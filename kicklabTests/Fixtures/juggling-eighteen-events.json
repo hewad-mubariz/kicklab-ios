@@ -1,0 +1,114 @@
+{
+  "source_sha256": "4a54b84afee6389e5229716e3d987ff6c4295ed297651e765d56ec1dd8cc64ae",
+  "review": "runs/roi-ios-20261001/manual-review/findings.json",
+  "timing_scope": "Times are visually reviewed app-event anchors; real impact can be 1\u20132 frames later. Offsets measure event correspondence, not exact physical impact accuracy.",
+  "unscorable": {
+    "time_interval_s": [
+      15.7,
+      16.0
+    ],
+    "reason": "Ball exits the left edge as kicking leg extends; contact/outgoing trajectory off-screen. Do not count this as a confirmed detector miss or supported contact."
+  },
+  "events": [
+    {
+      "time_s": 2.43380816699937,
+      "counts": false,
+      "kind": "hand_handling"
+    },
+    {
+      "time_s": 3.0998081669968087,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 3.7338081669877283,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 4.500808167009382,
+      "counts": false,
+      "kind": "hand_handling"
+    },
+    {
+      "time_s": 5.033808167005191,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 5.700808166991919,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 6.267808167001931,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 7.0678081669902895,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 7.634808167000301,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 8.53480816699448,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 9.134808167000301,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 9.834808166982839,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 10.30180816698703,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 10.90180816699285,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 11.835808167001233,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 12.53580816698377,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 13.235808166995412,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 13.835808167001233,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 14.569808166997973,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    },
+    {
+      "time_s": 15.236808166984702,
+      "counts": true,
+      "kind": "visible_foot_contact"
+    }
+  ]
+}
