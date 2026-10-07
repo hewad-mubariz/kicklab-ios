@@ -1,0 +1,17 @@
+PersonBoundaryMatte — derived from ViTMatte small, Composition-1k
+
+Authors: Jingfeng Yao, Xinggang Wang, Shusheng Yang, Baoyuan Wang / HUST Vision Lab.
+Paper: ViTMatte: Boosting Image Matting with Pretrained Plain Vision Transformers (2023).
+Source checkpoint: https://huggingface.co/hustvl/vitmatte-small-composition-1k
+Exact revision: 6a58ad7646403c1df626fbd746900aec7361ea1d
+The published checkpoint is identified as Apache-2.0. See Apache-2.0.txt.
+Original project: https://github.com/hustvl/ViTMatte
+Copyright (c) 2023 Hust Vision Lab. Original project license: ViTMatte-MIT.txt.
+
+KickLab changes: fixed 768 x 768 input, exact precomputed positional tables,
+Core ML ML Program conversion with float16 weights/computation and float32 I/O.
+No fine-tuning. RGB and trimap preprocessing and known-region constraints are
+implemented by KickLab. Conversion uses Hugging Face Transformers and
+coremltools locally; neither Python runtime is bundled in the app.
+
+Reproduction: scripts/convert-trimap-matte.py and scripts/check-trimap-coreml.py.

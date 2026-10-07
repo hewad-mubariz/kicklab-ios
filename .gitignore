@@ -1,0 +1,16 @@
+# Xcode build output and per-user state
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.xcresult/
+
+# Experiment renders, checkpoints and test results (several GB, files over GitHub's 100 MB limit)
+artifacts/
+
+# macOS
+.DS_Store
+
+# Core ML models (~413 MB) are kept out of git to keep pushes small.
+# A fresh clone needs them copied into kicklab/Models before it will build.
+*.mlpackage/
