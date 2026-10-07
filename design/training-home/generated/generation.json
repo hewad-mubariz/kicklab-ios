@@ -1,0 +1,19 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "generated_for": "KickLab home training cards",
+  "reference_images_used": false,
+  "assets": [
+    {
+      "name": "Juggling",
+      "original": "/Users/hewadmubariz/Desktop/projects/kicklab/design/training-home/generated/juggling-v1.png",
+      "card": "/Users/hewadmubariz/Desktop/projects/kicklab/design/training-home/generated/juggling-card-v1.jpg",
+      "prompt": "Use case: ads-marketing. Asset type: standalone vertical 2:3 photographic artwork for a Juggling training card in the KickLab football app, not an image of a phone or UI. Create a premium realistic sports editorial photograph of a completely fictional adult male football player practicing keep-ups with one football on a floodlit outdoor pitch at blue hour. He has close-cropped hair, dark brown skin, a charcoal-black unbranded training shirt with a very small lime accent, black shorts, long dark socks and pale lime football boots. A natural balanced juggling pose, one boot raised under a sharply detailed black-and-ivory football hovering just above it, the planted leg supports him correctly. Full athlete from head to boots, placed centrally and occupying the middle 70 percent of the image height. Ball and foot clearly readable around the vertical center to lower-middle of the composition so they survive a card crop. Rich deep teal-black shadows, real green turf, subtle atmospheric stadium floodlights, precise rim lighting, believable skin and fabric texture. Quiet dark space at the top 12 percent and bottom 18 percent for app labels that will be added separately. Tasteful high-end sports photography, natural anatomy, not a cartoon or glossy CGI. Entirely invented person, not based on any people or photographs in this conversation. No text, no words, no numbers, no watermarks, no logos, no split panels, no glowing orbit around the ball. Single portrait photograph."
+    },
+    {
+      "name": "Power Shot",
+      "original": "/Users/hewadmubariz/Desktop/projects/kicklab/design/training-home/generated/power-shot-v1.png",
+      "card": "/Users/hewadmubariz/Desktop/projects/kicklab/design/training-home/generated/power-shot-card-v1.jpg",
+      "prompt": "Use case: ads-marketing. Asset type: standalone vertical 2:3 photographic artwork for a Power Shot recording-and-effects card in the KickLab football app, not an image of a phone or UI. Create a premium realistic sports editorial photograph of a completely fictional adult male football player in a clear powerful instep shooting pose on a floodlit outdoor pitch at blue hour. Side-three-quarter view of the whole athlete from head to boots; planted support leg, kicking leg in an anatomically correct forward follow-through. A single sharply readable black-and-ivory football has just left the boot and has a short elegant amber flame-and-spark trail, a tasteful video special effect suggesting creative replay editing, with warm bounce light on the boot. The football is near the center-right of the frame around the vertical middle and remains readable as a real football. Short curly hair, medium-brown skin, charcoal-black unbranded kit with a small lime accent, black shorts, dark socks and pale lime football boots. The main action is centered within the middle 70 percent of the image; quiet dark space at the top 12 percent and bottom 18 percent for separate UI labels. Same coherent sports campaign look: deep teal-black shadows, real green turf, distant floodlight bokeh, restrained cinematic rim light, realistic materials. Entirely invented athlete, not based on any people or photographs in this conversation. No speedometer, no speed numbers, no typography, no logos, no watermark, no phone, no UI, no split panels. Single portrait photograph."
+    }
+  ]
+}

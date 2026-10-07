@@ -1,0 +1,21 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "revision": 2,
+  "changes": "Juggling athlete appearance and kit; longer Power Shot flame trail.",
+  "assets": [
+    {
+      "name": "juggling",
+      "edit_target": "/Users/hewadmubariz/Desktop/projects/kicklab/design/training-home/generated/juggling-v1.png",
+      "original": "/Users/hewadmubariz/Desktop/projects/kicklab/design/training-home/generated/juggling-v2.png",
+      "card": "/Users/hewadmubariz/Desktop/projects/kicklab/design/training-home/generated/juggling-card-v2.jpg",
+      "prompt": "Use case: precise-object-edit. Edit the supplied KickLab juggling photograph. Give the fictional adult male athlete a visibly different appearance and outfit: medium-length textured curly hair, a different clean-shaven face, and a premium warm-ivory football jersey with dark forest-green side panels, matching forest-green shorts, dark socks, and ivory boots with a small lime sole detail. His look must be clearly distinct from the original short-haired athlete in an all-black kit, even at thumbnail size. Keep him entirely fictional and do not reproduce anyone from earlier user photographs. Preserve the natural juggling pose, exact body and ball placement, one raised foot under the hovering football, full-body framing, anatomy, dark blue-hour pitch, floodlights, photoreal sports-editorial style, and portrait 2:3 composition. Maintain realistic fabric texture and lighting consistent with the floodlit scene. No logos, text, UI, extra balls, or extra people. Only change the athlete's look and clothing, retaining the original action and environment."
+    },
+    {
+      "name": "power",
+      "edit_target": "/Users/hewadmubariz/Desktop/projects/kicklab/design/training-home/generated/power-shot-v1.png",
+      "original": "/Users/hewadmubariz/Desktop/projects/kicklab/design/training-home/generated/power-shot-v2.png",
+      "card": "/Users/hewadmubariz/Desktop/projects/kicklab/design/training-home/generated/power-shot-card-v2.jpg",
+      "prompt": "Use case: precise-object-edit. Edit the supplied KickLab Power Shot photograph. The flame trail behind the football is far too short. Replace it with a much longer, bold cinematic orange fire trail following the ball. The ball is flying toward the right: the long flame must stream BACKWARD to the left, from the ball past the kicking boot and taper out across the lower-left portion of the frame, spanning roughly 60–70 percent of the image width, about six ball diameters. Make it a continuous flowing plume of layered flame tongues with a bright golden core near the ball, deeper orange curling edges, and tapering embers; clearly visible as real flame, not merely thin spark lines. A graceful slightly curving path behind the ball, energetic but not obscuring the ball, face, or body; layer the far tail behind the athlete where needed. Do not ignite his clothes, legs, or the pitch. Preserve the athlete's identity, outfit, exact shooting pose, ball size and position, camera perspective, dark floodlit football field, photographic realism, and portrait 2:3 composition. Only change the trail and its physically appropriate reflected warm light. No text, logos, UI, extra balls, or speed numbers."
+    }
+  ]
+}
