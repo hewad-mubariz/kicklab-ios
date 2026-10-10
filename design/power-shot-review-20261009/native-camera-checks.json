@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-09",
+  "feature": "Power Shot camera and replay",
+  "presets": [
+    "Ball Follow",
+    "Impact Zoom",
+    "Speed Ramp",
+    "Tilt Punch",
+    "Contact Lens",
+    "Freeze + Path",
+    "Wide + Detail",
+    "Frame Steps"
+  ],
+  "checks": {
+    "cameraClockGeometryGPU": 8,
+    "existingShotFlightAndTrails": 12,
+    "cameraExportsBothOrientations": 1,
+    "retimedAudioFrameTiming": 1,
+    "existingDistanceExport": 1,
+    "nativeUI": 3
+  },
+  "deviceInstallSucceeded": true,
+  "deviceLaunchSucceeded": true,
+  "recordingsUnchanged": true,
+  "documentsFilesBefore": 172,
+  "documentsFilesAfter": 172,
+  "missingDocuments": [],
+  "newModelRequired": false,
+  "strikeTiming": "Automatic estimate with manual source-frame override",
+  "reviewFootage": "Existing outdoor shot with cached detections",
+  "screenshots": [
+    "native-real-camera-follow.png",
+    "native-real-camera-lens.png",
+    "native-camera-frames.png"
+  ]
+}

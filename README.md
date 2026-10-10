@@ -1,1 +1,1 @@
-# kicklab-ios
+# Juggle Dude iOS

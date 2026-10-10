@@ -1,4 +1,4 @@
-# KickLab mobile design reference
+# Juggle Dude mobile design reference
 
 Six portrait iPhone concepts in two PNG boards, generated with the built-in image generation tool.
 
@@ -9,7 +9,7 @@ These are raster design references. Copy, numerical examples and footage are ill
 
 ## Visual system
 
-Charcoal and dark olive atmospheric surfaces; chalk-white text; electric yellow-lime primary actions and ball annotations. Condensed expressive display typography, oversized tabular live count, restrained utilitarian labels. The KickLab wordmark anchors entry screens. Single-column layouts and generous primary controls keep each screen focused.
+Charcoal and dark olive atmospheric surfaces; chalk-white text; electric yellow-lime primary actions and ball annotations. Condensed expressive display typography, oversized tabular live count, restrained utilitarian labels. The Juggle Dude wordmark anchors entry screens. Single-column layouts and generous primary controls keep each screen focused.
 
 ## Interaction notes
 

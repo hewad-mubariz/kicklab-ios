@@ -22,7 +22,7 @@ final class CameraRecordingLifecycleTests: XCTestCase {
 
         camera.startRecording()
         try await waitFor { camera.isRecording && camera.processedFrames >= 3 }
-        XCTAssertEqual(camera.performance.model, "SSDLite")
+        XCTAssertEqual(camera.performance.model, "YOLO26-M revised masks + marginal retry")
         XCTAssertNil(camera.recordingError)
         XCTAssertGreaterThan(benchmarkFiles().count, logsBefore.count)
 
@@ -93,7 +93,7 @@ final class CameraRecordingLifecycleTests: XCTestCase {
     @MainActor
     private func requireCamera() throws {
         try XCTSkipUnless(AVCaptureDevice.default(for: .video) != nil, "Requires a physical camera")
-        XCTAssertEqual(BallDetector.configuredResourceName, "KickLabDetector")
+        XCTAssertEqual(BallDetector.configuredResourceName, "KickLabYOLO26MotionSegmentation")
     }
 
     @MainActor

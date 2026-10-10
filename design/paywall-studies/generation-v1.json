@@ -1,0 +1,10 @@
+{
+  "mode": "builtin image generation",
+  "tool": "image_gen.imagegen",
+  "prompt": "generation-prompt-v1.txt",
+  "output": "juggle-dude-paywalls-v1.png",
+  "purpose": "Six paywall image mockups for design selection before implementation or subscription configuration",
+  "offer_status": "Pro name, premium benefits, prices and subscription terms are illustrative concept data, not approved live offers",
+  "sample_prices": {"monthly_eur": 3.99, "yearly_eur": 24.99},
+  "concepts": ["Pro Pass", "Effect Lab", "Club Pass", "Street Pro", "Creator Kit", "Floodlight"]
+}

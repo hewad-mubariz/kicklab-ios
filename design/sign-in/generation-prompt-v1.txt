@@ -1,0 +1,23 @@
+Use case: ui-mockup.
+Create ONE polished raster design presentation showing TWO related Juggle Dude iPhone authentication screen mockups side by side. This is a shippable interface study for an existing football juggling app, not a landing page or a wireframe. Landscape canvas approximately 1600 x 1200, sharply readable typography. Two large straight-on equal-size tall phone screens, no perspective, minimal black device frames, fully visible with comfortable margins. Small tasteful presentation header outside phones "JUGGLE DUDE / SIGN IN". Each phone should have current iPhone safe areas, small 9:41 status bar and Dynamic Island, bottom home indicator. The interface must feel native iOS 26: precise spacing, soft continuous corners, only subtle Liquid Glass on a close control and modal sheet. Large touch targets, calm layout.
+
+Existing Juggle Dude design system: charcoal background #0C0F10, panels #151A1C, off-white #F4F6EF, muted gray #99A5A2, restrained acidic lime #D0F852; display headlines similar to DIN Condensed Bold, body/buttons like SF Pro. Sports editorial, refined and practical. Do not put gradients or tint on authentication provider buttons. No purple, no blue page background, no dashboard, no navigation tab bar, no statistics invented on the sign-in screen, no badge clutter, no oversized framed hero section, no people or photographs of people.
+
+LEFT PHONE: caption outside phone "01 / Welcome screen". Full dark screen.
+At top inside screen a modest JUGGLE DUDE wordmark (KICK off-white, LAB lime).
+Middle upper area: a beautiful photorealistically rendered modern matte pearl football with sculpted curved black seams, approximately 125 points in diameter, floating in soft charcoal light. One extremely thin lime ball-motion arc curves behind it, understated, slight warm edge light. This generated football motif is the sole decoration, directly on the screen background, no card, no gaudy fire.
+Below the illustration, left aligned with 28pt horizontal margins, large readable headline exactly "Welcome to" on one line and "Juggle Dude." on the next, about 38pt equivalent, off-white.
+Supporting text exactly "Sign in to your Juggle Dude profile." in muted gray at normal body size.
+Below, two equal full-width solid white pill buttons, 54pt tall with 12pt gap. First includes a correct black Apple symbol plus exact centered label "Continue with Apple" in black. Second includes the standard recognizable multicolor Google G plus exact label "Continue with Google" in black. Match both buttons in dimensions and visual weight, align their logo positions and text baseline. Google G keeps its official colors, no monochrome substitute.
+Under buttons, a generous separate simple lime text action exactly "Try it first" with small right arrow, no filled button.
+Small gray helper below exactly "You can sign in later from Profile."
+At bottom, restrained centered links "Terms of Use · Privacy Policy" in readable small gray, above the home indicator.
+
+RIGHT PHONE: caption outside phone "02 / From Profile". Show the same dark app with an elegant iOS partial-height sign-in sheet occupying about the lower 60% of the display. Above it, a slightly dimmed simple existing Juggle Dude profile page: navigation title "Profile", soft monoline person icon, title "Your profile", one understated settings row. No person photo, no fabricated stats. The modal sheet has deep charcoal #151A1C, large continuous top corners, a short grabber, and a small circular glass X button top-right.
+Within the sheet, a small lime monoline person icon, then left-aligned headline exactly "Make it yours." and supporting text "Sign in to your Juggle Dude profile."
+Repeat EXACTLY the same two large white provider buttons, equal width/height and logos: "Continue with Apple" then "Continue with Google".
+Below them, simple muted action "Not now".
+Small footer links "Terms of Use · Privacy Policy".
+The right phone shows how a guest can return later to sign in; it is not a second extra onboarding step. Both screens must look designed as one product family, compact, polished, realistic to implement, no invented provider login popups.
+
+Outside phones, one concise footer "Apple + Google to start. Let players try first." Keep the image focused on the two screens. Render every quoted UI string correctly and cleanly. No other labels, watermark, or extra copy.

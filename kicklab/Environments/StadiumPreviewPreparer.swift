@@ -65,11 +65,11 @@ nonisolated enum StadiumPreviewPreparer {
         let previewComposition = try await EffectVideoGeometry.composition(track:video,duration:fullDuration,shortEdge:1080)
         // Segment before making the editing proxy: a 4K source contains toe,
         // hair and ball-edge detail that cannot be recovered from a 720p proxy.
-        let composition = try await EffectVideoGeometry.composition(track:video,duration:fullDuration,shortEdge:2160)
         let sourceFPS = try await video.load(.nominalFrameRate)
         guard maximumFrameRate.isFinite,maximumFrameRate>0 else {throw ForegroundMaskProcessor.Failure.invalidFrame}
         let preparedFPS=min(60,maximumFrameRate,Double(sourceFPS > 0 ? sourceFPS:30))
-        composition.frameDuration = CMTime(seconds:1/preparedFPS,preferredTimescale:60_000)
+        let composition = try await EffectVideoGeometry.composition(track:video,duration:fullDuration,shortEdge:2160,
+            frameDuration:CMTime(seconds:1/preparedFPS,preferredTimescale:60_000))
         let size = previewComposition.renderSize
         await onProgress(0.01)
         await onStage("Starting cutout processing")
@@ -138,7 +138,9 @@ nonisolated enum StadiumPreviewPreparer {
         var contacts = FootContactTracker(), frameCount = 0, observationIndex = 0
         let balls = observations.filter { $0.time.isFinite && $0.confidence >= 0.05 && $0.bounds.width > 0 && $0.bounds.height > 0 }.sorted { $0.time < $1.time }
         await onStage("Separating the player and ball")
-        while let sample = output.copyNextSampleBuffer() {
+        while true {
+            try await VideoWorkExecution.checkpoint(requiresGPU: true)
+            guard let sample = output.copyNextSampleBuffer() else { break }
             try Task.checkCancellation()
             guard let sourcePixels = CMSampleBufferGetImageBuffer(sample) else { throw failure("A video frame could not be read.") }
             let stamp = CMSampleBufferGetPresentationTimeStamp(sample), time = stamp.seconds

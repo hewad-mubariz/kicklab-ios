@@ -1,0 +1,95 @@
+{
+  "status": "Proposed UX. App implementation is unchanged in this mockup request.",
+  "principles": [
+    "Large preview stays visible while adjusting one effect.",
+    "A shared precise picker uses source frames, not retimed playback positions.",
+    "Single moment effects use one marker; range effects use start and end handles.",
+    "Selecting an effect opens contextual controls rather than a full preset grid.",
+    "Frame Steps remains a review aid.",
+    "Reuse a confirmed contact frame across moment-based effects, with a per-effect override when needed.",
+    "Offer an automatic initial moment and range, then let the user refine them."
+  ],
+  "effects": [
+    {
+      "effect": "Ball Follow",
+      "timing": "Selected source-video range",
+      "controls": [
+        "Zoom",
+        "Smooth or tight follow",
+        "Automatic target or adjusted crop"
+      ]
+    },
+    {
+      "effect": "Impact Zoom",
+      "timing": "One impact frame with an effect duration",
+      "controls": [
+        "Zoom",
+        "Zoom duration",
+        "Soft or punchy motion",
+        "Drag zoom target"
+      ]
+    },
+    {
+      "effect": "Speed Ramp",
+      "timing": "Selected slow-motion range",
+      "controls": [
+        "Playback rate",
+        "Smooth or instant transition"
+      ]
+    },
+    {
+      "effect": "Tilt Punch",
+      "timing": "One impact frame",
+      "controls": [
+        "Angle",
+        "Left or right",
+        "Settle time"
+      ]
+    },
+    {
+      "effect": "Contact Lens",
+      "timing": "Selected range when the lens is visible",
+      "controls": [
+        "Source inspection area",
+        "Magnification",
+        "Lens size",
+        "Inset position"
+      ]
+    },
+    {
+      "effect": "Freeze + Path",
+      "timing": "One freeze frame and an inserted hold duration",
+      "controls": [
+        "Hold duration",
+        "Show path",
+        "Initial direction",
+        "Tracked path endpoint"
+      ]
+    },
+    {
+      "effect": "Wide + Detail",
+      "timing": "Selected source-video range",
+      "controls": [
+        "Detail zoom",
+        "Stacked or side-by-side layout",
+        "Panel balance"
+      ]
+    },
+    {
+      "effect": "Frame Steps",
+      "timing": "Individually selected source frames for review",
+      "controls": [
+        "Add frame",
+        "Update selected frame",
+        "Remove frame",
+        "Adjacent-frame stepping"
+      ]
+    }
+  ],
+  "engineeringNotes": [
+    "Step to adjacent decoded presentation timestamps, including variable frame cadence.",
+    "Keep all ranges and selected frames on the original source timeline.",
+    "Apply camera controls to existing video pixels and reuse current detections; no new model.",
+    "Distinguish spatial selection of magnified pixels from the lens inset's screen placement."
+  ]
+}

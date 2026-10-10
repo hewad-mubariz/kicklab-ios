@@ -6,7 +6,7 @@ Generation prompt: “Production 360-degree equirectangular environment texture 
 
 Refinement prompt: “Remove both white football goals and white pitch markings, filling with the original black boards and turf. Keep stadium geometry, viewpoint, panorama, sky, roof, lights, crowd, exposure, colors and dimensions unchanged. The app renders its own goals and lines.”
 
-The generated stadium bitmap is 1774 × 887. It is an artistic backdrop, not a surveyed reconstruction, geometrically accurate equirectangular photograph, or recovered stadium geometry. Its architecture repeats twice around the azimuth; the native bowl, pitch, boards and goals provide world-space placement. Repeated KICKLAB branding is a deterministic 2048 × 512 native text asset (`stadium-boards-v2`), rather than generated lettering.
+The generated stadium bitmap is 1774 × 887. It is an artistic backdrop, not a surveyed reconstruction, geometrically accurate equirectangular photograph, or recovered stadium geometry. Its architecture repeats twice around the azimuth; the native bowl, pitch, boards and goals provide world-space placement. Repeated JUGGLE DUDE branding is a deterministic 2048 × 512 native text asset (`stadium-boards-v2`), rather than generated lettering.
 
 The generated turf albedo is saved as `kicklab/Assets.xcassets/stadium-turf-v2.imageset/stadium-turf-v2.png`. Art direction: seamless overhead short-cut football turf, dense fine blades, natural muted greens, even neutral illumination, no lines, objects, horizon, cast shadows or perspective. The shader repeats it in world space, selects mip levels explicitly for distance filtering, and adds mowing, illumination, near-field blades and contact shadows. The stadium bitmap does not supply the playable ground.
 

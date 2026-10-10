@@ -8,10 +8,10 @@ The published checkpoint is identified as Apache-2.0. See Apache-2.0.txt.
 Original project: https://github.com/hustvl/ViTMatte
 Copyright (c) 2023 Hust Vision Lab. Original project license: ViTMatte-MIT.txt.
 
-KickLab changes: fixed 768 x 768 input, exact precomputed positional tables,
+Juggle Dude changes: fixed 768 x 768 input, exact precomputed positional tables,
 Core ML ML Program conversion with float16 weights/computation and float32 I/O.
 No fine-tuning. RGB and trimap preprocessing and known-region constraints are
-implemented by KickLab. Conversion uses Hugging Face Transformers and
+implemented by Juggle Dude. Conversion uses Hugging Face Transformers and
 coremltools locally; neither Python runtime is bundled in the app.
 
 Reproduction: scripts/convert-trimap-matte.py and scripts/check-trimap-coreml.py.

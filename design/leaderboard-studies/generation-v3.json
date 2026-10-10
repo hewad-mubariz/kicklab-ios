@@ -1,0 +1,9 @@
+{
+  "mode": "builtin image generation",
+  "tool": "image_gen.imagegen",
+  "prompt": "generation-prompt-v3.txt",
+  "output": "juggle-dude-leaderboards-v3-sport.png",
+  "purpose": "Ten additional sporting leaderboard mockups for Juggle Dude, numbered 11 through 20",
+  "data": "Fictional players and concept scores; highest consecutive juggling touches",
+  "concepts": ["Stadium Steps", "Match Tickets", "Kit Numbers", "Spotlight Stack", "Club Pennants", "Touchline", "Street Stickers", "Broadcast", "Concrete Court", "Split Podium"]
+}

@@ -50,13 +50,14 @@ nonisolated struct ShotRollCalibration: Sendable {
         }
     }
     enum FitError: LocalizedError {
-        case distance, points, geometry, correction
+        case distance, points, geometry, correction, fittedSpan
         var errorDescription: String? {
             switch self {
             case .distance: "Enter the tape-measured spacing, between 0.50 and 10.00 metres."
             case .points: "Tap two separate paper centres inside the image."
             case .geometry: "Both paper centres must be on the same level floor, below the horizon."
             case .correction: "This setup needs a fresh floor scan. Check the paper centres and spacing."
+            case .fittedSpan: "Choose a separate measured gap, such as the 1 m to 2 m tapes."
             }
         }
     }
@@ -72,6 +73,38 @@ nonisolated struct ShotRollCalibration: Sendable {
     let imageSize: CGSize
     let sensorPoints: [CGPoint]
     let timestamp: Double
+    var independentSpanCheck: SpanCheck?
+
+    struct SpanCheck: Sendable {
+        let sensorPoints: [CGPoint]
+        let referenceDistanceM: Float
+        let estimatedDistanceM: Float
+        var errorM: Float { estimatedDistanceM - referenceDistanceM }
+        // An experimental setup check, not an accuracy claim for all distances.
+        var toleranceM: Float { max(0.1, referenceDistanceM * 0.05) }
+        var withinTolerance: Bool { abs(errorM) <= toleranceM }
+    }
+
+    /// Check a held-out span without changing the fitted floor or scale.
+    func checkSpan(sensorPoints points: [CGPoint], referenceDistanceM: Float) throws -> SpanCheck {
+        guard referenceDistanceM.isFinite, (0.5...10).contains(referenceDistanceM) else { throw FitError.distance }
+        guard points.count == 2, points.allSatisfy({ $0.x.isFinite && $0.y.isFinite &&
+            (0...1).contains($0.x) && (0...1).contains($0.y) }) else { throw FitError.points }
+        func pixelDistance(_ a: CGPoint, _ b: CGPoint) -> CGFloat {
+            hypot((a.x - b.x) * imageSize.width, (a.y - b.y) * imageSize.height)
+        }
+        guard pixelDistance(points[0], points[1]) >= 40 else { throw FitError.points }
+        let sameOrder = pixelDistance(points[0], sensorPoints[0]) < 10 && pixelDistance(points[1], sensorPoints[1]) < 10
+        let reverseOrder = pixelDistance(points[0], sensorPoints[1]) < 10 && pixelDistance(points[1], sensorPoints[0]) < 10
+        guard !sameOrder && !reverseOrder else { throw FitError.fittedSpan }
+        guard let a = Self.groundPoint(points[0], imageSize: imageSize, intrinsics: intrinsics, camera: camera, floor: floor),
+              let b = Self.groundPoint(points[1], imageSize: imageSize, intrinsics: intrinsics, camera: camera, floor: floor) else {
+            throw FitError.geometry
+        }
+        let distance = simd_distance(a, b)
+        guard distance.isFinite, distance > 0 else { throw FitError.geometry }
+        return SpanCheck(sensorPoints: points, referenceDistanceM: referenceDistanceM, estimatedDistanceM: distance)
+    }
 
     static func fit(sensorPoints: [CGPoint], referenceDistanceM: Float,
                     imageSize: CGSize, intrinsics: simd_float3x3,

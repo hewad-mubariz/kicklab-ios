@@ -49,6 +49,11 @@ extension EffectFrame {
             frame.impact = cue.strength
             frame.impactAge = cue.age
         }
+        if style == .heatPulse {
+            // Speed and direction changes alone are not confirmed touches.
+            frame.impact = 0
+            frame.impactAge = -1
+        }
         return frame
     }
     nonisolated static func video(size: CGSize, sourceSize: CGSize, edit: SessionEditState,
@@ -62,6 +67,11 @@ extension EffectFrame {
                                 time: time, intensity: 0, visibility: 0, style: edit.style.shaderID)
         }
         frame.environment = edit.environment.shaderAmount
+        if edit.style == .heatPulse, frame.visibility > 0,
+           let touch = track.latestTouch(at: time), time - touch < 0.60 {
+            frame.impact = 1
+            frame.impactAge = Float(time - touch)
+        }
         return frame
     }
 }

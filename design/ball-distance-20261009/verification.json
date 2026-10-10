@@ -1,0 +1,81 @@
+{
+  "completed_at_utc": "2026-10-09T07:31:44.132772+00:00",
+  "scope": "Clean Ball Distance camera and effects editor, using existing juggling design and detector.",
+  "behavior": {
+    "import": "Effects only; visual analysis without touch counting or invented metres.",
+    "app_recording": "Measured calibration plus ground displacement from one automatically armed start; original evidence saved and used during replay/export.",
+    "research": "Full experiment screen retained in Debug Development tools and original launch route; old sources backed up.",
+    "model_lifecycle": "Live detector paused and released before visual video analysis starts."
+  },
+  "constraints": [
+    "Fixed camera and measured calibration required for distance.",
+    "Distance is displacement from start, not accumulated path length.",
+    "Ground rolls only; general shot/airborne accuracy and speed remain unvalidated.",
+    "Design screenshots use an explicit example distance and background. Real capture uses the rear camera."
+  ],
+  "tests": [
+    {
+      "report": "test-summary.json",
+      "result": "Passed",
+      "passed": 50,
+      "failed": 0
+    },
+    {
+      "report": "export-test-summary.json",
+      "result": "Passed",
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "report": "final-test-summary.json",
+      "result": "Passed",
+      "passed": 2,
+      "failed": 0
+    }
+  ],
+  "builds": {
+    "simulator": "passed",
+    "signed_iphone": "passed",
+    "codesign_verified": true
+  },
+  "installed_bundle": "com.hewad.juggledude",
+  "installed": true,
+  "launched": true,
+  "current_app_documents": {
+    "before": 41,
+    "after": 41,
+    "removed": 0,
+    "root_entry_metadata_changed": 0
+  },
+  "historical_phone_data_note": "Old hewad.kicklab was already absent and ShotGeometryReviews was absent from the currently installed com.hewad.juggledude app before this update. Original experiment captures remain in kicklab-lab/runs; the latest complete capture was verified against its saved video/frame/calibration/observations hashes.",
+  "debug_archive_index": "/Users/hewadmubariz/Desktop/projects/kicklab/design/ball-distance-20261009/debug-workbench-index.json",
+  "source_sha256": {
+    "kicklab/Detection/ShotGeometryCapture.swift": "e129c2cae7b08a3943c4aaac4196f4cf11de591decf9d4f62495131532e0d867",
+    "kicklab/Detection/ShotRollDetector.swift": "835774ba2a6ad399545d754d51e106e348349daf8771011ea89799576f908518",
+    "kicklab/Detection/ShotRollCalibrationView.swift": "1c4d9e67729473251a1cd960249a87b0b6e1a5f09e0838a57e21dd9def075331",
+    "kicklab/Navigation/RootShellView.swift": "e50e488e5f7d90b2535616cee94ccdb360dbcf9eda0a4ddfd07fc8a295edc16f",
+    "kicklab/Home/HomeView.swift": "465d13ee46aba4ca842a017f64ba138bc93935cd805a261c5434d4b781170cbc",
+    "kicklab/Models/TrainingModule.swift": "0ee8e808b4a68479d4d3669216676536c109e713674dca4baefa575b94c2f327",
+    "kicklab/Record/ReplayEffectsView.swift": "0a47e6f9a9a59c4d3fc7207507768860505f191d8c6a74d1f0ccafec9203069a",
+    "kicklab/Record/ReplayToolbox.swift": "f677669c1db89ceb39c239553cf8a2bb5c2df286cd3e688177582fe9cd23e2f4",
+    "kicklab/Record/ReplayDownloader.swift": "d663eee6aab40f63dfd8b94981ec39beb547b968af0b7f0445d3b5ef7ad8940e",
+    "kicklab/Effects/BallStyleBurnIn.swift": "a97e4f2ac2999d3469d346706ced62881a435f693531e721f57b83db759a5e9b",
+    "kicklab/kicklabApp.swift": "5be4e9bae9507cb2a1b11b3dccdf506895c24ccf1981747e5dc22978fcb4d155",
+    "kicklab/Record/CaptureHUD.swift": "3864d0f9dce77a50cbf71f9fbc5e8785744282c9007651b71f1b4a3460a13d02",
+    "kicklab/Record/BallDistanceView.swift": "fff137669d6dbf6cb6f4945d5c034078d92369fa4288b8324cbb1c9aa3fea619",
+    "kicklab/Record/BallDistanceTimeline.swift": "af43d626ecce5fed6bddc7c241e0146acd35a0d18f13edb5768dcdf35970b00b",
+    "kicklab/Record/BallDistanceReadout.swift": "ac8e42bfe3186e16928035397a3c8b7f80f5aec9ec47d31ca034439520afb369",
+    "kicklab/Record/BallDistanceMedia.swift": "2f937ddbc3d97ae6d6f8c0786262a56132954d4538f3247792c011920205cb6c",
+    "kicklab/Record/BallVideoEditorView.swift": "9973b4611b255494adc2ada9899671e90101ce311fbb4b57acc13d345f468793",
+    "kicklab/Record/SessionDesignReview.swift": "20b795847fc7564e1e063855ff3d98d70249bae842882b9ff73e4e6e1889f9de",
+    "kicklabTests/BallDistanceTimelineTests.swift": "f8a5448d756bca98a13b78357d348a37ad282f2bdc289dc8f3277429e57245d7",
+    "kicklabTests/BallDistanceExportTests.swift": "598abd6756d891638d57aeec3978821a31d81ba974bbb30372e95bd6f09b7de7",
+    "kicklabUITests/BallDistanceUITests.swift": "5cceea0b11e435e2b6419b8ac6e834358a6b815dd88cd1bc2c6f35fa32af516c",
+    "kicklabTests/Fixtures/rolling-distance-saved-control.json": "dac643ea97c0ccf00478045573fe0ddf45f8a92452414a51e5e87b9927939950"
+  },
+  "device_binary_sha256": "a8c9163b7d0fd0a7b98b4baff482545534fe564162084b3c7819aeb211fba822",
+  "preview": {
+    "capture": "screenshots/D3232D53-10A1-470C-AE71-50ECB378727D.png",
+    "effects": "final-screenshots/32E29553-D2A5-420E-A041-30D7A034BA61.png"
+  }
+}

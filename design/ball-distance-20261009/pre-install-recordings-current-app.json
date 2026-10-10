@@ -1,0 +1,40 @@
+{
+  "error" : {
+    "code" : 3,
+    "domain" : "CoreDevice.ActionError",
+    "userInfo" : {
+      "NSDebugDescription" : {
+        "string" : "This operation could not be performed due to an error in StreamingAction: The system failed to get a list of files on the remote device."
+      }
+    }
+  },
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "info",
+      "files",
+      "--device",
+      "0440AB85-BD17-5A51-AF30-B00F6F7E3382",
+      "--domain-type",
+      "appDataContainer",
+      "--domain-identifier",
+      "com.hewad.juggledude",
+      "--subdirectory",
+      "Documents/ShotGeometryReviews",
+      "--no-recurse",
+      "--json-output",
+      "design/ball-distance-20261009/pre-install-recordings-current-app.json",
+      "--timeout",
+      "30",
+      "--quiet"
+    ],
+    "commandType" : "devicectl.device.info.files",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "failed",
+    "version" : "518.33"
+  }
+}

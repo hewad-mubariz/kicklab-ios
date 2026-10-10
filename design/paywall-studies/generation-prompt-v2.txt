@@ -1,0 +1,39 @@
+Use case: ui-mockup.
+Create ONE premium design exploration sheet of SIX NEW iPhone subscription paywalls for "Juggle Dude", the football juggling app. Number them 07 through 12. The user wants another sheet after seeing six sporty paywalls. Explore distinctly NEW compositions with premium sports-brand energy, tactile detail, strong typography and excellent native app usability. Do not merely change the hero picture on six identical templates.
+
+Presentation: exactly THREE columns by TWO rows of complete front-facing portrait app screens, consistent screen size roughly 1:2.05. Tall portrait contact sheet around 3:4, highest available resolution ideally 2304 x 3072. No hardware frames, no perspective on entire screens, no cropping. Charcoal canvas, spacious gutters. Board title "Juggle Dude / PRO — COLLECTION 02". Small subtitle "07–12 · Sample prices and benefits". Exact concept captions below each screen. Legible small type and meticulously aligned UI.
+
+Brand: vivid lime #D0F852, charcoal #0C0F10, warm ivory #F3F4ED, off-white. Condensed bold athletic headlines paired with a clean modern sans serif for functional copy. Subtle textures, fine sports lines, controlled corners, crisp high contrast, generous padding. Contemporary football culture rather than fantasy gaming. No giant gold trophies, fake testimonials, decorative sales graphs, invented discounts or urgency timers. No corporate or apparel logos. Use generated fictional adult footballers only; clothing, balls and shoes must be fully unbranded. No recognizable athletes.
+
+The six views are subscription screens, not sports posters. Every screen MUST contain these complete readable elements:
+- Small "Juggle Dude Pro" branding and a plainly visible circular X close control at top right.
+- Three illustrative benefit labels "Extra effects", "Ball styles", "Motion overlays", shown as a concise list, a strip, or labels on preview cards.
+- Two selectable plans: "Monthly" at "€3.99 / month", "Yearly" at "€24.99 / year". Yearly visibly selected with a radio/check indicator and lime or charcoal outline. Explore different plan arrangements per concept. Always display annual total clearly; do not replace with a monthly equivalent.
+- Large primary button "Get Pro · €24.99/year".
+- Readable sentence "Auto-renews. Cancel anytime." beneath button.
+- Footer links "Restore purchases", "Terms", "Privacy". Keep footer inside safe area with room above a thin home indicator.
+- No free trial language, no payment card form, no leaderboard advantage, no claims of increased real-world performance.
+All prices, benefits and Pro naming are illustrative only: put "CONCEPT PRICING & BENEFITS — NOT FINAL" at bottom of BOARD.
+Reserve roughly the lower 40–45% for offer, price selection, button and footer. Upper composition can be striking but no missing purchase controls.
+
+NEW CONCEPTS in exact order:
+
+07 / LIVE CANVAS
+Dark charcoal. The upper 45% looks like an authentic premium juggling VIDEO PREVIEW: generated adult footballer juggling at sunset on a small urban court, no branding, photographed full-body, ball near shin, crisp counter "05" / "TOUCHES" top-left, small lime smooth waveform along bottom and subtle comet trail following the ball. Rounded rectangular canvas with elegant tight padding. Overlay one small label "YOUR NEXT LOOK" near its edge. Beneath photo a short bold headline "MAKE IT YOURS." Three compact feature labels. Plans as TWO full-width slim stacked rows, strong annual selection, generous CTA. Clear preview-to-purchase story, visually grounded, native app layout.
+
+08 / MATCH TICKET
+Light cream and charcoal, small orange accent, striking all-access sports TICKET motif integrated into entire paywall. Header typography "YOUR PASS / TO MORE STYLE". Below it a single refined cream ticket shape with notched edges and a fine vertical perforation. One side carries a giant outlined "PRO", the other side contains three small rich previews of a flame trail, modern ball texture and a lime motion graph. This graphic is compact and mostly flat, not a payment card. Three benefit labels in a simple row. Two plan choices treated like clean ticket stubs side by side. Selected annual charcoal with lime tick, lime CTA, crisp unobtrusive footer. Tactile premium sports print aesthetic, not messy distressed texture.
+
+09 / EFFECT DECK
+Dark nearly black with silver and lime. Upper section three large overlapping effect preview cards fanned very slightly across the screen: central card a realistic white/silver football with long orange flame trail, left a football with electric blue arc, right a football with clean lime comet path. All art has dark backgrounds and high-quality believable material, no tiny text on cards. A restrained tiny three-dot page indicator under cards. Large headline "PICK YOUR / SIGNATURE." The benefits sit as a compact inline list with three tiny icons. Plan choices in a subtle two-column glass-like panel, selected annual edged lime, price still large. Lime CTA. Feels like choosing your favorite sport collectible, not a generic app paywall.
+
+10 / BOLD PRO
+Fresh, graphic direction using a LIME upper background and a charcoal lower purchase area. Huge cropped display "PRO" fills top quarter, with one beautifully textured modern football partly intersecting the O, careful overlap so word remains readable. Small "Juggle Dude" above, strong short headline "YOUR GAME. YOUR LOOK." beneath. A thin graphic path hints at juggling ball motion; no athlete photo. Three benefit icons and names in black directly on lime. Lower half transitions with one deliberate shallow angled boundary into charcoal. Two full-width plan rows, annual picked with lime radio. White CTA with black text and tiny lime arrow, all renewal and footer copy white/gray. Bold flat athletic identity, extremely polished typography, very little decoration.
+
+11 / COURT CULTURE
+Light warm ivory, editorial split collage with no torn-paper clichés. Two tall adjacent photo crops in upper third: one generated adult footballer's black-and-white footwork on a concrete court, the second a color close-up of a modern football with a restrained lime trail, separated by a thin white gutter. Headline "EVERY TOUCH. / YOUR STYLE." is beneath photos, not pasted over them. One tiny orange sports line. Three compact benefit rows with beautifully simple monoline icons. Plans side by side as spacious outlined rectangles, selected yearly dark ink with white amount and lime check. Dark charcoal CTA with lime text. Warm daylight, premium football magazine mood, restrained photograph-led design.
+
+12 / MOTION STUDIO
+Dark graphite with a premium silver and lime technical-sports feel. Upper third a striking large lime waveform ribbon curves smoothly behind one small realistic silver football, motion tracking dots along the ribbon, with three elegant floating sample overlay elements: condensed "05", a tiny vertical peak-bar chart and a smooth motion line, arranged with lots of breathing room. These are cosmetic overlay previews, no invented performance stats. Headline "MAKE MOTION / YOUR OWN." Clearly present "Extra effects", "Ball styles", "Motion overlays" as three small labeled swatches. Plan selector is two simple horizontal rows, yearly full-width subtle lime tint, readable annual total. Lime gradient CTA. Minimal art direction, sculptural and sporty rather than sci-fi clutter.
+
+Before rendering: check exactly six complete labeled screens 07–12, brand spelling, currency and prices, yearly selection, restore/terms/privacy and close controls. Distinct compositions, premium legible UI and rich football-related visuals. No real company or sportswear logos, no watermarks, no old app name. Make the sheet feel like a compelling next round by an expert sports product designer.

@@ -7,6 +7,11 @@ struct HomeView: View {
     let onImport: () -> Void
     let onProfile: () -> Void
     let onSetupGuide: () -> Void
+    var onLeaderboard: (() -> Void)? = nil
+    var onHistory: (() -> Void)? = nil
+    /// Lets the leaderboard zoom out of its button.
+    var leaderboardZoom: Namespace.ID? = nil
+    var profileZoom: Namespace.ID? = nil
     @Environment(\.colorScheme) private var scheme
     @Environment(\.dynamicTypeSize) private var typeSize
 
@@ -22,14 +27,34 @@ struct HomeView: View {
                                      actionLabel: "Start session", primary: true, action: onJuggling)
                         .accessibilityIdentifier("module-juggling")
                     TrainingHomeCard(image: "home-power-shot", category: "02 / CREATE",
-                                     title: "POWER SHOT", subtitle: "Your shot.\nWith extra impact.",
+                                     title: "BALL DISTANCE", subtitle: "Track a ground roll.\nMake it yours with effects.",
                                      actionLabel: "Record + effects", primary: false, action: onPowerShot)
                         .accessibilityIdentifier("module-power-shot")
                 }
                 personalBestRow.padding(.vertical, 22)
+                if let onHistory {
+                    Button(action: onHistory) {
+                        HStack(spacing: 14) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .font(.title3).foregroundStyle(TrainingHomeStyle.accent(scheme))
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Session history").font(.subheadline.weight(.semibold))
+                                Text("Your touches, time and replays").font(.caption)
+                                    .foregroundStyle(TrainingHomeStyle.muted(scheme))
+                            }
+                            Spacer(minLength: 0)
+                            Image(systemName: "arrow.up.right").font(.subheadline)
+                        }
+                        .padding(16).frame(maxWidth: .infinity, minHeight: 62)
+                        .background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 18))
+                        .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(TrainingHomeStyle.line(scheme)))
+                        .contentShape(.rect(cornerRadius: 18))
+                    }
+                    .buttonStyle(.plain).accessibilityIdentifier("home-session-history")
+                    .padding(.bottom, 22)
+                }
                 Rectangle().fill(TrainingHomeStyle.line(scheme)).frame(height: 1)
-                upcoming.padding(.top, 22).padding(.bottom, 20)
-                importButton
+                importButton.padding(.top, 22)
                 Button(action: onSetupGuide) {
                     Label("How to set up your camera", systemImage: "viewfinder")
                         .font(.caption)
@@ -54,20 +79,15 @@ struct HomeView: View {
 
     private var header: some View {
         HStack {
-            Text("KICKLAB")
+            Text("Juggle Dude")
                 .font(TrainingHomeStyle.display(30, relativeTo: .title2))
                 .tracking(1.5)
-                .accessibilityLabel("KickLab")
+                .accessibilityLabel("Juggle Dude")
             Spacer()
-            Button(action: onProfile) {
-                Image(systemName: "person.crop.circle")
-                    .font(.system(size: 17, weight: .medium))
-                    .frame(width: 32, height: 32)
+            if let onLeaderboard {
+                HomeLeaderboardButton(action: onLeaderboard, zoom: leaderboardZoom)
             }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-            .accessibilityLabel("Open profile")
-            .accessibilityIdentifier("home-profile")
+            HomeProfileButton(action: onProfile, zoom: profileZoom)
         }
     }
 
@@ -128,45 +148,6 @@ struct HomeView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(personalBest > 0 ? "Juggling personal best, \(personalBest) touches" : "Juggling personal best. Your first record starts here.")
         .accessibilityIdentifier("home-personal-best")
-    }
-
-    private var upcoming: some View {
-        VStack(alignment: .leading, spacing: 11) {
-            Text("NEXT ON THE PITCH")
-                .font(.caption2.weight(.semibold)).tracking(1.5)
-                .foregroundStyle(TrainingHomeStyle.muted(scheme))
-                .accessibilityAddTraits(.isHeader)
-            Button {} label: {
-                HStack(spacing: 14) {
-                    if !typeSize.isAccessibilitySize {
-                        Image("card-target")
-                            .resizable().scaledToFill()
-                            .frame(width: 80, height: 92).clipped()
-                            .saturation(0).opacity(0.55)
-                    }
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("TARGET SHOOTING")
-                            .font(TrainingHomeStyle.display(24, relativeTo: .title3))
-                        Text("Coming soon").font(.caption)
-                            .foregroundStyle(TrainingHomeStyle.muted(scheme))
-                    }
-                    Spacer(minLength: 0)
-                    Image(systemName: "lock")
-                        .font(.system(size: 15)).foregroundStyle(TrainingHomeStyle.muted(scheme))
-                        .padding(.trailing, 16)
-                }
-                .padding(.leading, typeSize.isAccessibilitySize ? 16 : 0)
-                .padding(.vertical, typeSize.isAccessibilitySize ? 16 : 0)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(TrainingHomeStyle.panel(scheme))
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(TrainingHomeStyle.line(scheme)))
-            }
-            .buttonStyle(.plain)
-            .disabled(true)
-            .accessibilityLabel("Target Shooting, coming soon")
-            .accessibilityIdentifier("module-target-shooting")
-        }
     }
 
     private var importButton: some View {

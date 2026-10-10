@@ -90,12 +90,30 @@ nonisolated struct EffectFrame: Sendable, Equatable {
         case 8: return 145
         case 9: return 130
         case 10: return 130
+        case 11: return 70
+        case 12: return 24
+        case 13: return 45
+        case 14: return 180
+        case 15: return 24
+        case 16: return 20
         default: return 0
         }
     }
 
     var region: CGRect {
         if counter { return CGRect(origin: .zero, size: size) }
+        if style >= 20 {
+            // Power Shot: the whole flight behind the ball, plus room for rings and sparks.
+            let r = CGFloat(max(4, radius))
+            var rect = CGRect(x: CGFloat(center.x) - r * 3, y: CGFloat(center.y) - r * 3, width: r * 6, height: r * 6)
+            for p in trail where p.z > 0 && p.w < 0.95 {
+                let pad = max(CGFloat(p.z), size.width * 0.022) * 4.4
+                rect = rect.union(CGRect(x: CGFloat(p.x) - pad, y: CGFloat(p.y) - pad, width: pad * 2, height: pad * 2))
+            }
+            let clipped = rect.integral.intersection(CGRect(origin: .zero, size: size))
+            return clipped.isNull || clipped.isEmpty
+                ? CGRect(x: 0, y: 0, width: min(16, size.width), height: min(16, size.height)) : clipped
+        }
         if style == 1 {
             // Fire: the leaning flame around the ball, the buoyant wake along
             // the recorded path and the embers that climb above both. The

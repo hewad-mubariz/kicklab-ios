@@ -20,17 +20,22 @@ struct PostSessionFlowView: View {
     var recordsPersonalBest = true
 
     @State private var path = NavigationPath()
+    @StateObject private var ballPreparation = SessionEffectsPreparation()
     @StateObject private var sceneModel = StadiumPreviewModel()
     @State private var overlays = ExportOverlaySettings.load()
     @State private var edit = SessionEditState(style: .fire, intensity: 0.85)
     @Namespace private var exportZoom
 
+    private var activeSummary: SessionSummary { ballPreparation.prepared ?? summary }
+
     var body: some View {
         NavigationStack(path: $path) {
             ReplayEffectsView(
-                summary: summary, edit: $edit, stadiumPreview: sceneModel, overlays: $overlays,
-                onSaveShare: { path.append(PostSessionRoute.share) }, onBack: onFinished,
-                exportZoom: exportZoom
+                summary: activeSummary, edit: $edit, stadiumPreview: sceneModel, overlays: $overlays,
+                onBack: { ballPreparation.cancel(); onFinished() },
+                onRecordAnother: { ballPreparation.cancel(); onRecordAnother() },
+                onDone: { ballPreparation.cancel(); onFinished() },
+                preparation: ballPreparation
             )
             .toolbar(.hidden, for: .navigationBar)
             .navigationBarBackButtonHidden(true)
@@ -38,26 +43,27 @@ struct PostSessionFlowView: View {
                 switch route {
                 case .effects:
                     ReplayEffectsView(
-                        summary: summary,
+                        summary: activeSummary,
                         edit: $edit, stadiumPreview: sceneModel, overlays: $overlays,
-                        onSaveShare: { path.append(PostSessionRoute.share) },
                         onBack: { path.removeLast() },
-                        exportZoom: exportZoom
+                        onRecordAnother: { ballPreparation.cancel(); onRecordAnother() },
+                        onDone: { ballPreparation.cancel(); onFinished() },
+                        preparation: ballPreparation
                     )
                     .navigationBarBackButtonHidden(true)
                 case .stats:
                     DetailedStatsView(
-                        summary: summary,
+                        summary: activeSummary,
                         onSaveShare: { path.append(PostSessionRoute.share) },
                         onBack: { path.removeLast() }
                     )
                     .navigationBarBackButtonHidden(true)
                 case .share:
                     SaveShareView(
-                        summary: summary,
-                        edit: edit, sceneModel: sceneModel, overlays: $overlays,
-                        onRecordAnother: onRecordAnother,
-                        onDone: onFinished,
+                        summary: activeSummary,
+                        edit: edit, sceneModel: sceneModel, overlays: $overlays, preparation: ballPreparation,
+                        onRecordAnother: { ballPreparation.cancel(); onRecordAnother() },
+                        onDone: { ballPreparation.cancel(); onFinished() },
                         onBack: { path.removeLast() }
                     )
                     .navigationBarBackButtonHidden(true)

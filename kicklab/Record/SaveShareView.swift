@@ -14,6 +14,7 @@ struct SaveShareView: View {
     let summary: SessionSummary
     let edit: SessionEditState
     @ObservedObject var sceneModel: StadiumPreviewModel
+    @ObservedObject var preparation: SessionEffectsPreparation
     @Binding var overlays: ExportOverlaySettings
     var onRecordAnother: () -> Void
     var onDone: () -> Void
@@ -57,12 +58,14 @@ struct SaveShareView: View {
          edit: SessionEditState,
          sceneModel: StadiumPreviewModel,
          overlays: Binding<ExportOverlaySettings>,
+         preparation: SessionEffectsPreparation? = nil,
          onRecordAnother: @escaping () -> Void,
          onDone: @escaping () -> Void,
          onBack: @escaping () -> Void) {
         self.summary = summary
         self.edit = edit
         self.sceneModel = sceneModel
+        self.preparation = preparation ?? SessionEffectsPreparation()
         self._overlays = overlays
         self.onRecordAnother = onRecordAnother
         self.onDone = onDone
@@ -84,6 +87,10 @@ struct SaveShareView: View {
                         overlayControls.sessionEntrance(shown, order: 2, offset: 14)
                         qualityRow.disabled(busy).sessionEntrance(shown, order: 3, offset: 14)
 
+                        if preparation.isPreparing {
+                            ProgressView("Preparing ball effects…", value: preparation.progress)
+                                .tint(SessionStyle.mint)
+                        }
                         if sceneModel.isPreparing || sceneModel.isRendering {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(sceneModel.isPreparing ? "Preparing your cutout…" : "Rendering your environment…")
@@ -139,7 +146,7 @@ struct SaveShareView: View {
         .sensoryFeedback(.success, trigger: saves)
         .sheet(item: $sharePayload) { payload in ActivityView(items: [payload.url]) }
         .sheet(isPresented: $showOverlayEditor) {
-            ExportOverlayEditor(summary: summary,
+            ExportOverlayEditor(preparation: preparation, summary: summary,
                 edit: version == .edited ? edit : SessionEditState(style: .none, intensity: 0),
                 sourceSize: sourceSize, sceneModel: sceneModel, settings: $overlays)
                 .presentationDragIndicator(.visible)
@@ -190,7 +197,7 @@ struct SaveShareView: View {
                         // Switching Original/Edited softens the old frame until the new one lands.
                         ZStack(alignment: .topLeading) {
                             MetalStillSurface(image: image,
-                                edit: version == .edited ? edit : SessionEditState(style: .none, intensity: 0),
+                                edit: previewEdit,
                                 track: effectTrack, time: thumbnailTime) { statusMessage = $0 }
                             ExportOverlayLayer(settings: overlays, timeline: counterTimeline, time: thumbnailTime, size: size)
                         }
@@ -308,26 +315,35 @@ struct SaveShareView: View {
         .accessibilityLabel(title)
     }
 
+    private var previewEdit: SessionEditState {
+        var value = version == .edited ? edit : SessionEditState(style: .none, intensity: 0)
+        if loadingThumb || effectTrack.surfaceMotion == nil { value.ballSkin = .original }
+        return value
+    }
+
     private func loadThumb() async {
         loadingThumb = thumb != nil
         let media: ScenePlayback
         do {
-            media = try await sceneModel.media(summary: summary, selection: version == .edited ? edit.scene : nil)
+            let ready = version == .edited && edit.ballSkin != .original
+                ? try await preparation.prepare(summary) : summary
+            media = try await sceneModel.media(summary: ready, selection: version == .edited ? edit.scene : nil)
             try Task.checkCancellation()
         } catch is CancellationError { return }
         catch {
             loadingThumb = false
             statusMessage = "Couldn’t load the video preview. \(error.localizedDescription)"; return
         }
-        effectTrack = BallEffectTrack(frames: media.track)
+        effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
+        if version == .edited, edit.ballSkin != .original {
+            do {
+                effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: summary.videoURL, track: BallEffectTrack(frames: (preparation.prepared ?? summary).renderTrack))
+            } catch is CancellationError { return }
+            catch { statusMessage = "Couldn’t prepare source spin. \(error.localizedDescription)" }
+            guard !Task.isCancelled else { return }
+        }
         let asset = AVURLAsset(url: media.url)
-        let gen = AVAssetImageGenerator(asset: asset)
-        gen.appliesPreferredTrackTransform = true
-        gen.maximumSize = CGSize(width: 720, height: 1280)
-        gen.requestedTimeToleranceBefore = .zero
-        gen.requestedTimeToleranceAfter = .zero
-        let time = CMTime(seconds: summary.duration * 0.35, preferredTimescale: 600)
-        let result = try? await gen.image(at: time)
+        let result = try? await EffectVideoGeometry.still(asset: asset, at: summary.duration * 0.35)
         guard !Task.isCancelled else { return }
         withAnimation(SessionMotion.fade) {
             if let result {
@@ -348,12 +364,13 @@ struct SaveShareView: View {
         let edited = version == .edited && edit.isEdited
         let media: ScenePlayback
         do {
+            let ready = edited && edit.ballSkin != .original ? try await preparation.prepare(summary) : summary
             if edited, let selection = edit.scene {
-                media = try await sceneModel.media(summary: summary, selection: selection)
+                media = try await sceneModel.media(summary: ready, selection: selection)
             } else {
-                media = ScenePlayback(url: summary.videoURL, track: summary.renderTrack)
+                media = ScenePlayback(url: ready.videoURL, track: ready.renderTrack)
             }
-        } catch { statusMessage = "Couldn’t export the environment. \(error.localizedDescription)"; return nil }
+        } catch { statusMessage = "Couldn’t prepare the export. \(error.localizedDescription)"; return nil }
         burnIn.export(source: media.url, track: media.track,
             style: edited ? edit.style : .none, intensity: edited ? edit.intensity : 0,
             skin: edited ? edit.ballSkin : .original, environment: edited ? edit.environment : .original, shortEdge: quality == .p1080 ? 1080 : 720,

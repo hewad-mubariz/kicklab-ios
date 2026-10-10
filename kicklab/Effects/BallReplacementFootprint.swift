@@ -13,23 +13,25 @@ nonisolated struct BallReplacementFootprint {
     let radii: [Double]
     let feather: Double
     let padding: Double
+    /// Estimated source edge blur (sigma in source pixels), for material detail only.
+    var textureBlur: Double = 0
 
     private static let count = 64
     private static let directions = (0..<count).map { i in
         SIMD2(cos(Double(i) * 2 * .pi / Double(count)), sin(Double(i) * 2 * .pi / Double(count)))
     }
 
-    static func fit(pixels: CVPixelBuffer, sample: BallStyleSample) -> Self? {
+    static func fit(pixels: CVPixelBuffer, sample: BallStyleSample, measureTexture: Bool = false) -> Self? {
         guard CVPixelBufferGetPixelFormatType(pixels) == kCVPixelFormatType_32BGRA else { return nil }
         CVPixelBufferLockBaseAddress(pixels, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(pixels, .readOnly) }
         guard let bytes = CVPixelBufferGetBaseAddress(pixels)?.assumingMemoryBound(to: UInt8.self) else { return nil }
         let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
         return fit(bytes: bytes, stride: CVPixelBufferGetBytesPerRow(pixels), size: size,
-                   origin: .zero, patchSize: size, sample: sample)
+                   origin: .zero, patchSize: size, sample: sample, measureTexture: measureTexture)
     }
 
-    static func fit(image: CGImage, sample: BallStyleSample) -> Self? {
+    static func fit(image: CGImage, sample: BallStyleSample, measureTexture: Bool = false) -> Self? {
         let size = CGSize(width: image.width, height: image.height)
         guard let initial = initial(size: size, sample: sample) else { return nil }
         let reach = initial.radius * 2.65 + 6*pixelScale(size)
@@ -43,7 +45,7 @@ nonisolated struct BallReplacementFootprint {
               let bytes = context.data?.assumingMemoryBound(to: UInt8.self) else { return nil }
         context.draw(crop, in: CGRect(x: 0, y: 0, width: crop.width, height: crop.height))
         return fit(bytes: bytes, stride: crop.width*4, size: size, origin: rect.origin,
-                   patchSize: rect.size, sample: sample)
+                   patchSize: rect.size, sample: sample, measureTexture: measureTexture)
     }
 
     // Keep edge softness/coverage comparable when replay decodes the original
@@ -62,7 +64,7 @@ nonisolated struct BallReplacementFootprint {
     }
 
     private static func fit(bytes: UnsafePointer<UInt8>, stride: Int, size: CGSize,
-                            origin: CGPoint, patchSize: CGSize, sample: BallStyleSample) -> Self? {
+                            origin: CGPoint, patchSize: CGSize, sample: BallStyleSample, measureTexture: Bool) -> Self? {
         guard let initial = initial(size: size, sample: sample) else { return nil }
         let r0 = initial.radius, c0 = SIMD2(Double(initial.center.x), Double(initial.center.y))
         func color(_ p: SIMD2<Double>) -> SIMD3<Double> {
@@ -179,9 +181,52 @@ nonisolated struct BallReplacementFootprint {
         }
         softness.sort()
         let feather = softness.isEmpty ? 1.2*scale : softness[softness.count/2]
+        var textureBlur=0.0
+        if measureTexture {
+            var estimates=[Double]()
+            for i in Swift.stride(from:0,to:count,by:2) {
+                let direction=directions[i],edge=radii[i]
+                let positions=Self.blurOffsets.map {center+direction*(edge+$0*scale)}
+                guard positions.allSatisfy({$0.x>=1 && $0.y>=1 && $0.x<size.width-1 && $0.y<size.height-1}) else {continue}
+                let colors=positions.map(color)
+                let inside=colors.prefix(5).reduce(SIMD3<Double>.zero,+)/5
+                let outside=colors.suffix(5).reduce(SIMD3<Double>.zero,+)/5
+                let delta=inside-outside,norm=simd_length_squared(delta)
+                let variation=colors.suffix(5).reduce(SIMD3<Double>.zero) {$0+($1-outside)*($1-outside)}/5
+                guard norm>900,max(variation.x,variation.y,variation.z)<100 else {continue}
+                let profile=colors.map {simd_dot($0-outside,delta)/norm}
+                var bestError=0.025,bestSigma=0.0
+                for candidate in Self.blurProfiles {
+                    var error=0.0
+                    for j in profile.indices {let d=profile[j]-candidate.values[j];error += d*d}
+                    error /= Double(profile.count)
+                    if error<bestError {bestError=error;bestSigma=candidate.sigma}
+                }
+                if bestSigma>0 {estimates.append(bestSigma)}
+            }
+            // Reject cluttered/occluded edges. Never infer exposure from FPS or
+            // velocity: a fast ball photographed sharply must remain sharp.
+            if estimates.count>=8 {
+                estimates.sort();textureBlur=min(3*scale,radius*0.08,estimates[estimates.count/2]*scale)
+            }
+        }
         return Self(sourceSize: size, center: CGPoint(x:center.x,y:center.y), radius: radius,
-                    radii: radii, feather: feather, padding: max(1.4*scale,min(3*scale,radius*0.045)))
+                    radii: radii, feather: feather, padding: max(1.4*scale,min(3*scale,radius*0.045)),
+                    textureBlur:textureBlur)
     }
+
+    private static let blurOffsets=(0...40).map {Double($0)*0.5-10}
+    private struct BlurProfile {let sigma:Double;let values:[Double]}
+    private static let blurProfiles: [BlurProfile] = {
+        var result=[BlurProfile]()
+        for sigma in [0.4,0.7,1.0,1.5,2.0,3.0,4.0] {
+            for shift in [-3.0,-1.5,0.0,1.5,3.0] {
+                let values=blurOffsets.map {0.5*(1-erf(($0-shift)/(sigma*sqrt(2))))}
+                result.append(BlurProfile(sigma:sigma,values:values))
+            }
+        }
+        return result
+    }()
 
     func edge(at angle: Double) -> Double {
         let phase = (angle + 2 * .pi).truncatingRemainder(dividingBy: 2 * .pi) / (2 * .pi) * Double(radii.count)

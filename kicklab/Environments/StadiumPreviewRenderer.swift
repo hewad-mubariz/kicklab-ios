@@ -44,7 +44,7 @@ nonisolated final class StadiumPreviewRenderer {
             #endif
             return try loader.newTexture(name:name,scaleFactor:1,bundle:.main,options:[.SRGB:true,.generateMipmaps:true])
         }
-        panorama=try asset("stadium-panorama-v2");boards=try asset("stadium-boards-v2");turf=try asset("stadium-turf-v2")
+        panorama=try asset("stadium-panorama-v2");boards=try StadiumSignage.make(device:device);turf=try asset("stadium-turf-v2")
         arenaSigns=try ArenaSignage.make(device:device)
         urbanSigns=try UrbanSignage.make(device:device)
         forestTrees=try asset("forest-trees-v2")

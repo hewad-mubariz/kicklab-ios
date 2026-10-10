@@ -31,7 +31,7 @@ nonisolated struct BallMask: Sendable {
     /// Decode only the selected ball. The box selection deliberately matches
     /// BallDetector.decodedValues, including source-content clipping and ties.
     static func decode(_ out: MLFeatureProvider, content: CGRect, sourceSize: CGSize,
-                       threshold: Double, selectedIndex: Int? = nil) -> BallMask? {
+                       threshold: Double, selectedIndex: Int? = nil, sourceBorder: Double = 0) -> BallMask? {
         guard let boxes = out.featureValue(for: "boxes")?.multiArrayValue,
               let scores = out.featureValue(for: "scores")?.multiArrayValue,
               let labels = out.featureValue(for: "labels")?.multiArrayValue,
@@ -71,43 +71,68 @@ nonisolated struct BallMask: Sendable {
         // storage to a 128-square byte patch even for a very close ball.
         // The detector rectangle can clip the learned rim. A half-prototype-cell
         // halo lets the network supply the edge; it never expands an empty mask.
-        selectedBox = selectedBox.insetBy(dx: -2.0/640, dy: -2.0/640).intersection(content)
+        // A magnified crop maps the normal two-model-pixel halo to less than
+        // one source pixel. Appearance recovery can request enough current
+        // image context for the round-body fit; logits still determine alpha.
+        // The default preserves the existing full-frame decoder exactly.
+        let borderX = max(2.0/640, sourceBorder*content.width/sourceSize.width)
+        let borderY = max(2.0/640, sourceBorder*content.height/sourceSize.height)
+        selectedBox = selectedBox.insetBy(dx: -borderX, dy: -borderY).intersection(content)
         let rect = CGRect(x: (selectedBox.minX-content.minX)/content.width,
                           y: (selectedBox.minY-content.minY)/content.height,
                           width: selectedBox.width/content.width, height: selectedBox.height/content.height)
         let w = min(128, max(8, Int(ceil(rect.width * sourceSize.width))))
         let h = min(128, max(8, Int(ceil(rect.height * sourceSize.height))))
         var binary = [UInt8](repeating: 0, count: w*h)
-        for y in 0..<h { for x in 0..<w {
+        // The sampling coordinates are separable. Calculate each axis once,
+        // retaining the same floating-point operations and interpolation order.
+        let columns = (0..<w).map { x -> (Int, Float) in
             let u = max(0, min(158.999, (selectedBox.minX + (Double(x)+0.5)/Double(w)*selectedBox.width)*160-0.5))
+            let ix = Int(u)
+            return (ix, Float(u-Double(ix)))
+        }
+        for y in 0..<h {
             let v = max(0, min(158.999, (selectedBox.minY + (Double(y)+0.5)/Double(h)*selectedBox.height)*160-0.5))
-            let ix = Int(u), iy = Int(v), fx = Float(u-Double(ix)), fy = Float(v-Double(iy))
-            let a = logits[iy*160+ix]*(1-fx)+logits[iy*160+ix+1]*fx
-            let b = logits[(iy+1)*160+ix]*(1-fx)+logits[(iy+1)*160+ix+1]*fx
-            binary[y*w+x] = a*(1-fy)+b*fy > 0 ? 255 : 0
-        } }
+            let iy = Int(v), fy = Float(v-Double(iy))
+            for x in 0..<w {
+                let (ix, fx) = columns[x]
+                let a = logits[iy*160+ix]*(1-fx)+logits[iy*160+ix+1]*fx
+                let b = logits[(iy+1)*160+ix]*(1-fx)+logits[(iy+1)*160+ix+1]*fx
+                binary[y*w+x] = a*(1-fy)+b*fy > 0 ? 255 : 0
+            }
+        }
         guard binary.contains(255) else { return nil }
-        // One-pixel coverage expansion followed by a small feather. No temporal
-        // holding: every patch belongs to its own observed video frame.
-        var expanded = binary
+        return BallMask(rect: rect, width: w, height: h,
+                        alpha: featheredCoverage(binary, width: w, height: h))
+    }
+
+    /// Exact separable 3×3 dilation and [1,2,1] feather. Keep intermediate
+    /// integers unrounded; divide only after both axes, including at the edges.
+    static func featheredCoverage(_ binary: [UInt8], width w: Int, height h: Int) -> [UInt8] {
+        precondition(w > 0 && h > 0 && binary.count == w*h)
+        var horizontal = [UInt8](repeating: 0, count: w*h)
         for y in 0..<h { for x in 0..<w {
-            var value: UInt8 = 0
-            for yy in max(0,y-1)...min(h-1,y+1) { for xx in max(0,x-1)...min(w-1,x+1) {
-                value = max(value, binary[yy*w+xx])
-            } }
-            expanded[y*w+x] = value
+            let i = y*w+x
+            horizontal[i] = max(binary[i], max(binary[y*w+max(0,x-1)], binary[y*w+min(w-1,x+1)]))
         } }
-        var alpha = expanded
+        var expanded = [UInt8](repeating: 0, count: w*h)
         for y in 0..<h { for x in 0..<w {
-            var sum = 0
-            for dy in -1...1 { for dx in -1...1 {
-                let yy = y+dy, xx = x+dx
-                if yy >= 0, yy < h, xx >= 0, xx < w {
-                    sum += Int(expanded[yy*w+xx]) * (dy == 0 ? 2 : 1) * (dx == 0 ? 2 : 1)
-                }
-            } }
-            alpha[y*w+x] = UInt8(sum/16)
+            let i = y*w+x
+            expanded[i] = max(horizontal[i], max(horizontal[max(0,y-1)*w+x], horizontal[min(h-1,y+1)*w+x]))
         } }
-        return BallMask(rect: rect, width: w, height: h, alpha: alpha)
+        var sums = [UInt16](repeating: 0, count: w*h)
+        for y in 0..<h { for x in 0..<w {
+            let i = y*w+x
+            sums[i] = UInt16(expanded[i])*2
+                + (x > 0 ? UInt16(expanded[i-1]) : 0)
+                + (x+1 < w ? UInt16(expanded[i+1]) : 0)
+        } }
+        var alpha = [UInt8](repeating: 0, count: w*h)
+        for y in 0..<h { for x in 0..<w {
+            let i = y*w+x
+            let sum = sums[i]*2 + (y > 0 ? sums[i-w] : 0) + (y+1 < h ? sums[i+w] : 0)
+            alpha[i] = UInt8(sum/16)
+        } }
+        return alpha
     }
 }

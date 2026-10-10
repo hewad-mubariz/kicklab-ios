@@ -28,6 +28,7 @@ swiftc -O -module-cache-path /tmp/kicklab-swift-cache \
   kicklab/Environments/StadiumPreviewPreparer.swift \
   kicklab/Environments/StadiumCameraMotion.swift \
   kicklab/Environments/PreviewEnvironment.swift \
+  kicklab/Environments/StadiumSignage.swift \
   kicklab/Environments/ArenaSignage.swift \
   kicklab/Environments/UrbanSignage.swift \
   kicklab/Environments/ForestSignage.swift \

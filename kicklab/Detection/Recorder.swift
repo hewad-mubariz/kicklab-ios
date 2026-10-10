@@ -7,8 +7,8 @@
 //  lab does when it renders an annotated video, which is how nearly every
 //  counting bug in this project was actually found.
 //
-//  The frames written are the ones the counter saw, so what you review is what
-//  was judged, not a second capture that might differ.
+//  Every delivered camera frame is saved. The live counter judges a bounded
+//  subset on a separate queue; both use the original capture timestamps.
 //
 
 import AVFoundation
@@ -42,6 +42,11 @@ nonisolated struct RecordedFrame {
     let person: PersonBox?
     var ballMask: BallMask? = nil
     var usesBallMasks: Bool = false
+    /// Appearance-only recovered mask; never a motion or counting observation.
+    var isVisualMaskRepair: Bool = false
+    /// Fresh crop detection for appearance; absent from counting/statistics input.
+    var isVisualRecovery: Bool = false
+    var identity: RecordedFrameIdentity? = nil
 }
 
 /// A touch, as it happened, for marking up the recording afterwards.
@@ -61,6 +66,9 @@ final class Recorder {
     private var adaptor: AVAssetWriterInputPixelBufferAdaptor?
     private var startedAt: CMTime?
     private(set) var url: URL?
+    private(set) var writtenFrames = 0
+    private(set) var droppedFrames = 0
+    private(set) var frameIdentities: [RecordedFrameIdentity] = []
 
     var isRecording: Bool { writer != nil }
 
@@ -72,7 +80,7 @@ final class Recorder {
                cameraPosition: AVCaptureDevice.Position = .back) throws {
         stop(completion: nil)
         let file = FileManager.default.temporaryDirectory
-            .appendingPathComponent("kicklab-run-\(Int(Date().timeIntervalSince1970)).mov")
+            .appendingPathComponent("juggledude-run-\(UUID().uuidString).mov")
         try? FileManager.default.removeItem(at: file)
 
         let writer = try AVAssetWriter(outputURL: file, fileType: .mov)
@@ -105,6 +113,9 @@ final class Recorder {
         self.adaptor = adaptor
         self.startedAt = nil
         self.url = file
+        self.writtenFrames = 0
+        self.droppedFrames = 0
+        self.frameIdentities = []
     }
 
     /// Preferred transform so AVPlayer shows the clip upright.
@@ -125,15 +136,22 @@ final class Recorder {
 
     /// Append one frame. Silently ignores frames the writer is not ready for -
     /// dropping a frame from the recording is better than stalling capture.
-    func append(_ pixelBuffer: CVPixelBuffer, at time: CMTime) {
-        guard let writer, let input, let adaptor else { return }
+    @discardableResult
+    func append(_ pixelBuffer: CVPixelBuffer, at time: CMTime) -> RecordedFrameIdentity? {
+        guard let writer, let input, let adaptor else { return nil }
         if startedAt == nil {
-            guard writer.startWriting() else { return }
+            guard writer.startWriting() else { return nil }
             writer.startSession(atSourceTime: time)
             startedAt = time
         }
-        guard input.isReadyForMoreMediaData else { return }
-        adaptor.append(pixelBuffer, withPresentationTime: time)
+        guard input.isReadyForMoreMediaData else { droppedFrames += 1; return nil }
+        guard adaptor.append(pixelBuffer, withPresentationTime: time) else { droppedFrames += 1; return nil }
+        let identity = RecordedFrameIdentity(index: writtenFrames, time: CMTimeSubtract(time, startedAt!),
+            width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer),
+            coordinates: "capture-buffer; normalized upright detector coordinates")
+        writtenFrames += 1
+        frameIdentities.append(identity)
+        return identity
     }
 
     /// Seconds since the first appended frame.
@@ -158,6 +176,6 @@ final class Recorder {
             return
         }
         input.markAsFinished()
-        writer.finishWriting { completion?(file) }
+        writer.finishWriting { completion?(writer.status == .completed ? file : nil) }
     }
 }

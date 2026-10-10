@@ -8,6 +8,8 @@ import simd
 nonisolated enum BallSkinSphereRenderer {
     private static let width = 512, height = 256
     private static let rasterSize = 192
+    /// Interface size for quick spins: about half the pixels, same print, light and rotation.
+    private static let previewRaster = 144
     private static let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
     private static let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
 
@@ -106,13 +108,20 @@ nonisolated enum BallSkinSphereRenderer {
         let normal: SIMD3<Float>
         let alpha: Float
         let diffuse: Float
+        let softDiffuse: Float
         let broadSpecular: Float
         let narrowSpecular: Float
+        // View-space lighting is fixed for every pose; calculate it once.
+        let rim: Float
     }
-    private static let pixels: [Pixel] = {
+    private static let pixels = makePixels(rasterSize)
+    private static let previewPixels = makePixels(previewRaster)
+
+    private static func makePixels(_ rasterSize: Int) -> [Pixel] {
         let light = simd_normalize(SIMD3<Float>(-0.5,0.7,1.1))
         let half = simd_normalize(light+SIMD3<Float>(0,0,1))
         let secondaryHalf = simd_normalize(SIMD3<Float>(0.65,0.3,1.8))
+        let softLight = simd_normalize(SIMD3<Float>(-0.28,0.48,0.832))
         var result = [Pixel](); result.reserveCapacity(rasterSize*rasterSize)
         for y in 0..<rasterSize { for x in 0..<rasterSize {
             let nx = (Float(x)+0.5)/Float(rasterSize)*2-1
@@ -124,27 +133,47 @@ nonisolated enum BallSkinSphereRenderer {
             let lambert = max(0,simd_dot(n,light))
             result.append(Pixel(offset:(y*rasterSize+x)*4,normal:n,alpha:alpha,
                 diffuse:0.38+0.62*lambert,
+                softDiffuse:0.20+0.72*max(0,simd_dot(n,softLight))+0.08*n.z,
                 broadSpecular:pow(max(0,simd_dot(n,half)),28),
-                narrowSpecular:pow(max(0,simd_dot(n,secondaryHalf)),100)))
+                narrowSpecular:pow(max(0,simd_dot(n,secondaryHalf)),100),
+                rim:pow(1-n.z,4)))
         } }
         return result
-    }()
+    }
 
-    static func image(skin: BallSkin, time: Double) -> CGImage? {
+    static func image(skin: BallSkin, time: Double, orientation: simd_quatf? = nil) -> CGImage? {
+        render(skin: skin, time: time, rasterSize: rasterSize, pixels: pixels, cached: true, orientation: orientation)
+    }
+
+    /// Picker-size frame for animated spins. Not cached: a spin is a one-off run of poses.
+    static func previewImage(skin: BallSkin, time: Double, orientation: simd_quatf? = nil) -> CGImage? {
+        render(skin: skin, time: time, rasterSize: previewRaster, pixels: previewPixels, cached: false,
+               orientation: orientation)
+    }
+
+    private static func render(skin: BallSkin, time: Double, rasterSize: Int, pixels: [Pixel], cached: Bool, orientation: simd_quatf? = nil) -> CGImage? {
         guard skin != .original, time.isFinite, let texture = textures[skin] else { return nil }
         // Deterministic video-time rotation. This is an art animation, not an
         // estimate of the real football's angular velocity.
         let tick = Int64((max(0,min(time,1e7))*60).rounded())
-        let key = "\(skin.rawValue):\(tick)" as NSString
-        if let image = cache.images.object(forKey:key) { return image }
+        let poseKey = orientation.map { q in [q.vector.x,q.vector.y,q.vector.z,q.vector.w].map { String($0.bitPattern) }.joined(separator: ":") } ?? "timer:\(tick)"
+        let key = "\(skin.rawValue):\(poseKey)" as NSString
+        if cached, let image = cache.images.object(forKey:key) { return image }
         let t = Float(Double(tick)/60)
         let yaw = t*1.1+0.35, pitch = t*0.29+0.18
         let cy = cos(yaw), sy = sin(yaw), cp = cos(pitch), sp = sin(pitch)
+        // A source-driven pose uses the same inverse for every sphere pixel.
+        let inverseOrientation = orientation?.inverse
         var rgba = [UInt8](repeating:0,count:rasterSize*rasterSize*4)
         for pixel in pixels {
             let n = pixel.normal
-            let rotatedY = SIMD3(n.x*cy-n.z*sy,n.y,n.x*sy+n.z*cy)
-            let object = SIMD3(rotatedY.x, rotatedY.y*cp+rotatedY.z*sp, -rotatedY.y*sp+rotatedY.z*cp)
+            let object: SIMD3<Float>
+            if let inverseOrientation {
+                object = inverseOrientation.act(n)
+            } else {
+                let rotatedY = SIMD3(n.x*cy-n.z*sy,n.y,n.x*sy+n.z*cy)
+                object = SIMD3(rotatedY.x, rotatedY.y*cp+rotatedY.z*sp, -rotatedY.y*sp+rotatedY.z*cp)
+            }
             let u = (atan2(object.x,object.z)/(2 * .pi)+0.5)*Float(width)-0.5
             let v = max(0,min(Float(height-1), (0.5-asin(max(-1,min(1,object.y))) / .pi)*Float(height)-0.5))
             let bx = Int(floor(u)), by = Int(v)
@@ -164,13 +193,16 @@ nonisolated enum BallSkinSphereRenderer {
             let gold = skin == .gold ? smooth(0.10,0.38,rgb.x-rgb.z) : 0
             let metallic: Float = skin == .chrome ? 0.48 : gold*0.78
             let rough: Float = skin == .stealth ? 0.94 : (skin == .galaxy ? 0.32 : 0.68-metallic*0.4)
-            let spec = pixel.broadSpecular*(0.12+metallic*0.3)*(1-rough*0.4)
-                + pixel.narrowSpecular*(0.08+metallic*0.38)*(1-rough*0.7)
-            let rim = pow(1-n.z,4)*(skin == .stealth ? 0.075 : 0.035)
+            let spec = (pixel.broadSpecular*(0.12+metallic*0.3)*(1-rough*0.4)
+                + pixel.narrowSpecular*(0.08+metallic*0.38)*(1-rough*0.7)) * (skin == .galaxy ? 0.5 : 1)
+            // Galaxy's print supplies its colour. A bright white rim made it
+            // read as a luminous disc; keep a softer material highlight instead.
+            let rim = pixel.rim*(skin == .stealth ? 0.075 : (skin == .galaxy ? 0.0042 : 0.035))
             let emission: Float = skin == .matrix ? max(0,rgb.y-max(rgb.x,rgb.z))*0.18
                 : (skin == .galaxy ? max(0,luminance-0.45)*0.15 : 0)
             // Lighting is fixed in view space while the print and grooves rotate.
-            let linear = rgb*rgb*(pixel.diffuse*(1-groove*0.70)+bevel+emission)
+            let diffuse = skin == .galaxy ? pixel.softDiffuse : pixel.diffuse
+            let linear = rgb*rgb*(diffuse*(1-groove*0.70)+bevel+emission)
             let highlight = SIMD3<Float>(1,1,1)*(spec*(1-metallic*0.65)+rim)
                 + rgb*(spec*metallic*0.65)
             let shaded = linear+highlight*(1-groove*0.7)
@@ -181,7 +213,7 @@ nonisolated enum BallSkinSphereRenderer {
               let image = CGImage(width:rasterSize,height:rasterSize,bitsPerComponent:8,bitsPerPixel:32,
                 bytesPerRow:rasterSize*4,space:colorSpace,bitmapInfo:CGBitmapInfo(rawValue:bitmapInfo),
                 provider:provider,decode:nil,shouldInterpolate:true,intent:.defaultIntent) else { return nil }
-        cache.images.setObject(image,forKey:key,cost:rgba.count)
+        if cached { cache.images.setObject(image,forKey:key,cost:rgba.count) }
         return image
     }
 

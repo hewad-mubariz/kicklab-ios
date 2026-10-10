@@ -7,7 +7,7 @@ The supplied woodland-court image guides this real-time interpretation: matte wo
 ## Implementation
 
 - `ForestCourt.h` renders the clearing, short grass relief, worn soil, fallen leaves, foliage shadows, rocks, banks, timber enclosure and lamps in world space. Trees use fixed radial planes arranged in three depth layers, supporting camera rotation and parallax without rotating to face the camera. The distant mountain ridges are angular background geometry; this is not a full photogrammetric forest.
-- `ForestSignage.swift` creates native KICKLAB, PRACTICE. IMPROVE. REPEAT. and SAME GAME. DIFFERENT VIBES. lettering for the side banners.
+- `ForestSignage.swift` creates native Juggle Dude, PRACTICE. IMPROVE. REPEAT. and SAME GAME. DIFFERENT VIBES. lettering for the side banners.
 - `PreviewEnvironment.forestCourt` uses shader index 3, preserving earlier identifiers and shader indices.
 - `StadiumPreviewRenderer` binds the foliage and sign atlases to both preview and export. Foreground compositing, contact position, ball tracking and counter rendering retain their existing behavior.
 - `scripts/review-forest-court.swift` produces landscape, portrait, side, reverse and picker-card renders with the shipping shader. Outputs are in `artifacts/forest-court/final/`. Native Mac renders took approximately 8–22 ms including submission and warmup; these are not iPhone performance measurements.

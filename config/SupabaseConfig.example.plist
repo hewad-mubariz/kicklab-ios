@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Copy to kicklab/Account/SupabaseConfig.plist after creating the project.
+         Use only a publishable client key. Never put a secret/service-role key here.
+         Google and email use this callback; Apple uses its native ID-token flow. -->
+    <key>SUPABASE_URL</key>
+    <string>https://YOUR_PROJECT_REF.supabase.co</string>
+    <key>SUPABASE_PUBLISHABLE_KEY</key>
+    <string>sb_publishable_REPLACE_ME</string>
+    <key>AUTH_REDIRECT_URL</key>
+    <string>juggledude://auth/callback</string>
+</dict>
+</plist>

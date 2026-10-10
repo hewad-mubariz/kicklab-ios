@@ -4,6 +4,7 @@ DerivedData/
 xcuserdata/
 *.xcuserstate
 *.xcresult/
+*.log
 
 # Experiment renders, checkpoints and test results (several GB, files over GitHub's 100 MB limit)
 artifacts/
@@ -11,6 +12,18 @@ artifacts/
 # macOS
 .DS_Store
 
+# Per-project auth configuration (client values only; use config/SupabaseConfig.example.plist)
+kicklab/Account/SupabaseConfig.plist
+
+# Local server/provider credentials; never bundle these into the iOS app.
+config/local/
+supabase/functions/node_modules/
+supabase/functions/.env
+supabase/functions/.env.*
+
 # Core ML models (~413 MB) are kept out of git to keep pushes small.
 # A fresh clone needs them copied into kicklab/Models before it will build.
 *.mlpackage/
+
+# PostHog project configuration; template in config/PostHogConfig.example.plist
+kicklab/Analytics/PostHogConfig.plist

@@ -1,0 +1,51 @@
+Use case: ui-mockup.
+Create ONE polished contact sheet containing TEN NEW iPhone juggling leaderboard designs for the app "Juggle Dude". This is the next exploration in a sporty, expressive football design family. Number these new concepts 11 through 20 to make comparison easy. The user wants more fun, athletic, distinctive views, with the visual appeal of premium football culture and sports graphics. Do not produce ten ordinary tables with different headings.
+
+Composition: exactly five columns and two rows, ten complete front-facing flat mobile app screens, equal size at approximately 1:2.1 portrait aspect ratio. No perspective, no hands, no phone hardware frames. Uniform margins and gutters on a charcoal presentation canvas. Use highest available resolution with sharp legible typography, ideally a near-square 2880 x 2880 board. Top title "Juggle Dude", subtitle "LEADERBOARDS / SPORT COLLECTION 02". Small text "11–20 · concept data". External numbered concept captions below each screen. No extra slogans or paragraphs around the board.
+
+Overall art direction: premium football editorial design meets an appealing native mobile app. Charcoal, off-white and vivid acid lime are the core. Use fine grain, crisp sports typography, restrained chamfered corners, strong oversized rank numbers, modern player portraits and a small number of carefully placed diagonal graphic details. A little cobalt, warm orange or brushed silver may support individual concepts. Expressive yet composed, not a chaotic gaming dashboard. 6 dark screens and 4 light screens. Strong visual differences between layouts, with each screen recognizable in silhouette. A few compact translucent controls are welcome; avoid filling everything with glossy glass.
+
+The content must remain a real readable leaderboard:
+- Small "JUGGLING" context, clear "Leaderboard" title, and "BEST STREAK · TOUCHES".
+- Small functional back chevron and clean filter chips "Global" and "This week", not a navigation bar across the bottom.
+- Sample ranking data shared across concepts: #1 Leo 458, #2 Noah 421, #3 Amir 396, #4 Kai 342, #5 Luca 315. Clearly indicate all are TOUCHES, not points or speed.
+- Bottom current-player row "23 You 214" in lime or dark contrasting treatment. It should feel integrated and have clear hierarchy.
+- At least five ranked competitors visible plus current user; if top three are presented in a special component, ordinary rows start at #4. Never duplicate the winner in two positions on a screen.
+- Align touch counts and make player names readable. Avoid arbitrary promotional text, filler tiny copy, duplicated headings or useless status metrics.
+- Fictional adult football players in generated editorial portraits. Diverse appearances and skin tones, unbranded athletic shirts, no famous athletes or actual brand/team crests. Portraits should look natural, not superhero characters. Small portraits and one or two compact winner cutouts, not huge images covering all the UI.
+- Keep navigation touch targets comfortably sized and interactive content within margins. Screens should read as polished app views, not posters.
+- Different list components and winner arrangements are the focus; do not just recolor the same layout.
+
+Exact ten concepts, left to right, top row then bottom row:
+
+11 / STADIUM STEPS
+Dark near-black with lime. Upper third: an elegant shallow horseshoe-shaped stadium podium, three abstract flat tiers seen slightly from above, three small player head-and-shoulder cutouts resting above their respective positions. #1 Leo in the center at highest step, #2 Noah left, #3 Amir right, all scores unmistakable. Delicate concentric stadium lines, no realistic giant stadium background. Below, wide clean rows 4 and 5 with oversized cropped outlined rank numbers at left; current user lime baseline card. Feels like earning a place on the stand.
+
+12 / MATCH TICKETS
+Light cream with black and orange. Every leaderboard entry is a compact horizontal sporting-event ticket, subtle corner notches and one dashed perforation before the right-hand score column. First place is a slightly taller ticket with a small portrait, huge 01 at left and 458 at right. Remaining tickets fit in a neat stack with enough breathing room, no fake barcodes or pointless fine print. User ticket is acid lime with black text. Fun tactile ticket geometry rendered elegantly and buildably.
+
+13 / KIT NUMBERS
+Dark navy-black with lime and soft silver. A compact top-three display inspired by the BACKS OF FOOTBALL SHIRTS: three small beautifully simple jersey silhouettes with subtle fabric texture, player names LEO, NOAH and AMIR across the shoulder, large ranks 1, 2 and 3 as shirt numbers, touch scores underneath. Arrange rank 2 left, larger rank 1 center, rank 3 right. No sponsor or brand logos. Remaining players become understated locker-room style rows with stitched-number-inspired rank typography. User row in lime. Sporty and friendly, without needing portrait photographs.
+
+14 / SPOTLIGHT STACK
+Dark graphite. A compact three-card vertical stack for ranks 1–3, the winner card has a lime left portion with a huge 1 and a medium generated athlete portrait cutout blending into dark right portion. 458 dominates one corner. Second and third cards use silver-gray and warm bronze fine rules, with small portraits and bolder-than-normal touch totals. The cards should feel like a premium sports carousel frozen into a tidy stacked layout, not tilted or overlapping text. Two simple rows for Kai and Luca below, self row pinned at bottom. Subtle directional light, readable restrained depth.
+
+15 / CLUB PENNANTS
+Warm white with olive-lime. Top-three competition expressed through three slim hanging sports pennants with V-cut lower tips, flat refined fabric-like texture, small portrait medallions near their tops, ranks and scores integrated within. Winner's pennant slightly taller and lime, the flanking pennants dark and pale gray. No actual club logos. Below, clean generous list rows for 4, 5 and user use a miniature pointed rank tab as a visual motif. A calm fun premium clubhouse feel.
+
+16 / TOUCHLINE
+Dark charcoal with lime and chalk-white. Use a single crisp football touchline marking as the visual organizing device: a slim vertical chalk rule down the left, five oversized staggered outlined rank numerals aligned to its side. Each player row has a small circular portrait, name and bold right-aligned touch count. At the top, a compact photographic crop of a football and boots crossing a white pitch line is integrated into the header, taking less than 20% of the screen. Subtle turf texture only in that crop, black flat background behind list. Selected self row connects to the same lime line. Crisp sports utility, no graph or tactical map.
+
+17 / STREET STICKERS
+Light ivory with charcoal and lime plus a very small orange accent. A joyful restrained sticker-book football ranking. Top-three players each have a rounded rectangular portrait sticker with white die-cut edge, tiny rank tag and legible score below; winner a little larger in middle. Only the background decorative sticker corners can have a 2-degree tilt, all text straight and readable. Lower rows 4 and 5 use rounded rank number stickers and crisp labels. Your rank is a bold black sticker-like card with lime 214. One tiny abstract football sticker near the section title. No childish cartoons, doodle overload or scribbled slogans.
+
+18 / BROADCAST
+Dark indigo/charcoal with cobalt and lime. Premium live-sports television scoreboard adapted to mobile. First place displayed as one strong horizontal winner plate with portrait cutout at left, 01 and LEO in center, huge 458 right. Five tight but readable horizontal ranking strips have squared-off rank boxes, subtly rounded outer corners, baseline score alignment and a narrow colored end-cap, as if part of a modern match broadcast. Since first place is featured, lower strips show 2,3,4,5 only. A small neat section label "WEEKLY RANKING". Bottom self result in lime. No fake LIVE state, no video controls, no excessive bevels.
+
+19 / CONCRETE COURT
+Light cool gray with charcoal and fluorescent lime. A tactile urban football court-inspired leaderboard with a faint concrete paper texture and one large faint court semicircle behind the top half. Top player is shown through giant typographic "01" alongside a small rectangular black-and-white portrait and giant 458. Remaining list rows use oversized black ranks, compact little portraits and sports sans names with generous white space, no boxed cards. One broad lime strip at the bottom carries the user's rank. A small orange accent only near winner. Confident raw sports identity with very clean readable UI.
+
+20 / SPLIT PODIUM
+Dark charcoal with acid lime and warm silver. Upper third is one contiguous asymmetric podium block: wide winner panel left, two half-height stacked panels on right for second and third. Winner portrait integrated as a small cutout, large 1 and 458; other two use small portraits with 2 Noah 421 and 3 Amir 396. The geometry interlocks elegantly like a compact sports magazine grid, subtle diagonal break between panels. Below are two generous list rows 4 and 5, then a pinned current-user band. Strong compact hierarchy and distinctive silhouette, without a generic three-column podium.
+
+Final check before rendering: exactly ten panels labeled 11–20 with the exact names above; correct spelling Juggle Dude; all five ranked players plus self in each concept; scores consistent; highest consecutive touches only. Make the interfaces refined, fun, sporty and genuinely different, worthy of a professional product design presentation. No old app names, watermarks, extra brands, implementation code, floating trophies, fantasy effects or tiny illegible body copy.

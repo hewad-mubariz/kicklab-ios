@@ -224,7 +224,7 @@ struct StadiumPreviewView: View {
                 let output=AVPlayerItemVideoOutput(pixelBufferAttributes:[
                     kCVPixelBufferPixelFormatTypeKey as String:kCVPixelFormatType_32BGRA,
                     kCVPixelBufferMetalCompatibilityKey as String:true,
-                    kCVPixelBufferIOSurfacePropertiesKey as String:[:]])
+                    kCVPixelBufferIOSurfacePropertiesKey as String:[String: Int]()])
                 output.suppressesPlayerRendering=true;item.add(output);videoOutput=output
             } else {videoOutput=nil}
             player.replaceCurrentItem(with:item)

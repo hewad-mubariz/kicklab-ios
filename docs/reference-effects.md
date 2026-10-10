@@ -38,7 +38,7 @@ python3 scripts/review-reference-effects.py
 Debug simulator launch:
 
 ```sh
-xcrun simctl launch --terminate-running-process booted hewad.kicklab \
+xcrun simctl launch --terminate-running-process booted com.juggledude \
   --effects-video /Users/hewadmubariz/Downloads/input/input-positive/input4.mp4 \
   --effects-track /absolute/path/artifacts/reference-effects/analysis.json \
   --effects-folder reference-effects-input4 --effects-quality 720 \

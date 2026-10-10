@@ -1,0 +1,59 @@
+Generator: built-in image_gen tool
+Purpose: selected graph and motion style concept sheet, not an app implementation.
+
+Use case: ui-mockup / consolidate selected concepts into one final design sheet.
+
+Create ONE coherent comparison sheet containing EXACTLY SEVEN selected graph/motion styles for the Juggle Dude iPhone app. The supplied four images are DESIGN REFERENCES, not full layouts to reproduce. Extract only the selected concepts specified below. The user has now chosen the set and wants to see all seven together, with Bounce Run simplified.
+
+REFERENCE ROLES:
+Image 1: use "Original" and "Comet" only. Rename "Original" to "Ball Motion".
+Image 2: use "Flight path" and "Peak bars" only.
+Image 3: use "Motion scan" and "Direction fan" only.
+Image 4: use "Bounce run" only, but SIMPLIFY it drastically as described below.
+Do not include ANY other options from the reference sheets.
+
+LAYOUT:
+Large polished landscape or slightly tall landscape design sheet, high resolution so all seven previews and labels are clear.
+Top heading "JUGGLE DUDE / MOTION STYLES". Small subtitle "Selected collection".
+Three equally spaced cards on the first row, three on the second, and ONE wide feature card across the third row for the simplified Bounce Run.
+Order, exact labels:
+first row: 01 Ball Motion, 02 Comet, 03 Flight Path
+second row: 04 Peak Bars, 05 Motion Scan, 06 Direction Fan
+third row: 07 Bounce Run
+Each card includes a compact visualization preview plus its number, name, and exact short caption below. Dark graphite #0C0F10 background, subtle graphite dividers and borders, lime #D0F852, mint and off-white accents, legible clean iOS-style sans serif type. Elegant practical sports UI. Modest depth only. No photos, no people, no phone frames, no giant glow or cartoon faces.
+Add a very small "DEFAULT" beside Ball Motion only.
+
+THE SEVEN PREVIEWS:
+01 Ball Motion
+Caption: "Original line graph"
+Fine lime height-over-time trace, low-contrast grid, tiny white current-position dot and thin cursor, subdued gray future trace, small touch ticks. Faithfully recognizably the Original from reference 1.
+
+02 Comet
+Caption: "A fading trail follows the ball"
+The same clear rise-and-fall line graph, but grid removed and the most recent short part of the line becomes a restrained bright tapered lime comet tail behind the white current dot. Earlier path dimmer; no flame. Faithful to reference 1.
+
+03 Flight Path
+Caption: "The ball’s path through the frame"
+A miniature 2D camera-space map with four corner brackets, irregular trail moving UP, DOWN and SIDEWAYS, dim older points, one or two small direction arrows, a small white latest-position marker. No time axis or repeated waveform. Faithful to reference 2.
+
+04 Peak Bars
+Caption: "Compare the height of each bounce"
+Five clean rounded lime/mint bars of different heights, small white dot above each, labels 01–05, latest bar brightest. Small "RELATIVE PEAK" header. Height is RELATIVE, not meters. Faithful to reference 2; use restrained simple dots instead of elaborate football clip-art.
+
+05 Motion Scan
+Caption: "Height over time, in pixels"
+A shallow wide matrix of tiny square cells, around 28 columns by 7 rows. Active lime cells show an irregular rising/falling staircase through the grid, old cells dim on left, latest cells white on right. No joined line. Faithful to reference 3.
+
+06 Direction Fan
+Caption: "Where the ball is heading"
+Small center white dot, one lime vector pointing up-right, a fan of five short faded older vectors, a sparse partial circular guide and tiny UP / DOWN labels. No geographical compass letters, degrees, speed or physical velocity values. Faithful to reference 3.
+
+07 Bounce Run — IMPORTANT SIMPLIFICATION:
+Caption: "Simple shapes. Squash, lift, return."
+This wide bottom panel must keep the IDEA of a tiny bounce course from image 4, but turn it into a flat, straightforward 2D native shape animation that can be built with circles, ovals, rounded rectangles and scale transforms.
+LEFT TWO THIRDS of this ONE panel: a side-on flat 2D row of four small rounded mint landing pads, aligned along a faint straight baseline, with a simple ivory circular ball above the third pad. A faint dotted hop arc from the second pad to the third. Show a subtle flattened ghost oval at the second pad where the prior contact happened. Pads are flat simple shapes, NOT isometric platforms, no perspective, 3D models, realistic lighting or game scenery.
+RIGHT THIRD of the SAME panel: three small clean animation keyframes showing ONE ball morphing from a flattened oval at contact, to a slightly stretched vertical oval while lifting, to a NORMAL ROUND CIRCLE in the air. Tiny arrows between keyframes and exact labels "SQUASH", "LIFT", "ROUND". These are phases of the same animation, not three separate options. A tiny return arrow suggests it repeats with the next touch.
+No face, no cute character, no confetti, no detailed football texture. Only a small simple seam if needed. Clearly communicate that the ball automatically returns to its normal round shape after each squash/stretch.
+
+CONSTRAINTS:
+Exactly seven named options, in the given order. No eight option. Do not reintroduce rejected concepts. Every preview should preserve its recognizable visual concept while sharing one clean palette and presentation. Correct spelling of "Comet", "Flight Path", "Peak Bars", "Motion Scan", "Direction Fan", "Bounce Run". Keep captions short and legible. This is a still mockup sheet illustrating future behavior, not a screenshot claiming live measurements.

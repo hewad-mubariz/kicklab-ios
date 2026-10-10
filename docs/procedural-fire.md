@@ -69,7 +69,7 @@ python3 scripts/review-procedural-fire.py
 To export again from a Debug simulator build:
 
 ```sh
-xcrun simctl launch --terminate-running-process booted hewad.kicklab \
+xcrun simctl launch --terminate-running-process booted com.juggledude \
   --effects-video /Users/hewadmubariz/Downloads/input/input-positive/input4.mp4 \
   --effects-track /Users/hewadmubariz/Desktop/projects/kicklab/artifacts/reference-effects/analysis.json \
   --effects-folder fire-procedural-input4-stronger --effects-quality 720 \

@@ -1,0 +1,41 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "3D65E9B0-7A57-4D7E-BC91-9A0E5301CA46",
+        "deviceName" : "Kicklab Ball Distance Review",
+        "exportedFileName" : "257D8475-D05A-47BF-B7AA-316D5A8E4D49.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Calibrated distance - encoded video frame_0_2267A369-18AA-48A2-A31D-3FD8EB0E3752.png",
+        "timestamp" : 1791530581.474
+      }
+    ],
+    "testIdentifier" : "BallDistanceExportTests/testSavedDistanceIsReadableInExportAndAbsentFromEffectsOnlyExport()",
+    "testIdentifierURL" : "test://com.apple.xcode/kicklab/kicklabTests/BallDistanceExportTests/testSavedDistanceIsReadableInExportAndAbsentFromEffectsOnlyExport"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "3D65E9B0-7A57-4D7E-BC91-9A0E5301CA46",
+        "deviceName" : "Kicklab Ball Distance Review",
+        "exportedFileName" : "7BD7ADBA-03F6-470D-AF65-BF5E1EAF5BA7.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Ball Distance - setup landscape_0_BF60DB0A-4FD9-4225-94B4-42EEDDB85C8E.png",
+        "timestamp" : 1791530589.079
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "3D65E9B0-7A57-4D7E-BC91-9A0E5301CA46",
+        "deviceName" : "Kicklab Ball Distance Review",
+        "exportedFileName" : "AE684027-C797-4F5E-A223-7D342739C2C9.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Ball Distance - setup_0_1989DD3D-BC5A-4CF7-AD24-CA1F8F8AEDD0.png",
+        "timestamp" : 1791530587.7
+      }
+    ],
+    "testIdentifier" : "BallDistanceUITests/testImportStaysAvailableWhileDistanceNeedsSetup()",
+    "testIdentifierURL" : "test://com.apple.xcode/kicklab/kicklabUITests/BallDistanceUITests/testImportStaysAvailableWhileDistanceNeedsSetup"
+  }
+]

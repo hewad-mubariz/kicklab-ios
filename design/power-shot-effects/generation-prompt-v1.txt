@@ -1,0 +1,55 @@
+Generator: built-in image_gen
+Deliverable: concept-sheet-v1.png
+Status: Ten visual concepts for selection; not implemented effects.
+
+Use case: stylized-concept
+Asset type: ONE high-resolution comparison sheet of TEN ball-tracking video effects for the Juggle Dude football app. This is a concept image for choosing effects, not code or a working app. New generated imagery only.
+
+Create a beautifully art-directed PORTRAIT contact sheet, approximately 2400 x 3200 pixels, exactly TWO columns and FIVE rows of wide photographic action cards. Ten clearly numbered, distinct concepts. Matte charcoal background, subtle card divisions, white condensed sports typography with small acid-lime accents. Header text exactly "JUGGLE DUDE / POWER SHOT". Smaller subtitle exactly "10 effects. One clean strike." Footer exactly "EFFECT CONCEPTS". No other brand, watermark, speed readout, timer, phone frame or app navigation.
+
+Inside EVERY card use the SAME newly generated photorealistic football-shot scene and camera angle: close low sideline view across a dim green football pitch at late dusk, tasteful blurred goal/fence far in background; only the cropped lower shin and white football boot of a fictional athlete can enter at the far lower LEFT, just after striking the ball. No faces or identifiable real people. The SAME modern ivory football with subtle dark geometric seams and fine textured panels flies toward the RIGHT, positioned about 80 percent across each image and slightly above center. Keep the ball about 11–13 percent of card width and at least 75 percent of its surface visible; there must be space for a long trailing effect BEHIND it toward the left. A tiny hint of physical motion blur in the background, crisp readable ball. Do not replace the ball surface with a different ball or object. These are additive motion effects.
+
+Every effect MUST be attached to or originate from the ball and trail along its recent flight path. Tails roughly FIVE to SIX ball diameters long, fading smoothly at the old far-left end. Do not put fire ahead of the ball. Avoid giant explosions, random decorative shapes unrelated to motion, dense clutter and overwhelming bloom. The effect is the hero. Preserve consistent shot framing and light across all ten.
+
+Read in row-major order, left to right:
+01 "Juggle Flame"
+Small caption "Our flame, stretched for shots"
+The existing juggling fire idea adapted for a power shot: an irregular incandescent orange/gold flame fringe hugging the football, yellow-white roots and natural translucent orange tongues streaming far behind. A LONG vigorous tapering flame tail with a few tiny embers, with organically broken edges. Clearly a fireball in motion while the actual football stays readable.
+
+02 "Blue Jet"
+Caption "A sharp, cool flame"
+A narrow cyan-white hot root and an electric blue, smooth tapered jet-flame plume. Two or three pointed blue tongues at the trailing edge. More concentrated and sleek than the turbulent orange flame. No lightning or shards in this tile.
+
+03 "Volt Strike"
+Caption "Forked lightning wake"
+Three fine bright blue-white electrical bolts snap backward from the ball in an angular branched trail, small violet accents and discrete forked endings. Dark negative space between the bolts. No broad flame body.
+
+04 "Ember Rush"
+Caption "Sparks with a warm edge"
+Only a restrained amber rim and a spray of separate orange-gold speed sparks and tiny fine streaks. Long tapered particle wake, brightest and densest closest to the ball. No large flames, fog or glitter cloud.
+
+05 "Lime Ribbon"
+Caption "One flowing line"
+One continuous slender acid-lime ribbon with a hot white core, gently curving into the back of the ball. Satin-like narrow light band, a tapered vanishing tail. Restrained glow. A sleek signature sports treatment; no smoke, lightning or rings.
+
+06 "Frost Wake"
+Caption "Cold shards and mist"
+A light icy cyan rim, sparse sharp translucent ice splinters streaking backward and a thin silver-blue chilly vapor wake. Clearly separated crystal fragments with a few white pinpoints. Keep the football's normal material.
+
+07 "Shockwave"
+Caption "Ripples through the air"
+Three translucent cyan-white elliptical pressure rings spaced along the trailing path, viewed in perspective around the axis of travel. Largest and faintest is farther back, smallest closest to the ball. Small crisp leading rim. No persistent solid beam or giant explosion.
+
+08 "Smoke Dash"
+Caption "A soft charcoal wake"
+An elegant long pale-silver and charcoal wispy smoke trail curling and thinning behind a normally lit, clean football. Side-lit sculptural smoke with negative spaces and soft edges, not a solid gray blob. No flame or orange sparks.
+
+09 "Twin Helix"
+Caption "Two ribbons, one spiral"
+Two fine magenta and violet luminous strands twist around one another in a clean elongated helix behind the ball. Two or three readable twists, tapered away in the distance. Clearly a spiral rather than two parallel streaks. No enclosing ball cage.
+
+10 "Speed Lines"
+Caption "Clean graphic acceleration"
+Five slim tapered off-white motion streaks fan narrowly behind the ball, accompanied by just two short curved graphic accents near its rear edge. Sharp sporty manga-inspired speed marks composited over the same realistic photo, minimal glow, no smoke and no repeated balls.
+
+Layout and finish: generous breathing room, strong readable labels in the top or bottom dark caption area of each card, small lime numbers 01 through 10, absolutely no extra text. Cards should look like premium video effect previews from the SAME shot, not collectible icons or abstract isolated balls. Sophisticated and sporty rather than childish. All TEN cards must be fully visible with uncropped labels. Make the distinct effect silhouettes and long trailing motion easy to compare at a glance.

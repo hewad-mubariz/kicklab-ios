@@ -2,7 +2,7 @@
 
 Open **Replay & Effects → Environment → Urban Court**, then choose **Use Urban Court**. The environment cards scroll horizontally; the prepared preview also offers an **Urban** comparison tab. Selection, camera framing, counter overlays, and audio use the existing scene export pipeline.
 
-The supplied night-court reference informed the design: navy cloud cover, a lit apartment skyline, warm floodlights, chain-link fencing above low concrete walls, teal crown and KICKLAB lettering, benches, and a worn court with broken wet reflections. This is a procedural real-time interpretation, not a photographic reproduction of the reference.
+The supplied night-court reference informed the design: navy cloud cover, a lit apartment skyline, warm floodlights, chain-link fencing above low concrete walls, teal crown and Juggle Dude lettering, benches, and a worn court with broken wet reflections. This is a procedural real-time interpretation, not a photographic reproduction of the reference.
 
 ## Rendering
 

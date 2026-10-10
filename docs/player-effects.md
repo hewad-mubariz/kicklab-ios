@@ -27,7 +27,7 @@ Input: `/Users/hewadmubariz/Downloads/input/input-positive/input4.mp4`. The app 
 Build/install the Debug app and launch in the simulator:
 
 ```sh
-xcrun simctl launch --terminate-running-process booted hewad.kicklab \
+xcrun simctl launch --terminate-running-process booted com.juggledude \
   --effects-video /Users/hewadmubariz/Downloads/input/input-positive/input4.mp4 \
   --effects-folder player-effects-input4 --effects-quality 720 --effects-export
 ```

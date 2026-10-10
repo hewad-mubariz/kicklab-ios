@@ -1,0 +1,20 @@
+{
+  "created_at_utc": "2026-10-09T06:56:22.517565+00:00",
+  "files": {
+    "kicklab/Detection/ShotGeometryCapture.swift": "10af977b0ff04e4571d6af7997f83497f87978356cb7c6835ec415702d9a8169",
+    "kicklab/Detection/ShotRollDetector.swift": "8615baed7cf8f42ee4c13db6f6d8217925656c4362817f2ecf68f5c8cfcc22dc",
+    "kicklab/Detection/ShotRollCalibrationView.swift": "1b97fbfb22a47bc4fc4645a0b5ce493f29932082aa0f9eadcba4b01357e33144",
+    "kicklab/Navigation/RootShellView.swift": "6abafd9d74b8b8f94b068d4442b956db213ba44ffaaaf6f633a1293af451812c",
+    "kicklab/Home/HomeView.swift": "0a0714349f572e61bd446ec26194a6266f9adbd8651fb40260129376a1009d90",
+    "kicklab/Models/TrainingModule.swift": "4d6888e4921594e871106c415c2ea437fefe997bbf648e803b0062ca982d7784",
+    "kicklab/Record/ReplayEffectsView.swift": "e7374279f0af261c65f6efeb869e85ee2760d79f88e87d7efdebafb00ec86a2c",
+    "kicklab/Record/ReplayToolbox.swift": "e4c1aac8bb7328055a6f28531fbcc25867a38266eef4dd0edc1bbdc9d90c77b4",
+    "kicklab/Record/ReplayDownloader.swift": "9aa223cf86fd43aa9c9f1bc031b8e6b5f5977f8cc24b3955cb0fc4bf036c594e",
+    "kicklab/Effects/BallStyleBurnIn.swift": "6064d108ab849b94c73c1a3ed9b46e067f6160473c696370a0009a3139cc7aa2",
+    "kicklab/kicklabApp.swift": "ab172e99687046bf1407ac2947a9c2146c1afaae7b9c4b7ec55a342f9418576c",
+    "kicklab/Record/CaptureHUD.swift": "8ff701c6345cc3d4d9412cc3b469b881d2c60760def9835c1419f610615f64b1"
+  },
+  "debug_data_root": "Documents/ShotGeometryReviews",
+  "gap_data_root": "Documents/ShotCalibrationReviews",
+  "old_screen_retained": "ShotGeometryCaptureView / --shot-geometry-capture"
+}

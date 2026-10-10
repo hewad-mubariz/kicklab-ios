@@ -81,9 +81,9 @@ def main():
     (OUT / 'verification.json').write_text(json.dumps(report, indent=2) + '\n')
     (OUT / 'index.html').write_text('''<!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KickLab · Procedural Fire</title>
+<title>Juggle Dude · Procedural Fire</title>
 <style>*{box-sizing:border-box}body{margin:0;background:#101413;color:#f2f4f1;font:16px system-ui}main{max-width:1050px;margin:auto;padding:32px 20px}h1{font-size:clamp(32px,6vw,60px);letter-spacing:-.04em;margin:12px 0}p{color:#bec8c2;line-height:1.6}a{color:#ffb967}video,img{display:block;width:100%;border-radius:16px;background:#000}.labels,.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.labels{padding:12px 0;text-align:center}.grid{margin-top:30px}.grid video,.grid img{max-height:650px;object-fit:contain}.note{font-size:13px;margin-top:32px}h2{font-size:22px}@media(max-width:620px){.grid{grid-template-columns:1fr}}</style>
-<main><p>KICKLAB / ACTUAL APP EXPORT</p><h1>Fire in motion.</h1>
+<main><p>JUGGLE DUDE / ACTUAL APP EXPORT</p><h1>Fire in motion.</h1>
 <p>Code-generated flames on input 4. Fuel follows the recorded ball path, curls in a changing flow field, then rises and fades. Original daylight, 85% intensity.</p>
 <div class="labels"><span>Previous Fire strength</span><strong>Stronger procedural Fire</strong></div>
 <video controls playsinline loop preload="metadata" poster="before-after.jpg" src="before-after.mp4"></video>

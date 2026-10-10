@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DAAA00010000000000000001 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = DAAA00010000000000000002 /* PostHog */; };
+		DADD00010000000000000001 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = DADD00010000000000000002 /* Auth */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		7441B457305617DD007026EB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,7 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		7441B447305617DC007026EB /* kicklab.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kicklab.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7441B447305617DC007026EB /* Juggle Dude.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Juggle Dude.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7441B456305617DD007026EB /* kicklabTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kicklabTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7441B460305617DE007026EB /* kicklabUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kicklabUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DADD00010000000000000001 /* Auth in Frameworks */,
+				DAAA00010000000000000001 /* PostHog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,7 +92,7 @@
 		7441B448305617DC007026EB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7441B447305617DC007026EB /* kicklab.app */,
+				7441B447305617DC007026EB /* Juggle Dude.app */,
 				7441B456305617DD007026EB /* kicklabTests.xctest */,
 				7441B460305617DE007026EB /* kicklabUITests.xctest */,
 			);
@@ -112,9 +119,11 @@
 			);
 			name = kicklab;
 			packageProductDependencies = (
+				DADD00010000000000000002 /* Auth */,
+				DAAA00010000000000000002 /* PostHog */,
 			);
 			productName = kicklab;
-			productReference = 7441B447305617DC007026EB /* kicklab.app */;
+			productReference = 7441B447305617DC007026EB /* Juggle Dude.app */;
 			productType = "com.apple.product-type.application";
 		};
 		7441B455305617DD007026EB /* kicklabTests */ = {
@@ -175,6 +184,17 @@
 				TargetAttributes = {
 					7441B446305617DC007026EB = {
 						CreatedOnToolsVersion = 26.6;
+						SystemCapabilities = {
+							com.apple.AssociatedDomains = {
+								enabled = 1;
+							};
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+							com.apple.SignInWithApple = {
+								enabled = 1;
+							};
+						};
 					};
 					7441B455305617DD007026EB = {
 						CreatedOnToolsVersion = 26.6;
@@ -195,6 +215,10 @@
 			);
 			mainGroup = 7441B43E305617DC007026EB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */,
+				DADD00010000000000000003 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7441B448305617DC007026EB /* Products */;
 			projectDirPath = "";
@@ -395,17 +419,21 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = config/KickLab.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = G276PSQ2LH;
 				ENABLE_PREVIEWS = YES;
+				GCC_OPTIMIZATION_LEVEL = 2;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "KickLab counts your touches from the camera. Video is processed on device and never leaves it.";
+				INFOPLIST_FILE = "config/KickLab-Info.plist";
+				INFOPLIST_KEY_CFBundleName = "Juggle Dude";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Juggle Dude counts your touches from the camera. Video is processed on device and never leaves it.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Move your phone to look around the stadium preview.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "KickLab saves your juggling replays to Photos so you can share them.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Juggle Dude saves your juggling replays to Photos so you can share them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -413,12 +441,14 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hewad.kicklab;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.juggledude;
+				PRODUCT_MODULE_NAME = kicklab;
+				PRODUCT_NAME = "Juggle Dude";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = kicklab/Effects/ShotCPUBridge.h;
 				"SWIFT_OPTIMIZATION_LEVEL[sdk=iphoneos*]" = "-O";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -431,17 +461,21 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = config/KickLab.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = G276PSQ2LH;
 				ENABLE_PREVIEWS = YES;
+				GCC_OPTIMIZATION_LEVEL = 2;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "KickLab counts your touches from the camera. Video is processed on device and never leaves it.";
+				INFOPLIST_FILE = "config/KickLab-Info.plist";
+				INFOPLIST_KEY_CFBundleName = "Juggle Dude";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Juggle Dude counts your touches from the camera. Video is processed on device and never leaves it.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Move your phone to look around the stadium preview.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "KickLab saves your juggling replays to Photos so you can share them.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Juggle Dude saves your juggling replays to Photos so you can share them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -449,12 +483,14 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hewad.kicklab;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.juggledude;
+				PRODUCT_MODULE_NAME = kicklab;
+				PRODUCT_NAME = "Juggle Dude";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = kicklab/Effects/ShotCPUBridge.h;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -471,7 +507,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hewad.kicklabTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juggledude.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -479,7 +515,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/kicklab.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/kicklab";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Juggle Dude.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Juggle Dude";
 			};
 			name = Debug;
 		};
@@ -493,7 +529,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hewad.kicklabTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juggledude.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -501,7 +537,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/kicklab.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/kicklab";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Juggle Dude.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Juggle Dude";
 			};
 			name = Release;
 		};
@@ -513,7 +549,7 @@
 				DEVELOPMENT_TEAM = G276PSQ2LH;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hewad.kicklabUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juggledude.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -533,7 +569,7 @@
 				DEVELOPMENT_TEAM = G276PSQ2LH;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = hewad.kicklabUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juggledude.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -585,6 +621,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios.git";
+			requirement = {
+				kind = exactVersion;
+				version = 3.92.0;
+			};
+		};
+		DADD00010000000000000003 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = exactVersion;
+				version = 2.55.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DAAA00010000000000000002 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
+		};
+		DADD00010000000000000002 /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DADD00010000000000000003 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 7441B43F305617DC007026EB /* Project object */;
 }

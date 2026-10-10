@@ -42,17 +42,18 @@ final class AnnotationExporter: ObservableObject {
         status = "preparing…"
 
         Task.detached(priority: .userInitiated) { [weak self] in
+            guard let self else { return }
             do {
-                let url = try await self?.run(source: source, track: track, touches: touches)
+                let url = try await self.run(source: source, track: track, touches: touches)
                 await MainActor.run {
-                    self?.outputURL = url
-                    self?.status = "done"
-                    self?.progress = 1
+                    self.outputURL = url
+                    self.status = "done"
+                    self.progress = 1
                 }
             } catch {
-                await MainActor.run { self?.status = "failed: \(error.localizedDescription)" }
+                await MainActor.run { self.status = "failed: \(error.localizedDescription)" }
             }
-            await MainActor.run { self?.isExporting = false }
+            await MainActor.run { self.isExporting = false }
         }
     }
 
@@ -83,7 +84,7 @@ final class AnnotationExporter: ObservableObject {
         reader.add(output)
 
         let out = FileManager.default.temporaryDirectory
-            .appendingPathComponent("kicklab-annotated-\(Int(Date().timeIntervalSince1970)).mov")
+            .appendingPathComponent("juggledude-annotated-\(Int(Date().timeIntervalSince1970)).mov")
         try? FileManager.default.removeItem(at: out)
 
         let writer = try AVAssetWriter(outputURL: out, fileType: .mov)

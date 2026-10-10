@@ -1,0 +1,5 @@
+Use case: background-extraction
+Asset type: transparent brand-mark PNG for a native iPhone splash screen.
+Edit target: the supplied approved Juggle Dude app icon.
+Remove ONLY the charcoal square background. Preserve exactly the white abstract lifting boot silhouette, the detached toe sole, and the small pearl-white football above the toe with black curved seams and the single lime seam. Keep their exact position, proportions, texture, silhouette and relative scale.
+Return the same square composition on a genuinely transparent background. The entire outside background and the gap between boot and sole must have alpha zero. All charcoal background must be removed; do not replace it with gray or white. Only the boot and ball are opaque. Export clean antialiased vector-like edges with no white fringe, pixel debris, dust, drop shadow, glow, floor, checkerboard graphic or matte. This is a precision cutout of existing art, not a logo redesign. Keep the ball small. No text.

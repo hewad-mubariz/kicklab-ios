@@ -14,30 +14,16 @@ constant float TAU = 6.28318530718;
 constexpr sampler noiseSampler(coord::normalized, address::repeat, filter::linear);
 constexpr sampler imageSampler(coord::normalized, address::clamp_to_edge, filter::linear);
 
+#include "ShotShaderMath.h"
+
 float hashFX(float p) { return fract(sin(p * 127.1 + 311.7) * 43758.5453); }
 float3 noiseFX(texture3d<float> noise, float3 p) { return noise.sample(noiseSampler, p / 32.0).rgb; }
 float fbmFX(texture3d<float> noise, float3 p) {
     return noiseFX(noise,p).r * 0.57 + noiseFX(noise,p * 2.07 + 13.1).g * 0.29
          + noiseFX(noise,p * 4.17 + 7.4).b * 0.14;
 }
-float3 fireSpectrum(float heat) {
-    float3 red = float3(1.8, 0.025, 0.001);
-    float3 orange = float3(4.0, 0.34, 0.007);
-    float3 yellow = float3(6.5, 2.3, 0.14);
-    float3 white = float3(8.0, 6.7, 2.8);
-    return heat < 0.4 ? mix(red, orange, heat / 0.4)
-         : heat < 0.76 ? mix(orange, yellow, (heat - 0.4) / 0.36)
-         : mix(yellow, white, (heat - 0.76) / 0.24);
-}
-float3 iceSpectrum(float cold) {
-    float3 deep = float3(0.05, 0.35, 1.35);
-    float3 cyan = float3(0.25, 1.35, 2.55);
-    float3 frost = float3(1.15, 2.05, 2.85);
-    float3 white = float3(2.4, 2.85, 3.2);
-    return cold < 0.4 ? mix(deep, cyan, cold / 0.4)
-         : cold < 0.76 ? mix(cyan, frost, (cold - 0.4) / 0.36)
-         : mix(frost, white, (cold - 0.76) / 0.24);
-}
+
+
 float segmentDistanceFX(float2 p, float2 a, float2 b) {
     float2 ab = b - a;
     float t = saturate(dot(p - a, ab) / max(dot(ab, ab), 0.0001));
@@ -48,9 +34,7 @@ float segmentDistanceFX(float2 p, float2 a, float2 b) {
 float3 rainbowFX(float hue) {
     return clamp(abs(fract(hue+float3(0,2.0/3.0,1.0/3.0))*6-3)-1,0.0,1.0);
 }
-float lineFX(float distance, float width) {
-    return exp(-pow(distance/max(width,0.002),2.0));
-}
+
 float2 orbitFX(float angle, float radius, float flatten, float tilt) {
     float2 p=float2(cos(angle),sin(angle)*flatten)*radius;
     return float2(p.x*cos(tilt)-p.y*sin(tilt),p.x*sin(tilt)+p.y*cos(tilt));
@@ -61,10 +45,7 @@ float animatedHashFX(float seed, float time) {
 }
 
 // Brightness is layered: saturated energy outside, a fine pale filament inside.
-float3 filamentFX(float d,float width,float3 tint,float core) {
-    return tint*(lineFX(d,width)*1.55+lineFX(d,width*3.2)*0.22)
-        +float3(2.4,2.5,2.4)*lineFX(d,width*0.26)*core;
-}
+
 
 float4 wakeEmitterFX(float age,constant float4 *emitters) {
     float slot=clamp(age*40.0,0.0,32.0);
@@ -81,30 +62,9 @@ float4 wakeEmitterFX(float age,constant float4 *emitters) {
 
 // Integer value noise shared by the procedural materials. Time is a noise
 // axis, so pause, seek and export are deterministic.
-float fireValue3(int3 cell) {
-    uint3 p=as_type<uint3>(cell);
-    uint n=p.x*374761393u+p.y*668265263u+p.z*2246822519u;
-    n=(n^(n>>13))*1274126177u;
-    n^=n>>16;
-    return float(n&0xFFFFFFu)/16777215.0;
-}
-float fireNoise3(float3 p) {
-    int3 c=int3(floor(p));
-    float3 f=fract(p);
-    f=f*f*f*(f*(f*6-15)+10);
-    float x00=mix(fireValue3(c),fireValue3(c+int3(1,0,0)),f.x);
-    float x10=mix(fireValue3(c+int3(0,1,0)),fireValue3(c+int3(1,1,0)),f.x);
-    float x01=mix(fireValue3(c+int3(0,0,1)),fireValue3(c+int3(1,0,1)),f.x);
-    float x11=mix(fireValue3(c+int3(0,1,1)),fireValue3(c+int3(1,1,1)),f.x);
-    return mix(mix(x00,x10,f.y),mix(x01,x11,f.y),f.z);
-}
-float fireFBM3(float3 p) {
-    float s=fireNoise3(p)*0.5;
-    p=p*2.02+float3(13.7,-9.1,5.3); s+=fireNoise3(p)*0.25;
-    p=p*2.03+float3(-7.3,19.1,2.1); s+=fireNoise3(p)*0.125;
-    p=p*2.01+float3(31.1,4.7,-8.9); s+=fireNoise3(p)*0.0625;
-    return s/0.9375;
-}
+
+
+
 // Ridged turbulence: the sharp bright filaments inside a flame sheet.
 float fireRidge3(float3 p) {
     float s=abs(fireNoise3(p)*2-1)*0.5;
@@ -1291,6 +1251,9 @@ float4 distinctMaterialFX(float2 pixel, constant FXUniforms &u,
     return float4(color*mask,alpha*mask);
 }
 
+#include "EffectStudies.h"
+#include "ShotTrails.h"
+
 kernel void fxEmission(texture2d<half,access::write> out [[texture(0)]],
                        texture3d<float> noise [[texture(1)]],
                        constant FXUniforms &u [[buffer(0)]], constant float4 *trail [[buffer(1)]],
@@ -1306,7 +1269,14 @@ kernel void fxEmission(texture2d<half,access::write> out [[texture(0)]],
         float wave = exp(-pow((length(p)-0.7-age*2.5)*24,2.0)) * exp(-age*6) * 0.06;
         result = float4(u.tint.rgb*(halo+wave)*2.2,(halo+wave)*0.14);
     } else if (u.ball.w>0.005 && u.viewport.w>0.005 && u.motion.w>0.5) {
-        result = u.motion.w==1 ? proceduralFireFX(pixel,u,emitters,u.region.z/float(out.get_width()))
+        result = u.motion.w>=20 ? shotTrailFX(pixel,u,trail,u.region.z/float(out.get_width()))
+               : u.motion.w==1 ? proceduralFireFX(pixel,u,emitters,u.region.z/float(out.get_width()))
+               : u.motion.w==11 ? labFlameFX(pixel,u,emitters,u.region.z/float(out.get_width()))
+               : u.motion.w==12 ? glowTrailFX(pixel,u,emitters,u.region.z/float(out.get_width()))
+               : u.motion.w==13 ? blueFlameFX(pixel,u,emitters,u.region.z/float(out.get_width()))
+               : u.motion.w==14 ? emberWakeFX(pixel,u,emitters,u.region.z/float(out.get_width()))
+               : u.motion.w==15 ? flameRibbonFX(pixel,u,emitters,u.region.z/float(out.get_width()))
+               : u.motion.w==16 ? heatPulseFX(pixel,u,emitters,u.region.z/float(out.get_width()))
                : u.motion.w==5 ? electricFX(pixel,u,emitters)
                : u.motion.w==3 ? neonFX(pixel,u,emitters,u.region.z/float(out.get_width()))
                : u.motion.w==8 ? rainbowFX(pixel,u,emitters,u.region.z/float(out.get_width()))
@@ -1514,6 +1484,25 @@ vertex FXParticleOut fxParticleVertex(uint vertexID [[vertex_id]], uint instance
                 alpha*=2.2;
             }
         }
+        if(style>=11 && style<=16) {
+            // Fine, sparse flecks born on the measured path. Ember Wake uses
+            // more and longer sparks; the other studies retain their clear form.
+            bool ember=style==14, cool=style==12 || style==13;
+            // Embers keep more of the ball's own motion, so they streak along its path.
+            float2 carried=clamp(inherited,-birth.z*20.0,birth.z*20.0)*(ember?0.13:0.065);
+            float2 drift=radial*birth.z*(ember?1.4:1.2)+float2(0,-birth.z*(ember?0.55:1.3));
+            center=birth.xy+radial*birth.z*1.08+(carried+drift)*age;
+            center.y-=birth.z*age*age*1.1;
+            float2 v=carried+drift+float2(0,-birth.z*age*2.2);
+            float speed=metal::length(v);
+            direction=speed>0.001?v/speed:float2(0,-1);
+            // Ember Wake's sparks are its body: bigger, longer, hotter streaks.
+            width=max(0.45,birth.z*(ember?0.017+hashFX(seed+7)*0.02:0.011+hashFX(seed+7)*0.014));
+            length=width*(ember?4.2:1.4)+speed/(ember?48.0:190.0);
+            color=cool?float3(0.10,2.3,4.5):studyWarmFX((ember?0.56:0.44)+hashFX(seed+9)*0.42);
+            alpha*= (ember?2.0:0.75)*(0.55+0.45*pow(sin(age*17+seed),2.0));
+            if(style==12)alpha*=0.7;
+        }
         if(style==0)alpha=0;
     }
     float2 perpendicular=float2(-direction.y,direction.x);
@@ -1675,6 +1664,14 @@ float4 resolveFX(float4 sharp,float4 nearGlow,float4 farGlow,float2 pixel,consta
         float3 energy=sharp.rgb+(nearGlow.rgb*(galaxy?0.18:0.16)+farGlow.rgb*0.055)*face;
         float3 mapped=1-exp(-energy*(galaxy?0.88:0.82));
         float alpha=clamp(max(max(mapped.r,max(mapped.g,mapped.b))*0.92,sharp.a),0.0,0.93)*face;
+        return float4(min(mapped*face,float3(alpha)),alpha);
+    }
+    if(u.control.y<0.5 && ((u.motion.w>=11 && u.motion.w<=16) || u.motion.w>=20)) {
+        // Bloom and particles must respect the same clear ball face as the field.
+        float face=smoothstep(0.96,1.055,length(pixel-u.ball.xy)/max(1.0,u.ball.z));
+        float3 energy=sharp.rgb+nearGlow.rgb*0.18+farGlow.rgb*0.045;
+        float3 mapped=1-exp(-energy*0.90);
+        float alpha=clamp(max(max(mapped.r,max(mapped.g,mapped.b)),sharp.a),0.0,0.96)*face;
         return float4(min(mapped*face,float3(alpha)),alpha);
     }
     float nearWeight = u.control.y>0.5 ? 0.72 : u.motion.w==1 ? 0.16 : u.motion.w==2 ? 0.26 : u.motion.w==4 ? 0.5 : u.motion.w==9 ? 0.22 : u.motion.w==7 ? 0.10 : u.motion.w==10 ? 0.14 : 0.32;

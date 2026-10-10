@@ -29,7 +29,7 @@ import CoreVideo
 import Foundation
 import Vision
 
-final class MotionCompensator {
+nonisolated final class MotionCompensator {
     /// Frames are reduced to this square before registering. Cheap, and still
     /// resolves what matters: a touch is ~0.02 of frame height, three pixels here.
     private let workSize = 160
@@ -41,7 +41,7 @@ final class MotionCompensator {
     /// seconds, and compensating one does not require compensating the other.
     private let highPassFrames = 60
 
-    private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+    private let ciContext = CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly])
     private var previous: CVPixelBuffer?
     private var scratchA: CVPixelBuffer?
     private var scratchB: CVPixelBuffer?
@@ -101,6 +101,7 @@ final class MotionCompensator {
         let request = VNTranslationalImageRegistrationRequest(targetedCVPixelBuffer: small)
         let handler = VNImageRequestHandler(cvPixelBuffer: reference, options: [:])
         do {
+            try VisionComputePolicy.configure(request)
             try handler.perform([request])
         } catch {
             return corrected()

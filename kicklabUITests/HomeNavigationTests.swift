@@ -10,11 +10,12 @@ final class HomeNavigationTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-kicklab.juggling.personalBest", "42"]
         XCUIDevice.shared.orientation = .portrait
+        app.launchArguments += ["-kicklab.welcome.completed", "YES"]
         app.launch()
         XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["module-juggling"].isEnabled)
         XCTAssertTrue(app.buttons["module-power-shot"].isEnabled)
-        XCTAssertFalse(app.buttons["module-target-shooting"].isEnabled)
+        XCTAssertFalse(app.buttons["module-target-shooting"].exists)
         XCTAssertFalse(app.buttons["tab-home"].exists)
         XCTAssertEqual(app.descendants(matching: .any)["home-personal-best"].label,
                        "Juggling personal best, 42 touches")
@@ -34,6 +35,7 @@ final class HomeNavigationTests: XCTestCase {
         app.buttons["profile-close"].tap()
         attach(app, name: "Training home - Dark")
         app.terminate()
+        app.launchArguments += ["-kicklab.welcome.completed", "YES"]
         app.launch()
         app.buttons["home-profile"].tap()
         app.buttons["profile-settings"].tap()
@@ -51,6 +53,7 @@ final class HomeNavigationTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-kicklab.juggling.personalBest", "42"]
         XCUIDevice.shared.orientation = .portrait
+        app.launchArguments += ["-kicklab.welcome.completed", "YES"]
         app.launch()
         app.buttons["home-profile"].tap()
         XCTAssertEqual(app.descendants(matching: .any)["profile-personal-best"].label,
@@ -69,6 +72,7 @@ final class HomeNavigationTests: XCTestCase {
         app.buttons["profile-name-cancel"].tap()
         XCTAssertEqual(app.staticTexts["profile-name"].label, "Jordan")
         app.terminate()
+        app.launchArguments += ["-kicklab.welcome.completed", "YES"]
         app.launch()
         app.buttons["home-profile"].tap()
         XCTAssertEqual(app.staticTexts["profile-name"].label, "Jordan")
@@ -95,6 +99,7 @@ final class HomeNavigationTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--roll-distance-ui-review"]
         XCUIDevice.shared.orientation = .portrait
+        app.launchArguments += ["-kicklab.welcome.completed", "YES"]
         app.launch()
         XCTAssertTrue(app.buttons["module-power-shot"].waitForExistence(timeout: 10))
         app.buttons["module-power-shot"].tap()
@@ -112,6 +117,7 @@ final class HomeNavigationTests: XCTestCase {
     func testJugglingAndImportCanReturnHome() {
         let app = XCUIApplication()
         XCUIDevice.shared.orientation = .portrait
+        app.launchArguments += ["-kicklab.welcome.completed", "YES"]
         app.launch()
         XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout: 10))
         app.buttons["module-juggling"].tap()
@@ -132,6 +138,7 @@ final class HomeNavigationTests: XCTestCase {
         app.launchArguments = ["-kicklab.juggling.personalBest", "0",
                                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         XCUIDevice.shared.orientation = .portrait
+        app.launchArguments += ["-kicklab.welcome.completed", "YES"]
         app.launch()
         let juggling = app.buttons["module-juggling"]
         XCTAssertTrue(juggling.waitForExistence(timeout: 10))

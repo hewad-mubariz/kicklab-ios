@@ -1,0 +1,15 @@
+{
+  "python_fire_preview": "../kicklab-lab/runs/fire-refinement-20261001/review-v2/fire.jpg",
+  "python_fire_renderer": "../kicklab-lab/scripts/render_juggling_effects.py",
+  "python_phone_preview": "../kicklab-lab/runs/juggling-replay-IMG8649-20261005/phone-v5/preview-0240.jpg",
+  "python_phone_renderer": "../kicklab-lab/scripts/render_annotated_replay.py:134",
+  "concepts": [
+    "Lab Flame",
+    "Glow Trail",
+    "Blue Flame",
+    "Ember Wake",
+    "Flame Ribbon",
+    "Heat Pulse"
+  ],
+  "status": "Concept sheet; new effects not implemented. Shadow and Pixel removed from public pickers."
+}

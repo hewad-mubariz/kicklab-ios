@@ -10,7 +10,7 @@ nonisolated final class NativeBallPixelTrack {
     private var handler = VNSequenceRequestHandler()
     private var last: FollowHit?
     private var patch: [Float]?
-    private let context = CIContext(options: [.workingColorSpace: NSNull(), .cacheIntermediates: false])
+    private let context = CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly, .workingColorSpace: NSNull(), .cacheIntermediates: false])
     private var pixels: CVPixelBuffer?
     private func perform(_ request: VNTrackObjectRequest, image: CIImage) throws {
         let width=Int(image.extent.width), height=Int(image.extent.height)
@@ -55,7 +55,10 @@ nonisolated final class NativeBallPixelTrack {
         request?.trackingLevel = .accurate
         // Feed the seed frame so the next update really compares two frames.
         if let request {
-            do { try perform(request,image:image) } catch { reset(); return }
+            do {
+                try VisionComputePolicy.configure(request)
+                try perform(request,image:image)
+            } catch { reset(); return }
         }
         last=hit; patch=texture(image,r,size)
     }

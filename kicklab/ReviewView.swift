@@ -331,7 +331,7 @@ struct ReviewView: View {
 
     /// What the app saw, so it can be diffed against the lab on the same footage.
     private func writeReport() -> URL? {
-        var lines = ["# kicklab run report",
+        var lines = ["# Juggle Dude run report",
                      "video: \(url.lastPathComponent)",
                      "touches: \(touches.count)",
                      "ball detected on frames: \(track.count)",

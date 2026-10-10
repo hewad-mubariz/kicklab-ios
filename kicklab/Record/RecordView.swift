@@ -14,13 +14,18 @@ import SwiftUI
 struct RecordView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var account: AccountStore
+    @EnvironmentObject private var player: PlayerStore
+    @State private var sessionOwner: UUID?
+    @State private var resultID = UUID()
+    @State private var resultStartedAt = Date()
     @StateObject private var camera = CameraSession()
     @StateObject private var importedVideo = VideoAnalyzer()
 
-    @AppStorage("experimentalBallModel") private var experimentalBallModel = "default"
     @State private var showGallery = false
     @State private var galleryItem: PhotosPickerItem?
     @State private var importedURL: URL?
+    @State private var importTask: Task<Void, Never>?
     @State private var importError: String?
     @State private var elapsed: TimeInterval = 0
     @State private var timerRunning = false
@@ -39,6 +44,13 @@ struct RecordView: View {
     @State private var sessionSummary: SessionSummary?
     @State private var isFinishingSession = false
     @State private var hudShown = false
+
+    #if DEBUG
+    @State private var processingReviewStarted = false
+    private var processingReviewPath: String? { SessionDesignReview.argument("--capture-processing-video") }
+    #else
+    private var processingReviewPath: String? { nil }
+    #endif
 
     private let timer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
 
@@ -81,10 +93,10 @@ struct RecordView: View {
                 }
             }
 
-            // Full-screen — outside the geo stack so Stop never flash-blacks.
+            // Full-screen — outside the geo stack so Stop never flash-blacks. The overlay's own
+            // background fills the screen; its content stays inside the safe area.
             if showProcessing {
-                ProcessingOverlay(progress: processingProgress, stepIndex: processingStep)
-                    .ignoresSafeArea()
+                importProcessingOverlay
                     .transition(.opacity)
                     .zIndex(100)
             }
@@ -92,12 +104,16 @@ struct RecordView: View {
         .statusBarHidden(false)
         .preferredColorScheme(.dark)
         .onAppear {
-            if ProcessInfo.processInfo.arguments.contains("--select-segmentation-pilot") { experimentalBallModel = "segmentation" }
-            if ProcessInfo.processInfo.arguments.contains("--select-motion-model") { experimentalBallModel = "motionModel" }
-            if galleryItem == nil { camera.start() }
+            if galleryItem == nil, processingReviewPath == nil { camera.start() }
             hudShown = true
         }
         .task {
+            #if DEBUG
+            if let path = processingReviewPath {
+                await reviewSavedCapture(path)
+                return
+            }
+            #endif
             if DetectorPhoneBenchmark.requested {
                 await DetectorPhoneBenchmark.run(camera: camera)
             }
@@ -105,6 +121,7 @@ struct RecordView: View {
         .onDisappear {
             timerRunning = false
             camera.stop()
+            if importedVideo.isRunning { importTask?.cancel(); importedVideo.cancel() }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
@@ -112,7 +129,7 @@ struct RecordView: View {
                 timerRunning = false
                 camera.stop()
             } else if phase == .active, !showProcessing, sessionSummary == nil,
-                      importedURL == nil {
+                      importedURL == nil, processingReviewPath == nil {
                 camera.start()
             }
         }
@@ -146,6 +163,9 @@ struct RecordView: View {
             timerRunning = recording
             liveTrail = []
             if recording {
+                ProductAnalytics.shared.track(.trainingStarted(.juggling))
+                sessionOwner = account.user?.id
+                resultID = UUID(); resultStartedAt = Date()
                 comboPeak = 0
                 motionPoints = []
                 sessionNumber = JugglingSessionIdentity.begin()
@@ -169,40 +189,21 @@ struct RecordView: View {
                 track: camera.recordedTrack, sessionNumber: sessionNumber
             )
             pendingSummary = summary
-            Task { await finishProcessing(with: summary) }
+            finishProcessing(with: summary)
+            saveAccountResult(summary, source: .recording)
         }
-        .photosPicker(isPresented: $showGallery, selection: $galleryItem, matching: .videos)
-        .task(id: galleryItem) {
-            guard let item = galleryItem else { return }
-            await importMovie(item)
+        .photosPicker(isPresented: $showGallery, selection: $galleryItem, matching: .videos, preferredItemEncoding: .current)
+        .onChange(of: galleryItem, initial: true) { _, item in
+            guard let item else { return }
+            importTask = Task { await importMovie(item) }
         }
         .onChange(of: importedVideo.progress) { _, progress in
             guard importedURL != nil else { return }
-            processingProgress = 0.1 + progress * 0.9
+            processingProgress = 0.1 + progress * 0.8
             processingStep = progress < 0.85 ? 1 : 2
         }
         .onChange(of: importedVideo.isRunning) { _, running in
-            guard !running, let url = importedURL else { return }
-            importedURL = nil
-            galleryItem = nil
-            guard importedVideo.status == "done" else {
-                try? FileManager.default.removeItem(at: url)
-                showProcessing = false
-                importError = importedVideo.status
-                camera.start()
-                return
-            }
-            processingProgress = 1
-            processingStep = 4
-            presentWithoutSlide(SessionSummary.make(
-                touches: importedVideo.touchCount,
-                duration: importedVideo.videoDuration,
-                bestCombo: importedVideo.touchCount,
-                personalBest: JugglingRecords.personalBest,
-                videoURL: url,
-                touchesMarked: importedVideo.recordedTouches,
-                track: importedVideo.recordedTrack, sessionNumber: JugglingSessionIdentity.begin()
-            ))
+            importDidFinish(running: running)
         }
         .alert("Video unavailable", isPresented: Binding(
             get: { importError != nil },
@@ -244,33 +245,149 @@ struct RecordView: View {
         }
     }
 
+    #if DEBUG
+    /// Exercises the real saved-capture processing and nested editor presentation.
+    /// Unlike --session-design, this retains the normal settings persistence path.
+    @MainActor
+    private func reviewSavedCapture(_ path: String) async {
+        guard !processingReviewStarted else { return }
+        processingReviewStarted = true
+        if UserDefaults.standard.data(forKey: "kicklab.export.overlays.v1") == nil {
+            ExportOverlaySettings().save()
+        }
+        let url = SessionDesignReview.fileURL(path)
+        beginProcessing()
+        do {
+            let duration = try await AVURLAsset(url: url).load(.duration).seconds
+            // Select fresh saved-pixel mask analysis; this sentinel is not a detection
+            // or a touch. The resulting visual track comes entirely from the video.
+            let maskedCapture = RecordedFrame(time: 0, x: 0, y: 0, width: 0, height: 0,
+                score: 0, smoothedX: 0, smoothedY: 0, vy: 0, motion: .unknown,
+                detected: false, person: nil, usesBallMasks: true)
+            let summary = SessionSummary.make(touches: 0, duration: duration, bestCombo: 0,
+                personalBest: JugglingRecords.personalBest, videoURL: url,
+                touchesMarked: [], track: [maskedCapture], sessionNumber: sessionNumber)
+            pendingSummary = summary
+            finishProcessing(with: summary)
+            // Exercise real persistence only with the isolated, network-free UI
+            // review store. Normal detector reviews never submit sample scores.
+            if SessionHistoryReview.requested { saveAccountResult(summary, source: .recording) }
+        } catch {
+            showProcessing = false
+            importError = error.localizedDescription
+        }
+    }
+    #endif
+
     // MARK: - Processing
+
+    private func importDidFinish(running: Bool) {
+        guard !running, let url = importedURL else { return }
+        importedURL = nil
+        galleryItem = nil
+        guard importedVideo.status == "done" else {
+            try? FileManager.default.removeItem(at: url)
+            showProcessing = false
+            if importedVideo.status != "cancelled" {
+                importError = importedVideo.status
+                camera.start()
+            }
+            return
+        }
+        var summary = SessionSummary.make(
+            touches: importedVideo.touchCount, duration: importedVideo.videoDuration,
+            bestCombo: importedVideo.touchCount, personalBest: JugglingRecords.personalBest,
+            videoURL: url, touchesMarked: importedVideo.recordedTouches,
+            track: importedVideo.recordedTrack, sessionNumber: JugglingSessionIdentity.begin())
+        if !importedVideo.visualRecoveries.isEmpty { summary.visualTrack = importedVideo.renderTrack }
+        finishProcessing(with: summary, framesUseCompositionClock: true)
+        saveAccountResult(summary, source: .gallery)
+    }
+
+    private var importProcessingOverlay: some View {
+        let cancel: (() -> Void)? = importedURL == nil ? nil : { cancelImport() }
+        let message = importedVideo.isCooling ? "Cooling down. Your video will continue automatically."
+            : importedVideo.isRunning && !importedVideo.canContinueInBackground
+                ? "Keep Juggle Dude open. Processing resumes when you return." : nil
+        return ProcessingOverlay(progress: processingProgress, stepIndex: processingStep,
+                                 statusMessage: message, onCancel: cancel, isPaused: importedVideo.isCooling)
+    }
+
+    @MainActor
+    private func cancelImport() {
+        let source = importedURL
+        importedURL = nil
+        galleryItem = nil
+        importTask?.cancel()
+        importedVideo.cancel()
+        showProcessing = false
+        if scenePhase == .active { camera.start() }
+        Task {
+            await importedVideo.waitUntilFinished()
+            if let source { try? FileManager.default.removeItem(at: source) }
+        }
+    }
 
     @MainActor
     private func importMovie(_ item: PhotosPickerItem) async {
         guard !camera.isRecording, !camera.isPreparingRecording,
               !camera.isFinishingRecording, !showProcessing else { return }
+        sessionOwner = account.user?.id
+        resultID = UUID(); resultStartedAt = Date()
+        ProductAnalytics.shared.track(.importStarted)
         showProcessing = true
         processingProgress = 0.02
         processingStep = 0
         camera.stop()
         do {
-            guard let movie = try await item.loadTransferable(type: PickedMovie.self) else {
-                throw CocoaError(.fileReadCorruptFile)
+            try await VideoBackgroundWork.shared.run(title: "Importing video") {
+                try await importSelectedMovie(item)
             }
-            guard !Task.isCancelled else {
-                try? FileManager.default.removeItem(at: movie.url)
-                showProcessing = false
-                return
-            }
-            importedURL = movie.url
-            importedVideo.analyse(url: movie.url)
+            ProductAnalytics.shared.track(.importFinished(.completed))
+        } catch is CancellationError {
+            ProductAnalytics.shared.track(.importFinished(.cancelled))
+            showProcessing = false
+            galleryItem = nil
         } catch {
+            ProductAnalytics.shared.track(.importFinished(.failed))
             showProcessing = false
             galleryItem = nil
             importError = error.localizedDescription
             camera.start()
         }
+    }
+
+    @MainActor
+    private func importSelectedMovie(_ item: PhotosPickerItem) async throws {
+        // Cancel can return to the picker before the previous worker has
+        // released its reader/model. Let that teardown finish before a new
+        // URL is published; analyse() deliberately ignores overlapping calls.
+        await importedVideo.waitUntilFinished()
+        try Task.checkCancellation()
+        guard let movie = try await item.loadTransferable(type: PickedMovie.self) else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        guard !Task.isCancelled else {
+            try? FileManager.default.removeItem(at: movie.url)
+            throw CancellationError()
+        }
+        importedURL = movie.url
+        importedVideo.analyse(url: movie.url)
+        await importedVideo.waitUntilFinished()
+        try Task.checkCancellation()
+        if importedVideo.status != "done" {
+            throw NSError(domain: "VideoImport", code: 1,
+                userInfo: [NSLocalizedDescriptionKey: importedVideo.status])
+        }
+    }
+
+    private func saveAccountResult(_ summary: SessionSummary, source: SavedJugglingResult.Source) {
+        if source == .recording {
+            ProductAnalytics.shared.track(.trainingCompleted(.juggling, duration: summary.duration))
+        }
+        let completed = source == .recording ? resultStartedAt.addingTimeInterval(summary.duration) : resultStartedAt
+        player.recordSession(id: resultID, owner: sessionOwner, summary: summary,
+            source: source, completedAt: completed)
     }
 
     private func beginProcessing() {
@@ -304,7 +421,7 @@ struct RecordView: View {
     }
 
     @MainActor
-    private func finishProcessing(with summary: SessionSummary) async {
+    private func finishProcessing(with summary: SessionSummary, framesUseCompositionClock: Bool = false) {
         guard !isFinishingSession, sessionSummary == nil else { return }
         isFinishingSession = true
         showProcessing = true
@@ -314,28 +431,12 @@ struct RecordView: View {
         }
 
         var finished = summary
-        finished.visualTrack = try? await Task.detached(priority: .userInitiated) {
-            try await BallVisualRefiner.refineVideo(
-                source: summary.videoURL,
-                frames: summary.track
-            ) { pct in
-                Task { @MainActor in
-                    // Map refine 0…1 into overlay 0.55…0.92
-                    let mapped = 0.55 + pct * 0.37
-                    withAnimation(.linear(duration: 0.12)) {
-                        self.processingProgress = max(self.processingProgress, mapped)
-                        self.processingStep = pct < 0.85 ? 2 : 3
-                    }
-                }
-            }
-        }.value
-
-        withAnimation(.easeInOut(duration: 0.25)) {
-            processingProgress = 1
-            processingStep = 4
-        }
-        // Leaves time for the overlay's completion beat before the editor takes over.
-        try? await Task.sleep(nanoseconds: 420_000_000)
+        finished.framesUseCompositionClock = framesUseCompositionClock
+        finished.needsVisualPreparation = !summary.track.isEmpty
+        // The live/import count and video are already ready. Precise ball effects
+        // belong to a shared on-demand session task, never the Save gate.
+        processingProgress = 1
+        processingStep = 4
 
         pendingSummary = nil
         // Present the editor first; overlay hides in cover onAppear.
@@ -388,8 +489,9 @@ struct RecordView: View {
                         .frame(width: 32, height: 32)
                 }
                 .buttonStyle(.glass).buttonBorderShape(.circle).controlSize(.regular)
-                .accessibilityLabel("Close").accessibilityIdentifier("capture-close")
-                .disabled(camera.isPreparingRecording || camera.isFinishingRecording)
+                .accessibilityLabel(camera.isPreparingRecording ? "Cancel recording setup" : "Close")
+                .accessibilityIdentifier("capture-close")
+                .disabled(camera.isFinishingRecording)
                 Spacer()
                 CaptureSessionBadge(number: sessionNumber, recording: camera.isRecording,
                                     preparing: camera.isPreparingRecording)

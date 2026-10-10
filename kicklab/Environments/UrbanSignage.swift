@@ -24,10 +24,11 @@ nonisolated enum UrbanSignage {
                 y: CGFloat(height - (row + 1) * 512) + y)
             CTLineDraw(text, context)
         }
-        let kick = line("KICK", size: 330, color: white), lab = line("LAB", size: 330, color: teal)
-        let a = CTLineGetTypographicBounds(kick, nil, nil, nil), b = CTLineGetTypographicBounds(lab, nil, nil, nil)
-        context.textPosition = CGPoint(x: (2048 - a - b) / 2, y: 1670); CTLineDraw(kick, context)
-        context.textPosition = CGPoint(x: (2048 - a - b) / 2 + a, y: 1670); CTLineDraw(lab, context)
+        // Keep the longer name inside the original wall-sign footprint.
+        let juggle = line("Juggle ", size: 225, color: white), dude = line("Dude", size: 225, color: teal)
+        let a = CTLineGetTypographicBounds(juggle, nil, nil, nil), b = CTLineGetTypographicBounds(dude, nil, nil, nil)
+        context.textPosition = CGPoint(x: (2048 - a - b) / 2, y: 1670); CTLineDraw(juggle, context)
+        context.textPosition = CGPoint(x: (2048 - a - b) / 2 + a, y: 1670); CTLineDraw(dude, context)
         for (index, string) in ["PRACTICE.", "IMPROVE.", "REPEAT."].enumerated() {
             draw(string, row: 1, y: CGFloat(350 - index * 132), size: 144, color: white)
         }

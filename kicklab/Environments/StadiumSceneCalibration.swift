@@ -15,9 +15,9 @@ nonisolated struct StadiumSceneCalibration {
         // Inspect every prepared timestamp. Sparse stills miss the widest part
         // of a kick and turn a soft segmentation error into a hard crop edge.
         let fullDuration = try await asset.load(.duration)
-        let composition = try await EffectVideoGeometry.composition(track: track, duration: fullDuration, shortEdge: 720)
         let fps = try await track.load(.nominalFrameRate)
-        composition.frameDuration = CMTime(seconds: 1 / min(maximumFrameRate,Double(fps > 0 ? fps : 30)), preferredTimescale: 60_000)
+        let composition = try await EffectVideoGeometry.composition(track: track, duration: fullDuration, shortEdge: 720,
+            frameDuration: CMTime(seconds: 1 / min(maximumFrameRate,Double(fps > 0 ? fps : 30)), preferredTimescale: 60_000))
         let reader = try AVAssetReader(asset: asset)
         let output = AVAssetReaderVideoCompositionOutput(videoTracks: [track], videoSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
         output.videoComposition = composition; output.alwaysCopiesSampleData = false

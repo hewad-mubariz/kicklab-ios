@@ -19,6 +19,8 @@ fi
 swiftc -O -module-cache-path /tmp/kicklab-swift-cache \
   kicklab/Environments/ForegroundMaskProcessor.swift kicklab/Environments/BallForegroundMask.swift \
   kicklab/Environments/SceneCameraRig.swift kicklab/Environments/VisibleFootContact.swift kicklab/Effects/EffectVideoGeometry.swift \
+  kicklab/Environments/PreviewEnvironment.swift kicklab/Environments/StadiumSignage.swift \
+  kicklab/Environments/ArenaSignage.swift kicklab/Environments/UrbanSignage.swift kicklab/Environments/ForestSignage.swift \
   kicklab/Environments/StadiumPreviewRenderer.swift kicklab/Environments/StadiumSceneCalibration.swift scripts/review-foreground.swift -o "$STUDY_OUT/review-foreground"
 STUDY_PARK="$(python3 -c 'import json; print(json.load(open("artifacts/export-counter/analysis.json"))["source"])')"
 STUDY_INDOOR="$(python3 -c 'import json; print(json.load(open("artifacts/flow-effects/indoor-analysis.json"))["source"])')"

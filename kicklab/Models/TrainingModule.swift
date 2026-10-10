@@ -59,8 +59,8 @@ extension TrainingModule {
         ),
         TrainingModule(
             id: "power-shot",
-            title: "Power Shot",
-            subtitle: "Record a shot for testing.",
+            title: "Ball Distance",
+            subtitle: "Record a roll. Add ball effects.",
             imageName: "card-freekick",
             style: .scene,
             isAvailable: true,

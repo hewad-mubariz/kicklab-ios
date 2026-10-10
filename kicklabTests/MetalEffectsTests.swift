@@ -38,7 +38,13 @@ struct MetalEffectsTests {
         return bytes
     }
     private func energy(_ bytes: [UInt8]) -> Int {
-        stride(from: 0, to: bytes.count, by: 4).reduce(0) { $0 + Int(bytes[$1]) + Int(bytes[$1+1]) + Int(bytes[$1+2]) }
+        var total = 0
+        for index in stride(from: 0, to: bytes.count, by: 4) {
+            total += Int(bytes[index])
+            total += Int(bytes[index + 1])
+            total += Int(bytes[index + 2])
+        }
+        return total
     }
 
     @Test func gpuRenderingPausesSeeksAndClearsCorrectly() throws {

@@ -1,0 +1,15 @@
+{
+  "tool": "built-in imagegen",
+  "edits": [
+    {
+      "id": "01-frame-and-range-v2",
+      "target": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-5f93ba4a-5b43-467d-b1b2-70ce338f63a8.png",
+      "prompt": "Use case: ui-mockup refinement. The input is a design mockup EDIT TARGET. Preserve the entire two-screen board, exact screen sizes, all text and labels, colors, typography, video previews, controls, captions, and layout. Make only one precise correction: on the LEFT screen's enlarged filmstrip, replace the thumbnail centered at the mint playhead labeled Impact with an exact miniature of the large LEFT preview above it. It must show the same player pose and boot contacting the ball at ground level; it must not show a later airborne frame. Keep this thumbnail's mint outline, fixed playhead and Impact label unchanged. All neighboring thumbnails and all of the right-hand range picker remain unchanged. Maintain the same polished native design. No additional text."
+    },
+    {
+      "id": "05-freeze-and-frames-v2",
+      "target": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-c3e929c1-bfb4-43ed-93b0-35eed18a1c85.png",
+      "prompt": "Use case: ui-mockup refinement. The input is a design mockup EDIT TARGET. Preserve the two-screen board, all wording, font sizes, colors, screen sizes, preview photographs, control settings and bottom captions. Correct the temporal selection visuals only. LEFT Freeze + Path screen: remove the green range-bracket selection and green shaded multi-frame rectangle around Hold 0.70 s in the source thumbnail filmstrip. Instead show just ONE thin mint vertical playhead through one chosen source thumbnail, retaining the Freeze 00:04.283 marker directly above it. Make that selected thumbnail an exact miniature of the large LEFT contact-frame preview. Place the wording Hold 0.70 s in a small separate rounded dark pill with mint border and a pause icon just below or beside the filmstrip in its existing available space. The hold pill is visibly separate from source-frame selection and has no draggable range handles. Keep the existing Hold duration parameter row unchanged. RIGHT Frame Steps screen: replace the selected 02 Flight card image with an exact miniature of the large RIGHT preview, including the same airborne ball and player pose; the timeline thumbnail directly under the playhead at 00:04.533 should match that same preview as well. Keep all other controls, labels, cards, preview images and page layout unchanged. This small correction should make frame selection unambiguous, not redesign the board."
+    }
+  ]
+}

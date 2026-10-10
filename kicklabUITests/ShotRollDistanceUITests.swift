@@ -274,4 +274,46 @@ final class ShotRollDistanceUITests: XCTestCase {
         app.buttons["calibration-apply"].tap()
         XCTAssertTrue(app.staticTexts["3.00 m spacing applied • check separate 1 m and 2 m marks"].waitForExistence(timeout: 5))
     }
+
+    @MainActor
+    func testIndependentGapCheckShowsMismatchCanBeCorrectedAndAppliesAcrossOrientations() {
+        for orientation in [UIDeviceOrientation.portrait, .landscapeLeft] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--shot-geometry-capture", "--roll-distance-ui-review", "--roll-calibration-ui-fixture", "--roll-calibration-ui-portrait-photo"]
+            XCUIDevice.shared.orientation = orientation; app.launch()
+            XCTAssertTrue(app.buttons["roll-calibrate"].waitForExistence(timeout: 10))
+            app.buttons["roll-calibrate"].tap()
+            let photo = app.images["calibration-canvas"]
+            XCTAssertTrue(photo.waitForExistence(timeout: 5))
+            photo.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.5)).tap()
+            photo.coordinate(withNormalizedOffset: CGVector(dx: 0.4, dy: 0.5)).tap()
+            app.buttons["calibration-check-gap"].tap()
+            XCTAssertTrue(app.buttons["span-check-save"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.buttons["span-check-save"].isEnabled)
+            let checkPhoto = app.images["span-check-canvas"]
+            checkPhoto.coordinate(withNormalizedOffset: CGVector(dx: 1.0/3, dy: 0.5)).tap()
+            checkPhoto.coordinate(withNormalizedOffset: CGVector(dx: 0.383333, dy: 0.5)).tap()
+            XCTAssertTrue(app.staticTexts["span-check-result"].exists)
+            XCTAssertTrue(app.buttons["span-check-save"].isEnabled)
+            attach(app, name: "Gap check - mismatch \(orientation.rawValue)")
+            app.buttons["span-check-save"].tap()
+            XCTAssertTrue(app.staticTexts["calibration-check-mismatch"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.buttons["calibration-apply"].isEnabled)
+            app.buttons["calibration-check-gap"].tap()
+            XCTAssertTrue(app.buttons["span-check-undo"].waitForExistence(timeout: 5))
+            app.buttons["span-check-undo"].tap(); app.buttons["span-check-undo"].tap()
+            checkPhoto.coordinate(withNormalizedOffset: CGVector(dx: 1.0/3, dy: 0.5)).tap()
+            checkPhoto.coordinate(withNormalizedOffset: CGVector(dx: 0.375, dy: 0.5)).tap()
+            attach(app, name: "Gap check - matching \(orientation.rawValue)")
+            app.buttons["span-check-save"].tap()
+            XCTAssertTrue(app.staticTexts["calibration-check-result"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.staticTexts["calibration-check-mismatch"].exists)
+            XCTAssertTrue(app.buttons["calibration-apply"].isHittable)
+            XCTAssertTrue(app.buttons["calibration-apply"].isEnabled)
+            app.buttons["calibration-apply"].tap()
+            XCTAssertTrue(app.buttons["roll-clear-calibration"].waitForExistence(timeout: 5))
+            app.terminate()
+        }
+        XCUIDevice.shared.orientation = .portrait
+    }
 }

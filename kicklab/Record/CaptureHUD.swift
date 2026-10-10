@@ -3,6 +3,7 @@ import SwiftUI
 nonisolated struct CaptureMotionPoint: Equatable {
     let time: Double
     let y: Double?
+    var x: Double? = nil
 }
 
 /// Shared live/review readouts, calculated from confirmed touch timestamps.
@@ -75,7 +76,7 @@ struct CaptureTouchCounter: View {
                 // Each counted touch floats a +1 up and away.
                 Text("+1").font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Color(cgColor: NormalCounterAppearance.lime))
-                    .keyframeAnimator(initialValue: FloatingIncrement(), trigger: increments) { label, value in
+                    .keyframeAnimator(initialValue: FloatingIncrement(), trigger: increments) { [reduceMotion] label, value in
                         label.offset(y: reduceMotion ? 0 : value.rise).opacity(value.opacity)
                     } keyframes: { _ in
                         KeyframeTrack(\.rise) {
@@ -112,34 +113,50 @@ struct CaptureMetrics: View {
     var duration: Double? = nil
     var showGraph = true
     var showTime = true
+    var motionStyle: MotionStyle = .ballMotion
+    var motionTimeline: MotionStyleTimeline? = nil
+    var sourceAspect: CGFloat = 9.0 / 16.0
+    var showsTouchMetrics = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        let graph = CaptureGraphLayout(points: points, time: time, duration: duration)
+        let snapshot = motionStyle == .ballMotion ? nil
+            : (motionTimeline ?? MotionStyleTimeline(points: points, touchTimes: touchTimes)).snapshot(at: time, duration: duration)
+        let graph = snapshot?.graph ?? CaptureGraphLayout(points: points, time: time, duration: duration)
         VStack(alignment: .leading, spacing: 12) {
             if showGraph {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("BALL MOTION").font(.system(size: 10, weight: .medium)).tracking(1)
-                        Text("Vertical position").font(.system(size: 10)).foregroundStyle(.white.opacity(0.65))
+                        Text(motionStyle.title.uppercased()).font(.system(size: 10, weight: .medium)).tracking(1)
+                        Text(motionStyle.subtitle).font(.system(size: 10)).foregroundStyle(.white.opacity(0.65))
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
                         Text(graph.status).font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(Color(cgColor: NormalCounterAppearance.lime))
-                        Text("RELATIVE").font(.system(size: 9, weight: .medium)).foregroundStyle(.white.opacity(0.65))
+                        Text(motionStyle.measure).font(.system(size: 9, weight: .medium)).foregroundStyle(.white.opacity(0.65))
                     }
                 }
-                CaptureMotionGraph(layout: graph, touchTimes: touchTimes).frame(height: 62)
-                    .accessibilityLabel(duration == nil ? "Relative ball motion over the last six seconds" : "Relative ball motion through the session")
+                Group {
+                    if motionStyle == .ballMotion {
+                        CaptureMotionGraph(layout: graph, touchTimes: touchTimes)
+                    } else if let snapshot {
+                        MotionStyleGraph(style: motionStyle, snapshot: snapshot, sourceAspect: sourceAspect)
+                    }
+                }.frame(height: motionStyle.height)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(motionStyle.title + ": " + motionStyle.subtitle)
+                    .accessibilityValue(motionStyle.rawValue)
                     .accessibilityIdentifier("capture-motion-graph")
                 Rectangle().fill(.white.opacity(0.16)).frame(height: 0.5)
             }
             let rhythm = CaptureRhythm(touchTimes: touchTimes, at: time)
             HStack(spacing: 12) {
+                if showsTouchMetrics {
                 metric("RHYTHM", value: rhythm.perMinute.map { String(format: "%.0f", $0) } ?? "—",
                        unit: rhythm.perMinute == nil ? nil : "/ min", alignment: .leading)
                 metric("TOUCH INTERVAL", value: rhythm.intervalLabel, alignment: .leading)
+                }
                 if showTime {
                     metric("TIME", value: ExportPreviewTime.label(at: time), alignment: .trailing)
                 }

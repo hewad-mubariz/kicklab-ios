@@ -1,14 +1,14 @@
 import SwiftUI
 
 /// Shared by the live camera and the isolated simulator design review.
-enum CaptureControlState: Equatable {
+nonisolated enum CaptureControlState: Equatable {
     case ready, preparing, recording, finishing
 
     var isBusy: Bool { self != .ready }
     var title: String {
         switch self {
         case .ready: "Record"
-        case .preparing: "Starting…"
+        case .preparing: "Preparing…"
         case .recording: "Stop"
         case .finishing: "Finishing…"
         }
@@ -25,27 +25,52 @@ struct CaptureControls: View {
     @State private var bursts = 0
 
     var body: some View {
-        HStack(alignment: .center, spacing: 0) {
-            gallerySlot
-            Spacer(minLength: 12)
-            recordButton
-            Spacer(minLength: 12)
-            flipSlot
+        VStack(spacing: 16) {
+            if state == .preparing {
+                HStack(alignment: .center, spacing: 12) {
+                    ProgressView().tint(SessionStyle.mint)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Preparing ball tracking…")
+                            .font(.system(size: 15, weight: .semibold))
+                        Text("Recording starts automatically when ready.")
+                            .font(.system(size: 12)).foregroundStyle(.white.opacity(0.8))
+                    }
+                    .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                }
+                .foregroundStyle(.white).padding(16)
+                .background(.black.opacity(0.48), in: RoundedRectangle(cornerRadius: 16))
+                .overlay { RoundedRectangle(cornerRadius: 16).strokeBorder(.white.opacity(0.14)) }
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("capture-preparation-status")
+                .transition(.opacity)
+            }
+            HStack(alignment: .center, spacing: 0) {
+                gallerySlot
+                Spacer(minLength: 12)
+                recordButton
+                Spacer(minLength: 12)
+                flipSlot
+            }
         }
         .frame(maxWidth: 380)
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: state)
         .sensoryFeedback(.impact(weight: .heavy, intensity: 0.85), trigger: state, condition: Self.isShutterPress)
         .sensoryFeedback(.selection, trigger: state, condition: Self.isBackToReady)
+        .sensoryFeedback(.success, trigger: state) { old, new in
+            old == .preparing && new == .recording
+        }
         .onChange(of: state) { old, new in
             if new == .recording && old != .recording { bursts += 1 }
         }
     }
 
-    private static func isShutterPress(_ old: CaptureControlState, _ new: CaptureControlState) -> Bool {
+    private nonisolated static func isShutterPress(_ old: CaptureControlState, _ new: CaptureControlState) -> Bool {
         (old == .ready && new.isBusy) || (old == .recording && new == .finishing)
     }
 
-    private static func isBackToReady(_ old: CaptureControlState, _ new: CaptureControlState) -> Bool {
+    private nonisolated static func isBackToReady(_ old: CaptureControlState, _ new: CaptureControlState) -> Bool {
         old.isBusy && new == .ready
     }
 
@@ -83,7 +108,8 @@ struct CaptureControls: View {
         }
         .buttonStyle(SessionPressStyle(scale: 0.9))
         .disabled(state == .preparing || state == .finishing || (state == .ready && !cameraReady))
-        .accessibilityLabel(state == .recording ? "Stop Recording" : "Start Recording")
+        .accessibilityLabel(state == .preparing ? "Preparing ball tracking" :
+                            state == .recording ? "Stop Recording" : "Start Recording")
         .accessibilityIdentifier("record-capture-button")
         .accessibilityValue(state.title)
     }
@@ -151,6 +177,10 @@ struct CaptureControls: View {
             .controlSize(.regular)
             Text(title).font(.system(size: 12, weight: .medium)).foregroundStyle(.white)
                 .accessibilityHidden(true)
+                // The word under the icon answers too, so a tap that lands on it is not lost.
+                .frame(width: 76, height: 22)
+                .contentShape(.rect)
+                .onTapGesture(perform: action)
         }.frame(width: 76)
     }
 }

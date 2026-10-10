@@ -1,0 +1,26 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "A3CAD1DF-A408-4EEC-9939-03A6A35073FF",
+        "deviceName" : "Kicklab Ball Distance Review",
+        "exportedFileName" : "32E29553-D2A5-420E-A041-30D7A034BA61.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Ball video - effects tools_0_03E3F910-B700-48A0-B714-4DB28EDE346E.png",
+        "timestamp" : 1791530953.012
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "A3CAD1DF-A408-4EEC-9939-03A6A35073FF",
+        "deviceName" : "Kicklab Ball Distance Review",
+        "exportedFileName" : "90E734CB-E823-41C5-AA52-86A152445AA0.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Ball video - effects-only replay_0_39C0B32E-77C2-43F5-AAA5-D3544500F0BE.png",
+        "timestamp" : 1791530950.644
+      }
+    ],
+    "testIdentifier" : "BallDistanceUITests/testBallEffectsEditorHasNoTouchCounterOrGraphTools()",
+    "testIdentifierURL" : "test://com.apple.xcode/kicklab/kicklabUITests/BallDistanceUITests/testBallEffectsEditorHasNoTouchCounterOrGraphTools"
+  }
+]

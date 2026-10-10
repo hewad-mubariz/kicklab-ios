@@ -90,6 +90,7 @@ private struct ShotRecordingReplayView: View {
                     VideoPlayer(player: player).frame(height: 320)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                 } else if error == nil { ProgressView("Opening replay").frame(height: 320) }
+                ShotEffectsButton(recording: recording) { player?.pause() }
                 VStack(alignment: .leading, spacing: 8) {
                     Label("Saved on this iPhone", systemImage: "checkmark.circle.fill")
                         .font(.headline).foregroundStyle(.green)

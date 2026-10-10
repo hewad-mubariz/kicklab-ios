@@ -16,12 +16,12 @@ fi
 echo "Device: $DEVICE"
 
 DERIVED="$ROOT/build/cli"
-APP="$DERIVED/Build/Products/Debug-iphoneos/kicklab.app"
+APP="$DERIVED/Build/Products/Debug-iphoneos/Juggle Dude.app"
 
 echo "Building…"
 xcodebuild \
   -project kicklab.xcodeproj \
-  -scheme kicklab \
+  -scheme JuggleDude \
   -configuration Debug \
   -destination 'generic/platform=iOS' \
   -derivedDataPath "$DERIVED" \
@@ -32,5 +32,5 @@ echo "Installing… (unlock phone if this hangs)"
 xcrun devicectl device install app --device "$DEVICE" "$APP"
 
 echo "Launching…"
-xcrun devicectl device process launch --device "$DEVICE" hewad.kicklab
+xcrun devicectl device process launch --device "$DEVICE" com.juggledude
 echo "Done."

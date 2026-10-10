@@ -20,7 +20,7 @@ import Foundation
 ///
 /// Trajectory thresholds preserve soft legal touches. Hand/arm exclusion uses
 /// contact evidence rather than raising the impulse threshold for every touch.
-struct CounterConfig {
+nonisolated struct CounterConfig: Codable, Equatable, Sendable {
     var medianWindow = 3
     var smoothingWindow = 3
     var velocityThreshold = 0.05
@@ -29,7 +29,10 @@ struct CounterConfig {
     /// stalled camera must not silently turn that into seconds of interpolation.
     var maxGapDurationMs = 300
     var minStateFrames = 2
+    /// Maximum required descent in frame heights; nearby observed ball sizes
+    /// reduce this for soft keep-ups without relaxing the other contact gates.
     var minFallAmplitude = 0.02
+    var minFallBallHeights = 0.10
     var minRiseAmplitude = 0.007
     /// Keep soft touches; a separate hand verifier rejects observed handling.
     var minTouchImpulse = 0.2
@@ -52,7 +55,7 @@ struct CounterConfig {
 
 // MARK: - Geometry
 
-struct Region {
+nonisolated struct Region {
     var xMin, yMin, xMax, yMax: Double
 
     func contains(_ x: Double, _ y: Double, margin: Double) -> Bool {
@@ -60,7 +63,7 @@ struct Region {
     }
 }
 
-struct PersonBox {
+nonisolated struct PersonBox: Codable, Equatable, Sendable {
     var x, y, width, height: Double
 
     var bottom: Double { y + height / 2 }
@@ -72,9 +75,9 @@ struct PersonBox {
     }
 }
 
-enum MotionState { case falling, rising, unknown }
+nonisolated enum MotionState { case falling, rising, unknown }
 
-struct TrajectoryPoint {
+nonisolated struct TrajectoryPoint {
     var frameIndex: Int
     var timestampMs: Int
     var x, y: Double
@@ -84,7 +87,7 @@ struct TrajectoryPoint {
     var motion: MotionState
 }
 
-struct Touch {
+nonisolated struct Touch: Codable, Equatable, Sendable {
     var index: Int
     var frameIndex: Int
     var timestampMs: Int
@@ -94,10 +97,25 @@ struct Touch {
     var impulse: Double
 }
 
-enum RejectionReason: String {
+nonisolated enum RejectionReason: String, Codable, Sendable {
     case amplitudeTooSmall, insufficientImpulse, groundBounce, cooldown
     case unsupportedByDetection, noPersonRegion, outsidePersonRegion, trackLost
     case handContact
+}
+
+/// One accepted or rejected trajectory proposal. Missing fields indicate a
+/// continuity break rather than a fully evaluated reversal.
+nonisolated struct CounterDecision: Codable, Equatable, Sendable {
+    let frameIndex, timestampMs: Int
+    let rejection: RejectionReason?
+    var handRejected: Bool? = nil
+    var footConfirmed: Bool? = nil
+    var footEvidence: FootContactEvidence? = nil
+    var fall: Double? = nil
+    var requiredFall: Double? = nil
+    var rise: Double? = nil
+    var impulse: Double? = nil
+    var ground: Double? = nil
 }
 
 // MARK: - State machine
@@ -107,7 +125,7 @@ enum RejectionReason: String {
 /// The counter was always causal - a single forward pass that reads the current
 /// point and the arc it is following, never a later frame. What needed bounding
 /// for live use is the *trajectory* feeding it, handled in `StreamingCounter`.
-final class TouchStateMachine {
+nonisolated final class TouchStateMachine {
     private let config: CounterConfig
     private(set) var touches: [Touch] = []
     private(set) var rejected: [(frame: Int, reason: RejectionReason)] = []
@@ -124,8 +142,13 @@ final class TouchStateMachine {
 
     /// Per-frame body geometry, filled by the caller as frames arrive.
     var personBoxes: [Int: PersonBox] = [:]
+    /// Real detections only, in the same frame-height units as the trajectory.
+    /// The streaming caller bounds this history and clears it at discontinuities.
+    var ballHeights: [Int: Double] = [:]
     var detectedFrames: Set<Int> = []
     var rejectsHandContact: ((Int) -> Bool)?
+    var footContactEvidence: ((Int) -> FootContactEvidence?)?
+    var onDecision: ((CounterDecision) -> Void)?
 
     var count: Int { touches.count }
 
@@ -144,9 +167,15 @@ final class TouchStateMachine {
     /// Preserve confirmed touches, but never finish an arc across a capture
     /// discontinuity or a period when camera motion made observations unusable.
     func discardPendingArc() {
-        if armed, let a = apex { rejected.append((a.frameIndex, .trackLost)) }
+        if armed, let a = apex { rejectLost(a) }
         resetArc()
         gapRun = 0
+    }
+
+    private func rejectLost(_ point: TrajectoryPoint) {
+        rejected.append((point.frameIndex, .trackLost))
+        onDecision?(CounterDecision(frameIndex: point.frameIndex, timestampMs: point.timestampMs,
+                                    rejection: .trackLost))
     }
 
     func push(_ point: TrajectoryPoint) -> Touch? {
@@ -156,7 +185,7 @@ final class TouchStateMachine {
                 // A long disappearance invalidates the arc: we cannot claim a
                 // reversal we never saw completed.
                 if armed, let a = apex {
-                    rejected.append((a.frameIndex, .trackLost))
+                    rejectLost(a)
                 }
                 resetArc()
             }
@@ -210,23 +239,41 @@ final class TouchStateMachine {
 
     private func evaluate(apex: TrajectoryPoint, confirmation: TrajectoryPoint,
                           arcTopY: Double, impulse: Double) -> Touch? {
+        let fallAmplitude = apex.y - arcTopY
+        let riseAmplitude = apex.y - confirmation.y
+        let requiredFall = fallThreshold(at: apex.frameIndex)
+        let ground = effectiveGround(apex.frameIndex)
+        var handRejected: Bool?
+        var footConfirmed: Bool?
+        var footEvidence: FootContactEvidence?
+        func record(_ reason: RejectionReason?) {
+            onDecision?(CounterDecision(frameIndex: apex.frameIndex, timestampMs: apex.timestampMs,
+                rejection: reason, handRejected: handRejected, footConfirmed: footConfirmed, footEvidence: footEvidence, fall: fallAmplitude,
+                requiredFall: requiredFall, rise: riseAmplitude, impulse: impulse, ground: ground))
+        }
         func reject(_ reason: RejectionReason) -> Touch? {
             rejected.append((apex.frameIndex, reason))
+            record(reason)
             return nil
         }
 
-        let fallAmplitude = apex.y - arcTopY
-        let riseAmplitude = apex.y - confirmation.y
-
-        // Without pose there is nothing to rescue a small fall: amplitude alone
-        // cannot tell a soft strike from jitter. The lab's pose path does this
-        // better and is parked, not deleted.
-        if fallAmplitude < config.minFallAmplitude { return reject(.amplitudeTooSmall) }
+        // A fixed fraction of the image rejected clear low keep-ups (25.6 px
+        // at 1280 px). Scale to the observed ball, retaining the rise noise floor
+        // and the existing impulse, support, ground and contact checks below.
+        if fallAmplitude < requiredFall { return reject(.amplitudeTooSmall) }
         if impulse < config.minTouchImpulse { return reject(.insufficientImpulse) }
 
-        if let ground = effectiveGround(apex.frameIndex),
+        if let ground,
            apex.y >= ground - config.groundTolerance {
-            return reject(.groundBounce)
+            let region = nearestRegion(apex.frameIndex)
+            let eligible = hasDetectionSupport(apex.frameIndex)
+                && region?.contains(apex.x, apex.y, margin: config.roiMargin) == true
+                && (lastTouchMs.map { apex.timestampMs - $0 >= config.touchCooldownMs } ?? true)
+            if eligible, let provider = footContactEvidence {
+                footEvidence = provider(apex.frameIndex)
+                footConfirmed = footEvidence.map { $0.contact.timestampMs == apex.timestampMs && $0.confirms } ?? false
+            }
+            if footConfirmed != true { return reject(.groundBounce) }
         }
 
         if let last = lastTouchMs, apex.timestampMs - last < config.touchCooldownMs {
@@ -240,7 +287,9 @@ final class TouchStateMachine {
             return reject(.outsidePersonRegion)
         }
 
-        if rejectsHandContact?(apex.frameIndex) == true { return reject(.handContact) }
+        handRejected = rejectsHandContact?(apex.frameIndex)
+        if handRejected == true { return reject(.handContact) }
+        record(nil)
 
         return Touch(index: touches.count, frameIndex: apex.frameIndex,
                      timestampMs: apex.timestampMs, x: apex.x, y: apex.y,
@@ -248,17 +297,38 @@ final class TouchStateMachine {
                      impulse: impulse)
     }
 
-    /// The floor line, taken from the bottom of the person box.
-    ///
-    /// This assumes the player's feet are on the ground and in frame. When they
-    /// are not, ground-bounce rejection misfires - a known weakness carried over
-    /// from the lab rather than fixed here.
+    /// Reject ground reversals using nearby body bottoms, not a single box
+    /// that can briefly clip the lower legs at contact. Uses already buffered
+    /// observations (no new lookahead); sparse evidence keeps the old fallback.
+    /// This still assumes the player's feet are near the ground and in frame.
     private func effectiveGround(_ frame: Int) -> Double? {
-        nearestPerson(frame)?.bottom
+        let bottoms = (-config.supportWindowFrames...config.supportWindowFrames)
+            .compactMap { personBoxes[frame + $0]?.bottom }.filter(\.isFinite).sorted()
+        guard bottoms.count >= 3 else { return nearestPerson(frame)?.bottom }
+        return bottoms[bottoms.count / 2]
+    }
+
+    private func fallThreshold(at frame: Int) -> Double {
+        let window = config.supportWindowFrames
+        let sizes = (-window...window).compactMap { ballHeights[frame + $0] }.sorted()
+        // Sparse or missing size evidence must not make a marginal arc easier.
+        guard sizes.count >= 3 else { return config.minFallAmplitude }
+        let diameter = sizes[sizes.count / 2]
+        return min(config.minFallAmplitude,
+                   max(config.minRiseAmplitude, diameter * config.minFallBallHeights))
     }
 
     private func hasDetectionSupport(_ frame: Int) -> Bool {
         guard !detectedFrames.isEmpty else { return false }
+        // An unseen reversal bridged between radically different apparent sizes
+        // is not reliable contact evidence (e.g. initial ball acquisition). Real
+        // observed contacts and consistent short occlusions retain their support.
+        if !detectedFrames.contains(frame),
+           let before = ballHeights.keys.filter({ $0 < frame && frame - $0 <= config.maxGapFrames + 1 }).max(),
+           let after = ballHeights.keys.filter({ $0 > frame && $0 - frame <= config.maxGapFrames + 1 }).min(),
+           let a = ballHeights[before], let b = ballHeights[after], max(a, b) > 2 * min(a, b) {
+            return false
+        }
         let w = config.supportWindowFrames
         return (-w...w).contains { detectedFrames.contains(frame + $0) }
     }

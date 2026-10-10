@@ -1,0 +1,45 @@
+{
+  "implemented": [
+    "Focused effect controls inside existing glass tray",
+    "Exact source stills, timestamp indexing and adjacent-frame stepping",
+    "Draft moment/range edits with cancel/done and noncrossing drag handles",
+    "Independent source inspection area and lens inset position",
+    "Effect-specific zoom, timing, motion, split balance and layout",
+    "Custom slow-motion ranges and rates with shared preview/export clock",
+    "Custom freeze frame, hold, path endpoint and visibility toggles",
+    "Editable review frame cards; cards remain review only"
+  ],
+  "tests": {
+    "unique_passed": 25,
+    "camera_core": 8,
+    "configuration": 7,
+    "exports": 3,
+    "cpu_background": 2,
+    "native_ui": 5
+  },
+  "limitations": [
+    "Automatic contact timestamp is an estimate until manually confirmed."
+  ],
+  "device": {
+    "bundle": "com.juggledude",
+    "installed": true,
+    "normal_launch": true,
+    "documents_unchanged": true
+  },
+  "source_sha256": {
+    "kicklab/PowerShot/ShotCamera.swift": "bca94ae66a36aed8b39a36f71f12e5d6e2fdb349ab106be39c4b2f9ef702b360",
+    "kicklab/PowerShot/ShotReplayClock.swift": "15f9526d05d8c2a4e27e37f349759583e747e7199115da0649301ba5c445c92a",
+    "kicklab/PowerShot/ShotSourceFrames.swift": "9b7bb91967c45f1dc9c0461b1e72dcf2062f66623f37cc902e7f2e0a05544c86",
+    "kicklab/PowerShot/ShotCameraControls.swift": "4321ac7794624e2f1c28ce8991dfc38e095a2d5febeed6da28ddcb4a64c19595",
+    "kicklab/PowerShot/ShotSourceFramePicker.swift": "9402ee473f19b93155c4ce7a0397b8065cb2193d1876cecdc27be4ec2a66a7bd",
+    "kicklab/PowerShot/ShotCameraPicker.swift": "f3ee2815205f7f0ae34ad204d7b67d16d85d0ffb2b4ec149fa4ee460d3ff81f1",
+    "kicklab/PowerShot/ShotEffectsReplayView.swift": "2e5141f07d5ef0de0c6f5bed2c3ed883e9e490bae4914d8181bf7f336de3248c",
+    "kicklab/PowerShot/ShotToolbox.swift": "027b9732a3b3340a72d9385d6f8094cbacbac64517ab97bfe611b06b4176f04a",
+    "kicklab/Effects/Metal/ShotCamera.metal": "9fad8ce9e0ab5e329e6edff5537aafca3a7e7f3315d53b847015e1a7d6a0410e",
+    "kicklab/Effects/Metal/ShotCameraPixel.h": "f67e1da7762f02f0899b17136c8a3cca380ffdb13c57d740f974b2a38dd53aa8",
+    "kicklab/Effects/ShotCPURenderer.mm": "b94b2c95c8adb386a355af0658d5b734dc21e16648a93e616bd3395d8c228a8c",
+    "kicklabTests/ShotCameraConfigurationTests.swift": "1a4bcbd4d06a5d274894c9c9d32c0e1b40920c516cb7a2cb701cd73a8feba293",
+    "kicklabTests/ShotCameraExportTests.swift": "76ec43b48f90aac8d989ccc22972043f0b521962b8d97ad7c75bdaec9cd3927d",
+    "kicklabUITests/ShotCameraUITests.swift": "fd2b4ae573fe44259a1a15219f8a329f1c68d8a21e29b0d8f56dc186c431077a"
+  }
+}

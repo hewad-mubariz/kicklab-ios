@@ -12,7 +12,7 @@ struct HomeHeroView: View {
             }
             .font(Theme.brandWordmark(38))
             .tracking(-1.4)
-            .accessibilityLabel("KickLab")
+            .accessibilityLabel("Juggle Dude")
 
             Text("PRACTICE. IMPROVE. REPEAT.")
                 .font(.system(size: 8, weight: .medium))

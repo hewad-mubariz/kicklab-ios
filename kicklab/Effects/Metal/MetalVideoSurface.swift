@@ -18,6 +18,26 @@ struct MetalVideoSurface: UIViewRepresentable {
     static func dismantleUIView(_ view: EffectVideoView, coordinator: ()) { view.stop() }
 }
 
+/// A Power Shot replay: the same decoded-frame pipeline, drawing a shot trail instead.
+struct ShotVideoSurface: UIViewRepresentable {
+    let player: AVPlayer
+    let style: ShotTrailStyle
+    var intensity = 1.0
+    let track: BallEffectTrack
+    var camera = ShotCameraSettings()
+    var flight: ShotFlight?
+    var clock = ShotReplayClock()
+    var onFailure: (String) -> Void = { _ in }
+
+    func makeUIView(context: Context) -> EffectVideoView { EffectVideoView() }
+    func updateUIView(_ view: EffectVideoView, context: Context) {
+        view.onFailure = onFailure
+        view.configure(player: player, shot: style, intensity: intensity, track: track,
+                       camera: camera, flight: flight, clock: clock)
+    }
+    static func dismantleUIView(_ view: EffectVideoView, coordinator: ()) { view.stop() }
+}
+
 struct MetalStillSurface: UIViewRepresentable {
     let image: CGImage
     let edit: SessionEditState
@@ -46,12 +66,26 @@ final class EffectVideoView: MTKView {
     private var stillTexture: MTLTexture?
     private var frameTime = 0.0
     private var edit = SessionEditState()
+    /// Set for a Power Shot replay; juggling replays build their frame from `edit`.
+    private var shot: (style: ShotTrailStyle, intensity: Double)?
+    private var shotCamera = ShotCameraSettings()
+    private var shotFlight: ShotFlight?
+    private var shotClock = ShotReplayClock()
     private var track = BallEffectTrack(frames: [])
     private var dirty = true
     private var previousSize = CGSize.zero
     private let inFlight = DispatchSemaphore(value: 2)
+    private let materialPool = BallMaterialTexturePool()
+    // Visible to lifecycle regressions; these count owned canvases/textures.
+    var materialAllocationCount: Int { materialPool.allocationCount }
+    var retainedMaterialSlotCount: Int { materialPool.retainedSlotCount }
     private var reportedError = false
     var onFailure: (String) -> Void = { _ in }
+    #if DEBUG
+    /// --preview-benchmark <seconds>: play from the start once the ball skin is
+    /// active and record per-frame preview cost. Debug harness only.
+    private var benchmark: PreviewBenchmark?
+    #endif
 
     init() {
         super.init(frame: .zero, device: MTLCreateSystemDefaultDevice())
@@ -96,8 +130,18 @@ final class EffectVideoView: MTKView {
     }
 
     func configure(player: AVPlayer, edit: SessionEditState, track: BallEffectTrack) {
-        if self.edit != edit { dirty = true; setNeedsDisplay() }
+        if self.edit != edit || self.track.surfaceMotion?.entries.count != track.surfaceMotion?.entries.count { dirty = true; setNeedsDisplay() }
+        if edit.ballSkin == .original { materialPool.removeAll() }
         self.edit = edit; self.track = track; self.player = player
+        #if DEBUG
+        if benchmark == nil, edit.ballSkin != .original, track.surfaceMotion != nil,
+           let seconds = SessionDesignReview.argument("--preview-benchmark").flatMap(Double.init) {
+            benchmark = PreviewBenchmark(seconds: seconds, skin: edit.ballSkin.rawValue)
+            player.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero) { _ in
+                DispatchQueue.main.async { player.play() }
+            }
+        }
+        #endif
         guard item !== player.currentItem else { return }
         if let item, let output { item.remove(output) }
         item = player.currentItem
@@ -111,8 +155,20 @@ final class EffectVideoView: MTKView {
         self.output = output; pixels = nil; dirty = true
     }
 
+    func configure(player: AVPlayer, shot style: ShotTrailStyle, intensity: Double, track: BallEffectTrack,
+                   camera: ShotCameraSettings = .init(), flight: ShotFlight? = nil, clock: ShotReplayClock = .init()) {
+        if shot?.style != style || shot?.intensity != intensity || self.track.samples.count != track.samples.count ||
+            shotCamera != camera || shotClock != clock || shotFlight != flight {
+            dirty = true; setNeedsDisplay()
+        }
+        shot = (style, intensity)
+        shotCamera = camera; shotFlight = flight; shotClock = clock
+        configure(player: player, edit: SessionEditState(style: .none, intensity: 0), track: track)
+    }
+
     func configure(image: CGImage, edit: SessionEditState, track: BallEffectTrack, time: Double) {
         if self.edit != edit || frameTime != time { dirty = true; setNeedsDisplay() }
+        if edit.ballSkin == .original { materialPool.removeAll() }
         self.edit = edit; self.track = track; frameTime = time
         if stillImage !== image, let engine {
             stillImage = image
@@ -128,6 +184,11 @@ final class EffectVideoView: MTKView {
         displayLink?.invalidate(); displayLink = nil; displayTarget = nil
         if let item, let output { item.remove(output) }
         output = nil; item = nil; pixels = nil; player = nil
+        stillImage = nil; stillTexture = nil
+        track = BallEffectTrack(frames: [])
+        materialPool.removeAll()
+        engine?.releaseCameraTargets()
+        if let textureCache { CVMetalTextureCacheFlush(textureCache, 0) }
     }
 
     private func tick(_ link: CADisplayLink) {
@@ -139,7 +200,8 @@ final class EffectVideoView: MTKView {
                 if let frame = output.copyPixelBuffer(forItemTime: requested, itemTimeForDisplay: &displayed) {
                     pixels = frame
                     let stamp = displayed.isValid ? displayed : requested
-                    frameTime = max(0, CMTimeGetSeconds(stamp))
+                    let decodedTime = max(0, CMTimeGetSeconds(stamp))
+                    frameTime = shot == nil ? decodedTime : shotClock.sourceTime(for: decodedTime)
                     dirty = true
                 }
             }
@@ -152,6 +214,11 @@ final class EffectVideoView: MTKView {
     // Fetching currentDrawable directly in CADisplayLink can reuse a stale
     // drawable, especially when editing a paused frame.
     override func draw(_ rect: CGRect) {
+        #if DEBUG
+        let drawStart = ProcessInfo.processInfo.systemUptime
+        if dirty, engine != nil, inFlight.wait(timeout: .now()) == .success { inFlight.signal() }
+        else if dirty { benchmark?.busySkip() }
+        #endif
         guard let engine, dirty, drawableSize.width > 0, drawableSize.height > 0,
               inFlight.wait(timeout: .now()) == .success else { return }
         var submitted = false
@@ -171,46 +238,68 @@ final class EffectVideoView: MTKView {
             guard let drawable = currentDrawable, let command = engine.resources.queue.makeCommandBuffer() else { return }
             let size = CGSize(width: drawable.texture.width, height: drawable.texture.height)
             let sourceSize = CGSize(width: source.width, height: source.height)
-            let frame = EffectFrame.video(size: size, sourceSize: sourceSize, edit: edit, track: track, time: frameTime)
+            let frame = shot.map { EffectFrame.shot(size: size, sourceSize: sourceSize, style: $0.style,
+                                                     intensity: $0.intensity, track: track, time: frameTime) }
+                ?? EffectFrame.video(size: size, sourceSize: sourceSize, edit: edit, track: track, time: frameTime)
+            #if DEBUG
+            let materialStart = ProcessInfo.processInfo.systemUptime
+            #endif
             let material = try materialTexture(engine: engine, size: size, sourceSize: sourceSize)
-            try engine.encode(frame, into: drawable.texture, source: source, material: material, command: command)
+            #if DEBUG
+            let materialMS = (ProcessInfo.processInfo.systemUptime - materialStart) * 1000
+            #endif
+            let camera = shot.map { _ in ShotCameraFrame.make(settings: shotCamera, track: track,
+                                                              flight: shotFlight, size: size, time: frameTime) }
+            try engine.encode(frame, into: drawable.texture, source: source, material: material?.texture,
+                              camera: camera, command: command)
             command.present(drawable)
             let retainedPixels = pixels
             let semaphore = inFlight
             command.addCompletedHandler { [weak self] completed in
                 withExtendedLifetime((videoReference, retainedPixels, material)) {}
+                material?.release()
                 semaphore.signal()
                 if let error = completed.error { Task { @MainActor [weak self] in self?.report(error) } }
             }
             command.commit(); submitted = true
             previousSize = drawableSize; dirty = false
+            #if DEBUG
+            benchmark?.record(frameTime: frameTime, materialMS: materialMS,
+                              drawMS: (ProcessInfo.processInfo.systemUptime - drawStart) * 1000)
+            #endif
         } catch { report(error) }
     }
 
-    private func materialTexture(engine: MetalEffectEngine, size: CGSize, sourceSize: CGSize) throws -> MTLTexture? {
+    private func materialTexture(engine: MetalEffectEngine, size: CGSize, sourceSize: CGSize) throws -> BallMaterialTexturePool.Lease? {
         guard edit.ballSkin != .original else { return nil }
         let width = Int(size.width), height = Int(size.height)
-        guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
-            space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue),
-              let data = context.data else { throw MetalEffectEngine.Failure.unavailable("Couldn’t draw the ball material.") }
-        context.translateBy(x: 0, y: size.height); context.scaleBy(x: 1, y: -1)
+        guard let lease = try materialPool.acquire(device: engine.device, width: width, height: height) else {
+            throw MetalEffectEngine.Failure.unavailable("The ball material buffers are still in use.")
+        }
+        let context = lease.context
         let sample = track.replacementGuide(at: frameTime)
         let mask = track.mask(at: frameTime)
-        let footprint: BallReplacementFootprint? = track.usesBallMasks ? mask?.footprint(in: sourceSize) : sample.flatMap { sample in
-            if let pixels { return BallReplacementFootprint.fit(pixels: pixels, sample: sample) }
-            if let stillImage { return BallReplacementFootprint.fit(image: stillImage, sample: sample) }
+        let fitted = sample.flatMap { sample -> BallReplacementFootprint? in
+            if let pixels { return BallReplacementFootprint.fit(pixels: pixels, sample: sample, measureTexture: true) }
+            if let stillImage { return BallReplacementFootprint.fit(image: stillImage, sample: sample, measureTexture: true) }
             return nil
         }
-        let coverage: ((Double, Double) -> Double)? = mask.map { m in
-            { x, y in m.coverage(x: x/sourceSize.width, y: y/sourceSize.height) }
+        // Motion smear comes from the shared track, so replay and export agree.
+        let smear = track.smear(at: frameTime, size: sourceSize)
+        let matte = mask.map { BallReplacementCoverage(mask: $0, fitted: fitted, size: sourceSize, smear: smear) }
+        let footprint = track.usesBallMasks ? matte?.footprint : fitted
+        let coverage: ((Double, Double) -> Double)? = matte.map { m in
+            { x, y in m.coverage(x: x, y: y) }
         }
-        let replacement = BallMaterialRenderer.replacement(footprint: footprint, skin: edit.ballSkin, time: frameTime, coverage: coverage)
+        let replacement = BallMaterialRenderer.replacement(footprint: footprint, skin: edit.ballSkin,
+            time: frameTime, coverage: coverage, coverageBounds: matte?.bounds,
+            orientation: track.surfaceMotion?.renderOrientation(at: frameTime), smear: smear,
+            light: track.surfaceMotion?.light(at: frameTime))
         // No supported silhouette: retain the source instead of inventing a ball.
         BallMaterialRenderer.draw(in: context, size: size, sourceSize: sourceSize, skin: edit.ballSkin,
             sample: replacement == nil ? nil : sample, time: frameTime, replacement: replacement)
-        let texture = try engine.texture(width: width, height: height, storage: .shared)
-        texture.replace(region: MTLRegionMake2D(0, 0, width, height), mipmapLevel: 0, withBytes: data, bytesPerRow: width * 4)
-        return texture
+        lease.upload()
+        return lease
     }
 
     private func report(_ error: Error) {
@@ -221,3 +310,26 @@ final class EffectVideoView: MTKView {
         DispatchQueue.main.async { [weak self] in self?.onFailure(message) }
     }
 }
+
+#if DEBUG
+/// Per-frame preview cost on the device. Written once to Documents/preview-benchmark.json.
+final class PreviewBenchmark {
+    private let seconds: Double, skin: String
+    private var rows: [[Double]] = [], skips = 0, started: Double?, written = false
+    init(seconds: Double, skin: String) { self.seconds = seconds; self.skin = skin }
+    func busySkip() { if started != nil { skips += 1 } }
+    func record(frameTime: Double, materialMS: Double, drawMS: Double) {
+        let now = ProcessInfo.processInfo.systemUptime
+        if started == nil { started = now }
+        guard !written, let started else { return }
+        rows.append([now - started, frameTime, materialMS, drawMS])
+        guard now - started >= seconds else { return }
+        written = true
+        let report: [String: Any] = ["skin": skin, "seconds": now - started, "busy_skips": skips,
+                                     "rows": rows, "columns": ["wall_s", "video_s", "material_ms", "draw_ms"]]
+        if let data = try? JSONSerialization.data(withJSONObject: report) {
+            try? data.write(to: URL.documentsDirectory.appendingPathComponent("preview-benchmark.json"))
+        }
+    }
+}
+#endif

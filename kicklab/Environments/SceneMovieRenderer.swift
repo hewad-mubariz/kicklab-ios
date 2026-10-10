@@ -53,7 +53,9 @@ nonisolated enum SceneMovieRenderer {
             defer { if reader.status == .reading { reader.cancelReading() } }
             phase = "Rendering scene frames"
             var count = 0
-            while let sample = output.copyNextSampleBuffer() {
+            while true {
+                try await VideoWorkExecution.checkpoint(requiresGPU: true)
+                guard let sample = output.copyNextSampleBuffer() else { break }
                 try Task.checkCancellation()
                 guard let source = CMSampleBufferGetImageBuffer(sample) else {
                     throw StadiumPreviewPreparer.failure("A foreground frame is missing.")

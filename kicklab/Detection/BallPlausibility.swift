@@ -31,7 +31,7 @@
 
 import Foundation
 
-struct BallPlausibility {
+nonisolated struct BallPlausibility {
     /// Above this, a detection is trusted whatever its size or position.
     ///
     ///0.25, not 0.45. The first version used 0.45 and cost 13 touches of 33 on a

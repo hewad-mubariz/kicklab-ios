@@ -1,0 +1,13 @@
+{
+  "mode": "built-in image generation",
+  "intent": "Generate a splash-screen comparison sheet using the approved logo as reference",
+  "image": "kicklab-splash-sheet-v1.png",
+  "prompt": "generation-prompt-v1.txt",
+  "reference": "../../kicklab/Assets.xcassets/AppIcon.appiconset/AppIcon-Default.png",
+  "concepts": ["01 Pure Lift", "02 Signature", "03 Soft Halo", "04 Lower Signature", "05 Lift Arc", "06 Pitch Lines"],
+  "appearances": ["dark", "light"],
+  "review": "Visually inspected: all six numbered concepts present, matching light/dark pairs, correct brand text, recognizable Lift mark and smaller football, no navigation or loading controls.",
+  "implementation_status": "Design study only; app code unchanged.",
+  "implementation_note": "Apple distinguishes a branded splash screen from the system launch screen. These are branded opening-screen concepts; preserve a fast launch and use the native launch screen appropriately when implementing.",
+  "guidance": "https://developer.apple.com/design/human-interface-guidelines/launching"
+}

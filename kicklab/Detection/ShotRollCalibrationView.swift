@@ -18,11 +18,17 @@ struct ShotRollCalibrationView: View {
     let snapshot: ShotRollCalibrationSnapshot
     let apply: (ShotRollCalibration) throws -> Void
     let cancel: () -> Void
+    var showsResearchDetails = true
     @State private var points: [CGPoint] = []
     @State private var spacing = "3.00"
     @State private var error: String?
     @State private var selectedPoint = 0
     @State private var retapPoint: Int?
+    @State private var showingSpanCheck = false
+    @State private var checkedPoints: [CGPoint] = []
+    @State private var checkedSpacing: Float = 1
+    @State private var checkSavedOnPhone = false
+    @State private var showingPrecision = false
     @FocusState private var spacingFocused: Bool
 
     private var fit: Result<ShotRollCalibration, Error> {
@@ -34,6 +40,15 @@ struct ShotRollCalibrationView: View {
         }
     }
 
+    private var spanCheck: ShotRollCalibration.SpanCheck? {
+        guard let calibration = try? fit.get(), checkedPoints.count == 2 else { return nil }
+        return try? calibration.checkSpan(sensorPoints: checkedPoints, referenceDistanceM: checkedSpacing)
+    }
+
+    private var validCheck: Bool {
+        checkedPoints.isEmpty || spanCheck?.withinTolerance == true
+    }
+
     var body: some View {
         NavigationStack {
             GeometryReader { geometry in
@@ -41,16 +56,16 @@ struct ShotRollCalibrationView: View {
                     HStack(spacing: 16) {
                         photoControls
                         VStack(spacing: 12) {
-                            ScrollView { VStack(spacing: 16) { precisionControls; valueControls } }
+                            ScrollView { VStack(spacing: 16) { precisionSection; valueControls } }
                             applyControl
                         }
                             .frame(width: min(340, geometry.size.width * 0.43))
                     }
                 } else {
-                    VStack(spacing: 12) { photoControls; precisionControls; valueControls; applyControl }
+                    VStack(spacing: 12) { photoControls; precisionSection; valueControls; applyControl }
                 }
             }.padding(16)
-                .navigationTitle("Calibrate distance").navigationBarTitleDisplayMode(.inline)
+                .navigationTitle(showsResearchDetails ? "Calibrate distance" : "Set up distance").navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) { Button("Cancel", action: cancel) }
                     ToolbarItemGroup(placement: .keyboard) {
@@ -58,6 +73,17 @@ struct ShotRollCalibrationView: View {
                     }
                 }
         }.interactiveDismissDisabled()
+            .onChange(of: points) { _, _ in checkSavedOnPhone = false }
+            .onChange(of: spacing) { _, _ in checkSavedOnPhone = false }
+            .sheet(isPresented: $showingSpanCheck) {
+                if let calibration = try? fit.get() {
+                    CalibrationSpanCheckView(snapshot: snapshot, calibration: calibration,
+                        initialPoints: checkedPoints, initialSpacing: checkedSpacing) { points, spacing in
+                        checkedPoints = points; checkedSpacing = spacing; checkSavedOnPhone = true
+                        showingSpanCheck = false
+                    } cancel: { showingSpanCheck = false }
+                }
+            }
     }
 
     private var photoControls: some View {
@@ -135,6 +161,14 @@ struct ShotRollCalibrationView: View {
         }
     }
 
+    @ViewBuilder private var precisionSection: some View {
+        if showsResearchDetails { precisionControls }
+        else {
+            DisclosureGroup("Fine-tune the marks", isExpanded: $showingPrecision) { precisionControls }
+                .font(.caption)
+        }
+    }
+
     private func nudgeButton(_ direction: ShotRollCalibrationPointEditing.Direction,
                              icon: String, name: String) -> some View {
         Button {
@@ -166,26 +200,173 @@ struct ShotRollCalibrationView: View {
             } else if points.count == 2 {
                 switch fit {
                 case .success(let result):
-                    Text(String(format: "Scanned spacing %.2f m → use %.2f m", result.originalSpanM, result.referenceDistanceM))
-                        .font(.caption).accessibilityIdentifier("calibration-fit-summary")
+                    VStack(spacing: 4) {
+                        Text(String(format: "Your measured spacing: %.2f m", result.referenceDistanceM))
+                            .font(.caption.weight(.semibold))
+                            .accessibilityIdentifier("calibration-reference-summary")
+                        if showsResearchDetails {
+                        Text(String(format: "Before correction: %.2f m (floor scan estimate)", result.originalSpanM))
+                            .font(.caption).foregroundStyle(.secondary)
+                            .accessibilityIdentifier("calibration-fit-summary")
+                        }
+                        Text("Tap Use calibration to apply your measured spacing to the rolling counter.")
+                            .font(.caption).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 case .failure(let failure):
                     Text(failure.localizedDescription).font(.caption).foregroundStyle(.orange)
                 }
             }
-            Text("Both papers must lie on the same level floor. After calibration, check separate 1 m and 2 m marks. Matching these two papers alone does not verify accuracy.")
+            Text(showsResearchDetails ? "Both papers must lie on the same level floor. After calibration, check separate 1 m and 2 m marks. Matching these two papers alone does not verify accuracy." :
+                "Use two marks on the same level floor and enter their tape-measured spacing. Keep the phone fixed after setup. Distance is an estimate for rolling balls.")
                 .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            if showsResearchDetails {
+            Button(checkedPoints.isEmpty ? "Check another measured gap" : "Edit gap check") { showingSpanCheck = true }
+                .font(.caption).disabled(points.count != 2 || retapPoint != nil || (try? fit.get()) == nil)
+                .accessibilityIdentifier("calibration-check-gap")
+            if !checkedPoints.isEmpty {
+                if checkSavedOnPhone {
+                    Text("Gap check saved on this phone. No video needed.")
+                        .font(.caption).foregroundStyle(.secondary)
+                        .accessibilityIdentifier("calibration-check-saved")
+                }
+                if let check = spanCheck {
+                    Text(String(format: "Gap check: %.2f m estimated / %.2f m measured • %+.0f cm", check.estimatedDistanceM,
+                                check.referenceDistanceM, check.errorM * 100))
+                        .font(.caption.weight(.semibold)).foregroundStyle(check.withinTolerance ? Color.primary : .orange)
+                        .accessibilityIdentifier("calibration-check-result")
+                    if !check.withinTolerance {
+                        Text("Scale mismatch. Retap the centres or scan the floor again before applying.")
+                            .font(.caption).foregroundStyle(.orange).accessibilityIdentifier("calibration-check-mismatch")
+                    }
+                } else {
+                    Text("Recheck the separate gap after changing A or B.").font(.caption).foregroundStyle(.orange)
+                }
+                Button("Remove gap check") { checkedPoints = []; checkSavedOnPhone = false }.font(.caption)
+                    .accessibilityIdentifier("calibration-check-remove")
+            }
+            }
         }
     }
 
     private var applyControl: some View {
         Button("Use calibration") {
-            do { try apply(fit.get()) }
+            do {
+                var calibration = try fit.get()
+                calibration.independentSpanCheck = spanCheck
+                try apply(calibration)
+            }
             catch let failure { error = failure.localizedDescription }
         }.buttonStyle(.borderedProminent).frame(maxWidth: .infinity)
-            .disabled(points.count != 2 || retapPoint != nil || (try? fit.get()) == nil)
+            .disabled(points.count != 2 || retapPoint != nil || (try? fit.get()) == nil || !validCheck)
             .accessibilityIdentifier("calibration-apply")
     }
 
+}
+
+/// Reuses the existing frozen pixels; the check never refits the calibration.
+private struct CalibrationSpanCheckView: View {
+    let snapshot: ShotRollCalibrationSnapshot
+    let calibration: ShotRollCalibration
+    let save: ([CGPoint], Float) -> Void
+    let cancel: () -> Void
+    @State private var points: [CGPoint]
+    @State private var spacing: String
+    @State private var saveError: String?
+    @FocusState private var spacingFocused: Bool
+
+    init(snapshot: ShotRollCalibrationSnapshot, calibration: ShotRollCalibration,
+         initialPoints: [CGPoint], initialSpacing: Float,
+         save: @escaping ([CGPoint], Float) -> Void, cancel: @escaping () -> Void) {
+        self.snapshot = snapshot; self.calibration = calibration; self.save = save; self.cancel = cancel
+        _points = State(initialValue: initialPoints)
+        _spacing = State(initialValue: String(format: "%.2f", initialSpacing))
+    }
+    private var distance: Float { Float(spacing.replacingOccurrences(of: ",", with: ".")) ?? .nan }
+    private var result: Result<ShotRollCalibration.SpanCheck, Error> {
+        Result { try calibration.checkSpan(sensorPoints: points, referenceDistanceM: distance) }
+    }
+    var body: some View {
+        NavigationStack {
+            GeometryReader { geometry in
+                if geometry.size.width > geometry.size.height {
+                    HStack(spacing: 16) {
+                        photoControls
+                        ScrollView { valueControls }.frame(width: min(340, geometry.size.width * 0.43))
+                    }
+                } else {
+                    VStack(spacing: 12) { photoControls; valueControls }
+                }
+            }.padding(16)
+                .navigationTitle("Check a measured gap").navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button("Cancel", action: cancel) }
+                    ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("Done") { spacingFocused = false } }
+                }
+        }.interactiveDismissDisabled()
+    }
+    private var photoControls: some View {
+        VStack(spacing: 12) {
+                Text(points.isEmpty ? "Tap the first paper centre for your check." : points.count == 1 ?
+                     "Now tap the second paper centre for your check." : "Enter the measured gap between these two centres.")
+                    .font(.subheadline.weight(.semibold)).multilineTextAlignment(.center)
+                Text("Same frozen photo • pinch to zoom • keep the phone fixed")
+                    .font(.caption).foregroundStyle(.secondary)
+                CalibrationPhoto(snapshot: snapshot, sensorPoints: points, accessibilityID: "span-check-canvas") { upright in
+                    guard points.count < 2 else { return }
+                    points.append(snapshot.rotation.sensorPoint(upright)); spacingFocused = false; saveError = nil
+                }.frame(maxWidth: .infinity, maxHeight: .infinity).frame(minHeight: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                HStack {
+                    Text("\(points.count) of 2 check centres selected").font(.caption)
+                    Spacer()
+                    Button("Undo tap") { if !points.isEmpty { points.removeLast() }; saveError = nil }
+                        .disabled(points.isEmpty).accessibilityIdentifier("span-check-undo")
+                }
+        }
+    }
+    private var valueControls: some View {
+        VStack(spacing: 12) {
+                HStack {
+                    Text("Measured gap")
+                    Spacer()
+                    TextField("Metres", text: $spacing).keyboardType(.decimalPad).focused($spacingFocused)
+                        .textFieldStyle(.roundedBorder).multilineTextAlignment(.trailing).frame(width: 90)
+                        .accessibilityIdentifier("span-check-spacing")
+                    Text("m")
+                }
+                if points.count == 2 {
+                    switch result {
+                    case .success(let check):
+                        Text(String(format: "Estimated %.2f m • measured %.2f m\nDifference %+.0f cm", check.estimatedDistanceM,
+                                    check.referenceDistanceM, check.errorM * 100))
+                            .font(.subheadline.weight(.semibold)).multilineTextAlignment(.center)
+                            .foregroundStyle(check.withinTolerance ? Color.primary : .orange)
+                            .accessibilityIdentifier("span-check-result")
+                        Text(check.withinTolerance ? "Within the experimental tolerance for this gap. Speed accuracy still needs checking." :
+                             "This calibration misses the measured gap. Retap the centres or scan the floor again.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    case .failure(let error): Text(error.localizedDescription).font(.caption).foregroundStyle(.orange)
+                    }
+                }
+                if let saveError {
+                    Text(saveError).font(.caption).foregroundStyle(.orange)
+                        .accessibilityIdentifier("span-check-save-error")
+                }
+                Button("Save gap check") {
+                    do {
+                        let check = try result.get()
+                        _ = try ShotRollCalibrationReviewStore.save(calibration: calibration, check: check,
+                            imagePNG: snapshot.png, rotation: snapshot.rotation)
+                        save(points, distance)
+                    } catch {
+                        saveError = "The check could not be saved. Keep it open and try again. " + error.localizedDescription
+                    }
+                }
+                    .buttonStyle(.borderedProminent).disabled((try? result.get()) == nil)
+                    .accessibilityIdentifier("span-check-save")
+        }
+    }
 }
 
 private struct CalibrationPointLoupe: UIViewRepresentable {
@@ -243,12 +424,14 @@ final class CalibrationPointLoupeView: UIView {
 private struct CalibrationPhoto: UIViewRepresentable {
     let snapshot: ShotRollCalibrationSnapshot
     let sensorPoints: [CGPoint]
+    var accessibilityID = "calibration-canvas"
     let tap: (CGPoint) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator(tap: tap) }
     func makeUIView(context: Context) -> CalibrationScrollView {
         let view = CalibrationScrollView()
         view.canvas.imageView.image = snapshot.image
+        view.canvas.accessibilityIdentifier = accessibilityID
         view.photoSize = ShotRollCalibrationPointEditing.uprightSize(snapshot.imageSize, rotation: snapshot.rotation)
         view.delegate = context.coordinator
         view.canvas.addGestureRecognizer(UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.tapped(_:))))
@@ -256,6 +439,7 @@ private struct CalibrationPhoto: UIViewRepresentable {
     }
     func updateUIView(_ view: CalibrationScrollView, context: Context) {
         context.coordinator.tap = tap
+        view.canvas.accessibilityIdentifier = accessibilityID
         // sensorPoint is the inverse rotation; use the opposite rotation here.
         view.canvas.points = sensorPoints.map { ShotRollCalibrationPointEditing.uprightPoint($0, rotation: snapshot.rotation) }
         view.canvas.setNeedsDisplay()

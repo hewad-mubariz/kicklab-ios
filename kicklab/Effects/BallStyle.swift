@@ -9,7 +9,7 @@ import CoreGraphics
 import simd
 import SwiftUI
 
-/// Share-clip ball skins. v1 set matches the Effects picker.
+/// Effect identifiers, including retired styles retained for render compatibility.
 nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendable {
     case none
     case fire
@@ -22,8 +22,14 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
     case rainbow
     case pixel
     case nature
+    case labFlame, glowTrail, blueFlame, emberWake, flameRibbon, heatPulse
 
     var id: String { rawValue }
+
+    /// Keep retired identifiers and shader IDs stable while removing them from all pickers.
+    static var selectableCases: [BallStyle] {
+        allCases.filter { $0 != .shadow && $0 != .pixel }
+    }
 
     var title: String {
         switch self {
@@ -38,6 +44,12 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
         case .rainbow: return "Rainbow"
         case .pixel: return "Pixel"
         case .nature: return "Nature"
+        case .labFlame: return "Lab Flame"
+        case .glowTrail: return "Glow Trail"
+        case .blueFlame: return "Blue Flame"
+        case .emberWake: return "Ember Wake"
+        case .flameRibbon: return "Flame Ribbon"
+        case .heatPulse: return "Heat Pulse"
         }
     }
 
@@ -54,6 +66,7 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
         case .rainbow: return "effect-card-rainbow"
         case .pixel: return "effect-card-pixel"
         case .nature: return "effect-card-nature"
+        case .labFlame, .glowTrail, .blueFlame, .emberWake, .flameRibbon, .heatPulse: return nil
         }
     }
 
@@ -70,6 +83,12 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
         case .rainbow: return Color(red: 1, green: 0.44, blue: 0.7)
         case .pixel: return Color(red: 0.1, green: 0.85, blue: 1)
         case .nature: return Color(red: 0.43, green: 0.91, blue: 0.22)
+        case .labFlame: return Color(red: 1, green: 0.49, blue: 0.12)
+        case .glowTrail: return Color(red: 0.18, green: 0.85, blue: 1)
+        case .blueFlame: return Color(red: 0.15, green: 0.65, blue: 1)
+        case .emberWake: return Color(red: 1, green: 0.62, blue: 0.20)
+        case .flameRibbon: return Color(red: 1, green: 0.32, blue: 0.10)
+        case .heatPulse: return Color(red: 1, green: 0.72, blue: 0.24)
         }
     }
 }
@@ -192,6 +211,12 @@ extension BallStyle {
         case .rainbow: 8
         case .pixel: 9
         case .nature: 10
+        case .labFlame: 11
+        case .glowTrail: 12
+        case .blueFlame: 13
+        case .emberWake: 14
+        case .flameRibbon: 15
+        case .heatPulse: 16
         }
     }
     var caption: String {
@@ -207,6 +232,12 @@ extension BallStyle {
         case .rainbow: "All the colors. Playful ribbons."
         case .pixel: "Digital trails. Pixel-perfect touches."
         case .nature: "Drifting leaves. Organic trails."
+        case .labFlame: "Warm flame. Clear ball."
+        case .glowTrail: "A clean trail through each touch."
+        case .blueFlame: "Cool fire. Longer trail."
+        case .emberWake: "Warm sparks that fade behind."
+        case .flameRibbon: "A flowing wrap around the ball."
+        case .heatPulse: "A soft burst on every touch."
         }
     }
     var symbol: String {
@@ -222,6 +253,12 @@ extension BallStyle {
         case .rainbow: "rainbow"
         case .pixel: "square.grid.2x2.fill"
         case .nature: "leaf.fill"
+        case .labFlame: "flame"
+        case .glowTrail: "point.topleft.down.to.point.bottomright.curvepath"
+        case .blueFlame: "flame.fill"
+        case .emberWake: "sparkles"
+        case .flameRibbon: "wind"
+        case .heatPulse: "dot.radiowaves.left.and.right"
         }
     }
 }

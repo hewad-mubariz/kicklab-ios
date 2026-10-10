@@ -1,0 +1,48 @@
+{
+  "result": "passed",
+  "checks": [
+    {
+      "kind": "effects",
+      "width": 288,
+      "clipped": [],
+      "scrollWidth": 288,
+      "clientWidth": 288
+    },
+    {
+      "kind": "effects",
+      "width": 418,
+      "clipped": [],
+      "scrollWidth": 418,
+      "clientWidth": 418
+    },
+    {
+      "kind": "effects",
+      "width": 650,
+      "clipped": [],
+      "scrollWidth": 650,
+      "clientWidth": 650
+    },
+    {
+      "kind": "data",
+      "width": 288,
+      "clipped": [],
+      "scrollWidth": 288,
+      "clientWidth": 288
+    },
+    {
+      "kind": "data",
+      "width": 418,
+      "clipped": [],
+      "scrollWidth": 418,
+      "clientWidth": 418
+    },
+    {
+      "kind": "data",
+      "width": 650,
+      "clipped": [],
+      "scrollWidth": 650,
+      "clientWidth": 650
+    }
+  ],
+  "consoleErrors": 0
+}

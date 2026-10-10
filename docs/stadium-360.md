@@ -1,6 +1,6 @@
 # Stadium look-around preview
 
-Open Replay & Effects → Environment → Classic Stadium. The night bowl now has photographed-style architecture, roof floodlights, warm concourse lighting, native KICKLAB screens and continuous fascia. The camera places the player closer, with the visible supporting sole on the turf and the screens above the player.
+Open Replay & Effects → Environment → Classic Stadium. The night bowl now has photographed-style architecture, roof floodlights, warm concourse lighting, native JUGGLE DUDE screens and continuous fascia. The camera places the player closer, with the visible supporting sole on the turf and the screens above the player.
 
 Drag the picture or use the left/right buttons to look around the full stadium. Rotation and zoom ease toward the requested view using shortest-path yaw; Reduce Motion applies changes directly. Reset view returns to the player and restores the zoom. The zoom slider changes field of view. Playback controls sit below the picture so they do not cover the feet. On an iPhone, enable Look around with phone to use relative device attitude; the starting phone orientation becomes the origin. Reset also recentres that origin. Device motion stops when the preview leaves the screen. The environment surrounds the camera; rotating away lets the player leave the frame. This is not a reconstructed 3D body or an orbit behind the person.
 

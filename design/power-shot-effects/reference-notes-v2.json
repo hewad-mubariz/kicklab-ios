@@ -1,0 +1,38 @@
+{
+  "status": "Image-generation concept revision only; no app or Python runtime changes.",
+  "reference_script": "../kicklab-lab/scripts/apply_shooting_effect.py",
+  "original_linear_trail_renderer": "../kicklab-lab/src/kicklab_lab/shot_effects.py",
+  "linear_mode": "--look trails",
+  "linear_preview_script": "../kicklab-lab/scripts/render_shot_effects.py",
+  "preserved_glow_renderers": [
+    "../kicklab-lab/src/kicklab_lab/shooting_effects/fire_v4.py",
+    "../kicklab-lab/src/kicklab_lab/shooting_effects/ice_v3.py"
+  ],
+  "reviewed_frames": [
+    "../kicklab-lab/runs/power-shot-8-repair-20261001/trails-final-fire-review.jpg",
+    "../kicklab-lab/runs/power-shot-8-repair-20261001/glow-final-fire-review.jpg",
+    "../kicklab-lab/runs/power-shot-8-repair-20261001/glow-final-ice-review.jpg"
+  ],
+  "concepts": [
+    "Juggle Flame",
+    "Blue Jet",
+    "Volt Strike",
+    "Ember Rush",
+    "Lime Ribbon",
+    "Ice Trail",
+    "Shockwave",
+    "Fire Trail",
+    "Glow Trail",
+    "Pulse Trail"
+  ],
+  "removed_concepts": [
+    "Frost Wake",
+    "Smoke Dash",
+    "Twin Helix",
+    "Speed Lines"
+  ],
+  "added_suggestion": "Pulse Trail is a new concept to retain ten choices.",
+  "future_implementation": "Follow recent observed ball positions with narrow direction-aligned trails; horizontal imagery illustrates one straight shot, not a fixed screen-space direction. Preserve tracking-gap resets/fades and keep the ball visible. Python reference cards are illustrations, not exact renderer output.",
+  "reference_image": "concept-sheet-v1.png",
+  "generator": "built-in image_gen"
+}

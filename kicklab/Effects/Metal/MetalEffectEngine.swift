@@ -19,16 +19,18 @@ nonisolated final class MetalEffectEngine {
         let emission: MTLComputePipelineState
         let resolve: MTLComputePipelineState
         let composite: MTLComputePipelineState
+        let shotCamera: MTLComputePipelineState?
         let particles: MTLRenderPipelineState
         let noise: MTLTexture
 
-        init(libraryURL: URL? = nil) throws {
+        init(libraryURL: URL? = nil, source: String? = nil) throws {
             guard let device = MTLCreateSystemDefaultDevice(), let queue = device.makeCommandQueue() else {
                 throw Failure.unavailable("Metal is unavailable on this device.")
             }
             self.device = device; self.queue = queue
             let library: MTLLibrary
-            if let libraryURL { library = try device.makeLibrary(URL: libraryURL) }
+            if let source { library = try device.makeLibrary(source: source, options: nil) }
+            else if let libraryURL { library = try device.makeLibrary(URL: libraryURL) }
             else if let bundled = device.makeDefaultLibrary() { library = bundled }
             else { throw Failure.unavailable("The effects shader library is missing.") }
             func kernel(_ name: String) throws -> MTLComputePipelineState {
@@ -36,6 +38,7 @@ nonisolated final class MetalEffectEngine {
                 return try device.makeComputePipelineState(function: f)
             }
             emission = try kernel("fxEmission"); resolve = try kernel("fxResolve"); composite = try kernel("fxComposite")
+            shotCamera = library.makeFunction(name: "fxShotCamera").map { try? device.makeComputePipelineState(function: $0) } ?? nil
             let desc = MTLRenderPipelineDescriptor()
             desc.vertexFunction = library.makeFunction(name: "fxParticleVertex")
             desc.fragmentFunction = library.makeFunction(name: "fxParticleFragment")
@@ -72,6 +75,7 @@ nonisolated final class MetalEffectEngine {
     private var far: MTLTexture?
     private var cache: CVMetalTextureCache?
     private var scratch: MTLTexture?
+    private var cameraScratch: MTLTexture?
     private var blurNear: MPSImageGaussianBlur?
     private var blurFar: MPSImageGaussianBlur?
     private var blurRadius: Float = -1
@@ -94,7 +98,8 @@ nonisolated final class MetalEffectEngine {
 
     private func prepare(_ frame: EffectFrame) throws {
         let region = frame.region
-        let limit = frame.counter ? 768.0 : frame.style == 1 ? 832.0 : 640.0
+        // Shot trails span the whole flight, so they need more texels than a ball-sized effect.
+        let limit = frame.counter ? 768.0 : frame.style == 1 ? 832.0 : frame.style >= 20 ? 1024.0 : 640.0
         let scale = min(1, limit / max(1, max(region.width, region.height)))
         // Quantization avoids allocation churn as the tracked ball moves.
         let w = max(16, Int(ceil(region.width * scale / 16)) * 16)
@@ -128,7 +133,31 @@ nonisolated final class MetalEffectEngine {
 
     /// Caller controls presentation / completion. A single queue orders reuse of targets.
     func encode(_ frame: EffectFrame, into target: MTLTexture, source: MTLTexture? = nil, material: MTLTexture? = nil,
+                camera: ShotCameraFrame? = nil,
                 command: MTLCommandBuffer) throws {
+        if let camera, camera.isActive, let source {
+            if cameraScratch?.width != target.width || cameraScratch?.height != target.height {
+                cameraScratch = try texture(width: target.width, height: target.height)
+            }
+            guard let cameraScratch, let pipeline = resources.shotCamera else {
+                throw Failure.unavailable("The camera effects renderer is unavailable.")
+            }
+            try encode(frame, into: cameraScratch, source: source, material: material, command: command)
+            guard let encoder = command.makeComputeCommandEncoder() else {
+                throw Failure.unavailable("Couldn’t draw the camera effect.")
+            }
+            var uniforms = camera.uniforms
+            var path = camera.path
+            if path.isEmpty { path = [.zero] }
+            encoder.label = "Power Shot camera and replay"
+            encoder.setBytes(&uniforms, length: MemoryLayout<ShotCameraFrame.Uniforms>.stride, index: 0)
+            path.withUnsafeBytes { encoder.setBytes($0.baseAddress!, length: $0.count, index: 1) }
+            encoder.setTexture(cameraScratch, index: 0)
+            encoder.setTexture(target, index: 1)
+            encoder.setTexture(source, index: 2)
+            dispatch(encoder, pipeline, target)
+            return
+        }
         guard frame.size.width > 0, frame.size.height > 0, !frame.region.isNull,
               frame.region.width > 0, frame.region.height > 0 else { throw Failure.unavailable("Invalid effect geometry.") }
         if !frame.counter && (frame.style < 0.5 || frame.intensity <= 0.005 || frame.visibility <= 0.005) {
@@ -176,7 +205,10 @@ nonisolated final class MetalEffectEngine {
         particles.setVertexBytes(&u, length: MemoryLayout<EffectUniforms>.stride, index: 0)
         history.withUnsafeBytes { particles.setVertexBytes($0.baseAddress!, length: $0.count, index: 1) }
         emitters.withUnsafeBytes { particles.setVertexBytes($0.baseAddress!, length: $0.count, index: 2) }
-        particles.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 6, instanceCount: frame.particleCount)
+        // Shot trails draw their sparks in the field; an empty instanced draw is not valid.
+        if frame.particleCount > 0 {
+            particles.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 6, instanceCount: frame.particleCount)
+        }
         particles.endEncoding()
         blurNear?.encode(commandBuffer: command, sourceTexture: emission, destinationTexture: near)
         blurFar?.encode(commandBuffer: command, sourceTexture: emission, destinationTexture: far)
@@ -194,15 +226,15 @@ nonisolated final class MetalEffectEngine {
         }
     }
 
-    func render(_ frame: EffectFrame, into target: MTLTexture, source: MTLTexture? = nil) throws {
+    func render(_ frame: EffectFrame, into target: MTLTexture, source: MTLTexture? = nil, camera: ShotCameraFrame? = nil) throws {
         guard let command = resources.queue.makeCommandBuffer() else { throw Failure.unavailable("Cannot start effect rendering.") }
-        try encode(frame, into: target, source: source, command: command)
+        try encode(frame, into: target, source: source, camera: camera, command: command)
         command.commit(); command.waitUntilCompleted()
         if let error = command.error { throw error }
     }
 
     /// The decoded video is copied before compositing to avoid read/write hazards.
-    func composite(_ frame: EffectFrame, pixelBuffer: CVPixelBuffer) throws {
+    func composite(_ frame: EffectFrame, pixelBuffer: CVPixelBuffer, camera: ShotCameraFrame? = nil) throws {
         let w = CVPixelBufferGetWidth(pixelBuffer), h = CVPixelBufferGetHeight(pixelBuffer)
         var ref: CVMetalTexture?
         guard let cache, CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, cache, pixelBuffer, nil,
@@ -213,9 +245,11 @@ nonisolated final class MetalEffectEngine {
             throw Failure.unavailable("Cannot prepare the video texture.")
         }
         copy.copy(from: output, to: scratch); copy.endEncoding()
-        try encode(frame, into: output, source: scratch, command: command)
+        try encode(frame, into: output, source: scratch, camera: camera, command: command)
         command.commit(); command.waitUntilCompleted()
         if let error = command.error { throw error }
         withExtendedLifetime(ref) {}
     }
+
+    func releaseCameraTargets() { cameraScratch = nil }
 }

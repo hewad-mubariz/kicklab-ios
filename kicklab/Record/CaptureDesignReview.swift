@@ -6,6 +6,10 @@ struct CaptureDesignReview: View {
     @State private var state: CaptureControlState = .ready
     @State private var lastAction = "Ready"
 
+    init(initialState: CaptureControlState = .ready) {
+        _state = State(initialValue: initialState)
+    }
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -17,7 +21,8 @@ struct CaptureDesignReview: View {
                     HStack {
                         Image(systemName: "chevron.left").frame(width: 48, height: 48)
                         Spacer()
-                        CaptureSessionBadge(number: 1, recording: state == .recording)
+                        CaptureSessionBadge(number: 1, recording: state == .recording,
+                                            preparing: state == .preparing)
                     }.padding(.bottom, 18)
                     CaptureTouchCounter(count: state == .recording ? 18 : 0)
                     Text(lastAction).font(.caption2).foregroundStyle(.secondary)

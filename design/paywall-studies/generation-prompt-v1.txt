@@ -1,0 +1,51 @@
+Use case: ui-mockup.
+Asset type: one contact sheet of SIX premium iPhone subscription PAYWALL screen concepts for the football juggling app "Juggle Dude".
+
+Primary request: Design an awesome, stylish, sporty paywall that belongs to a modern football creator/training app. The user likes strong athletic typography, acid lime with charcoal, generated football photos, street-football character and appealing tactile sports graphics. This is visual design exploration only, before subscription configuration. Six genuinely different premium compositions. High-end product UI, not generic gradient subscription templates or marketing posters.
+
+Board layout: exactly THREE columns by TWO rows, six complete flat straight-on mobile screens at roughly 1:2.05 aspect ratio. Tall portrait contact sheet around 3:4 overall, highest available resolution, ideally 2304 x 3072. Comfortable gutters on charcoal canvas, thin framing only, no physical phones/hardware. Board heading "Juggle Dude / PRO PAYWALL STUDIES". Subheading "6 directions · sample pricing and benefits". Number and label each screen BELOW it, outside the screen. Keep large enough for crisp readable copy.
+
+Visual language:
+- Four dark concepts (01,02,03,06), two light concepts (04,05).
+- Core lime #D0F852, charcoal #0C0F10, warm ivory #F3F4ED, warm white. Small restrained warm orange accents in 04 only.
+- Bold athletic condensed headings, friendly clean body text, bold clear prices, rounded controls, comfortable 20-point-like side gutters, high contrast.
+- Premium subtle grain, tiny sports markings and pitch curves, restraint with highlights. No fantasy HUDs, giant gold coins, payment logos, confetti, fake urgency or clutter.
+- Any athlete or photo must be newly generated, fictional adult, unbranded sportswear, never a recognizable athlete. A realistic modern textured football, anatomically plausible juggling pose, dynamic but elegant.
+- Screens must feel functional and achievable in an actual native iOS app. A small high-contrast circular X close button at top right of EVERY screen. Never hide it.
+- A proposal tier called "Juggle Dude Pro". On the board only, make clear pricing and benefits are SAMPLE CONCEPT DATA, not confirmed product offers.
+- The visual previews must relate to JUGGLING: touch counter, ball-motion line graph, alternative ball surface, flame/comet trail. Do not imply buying rank, improved athletic ability, analytics we cannot measure, or leaderboard advantages.
+
+Shared sample offer and purchase content, in every screen:
+1. Three clear compact benefit labels: "Extra effects", "Ball styles", "Motion overlays". Tiny distinct refined icons or preview swatches, not a long checklist of invented features.
+2. Two plan choices with clearly visible selection:
+   "Monthly" — "€3.99 / month"
+   "Yearly" — "€24.99 / year"
+   Select Yearly with lime outline/fill and clear radio indicator. Annual price MUST be as prominent as any equivalent monthly price. Do not show percentage savings, discount tags, crossed-out fake prices, or free trials. No claim of a trial.
+3. A prominent bottom call to action with exact wording "Get Pro · €24.99/year", highly legible, full width inside margins. This is a real-looking recurring subscription choice, not a generic "Continue" or free button.
+4. Immediately under CTA, small but READABLE "Auto-renews. Cancel anytime."
+5. Footer links in one comfortable row: "Restore purchases"   "Terms"   "Privacy". These should be rendered clearly and not microscopic or cropped.
+6. Safe-area space beneath footer and a small neutral home indicator.
+7. No bottom navigation. No social sign-in buttons or checkout credit-card forms.
+8. Keep the offer area in lower half stable enough to compare, while changing art direction and upper content layout substantially.
+
+SIX CONCEPTS, exact order left to right, top row then bottom row:
+
+01 / PRO PASS
+Dark sports editorial composition. Top area is a compact stunning generated full-body adult male footballer juggling a ball on a dark urban court. Player is mostly on the right with lime diagonal sliver behind, headline on left "MAKE EVERY / TOUCH YOURS". Crop intentionally within upper 35% of the screen, not cutting text. Add tiny "JUGGLE DUDE PRO" sports-label kicker. An elegant score overlay "05 TOUCHES" and a small smooth lime ball-motion graph on the photo demonstrate app styling. Three compact benefits below, then plans side by side, selected yearly lime. Big lime CTA. Confident football premium campaign atmosphere, clear calm purchase area.
+
+02 / EFFECT LAB
+Dark near-black, more playful premium product visualization. A beautiful textured modern white/silver football floats centrally in upper third, with a long sculpted orange-to-lime flame/comet trail curling behind it, crisp believable lighting. Three small swatch discs below preview a lime trail, a blue electric trail and a minimal white ball outline. Headline "GIVE YOUR GAME / SOME HEAT". Small Pro label. The art is a compact creative preview, no implied physical boost. Benefits in three small equal-width rounded tiles, each with refined micro-illustration: a flame, textured ball, motion line. Plan rows stacked tightly with good price hierarchy, then lime CTA and all footer content.
+
+03 / CLUB PASS
+Dark charcoal and brushed silver with lime. Upper third contains one premium membership-pass visual, mostly front-facing, subtle rounded cut corners and a narrow ticket notch, a giant outlined typographic "PRO" with small "JUGGLE DUDE" and a minimal embossed football icon. No numbers that look like payment-card details, no barcode, no crown or giant trophy. A small lime corner detail and fine pitch-line curves give tactile sports identity. Headline beneath "YOUR GAME. / YOUR STYLE." Benefits as one clean horizontal row. Two compact plan choices, strong selected annual, lime CTA. A calm luxurious sporty club-membership mood without invented club privileges.
+
+04 / STREET PRO
+Light warm ivory, black condensed typography, lime CTA, tiny orange sports-tape accents. Upper section is an editorial collage of a newly generated adult player juggling outdoors on a concrete court, black-and-white rectangular photo, subtly torn-paper edge on one corner, a small lime ball trail doodle drawn precisely along ball motion. Headline "MAKE IT / YOURS." in strong slightly italic athletic typography, tiny "JUGGLE DUDE PRO" above. This must remain clean native UI with ample room, not distressed unreadable poster design. Benefits are concise one-line labels with orange/lime outline icons. Plan cards side by side; yearly selected charcoal with white price and small lime tick. Lime CTA with black text and all readable footer content in dark gray.
+
+05 / CREATOR KIT
+Light ivory/white, premium clean sports creator design. Upper third features three compact overlapping preview panels, each displaying a actual app-style visual: a condensed white "05" touch counter on dark background, a sleek lime ball-motion waveform on dark background, and a realistic textured football with a curved effect trail on charcoal. Panels are arranged as a clean stepped composition, subtle shadow, text horizontal and readable. Headline "A LOOK FOR / EVERY SESSION". Small "JUGGLE DUDE PRO" kicker. The three benefit names sit under their corresponding mini previews or in a simple row below. Two full-width stacked plan rows with clear annual selection and €24.99/year. Black CTA with lime label, readable renewal note and links. Friendly and polished, focused on exactly what the user receives.
+
+06 / FLOODLIGHT
+Dark stadium mood with very subtle distant floodlights restricted to top corners and a shallow lime pitch arc behind a centrally lit modern football. No big athlete photo. Large centered sports typography "LIGHT UP / YOUR GAME" with small Pro kicker. The ball carries a gentle comet-like lime highlight demonstrating a cosmetic effect, not explosive flames. Upper artwork occupies no more than one third, with lots of dark negative space so typography feels expensive. Three concise benefit rows with elegant small icons and check marks. Horizontal plan selector with two equal cards and visibly selected yearly. A very subtle lime gradient CTA, all legal and restore content clearly present below. Minimal, dramatic and unmistakably football.
+
+Quality rules: six screens only; all six must have complete visible subscription controls and footer, not just artwork. Precise "Juggle Dude" spelling. Consistent sample prices and yearly selection, no free-trial promises. Every paywall visually different at thumbnail scale. Photo and texture richness in the artwork, calm sharply readable UI in the offer area. No invented fake app store badges or old branding. No watermarks. Professional convincing native mobile product design mockups.

@@ -1,0 +1,59 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "process",
+      "launch",
+      "--device",
+      "0440AB85-BD17-5A51-AF30-B00F6F7E3382",
+      "com.hewad.juggledude",
+      "--json-output",
+      "design/ball-distance-20261009/device-launch.json",
+      "--quiet",
+      "--timeout",
+      "30"
+    ],
+    "commandType" : "devicectl.device.process.launch",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "success",
+    "version" : "518.33"
+  },
+  "result" : {
+    "deviceIdentifier" : "0440AB85-BD17-5A51-AF30-B00F6F7E3382",
+    "launchOptions" : {
+      "activatedWhenStarted" : true,
+      "arguments" : [
+
+      ],
+      "environmentVariables" : {
+        "TERM" : "dumb"
+      },
+      "platformSpecificOptions" : {
+
+      },
+      "startStopped" : false,
+      "terminateExistingInstances" : false,
+      "user" : {
+        "active" : true
+      }
+    },
+    "process" : {
+      "auditToken" : [
+        4294967295,
+        501,
+        501,
+        501,
+        501,
+        31341,
+        0,
+        80410
+      ],
+      "executable" : "file:///private/var/containers/Bundle/Application/2C4C8285-55F8-47C1-B2F7-2B6C04D1D84D/kicklab.app/kicklab",
+      "processIdentifier" : 31341
+    }
+  }
+}

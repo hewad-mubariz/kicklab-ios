@@ -1,0 +1,73 @@
+{
+  "design": "08 Lift boot with the smaller 03 Panel football",
+  "approved_reference": "design/app-icon-studies/kicklab-lift-panel-v2.png",
+  "generation_mode": "Built-in image generation, edits of approved reference",
+  "production_prompts": [
+    "default-prompt.txt",
+    "tinted-prompt.txt"
+  ],
+  "unused_experiment": "dark-prompt.txt produced rough alpha edges and was excluded from app and export",
+  "integration": "Xcode AppIcon asset catalog, universal iOS 1024x1024 source assets; Xcode handles required sizes",
+  "default_and_dark": "Same opaque charcoal artwork with a white boot and white/lime football, sRGB",
+  "tinted": "Grayscale artwork using Generic Gray Gamma 2.2, user tint applied by iOS",
+  "shape": "Square full-bleed artwork; no baked outer border or rounded corners",
+  "composer": "Asset catalog export, not a layered Icon Composer document",
+  "checks": [
+    {
+      "file": "kicklab/Assets.xcassets/AppIcon.appiconset/AppIcon-Default.png",
+      "width": 1024,
+      "height": 1024,
+      "bit_depth": 8,
+      "png_color_type": 2,
+      "has_alpha": false,
+      "sha256": "32c2ec199b58257fe0fcc2b7bdb690d807feb3c98ba8c04e0d887f9d630dad98"
+    },
+    {
+      "file": "kicklab/Assets.xcassets/AppIcon.appiconset/AppIcon-Dark.png",
+      "width": 1024,
+      "height": 1024,
+      "bit_depth": 8,
+      "png_color_type": 2,
+      "has_alpha": false,
+      "sha256": "32c2ec199b58257fe0fcc2b7bdb690d807feb3c98ba8c04e0d887f9d630dad98"
+    },
+    {
+      "file": "kicklab/Assets.xcassets/AppIcon.appiconset/AppIcon-Tinted.png",
+      "width": 1024,
+      "height": 1024,
+      "bit_depth": 8,
+      "png_color_type": 0,
+      "has_alpha": false,
+      "sha256": "5b8b524f387284e636bc6b02fa3866ca7a850c0121d4aeb4f02005871ad8158f"
+    }
+  ],
+  "validation": {
+    "debug_simulator_build": "passed",
+    "simulator": "iPhone 17, iOS 26.5, KickLab Account UI Review",
+    "bundle_id": "hewad.kicklab",
+    "install_and_launch": "passed",
+    "compiled_appearances": [
+      "default",
+      "UIAppearanceDark",
+      "ISAppearanceTintable"
+    ],
+    "visually_verified": [
+      "default Home Screen",
+      "dark icon appearance",
+      "tinted icon appearance",
+      "system clear icon appearance"
+    ],
+    "screenshots": [
+      "artifacts/app-icon/home-screen-default.png",
+      "artifacts/app-icon/home-screen-dark-variant.png",
+      "artifacts/app-icon/home-screen-tinted.png",
+      "artifacts/app-icon/home-screen-clear.png"
+    ],
+    "scope": "Simulator and local build; no device install or App Store upload performed"
+  },
+  "apple_references": [
+    "https://developer.apple.com/documentation/xcode/configuring-your-app-icon",
+    "https://developer.apple.com/help/app-store-connect/manage-app-information/add-an-app-icon/",
+    "https://developer.apple.com/library/archive/qa/qa1686/"
+  ]
+}

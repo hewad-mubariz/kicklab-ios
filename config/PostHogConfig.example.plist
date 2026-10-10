@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>POSTHOG_HOST</key>
+	<string>https://eu.i.posthog.com</string>
+	<key>POSTHOG_PROJECT_TOKEN</key>
+	<string>phc_REPLACE_ME</string>
+</dict>
+</plist>

@@ -25,13 +25,13 @@ struct ExportOverlayLayer: View {
 }
 
 struct ExportOverlayEditor: View {
+    @ObservedObject var preparation = SessionEffectsPreparation()
     let summary: SessionSummary
     let edit: SessionEditState
     let sourceSize: CGSize
     @ObservedObject var sceneModel: StadiumPreviewModel
     @Binding var settings: ExportOverlaySettings
     @Environment(\.dismiss) private var dismiss
-    @State private var canvasSize = CGSize(width: 720, height: 1280)
     @State private var player: AVPlayer?
     @State private var observer: Any?
     @State private var time: Double = 0
@@ -40,8 +40,6 @@ struct ExportOverlayEditor: View {
     @State private var wasPlaying = false
     @State private var scrubbing = false
     @State private var error: String?
-    @State private var showStyles = false
-    @State private var stylesShown = false
     @State private var effectTrack = BallEffectTrack(frames: [])
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private var timeline: ExportCounterTimeline { .init(touches: summary.touchesMarked, total: summary.touches) }
@@ -71,21 +69,9 @@ struct ExportOverlayEditor: View {
                     VStack(spacing: 12) {
                         Toggle("Show counter", isOn: item.enabled.animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)))
                             .font(.system(size: 14, weight: .semibold)).tint(SessionStyle.mint)
-                        if item.wrappedValue.enabled {
-                            Button { showStyles = true } label: {
-                                HStack {
-                                    Text("Style").foregroundStyle(.white)
-                                    Spacer()
-                                    Text(item.wrappedValue.style.title).contentTransition(.interpolate)
-                                    Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold))
-                                }.font(.system(size: 13, weight: .semibold)).foregroundStyle(SessionStyle.mint)
-                                    .padding(14).modifier(SessionPanel())
-                            }.buttonStyle(SessionPressStyle(scale: 0.97))
-                                .accessibilityLabel("Choose counter style, \(item.wrappedValue.style.title)")
-                                .accessibilityIdentifier("counter-choose-style")
-                                .transition(.sessionRise)
-                            layoutControls.transition(.sessionRise)
-                        }
+                            .accessibilityIdentifier("counter-show")
+                        // Placement is direct on the canvas above; only the look is chosen here.
+                        CounterStyleGrid(item: item)
                         if let error { Text(error).font(.system(size: 12)).foregroundStyle(.orange) }
                     }
                     .padding(.horizontal, 20).padding(.bottom, 28)
@@ -95,19 +81,6 @@ struct ExportOverlayEditor: View {
             .foregroundStyle(.white).background(SessionStyle.background)
         }
         .preferredColorScheme(.dark)
-        .sheet(isPresented: $showStyles) {
-            VStack(spacing: 0) {
-                HStack {
-                    Text("Counter styles").font(.system(size: 23, weight: .bold))
-                    Spacer()
-                    Button("Done") { showStyles = false }.foregroundStyle(SessionStyle.mint)
-                }.padding(20).padding(.top, 12)
-                ScrollView { stylePicker.padding(20) }
-            }.foregroundStyle(.white).background(SessionStyle.background)
-                .presentationDragIndicator(.visible).preferredColorScheme(.dark)
-                .onAppear { stylesShown = true }
-                .onDisappear { stylesShown = false }
-        }
         .task { await prepare() }
         .onDisappear {
             player?.pause()
@@ -153,8 +126,6 @@ struct ExportOverlayEditor: View {
                 }
             }
             .frame(width: size.width, height: size.height).clipped()
-            .onAppear { canvasSize = size }
-            .onChange(of: size) { _, value in canvasSize = value }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(.black)
@@ -183,102 +154,30 @@ struct ExportOverlayEditor: View {
         }
     }
 
-    private var layoutControls: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Size").font(.system(size: 12, weight: .semibold))
-                Slider(value: Binding(get: { settings.counter.placement.scale }, set: {
-                    settings.counter.placement = settings.counter.placement.transformed(scale: $0, in: canvasSize)
-                }), in: 0.5...1.75, step: 0.05)
-                    .tint(SessionStyle.mint).accessibilityLabel("Counter size")
-                Text("\(Int(item.wrappedValue.placement.scale * 100))%")
-                    .font(.system(size: 11, design: .monospaced)).frame(width: 42)
-            }
-            HStack {
-                Text("Rotation").font(.system(size: 12, weight: .semibold))
-                Slider(value: Binding(get: { ExportOverlayPlacement.normalizedRotation(settings.counter.placement.rotation) }, set: {
-                    settings.counter.placement = settings.counter.placement.transformed(rotation: $0, in: canvasSize)
-                }), in: -180...180, step: 1)
-                    .tint(SessionStyle.mint).accessibilityLabel("Counter rotation")
-                Text("\(Int(ExportOverlayPlacement.normalizedRotation(settings.counter.placement.rotation)))°")
-                    .font(.system(size: 11, design: .monospaced)).frame(width: 42)
-            }
-            HStack(spacing: 6) {
-                ForEach(0..<3) { index in
-                    // Presets glide the sticker to its new spot rather than jumping.
-                    Button(["Top", "Middle", "Bottom"][index]) {
-                        withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
-                            item.wrappedValue.placement.y = [0.0, 0.5, 1.0][index]
-                        }
-                    }
-                        .font(.system(size: 11, weight: .medium)).frame(maxWidth: .infinity).padding(.vertical, 9)
-                        .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
-                        .buttonStyle(SessionPressStyle(scale: 0.93))
-                        .accessibilityLabel("Move counter to \(["top", "middle", "bottom"][index])")
-                }
-            }
-            HStack {
-                Image(systemName: "arrow.left.and.right").frame(width: 20)
-                Slider(value: item.placement.x, in: 0...1).tint(SessionStyle.mint).accessibilityLabel("Counter horizontal position")
-            }
-            HStack {
-                Image(systemName: "arrow.up.and.down").frame(width: 20)
-                Slider(value: item.placement.y, in: 0...1).tint(SessionStyle.mint).accessibilityLabel("Counter vertical position")
-            }
-            Button("Reset position, size & rotation") {
-                withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
-                    item.wrappedValue.placement = ExportOverlayPlacement()
-                }
-            }.font(.system(size: 11, weight: .medium)).foregroundStyle(SessionStyle.mint)
-        }.padding(14).modifier(SessionPanel())
-    }
-
-    private var stylePicker: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Same session. Your style.").font(.system(size: 13)).foregroundStyle(SessionStyle.secondary)
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                ForEach(Array(ExportBadgeStyle.allCases.enumerated()), id: \.element) { index, style in
-                    Button {
-                        withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { item.wrappedValue.style = style }
-                        showStyles = false
-                    } label: {
-                        VStack(spacing: 2) {
-                            if let image = ExportOverlayRenderer.image(style: style, time: style == .flipboard ? 24.4 : 24.15,
-                                counter: .init(count: 24, isTotal: false, age: style == .flipboard ? 0.4 : 0.15), scale: 2) {
-                                Image(decorative: image, scale: 1).resizable().scaledToFit().frame(height: 100)
-                            }
-                            Text(style == .normal ? "Normal · Default" : style.title)
-                                .font(.system(size: 11, weight: .semibold)).padding(.bottom, 11)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .background(SessionStyle.panel, in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(item.wrappedValue.style == style ? SessionStyle.mint : SessionStyle.rim,
-                                                                          lineWidth: item.wrappedValue.style == style ? 1.5 : 0.7))
-                    }.buttonStyle(SessionPressStyle(scale: 0.94))
-                        .sessionEntrance(stylesShown, order: index, offset: 18, scale: 0.92)
-                        .accessibilityLabel("\(style.title) counter style")
-                        .accessibilityIdentifier("counter-style-\(style.rawValue)")
-                        .accessibilityAddTraits(item.wrappedValue.style == style ? .isSelected : [])
-                }
-            }
-        }
-    }
-
     private func seek() {
         player?.seek(to: CMTime(seconds: time, preferredTimescale: 60000), toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
     private func prepare() async {
         do {
-            let media = try await sceneModel.media(summary: summary, selection: edit.scene)
+            let ready = edit.ballSkin != .original ? try await preparation.prepare(summary) : summary
+            let media = try await sceneModel.media(summary: ready, selection: edit.scene)
             let url = media.url
-            effectTrack = BallEffectTrack(frames: media.track)
+            effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
+            if edit.ballSkin != .original {
+                effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: ready.videoURL, track: BallEffectTrack(frames: ready.renderTrack))
+            }
             try Task.checkCancellation()
             let asset = AVURLAsset(url: url)
             let length = try await asset.load(.duration)
             try Task.checkCancellation()
             duration = max(0.1, CMTimeGetSeconds(length))
-            let next = AVPlayer(playerItem: AVPlayerItem(asset: asset))
+            let item = AVPlayerItem(asset: asset)
+            if let video = try await asset.loadTracks(withMediaType: .video).first {
+                item.videoComposition = try await EffectVideoGeometry.composition(track: video, duration: length, shortEdge: 1080)
+            }
+            try Task.checkCancellation()
+            let next = AVPlayer(playerItem: item)
             next.actionAtItemEnd = .pause
             player = next
             observer = next.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 24), queue: .main) { stamp in

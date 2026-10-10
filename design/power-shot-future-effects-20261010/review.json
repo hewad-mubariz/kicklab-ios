@@ -1,0 +1,128 @@
+{
+  "created": "2026-10-10",
+  "status": "complete",
+  "tool": "built-in image_gen.imagegen",
+  "gallery": "index.html",
+  "promptSet": "concepts.json",
+  "imageCount": 10,
+  "appImplementation": false,
+  "images": [
+    {
+      "number": 1,
+      "id": "flight-echo",
+      "name": "Flight Echo",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-f245b139-a2f4-4e1d-8b16-a68b7a9f197d.png",
+      "file": "01-flight-echo.png",
+      "visualReview": "Accepted: clear effect, legible controls and detail/timing panels.",
+      "width": 1513,
+      "height": 1040,
+      "bytes": 2042188
+    },
+    {
+      "number": 2,
+      "id": "ball-lock-pro",
+      "name": "Ball Lock Pro",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-c6a5c2ce-77fc-4a83-99cd-eca521b1dfef.png",
+      "file": "02-ball-lock-pro.png",
+      "visualReview": "Accepted: clear effect, legible controls and detail/timing panels.",
+      "width": 1513,
+      "height": 1040,
+      "bytes": 1924406
+    },
+    {
+      "number": 3,
+      "id": "spotlight-ball",
+      "name": "Spotlight Ball",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-04bca9e8-258f-4873-beb9-4094d4ae7da2.png",
+      "file": "03-spotlight-ball.png",
+      "visualReview": "Accepted: clear effect, legible controls and detail/timing panels.",
+      "width": 1512,
+      "height": 1040,
+      "bytes": 1881254
+    },
+    {
+      "number": 4,
+      "id": "heat-wake",
+      "name": "Heat Wake",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-85df39e0-b9f8-48f1-8283-dda5bab7d743.png",
+      "file": "04-heat-wake.png",
+      "visualReview": "Accepted: visible effect, legible controls and contact/flight/finish detail.",
+      "width": 1512,
+      "height": 1040,
+      "bytes": 1925452
+    },
+    {
+      "number": 5,
+      "id": "orbit-rings",
+      "name": "Orbit Rings",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-af864565-5479-4237-ae0c-219767a54222.png",
+      "file": "05-orbit-rings.png",
+      "visualReview": "Accepted: visible effect, legible controls and contact/flight/finish detail.",
+      "width": 1513,
+      "height": 1040,
+      "bytes": 1939157
+    },
+    {
+      "number": 6,
+      "id": "turf-burst",
+      "name": "Turf Burst",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-47814ac4-a954-4da2-af52-c24233eb7b02.png",
+      "file": "06-turf-burst.png",
+      "visualReview": "Accepted: visible effect, legible controls and contact/flight/finish detail.",
+      "width": 1513,
+      "height": 1040,
+      "bytes": 2220987
+    },
+    {
+      "number": 7,
+      "id": "net-pulse",
+      "name": "Net Pulse",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-d391eaf8-3839-4f29-b947-f0d318f4d0f8.png",
+      "file": "07-net-pulse.png",
+      "visualReview": "Accepted: visible effect, legible controls and contact/flight/finish detail.",
+      "width": 1513,
+      "height": 1040,
+      "bytes": 2137592
+    },
+    {
+      "number": 8,
+      "id": "energy-gate",
+      "name": "Energy Gate",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-643310e4-7af4-4ba4-a2a7-21d38fe0475c.png",
+      "file": "08-energy-gate.png",
+      "visualReview": "Accepted: clear creative effect, readable controls, useful sequence/detail.",
+      "width": 1513,
+      "height": 1040,
+      "bytes": 2105234
+    },
+    {
+      "number": 9,
+      "id": "ghost-duel",
+      "name": "Ghost Duel",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-acd1e579-8036-44b3-91b0-ff4d65f10d54.png",
+      "file": "09-ghost-duel.png",
+      "visualReview": "Accepted: clear creative effect, readable controls, useful sequence/detail.",
+      "width": 1513,
+      "height": 1040,
+      "bytes": 2067810
+    },
+    {
+      "number": 10,
+      "id": "hero-sequence",
+      "name": "Hero Sequence",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a111cf-b0e4-7db1-8cee-6b7bd73a7af9/exec-927b9115-8511-44eb-9850-7624bba57cb3.png",
+      "file": "10-hero-sequence.png",
+      "visualReview": "Accepted: clear creative effect, readable controls, useful sequence/detail.",
+      "width": 1513,
+      "height": 1040,
+      "bytes": 2001909
+    }
+  ],
+  "notes": [
+    "Illustrative generated footage and proposed controls, for future development.",
+    "Flight Echo, Ball Lock Pro and Spotlight Ball are suggested first based on fit with existing tracking.",
+    "Turf Burst and Net Pulse require confirmed events and scene alignment.",
+    "Orbit Rings is decorative and makes no spin measurement.",
+    "No speed, metric-distance or accuracy claims are presented."
+  ]
+}

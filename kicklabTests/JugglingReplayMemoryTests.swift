@@ -45,8 +45,9 @@ final class JugglingReplayMemoryTests: XCTestCase {
             var host: UIHostingController<ReplayEffectsView>? = UIHostingController(rootView:
                 ReplayEffectsView(summary: summary, edit: .constant(.init(style: .fire, intensity: 0.8)),
                     stadiumPreview: StadiumPreviewModel(), overlays: .constant(ExportOverlaySettings()),
-                    onSaveShare: {}, onBack: {}))
-            weak var weakHost = host
+                    onBack: {}))
+            weak var weakHost: UIHostingController<ReplayEffectsView>?
+            weakHost = host
             window.rootViewController = host
             try await settle("replay_\(cycle)", seconds: 4)
             window.rootViewController = UIViewController()

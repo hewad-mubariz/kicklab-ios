@@ -35,6 +35,10 @@ struct SessionSummary: Sendable {
     let touchTimeline: [Double]
     var sessionNumber: Int = 1
     var visualTrack: [RecordedFrame]? = nil
+    /// Live frames remain the source of truth for stats. Precise replay masks are
+    /// requested once, only by features which actually need them.
+    var needsVisualPreparation = false
+    var framesUseCompositionClock = false
     var renderTrack: [RecordedFrame] { visualTrack ?? track }
 
     var isNewBest: Bool { touches > 0 && touches >= personalBest }

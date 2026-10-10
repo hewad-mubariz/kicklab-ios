@@ -1,4 +1,4 @@
-# KickLab — Juggling flow design pass
+# Juggle Dude — Juggling flow design pass
 
 Scope: SwiftUI styling and screen composition, as confirmed by the user. Existing recording, tracking, calculation, playback, selection and export behavior stays in place. Debug-review data and footage are illustrative.
 
@@ -69,7 +69,7 @@ Use a subtle Save & Share continuation below content. Do not let it displace the
 
 Centered “Save & Share” header. Directly beneath it: Original / Edited segmented control. Remove “Ready to Share?” and the second introductory line.
 
-Preview follows immediately. Use the same footage as Replay, with a small KickLab watermark in the edited design state. Original and edited remain clearly distinct.
+Preview follows immediately. Use the same footage as Replay, with a small Juggle Dude watermark in the edited design state. Original and edited remain clearly distinct.
 
 Then: Video Quality row with 1080p and chevron; mint Save to Device button; outlined Share button; compact Share to row with Instagram, TikTok, YouTube and More; bottom Record Another Session and Done controls. Secondary bottom actions have dark panels, not a competing second bright primary button.
 

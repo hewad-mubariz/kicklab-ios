@@ -7,12 +7,12 @@ struct HomeHeroView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: -1) {
-                Text("KICK").foregroundStyle(HomeSurface.ink(scheme))
-                Text("LAB").foregroundStyle(HomeSurface.green(scheme))
+                Text("Juggle ").foregroundStyle(HomeSurface.ink(scheme))
+                Text("Dude").foregroundStyle(HomeSurface.green(scheme))
             }
             .font(Theme.brandWordmark(38))
             .tracking(-1.4)
-            .accessibilityLabel("KickLab")
+            .accessibilityLabel("Juggle Dude")
 
             Text("PRACTICE. IMPROVE. REPEAT.")
                 .font(.system(size: 8, weight: .medium))

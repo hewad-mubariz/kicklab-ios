@@ -3,6 +3,41 @@ import XCTest
 @testable import kicklab
 
 final class BallMaskTests: XCTestCase {
+    func testSeparableCoverageMatchesTwoDimensionalKernelAtEdgesAndAllSizes() {
+        var state: UInt64 = 0xB411
+        for (w, h) in [(1,1), (1,8), (8,1), (8,8), (17,31), (64,97), (128,128)] {
+            for mode in 0..<4 {
+                let binary: [UInt8] = (0..<w*h).map { i in
+                    state = state &* 6364136223846793005 &+ 1
+                    switch mode {
+                    case 0: return 0
+                    case 1: return 255
+                    case 2: return (state >> 32) % 7 == 0 ? 255 : 0
+                    default: return UInt8(truncatingIfNeeded: state >> 32)
+                    }
+                }
+                var expanded = binary, expected = binary
+                for y in 0..<h { for x in 0..<w {
+                    expanded[y*w+x] = (max(0,y-1)...min(h-1,y+1)).flatMap { yy in
+                        (max(0,x-1)...min(w-1,x+1)).map { binary[yy*w+$0] }
+                    }.max()!
+                } }
+                for y in 0..<h { for x in 0..<w {
+                    var sum = 0
+                    for dy in -1...1 { for dx in -1...1 {
+                        let yy = y+dy, xx = x+dx
+                        if yy >= 0, yy < h, xx >= 0, xx < w {
+                            sum += Int(expanded[yy*w+xx]) * (dy == 0 ? 2 : 1) * (dx == 0 ? 2 : 1)
+                        }
+                    } }
+                    expected[y*w+x] = UInt8(sum/16)
+                } }
+                XCTAssertEqual(BallMask.featheredCoverage(binary, width: w, height: h), expected,
+                               "Coverage changed for \(w)×\(h), pattern \(mode)")
+            }
+        }
+    }
+
     private func output(maskValue: Float) throws -> MLFeatureProvider {
         let boxes = try MLMultiArray(shape: [1, 4], dataType: .float32)
         for (i, v) in [280, 320, 360, 400].enumerated() { boxes[i] = NSNumber(value: v) }
@@ -24,6 +59,27 @@ final class BallMaskTests: XCTestCase {
         let box = try BallDetector.decodedValues(out, width: 640, height: 640, clipTo: content)
         XCTAssertEqual(box[0], 0.9, accuracy: 0.0001)
         XCTAssertGreaterThan(box[3], 0)
+    }
+
+    func testCropBorderLetsAnObservedCircleReconstructWithoutInventingEmptyCoverage() throws {
+        let out = try output(maskValue: -10)
+        let prototypes = try XCTUnwrap(out.featureValue(for: "mask_prototypes")?.multiArrayValue)
+        let p = prototypes.dataPointer.assumingMemoryBound(to: Float.self)
+        // A known circle touches the selected box. The border must expose its
+        // actual negative logits so the silhouette fit can see the whole rim.
+        for y in 0..<160 { for x in 0..<160 {
+            p[y*160+x] = Float(10 - hypot(Double(x)+0.5-80, Double(y)+0.5-90))*10
+        } }
+        let size = CGSize(width:160,height:160), content = CGRect(x:0,y:0,width:1,height:1)
+        let mask = try XCTUnwrap(BallMask.decode(out,content:content,sourceSize:size,threshold:0.5,sourceBorder:4))
+        let coverage = BallReplacementCoverage(mask:mask,fitted:nil,size:size)
+        XCTAssertTrue(coverage.reconstructsBody)
+        XCTAssertEqual(coverage.footprint.center.x,80,accuracy:1)
+        XCTAssertEqual(coverage.footprint.center.y,90,accuracy:1)
+        XCTAssertEqual(coverage.footprint.radius,10,accuracy:1.5)
+        XCTAssertLessThan(mask.coverage(x:mask.rect.minX+0.01,y:mask.rect.minY+0.01),0.1)
+        XCTAssertNil(BallMask.decode(try output(maskValue:-10),content:content,sourceSize:size,
+                                    threshold:0.5,sourceBorder:4))
     }
 
     func testMaskUnletterboxingCoverageAndBoundedStorage() throws {

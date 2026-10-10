@@ -176,6 +176,10 @@ nonisolated enum ShotRollGeometry {
 nonisolated struct ShotRollSpeedEstimator {
     static let windowS: Double = 0.6
     static let minimumSpanS: Double = 0.5
+    // A 30 fps capture submitted every fourth frame supplies five contacts in
+    // this window. Keep elapsed-time and quality gates instead of requiring
+    // six contacts that can never coexist at that valid sampling cadence.
+    static let minimumSamples = 5
     static let maximumGapS: Double = 0.25
     static let maximumSpeedMPS: Float = 6
     private struct Sample { let point: SIMD3<Float>; let time: Double }
@@ -204,9 +208,18 @@ nonisolated struct ShotRollSpeedEstimator {
         // Also bound work under unexpected callback rates.
         if samples.count > 32 { samples.removeFirst(samples.count - 32) }
         status = "Collecting motion…"
-        guard samples.count >= 6, let first = samples.first else { return }
+        guard let first = samples.first else { return }
         spanS = time - first.time
+        guard samples.count >= Self.minimumSamples else { return }
         guard spanS + 1e-6 >= Self.minimumSpanS else { return }
+        if samples.count == Self.minimumSamples {
+            // Five contacts can support a steady lower cadence, but a missed
+            // callback at a higher cadence must still collect a sixth contact.
+            let denseGapS = Self.windowS / Double(Self.minimumSamples - 1)
+            guard zip(samples, samples.dropFirst()).allSatisfy({
+                $1.time - $0.time <= denseGapS + 1e-6
+            }) else { return }
+        }
         let count = Float(samples.count)
         let meanTime = samples.reduce(0.0) { $0 + ($1.time - first.time) } / Double(samples.count)
         let meanPoint = samples.reduce(SIMD3<Float>(repeating: 0)) { $0 + $1.point } / count
@@ -246,6 +259,8 @@ nonisolated struct ShotRollTracker {
     private(set) var needsNewStart = false
     private var lastPoint: SIMD3<Float>?
     private var lastTime: Double?
+    private var hasLeftStartArea = false
+    private(set) var recoveredPreRollGapS: Double?
     private(set) var speed = ShotRollSpeedEstimator()
 
     mutating func reset() { self = Self() }
@@ -253,24 +268,42 @@ nonisolated struct ShotRollTracker {
     mutating func arm(point: SIMD3<Float>, time: Double) {
         origin = point; lastPoint = point; lastTime = time
         distanceM = 0; needsNewStart = false
+        hasLeftStartArea = false; recoveredPreRollGapS = nil
         speed.reset(); speed.observe(point: point, time: time)
     }
 
-    mutating func invalidate() { needsNewStart = true; speed.reset() }
+    mutating func invalidate() {
+        needsNewStart = true; recoveredPreRollGapS = nil; speed.reset()
+    }
 
     mutating func observe(point: SIMD3<Float>, time: Double) -> Bool {
+        recoveredPreRollGapS = nil
         guard let origin, !needsNewStart, time.isFinite,
               [point.x, point.y, point.z].allSatisfy(\.isFinite) else { return false }
+        let distance = simd_distance(point, origin)
         if let lastTime, let lastPoint {
             let dt = time - lastTime
             guard dt > 0 else { return false }
-            guard dt <= 0.8, simd_distance(point, lastPoint) <= Float(dt) * 6 + 0.12 else {
+            let step = simd_distance(point, lastPoint)
+            // A hand can briefly hide the resting ball before the push. Only
+            // recover near the original start, before leaving that area; never
+            // bridge missing motion or keep an old speed window across the gap.
+            let recoverAtStart = dt > 0.8 && dt <= 2 && !hasLeftStartArea
+                && distance <= 0.08 && simd_distance(lastPoint, origin) <= 0.08
+                && step <= 0.03
+            guard (dt <= 0.8 || recoverAtStart), step <= Float(dt) * 6 + 0.12 else {
                 invalidate(); return false
             }
+            if recoverAtStart {
+                // observe below clears the live window for this gap while
+                // retaining any historical supported peak.
+                recoveredPreRollGapS = dt
+            }
         }
-        distanceM = simd_distance(point, origin)
+        distanceM = distance
         lastPoint = point; lastTime = time
         speed.observe(point: point, time: time)
+        if distance > 0.08 { hasLeftStartArea = true }
         return true
     }
 }

@@ -26,7 +26,7 @@ struct ReplayStyleOption: Identifiable, Hashable {
 }
 
 enum ReplayStyleCatalog {
-    static let effects: [ReplayStyleOption] = BallStyle.allCases.map { style in
+    static let effects: [ReplayStyleOption] = BallStyle.selectableCases.map { style in
         ReplayStyleOption(
             id: style.rawValue,
             title: style.title,

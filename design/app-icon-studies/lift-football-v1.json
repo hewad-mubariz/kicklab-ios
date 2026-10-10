@@ -1,0 +1,10 @@
+{
+  "selected_concept": "08 Lift",
+  "change": "Lime ball now has restrained soccer panel seams and matte surface texture. Original boot silhouette and composition retained.",
+  "tool": "built-in image_gen",
+  "reference": "kicklab-app-icon-sheet-v1.png",
+  "preview": "kicklab-lift-football-v1.png",
+  "prompt": "lift-football-prompt-v1.txt",
+  "status": "Refinement preview; not installed as app icon.",
+  "visual_review": "One selected icon, lime football above original white boot, no extra symbols or text. Ball remains approximately 30 percent of tile width."
+}

@@ -1,0 +1,493 @@
+{
+  "result": "passed",
+  "choices": [
+    {
+      "mode": "follow",
+      "title": "Ball Follow",
+      "pixelsChange": true
+    },
+    {
+      "mode": "impact",
+      "title": "Impact Zoom",
+      "pixelsChange": true
+    },
+    {
+      "mode": "ramp",
+      "title": "Speed Ramp",
+      "pixelsChange": true
+    },
+    {
+      "mode": "tilt",
+      "title": "Tilt Punch",
+      "pixelsChange": true
+    },
+    {
+      "mode": "lens",
+      "title": "Contact Lens",
+      "pixelsChange": true
+    },
+    {
+      "mode": "freeze",
+      "title": "Freeze + Path",
+      "pixelsChange": true
+    },
+    {
+      "mode": "split",
+      "title": "Wide + Detail",
+      "pixelsChange": true
+    },
+    {
+      "mode": "frames",
+      "title": "Frame Steps",
+      "pixelsChange": false
+    }
+  ],
+  "layouts": [
+    {
+      "viewport": 320,
+      "mode": "follow",
+      "width": 288,
+      "clipped": [],
+      "scrollWidth": 288,
+      "clientWidth": 288,
+      "canvases": [
+        {
+          "w": 272,
+          "h": 204
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        }
+      ]
+    },
+    {
+      "viewport": 320,
+      "mode": "frames",
+      "width": 288,
+      "clipped": [],
+      "scrollWidth": 288,
+      "clientWidth": 288,
+      "canvases": [
+        {
+          "w": 272,
+          "h": 204
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        }
+      ]
+    },
+    {
+      "viewport": 320,
+      "mode": "split",
+      "width": 288,
+      "clipped": [],
+      "scrollWidth": 288,
+      "clientWidth": 288,
+      "canvases": [
+        {
+          "w": 272,
+          "h": 204
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        },
+        {
+          "w": 118,
+          "h": 88
+        }
+      ]
+    },
+    {
+      "viewport": 450,
+      "mode": "follow",
+      "width": 418,
+      "clipped": [],
+      "scrollWidth": 418,
+      "clientWidth": 418,
+      "canvases": [
+        {
+          "w": 402,
+          "h": 302
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        }
+      ]
+    },
+    {
+      "viewport": 450,
+      "mode": "frames",
+      "width": 418,
+      "clipped": [],
+      "scrollWidth": 418,
+      "clientWidth": 418,
+      "canvases": [
+        {
+          "w": 402,
+          "h": 302
+        },
+        {
+          "w": 118,
+          "h": 63
+        },
+        {
+          "w": 118,
+          "h": 63
+        },
+        {
+          "w": 118,
+          "h": 63
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        }
+      ]
+    },
+    {
+      "viewport": 450,
+      "mode": "split",
+      "width": 418,
+      "clipped": [],
+      "scrollWidth": 418,
+      "clientWidth": 418,
+      "canvases": [
+        {
+          "w": 402,
+          "h": 302
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        },
+        {
+          "w": 183,
+          "h": 88
+        }
+      ]
+    },
+    {
+      "viewport": 736,
+      "mode": "follow",
+      "width": 650,
+      "clipped": [],
+      "scrollWidth": 650,
+      "clientWidth": 650,
+      "canvases": [
+        {
+          "w": 626,
+          "h": 352
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        }
+      ]
+    },
+    {
+      "viewport": 736,
+      "mode": "frames",
+      "width": 650,
+      "clipped": [],
+      "scrollWidth": 650,
+      "clientWidth": 650,
+      "canvases": [
+        {
+          "w": 626,
+          "h": 352
+        },
+        {
+          "w": 190,
+          "h": 76
+        },
+        {
+          "w": 190,
+          "h": 76
+        },
+        {
+          "w": 190,
+          "h": 76
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        }
+      ]
+    },
+    {
+      "viewport": 736,
+      "mode": "split",
+      "width": 650,
+      "clipped": [],
+      "scrollWidth": 650,
+      "clientWidth": 650,
+      "canvases": [
+        {
+          "w": 626,
+          "h": 352
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        },
+        {
+          "w": 136,
+          "h": 78
+        }
+      ]
+    }
+  ],
+  "consoleErrors": 0,
+  "slowMotionSourceTimeAfter500ms": 0.21,
+  "finalVisualPass": {
+    "result": "passed",
+    "mobileHeaderAndSourceTimeVisible": true,
+    "contactMagnifierContained": true,
+    "consoleErrors": 0
+  }
+}

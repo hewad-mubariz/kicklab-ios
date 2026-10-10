@@ -24,9 +24,9 @@ Reusable building blocks:
 
 Leave out the 28 × 45 × 48 seat slots, individual-seat animation, selection state, pricing, hit testing and section-orbit camera. Use the distant seat representation from the start. Build permanent buffers once.
 
-Dawn has a Metal backend, but that does not make the Three.js TypeScript scene executable in Swift. Port the geometry generation, camera math and material intent. Use native Metal pipelines instead of introducing the React Native/Three.js/Dawn runtime into KickLab.
+Dawn has a Metal backend, but that does not make the Three.js TypeScript scene executable in Swift. Port the geometry generation, camera math and material intent. Use native Metal pipelines instead of introducing the React Native/Three.js/Dawn runtime into Juggle Dude.
 
-KickLab already supplies:
+Juggle Dude already supplies:
 
 - `MetalVideoSurface.swift`: decoded video frames and their presentation timestamps.
 - `MetalEffectEngine.swift` / `EffectShaders.metal`: preview/export GPU rendering.

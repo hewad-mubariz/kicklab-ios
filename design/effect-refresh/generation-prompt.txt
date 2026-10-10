@@ -1,0 +1,42 @@
+Generator: built-in image_gen
+Status: Concept sheet for review, not six implemented effects.
+
+Use case: ui-mockup
+Asset type: one polished effects comparison sheet for the Juggle Dude football-juggling iPhone app.
+
+Create ONE landscape design sheet with exactly SIX large concept cards in a clean 3-column by 2-row grid. It should be easy to compare actual ball effects, not six decorative app icons. Dark graphite background, restrained thin borders, beautiful spacious typography, off-white headings and a small lime brand accent. Heading: "JUGGLE DUDE / EFFECT STUDIES". Subtitle: "Two Python references + four new directions". Small footer: "CONCEPT PREVIEWS".
+
+Each card contains the SAME newly generated modern ivory-white football, with understated dark curved panel seams and realistic soft volume, about one-quarter of card width. No classic black pentagons, no people, no hands, no user photographs, no stadium or phone frame. Leave plenty of space around the ball to see the effect. Keep at least 75% of its surface readable in every card. These are effects around and behind the ball, separate from replacing its material.
+
+Order and exact card labels, numbered 01–06:
+01 "Lab Flame"
+Small badge: "PYTHON FIRE"
+Caption: "Warm flame. Clear ball."
+Reinterpret our actual Python fire reference: an orange/gold incandescent fringe hugging the ball’s outside silhouette, irregular translucent tongues of fire rising above it, a few warm ember specks and a short flowing wake. Yellow-white roots, orange outer tips. Flame stays attached to the ball, with uneven natural wisps rather than a perfect orange circle. Ball texture is visible and clear. Practical medium-sized flame, not an explosion.
+
+02 "Glow Trail"
+Small badge: "PYTHON REPLAY"
+Caption: "A clean trail through each touch."
+Our actual Python phone replay uses a slim continuous blue-white luminous ribbon tracing about half a second of recent ball movement, with a tapered faded end, narrow white-hot core and modest cyan bloom. Show an elegant curved tail roughly three ball diameters long leading INTO the ball, and a very thin lime tracking ring just outside its rim. It is a continuous fine light trail, not jagged lightning, not smoke and not fire. Keep the ball completely readable.
+
+03 "Blue Flame"
+Small badge: "NEW DIRECTION"
+Caption: "Cool fire. Longer tail."
+A compact cyan and deep-blue flame hugs the outer rim, with white-blue roots and two or three clearly tapered fluid flame tongues streaming behind the moving ball. Tail about three ball diameters. A believable flame silhouette, different from the thin Glow Trail ribbon. No ice shards or frozen ball.
+
+04 "Ember Wake"
+Small badge: "NEW DIRECTION"
+Caption: "Warm sparks that fade behind."
+A restrained amber edge glow and sparse orange/gold sparks, some short streaks, trailing behind the ball along a gently curved recent path. Clear individual sparks, a few brighter near the ball, faint smaller older particles. No opaque flame body, no smoke, no glitter cloud. A visibly lighter alternative to full fire.
+
+05 "Flame Ribbon"
+Small badge: "NEW DIRECTION"
+Caption: "A flowing wrap around the ball."
+One or two narrow, smooth red-orange luminous flame ribbons curl around the sides and behind the ball, then peel off into a long warm tail. The silhouette is a flowing curved band rather than turbulent fire or a rigid orbit ring. Keep the front of the ball unobstructed. Restrained gold-hot edge and tiny flickering tips.
+
+06 "Heat Pulse"
+Small badge: "NEW DIRECTION"
+Caption: "A soft burst on every touch."
+A tight warm flame fringe on the ball and three thin expanding concentric amber/gold pulse rings, older outer rings fainter. The rings communicate a quick impact pulse on a juggling touch; they have no symbols or numbers. Clear circular shape, little bloom, no huge explosion, no long tail, no shockwave debris.
+
+Art direction: polished sports product design, consistent ball size and materials, each effect has its own unmistakable silhouette. Use only enough glow to read the effect, with the dark background visible between fine details. Cards have generous padding, legible exact labels and short captions below their visuals. Orange fire looks organic, not a flat flame emoji. Give Flame, Glow Trail and Blue Flame meaningful length and motion. No Shadow effect, no Pixel effect, no checkerboard, no screenshots of people, no bottom navigation, no fake camera UI, no speed metrics. These are visual concepts for review, not a claim that all six are implemented.

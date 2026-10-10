@@ -1,0 +1,26 @@
+{
+  "purpose": "Selection sheet of 10 KickLab app icon concepts; no app icon changed.",
+  "created": "2026-10-08",
+  "tool": "built-in image_gen",
+  "sheet": "kicklab-app-icon-sheet-v1.png",
+  "prompt": "generation-prompt-v1.txt",
+  "concepts": [
+    "01 Kinetic K",
+    "02 First Touch",
+    "03 Panel",
+    "04 Orbit",
+    "05 KL",
+    "06 Flight",
+    "07 Ignite",
+    "08 Lift",
+    "09 Bounce",
+    "10 Track"
+  ],
+  "review": "Exactly 10 numbered concepts in a 5 by 2 grid; labels legible; consistent charcoal/lime/pearl palette; distinct shapes. Concept raster only, pending user selection before production artwork.",
+  "shortlist": [
+    "01 Kinetic K",
+    "03 Panel",
+    "07 Ignite"
+  ],
+  "selected": "08 Lift"
+}

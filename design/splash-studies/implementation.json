@@ -1,0 +1,35 @@
+{
+  "selected_concept": "03 \u2014 Soft Halo",
+  "status": "Implemented",
+  "reference": "design/splash-studies/kicklab-splash-sheet-v1.png",
+  "files": [
+    "kicklab/Launch/SoftHaloSplashView.swift",
+    "kicklab/Launch/LiftBrandMark.swift",
+    "kicklab/Launch/LaunchScreen.storyboard",
+    "kicklab/Assets.xcassets/LaunchBackground.colorset/Contents.json",
+    "kicklab/Navigation/RootShellView.swift",
+    "kicklab.xcodeproj/project.pbxproj"
+  ],
+  "artwork": "Native SwiftUI vector paths reproduce the approved Lift silhouette and small Panel football; no generated raster cutout is used.",
+  "appearance": "Dynamic ivory/charcoal launch background; the splash follows the existing app Light/Dark/System setting, with matching lime halo and light/dark mark.",
+  "timing": "600 ms presentation, then a 220 ms opacity transition. Reduce Motion removes the fade. State is retained at the root across navigation and background/foreground transitions.",
+  "review_mode": "Debug only: --splash-preview -kicklab.appearance dark (or light). Omit --splash-preview for normal dismissal.",
+  "native_launch": "LaunchScreen.storyboard provides an adaptive background before SwiftUI is ready. The branded splash is an in-app opening view.",
+  "validation": {
+    "build": "Debug iPhone simulator build passed",
+    "visual": "Light and dark reviewed on iPhone 17 / iOS 26.5",
+    "existing_ui_test": "SignInUITests/testGuestChoicePersistsAndProfileFollowsAppearanceSettings passed",
+    "test_result": "artifacts/splash-screen/GuestFlow.xcresult",
+    "test_summary": "artifacts/splash-screen/test-summary.json",
+    "screenshots": [
+      "artifacts/splash-screen/soft-halo-dark.png",
+      "artifacts/splash-screen/soft-halo-light.png"
+    ],
+    "diff_check": "passed"
+  },
+  "excluded_artwork_experiment": {
+    "mode": "built-in image generation",
+    "prompt": "design/splash-studies/soft-halo-mark-dark-prompt.txt",
+    "outcome": "Excluded: transparent cutout showed rough matte edges. Native vector drawing used instead."
+  }
+}

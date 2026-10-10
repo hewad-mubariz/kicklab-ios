@@ -73,8 +73,9 @@ nonisolated final class DetectorPerformance {
         handle = nil
     }
 
-    func observe(inferenceMS: Double, preprocessMS: Double, totalMS: Double, recording: Bool,
+    func observe(inferenceMS: Double, preprocessMS: Double, totalMS: Double, recording: Bool, captureDrops: Int? = nil,
                  roiFullFrames: Int = 0, roiCropFrames: Int = 0) -> DetectorPerformanceSnapshot {
+        if let captureDrops { snapshot.captureDrops = captureDrops }
         snapshot.roiFullFrames = roiFullFrames
         snapshot.roiCropFrames = roiCropFrames
         snapshot.inferenceMS = inferenceMS

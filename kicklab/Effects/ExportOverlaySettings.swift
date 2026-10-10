@@ -2,22 +2,29 @@ import CoreGraphics
 import Foundation
 
 nonisolated enum ExportBadgeStyle: String, CaseIterable, Identifiable, Codable, Sendable {
-    case normal, particleBurst, fire, ice, lightning, galaxy, neonRing, ripple, flipboard, pixelBurst, goldenSparks
+    case normal, classic, odometer, broadcast, comic, neon, molten, glitch, graffiti, jelly, goldCoin, chalk
     var id: String { rawValue }
     var title: String {
         switch self {
         case .normal: "Normal"
-        case .particleBurst: "Particle Burst"
-        case .fire: "Fire"
-        case .ice: "Ice"
-        case .lightning: "Lightning"
-        case .galaxy: "Galaxy"
-        case .neonRing: "Neon Ring"
-        case .ripple: "Ripple"
-        case .flipboard: "Flipboard"
-        case .pixelBurst: "Pixel Burst"
-        case .goldenSparks: "Golden Sparks"
+        case .classic: "Classic"
+        case .odometer: "Odometer"
+        case .broadcast: "Broadcast"
+        case .comic: "Comic"
+        case .neon: "Neon Sign"
+        case .molten: "Molten"
+        case .glitch: "Glitch"
+        case .graffiti: "Graffiti"
+        case .jelly: "Jelly"
+        case .goldCoin: "Gold Coin"
+        case .chalk: "Chalkboard"
         }
+    }
+
+    /// Retired styles in saved settings fall back to Normal; the rest of the layout is kept.
+    init(from decoder: any Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        self = Self(rawValue: raw) ?? .normal
     }
 }
 
@@ -117,33 +124,53 @@ nonisolated struct ExportOverlayItem: Codable, Equatable, Sendable {
     var placement: ExportOverlayPlacement
 }
 
+nonisolated struct ExportGraphSettings: Codable, Equatable, Sendable {
+    var enabled = false
+    var style: MotionStyle = .ballMotion
+}
+
 nonisolated struct ExportOverlaySettings: Codable, Equatable, Sendable {
     var counter = ExportOverlayItem(enabled: true, style: .normal, placement: .init(x: 0.04, y: 0.08, scale: 0.65))
-    var hasVisibleOverlays: Bool { counter.enabled }
+    var graph = ExportGraphSettings()
+    var hasVisibleOverlays: Bool { counter.enabled || graph.enabled }
 
-    static func load() -> Self {
+    init() {}
+
+    private enum CodingKeys: String, CodingKey { case counter, graph }
+    init(from decoder: any Decoder) throws {
+        self.init()
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        counter = try values.decodeIfPresent(ExportOverlayItem.self, forKey: .counter) ?? counter
+        graph = try values.decodeIfPresent(ExportGraphSettings.self, forKey: .graph) ?? graph
+    }
+
+    static func load(defaults: UserDefaults = .standard) -> Self {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--session-design") { return Self() }
         #endif
-        if let data = UserDefaults.standard.data(forKey: "kicklab.export.overlays.v1"),
+        if let data = defaults.data(forKey: "kicklab.export.overlays.v1"),
            let saved = try? JSONDecoder().decode(Self.self, from: data) {
-            // Decoding ignores the removed timer key; saving removes it permanently.
-            saved.save()
+            // View initialization must only read preferences. Writing here invalidates
+            // AppStorage in the presenting view and can rebuild this editor forever.
+            // Removed keys disappear on the next explicit settings change.
             return saved
         }
         var initial = Self()
-        if let previous = UserDefaults.standard.object(forKey: "kicklab.export.includeCounter") as? Bool {
+        if let previous = defaults.object(forKey: "kicklab.export.includeCounter") as? Bool {
             initial.counter.enabled = previous
         }
         return initial
     }
 
-    func save() {
+    func save(defaults: UserDefaults = .standard) {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--session-design") { return }
         #endif
-        if let data = try? JSONEncoder().encode(self) {
-            UserDefaults.standard.set(data, forKey: "kicklab.export.overlays.v1")
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        if let data = try? encoder.encode(self),
+           defaults.data(forKey: "kicklab.export.overlays.v1") != data {
+            defaults.set(data, forKey: "kicklab.export.overlays.v1")
         }
     }
 }

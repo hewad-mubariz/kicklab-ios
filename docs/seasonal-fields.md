@@ -2,7 +2,7 @@
 
 These two environments complete the current six-scene set. Select them in Replay & Effects → Environment, or use the horizontally scrolling Snow and Beach tabs in the prepared scene preview. The chosen environment and camera framing use the existing save, replay and export pipeline.
 
-The supplied images guide real-time interpretations, rather than photographic replicas. Snow Field includes blue dusk lighting, snowy spruce, alpine terrain, a lit timber cabin, powder-like ground and falling snow. Beach Field includes warm sand, palms, a hut, surfboards, sunset water, foam and distant sails. Both retain KICKLAB training banners, court markings, benches and floodlights. Neither field mirrors signage or scenery on the floor.
+The supplied images guide real-time interpretations, rather than photographic replicas. Snow Field includes blue dusk lighting, snowy spruce, alpine terrain, a lit timber cabin, powder-like ground and falling snow. Beach Field includes warm sand, palms, a hut, surfboards, sunset water, foam and distant sails. Both retain JUGGLE DUDE training banners, court markings, benches and floodlights. Neither field mirrors signage or scenery on the floor.
 
 ## Implementation
 

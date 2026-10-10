@@ -34,7 +34,7 @@ Apple describes subject lifting as an image-based request producing a soft segme
 
 ## Recommended next experiment
 
-Keep native Vision as the baseline and keep the ball detector/matte separate. Compare the current person output with a dedicated video-matting model that estimates fine alpha while using information across frames. [Robust Video Matting](https://github.com/PeterL1n/RobustVideoMatting) provides recurrent temporal processing, foreground-color output and official Core ML exports. [MatAnyone 2](https://github.com/pq-yang/MatAnyone2) is another relevant human-matting benchmark. Neither has been run on KickLab footage in this audit. Their published results are not evidence of an improvement here; model/code rights must be suitable before product integration.
+Keep native Vision as the baseline and keep the ball detector/matte separate. Compare the current person output with a dedicated video-matting model that estimates fine alpha while using information across frames. [Robust Video Matting](https://github.com/PeterL1n/RobustVideoMatting) provides recurrent temporal processing, foreground-color output and official Core ML exports. [MatAnyone 2](https://github.com/pq-yang/MatAnyone2) is another relevant human-matting benchmark. Neither has been run on Juggle Dude footage in this audit. Their published results are not evidence of an improvement here; model/code rights must be suitable before product integration.
 
 For the comparison:
 

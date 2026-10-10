@@ -1,0 +1,57 @@
+Generator: built-in image_gen
+Deliverable: concept-sheet-v2-linear.png
+Status: Concept previews only; Python references inspected, no runtime changes.
+
+Use case: precise-object-edit
+Asset type: revised Juggle Dude power-shot effect concept sheet.
+Edit target: the attached previous TEN-card concept sheet. Keep its polished two-column, five-row layout, generated football-pitch photography, cropped fictional athlete's boot, modern football, typography, charcoal/lime palette and overall framing. The provided image is entirely generated concept art. Do not introduce real people or any photographs from other references. Change the EFFECT SHAPES and specified labels as described below.
+
+CRITICAL USER CORRECTION: Make the trails mostly LINEAR. For every card the main trail follows ONE STRAIGHT horizontal flight axis ending at the back of the football, from left to right. Ball remains at the leading RIGHT end. No sine-wave routes, looping ribbons, helices, sprawling fork trees, clouds or wide sprays. Keep almost all emission within a narrow corridor about half a football diameter high, except the ball's tight flame corona and the explicitly requested pressure rings. Small texture flicker and pointed flame tips are welcome but the overall trail path must be visibly STRAIGHT. Long effects extend 4–6 ball diameters behind the ball; tails taper or fade at the older left end. Preserve 80 percent of the visible football surface. This should feel much simpler and more practical to animate than the old sheet.
+
+Header exactly "JUGGLE DUDE / POWER SHOT".
+Subtitle exactly "Straight trails. Clear ball."
+Footer exactly "CONCEPT REVISION 02".
+
+Maintain the positions and numbering of the retained effects. EXACT new card content, row-major order:
+
+01 "JUGGLE FLAME"
+Caption "A tighter flame behind the ball"
+Retain the orange juggling flame but reduce its old chaotic spread by at least 65 percent. A modest irregular orange rim outside the ball, with a narrow, tapered flame tail going straight left. Amber/yellow hot core, small natural orange tongues and fine edge flicker. No giant swirls or wide fire cloud. This is organic but tightly guided by the flight line.
+
+02 "BLUE JET"
+Caption "More flame. One straight wake."
+Keep Blue Jet but give it MORE OBVIOUS REAL FLAME TEXTURE: a compact luminous blue-white root at the rear of the ball, several distinct translucent cyan-blue flame tongues streaming left within one narrow straight cone. Fluid flame tongues with pointed tips, small turbulent gaps and hot roots. It must look like a controlled blue torch flame, not electrical lightning or a blurred blue laser. A visible flame fringe on the outside of the football, without covering the front.
+
+03 "VOLT STRIKE"
+Caption "Electric detail on a straight path"
+Keep the electrical concept but restrain it to one thin bright blue-white main bolt with one or two very short side branches, all contained along the straight travel line. Tiny local jagged details, no widely separated lightning branches and no broad electrical net. Keep plenty of negative space around it.
+
+04 "EMBER RUSH"
+Caption "A slim line of warm sparks"
+Keep the warm spark effect but narrow the scattered fan into a slim straight lane of discrete amber and gold sparks, aligned with flight. Tiny streaks and pinpoints fading toward the left. Only a faint warm ball-edge rim. No smoke, flames or large burst.
+
+05 "LIME RIBBON"
+Caption "A clean ribbon on the flight line"
+Keep its bright acid-lime identity. Replace the curving S-shaped ribbon with ONE STRAIGHT, slim tapered lime band ending behind the ball. Subtle luminous white center and lime edges, clean satin-like appearance, modest bloom. No wave, no loop and no multiple parallel ribbons. A small lime rim on the football is fine.
+
+06 "ICE TRAIL"
+Caption "Based on the Python ice effect"
+REPLACE Frost Wake completely. Reference the existing Python shot-trail idea: a slender straight icy-blue luminous trail through recent ball positions, pale-white core, cyan edges, a compact cold glow around the ball and only a handful of tiny frost pinpoints near the line. No floating ice shards, no snowstorm, no smoky cloud. A practical clean cold light trail. Preserve the normally textured football.
+
+07 "SHOCKWAVE"
+Caption "Small pulses along the flight line"
+Keep the approved pressure-ring idea but use only three compact faint blue-white elliptical rings centered on ONE straight axis behind the ball. Rings viewed in perspective, aligned with the flight direction; older rings further left become fainter. Max ring height about 1.5 ball diameters, much tighter than the old expansive rings. Clear gaps between the rings. No smoke cloud or curving ribbon.
+
+08 "FIRE TRAIL"
+Caption "Based on the Python fire effect"
+REPLACE Smoke Dash completely. This is the known simple Python shot-trail visual, deliberately DIFFERENT from Juggle Flame: one straight narrow white-yellow core, bright amber middle line and subtle orange halo, a small orange ball rim and a few tiny fading sparks. Nearly linear layered light, not simulation-heavy flame volume. Do not draw a broad fire plume or swirling orange ribbons.
+
+09 "GLOW TRAIL"
+Caption "The juggling glow, extended"
+REPLACE Twin Helix completely. Match the juggling Glow Trail idea: a single very fine white-cyan luminous centerline with restrained blue bloom, tapered fading at the far left end, attached cleanly to the ball's rear. Thin lime tracking rim around the ball. A straight elegant filament, noticeably finer and softer than Lime Ribbon, without zigzags, loops, helices or branching.
+
+10 "PULSE TRAIL"
+Caption "New: simple fading light pulses"
+REPLACE Speed Lines completely. One straight row of six small luminous violet-white rounded dash segments behind the ball, aligned end to end with clear tiny gaps, bright near the ball and faint toward the oldest left end. It visually implies pulses travelling along the ball's recent straight path. No multiple parallel lines, no comic speed fan, no arrows, no ball duplicates, no spirals.
+
+The Python-based cards are illustrated references, not screenshots or claims of exact runtime output. All ten are concept previews. The removed names and looks Frost Wake, Smoke Dash, Twin Helix and Speed Lines must not appear anywhere. No old app branding. The entire sheet must remain readable with all TEN cards fully visible. Prioritize clear distinct line treatments, visible ball texture and restrained effect footprint.

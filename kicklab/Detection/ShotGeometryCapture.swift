@@ -164,6 +164,7 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
             preserveFailureStatus = false
             recordedAt = Date()
             recording = true
+            ProductAnalytics.shared.track(.trainingStarted(.ballDistance))
             status = "Recording — hold the phone steady"
         } catch { abort(); showFailure("Could not start: \(error.localizedDescription)") }
     }
@@ -380,6 +381,7 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
         catch { abort(); showFailure("Measurement data could not be saved: \(error.localizedDescription)"); return }
         let count = saved, skipped = dropped, bad = limited, size = dimensions
         let mapped = groundReadyFrames
+        let recordingDuration = max(0, lastTimestamp - (origin ?? lastTimestamp))
         let firstTime = origin ?? 0
         let rollFile = rollEnabledForRecording ? directory.appendingPathComponent("roll-distance.jsonl") : nil
         let rollCount = rollSamples, rollTrials = rollTrial, detectorName = rollModel
@@ -450,6 +452,7 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
                     }
                     try JSONSerialization.data(withJSONObject: data, options: [.sortedKeys])
                         .write(to: manifest, options: .atomic)
+                    ProductAnalytics.shared.track(.trainingCompleted(.ballDistance, duration: recordingDuration))
                     self.files = [video, frames, manifest] + (rollFile.map { [$0] } ?? []) + (calibrationImage.map { [$0] } ?? [])
                     self.status = bad == 0 ? "Saved to Saved shots — video + data" :
                         "Saved to Saved shots. Camera tracking was limited during this shot."
@@ -537,6 +540,11 @@ extension ShotGeometryCapture {
     func cancelRollCalibration() { calibrationSnapshot = nil }
 
     func applyRollCalibration(_ calibration: ShotRollCalibration) throws {
+        guard calibration.independentSpanCheck?.withinTolerance != false else {
+            throw NSError(domain: "Kicklab.RollCalibration", code: 2, userInfo: [
+                NSLocalizedDescriptionKey: "Scale mismatch in the measured gap. Retap the centres or scan the floor again."
+            ])
+        }
         guard let snapshot = calibrationSnapshot, !recording, !finishing else {
             throw ShotRollCalibration.FitError.correction
         }
@@ -607,7 +615,7 @@ extension ShotGeometryCapture {
     }
 
     private func calibrationEvent(_ value: ShotRollCalibration) -> [String: Any] {
-        ["event": "calibration", "schema": "kicklab.roll-calibration.v1", "calibration_id": value.id,
+        var event: [String: Any] = ["event": "calibration", "schema": "kicklab.roll-calibration.v1", "calibration_id": value.id,
          "method": "measured_span_floor_offset", "capture_timestamp_s": value.timestamp,
          "reference_distance_m": value.referenceDistanceM, "uncalibrated_span_m": value.originalSpanM,
          "height_factor": value.heightFactor, "image": "roll-calibration.png",
@@ -623,6 +631,15 @@ extension ShotGeometryCapture {
          "physical_scale_verified": false, "ground_contact_verified": false,
          "independently_verified": false,
          "note": "Fitted using these two marks. Requires separate held-out distances; assumes a level floor and fixed camera."]
+        if let check = value.independentSpanCheck {
+            event["independent_span_check"] = [
+                "sensor_points_normalized": check.sensorPoints.map { [$0.x, $0.y] },
+                "reference_distance_m": check.referenceDistanceM, "estimated_distance_m": check.estimatedDistanceM,
+                "error_m": check.errorM, "tolerance_m": check.toleranceM,
+                "within_experimental_tolerance": check.withinTolerance, "physical_speed_accuracy_verified": false
+            ] as [String: Any]
+        }
+        return event
     }
 
     #if DEBUG
@@ -661,6 +678,7 @@ extension ShotGeometryCapture {
         rollLatest = nil; rollDisplay.canSetStart = false; rollDisplay.isLive = false
         session.pause()
     }
+    func waitForDetectorRelease() async { await rollDetector.releaseAndWait() }
     func setRollMode(_ enabled: Bool) {
         guard !recording, !finishing else { return }
         rollDistanceEnabled = enabled
@@ -867,6 +885,9 @@ extension ShotGeometryCapture {
             rollDisplay.status = inside ? "Ball found — tap Set start, then roll" : "Scan more floor around the starting ball"
         } else if rollTracker.observe(point: projection.worldContact, time: timestamp) {
             rollDisplay.distanceM = rollTracker.distanceM; rollDisplay.isLive = true
+            if let gap = rollTracker.recoveredPreRollGapS {
+                event["pre_roll_gap_recovered_s"] = gap
+            }
             if rollCalibration != nil {
                 // The fit uses capture time. A delayed callback may update the
                 // historical peak, but must not present old motion as live.
@@ -923,7 +944,7 @@ extension ShotGeometryCapture {
     }
 }
 
-private final class ShotGeometryPreviewSurface: ARSCNView {
+final class ShotGeometryPreviewSurface: ARSCNView {
     private let ballOverlay = CAShapeLayer()
     var rollState = ShotRollDisplay()
 
@@ -962,8 +983,9 @@ private final class ShotGeometryPreviewSurface: ARSCNView {
     }
 }
 
-private struct ShotGeometryPreview: UIViewRepresentable {
+struct ShotGeometryPreview: UIViewRepresentable {
     let capture: ShotGeometryCapture
+    var showsTrackingOverlay = true
     func makeUIView(context: Context) -> ShotGeometryPreviewSurface {
         let view = ShotGeometryPreviewSurface(frame: .zero)
         view.session = capture.session
@@ -972,7 +994,7 @@ private struct ShotGeometryPreview: UIViewRepresentable {
         return view
     }
     func updateUIView(_ view: ShotGeometryPreviewSurface, context: Context) {
-        view.rollState = capture.rollDistanceEnabled ? capture.rollDisplay : ShotRollDisplay()
+        view.rollState = capture.rollDistanceEnabled && showsTrackingOverlay ? capture.rollDisplay : ShotRollDisplay()
         view.updateRollOverlay()
     }
 }

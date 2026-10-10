@@ -58,4 +58,14 @@ nonisolated final class ShotRollDetector: @unchecked Sendable {
             detector = nil; loadedResource = nil; lastRotation = nil
         }
     }
+
+    /// Imports wait for the live detector to release before loading replay analysis.
+    func releaseAndWait() async {
+        await withCheckedContinuation { continuation in
+            queue.async { [self] in
+                detector = nil; loadedResource = nil; lastRotation = nil
+                continuation.resume()
+            }
+        }
+    }
 }

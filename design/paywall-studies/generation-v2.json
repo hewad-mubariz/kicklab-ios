@@ -1,0 +1,10 @@
+{
+  "mode": "builtin image generation",
+  "tool": "image_gen.imagegen",
+  "prompt": "generation-prompt-v2.txt",
+  "output": "juggle-dude-paywalls-v2.png",
+  "purpose": "Six additional paywall image mockups, numbered 07 through 12, for design selection",
+  "offer_status": "Pro name, premium benefits, prices and subscription terms are illustrative concept data, not approved live offers",
+  "sample_prices": {"monthly_eur": 3.99, "yearly_eur": 24.99},
+  "concepts": ["Live Canvas", "Match Ticket", "Effect Deck", "Bold Pro", "Court Culture", "Motion Studio"]
+}

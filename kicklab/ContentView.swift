@@ -25,9 +25,10 @@ struct PickedMovie: Transferable {
             SentTransferredFile(movie.url)
         } importing: { received in
             let copy = FileManager.default.temporaryDirectory
-                .appendingPathComponent("kicklab-\(UUID().uuidString).mov")
+                .appendingPathComponent("juggledude-\(UUID().uuidString).mov")
             try? FileManager.default.removeItem(at: copy)
             try FileManager.default.copyItem(at: received.file, to: copy)
+            try FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: copy.path)
             return PickedMovie(url: copy)
         }
     }
@@ -79,8 +80,8 @@ struct FileView: View {
             }
 
             VStack(spacing: 10) {
-                PhotosPicker(selection: $photoItem, matching: .videos) {
-                    Text(analyzer.isRunning ? "Analysing…" : "Choose from Photos")
+                PhotosPicker(selection: $photoItem, matching: .videos, preferredItemEncoding: .current) { [isRunning = analyzer.isRunning] in
+                    Text(isRunning ? "Analysing…" : "Choose from Photos")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -117,6 +118,7 @@ struct FileView: View {
                 analyzer.analyse(url: url)
             }
         }
+        .onDisappear { analyzer.cancel() }
     }
 
     private func row(_ label: String, _ value: String) -> some View {

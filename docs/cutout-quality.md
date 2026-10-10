@@ -34,15 +34,15 @@ The updated Replay & Effects UI was also checked on the prepared SDR source at a
 
 ## Tool comparison and recommendation
 
-| Option | Fit for KickLab |
+| Option | Fit for Juggle Dude |
 |---|---|
 | [Apple Vision subject lifting](https://developer.apple.com/videos/play/wwdc2023/10176/) | Current implementation: native deployment, source-aware scaled masks, and a separate crop for the ball. Image-based, so temporal consistency still needs testing on a broader set of clips. |
 | [OpenCV GrabCut](https://docs.opencv.org/4.13.0/d8/d83/tutorial_py_grabcut.html) | Useful interactive initialization/refinement, not an automatic semantic person-and-ball video matte. |
 | [OpenCV alphamat](https://docs.opencv.org/4.12.0/d4/d40/group__alphamat.html) / [global-matting C++](https://github.com/atilimcetin/global-matting) | Can refine an uncertain boundary given a foreground/background/unknown trimap. The C++ implementation is MIT. Neither supplies object identity or temporal tracking by itself. Not added as a dependency without a measured advantage over the native cut. |
 | [Robust Video Matting](https://github.com/PeterL1n/RobustVideoMatting) | A temporal human-matting baseline with official Core ML exports. Person-focused; the ball still needs separate handling. Repository is GPL-3.0, so not treated as a drop-in proprietary-app dependency. |
-| [MatAnyone 2](https://github.com/pq-yang/MatAnyone2) / [MatAnyone2Kit](https://github.com/flowtyone/MatAnyone2Kit) | Strong candidate for a dedicated video-matting benchmark. The Swift port reports 30 fps on A18 at 288 × 512 working resolution; that is its published result, not a KickLab measurement. The port is GPL-3.0 and bundled weights use S-Lab's non-commercial license. It is not bundled in KickLab. A commercial route needs suitable model rights and validation on juggling footage. |
+| [MatAnyone 2](https://github.com/pq-yang/MatAnyone2) / [MatAnyone2Kit](https://github.com/flowtyone/MatAnyone2Kit) | Strong candidate for a dedicated video-matting benchmark. The Swift port reports 30 fps on A18 at 288 × 512 working resolution; that is its published result, not a Juggle Dude measurement. The port is GPL-3.0 and bundled weights use S-Lab's non-commercial license. It is not bundled in Juggle Dude. A commercial route needs suitable model rights and validation on juggling footage. |
 
-Recommended path: keep evaluating the native refinement in the prepared preview, with current-frame ball identity validation and a separate ball mask. OpenCV optical flow or a trimap matting library would not independently solve a tracker selecting foliage. Evaluate a suitably licensed temporal matting model against held-out juggling clips if remaining edge flicker warrants it. A person-only model should not be assumed to preserve an airborne football. The existing KickLab detector supplies ball proposals; replacing its detector is not the same as adding a matting model.
+Recommended path: keep evaluating the native refinement in the prepared preview, with current-frame ball identity validation and a separate ball mask. OpenCV optical flow or a trimap matting library would not independently solve a tracker selecting foliage. Evaluate a suitably licensed temporal matting model against held-out juggling clips if remaining edge flicker warrants it. A person-only model should not be assumed to preserve an airborne football. The existing Juggle Dude detector supplies ball proposals; replacing its detector is not the same as adding a matting model.
 
 All footage and masks in this evaluation were processed locally. No clips were sent to an external background-removal service.
 

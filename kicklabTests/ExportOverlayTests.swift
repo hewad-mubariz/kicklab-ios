@@ -7,16 +7,53 @@ import Testing
 struct ExportOverlayTests {
     @Test func normalIsTheDefaultAndOldCounterChoicesRemainAvailable() throws {
         #expect(ExportOverlaySettings().counter.style == .normal)
-        #expect(ExportBadgeStyle.allCases.count == 11)
-        #expect(ExportBadgeStyle.allCases.contains(.particleBurst))
+        #expect(ExportBadgeStyle.allCases.count == 12)
+        #expect(ExportBadgeStyle.allCases.contains(.classic))
+        #expect(ExportBadgeStyle.allCases.contains(.odometer))
         #expect(NormalCounterAppearance.label(5) == "05")
         #expect(NormalCounterAppearance.label(124) == "124")
         let font = CTFontCreateWithName(NormalCounterAppearance.fontName as CFString, 84, nil)
         #expect(CTFontCopyPostScriptName(font) as String == NormalCounterAppearance.fontName)
         var choice = ExportOverlaySettings()
-        choice.counter.style = .particleBurst
+        choice.counter.style = .goldCoin
         let restored = try JSONDecoder().decode(ExportOverlaySettings.self, from: JSONEncoder().encode(choice))
-        #expect(restored.counter.style == .particleBurst)
+        #expect(restored.counter.style == .goldCoin)
+        choice.counter.style = .classic
+        let classic = try JSONDecoder().decode(ExportOverlaySettings.self, from: JSONEncoder().encode(choice))
+        #expect(classic.counter.style == .classic)
+    }
+
+    @Test func retiredCounterStylesFallBackToNormalAndKeepTheirLayout() throws {
+        let old = Data(#"{"counter":{"enabled":true,"style":"particleBurst","placement":{"x":0.3,"y":0.6,"scale":1.2,"rotation":10}}}"#.utf8)
+        let restored = try JSONDecoder().decode(ExportOverlaySettings.self, from: old)
+        #expect(restored.counter.style == .normal)
+        #expect(restored.counter.placement == .init(x: 0.3, y: 0.6, scale: 1.2, rotation: 10))
+    }
+
+    @Test func showpieceCountersReactToATouchAndSettleWhenIdle() throws {
+        for style in ExportBadgeStyle.allCases where style != .normal && style != .classic {
+            func pixels(age: Double?, time: Double) throws -> Data {
+                let image = try #require(ExportOverlayRenderer.image(style: style, time: time,
+                    counter: .init(count: 24, isTotal: false, age: age), scale: 1))
+                return try #require(image.dataProvider?.data) as Data
+            }
+            #expect(try pixels(age: 0.1, time: 30.1) != pixels(age: 30, time: 60), "\(style) shows the touch")
+            #expect(try pixels(age: nil, time: 12) == pixels(age: -1, time: 12), "\(style) treats a missing touch as idle")
+        }
+    }
+
+    @Test func classicBurstOnlyAppearsForARecentRecordedTouch() throws {
+        func pixels(age: Double?, total: Bool = false) throws -> Data {
+            let image = try #require(ExportOverlayRenderer.image(style: .classic, time: 10,
+                counter: .init(count: 5, isTotal: total, age: age), scale: 1))
+            return try #require(image.dataProvider?.data) as Data
+        }
+        let settled = try pixels(age: nil)
+        #expect(try pixels(age: 0.15) != settled)
+        #expect(try pixels(age: 2) == settled)
+        #expect(try pixels(age: -1) == settled)
+        #expect(try pixels(age: .nan) == settled)
+        #expect(try pixels(age: 0.15, total: true) == pixels(age: nil, total: true))
     }
 
     @Test func placementKeepsRotatedCornersInsideEveryOrientationAndQuality() {
@@ -74,7 +111,8 @@ struct ExportOverlayTests {
     @Test func migrationRemovesTheTimerAndKeepsExistingCounterLayout() throws {
         let old = Data(#"{"counter":{"enabled":true,"style":"ice","placement":{"x":0.2,"y":0.7,"scale":0.85}},"timer":{"enabled":true,"style":"galaxy","placement":{"x":0.8,"y":0.4,"scale":0.6}}}"#.utf8)
         let migrated = try JSONDecoder().decode(ExportOverlaySettings.self, from: old)
-        #expect(migrated.counter.style == .ice)
+        // Ice was retired with the old counter set: it falls back to Normal, keeping the layout.
+        #expect(migrated.counter.style == .normal)
         #expect(migrated.counter.placement == .init(x: 0.2, y: 0.7, scale: 0.85, rotation: 0))
         let saved = try JSONEncoder().encode(migrated)
         #expect(!String(decoding: saved, as: UTF8.self).contains("timer"))
@@ -117,7 +155,7 @@ struct ExportOverlayTests {
             return CGPoint(x: xSum / weight, y: ySum / weight)
         }
         var settings = ExportOverlaySettings()
-        settings.counter.style = .flipboard
+        settings.counter.style = .odometer
         settings.counter.placement = .init(x: 0.5, y: 0.5)
         let upright = centroid(try render(settings))
         settings.counter.placement.rotation = 90

@@ -1,4 +1,4 @@
-# KickLab design system
+# Juggle Dude design system
 
 This implementation follows the supplied day/night home mockup.
 
@@ -35,7 +35,7 @@ Created with the built-in imagegen tool. Original assets retained.
 
 ### Day prompt
 
-Use case: stylized-concept. Asset type: portrait 9:16 background image for KickLab mobile football training app, no UI or typography. Create a premium cinematic realistic 3D football pitch at sunny daytime, camera very low near vibrant fresh green grass. Clear pale blue sky occupies top 28 percent, softly out of focus leafy trees and small community stadium grandstands with tall floodlight poles at left and right occupy next 15 percent, field horizon at 43 percent down image, lower 57 percent lush vivid green football turf with sunlit blades and gentle bokeh in foreground. The center at 35 percent height is open and quiet for a mascot to be overlaid by the app. Warm natural sun from upper right. Rich natural green, blue sky, bright welcoming sports atmosphere, enough definition to feel like a real pitch, no fog or white haze. Edges slightly soft depth of field. No people, no balls, no text, no logos, no icons, no phone frame. This is a full bleed app background asset, not a mockup.
+Use case: stylized-concept. Asset type: portrait 9:16 background image for Juggle Dude mobile football training app, no UI or typography. Create a premium cinematic realistic 3D football pitch at sunny daytime, camera very low near vibrant fresh green grass. Clear pale blue sky occupies top 28 percent, softly out of focus leafy trees and small community stadium grandstands with tall floodlight poles at left and right occupy next 15 percent, field horizon at 43 percent down image, lower 57 percent lush vivid green football turf with sunlit blades and gentle bokeh in foreground. The center at 35 percent height is open and quiet for a mascot to be overlaid by the app. Warm natural sun from upper right. Rich natural green, blue sky, bright welcoming sports atmosphere, enough definition to feel like a real pitch, no fog or white haze. Edges slightly soft depth of field. No people, no balls, no text, no logos, no icons, no phone frame. This is a full bleed app background asset, not a mockup.
 
 ### Night prompt
 

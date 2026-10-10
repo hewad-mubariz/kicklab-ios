@@ -1,0 +1,14 @@
+{
+  "selected_concept": "08 Lift with 03 Panel ball",
+  "change": "Replaced the textured lime ball with a smaller pearl-white ball using the curved charcoal and lime seams from 03 Panel.",
+  "preserved": "White boot, dark sole cut, charcoal rounded tile and overall composition.",
+  "tool": "built-in image_gen",
+  "references": [
+    "kicklab-lift-football-v1.png",
+    "kicklab-app-icon-sheet-v1.png"
+  ],
+  "preview": "kicklab-lift-panel-v2.png",
+  "prompt": "lift-panel-prompt-v2.txt",
+  "status": "Refinement preview; not installed as app icon.",
+  "visual_review": "Ball matches the 03 Panel curved-seam design and is slightly smaller than the previous ball; boot and tile remain visually consistent."
+}

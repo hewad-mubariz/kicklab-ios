@@ -1,0 +1,36 @@
+{
+  "scope": "Approved: screens and guest flow first",
+  "screens": [
+    "First-entry welcome",
+    "Profile sign-in sheet"
+  ],
+  "appearance": "Uses saved System, Light or Dark setting. New installs default to System. Screen and alert accents adapt for readable contrast.",
+  "guest": "Try it first persists kicklab.welcome.completed and opens existing training home. Profile sign-in sheet is dismissible without changing local profile.",
+  "providers": "Apple uses ASAuthorizationAppleIDButton. Google uses official supplied Google G artwork. Email is a smaller outlined secondary option. All three show an availability notice; no account, email address or credentials are collected or stored.",
+  "legal": "Terms and Privacy actions show availability notices pending published documents.",
+  "artwork": {
+    "path": "kicklab/Assets.xcassets/signin-ball.imageset/signin-ball.png",
+    "generator": "built-in image_gen",
+    "prompt": "ball-asset-prompt.txt",
+    "transparent": true
+  },
+  "google_artwork_source": "https://developers.google.com/static/identity/images/g-logo.png",
+  "google_brand_reference": "https://developers.google.com/identity/branding-guidelines",
+  "app_files": [
+    "kicklab/Account/SignInView.swift",
+    "kicklab/Navigation/RootShellView.swift",
+    "kicklab/Home/TrainingProfileView.swift",
+    "kicklab/Home/HomeProfileButton.swift",
+    "kicklab/kicklabApp.swift"
+  ],
+  "test_file": "kicklabUITests/SignInUITests.swift",
+  "presentation": "Welcome, Home and their modal destinations share a stable root presentation host.",
+  "email": "Optional choice on both Welcome and Profile. Guest access remains prominent and available from the notice. Email verification and its entry sheet will be connected in the authentication phase.",
+  "latest_screenshots": [
+    "design/sign-in/implemented-email-welcome-dark.png",
+    "design/sign-in/implemented-email-welcome-light.png",
+    "design/sign-in/implemented-email-sheet-dark.png",
+    "design/sign-in/implemented-email-sheet-light.png"
+  ],
+  "latest_validation": "artifacts/sign-in-email/validation.json"
+}

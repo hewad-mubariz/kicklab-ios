@@ -4,7 +4,7 @@ Open **Replay & Effects → Environment → Indoor Arena**. Once the foreground 
 
 ## Design
 
-The supplied indoor hall image and the [Motion Lab gallery](https://github.com/hewad-mubariz/react-native-motion-lab/tree/main/src/scenes/gallery) informed the lighting and material direction. This implementation uses native Metal, with a complete room around the camera: charcoal wall panels, structural columns, roof trusses, suspended white twin lights, warm wall lights, thin perimeter coves, service doors, and KICKLAB signage. The sealed concrete floor has court markings, softened room reflections, a faint foreground reflection, and the existing foot-contact shadow.
+The supplied indoor hall image and the [Motion Lab gallery](https://github.com/hewad-mubariz/react-native-motion-lab/tree/main/src/scenes/gallery) informed the lighting and material direction. This implementation uses native Metal, with a complete room around the camera: charcoal wall panels, structural columns, roof trusses, suspended white twin lights, warm wall lights, thin perimeter coves, service doors, and Juggle Dude signage. The sealed concrete floor has court markings, softened room reflections, a faint foreground reflection, and the existing foot-contact shadow.
 
 The room is world-space geometry described through analytic ray intersections in `IndoorArena.h`. Camera rotation reveals the side and rear walls; it is not a fixed background image. The existing recorded-camera follow, drag/arrow look controls, zoom, and device-motion controls apply to both environments.
 

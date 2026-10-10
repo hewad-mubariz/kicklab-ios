@@ -6,6 +6,7 @@ final class CaptureFlowUITests: XCTestCase {
     @MainActor
     func testReadyCaptureHasSessionAndMetricsWithoutEditingTools() {
         let app = XCUIApplication()
+        app.launchArguments = ["-kicklab.welcome.completed", "YES"]
         app.launch()
         XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout: 10))
         app.buttons["module-juggling"].tap()
@@ -41,6 +42,15 @@ final class CaptureFlowUITests: XCTestCase {
         app.buttons["replay-select-counter"].tap()
         XCTAssertTrue(app.buttons["replay-remove-counter"].waitForExistence(timeout: 3))
         attach(app, "Editor - counter selected")
+        // "Counter style" morphs into the tray, opened straight on the styles.
+        app.buttons["replay-customize"].tap()
+        XCTAssertTrue(app.buttons["counter-style-normal"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["replay-export"].exists, "Counter styles open in the tray, not a sheet")
+        attach(app, "Editor - counter styles from the selected counter")
+        app.buttons["replay-close-tools"].tap()
+        XCTAssertTrue(app.buttons["replay-select-counter"].waitForExistence(timeout: 3))
+        app.buttons["replay-select-counter"].tap()
+        XCTAssertTrue(app.buttons["replay-remove-counter"].waitForExistence(timeout: 3))
         app.buttons["replay-remove-counter"].tap()
         XCTAssertTrue(app.buttons["replay-select-counter"].waitForNonExistence(timeout: 3))
         app.buttons["replay-reset"].tap()
@@ -64,27 +74,64 @@ final class CaptureFlowUITests: XCTestCase {
         app.buttons["replay-customize"].tap()
         XCTAssertTrue(app.buttons["replay-tool-timer"].waitForExistence(timeout: 3))
         app.buttons["replay-tool-timer"].tap()
+        // Tools open in place inside the panel; the editor stays on screen.
         XCTAssertTrue(app.switches["Show elapsed time"].waitForExistence(timeout: 3))
-        app.buttons["Done"].tap()
-
-        openTool("counter", in: app)
-        let chooseStyle = app.buttons["counter-choose-style"]
-        XCTAssertTrue(chooseStyle.waitForExistence(timeout: 5))
-        XCTAssertTrue(chooseStyle.label.contains("Normal"))
-        chooseStyle.tap()
-        XCTAssertTrue(app.buttons["counter-style-normal"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.buttons["counter-style-normal"].isSelected)
+        XCTAssertTrue(app.buttons["replay-export"].exists)
+        app.buttons["replay-tools-back"].tap()
+        XCTAssertTrue(app.buttons["replay-tool-counter"].waitForExistence(timeout: 3))
+        app.buttons["replay-tool-counter"].tap()
+        // Counter styles open in place like the other tools, and apply live.
+        let normal = app.buttons["counter-style-normal"], odometer = app.buttons["counter-style-odometer"]
+        XCTAssertTrue(normal.waitForExistence(timeout: 5))
+        XCTAssertTrue(normal.isSelected)
+        XCTAssertTrue(app.switches["counter-show"].exists)
+        XCTAssertFalse(app.sliders["Counter size"].exists, "Placement is by gesture, not sliders")
         attach(app, "Counter styles - normal default and alternatives")
-        app.buttons["counter-style-particleBurst"].tap()
-        XCTAssertTrue(chooseStyle.waitForExistence(timeout: 3))
-        XCTAssertTrue(chooseStyle.label.contains("Particle Burst"))
-        chooseStyle.tap()
-        app.buttons["counter-style-normal"].tap()
-        XCTAssertTrue(chooseStyle.waitForExistence(timeout: 3))
-        app.buttons["counter-editor-done"].tap()
+        odometer.tap()
+        XCTAssertTrue(odometer.isSelected)
+        normal.tap()
+        XCTAssertTrue(normal.isSelected)
+        app.buttons["replay-close-tools"].tap()
 
-        app.buttons["replay-export"].tap()
-        XCTAssertTrue(app.staticTexts["Save & Share"].waitForExistence(timeout: 10))
+        // Download saves in place: no Save & Share page, then share and next steps.
+        XCTAssertTrue(app.startReplayDownload(), "Download starts at once")
+        attach(app, "Download - saving in place")
+        XCTAssertTrue(app.waitForReplaySaved(timeout: 240), "The replay is saved to Photos")
+        XCTAssertTrue(app.buttons["replay-record-another"].exists)
+        XCTAssertTrue(app.buttons["replay-done"].exists)
+        attach(app, "Download - saved, share and next steps")
+    }
+
+    @MainActor
+    func testClassicCounterCanBeSelectedAndKeptAlongsideNormal() throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("This fixture path is only available in the simulator")
+        #endif
+        let fixture = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("kicklabTests/Fixtures/juggling-eighteen.mov").path
+        let app = XCUIApplication()
+        app.launchArguments = ["--session-design", "capture-flow", "--session-video", fixture]
+        app.launch()
+        XCTAssertTrue(app.buttons["replay-customize"].waitForExistence(timeout: 15))
+        app.buttons["replay-customize"].tap()
+        app.buttons["replay-tool-counter"].tap()
+        let normal = app.buttons["counter-style-normal"], classic = app.buttons["counter-style-classic"]
+        XCTAssertTrue(classic.waitForExistence(timeout: 5))
+        XCTAssertTrue(normal.isSelected)
+        XCTAssertTrue(app.buttons["counter-style-odometer"].exists)
+        attach(app, "Counter styles - Normal and Classic")
+        classic.tap()
+        XCTAssertTrue(classic.isSelected)
+        attach(app, "Counter styles - Classic original design")
+        app.buttons["replay-close-tools"].tap()
+        attach(app, "Replay - Classic counter")
+        app.buttons["replay-customize"].tap()
+        app.buttons["replay-tool-counter"].tap()
+        XCTAssertTrue(classic.waitForExistence(timeout: 5))
+        XCTAssertTrue(classic.isSelected, "The chosen style is kept")
+        normal.tap()
+        XCTAssertTrue(normal.isSelected)
+        app.buttons["replay-close-tools"].tap()
     }
 
     @MainActor
@@ -100,34 +147,35 @@ final class CaptureFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["replay-export"].waitForExistence(timeout: 15))
 
         openTool("ball", in: app)
-        XCTAssertTrue(app.buttons["ball-picker-chrome"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.staticTexts["Choose an Effect"].exists)
-        app.buttons["ball-picker-chrome"].tap()
-        attach(app, "Ball picker - modern replacements")
-        app.buttons["ball-picker-apply"].tap()
+        let chrome = app.buttons["ball-picker-chrome"]
+        XCTAssertTrue(chrome.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["replay-export"].exists, "Ball choices open in place, not in a sheet")
+        chrome.tap()
+        XCTAssertTrue(chrome.isSelected)
+        attach(app, "Ball page - picks apply live")
+        app.buttons["replay-tools-back"].tap()
 
-        openTool("effects", in: app)
-        XCTAssertTrue(app.buttons["effect-picker-fire"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["effect-picker-fire"].isSelected)
-        app.buttons["effect-picker-ice"].tap()
-        app.buttons["effect-picker-apply"].tap()
+        app.buttons["replay-tool-effects"].tap()
+        let fire = app.buttons["effect-picker-fire"], ice = app.buttons["effect-picker-ice"]
+        XCTAssertTrue(fire.waitForExistence(timeout: 5))
+        XCTAssertTrue(fire.isSelected)
+        ice.tap()
+        XCTAssertTrue(ice.isSelected)
+        XCTAssertTrue(app.sliders["Effect intensity"].exists)
+        attach(app, "Effects page - ball effect icons")
+        app.buttons["replay-tools-back"].tap()
 
-        openTool("ball", in: app)
-        XCTAssertTrue(app.buttons["ball-picker-chrome"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["ball-picker-chrome"].isSelected)
-        app.buttons["ball-picker-arctic"].tap()
-        app.buttons["ball-picker-close"].tap()
-
-        openTool("ball", in: app)
-        XCTAssertTrue(app.buttons["ball-picker-chrome"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["ball-picker-chrome"].isSelected, "Closing must discard the draft ball")
+        app.buttons["replay-tool-ball"].tap()
+        XCTAssertTrue(chrome.waitForExistence(timeout: 5))
+        XCTAssertTrue(chrome.isSelected, "Changing the effect must keep the ball")
         app.buttons["ball-picker-original"].tap()
-        app.buttons["ball-picker-apply"].tap()
+        app.buttons["replay-tools-back"].tap()
 
-        openTool("effects", in: app)
-        XCTAssertTrue(app.buttons["effect-picker-ice"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["effect-picker-ice"].isSelected, "Changing the ball must preserve the effect")
-        app.buttons["effect-picker-close"].tap()
+        app.buttons["replay-tool-effects"].tap()
+        XCTAssertTrue(ice.waitForExistence(timeout: 5))
+        XCTAssertTrue(ice.isSelected, "Changing the ball must preserve the effect")
+        app.buttons["replay-close-tools"].tap()
+        XCTAssertTrue(app.buttons["replay-customize"].waitForExistence(timeout: 3))
     }
 
     @MainActor

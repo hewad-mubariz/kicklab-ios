@@ -56,7 +56,10 @@ final class StadiumPreviewModel: ObservableObject {
         #if DEBUG
         writeDiagnostics(status:"preparing",source:summary.videoURL)
         #endif
-        let observations = summary.renderTrack.filter(\.detected).map {
+        let visualSummary: SessionSummary
+        do { visualSummary = try await readySummary(summary) }
+        catch { self.error = error.localizedDescription; isPreparing = false; return }
+        let observations = visualSummary.renderTrack.filter { $0.detected && !$0.isVisualMaskRepair }.map {
             StadiumBallObservation(time:$0.time,
                 bounds:CGRect(x:$0.x-$0.width/2,y:$0.y-$0.height/2,width:$0.width,height:$0.height),confidence:$0.score)
         }
@@ -68,7 +71,7 @@ final class StadiumPreviewModel: ObservableObject {
         let reportStage: @Sendable (String) async -> Void = { [weak self] stage in
             await self?.receiveStage(stage, token: token)
         }
-        let task = Task.detached(priority:.userInitiated) {
+        let task = VideoWorkExecution.detached {
             try await operation(source, observations, reportProgress, reportStage)
         }
         worker = task
@@ -106,6 +109,7 @@ final class StadiumPreviewModel: ObservableObject {
         guard let selection else {
             return ScenePlayback(url: try await EffectPreviewCache.shared.preparedURL(for: summary.videoURL), track: summary.renderTrack)
         }
+        let summary = try await readySummary(summary)
         if let cached = scenes[selection] { return cached }
         if let pending = sceneTasks[selection] { return try await pending.value }
         if isPreparing {
@@ -119,11 +123,11 @@ final class StadiumPreviewModel: ObservableObject {
         // Another consumer may have requested the same scene while preparation ran.
         if let cached = scenes[selection] { return cached }
         if let pending = sceneTasks[selection] { return try await pending.value }
-        let frames = summary.renderTrack
+        let frames = summary.renderTrack.filter { !$0.isVisualMaskRepair }
         let progress: @Sendable (Double) async -> Void = { [weak self] value in
             await self?.receiveRenderProgress(value)
         }
-        let task = Task.detached(priority: .userInitiated) {
+        let task = VideoWorkExecution.detached {
             let url = try await SceneMovieRenderer.render(prepared: prepared, selection: selection, onProgress: progress)
             return ScenePlayback(url: url, track: selection.project(frames, in: prepared.recording!))
         }
@@ -132,6 +136,14 @@ final class StadiumPreviewModel: ObservableObject {
         let media = try await task.value
         scenes[selection] = media
         return media
+    }
+
+    private func readySummary(_ summary: SessionSummary) async throws -> SessionSummary {
+        guard summary.needsVisualPreparation else { return summary }
+        let frames = try await BallVisualRefiner.refineVideo(source: summary.videoURL, frames: summary.track,
+            framesUseCompositionClock: summary.framesUseCompositionClock)
+        var ready = summary; ready.visualTrack = frames; ready.needsVisualPreparation = false
+        return ready
     }
 
     private func receiveRenderProgress(_ value: Double) { renderProgress = value }

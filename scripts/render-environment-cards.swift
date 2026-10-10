@@ -1,5 +1,6 @@
 // Render picker artwork with the shipping scene shader, without a foreground.
 // Usage: render-environment-cards <metallib> <Assets.xcassets>
+// Build and run with: zsh scripts/render-environment-cards.sh [output-catalog]
 import CoreImage
 import Foundation
 

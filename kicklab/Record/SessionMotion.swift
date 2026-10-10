@@ -11,6 +11,8 @@ enum SessionMotion {
     /// Large surfaces settling: video, toolbox.
     static let settle = Animation.spring(response: 0.44, dampingFraction: 0.86)
     static let fade = Animation.easeOut(duration: 0.18)
+    /// The Customize tray resizing between pages; the video above it rides the same curve.
+    static let tray = Animation.spring(response: 0.4, dampingFraction: 0.86)
     /// Delay between staggered siblings.
     static let stagger = 0.045
 

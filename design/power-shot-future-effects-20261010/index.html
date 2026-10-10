@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kicklab — Future Power Shot Effects</title>
+<style>
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f3f5f4;background:#090c0c}
+*{box-sizing:border-box}
+body{margin:0;padding:32px 24px 64px}
+main{max-width:1600px;margin:auto}
+header{max-width:900px;margin-bottom:32px}
+.eyebrow{color:#57f5a6;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+h1{font-size:clamp(28px,4vw,48px);letter-spacing:-1px;line-height:1.1;margin:14px 0}
+header p{color:#b4beb9;line-height:1.6;font-size:17px}
+.shortlist{color:#57f5a6}
+nav{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0}
+nav a{color:#edf2ef;text-decoration:none;background:#202725;border-radius:20px;padding:10px 14px}
+nav a:hover{background:#2f3b35}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+article{background:#131918;border:1px solid #29312d;border-radius:24px;overflow:hidden;scroll-margin-top:20px}
+.caption{display:flex;align-items:center;gap:12px;padding:20px 22px}
+h2{font-size:24px;margin:0}
+.number{font-size:24px;font-weight:700;color:#57f5a6}
+.board{display:block}
+.board img{display:block;width:100%;height:auto}
+article p{margin:20px 22px;color:#e0e7e3;line-height:1.5}
+dl{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;margin:0 22px 24px;line-height:1.5}
+dt{color:#57f5a6;font-weight:600}dd{margin:0;color:#aebcb4}
+footer{margin-top:32px;line-height:1.6;color:#aebcb4}footer a{color:#57f5a6}
+a:focus-visible{outline:3px solid #57f5a6;outline-offset:4px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}body{padding:24px 14px 40px}.caption{padding:16px}h2{font-size:22px}article p{margin:16px}dl{margin:0 16px 20px}}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="eyebrow">Power Shot · Future concepts · October 2026</div>
+<h1>Ten ideas for a cleaner ball model.</h1>
+<p>Detailed visual concepts in Kicklab’s dark glass and mint style. Each board shows the effect, a close-up, its timing and proposed controls. Select a board to open the full image.</p>
+<p class="shortlist">Suggested starting three: Flight Echo · Ball Lock Pro · Spotlight Ball</p>
+<nav aria-label="Concept navigation"><a href="#flight-echo">Flight Echo</a><a href="#ball-lock-pro">Ball Lock Pro</a><a href="#spotlight-ball">Spotlight Ball</a><a href="#heat-wake">Heat Wake</a><a href="#orbit-rings">Orbit Rings</a><a href="#turf-burst">Turf Burst</a><a href="#net-pulse">Net Pulse</a><a href="#energy-gate">Energy Gate</a><a href="#ghost-duel">Ghost Duel</a><a href="#hero-sequence">Hero Sequence</a></nav>
+</header>
+<div class="grid"><article id="flight-echo">
+  <div class="caption"><span class="number">01</span><h2>Flight Echo</h2></div>
+  <a class="board" href="01-flight-echo.png" target="_blank" rel="noopener" aria-label="Open full image: Flight Echo"><img src="01-flight-echo.png" alt="Flight Echo concept with video preview, enlarged effect detail, timing sequence and controls" loading="lazy"></a>
+  <p>Fading cutouts of the actual ball reveal the observed flight in one cinematic frame.</p>
+  <dl><dt>Adjust</dt><dd>Echo count · Frame spacing · Fade</dd><dt>Needs</dt><dd>Reliable ball masks and continuous tracked frames.</dd></dl>
+</article>
+<article id="ball-lock-pro">
+  <div class="caption"><span class="number">02</span><h2>Ball Lock Pro</h2></div>
+  <a class="board" href="02-ball-lock-pro.png" target="_blank" rel="noopener" aria-label="Open full image: Ball Lock Pro"><img src="02-ball-lock-pro.png" alt="Ball Lock Pro concept with video preview, enlarged effect detail, timing sequence and controls" loading="lazy"></a>
+  <p>Keep the ball in a stable screen zone while the recorded background flows past it.</p>
+  <dl><dt>Adjust</dt><dd>Lock position · Zoom · Background blur</dd><dt>Needs</dt><dd>Smooth ball tracking, clean masks and enough source resolution for a bounded crop.</dd></dl>
+</article>
+<article id="spotlight-ball">
+  <div class="caption"><span class="number">03</span><h2>Spotlight Ball</h2></div>
+  <a class="board" href="03-spotlight-ball.png" target="_blank" rel="noopener" aria-label="Open full image: Spotlight Ball"><img src="03-spotlight-ball.png" alt="Spotlight Ball concept with video preview, enlarged effect detail, timing sequence and controls" loading="lazy"></a>
+  <p>Pull attention toward the ball with color isolation and a soft focus falloff.</p>
+  <dl><dt>Adjust</dt><dd>Focus size · Background color · Feather</dd><dt>Needs</dt><dd>Stable ball mask; the existing player mask is optional.</dd></dl>
+</article>
+<article id="heat-wake">
+  <div class="caption"><span class="number">04</span><h2>Heat Wake</h2></div>
+  <a class="board" href="04-heat-wake.png" target="_blank" rel="noopener" aria-label="Open full image: Heat Wake"><img src="04-heat-wake.png" alt="Heat Wake concept with video preview, enlarged effect detail, timing sequence and controls" loading="lazy"></a>
+  <p>A short refractive air wake bends the existing background behind the moving ball.</p>
+  <dl><dt>Adjust</dt><dd>Distortion · Wake length · Falloff</dd><dt>Needs</dt><dd>Smooth tracked direction and ball scale, plus a background pixel-warp renderer.</dd></dl>
+</article>
+<article id="orbit-rings">
+  <div class="caption"><span class="number">05</span><h2>Orbit Rings</h2></div>
+  <a class="board" href="05-orbit-rings.png" target="_blank" rel="noopener" aria-label="Open full image: Orbit Rings"><img src="05-orbit-rings.png" alt="Orbit Rings concept with video preview, enlarged effect detail, timing sequence and controls" loading="lazy"></a>
+  <p>Decorative light rings wrap around the tracked ball with convincing foreground and background layering.</p>
+  <dl><dt>Adjust</dt><dd>Ring size · Orbit motion · Color</dd><dt>Needs</dt><dd>Precise ball silhouette and screen-space scale; decorative motion does not measure spin.</dd></dl>
+</article>
+<article id="turf-burst">
+  <div class="caption"><span class="number">06</span><h2>Turf Burst</h2></div>
+  <a class="board" href="06-turf-burst.png" target="_blank" rel="noopener" aria-label="Open full image: Turf Burst"><img src="06-turf-burst.png" alt="Turf Burst concept with video preview, enlarged effect detail, timing sequence and controls" loading="lazy"></a>
+  <p>A tightly timed burst of grass or dust gives the strike a physical punch.</p>
+  <dl><dt>Adjust</dt><dd>Strike frame · Burst strength · Turf or dust</dd><dt>Needs</dt><dd>A confirmed strike and local ground alignment, with foreground occlusion.</dd></dl>
+</article>
+<article id="net-pulse">
+  <div class="caption"><span class="number">07</span><h2>Net Pulse</h2></div>
+  <a class="board" href="07-net-pulse.png" target="_blank" rel="noopener" aria-label="Open full image: Net Pulse"><img src="07-net-pulse.png" alt="Net Pulse concept with video preview, enlarged effect detail, timing sequence and controls" loading="lazy"></a>
+  <p>A confirmed net hit sends a controlled light ripple through the goal mesh.</p>
+  <dl><dt>Adjust</dt><dd>Impact frame · Ripple size · Duration</dd><dt>Needs</dt><dd>A confirmed net impact and goal/net alignment in addition to ball tracking.</dd></dl>
+</article>
+<article id="energy-gate">
+  <div class="caption"><span class="number">08</span><h2>Energy Gate</h2></div>
+  <a class="board" href="08-energy-gate.png" target="_blank" rel="noopener" aria-label="Open full image: Energy Gate"><img src="08-energy-gate.png" alt="Energy Gate concept with video preview, enlarged effect detail, timing sequence and controls" loading="lazy"></a>
+  <p>Place an artistic light gate at an observed point in the ball’s flight.</p>
+  <dl><dt>Adjust</dt><dd>Gate position · Gate size · Color</dd><dt>Needs</dt><dd>Ball track and masks; stable or aligned footage helps place the gate.</dd></dl>
+</article>
+<article id="ghost-duel">
+  <div class="caption"><span class="number">09</span><h2>Ghost Duel</h2></div>
+  <a class="board" href="09-ghost-duel.png" target="_blank" rel="noopener" aria-label="Open full image: Ghost Duel"><img src="09-ghost-duel.png" alt="Ghost Duel concept with video preview, enlarged effect detail, timing sequence and controls" loading="lazy"></a>
+  <p>Compare two aligned recordings through synchronized photographic ball ghosts.</p>
+  <dl><dt>Adjust</dt><dd>Reference clip · Contact sync · Ghost opacity</dd><dt>Needs</dt><dd>Two recordings with a matching camera view or reliable alignment and tracked balls.</dd></dl>
+</article>
+<article id="hero-sequence">
+  <div class="caption"><span class="number">10</span><h2>Hero Sequence</h2></div>
+  <a class="board" href="10-hero-sequence.png" target="_blank" rel="noopener" aria-label="Open full image: Hero Sequence"><img src="10-hero-sequence.png" alt="Hero Sequence concept with video preview, enlarged effect detail, timing sequence and controls" loading="lazy"></a>
+  <p>An editable highlight preset assembles run-up, strike, flight and finish into a short story.</p>
+  <dl><dt>Adjust</dt><dd>Story length · Pacing · Effect strength</dd><dt>Needs</dt><dd>Confirmed event timing and reliable tracking; combines editable effects into chapters.</dd></dl>
+</article></div>
+<footer>
+<p>Future creative concepts. The illustrated ball, footage and controls are generated design references, not completed app features or verified measurements. The effects are designed around shared tracked ball positions and masks. Turf/net reactions also need confirmed impact events and scene alignment. Orbit Rings is decorative and does not measure spin.</p>
+<p>Technical reference for attaching effects to tracked scene planes: <a href="https://helpx.adobe.com/in/after-effects/desktop/work-with-3d-composition/3d-camera-tracker-effect/tracking-3d-camera-movement.html" target="_blank" rel="noopener">Adobe camera tracking guide</a>. Generated with the built-in image tool. <a href="concepts.json">Concepts and generation prompts</a>.</p>
+</footer>
+</main>
+</body>
+</html>

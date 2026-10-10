@@ -1,0 +1,36 @@
+{
+  "status": "design concept only; authentication not implemented",
+  "generator": "built-in image_gen",
+  "image": "kicklab-sign-in-v1.png",
+  "prompt": "generation-prompt-v1.txt",
+  "recommendation": {
+    "launch": [
+      "Continue with Apple",
+      "Continue with Google",
+      "Try it first"
+    ],
+    "later": "Optional email one-time code if needed",
+    "entry_points": [
+      "Welcome screen",
+      "Sign-in sheet from Profile"
+    ]
+  },
+  "design": {
+    "background": "#0C0F10",
+    "panel": "#151A1C",
+    "accent": "#D0F852",
+    "display_type": "DIN Condensed-inspired",
+    "body_type": "SF Pro-inspired",
+    "artwork": "Generated football, no user photos"
+  },
+  "implementation_notes": [
+    "Use official provider controls/assets rather than generated button graphics.",
+    "The same provider action can serve new and returning users.",
+    "Guest access is a proposed product choice, not implemented in this task.",
+    "No account sync, backup or cross-device storage is promised by this copy."
+  ],
+  "references": [
+    "https://developer.apple.com/design/human-interface-guidelines/sign-in-with-apple",
+    "https://developers.google.com/identity/branding-guidelines"
+  ]
+}

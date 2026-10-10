@@ -1,0 +1,252 @@
+{
+  "status": "future concepts only; no app implementation",
+  "created": "2026-10-10",
+  "tool": "built-in image_gen.imagegen",
+  "recommendedFirst": [
+    "flight-echo",
+    "ball-lock-pro",
+    "spotlight-ball"
+  ],
+  "concepts": [
+    {
+      "number": 1,
+      "id": "flight-echo",
+      "name": "Flight Echo",
+      "description": "Fading cutouts of the actual ball reveal the observed flight in one cinematic frame.",
+      "controls": [
+        "Echo count",
+        "Frame spacing",
+        "Fade"
+      ],
+      "needs": "Reliable ball masks and continuous tracked frames.",
+      "detail": "Use six translucent photographic copies of the same white and black leather ball at previous observed positions along a believable shallow flight arc. Earlier copies fade gradually, the current ball is opaque and crisp. The arc occupies the middle of the recorded pitch, never an artificial flight beyond the observed ball. No glowing line connecting the copies. Show enlarged ball cutout detail with perfect edges and preserved leather texture.",
+      "callouts": [
+        "Real ball cutouts",
+        "Older frames fade",
+        "Current ball stays sharp"
+      ],
+      "sequence": [
+        "Strike",
+        "Flight echoes",
+        "Fade out"
+      ],
+      "prompt": "Create a polished detailed premium iOS sports-video app concept board for Kicklab Power Shot. Landscape art direction, 1600 by 1100 approximate aspect ratio. This is an illustrative FUTURE CONCEPT, not a screenshot of an implemented feature. Consistent current app visual language: near-black background, charcoal frosted-glass cards with 26px rounded corners, vivid mint green accents (#57F5A6), clean white sans-serif typography, secondary muted gray. Tasteful spacious layout; high quality photoreal soccer footage, real white-and-black leather football, player in dark kit, natural football pitch and goal in daylight, actual ball remains recognizable. One large mobile-editor mockup occupies left 58% with generous video preview and compact glass settings below it. Right 42% contains one enlarged visual detail crop, two short callouts and a 3-stage sequence of image thumbnails. Title at top with a numbered badge and small FUTURE CONCEPT label. This is a crafted product-design presentation with large readable text, not a wall of paragraphs. No speed, metres, RPM, accuracy scores or fictional analysis numbers. Source-frame timeline at bottom, minimal existing icons, no giant logo, no tacky neon everywhere. Prioritize strong visible effect over unnecessary chrome.\nTitle exactly \"01 · Flight Echo\". Effect visualization: Use six translucent photographic copies of the same white and black leather ball at previous observed positions along a believable shallow flight arc. Earlier copies fade gradually, the current ball is opaque and crisp. The arc occupies the middle of the recorded pitch, never an artificial flight beyond the observed ball. No glowing line connecting the copies. Show enlarged ball cutout detail with perfect edges and preserved leather texture.\nGlass settings card title \"Flight Echo\". Show these 3 readable control labels with tasteful sliders or chips: \"Echo count\", \"Frame spacing\", \"Fade\". Detail callouts: \"Real ball cutouts\", \"Older frames fade\", \"Current ball stays sharp\". Sequence captions: \"Strike\", \"Flight echoes\", \"Fade out\". Render crisp type, coherent scene, very detailed source image and professional app-design finish."
+    },
+    {
+      "number": 2,
+      "id": "ball-lock-pro",
+      "name": "Ball Lock Pro",
+      "description": "Keep the ball in a stable screen zone while the recorded background flows past it.",
+      "controls": [
+        "Lock position",
+        "Zoom",
+        "Background blur"
+      ],
+      "needs": "Smooth ball tracking, clean masks and enough source resolution for a bounded crop.",
+      "detail": "A sharp photographic football occupies the central upper third while the original pitch, running shooter and goal are streaked with restrained directional motion blur. This is a crop and background treatment of the recorded view, never an invented orbit or unseen side of the scene. Ball leather and silhouette stay sharp. Detail crop contrasts crisp ball edge against moving background. Small lock-position control with a mint draggable dot in a rectangular preview.",
+      "callouts": [
+        "Ball held in frame",
+        "Background flows past",
+        "Smooth crop movement"
+      ],
+      "sequence": [
+        "Find ball",
+        "Lock and follow",
+        "Ease back"
+      ],
+      "prompt": "Create a polished detailed premium iOS sports-video app concept board for Kicklab Power Shot. Landscape art direction, 1600 by 1100 approximate aspect ratio. This is an illustrative FUTURE CONCEPT, not a screenshot of an implemented feature. Consistent current app visual language: near-black background, charcoal frosted-glass cards with 26px rounded corners, vivid mint green accents (#57F5A6), clean white sans-serif typography, secondary muted gray. Tasteful spacious layout; high quality photoreal soccer footage, real white-and-black leather football, player in dark kit, natural football pitch and goal in daylight, actual ball remains recognizable. One large mobile-editor mockup occupies left 58% with generous video preview and compact glass settings below it. Right 42% contains one enlarged visual detail crop, two short callouts and a 3-stage sequence of image thumbnails. Title at top with a numbered badge and small FUTURE CONCEPT label. This is a crafted product-design presentation with large readable text, not a wall of paragraphs. No speed, metres, RPM, accuracy scores or fictional analysis numbers. Source-frame timeline at bottom, minimal existing icons, no giant logo, no tacky neon everywhere. Prioritize strong visible effect over unnecessary chrome.\nTitle exactly \"02 · Ball Lock Pro\". Effect visualization: A sharp photographic football occupies the central upper third while the original pitch, running shooter and goal are streaked with restrained directional motion blur. This is a crop and background treatment of the recorded view, never an invented orbit or unseen side of the scene. Ball leather and silhouette stay sharp. Detail crop contrasts crisp ball edge against moving background. Small lock-position control with a mint draggable dot in a rectangular preview.\nGlass settings card title \"Ball Lock Pro\". Show these 3 readable control labels with tasteful sliders or chips: \"Lock position\", \"Zoom\", \"Background blur\". Detail callouts: \"Ball held in frame\", \"Background flows past\", \"Smooth crop movement\". Sequence captions: \"Find ball\", \"Lock and follow\", \"Ease back\". Render crisp type, coherent scene, very detailed source image and professional app-design finish."
+    },
+    {
+      "number": 3,
+      "id": "spotlight-ball",
+      "name": "Spotlight Ball",
+      "description": "Pull attention toward the ball with color isolation and a soft focus falloff.",
+      "controls": [
+        "Focus size",
+        "Background color",
+        "Feather"
+      ],
+      "needs": "Stable ball mask; the existing player mask is optional.",
+      "detail": "Football retains natural white leather and a small warm orange panel detail, crisp and full color. Recorded player, grass and goal become elegant desaturated charcoal photography with restrained darkening. A soft area around the ball and contact foot retains slightly more light; no hard spotlight cone, no neon outline, no arbitrary ball recoloring. Show enlarged boundary detail with feathered background falloff and original ball texture.",
+      "callouts": [
+        "Original ball color",
+        "Soft background falloff",
+        "Clean silhouette"
+      ],
+      "sequence": [
+        "Normal scene",
+        "Focus on strike",
+        "Follow the ball"
+      ],
+      "prompt": "Create a polished detailed premium iOS sports-video app concept board for Kicklab Power Shot. Landscape art direction, 1600 by 1100 approximate aspect ratio. This is an illustrative FUTURE CONCEPT, not a screenshot of an implemented feature. Consistent current app visual language: near-black background, charcoal frosted-glass cards with 26px rounded corners, vivid mint green accents (#57F5A6), clean white sans-serif typography, secondary muted gray. Tasteful spacious layout; high quality photoreal soccer footage, real white-and-black leather football, player in dark kit, natural football pitch and goal in daylight, actual ball remains recognizable. One large mobile-editor mockup occupies left 58% with generous video preview and compact glass settings below it. Right 42% contains one enlarged visual detail crop, two short callouts and a 3-stage sequence of image thumbnails. Title at top with a numbered badge and small FUTURE CONCEPT label. This is a crafted product-design presentation with large readable text, not a wall of paragraphs. No speed, metres, RPM, accuracy scores or fictional analysis numbers. Source-frame timeline at bottom, minimal existing icons, no giant logo, no tacky neon everywhere. Prioritize strong visible effect over unnecessary chrome.\nTitle exactly \"03 · Spotlight Ball\". Effect visualization: Football retains natural white leather and a small warm orange panel detail, crisp and full color. Recorded player, grass and goal become elegant desaturated charcoal photography with restrained darkening. A soft area around the ball and contact foot retains slightly more light; no hard spotlight cone, no neon outline, no arbitrary ball recoloring. Show enlarged boundary detail with feathered background falloff and original ball texture.\nGlass settings card title \"Spotlight Ball\". Show these 3 readable control labels with tasteful sliders or chips: \"Focus size\", \"Background color\", \"Feather\". Detail callouts: \"Original ball color\", \"Soft background falloff\", \"Clean silhouette\". Sequence captions: \"Normal scene\", \"Focus on strike\", \"Follow the ball\". Render crisp type, coherent scene, very detailed source image and professional app-design finish."
+    },
+    {
+      "number": 4,
+      "id": "heat-wake",
+      "name": "Heat Wake",
+      "description": "A short refractive air wake bends the existing background behind the moving ball.",
+      "controls": [
+        "Distortion",
+        "Wake length",
+        "Falloff"
+      ],
+      "needs": "Smooth tracked direction and ball scale, plus a background pixel-warp renderer.",
+      "detail": "Fast sharp football in flight, behind it a short transparent heat-haze wake with rippling refraction of grass stripes and goal mesh. Visible effect must be bent background pixels, like hot air, not smoke, colored flames, a painted ribbon or a particle trail. Enlarge the wake in a callout crop where straight grass lines visibly wobble through clear air. Keep restrained warm highlights without obscuring the source scene.",
+      "callouts": [
+        "Clear air distortion",
+        "Source pixels bend",
+        "Wake fades quickly"
+      ],
+      "sequence": [
+        "Clean flight",
+        "Air distortion",
+        "Soft dissolve"
+      ],
+      "prompt": "Create a polished detailed premium iOS sports-video app concept board for Kicklab Power Shot. Landscape art direction, 1600 by 1100 approximate aspect ratio. This is an illustrative FUTURE CONCEPT, not a screenshot of an implemented feature. Consistent current app visual language: near-black background, charcoal frosted-glass cards with 26px rounded corners, vivid mint green accents (#57F5A6), clean white sans-serif typography, secondary muted gray. Tasteful spacious layout; high quality photoreal soccer footage, real white-and-black leather football, player in dark kit, natural football pitch and goal in daylight, actual ball remains recognizable. One large mobile-editor mockup occupies left 58% with generous video preview and compact glass settings below it. Right 42% contains one enlarged visual detail crop, two short callouts and a 3-stage sequence of image thumbnails. Title at top with a numbered badge and small FUTURE CONCEPT label. This is a crafted product-design presentation with large readable text, not a wall of paragraphs. No speed, metres, RPM, accuracy scores or fictional analysis numbers. Source-frame timeline at bottom, minimal existing icons, no giant logo, no tacky neon everywhere. Prioritize strong visible effect over unnecessary chrome.\nTitle exactly \"04 · Heat Wake\". Effect visualization: Fast sharp football in flight, behind it a short transparent heat-haze wake with rippling refraction of grass stripes and goal mesh. Visible effect must be bent background pixels, like hot air, not smoke, colored flames, a painted ribbon or a particle trail. Enlarge the wake in a callout crop where straight grass lines visibly wobble through clear air. Keep restrained warm highlights without obscuring the source scene.\nGlass settings card title \"Heat Wake\". Show these 3 readable control labels with tasteful sliders or chips: \"Distortion\", \"Wake length\", \"Falloff\". Detail callouts: \"Clear air distortion\", \"Source pixels bend\", \"Wake fades quickly\". Sequence captions: \"Clean flight\", \"Air distortion\", \"Soft dissolve\". Render crisp type, coherent scene, very detailed source image and professional app-design finish."
+    },
+    {
+      "number": 5,
+      "id": "orbit-rings",
+      "name": "Orbit Rings",
+      "description": "Decorative light rings wrap around the tracked ball with convincing foreground and background layering.",
+      "controls": [
+        "Ring size",
+        "Orbit motion",
+        "Color"
+      ],
+      "needs": "Precise ball silhouette and screen-space scale; decorative motion does not measure spin.",
+      "detail": "Two elegant thin mint and pale gold gyroscope-like elliptical light rings hug a real football, about 1.5 times ball diameter. Rings tilt in different planes. Back portions disappear correctly behind the opaque ball, front portions pass in front of the leather. Restrained tiny light flecks, no giant Saturn rings. Large detail crop makes the front-back occlusion obvious. Label decorative orbit in small readable text; never show RPM or measured spin.",
+      "callouts": [
+        "Rings wrap the ball",
+        "Correct front and back",
+        "Decorative orbit"
+      ],
+      "sequence": [
+        "Ring reveal",
+        "Follow flight",
+        "Fade away"
+      ],
+      "prompt": "Create a polished detailed premium iOS sports-video app concept board for Kicklab Power Shot. Landscape art direction, 1600 by 1100 approximate aspect ratio. This is an illustrative FUTURE CONCEPT, not a screenshot of an implemented feature. Consistent current app visual language: near-black background, charcoal frosted-glass cards with 26px rounded corners, vivid mint green accents (#57F5A6), clean white sans-serif typography, secondary muted gray. Tasteful spacious layout; high quality photoreal soccer footage, real white-and-black leather football, player in dark kit, natural football pitch and goal in daylight, actual ball remains recognizable. One large mobile-editor mockup occupies left 58% with generous video preview and compact glass settings below it. Right 42% contains one enlarged visual detail crop, two short callouts and a 3-stage sequence of image thumbnails. Title at top with a numbered badge and small FUTURE CONCEPT label. This is a crafted product-design presentation with large readable text, not a wall of paragraphs. No speed, metres, RPM, accuracy scores or fictional analysis numbers. Source-frame timeline at bottom, minimal existing icons, no giant logo, no tacky neon everywhere. Prioritize strong visible effect over unnecessary chrome.\nTitle exactly \"05 · Orbit Rings\". Effect visualization: Two elegant thin mint and pale gold gyroscope-like elliptical light rings hug a real football, about 1.5 times ball diameter. Rings tilt in different planes. Back portions disappear correctly behind the opaque ball, front portions pass in front of the leather. Restrained tiny light flecks, no giant Saturn rings. Large detail crop makes the front-back occlusion obvious. Label decorative orbit in small readable text; never show RPM or measured spin.\nGlass settings card title \"Orbit Rings\". Show these 3 readable control labels with tasteful sliders or chips: \"Ring size\", \"Orbit motion\", \"Color\". Detail callouts: \"Rings wrap the ball\", \"Correct front and back\", \"Decorative orbit\". Sequence captions: \"Ring reveal\", \"Follow flight\", \"Fade away\". Render crisp type, coherent scene, very detailed source image and professional app-design finish."
+    },
+    {
+      "number": 6,
+      "id": "turf-burst",
+      "name": "Turf Burst",
+      "description": "A tightly timed burst of grass or dust gives the strike a physical punch.",
+      "controls": [
+        "Strike frame",
+        "Burst strength",
+        "Turf or dust"
+      ],
+      "needs": "A confirmed strike and local ground alignment, with foreground occlusion.",
+      "detail": "Low recorded sideline view of boot striking football on real grass. Small physically plausible grass blades, dry turf flecks and a restrained low dust puff spread behind contact, staying close to ground. Real football remains distinct and sharp. Particles correctly disappear behind shoe and ball; soft local shadows connect the burst to turf. No huge explosion. Detail crop centered on boot-ball contact with grass fragments. A precise strike-frame selector is prominent.",
+      "callouts": [
+        "Timed to contact",
+        "Ground attached",
+        "Boot stays in front"
+      ],
+      "sequence": [
+        "Before contact",
+        "Turf burst",
+        "Quick settle"
+      ],
+      "prompt": "Create a polished detailed premium iOS sports-video app concept board for Kicklab Power Shot. Landscape art direction, 1600 by 1100 approximate aspect ratio. This is an illustrative FUTURE CONCEPT, not a screenshot of an implemented feature. Consistent current app visual language: near-black background, charcoal frosted-glass cards with 26px rounded corners, vivid mint green accents (#57F5A6), clean white sans-serif typography, secondary muted gray. Tasteful spacious layout; high quality photoreal soccer footage, real white-and-black leather football, player in dark kit, natural football pitch and goal in daylight, actual ball remains recognizable. One large mobile-editor mockup occupies left 58% with generous video preview and compact glass settings below it. Right 42% contains one enlarged visual detail crop, two short callouts and a 3-stage sequence of image thumbnails. Title at top with a numbered badge and small FUTURE CONCEPT label. This is a crafted product-design presentation with large readable text, not a wall of paragraphs. No speed, metres, RPM, accuracy scores or fictional analysis numbers. Source-frame timeline at bottom, minimal existing icons, no giant logo, no tacky neon everywhere. Prioritize strong visible effect over unnecessary chrome.\nTitle exactly \"06 · Turf Burst\". Effect visualization: Low recorded sideline view of boot striking football on real grass. Small physically plausible grass blades, dry turf flecks and a restrained low dust puff spread behind contact, staying close to ground. Real football remains distinct and sharp. Particles correctly disappear behind shoe and ball; soft local shadows connect the burst to turf. No huge explosion. Detail crop centered on boot-ball contact with grass fragments. A precise strike-frame selector is prominent.\nGlass settings card title \"Turf Burst\". Show these 3 readable control labels with tasteful sliders or chips: \"Strike frame\", \"Burst strength\", \"Turf or dust\". Detail callouts: \"Timed to contact\", \"Ground attached\", \"Boot stays in front\". Sequence captions: \"Before contact\", \"Turf burst\", \"Quick settle\". Render crisp type, coherent scene, very detailed source image and professional app-design finish."
+    },
+    {
+      "number": 7,
+      "id": "net-pulse",
+      "name": "Net Pulse",
+      "description": "A confirmed net hit sends a controlled light ripple through the goal mesh.",
+      "controls": [
+        "Impact frame",
+        "Ripple size",
+        "Duration"
+      ],
+      "needs": "A confirmed net impact and goal/net alignment in addition to ball tracking.",
+      "detail": "Real football visibly contacts goal net in recorded front-diagonal view. A restrained mint and warm gold ripple follows the actual diamond net mesh around one confirmed contact point, fading outward. Only local mesh illuminates, not entire rectangular goal as a sci-fi portal. Net fibers and current ball stay readable. Detail crop shows mesh-conforming rings and realistic ball/net layering. Include a small impact-point pin and Impact frame control.",
+      "callouts": [
+        "Confirmed net impact",
+        "Ripple follows mesh",
+        "Localized finish"
+      ],
+      "sequence": [
+        "Ball approaches",
+        "Net contact",
+        "Ripple fades"
+      ],
+      "prompt": "Create a polished detailed premium iOS sports-video app concept board for Kicklab Power Shot. Landscape art direction, 1600 by 1100 approximate aspect ratio. This is an illustrative FUTURE CONCEPT, not a screenshot of an implemented feature. Consistent current app visual language: near-black background, charcoal frosted-glass cards with 26px rounded corners, vivid mint green accents (#57F5A6), clean white sans-serif typography, secondary muted gray. Tasteful spacious layout; high quality photoreal soccer footage, real white-and-black leather football, player in dark kit, natural football pitch and goal in daylight, actual ball remains recognizable. One large mobile-editor mockup occupies left 58% with generous video preview and compact glass settings below it. Right 42% contains one enlarged visual detail crop, two short callouts and a 3-stage sequence of image thumbnails. Title at top with a numbered badge and small FUTURE CONCEPT label. This is a crafted product-design presentation with large readable text, not a wall of paragraphs. No speed, metres, RPM, accuracy scores or fictional analysis numbers. Source-frame timeline at bottom, minimal existing icons, no giant logo, no tacky neon everywhere. Prioritize strong visible effect over unnecessary chrome.\nTitle exactly \"07 · Net Pulse\". Effect visualization: Real football visibly contacts goal net in recorded front-diagonal view. A restrained mint and warm gold ripple follows the actual diamond net mesh around one confirmed contact point, fading outward. Only local mesh illuminates, not entire rectangular goal as a sci-fi portal. Net fibers and current ball stay readable. Detail crop shows mesh-conforming rings and realistic ball/net layering. Include a small impact-point pin and Impact frame control.\nGlass settings card title \"Net Pulse\". Show these 3 readable control labels with tasteful sliders or chips: \"Impact frame\", \"Ripple size\", \"Duration\". Detail callouts: \"Confirmed net impact\", \"Ripple follows mesh\", \"Localized finish\". Sequence captions: \"Ball approaches\", \"Net contact\", \"Ripple fades\". Render crisp type, coherent scene, very detailed source image and professional app-design finish."
+    },
+    {
+      "number": 8,
+      "id": "energy-gate",
+      "name": "Energy Gate",
+      "description": "Place an artistic light gate at an observed point in the ball’s flight.",
+      "controls": [
+        "Gate position",
+        "Gate size",
+        "Color"
+      ],
+      "needs": "Ball track and masks; stable or aligned footage helps place the gate.",
+      "detail": "A real football passes through a single thin elliptical mint-white light gate placed at an actual visible trajectory point in front of the goal. Small edge sparks and subtle local lens warp briefly mark passage. Gate has correct front-back occlusion with ball and only modest diameter, around three ball widths. It is an intentional creative overlay, not claimed physical geometry. Do not invent any camera angle. Detail crop shows ball at gate crossing and narrow luminous ring.",
+      "callouts": [
+        "Place on visible flight",
+        "Ball crosses the gate",
+        "Short light reaction"
+      ],
+      "sequence": [
+        "Gate appears",
+        "Ball passes through",
+        "Gate dissolves"
+      ],
+      "prompt": "Create a polished detailed premium iOS sports-video app concept board for Kicklab Power Shot. Landscape art direction, 1600 by 1100 approximate aspect ratio. This is an illustrative FUTURE CONCEPT, not a screenshot of an implemented feature. Consistent current app visual language: near-black background, charcoal frosted-glass cards with 26px rounded corners, vivid mint green accents (#57F5A6), clean white sans-serif typography, secondary muted gray. Tasteful spacious layout; high quality photoreal soccer footage, real white-and-black leather football, player in dark kit, natural football pitch and goal in daylight, actual ball remains recognizable. One large mobile-editor mockup occupies left 58% with generous video preview and compact glass settings below it. Right 42% contains one enlarged visual detail crop, two short callouts and a 3-stage sequence of image thumbnails. Title at top with a numbered badge and small FUTURE CONCEPT label. This is a crafted product-design presentation with large readable text, not a wall of paragraphs. No speed, metres, RPM, accuracy scores or fictional analysis numbers. Source-frame timeline at bottom, minimal existing icons, no giant logo, no tacky neon everywhere. Prioritize strong visible effect over unnecessary chrome.\nTitle exactly \"08 · Energy Gate\". Effect visualization: A real football passes through a single thin elliptical mint-white light gate placed at an actual visible trajectory point in front of the goal. Small edge sparks and subtle local lens warp briefly mark passage. Gate has correct front-back occlusion with ball and only modest diameter, around three ball widths. It is an intentional creative overlay, not claimed physical geometry. Do not invent any camera angle. Detail crop shows ball at gate crossing and narrow luminous ring.\nGlass settings card title \"Energy Gate\". Show these 3 readable control labels with tasteful sliders or chips: \"Gate position\", \"Gate size\", \"Color\". Detail callouts: \"Place on visible flight\", \"Ball crosses the gate\", \"Short light reaction\". Sequence captions: \"Gate appears\", \"Ball passes through\", \"Gate dissolves\". Render crisp type, coherent scene, very detailed source image and professional app-design finish."
+    },
+    {
+      "number": 9,
+      "id": "ghost-duel",
+      "name": "Ghost Duel",
+      "description": "Compare two aligned recordings through synchronized photographic ball ghosts.",
+      "controls": [
+        "Reference clip",
+        "Contact sync",
+        "Ghost opacity"
+      ],
+      "needs": "Two recordings with a matching camera view or reliable alignment and tracked balls.",
+      "detail": "Recorded football pitch from locked stationary camera. Current shot ball in opaque natural color and a reference-shot ball in translucent cool blue appear at two clearly separated flight positions. Small calm labels Current and Reference point to them. Two subtle sequences of photographic ball echoes reveal different observed paths, without invented distances, speed or a statistical chart. Source scene stays intact. Detail crop shows solid current leather football versus translucent reference football. Reference clip selector and contact-sync control are readable.",
+      "callouts": [
+        "Two real recordings",
+        "Synced at contact",
+        "Aligned camera view"
+      ],
+      "sequence": [
+        "Choose reference",
+        "Sync both strikes",
+        "Compare flight"
+      ],
+      "prompt": "Create a polished detailed premium iOS sports-video app concept board for Kicklab Power Shot. Landscape art direction, 1600 by 1100 approximate aspect ratio. This is an illustrative FUTURE CONCEPT, not a screenshot of an implemented feature. Consistent current app visual language: near-black background, charcoal frosted-glass cards with 26px rounded corners, vivid mint green accents (#57F5A6), clean white sans-serif typography, secondary muted gray. Tasteful spacious layout; high quality photoreal soccer footage, real white-and-black leather football, player in dark kit, natural football pitch and goal in daylight, actual ball remains recognizable. One large mobile-editor mockup occupies left 58% with generous video preview and compact glass settings below it. Right 42% contains one enlarged visual detail crop, two short callouts and a 3-stage sequence of image thumbnails. Title at top with a numbered badge and small FUTURE CONCEPT label. This is a crafted product-design presentation with large readable text, not a wall of paragraphs. No speed, metres, RPM, accuracy scores or fictional analysis numbers. Source-frame timeline at bottom, minimal existing icons, no giant logo, no tacky neon everywhere. Prioritize strong visible effect over unnecessary chrome.\nTitle exactly \"09 · Ghost Duel\". Effect visualization: Recorded football pitch from locked stationary camera. Current shot ball in opaque natural color and a reference-shot ball in translucent cool blue appear at two clearly separated flight positions. Small calm labels Current and Reference point to them. Two subtle sequences of photographic ball echoes reveal different observed paths, without invented distances, speed or a statistical chart. Source scene stays intact. Detail crop shows solid current leather football versus translucent reference football. Reference clip selector and contact-sync control are readable.\nGlass settings card title \"Ghost Duel\". Show these 3 readable control labels with tasteful sliders or chips: \"Reference clip\", \"Contact sync\", \"Ghost opacity\". Detail callouts: \"Two real recordings\", \"Synced at contact\", \"Aligned camera view\". Sequence captions: \"Choose reference\", \"Sync both strikes\", \"Compare flight\". Render crisp type, coherent scene, very detailed source image and professional app-design finish."
+    },
+    {
+      "number": 10,
+      "id": "hero-sequence",
+      "name": "Hero Sequence",
+      "description": "An editable highlight preset assembles run-up, strike, flight and finish into a short story.",
+      "controls": [
+        "Story length",
+        "Pacing",
+        "Effect strength"
+      ],
+      "needs": "Confirmed event timing and reliable tracking; combines editable effects into chapters.",
+      "detail": "Hero cinematic preview of a real football strike, restrained mint flight echoes and a clean final freeze composition. To the right show four wide storyboard stills of the same recorded view: Run-up, Strike, Flight, Finish. Bottom is an editable chapter timeline with mint segments, showing a restrained contact punch, slower crisp flight and final hold. No invented stats or goal claims. This is an authored replay sequence from recorded frames, no generated unseen video. Controls show story length, pacing and strength.",
+      "callouts": [
+        "Editable chapters",
+        "Strike to finish",
+        "One-tap starting preset"
+      ],
+      "sequence": [
+        "Run-up",
+        "Strike and flight",
+        "Finish hold"
+      ],
+      "prompt": "Create a polished detailed premium iOS sports-video app concept board for Kicklab Power Shot. Landscape art direction, 1600 by 1100 approximate aspect ratio. This is an illustrative FUTURE CONCEPT, not a screenshot of an implemented feature. Consistent current app visual language: near-black background, charcoal frosted-glass cards with 26px rounded corners, vivid mint green accents (#57F5A6), clean white sans-serif typography, secondary muted gray. Tasteful spacious layout; high quality photoreal soccer footage, real white-and-black leather football, player in dark kit, natural football pitch and goal in daylight, actual ball remains recognizable. One large mobile-editor mockup occupies left 58% with generous video preview and compact glass settings below it. Right 42% contains one enlarged visual detail crop, two short callouts and a 3-stage sequence of image thumbnails. Title at top with a numbered badge and small FUTURE CONCEPT label. This is a crafted product-design presentation with large readable text, not a wall of paragraphs. No speed, metres, RPM, accuracy scores or fictional analysis numbers. Source-frame timeline at bottom, minimal existing icons, no giant logo, no tacky neon everywhere. Prioritize strong visible effect over unnecessary chrome.\nTitle exactly \"10 · Hero Sequence\". Effect visualization: Hero cinematic preview of a real football strike, restrained mint flight echoes and a clean final freeze composition. To the right show four wide storyboard stills of the same recorded view: Run-up, Strike, Flight, Finish. Bottom is an editable chapter timeline with mint segments, showing a restrained contact punch, slower crisp flight and final hold. No invented stats or goal claims. This is an authored replay sequence from recorded frames, no generated unseen video. Controls show story length, pacing and strength.\nGlass settings card title \"Hero Sequence\". Show these 3 readable control labels with tasteful sliders or chips: \"Story length\", \"Pacing\", \"Effect strength\". Detail callouts: \"Editable chapters\", \"Strike to finish\", \"One-tap starting preset\". Sequence captions: \"Run-up\", \"Strike and flight\", \"Finish hold\". Render crisp type, coherent scene, very detailed source image and professional app-design finish."
+    }
+  ]
+}

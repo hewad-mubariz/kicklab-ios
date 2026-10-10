@@ -23,34 +23,46 @@ final class BallStyleBurnIn: ObservableObject {
         let overlays: ExportOverlaySettings?
         let preserveFrameTimes: Bool
         let maskSignature: Int
+        let distanceTimeline: BallDistanceTimeline?
+        let motionTimeline: MotionStyleTimeline?
     }
     private var completedRequest: Request?
+    private var worker: Task<Void, Never>?
+    func cancel() { worker?.cancel() }
 
     func export(source: URL, track: [RecordedFrame], style: BallStyle, intensity: Double,
                 skin: BallSkin = .original, environment: EffectEnvironment = .original, shortEdge: Int = 1080,
-                counter: ExportCounterTimeline? = nil, overlays: ExportOverlaySettings? = nil,preserveFrameTimes:Bool=false) {
+                counter: ExportCounterTimeline? = nil, overlays: ExportOverlaySettings? = nil,preserveFrameTimes:Bool=false,
+                distanceTimeline: BallDistanceTimeline? = nil, motionTimeline: MotionStyleTimeline? = nil) {
         guard !isExporting else { return }
         var maskHasher = Hasher()
         for frame in track {
             maskHasher.combine(frame.time); maskHasher.combine(frame.usesBallMasks)
             if let mask = frame.ballMask { maskHasher.combine(mask.alpha) }
         }
-        let request = Request(source: source, style: style, skin: skin, intensity: intensity, environment: environment, shortEdge: shortEdge, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes, maskSignature: maskHasher.finalize())
+        let request = Request(source: source, style: style, skin: skin, intensity: intensity, environment: environment, shortEdge: shortEdge, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes, maskSignature: maskHasher.finalize(), distanceTimeline: distanceTimeline, motionTimeline: motionTimeline)
         if completedRequest == request, let outputURL, FileManager.default.fileExists(atPath: outputURL.path) { return }
         isExporting = true; progress = 0; outputURL = nil; status = "Preparing video…"
-        Task {
+        worker = Task {
             do {
-                let url = try await Task.detached(priority: .userInitiated) {
-                    try await Self.render(source: source, track: track, style: style, skin: skin,
-                                          intensity: intensity, environment: environment, shortEdge: shortEdge, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes) { p in
-                        await MainActor.run { self.progress = p; self.status = p < 0.94 ? "Rendering effects…" : "Finishing video…" }
+                let url = try await VideoBackgroundWork.shared.run(title: "Exporting video",
+                    requiresGPU: (style != .none && intensity > 0) || environment != .original) {
+                    let renderTask = VideoWorkExecution.detached {
+                        try await Self.render(source: source, track: track, style: style, skin: skin,
+                                              intensity: intensity, environment: environment, shortEdge: shortEdge, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes, distanceTimeline: distanceTimeline, motionTimeline: motionTimeline) { p in
+                            VideoWorkExecution.lease?.progress(p, subtitle: p < 0.94 ? "Rendering your video" : "Finishing video")
+                            await MainActor.run { self.progress = p; self.status = p < 0.94 ? "Rendering effects…" : "Finishing video…" }
+                        }
                     }
-                }.value
+                    return try await withTaskCancellationHandler { try await renderTask.value } onCancel: { renderTask.cancel() }
+                }
                 outputURL = url; completedRequest = request; status = "Ready"; progress = 1
+            } catch is CancellationError {
+                status = "Export stopped. Tap Download to try again."
             } catch {
                 status = "Export failed: \(error.localizedDescription)"
             }
-            isExporting = false
+            isExporting = false; worker = nil
         }
     }
 
@@ -64,7 +76,10 @@ final class BallStyleBurnIn: ObservableObject {
                                   skin: BallSkin = .original, intensity: Double, environment: EffectEnvironment = .original, shortEdge: Int = 1080,
                                   counter: ExportCounterTimeline? = nil,
                                   overlays: ExportOverlaySettings? = nil,
+                                  touchTimes: [Double]? = nil,
                                   preserveFrameTimes:Bool=false,
+                                  distanceTimeline: BallDistanceTimeline? = nil,
+                                  motionTimeline: MotionStyleTimeline? = nil,
                                   onProgress: @Sendable (Double) async -> Void = { _ in }) async throws -> URL {
         let scoped = source.startAccessingSecurityScopedResource()
         defer { if scoped { source.stopAccessingSecurityScopedResource() } }
@@ -74,6 +89,14 @@ final class BallStyleBurnIn: ObservableObject {
         let seconds = CMTimeGetSeconds(duration)
         let composition = try await EffectVideoGeometry.composition(track: videoTrack, duration: duration, shortEdge: shortEdge)
         let size = composition.renderSize
+        var effects = BallEffectTrack(frames: track, touchTimes: touchTimes ?? counter?.times ?? [])
+        if skin != .original {
+            effects.surfaceMotion = try await BallSurfaceTimeline.prepare(source: source, track: effects)
+        }
+        let graphTimeline: MotionStyleTimeline? = overlays?.graph.enabled == true
+            ? motionTimeline ?? MotionStyleTimeline(points: track.map {
+                CaptureMotionPoint(time: $0.time, y: $0.detected ? $0.y : nil, x: $0.detected ? $0.x : nil)
+            }, touchTimes: touchTimes ?? counter?.times ?? []) : nil
         let reader = try AVAssetReader(asset: asset)
         let output: AVAssetReaderOutput
         if preserveFrameTimes {
@@ -89,10 +112,22 @@ final class BallStyleBurnIn: ObservableObject {
         guard reader.canAdd(output) else { throw failure("Cannot decode video.") }
         reader.add(output)
         let temp = FileManager.default.temporaryDirectory
-        let silentURL = temp.appendingPathComponent("kicklab-render-\(UUID().uuidString).mp4")
-        let finalURL = temp.appendingPathComponent("kicklab-edited-\(UUID().uuidString).mp4")
+        // AVFoundation drops the QuickTime playback-intent key in MP4 files.
+        // High-frame-rate replays need MOV to retain that intent in Photos.
+        let highFrameRate = try await videoTrack.load(.nominalFrameRate) > 60
+        let fileType: AVFileType = highFrameRate ? .mov : .mp4
+        let fileExtension = highFrameRate ? "mov" : "mp4"
+        let silentURL = temp.appendingPathComponent("juggledude-render-\(UUID().uuidString).\(fileExtension)")
+        let finalURL = temp.appendingPathComponent("juggledude-edited-\(UUID().uuidString).\(fileExtension)")
         defer { try? FileManager.default.removeItem(at: silentURL) }
-        let writer = try AVAssetWriter(outputURL: silentURL, fileType: .mp4)
+        let writer = try AVAssetWriter(outputURL: silentURL, fileType: fileType)
+        // Photos may otherwise interpret 120/240 fps exports as slow motion.
+        // Keep the original timestamps and explicitly request full-speed playback.
+        let playbackIntent = AVMutableMetadataItem()
+        playbackIntent.identifier = .quickTimeMetadataFullFrameRatePlaybackIntent
+        playbackIntent.dataType = kCMMetadataBaseDataType_UInt8 as String
+        playbackIntent.value = NSNumber(value: 1)
+        writer.metadata = [playbackIntent]
         let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
             AVVideoCodecKey: AVVideoCodecType.h264,
             AVVideoWidthKey: Int(size.width), AVVideoHeightKey: Int(size.height),
@@ -109,15 +144,19 @@ final class BallStyleBurnIn: ObservableObject {
         guard writer.canAdd(input) else { throw failure("Cannot encode video.") }
         writer.add(input)
         guard writer.startWriting(), reader.startReading() else { throw writer.error ?? reader.error ?? failure("Cannot start export.") }
+        try FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: silentURL.path)
         writer.startSession(atSourceTime: .zero)
-        let effects = BallEffectTrack(frames: track)
         let edit = SessionEditState(style: style, intensity: intensity, ballSkin: skin, environment: environment)
-        let engine = (style != .none && intensity > 0) || environment != .original ? try MetalEffectEngine() : nil
+        let needsGPU = (style != .none && intensity > 0) || environment != .original
+        try await VideoWorkExecution.checkpoint(requiresGPU: needsGPU)
+        let engine = needsGPU ? try MetalEffectEngine() : nil
         let ci = engine.map { CIContext(mtlDevice: $0.device, options: [.cacheIntermediates: false]) }
-            ?? CIContext(options: [.cacheIntermediates: false])
+            ?? CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly, .cacheIntermediates: false])
         var frameCount = 0
         do {
-            while let buffer = output.copyNextSampleBuffer() {
+            while true {
+                try await VideoWorkExecution.checkpoint(requiresGPU: needsGPU)
+                guard let buffer = output.copyNextSampleBuffer() else { break }
                 try Task.checkCancellation()
                 guard let pixels = CMSampleBufferGetImageBuffer(buffer), let pool = adaptor.pixelBufferPool else {
                     throw failure("Missing decoded frame or pixel buffer pool.")
@@ -125,9 +164,16 @@ final class BallStyleBurnIn: ObservableObject {
                 let stamp = CMSampleBufferGetPresentationTimeStamp(buffer)
                 let time = CMTimeGetSeconds(stamp)
                 while !input.isReadyForMoreMediaData {
+                    try await VideoWorkExecution.checkpoint(requiresGPU: needsGPU)
                     guard writer.status == .writing else { throw writer.error ?? failure("Encoder stopped.") }
                     try await Task.sleep(for: .milliseconds(2))
                 }
+                let graphImage: CGImage?
+                if let graphTimeline, let graph = overlays?.graph {
+                    graphImage = await ExportMotionGraphRenderer.image(style: graph.style,
+                        snapshot: graphTimeline.snapshot(at: time, duration: seconds), size: size)
+                    guard graphImage != nil else { throw failure("Cannot render the motion graph.") }
+                } else { graphImage = nil }
                 try autoreleasepool {
                     var target: CVPixelBuffer?
                     guard CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool, &target) == kCVReturnSuccess,
@@ -138,15 +184,29 @@ final class BallStyleBurnIn: ObservableObject {
                             kCIInputAspectRatioKey:(size.width/image.extent.width)/(size.height/image.extent.height)])
                     }
                     ci.render(image, to: target)
+                    #if DEBUG
+                    try PipelineParityReview.exportPixels(target, time: time, stage: "source")
+                    #endif
                     if skin != .original {
                         let sample = effects.replacementGuide(at: time)
-                    let mask = effects.mask(at: time)
-                    let footprint = effects.usesBallMasks ? mask?.footprint(in: size)
-                        : sample.flatMap { BallReplacementFootprint.fit(pixels: target, sample: $0) }
-                    let coverage: ((Double, Double) -> Double)? = mask.map { m in
-                        { x, y in m.coverage(x: x/size.width, y: y/size.height) }
-                    }
-                    let replacement = BallMaterialRenderer.replacement(footprint: footprint, skin: skin, time: time, coverage: coverage)
+                        let mask = effects.mask(at: time)
+                        // Measure on the decoder's pixels, as replay and source spin do.
+                        // Core Image's output color conversion can change edge scores
+                        // enough to select a different outline on a blurred ball.
+                        // Keep geometry in source coordinates; the normalized patch
+                        // rect handles prepared scenes whose output size differs.
+                        let appearanceSize = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
+                        let fitted = sample.flatMap { BallReplacementFootprint.fit(pixels: pixels, sample: $0, measureTexture: true) }
+                        let smear = effects.smear(at: time, size: appearanceSize)
+                        let matte = mask.map { BallReplacementCoverage(mask: $0, fitted: fitted, size: appearanceSize, smear: smear) }
+                        let footprint = effects.usesBallMasks ? matte?.footprint : fitted
+                        let coverage: ((Double, Double) -> Double)? = matte.map { m in
+                            { x, y in m.coverage(x: x, y: y) }
+                        }
+                        let replacement = BallMaterialRenderer.replacement(footprint: footprint, skin: skin,
+                            time: time, coverage: coverage, coverageBounds: matte?.bounds,
+                            orientation: effects.surfaceMotion?.renderOrientation(at: time), smear: smear,
+                            light: effects.surfaceMotion?.light(at: time))
                         CVPixelBufferLockBaseAddress(target, [])
                         do {
                             defer { CVPixelBufferUnlockBaseAddress(target, []) }
@@ -157,14 +217,18 @@ final class BallStyleBurnIn: ObservableObject {
                             }
                             ctx.translateBy(x: 0, y: size.height); ctx.scaleBy(x: 1, y: -1)
                             // Match replay: weak outline support leaves source pixels intact.
-                            BallMaterialRenderer.draw(in: ctx, size: size, sourceSize: size, skin: skin, sample: replacement == nil ? nil : sample, time: time, replacement: replacement)
+                            BallMaterialRenderer.draw(in: ctx, size: size, sourceSize: appearanceSize, skin: skin, sample: replacement == nil ? nil : sample, time: time, replacement: replacement)
                         }
+                        #if DEBUG
+                        try PipelineParityReview.exportPixels(target, time: time, stage: "composite", fitted: fitted,
+                            material: footprint, orientation: effects.surfaceMotion?.renderOrientation(at: time))
+                        #endif
                     }
                     if let engine {
                         let frame = EffectFrame.video(size: size, sourceSize: size, edit: edit, track: effects, time: time)
                         try engine.composite(frame, pixelBuffer: target)
                     }
-                    if overlays?.hasVisibleOverlays == true || (overlays == nil && counter != nil) {
+                    if overlays?.hasVisibleOverlays == true || (overlays == nil && counter != nil) || distanceTimeline != nil {
                         CVPixelBufferLockBaseAddress(target, [])
                         defer { CVPixelBufferUnlockBaseAddress(target, []) }
                         guard let context = CGContext(data: CVPixelBufferGetBaseAddress(target), width: Int(size.width), height: Int(size.height),
@@ -181,7 +245,16 @@ final class BallStyleBurnIn: ObservableObject {
                         } else if let counter {
                             ExportCounterRenderer.draw(in: context, size: size, state: counter.state(at: time))
                         }
+                        if let graphImage, let graph = overlays?.graph {
+                            ExportMotionGraphRenderer.draw(graphImage, in: context, style: graph.style, size: size)
+                        }
+                        if let distanceTimeline {
+                            BallDistanceBadgeRenderer.draw(in: context, size: size, state: distanceTimeline.state(at: time))
+                        }
                     }
+                    #if DEBUG
+                    try PipelineParityReview.exportHash(target,time:time,stage:"encoder")
+                    #endif
                     guard adaptor.append(target, withPresentationTime: stamp) else { throw writer.error ?? failure("Cannot append rendered frame.") }
                 }
                 frameCount += 1
@@ -196,6 +269,7 @@ final class BallStyleBurnIn: ObservableObject {
             reader.cancelReading(); writer.cancelWriting()
             throw error
         }
+        try await VideoWorkExecution.checkpoint()
         await onProgress(0.95)
         let audioTracks = try await asset.loadTracks(withMediaType: .audio)
         if audioTracks.isEmpty {
@@ -216,9 +290,12 @@ final class BallStyleBurnIn: ObservableObject {
                 try dest.insertTimeRange(available, of: audio, at: available.start)
             }
             guard let session = AVAssetExportSession(asset: mux, presetName: AVAssetExportPresetPassthrough) else { throw failure("Cannot preserve audio.") }
-            do { try await session.export(to: finalURL, as: .mp4) }
+            // A new composition does not inherit the writer's movie-level metadata.
+            session.metadata = [playbackIntent]
+            do { try await session.export(to: finalURL, as: fileType) }
             catch { try? FileManager.default.removeItem(at: finalURL); throw error }
         }
+        try FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: finalURL.path)
         await onProgress(1)
         return finalURL
     }

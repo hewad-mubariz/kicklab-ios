@@ -23,10 +23,11 @@ nonisolated enum ForestSignage {
             context.textPosition = CGPoint(x: (Double(width) - CTLineGetTypographicBounds(text, nil, nil, nil)) / 2, y: y)
             CTLineDraw(text, context)
         }
-        let kick = line("KICK", size: 202, color: white), lab = line("LAB", size: 202, color: teal)
-        let a = CTLineGetTypographicBounds(kick, nil, nil, nil), b = CTLineGetTypographicBounds(lab, nil, nil, nil)
-        context.textPosition = CGPoint(x: (2048-a-b)/2, y: 818); CTLineDraw(kick, context)
-        context.textPosition = CGPoint(x: (2048-a-b)/2+a, y: 818); CTLineDraw(lab, context)
+        // These side banners also appear in Snow Field and Beach Field.
+        let juggle = line("Juggle ", size: 149, color: white), dude = line("Dude", size: 149, color: teal)
+        let a = CTLineGetTypographicBounds(juggle, nil, nil, nil), b = CTLineGetTypographicBounds(dude, nil, nil, nil)
+        context.textPosition = CGPoint(x: (2048-a-b)/2, y: 818); CTLineDraw(juggle, context)
+        context.textPosition = CGPoint(x: (2048-a-b)/2+a, y: 818); CTLineDraw(dude, context)
         for (i, text) in ["PRACTICE.", "IMPROVE.", "REPEAT."].enumerated() { draw(text, size: 78, y: CGFloat(720-i*81)) }
         draw("SAME GAME.", size: 114, y: 270)
         draw("DIFFERENT VIBES.", size: 114, y: 132)

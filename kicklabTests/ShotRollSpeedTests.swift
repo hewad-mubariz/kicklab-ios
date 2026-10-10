@@ -3,6 +3,56 @@ import simd
 @testable import kicklab
 
 final class ShotRollSpeedTests: XCTestCase {
+    func testThirtyFPSCaptureAtEveryFourthFrameEstimatesKnownVelocityAndStops() throws {
+        var speed = ShotRollSpeedEstimator()
+        let cadence = 4.0 / 30.0
+        for i in 0...20 {
+            let time = Double(i) * cadence
+            speed.observe(point: SIMD3(Float(time) * 1.25, 0, 0), time: 900_000 + time)
+            if time < 0.5 {
+                XCTAssertNil(speed.speedKMH, "Do not report speed before enough capture time has elapsed")
+            } else {
+                XCTAssertEqual(try XCTUnwrap(speed.speedKMH), 4.5, accuracy: 0.001)
+            }
+        }
+        let stoppedPoint = SIMD3(Float(20 * cadence) * 1.25, 0, 0)
+        for i in 21...30 {
+            speed.observe(point: stoppedPoint, time: 900_000 + Double(i) * cadence)
+        }
+        XCTAssertEqual(speed.speedKMH, 0)
+        XCTAssertEqual(try XCTUnwrap(speed.peakKMH), 4.5, accuracy: 0.001)
+    }
+
+    func testActualThirtyFPSPhoneRollProducesSupportedMotionAndZeroAtRest() throws {
+        struct Sample: Decodable { let t: Double; let point: [Float] }
+        struct Clip: Decodable { let start: Sample; let samples: [Sample]; let endpoint_m: Float }
+        let file = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "rolling-speed-low-cadence-control", withExtension: "json"))
+        let clip = try JSONDecoder().decode(Clip.self, from: Data(contentsOf: file))
+        func point(_ sample: Sample) -> SIMD3<Float> { SIMD3(sample.point[0], sample.point[1], sample.point[2]) }
+        var tracker = ShotRollTracker()
+        tracker.arm(point: point(clip.start), time: clip.start.t)
+        var supported = 0
+        for sample in clip.samples {
+            XCTAssertTrue(tracker.observe(point: point(sample), time: sample.t))
+            if tracker.speed.speedKMH != nil { supported += 1 }
+        }
+        XCTAssertGreaterThan(supported, 50)
+        XCTAssertEqual(tracker.speed.speedKMH, 0)
+        XCTAssertGreaterThan(try XCTUnwrap(tracker.speed.peakKMH), 3)
+        XCTAssertLessThan(try XCTUnwrap(tracker.speed.peakKMH), 4.5)
+        XCTAssertEqual(try XCTUnwrap(tracker.distanceM), clip.endpoint_m, accuracy: 0.0001)
+    }
+
+    func testFiveContactsWithAMissedObservationWaitForFreshSupport() throws {
+        var speed = ShotRollSpeedEstimator()
+        for time in [0.0, 0.1, 0.3, 0.4, 0.5] {
+            speed.observe(point: SIMD3(Float(time), 0, 0), time: time)
+            XCTAssertNil(speed.speedKMH)
+        }
+        speed.observe(point: SIMD3(0.6, 0, 0), time: 0.6)
+        XCTAssertEqual(try XCTUnwrap(speed.speedKMH), 3.6, accuracy: 0.001)
+    }
+
     func testKnownVelocityUsesCaptureTimeDespiteIrregularSamplesAndLongWait() throws {
         var speed = ShotRollSpeedEstimator()
         for i in 0...30 { speed.observe(point: .zero, time: 900_000 + Double(i) * 0.1) }
@@ -79,7 +129,7 @@ final class ShotRollSpeedTests: XCTestCase {
         XCTAssertEqual(speed.sampleCount, 0)
     }
 
-    func testTrackingInvalidationClearsSpeedAndPeakWithoutChangingDistanceGuard() throws {
+    func testTrackingInvalidationClearsSpeedAndPeakForMovingBall() throws {
         for nextTime in [0.7, 2.0] {
             var tracker = ShotRollTracker()
             tracker.arm(point: .zero, time: 0)
@@ -94,6 +144,96 @@ final class ShotRollSpeedTests: XCTestCase {
         display.speedKMH = 3; display.peakRollingSpeedKMH = 4
         display.markCalibrationLost("Camera moved")
         XCTAssertNil(display.speedKMH); XCTAssertNil(display.peakRollingSpeedKMH)
+    }
+
+    func testRestingStartRecoversBriefHandOcclusionAndRequiresFreshSpeed() throws {
+        var tracker = ShotRollTracker()
+        tracker.arm(point: .zero, time: 0)
+        for i in 1...10 {
+            XCTAssertTrue(tracker.observe(point: SIMD3(0.03, 0, 0), time: Double(i) / 10))
+        }
+        XCTAssertEqual(tracker.speed.speedKMH, 0)
+        XCTAssertTrue(tracker.observe(point: SIMD3(0.031, 0, 0), time: 1.9))
+        XCTAssertFalse(tracker.needsNewStart)
+        XCTAssertEqual(try XCTUnwrap(tracker.recoveredPreRollGapS), 0.9, accuracy: 0.0001)
+        XCTAssertEqual(try XCTUnwrap(tracker.distanceM), 0.031, accuracy: 0.0001)
+        XCTAssertNil(tracker.speed.speedKMH); XCTAssertEqual(tracker.speed.peakKMH, 0)
+        XCTAssertEqual(tracker.speed.sampleCount, 1)
+        for i in 1...4 {
+            XCTAssertTrue(tracker.observe(point: SIMD3(0.031 + Float(i) / 10, 0, 0), time: 1.9 + Double(i) / 10))
+            XCTAssertNil(tracker.speed.speedKMH)
+        }
+        XCTAssertTrue(tracker.observe(point: SIMD3(0.531, 0, 0), time: 2.4))
+        XCTAssertEqual(try XCTUnwrap(tracker.speed.speedKMH), 3.6, accuracy: 0.001)
+        XCTAssertNil(tracker.recoveredPreRollGapS)
+    }
+
+    func testPreRollRecoveryRejectsLongGapDistantBallAndChangedPosition() throws {
+        for (time, point) in [(2.6001, Float(0.01)), (1.5, Float(0.10)), (1.5, Float(0.06))] {
+            var tracker = ShotRollTracker()
+            tracker.arm(point: .zero, time: 0)
+            for i in 1...6 { XCTAssertTrue(tracker.observe(point: SIMD3(0.01, 0, 0), time: Double(i) / 10)) }
+            XCTAssertFalse(tracker.observe(point: SIMD3(point, 0, 0), time: time))
+            XCTAssertTrue(tracker.needsNewStart)
+            XCTAssertNil(tracker.recoveredPreRollGapS)
+            XCTAssertNil(tracker.speed.speedKMH); XCTAssertNil(tracker.speed.peakKMH)
+        }
+    }
+
+    func testMovingBallCannotRecoverEvenAfterReturningToStart() throws {
+        var returned = ShotRollTracker()
+        returned.arm(point: .zero, time: 0)
+        XCTAssertTrue(returned.observe(point: SIMD3(0.2, 0, 0), time: 0.1))
+        XCTAssertTrue(returned.observe(point: .zero, time: 0.2))
+        XCTAssertFalse(returned.observe(point: .zero, time: 1.1))
+        XCTAssertTrue(returned.needsNewStart)
+        // A slow roll that leaves the start area also closes recovery.
+        var slow = ShotRollTracker()
+        slow.arm(point: .zero, time: 0)
+        for i in 1...10 { XCTAssertTrue(slow.observe(point: SIMD3(Float(i) * 0.012, 0, 0), time: Double(i) / 10)) }
+        XCTAssertGreaterThan(try XCTUnwrap(slow.speed.speedKMH), 0)
+        XCTAssertFalse(slow.observe(point: SIMD3(0.12, 0, 0), time: 1.9))
+        XCTAssertTrue(slow.needsNewStart)
+    }
+
+    func testExplicitInvalidationStillRequiresSetStart() {
+        var tracker = ShotRollTracker()
+        tracker.arm(point: .zero, time: 0)
+        tracker.invalidate()
+        XCTAssertFalse(tracker.observe(point: .zero, time: 0.9))
+        XCTAssertTrue(tracker.needsNewStart)
+        XCTAssertNil(tracker.recoveredPreRollGapS)
+        tracker.arm(point: .zero, time: 1)
+        XCTAssertTrue(tracker.observe(point: .zero, time: 1.1))
+        XCTAssertFalse(tracker.needsNewStart)
+    }
+
+    func testActualPhoneHandOcclusionRecoversWithoutChangingSuccessfulRoll() throws {
+        struct Sample: Decodable { let t: Double; let point: [Float]; let frame: Int? }
+        struct Clip: Decodable { let id: String; let start: Sample; let samples: [Sample]; let expectedRecoveryFrames: [Int]; let peakRange: [Float]; let endpointM: Float }
+        let file = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "pre-roll-occlusion-controls", withExtension: "json"))
+        let clips = try JSONDecoder().decode([Clip].self, from: Data(contentsOf: file))
+        XCTAssertEqual(clips.count, 2)
+        for clip in clips {
+            var tracker = ShotRollTracker()
+            func point(_ sample: Sample) -> SIMD3<Float> { SIMD3(sample.point[0], sample.point[1], sample.point[2]) }
+            tracker.arm(point: point(clip.start), time: clip.start.t)
+            var recoveredFrames: [Int] = []
+            for sample in clip.samples {
+                XCTAssertTrue(tracker.observe(point: point(sample), time: sample.t), "\(clip.id), frame \(sample.frame ?? -1)")
+                if tracker.recoveredPreRollGapS != nil {
+                    recoveredFrames.append(try XCTUnwrap(sample.frame))
+                    XCTAssertNil(tracker.speed.speedKMH)
+                    XCTAssertEqual(tracker.speed.sampleCount, 1)
+                }
+            }
+            XCTAssertEqual(recoveredFrames, clip.expectedRecoveryFrames)
+            XCTAssertFalse(tracker.needsNewStart)
+            XCTAssertEqual(try XCTUnwrap(tracker.distanceM), clip.endpointM, accuracy: 0.001)
+            let peak = try XCTUnwrap(tracker.speed.peakKMH)
+            XCTAssertGreaterThan(peak, clip.peakRange[0]); XCTAssertLessThan(peak, clip.peakRange[1])
+            XCTAssertEqual(tracker.speed.speedKMH, 0)
+        }
     }
 
     func testSavedTwoMetreRollsHaveSupportedMotionAndZeroAtRest() throws {

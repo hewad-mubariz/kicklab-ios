@@ -1,0 +1,29 @@
+{
+  "created_at_utc": "2026-10-09T07:29:15.781486+00:00",
+  "full_debug_screen": "kicklab/Detection/ShotGeometryCapture.swift / ShotGeometryCaptureView",
+  "open_debug_screen": "Ball Distance > More > Development tools (Debug builds); --shot-geometry-capture launch argument retained",
+  "original_source_backup": "/Users/hewadmubariz/Desktop/projects/kicklab/design/ball-distance-20261009/original",
+  "existing_roll_review_artifacts": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/roll-distance-experiment",
+  "original_recordings_and_analysis": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/runs",
+  "verified_saved_control": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/runs/power-shot-repeat-roll-review-20261008-1714/captures/6FD1A230-8CA4-447A-A553-174A298B2925",
+  "saved_control_digest_checks": {
+    "video.mov": {
+      "sha256": "c1cc9b78cd6cd89cb491da9770effc0454d4ee6ff9ff0960dba694bed408d6ea",
+      "matches_saved_manifest": true
+    },
+    "frames.jsonl": {
+      "sha256": "0ab304cd424d22f981f8ed37a6b3aebeadfa71691d856a848ed1603f1607c08a",
+      "matches_saved_manifest": true
+    },
+    "roll-distance.jsonl": {
+      "sha256": "6e4e40f183be2df3e15143b778d9fc15539f09f47fac627a40e5ef7939c4511d",
+      "matches_saved_manifest": true
+    },
+    "roll-calibration.png": {
+      "sha256": "59874702a0b75b9d7cf7ba037f03d7eef1c66e2162e3503d84a39bd8e276c58a",
+      "matches_saved_manifest": true
+    }
+  },
+  "backup_source_file_count": 12,
+  "note": "Raw clips, frame geometry, calibration images, JSONL observations and existing review results are retained. Sources stay live in the app and original versions are backed up without duplicating raw videos."
+}

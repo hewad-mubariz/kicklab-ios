@@ -32,7 +32,9 @@ nonisolated struct FrameDetections {
     var usesBallMasks: Bool = false
 }
 
-final class BallDetector {
+/// Each camera queue or video-analysis worker owns its detector exclusively.
+/// This mutable inference state is not shared between concurrent workers.
+nonisolated final class BallDetector {
     /// Layout of the model's single output.
     private enum Slot {
         static let ballScore = 0, ballBox = 1
@@ -46,33 +48,154 @@ final class BallDetector {
     private let preservesAspect: Bool
     private let isYOLOX: Bool
     private let isYOLO26: Bool
+    let marginalRetryEnabled: Bool
+    private let marginalRetry = MarginalBallRetry()
+    let directConfirmationEnabled: Bool
+    private let directConfirmation = BallDetectionConfirmation()
     let guardedRecoveryEnabled: Bool
     private let guardedFollower = GuardedBallFollower()
     private let nativePixels = NativeBallPixelTrack()
     private(set) var lastFollowKind = "detector"
     private(set) var lastFollowCalls = 1
+    private(set) var lastSceneCut = false
     private var guardedDimensions = CGSize.zero
     let hasMaskOutputs: Bool
     let modelName: String
     let activeBallThreshold: Double
-    static let ballThreshold = 0.05
-    static let personThreshold = 0.5
-
-    static var configuredResourceName: String {
-        let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains(where: { $0.hasPrefix("--yolo") || $0 == "--ssdlite" || $0 == "--fasterrcnn" }) {
-            return resourceName(for: arguments)
-        }
-        let selected = UserDefaults.standard.string(forKey: "experimentalBallModel") ?? "default"
-        if selected == "motion" || selected == "motionModel" { return "KickLabYOLO26MotionSegmentation" }
-        if selected == "segmentation" { return "KickLabYOLO26MediumSegmentation" }
-        if selected == "medium" { return "KickLabYOLO26MediumRetained" }
-        return resourceName(for: arguments)
+    private let batchModelCompatible: Bool
+    var supportsFrameBatching: Bool { batchModelCompatible && !roiEnabled && !guardedRecoveryEnabled }
+    var supportsDistantVisualRecovery: Bool {
+        batchModelCompatible && !roiEnabled && !guardedRecoveryEnabled && (marginalRetryEnabled || directConfirmationEnabled)
     }
 
+    /// Opt-in until paired device timing and output checks qualify this path.
+    nonisolated static func visualBatchSize(visualOnly: Bool, arguments: [String] = ProcessInfo.processInfo.arguments) -> Int {
+        visualOnly && (arguments.contains("--visual-batch2") || arguments.contains("--visual-async2")) && !arguments.contains("--visual-serial") ? 2 : 1
+    }
+
+    enum BatchError: Error, Equatable { case unsupported, invalidFrames, outputCount, wrongDetector, consumed, outOfOrder }
+    fileprivate final class BatchCursor { var next = 0 }
+
+    /// Own both the immutable tensor and source pixels through ordered decode.
+    /// Camera inputProvider is reusable scratch and must never enter a batch.
+    final class PreparedFrame {
+        fileprivate let owner: ObjectIdentifier
+        fileprivate let pixels: CVPixelBuffer
+        fileprivate let time: Double
+        fileprivate let input: MLFeatureProvider
+        fileprivate let output: MLFeatureProvider
+        fileprivate let content: CGRect
+        fileprivate let preprocessMS, inferenceMS, preparationMS: Double
+        fileprivate var consumed = false
+        fileprivate let cursor: BatchCursor
+        fileprivate let index: Int
+        fileprivate init(owner: ObjectIdentifier, pixels: CVPixelBuffer, time: Double,
+                         input: MLFeatureProvider, output: MLFeatureProvider, content: CGRect,
+                         preprocessMS: Double, inferenceMS: Double, preparationMS: Double,
+                         cursor: BatchCursor, index: Int) {
+            self.owner=owner; self.pixels=pixels; self.time=time; self.input=input; self.output=output
+            self.content=content; self.preprocessMS=preprocessMS; self.inferenceMS=inferenceMS
+            self.preparationMS=preparationMS
+            self.cursor=cursor; self.index=index
+        }
+    }
+
+    /// Full-frame prediction is stateless. Confirmation/retry history is touched
+    /// only when detectPrepared consumes each result in source order.
+    private struct BatchInputs {
+        let frames: [(pixels: CVPixelBuffer, time: Double)]
+        let inputs: [MLFeatureProvider]
+        let rects: [CGRect]
+        let start, prepared: Double
+    }
+
+    private func batchInputs(_ frames: [(pixels: CVPixelBuffer, time: Double)]) throws -> BatchInputs {
+        try Task.checkCancellation()
+        guard supportsFrameBatching else { throw BatchError.unsupported }
+        guard (1...2).contains(frames.count), frames.allSatisfy({ $0.time.isFinite }),
+              zip(frames,frames.dropFirst()).allSatisfy({ $0.time < $1.time }) else { throw BatchError.invalidFrames }
+        let start=ProcessInfo.processInfo.systemUptime
+        let oldContent=contentRect
+        defer { contentRect=oldContent }
+        var inputs=[MLFeatureProvider](), rects=[CGRect]()
+        for frame in frames {
+            try Task.checkCancellation()
+            let image=orientedImage(frame.pixels,portrait:false,orientation:nil)
+            let provider=try makeInput(from:image)
+            guard let source=provider.featureValue(for:"image")?.multiArrayValue,
+                  source.dataType == .float32 else { throw BatchError.unsupported }
+            let copy=try MLMultiArray(shape:source.shape,dataType:.float32)
+            memcpy(copy.dataPointer,source.dataPointer,source.count*MemoryLayout<Float>.size)
+            inputs.append(try MLDictionaryFeatureProvider(dictionary:["image":MLFeatureValue(multiArray:copy)]))
+            rects.append(contentRect)
+        }
+        try Task.checkCancellation()
+        return BatchInputs(frames:frames,inputs:inputs,rects:rects,start:start,prepared:ProcessInfo.processInfo.systemUptime)
+    }
+
+    private func preparedFrames(_ plan: BatchInputs, outputs: [MLFeatureProvider], finished: Double) throws -> [PreparedFrame] {
+        try Task.checkCancellation()
+        guard outputs.count == plan.frames.count else { throw BatchError.outputCount }
+        let divisor=Double(plan.frames.count), cursor=BatchCursor()
+        return plan.frames.indices.map { i in
+            PreparedFrame(owner:ObjectIdentifier(self),pixels:plan.frames[i].pixels,time:plan.frames[i].time,
+                input:plan.inputs[i],output:outputs[i],content:plan.rects[i],
+                preprocessMS:(plan.prepared-plan.start)*1000/divisor,inferenceMS:(finished-plan.prepared)*1000/divisor,
+                preparationMS:(finished-plan.start)*1000/divisor,cursor:cursor,index:i)
+        }
+    }
+
+    func prepareBatch(_ frames: [(pixels: CVPixelBuffer, time: Double)]) throws -> [PreparedFrame] {
+        let plan=try batchInputs(frames)
+        let batch=try model.predictions(from:MLArrayBatchProvider(array:plan.inputs),options:MLPredictionOptions())
+        let finished=ProcessInfo.processInfo.systemUptime
+        return try preparedFrames(plan,outputs:(0..<batch.count).map {batch.features(at:$0)},finished:finished)
+    }
+
+    /// Same two-frame ownership and ordering contract, with independent async
+    /// predictions. Only the immutable model inputs cross prediction tasks.
+    func prepareBatchAsync(_ frames: [(pixels: CVPixelBuffer, time: Double)]) async throws -> [PreparedFrame] {
+        let plan=try autoreleasepool {try batchInputs(frames)}
+        let model=self.model
+        let outputs=try await withThrowingTaskGroup(of:(Int,MLFeatureProvider).self) { group in
+            for (i,input) in plan.inputs.enumerated() {
+                group.addTask {(i,try await model.prediction(from:input))}
+            }
+            var values=[(Int,MLFeatureProvider)]()
+            for try await value in group {values.append(value)}
+            return values.sorted {$0.0<$1.0}.map(\.1)
+        }
+        return try preparedFrames(plan,outputs:outputs,finished:ProcessInfo.processInfo.systemUptime)
+    }
+
+    func detectPrepared(_ prepared: PreparedFrame) throws -> FrameDetections {
+        try Task.checkCancellation()
+        guard prepared.owner == ObjectIdentifier(self) else { throw BatchError.wrongDetector }
+        guard !prepared.consumed else { throw BatchError.consumed }
+        guard prepared.index == prepared.cursor.next else { throw BatchError.outOfOrder }
+        prepared.consumed=true
+        prepared.cursor.next += 1
+        return try detectFrame(prepared.pixels,orientLandscapeAsPortrait:false,timestamp:prepared.time,
+                               imageOrientation:nil,prepared:prepared)
+    }
+    static let ballThreshold = 0.05
+    static let personThreshold = 0.5
+    static let productionResourceName = "KickLabYOLO26MotionSegmentation"
+
+    static var configuredResourceName: String {
+        configuredResourceName(arguments: ProcessInfo.processInfo.arguments, defaults: .standard)
+    }
+
+    /// All app entry points use the validated segmentation export. Legacy saved
+    /// selections and launch flags must not silently change the production model.
+    /// Keep the inputs injectable to cover upgraded installs and old launch setups.
+    static func configuredResourceName(arguments: [String], defaults: UserDefaults) -> String {
+        productionResourceName
+    }
+
+    /// Explicit lookup for standalone model studies. App configuration does not
+    /// use this selector; studies must inject a resource into the detector.
     static func resourceName(for arguments: [String]) -> String {
-        // Faster R-CNN exceeded 3 GB during the phone experiment and crashed.
-        // Keep the working mobile model as the default, even when both are bundled.
         if arguments.contains("--ssdlite") { return "KickLabDetector" }
         if arguments.contains("--yolo26-motion-segmentation") || arguments.contains("--yolo26-motion-model-only") { return "KickLabYOLO26MotionSegmentation" }
         if arguments.contains("--yolo26-medium-retained") { return "KickLabYOLO26MediumRetained" }
@@ -89,7 +212,7 @@ final class BallDetector {
         if arguments.contains("--fasterrcnn") {
             return "KickLabFasterRCNN"
         }
-        return "KickLabDetector"
+        return productionResourceName
     }
 
     static func ballThreshold(for resource: String) -> Double {
@@ -113,6 +236,10 @@ final class BallDetector {
     private let roiPolicy = BallROIPolicy()
     private var thumbnail: CVPixelBuffer?
     private var previousThumbnail: [UInt8]?
+    // detect() and its crop retries are synchronous on the owning analysis
+    // queue. Like `scratch`, these buffers are reused only after prediction ends.
+    private var inputArray: MLMultiArray?
+    private var inputProvider: MLFeatureProvider?
     private(set) var lastROIView: ROIView?
     private(set) var lastROIReason: String?
     private(set) var fullFrameCount = 0
@@ -127,14 +254,14 @@ final class BallDetector {
     /// Why the last frame produced nothing, when it produced nothing.
     private(set) var lastError: String?
 
-    init(resourceName: String? = nil, modelURL: URL? = nil, useROI: Bool? = nil) throws {
+    init(resourceName: String? = nil, modelURL: URL? = nil, useROI: Bool? = nil, useMarginalRetry: Bool? = nil, useDirectConfirmation: Bool? = nil) throws {
         let resource = resourceName ?? Self.configuredResourceName
         guard let url = modelURL ?? Bundle.main.url(forResource: resource, withExtension: "mlmodelc") else {
             throw NSError(domain: "KickLab", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "\(resource) not in bundle"])
         }
         let configuration = MLModelConfiguration()
-        configuration.computeUnits = .all
+        configuration.computeUnits = VideoWorkExecution.cpuOnly ? .cpuOnly : .all
         self.model = try MLModel(contentsOf: url, configuration: configuration)
         guard let shape = model.modelDescription.inputDescriptionsByName["image"]?.multiArrayConstraint?.shape,
               shape.count == 4, shape[0].intValue == 1, shape[1].intValue == 3,
@@ -147,18 +274,25 @@ final class BallDetector {
         isYOLOX = resource == "KickLabYOLOXTiny" || resource == "KickLabYOLOXTinyFineTuned"
         let isMotionModel = resource == "KickLabYOLO26MotionSegmentation"
         let arguments=ProcessInfo.processInfo.arguments
-        guardedRecoveryEnabled = isMotionModel && (arguments.contains("--yolo26-motion-segmentation")
+        let exportMetadata = model.modelDescription.metadata[.creatorDefinedKey] as? [String: String]
+        let repairedExport = isMotionModel && exportMetadata?["precision"] == "p3_features_fp32"
+        batchModelCompatible = isMotionModel && repairedExport
+        directConfirmationEnabled = repairedExport && (useDirectConfirmation ?? !arguments.contains("--disable-ball-confirmation"))
+        marginalRetryEnabled = repairedExport && (useMarginalRetry ?? !arguments.contains("--disable-marginal-retry"))
+        // This repaired export uses the narrow retry, not the older experimental
+        // follower which changes otherwise valid detections and juggling counts.
+        guardedRecoveryEnabled = isMotionModel && !repairedExport && (arguments.contains("--yolo26-motion-segmentation")
             || (!arguments.contains("--yolo26-motion-model-only") && UserDefaults.standard.string(forKey:"experimentalBallModel") == "motion"))
         hasMaskOutputs = isMotionModel || resource == "KickLabYOLO26MediumSegmentation"
         isYOLO26 = hasMaskOutputs || resource == "KickLabYOLO26SmallFineTuned"
             || resource == "KickLabYOLO26MediumBenchmark" || resource == "KickLabYOLO26MediumFineTuned" || resource == "KickLabYOLO26MediumRetained"
         ciContext = isYOLO26
-            ? CIContext(options: [.useSoftwareRenderer: false, .workingColorSpace: NSNull(), .cacheIntermediates: !guardedRecoveryEnabled])
-            : CIContext(options: [.useSoftwareRenderer: false])
+            ? CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly, .workingColorSpace: NSNull(), .cacheIntermediates: !guardedRecoveryEnabled])
+            : CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly])
         roiEnabled = resource == "KickLabYOLOXTinyFineTuned"
             && (useROI ?? ProcessInfo.processInfo.arguments.contains("--yolox-roi"))
         preservesAspect = resource == "KickLabFasterRCNN" || isYOLOX || isYOLO26
-        modelName = guardedRecoveryEnabled ? "YOLO26-M motion + masks + native recovery (test)" : isMotionModel ? "YOLO26-M motion + masks (model-only test)" : hasMaskOutputs ? "YOLO26-M + masks (pilot)" : roiEnabled ? "YOLOX-Tiny crop v3 (test)" :
+        modelName = marginalRetryEnabled ? "YOLO26-M revised masks + marginal retry" : guardedRecoveryEnabled ? "YOLO26-M motion + masks + native recovery (test)" : isMotionModel ? "YOLO26-M motion + masks (model-only test)" : hasMaskOutputs ? "YOLO26-M + masks (pilot)" : roiEnabled ? "YOLOX-Tiny crop v3 (test)" :
             resource == "KickLabYOLO26MediumRetained" ? "YOLO26-M retained (control)" :
             resource == "KickLabYOLO26MediumFineTuned" ? "YOLO26-M fine-tuned (test)" :
             resource == "KickLabYOLO26MediumBenchmark" ? "YOLO26-M pretrained (benchmark)" :
@@ -183,11 +317,24 @@ final class BallDetector {
     func detect(_ pixelBuffer: CVPixelBuffer, orientLandscapeAsPortrait: Bool = true,
                 timestamp: Double? = nil,
                 imageOrientation: CGImagePropertyOrientation? = nil) throws -> FrameDetections {
+        try detectFrame(pixelBuffer,orientLandscapeAsPortrait:orientLandscapeAsPortrait,
+                        timestamp:timestamp,imageOrientation:imageOrientation,prepared:nil)
+    }
+
+    private func detectFrame(_ pixelBuffer: CVPixelBuffer, orientLandscapeAsPortrait: Bool,
+                             timestamp: Double?, imageOrientation: CGImagePropertyOrientation?,
+                             prepared: PreparedFrame?) throws -> FrameDetections {
         let start = ProcessInfo.processInfo.systemUptime
-        defer { lastTotalMS = (ProcessInfo.processInfo.systemUptime - start) * 1000 }
+        defer { lastTotalMS = (ProcessInfo.processInfo.systemUptime - start) * 1000 + (prepared?.preparationMS ?? 0) }
         var image = orientedImage(pixelBuffer, portrait: orientLandscapeAsPortrait,
                                   orientation: imageOrientation)
         lastInputSize = image.extent.size
+        lastSceneCut = false
+        lastFollowKind = "detector"; lastFollowCalls = 1
+        if marginalRetryEnabled || directConfirmationEnabled {
+            if timestamp == nil { marginalRetry.reset(); directConfirmation.reset() }
+            else if try sceneChanged(image) { lastSceneCut = true; marginalRetry.reset(); directConfirmation.reset() }
+        }
         if guardedRecoveryEnabled {
             guard let timestamp, timestamp.isFinite else { throw GuardedBallFollower.Failure.timestamp }
             return try guardedDetect(image, timestamp: timestamp)
@@ -210,16 +357,25 @@ final class BallDetector {
         let input: MLFeatureProvider
         let out: MLFeatureProvider
         do {
-            input = try makeInput(from: image)
-            let prepared = ProcessInfo.processInfo.systemUptime
-            lastPreprocessMS = (prepared - start) * 1000
-            out = try model.prediction(from: input)
-            lastInferenceMS = (ProcessInfo.processInfo.systemUptime - prepared) * 1000
+            if let prepared {
+                input=prepared.input; out=prepared.output; contentRect=prepared.content
+                lastPreprocessMS=prepared.preprocessMS; lastInferenceMS=prepared.inferenceMS
+            } else {
+                input = try makeInput(from: image)
+                let prepared = ProcessInfo.processInfo.systemUptime
+                lastPreprocessMS = (prepared - start) * 1000
+                out = try model.prediction(from: input)
+                lastInferenceMS = (ProcessInfo.processInfo.systemUptime - prepared) * 1000
+            }
         } catch {
             lastError = error.localizedDescription
             throw error
         }
         #if DEBUG
+        if let timestamp {
+            try PipelineParityReview.model(input:input,output:out,time:timestamp,content:contentRect,
+                                           sourceSize:lastInputSize,threshold:activeBallThreshold)
+        }
         if hasMaskOutputs, ProcessInfo.processInfo.arguments.contains("--effects-mask-review"),
            let timestamp, abs(timestamp - 20.0/30.0) < 0.002 {
             let folder = URL.documentsDirectory.appendingPathComponent("segmentation-native-output")
@@ -285,7 +441,7 @@ final class BallDetector {
             return d
         }
 
-        return FrameDetections(
+        let direct = FrameDetections(
             ball: detection(scoreAt: Slot.ballScore, boxAt: Slot.ballBox,
                             threshold: activeBallThreshold),
             person: detection(scoreAt: Slot.personScore, boxAt: Slot.personBox,
@@ -293,6 +449,102 @@ final class BallDetector {
             ballMask: hasMaskOutputs ? BallMask.decode(out, content: contentRect,
                 sourceSize: lastInputSize, threshold: activeBallThreshold) : nil,
             usesBallMasks: hasMaskOutputs)
+        if directConfirmationEnabled {
+            let values: [Double] = direct.ball.map { [$0.score, $0.x, $0.y, $0.width, $0.height] } ?? [0,0,0,0,0]
+            if let request = directConfirmation.observe(time: timestamp,
+                width: Int(lastInputSize.width), height: Int(lastInputSize.height), direct: values) {
+                let confirmed = try confirmDirectBall(image, request: request)
+                lastFollowKind = confirmed ? "direct_confirmed" : "direct_confirmation_rejected"
+                if !confirmed {
+                    // A rejected weak object cannot seed the marginal retry or
+                    // spend a second crop call on the same frame.
+                    marginalRetry.reset()
+                    return FrameDetections(ball: nil, person: direct.person, ballMask: nil, usesBallMasks: hasMaskOutputs)
+                }
+            }
+        }
+        guard marginalRetryEnabled, let timestamp else { return direct }
+        let weak = detection(scoreAt: Slot.ballScore, boxAt: Slot.ballBox, threshold: 0.20)
+        return try retryMarginalBall(image, time: timestamp, direct: direct, weak: weak)
+    }
+
+    /// Retain the original box and mask after confirmation. The crop supplies
+    /// independent current-pixel evidence, never a replacement observation.
+    private func confirmDirectBall(_ image: CIImage, request: BallDetectionConfirmation.Request) throws -> Bool {
+        lastFollowCalls = 2
+        return try autoreleasepool {
+            let oldContent = contentRect
+            defer { contentRect = oldContent }
+            let roi = request.roi
+            let rect = CGRect(x: roi[0], y: Int(lastInputSize.height)-roi[1]-roi[3], width: roi[2], height: roi[3])
+            let crop = image.cropped(to: rect).transformed(by: CGAffineTransform(translationX: -rect.minX, y: -rect.minY))
+            let began = ProcessInfo.processInfo.systemUptime
+            let input = try makeInput(from: crop)
+            let prepared = ProcessInfo.processInfo.systemUptime
+            let output = try model.prediction(from: input)
+            lastPreprocessMS += (prepared-began)*1000
+            lastInferenceMS += (ProcessInfo.processInfo.systemUptime-prepared)*1000
+            let result = try Self.decodedValues(output, width: inputWidth, height: inputHeight, clipTo: contentRect)
+            let ball = [Double(result[0]), (Double(result[1])-contentRect.minX)/contentRect.width,
+                (Double(result[2])-contentRect.minY)/contentRect.height,
+                Double(result[3])/contentRect.width, Double(result[4])/contentRect.height]
+            guard ball[0] >= 0.45,
+                  let mask = BallMask.decode(output, content: contentRect, sourceSize: crop.extent.size, threshold: 0.45) else { return false }
+            let fill = Double(mask.alpha.filter { $0 >= 128 }.count) / Double(mask.width*mask.height)
+            return BallDetectionConfirmation.accepts(request, crop: ball, maskFill: fill)
+        }
+    }
+
+    /// Keep full-view person and successful ball observations exactly as decoded.
+    /// The only extra inference is a current-frame crop after a marginal miss.
+    private func retryMarginalBall(_ image: CIImage, time: Double,
+                                   direct: FrameDetections, weak: Detection?) throws -> FrameDetections {
+        func values(_ ball: Detection?) -> [Double] {
+            ball.map { [$0.score,$0.x,$0.y,$0.width,$0.height] } ?? [0,0,0,0,0]
+        }
+        guard let request = marginalRetry.observe(time: time,
+            width: Int(lastInputSize.width), height: Int(lastInputSize.height),
+            direct: values(direct.ball), weak: values(weak)) else { return direct }
+        lastFollowCalls = 2
+        lastFollowKind = "marginal_retry_rejected"
+        return try autoreleasepool {
+            let oldContent = contentRect
+            defer { contentRect = oldContent }
+            let roi = request.roi
+            let rect = CGRect(x: roi[0], y: Int(lastInputSize.height)-roi[1]-roi[3],
+                              width: roi[2], height: roi[3])
+            let crop = image.cropped(to: rect).transformed(by:
+                CGAffineTransform(translationX: -rect.minX, y: -rect.minY))
+            let began = ProcessInfo.processInfo.systemUptime
+            let input = try makeInput(from: crop)
+            let prepared = ProcessInfo.processInfo.systemUptime
+            let output = try model.prediction(from: input)
+            lastPreprocessMS += (prepared-began)*1000
+            lastInferenceMS += (ProcessInfo.processInfo.systemUptime-prepared)*1000
+            let result = try Self.decodedValues(output, width: inputWidth, height: inputHeight,
+                                                clipTo: contentRect)
+            let ball = [Double(result[0]),
+                        (Double(result[1])-contentRect.minX)/contentRect.width,
+                        (Double(result[2])-contentRect.minY)/contentRect.height,
+                        Double(result[3])/contentRect.width, Double(result[4])/contentRect.height]
+            guard ball[0] >= 0.50,
+                  let mask = BallMask.decode(output, content: contentRect,
+                      sourceSize: crop.extent.size, threshold: activeBallThreshold) else { return direct }
+            let fill = Double(mask.alpha.filter { $0 >= 128 }.count) / Double(mask.width*mask.height)
+
+            guard let mapped = MarginalBallRetry.accept(request, crop: ball, maskFill: fill)
+            else { return direct }
+            let mappedMask = BallMask(rect: CGRect(
+                x: (Double(roi[0])+mask.rect.minX*Double(roi[2]))/lastInputSize.width,
+                y: (Double(roi[1])+mask.rect.minY*Double(roi[3]))/lastInputSize.height,
+                width: mask.rect.width*Double(roi[2])/lastInputSize.width,
+                height: mask.rect.height*Double(roi[3])/lastInputSize.height),
+                width: mask.width, height: mask.height, alpha: mask.alpha)
+            lastFollowKind = "marginal_retry"
+            return FrameDetections(ball: Detection(score: mapped[0], x: mapped[1], y: mapped[2],
+                width: mapped[3], height: mapped[4]), person: direct.person,
+                ballMask: mappedMask, usesBallMasks: true)
+        }
     }
 
     /// All contextual requests use the same model. Only compact masks/boxes
@@ -495,8 +747,13 @@ final class BallDetector {
 
     /// Camera frame to RGB 0-1 for SSD/Faster R-CNN, or official BGR 0-255 for YOLOX.
     private func makeInput(from image: CIImage) throws -> MLFeatureProvider {
-        let array = try MLMultiArray(shape: [1, 3, NSNumber(value: inputHeight), NSNumber(value: inputWidth)],
-                                     dataType: .float32)
+        if inputArray == nil {
+            let array = try MLMultiArray(shape: [1, 3, NSNumber(value: inputHeight), NSNumber(value: inputWidth)],
+                                        dataType: .float32)
+            inputProvider = try MLDictionaryFeatureProvider(dictionary:["image":MLFeatureValue(multiArray:array)])
+            inputArray = array
+        }
+        guard let array=inputArray, let provider=inputProvider else { throw NSError(domain:"KickLab",code:3) }
         let resized = try square(image)
         CVPixelBufferLockBaseAddress(resized, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(resized, .readOnly) }
@@ -508,27 +765,34 @@ final class BallDetector {
         let src = base.assumingMemoryBound(to: UInt8.self)
         // Safe here: this is a buffer we created, contiguous and CPU-backed.
         let dst = UnsafeMutablePointer<Float>(OpaquePointer(array.dataPointer))
-        let plane = inputWidth * inputHeight
+        Self.fillInput(src, rowBytes:stride, width:inputWidth,height:inputHeight,bgr:isYOLOX,output:dst)
+        return provider
+    }
 
-        // BGRA in, planar RGB out, scaled to 0-1.
-        for y in 0..<inputHeight {
-            let row = src + y * stride
-            for x in 0..<inputWidth {
+    private static let normalizedBytes: [Float] = (0...255).map { Float($0)/255.0 }
+
+    /// Preserve the exact Float division for every possible source byte while
+    /// avoiding millions of conversions/divisions per frame. Honor row padding.
+    static func fillInput(_ src: UnsafePointer<UInt8>, rowBytes: Int, width: Int, height: Int,
+                          bgr: Bool, output dst: UnsafeMutablePointer<Float>) {
+        let plane=width*height
+        let lookup=normalizedBytes
+        for y in 0..<height {
+            let row = src + y * rowBytes
+            for x in 0..<width {
                 let p = row + x * 4
-                let i = y * inputWidth + x
-                if isYOLOX {
+                let i = y * width + x
+                if bgr {
                     dst[i] = Float(p[0])
                     dst[plane + i] = Float(p[1])
                     dst[2 * plane + i] = Float(p[2])
                 } else {
-                    dst[i] = Float(p[2]) / 255.0
-                    dst[plane + i] = Float(p[1]) / 255.0
-                    dst[2 * plane + i] = Float(p[0]) / 255.0
+                    dst[i] = lookup[Int(p[2])]
+                    dst[plane + i] = lookup[Int(p[1])]
+                    dst[2 * plane + i] = lookup[Int(p[0])]
                 }
             }
         }
-        return try MLDictionaryFeatureProvider(
-            dictionary: ["image": MLFeatureValue(multiArray: array)])
     }
 
     /// Orient the frame, then resize to the model input. Faster R-CNN preserves
@@ -610,5 +874,53 @@ final class BallDetector {
             wantsModelInputSnapshot = false
         }
         return out
+    }
+}
+
+#if DEBUG
+nonisolated extension BallDetector {
+    /// Immutable real inputs for bounded execution-mode measurements only.
+    func reviewInput(_ pixels: CVPixelBuffer) throws -> MLFeatureProvider {
+        let input=try makeInput(from:orientedImage(pixels,portrait:false,orientation:nil))
+        let source=input.featureValue(for:"image")!.multiArrayValue!
+        let copy=try MLMultiArray(shape:source.shape,dataType:.float32)
+        memcpy(copy.dataPointer,source.dataPointer,source.count*MemoryLayout<Float>.size)
+        return try MLDictionaryFeatureProvider(dictionary:["image":MLFeatureValue(multiArray:copy)])
+    }
+    func reviewSerial(_ input:MLFeatureProvider) throws -> MLFeatureProvider {try model.prediction(from:input)}
+    func reviewBatch(_ inputs:[MLFeatureProvider]) throws -> MLBatchProvider {
+        try model.predictions(from:MLArrayBatchProvider(array:inputs),options:MLPredictionOptions())
+    }
+    func reviewAsync(_ input:MLFeatureProvider) async throws -> MLFeatureProvider {try await model.prediction(from:input)}
+}
+#endif
+
+// Appearance-only access to current-pixel crops. Temporal detector state stays
+// with the full-frame baseline; this method never seeds its confirmation/retry.
+nonisolated extension BallDetector {
+    func inferVisualCrop(_ pixels: CVPixelBuffer, roi: CGRect) throws -> FrameDetections {
+        try Task.checkCancellation()
+        guard supportsDistantVisualRecovery else { return FrameDetections(ball:nil,person:nil) }
+        let old = contentRect
+        defer { contentRect = old }
+        let image = orientedImage(pixels, portrait: false, orientation: nil)
+        let rect = CGRect(x: roi.minX, y: image.extent.height-roi.maxY, width: roi.width, height: roi.height)
+        let patch = image.cropped(to: rect).transformed(by: CGAffineTransform(translationX: -rect.minX, y: -rect.minY))
+        let output = try model.prediction(from: makeInput(from: patch))
+        let result = try Self.decodedValues(output, width: inputWidth, height: inputHeight, clipTo: contentRect)
+        let score = Double(result[0])
+        guard score.isFinite, score > 0 else { return FrameDetections(ball:nil, person:nil) }
+        let x = (Double(result[1])-contentRect.minX)/contentRect.width
+        let y = (Double(result[2])-contentRect.minY)/contentRect.height
+        let w = Double(result[3])/contentRect.width, h = Double(result[4])/contentRect.height
+        let size = image.extent.size
+        let ball = Detection(score:score, x:(roi.minX+x*roi.width)/size.width,
+            y:(roi.minY+y*roi.height)/size.height, width:w*roi.width/size.width, height:h*roi.height/size.height)
+        let localMask = BallMask.decode(output, content:contentRect, sourceSize:patch.extent.size, threshold:0.5,
+                                       sourceBorder:4)
+        let mask = localMask.map { m in BallMask(rect:CGRect(x:(roi.minX+m.rect.minX*roi.width)/size.width,
+            y:(roi.minY+m.rect.minY*roi.height)/size.height, width:m.rect.width*roi.width/size.width,
+            height:m.rect.height*roi.height/size.height), width:m.width, height:m.height, alpha:m.alpha) }
+        return FrameDetections(ball:ball, person:nil, ballMask:mask, usesBallMasks:true)
     }
 }

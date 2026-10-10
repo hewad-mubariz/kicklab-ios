@@ -1,0 +1,6 @@
+project_id = "juggledude"
+
+[functions.delete-account]
+# The dashboard's gateway switch accepts only legacy HS256 tokens. This handler
+# validates the caller with Supabase Auth itself and never trusts decoded claims.
+verify_jwt = false

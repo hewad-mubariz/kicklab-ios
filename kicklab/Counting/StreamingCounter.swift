@@ -16,16 +16,18 @@
 
 import Foundation
 
-struct BallObservation {
+nonisolated struct BallObservation: Codable, Equatable, Sendable {
     var frameIndex: Int
     var timestampMs: Int
     var x, y, width, height: Double
     var confidence: Double
 }
 
-final class StreamingCounter {
+nonisolated final class StreamingCounter {
     private let config: CounterConfig
     private let machine: TouchStateMachine
+    private let traceRecorder: CounterTraceRecorder?
+    private let countsTouches: Bool
 
     private var stamps: [Int: Int] = [:]
     private var balls: [Int: BallObservation] = [:]
@@ -45,11 +47,22 @@ final class StreamingCounter {
     /// state. The annotated replay shows these, the way the Python renderer does.
     private(set) var lastPoint: TrajectoryPoint?
 
-    init(config: CounterConfig = CounterConfig(), rejectsHandContact: ((Int) -> Bool)? = nil) {
+    init(config: CounterConfig = CounterConfig(), rejectsHandContact: ((Int) -> Bool)? = nil,
+         recordTrace: Bool = false, traceLimit: Int = 18_000,
+         footContactEvidence: ((Int) -> FootContactEvidence?)? = nil,
+         countsTouches: Bool = true) {
         self.config = config
+        self.countsTouches = countsTouches
         self.machine = TouchStateMachine(config: config)
         self.machine.rejectsHandContact = rejectsHandContact
+        self.machine.footContactEvidence = footContactEvidence
+        let recorder = recordTrace ? CounterTraceRecorder(config: config,
+            usesHandVerifier: rejectsHandContact != nil, usesFootVerifier: footContactEvidence != nil, limit: traceLimit) : nil
+        self.traceRecorder = recorder
+        self.machine.onDecision = { [weak recorder] in recorder?.append(decision: $0) }
     }
+
+    func traceSnapshot() -> CounterTrace? { traceRecorder?.snapshot(touches: touches) }
 
     /// Feed one frame. Returns touches confirmed by frames now leaving the window.
     ///
@@ -59,7 +72,10 @@ final class StreamingCounter {
     @discardableResult
     func push(frameIndex: Int, timestampMs: Int,
               ball: BallObservation?, person: PersonBox?,
-              cameraOffsetY: Double = 0, reliable: Bool = true) -> [Touch] {
+              cameraOffsetY: Double = 0, reliable: Bool = true, sourceFrameIndex: Int? = nil) -> [Touch] {
+        traceRecorder?.append(input: .init(frameIndex: frameIndex, timestampMs: timestampMs,
+            sourceFrameIndex: sourceFrameIndex, ball: ball, person: person,
+            cameraOffsetY: cameraOffsetY, reliable: reliable))
         guard reliable, cameraOffsetY.isFinite else {
             breakContinuity()
             return []
@@ -73,6 +89,9 @@ final class StreamingCounter {
         if var ball {
             ball.y += cameraOffsetY
             balls[frameIndex] = ball
+            if ball.height.isFinite, ball.height > 0, ball.height < 1 {
+                machine.ballHeights[frameIndex] = ball.height
+            }
             machine.detectedFrames.insert(frameIndex)
         }
         if var person {
@@ -94,6 +113,7 @@ final class StreamingCounter {
     /// Judge the frames still held in the lookahead window. Call once, at the end.
     @discardableResult
     func flush() -> [Touch] {
+        traceRecorder?.append(input: nil)
         var emitted: [Touch] = []
         guard let last = latest else { return emitted }
         while let n = next, n <= last {
@@ -106,6 +126,9 @@ final class StreamingCounter {
     private func judge(_ frame: Int) -> Touch? {
         guard let point = point(for: frame) else { return nil }
         lastPoint = point
+        // Appearance preparation needs the same smoothed velocity for effects,
+        // but must not repeat touch classification or its pose-model requests.
+        guard countsTouches else { return nil }
         guard var touch = machine.push(point) else { return nil }
         touch.y -= cameraOffsets[touch.frameIndex] ?? 0
         touches.append(touch)
@@ -115,6 +138,7 @@ final class StreamingCounter {
     private func breakContinuity() {
         machine.discardPendingArc()
         machine.personBoxes.removeAll(keepingCapacity: true)
+        machine.ballHeights.removeAll(keepingCapacity: true)
         machine.detectedFrames.removeAll(keepingCapacity: true)
         stamps.removeAll(keepingCapacity: true)
         balls.removeAll(keepingCapacity: true)
@@ -203,6 +227,7 @@ final class StreamingCounter {
         stamps = stamps.filter { $0.key >= cutoff }
         balls = balls.filter { $0.key >= cutoff }
         cameraOffsets = cameraOffsets.filter { $0.key >= cutoff }
+        machine.ballHeights = machine.ballHeights.filter { $0.key >= cutoff }
         machine.personBoxes = machine.personBoxes.filter { $0.key >= cutoff }
         machine.detectedFrames = machine.detectedFrames.filter { $0 >= cutoff }
     }
@@ -214,7 +239,7 @@ final class StreamingCounter {
 // would be genuinely causal and need no lookahead, but it lags the signal and
 // shifts every reversal later - which moves the apex the counter keys on.
 
-func medianFilter(_ values: [Double], _ window: Int) -> [Double] {
+nonisolated func medianFilter(_ values: [Double], _ window: Int) -> [Double] {
     guard window > 1, values.count >= 3 else { return values }
     let half = window / 2
     return values.indices.map { i in
@@ -224,7 +249,7 @@ func medianFilter(_ values: [Double], _ window: Int) -> [Double] {
     }
 }
 
-func movingAverage(_ values: [Double], _ window: Int) -> [Double] {
+nonisolated func movingAverage(_ values: [Double], _ window: Int) -> [Double] {
     guard window > 1, values.count >= 3 else { return values }
     let half = window / 2
     return values.indices.map { i in
@@ -235,7 +260,7 @@ func movingAverage(_ values: [Double], _ window: Int) -> [Double] {
 }
 
 /// Central-difference vertical velocity, in frame-heights per second.
-func centralVelocity(_ ys: [Double], at index: Int, frames: [Int],
+nonisolated func centralVelocity(_ ys: [Double], at index: Int, frames: [Int],
                      stamps: [Int: Int]) -> Double {
     let lo = index > 0 ? index - 1 : index
     let hi = index < ys.count - 1 ? index + 1 : index

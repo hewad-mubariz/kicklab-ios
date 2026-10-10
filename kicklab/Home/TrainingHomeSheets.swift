@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TrainingHomeSettings: View {
     @Binding var appearance: String
+    @ObservedObject private var analytics = ProductAnalytics.shared
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
@@ -15,9 +16,18 @@ struct TrainingHomeSettings: View {
                 .pickerStyle(.segmented)
                 .accessibilityIdentifier("appearance-picker")
             }
+            Section {
+                Toggle("Share usage analytics", isOn: Binding(
+                    get: { analytics.isEnabled }, set: { analytics.setEnabled($0) }))
+                    .accessibilityIdentifier("analytics-sharing")
+            } header: {
+                Text("Privacy")
+            } footer: {
+                Text("Help improve Juggle Dude by sharing feature usage and whether actions succeed. Uses a random installation ID. Your videos, email and sign-in details aren’t included. You can turn this off anytime.")
+            }
             if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
                 Section("About") {
-                    LabeledContent("KickLab", value: "Version \(version)")
+                    LabeledContent("Juggle Dude", value: "Version \(version)")
                 }
             }
         }

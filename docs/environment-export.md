@@ -4,6 +4,10 @@ Replay & Effects → **Environment** now starts with Classic Stadium and Indoor 
 
 **Counter** sits beside Environment in the editor tabs and is also available beside the scene's Apply button. The same counter state is shared across replay, scene preview, the counter editor and Save & Share. Its ten styles, visibility, position, size and rotation carry into the exported video. There is no timer overlay.
 
+## Scene branding
+
+All six scene previews and their rendered signs use Juggle Dude. `StadiumSignage.swift` draws the stadium boards with native typography; `ArenaSignage.swift`, `UrbanSignage.swift`, and `ForestSignage.swift` draw the other signs (Forest is shared by Snow and Beach). The old branded stadium PNG has been removed. Regenerate picker images from the app's Metal renderer with `zsh scripts/render-environment-cards.sh`.
+
 ## Export and playback
 
 `SessionEditState.scene` stores the environment, look direction, zoom and recorded-camera-follow choice. Applying a view sets a fixed framing offset; follow uses the measured camera motion over the clip. Phone look captures the currently displayed orientation when applied. Live gestures are not recorded as an animated camera path.

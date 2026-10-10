@@ -98,11 +98,43 @@ extension BallVisualRefiner {
     static func refineVideo(
         source: URL,
         frames: [RecordedFrame],
+        framesUseCompositionClock: Bool = false,
         onProgress: (@Sendable (Double) -> Void)? = nil
     ) async throws -> [RecordedFrame] {
+        try Task.checkCancellation()
         guard !frames.isEmpty else { return [] }
+        let content = try SessionAnalysisStore.sourceDigest(source)
+        let mode = framesUseCompositionClock ? "composition" : frames.contains(where: \.usesBallMasks) ? "capture-masks" : "capture-boxes"
+        // Capture-mask reconstruction is independent of the sparse live track.
+        // Imports and legacy box refinement depend on their exact seed observations.
+        let seed = mode == "capture-masks" ? "" : try SessionAnalysisStore.digest(SessionAnalysisStore.frameData(frames))
+        if ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache") {
+            return try await computeVideo(source:source,frames:frames,framesUseCompositionClock:framesUseCompositionClock,
+                                          onProgress:onProgress)
+        }
+        let key = SessionAnalysisStore.digest(Data("visual-v1|\(content)|\(mode)|\(seed)|\(SessionAnalysisStore.visualPipelineSignature())".utf8))
+        return try await SessionAnalysisStore.shared.prepare(key: key, onProgress: onProgress ?? { _ in }) { progress in
+            try await computeVideo(source: source, frames: frames, framesUseCompositionClock: framesUseCompositionClock,
+                                   onProgress: progress)
+        }
+    }
+
+    private static func computeVideo(source: URL, frames: [RecordedFrame], framesUseCompositionClock: Bool,
+                                     onProgress: (@Sendable (Double) -> Void)?) async throws -> [RecordedFrame] {
+        // Imports have already been analysed on the replay clock. Retain that
+        // inference and add only the same appearance repair used by recordings.
+        if framesUseCompositionClock {
+            return try await BallMaskGapRefiner.refine(source: source, frames: frames, onProgress: onProgress)
+        }
         let asset = AVURLAsset(url: source)
-        if frames.contains(where: \.usesBallMasks) { return frames }
+        if frames.contains(where: \.usesBallMasks) {
+            // Live capture can drop frames. Its irregular mask timestamps do
+            // not match the composition's regular replay/export timestamps.
+            // Analyse the saved pixels afresh; never widen mask age tolerance
+            // or reuse an old silhouette across a missing observation.
+            let fresh = try await VideoAnalyzer.replayTrack(source: source) { onProgress?($0 * 0.9) }
+            return try await BallMaskGapRefiner.refine(source: source, frames: fresh) { onProgress?(0.9 + $0 * 0.1) }
+        }
         guard let track = try await asset.loadTracks(withMediaType: .video).first else { return frames }
         let duration = try await asset.load(.duration)
         let composition = try await EffectVideoGeometry.composition(track: track, duration: duration, shortEdge: 720)
@@ -120,7 +152,9 @@ extension BallVisualRefiner {
         let total = max(1, ordered.count)
         let halfFrame = CMTimeGetSeconds(composition.frameDuration) * 0.55
         var lastReported = -1
-        while let sample = output.copyNextSampleBuffer(), index < ordered.count {
+        while index < ordered.count {
+            try await VideoWorkExecution.checkpoint()
+            guard let sample = output.copyNextSampleBuffer() else { break }
             try Task.checkCancellation()
             guard let pixels = CMSampleBufferGetImageBuffer(sample) else { continue }
             let time = CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sample))

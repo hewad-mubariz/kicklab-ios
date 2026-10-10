@@ -1,0 +1,51 @@
+{
+  "type": "Design mockups",
+  "appChanged": false,
+  "imageTool": "built-in imagegen",
+  "screens": 10,
+  "cameraEffectsCovered": 8,
+  "selectedImages": [
+    {
+      "file": "01-frame-and-range-v2.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1906965,
+      "visualReview": "Inspected generated output; main labels and effect controls readable."
+    },
+    {
+      "file": "02-follow-and-impact.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1836374,
+      "visualReview": "Inspected generated output; main labels and effect controls readable."
+    },
+    {
+      "file": "03-ramp-and-tilt.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1840970,
+      "visualReview": "Inspected generated output; main labels and effect controls readable."
+    },
+    {
+      "file": "04-lens-and-split.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1952475,
+      "visualReview": "Inspected generated output; main labels and effect controls readable."
+    },
+    {
+      "file": "05-freeze-and-frames-v2.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1887077,
+      "visualReview": "Inspected generated output; main labels and effect controls readable."
+    }
+  ],
+  "reviewedUX": [
+    "Exact-frame selection with a large preview and adjacent-frame buttons",
+    "Two-handle source range selection",
+    "Contextual controls for each of the eight existing effects",
+    "Freeze source marker separated from inserted hold duration",
+    "Frame Steps remains a review feature"
+  ]
+}

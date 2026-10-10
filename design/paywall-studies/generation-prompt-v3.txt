@@ -1,0 +1,55 @@
+Use case: ui-mockup.
+Generate ONE contact sheet of exactly SIX NEW high-fidelity mobile subscription paywall concepts for the football juggling app "Juggle Dude". Number these 13 through 18. The user has already seen twelve directions and requests six more. Make this a compelling fresh exploration with distinct compositions, strong premium sports character and clear subscription UI, not repeated recolors.
+
+BOARD: Three columns by two rows. Six complete, flat front-facing portrait screens, equal dimensions around 1:2.05. Highest available resolution, ideally 2304 x 3072 portrait. Charcoal background with generous gaps, no hardware frames or perspective on entire screens. Title "Juggle Dude / PRO COLLECTION 03". Small subtitle "13–18 · Paywall concepts". Exact numbered labels underneath each screen. Bottom board note "SAMPLE PRICES & BENEFITS — NOT FINAL". No other board copy.
+
+STYLE: Juggle Dude visual identity: acid lime #D0F852, charcoal #0C0F10, warm white and ivory #F3F4ED. Modern athletic condensed headlines, elegant clean UI body text, confident graphic layouts, refined rounded corners, subtle depth. Some photoreal sports artwork, some product visualization, some clean typographic directions. Fine film grain and purposeful sports markings, no excessive sci-fi, neon HUD, crowns or coins. Each concept recognizable at thumbnail size. Realistic buildable iPhone interface with generous margins and clear controls.
+Generate all photographs from scratch using fictional adults in plain unbranded sportswear. NO Nike swooshes, Adidas stripes or other real company logos on clothing, shoes or balls. No famous athletes or actual user photos. Footballs have modern subtly textured panels.
+
+SHARED OFFER — concept placeholders only, consistent on all SIX:
+Brand "Juggle Dude Pro"; clearly visible circular close X at top right.
+Three benefit names: "Extra effects", "Ball styles", "Motion overlays". Present concisely with simple icons or rich tiny previews.
+Two selectable plans with full readable billing periods:
+"Monthly" — "€3.99 / month"
+"Yearly" — "€24.99 / year"
+Yearly visibly selected. Both options should remain discoverable, no hidden toggle pricing. No false discounts, trials, urgency, fake testimonials, ranking advantages or performance claims.
+Primary CTA exact text "Get Pro · €24.99/year".
+Below: "Auto-renews. Cancel anytime."
+Footer links: "Restore purchases" · "Terms" · "Privacy".
+Home indicator and comfortable bottom safe area.
+All text complete and within screen. Annual total displayed prominently. The offer, button and footer should occupy a calm lower section, with visual art and headline mostly in top 45%. No global bottom navigation.
+These are design proposals, so don't add any real payment setup or settings screens.
+
+THE SIX NEW DIRECTIONS, top row left to right, then bottom row:
+
+13 / SIDELINE
+Dark immersive editorial sports photograph with a frosted lower purchase sheet.
+Upper 45%: powerful generated photo of an adult footballer juggling at a small floodlit outdoor court, medium-wide view with plausible anatomy and foot-ball interaction, subject offset left, empty dark area right for small elegant "JUGGLE DUDE PRO" and bold "OWN YOUR / NEXT LOOK". One subtle lime ball trail and a small "05 TOUCHES" overlay. Refined sports campaign photography, no brands.
+Lower 55%: an INSET smoky charcoal glass-like panel with round top corners, holding three understated feature labels, TWO STACKED FULL-WIDTH plan rows, CTA and all footer copy. Photography fades cleanly behind it with excellent contrast. A premium native sheet composition with clearly readable pricing; close X stays top right in photo.
+
+14 / THE TOOLKIT
+Light ivory, playful precision, tangible sports-creator toolkit.
+Upper section: asymmetric four-tile compact feature-preview grid. One tall tile shows a textured football with tasteful comet trail on dark background; one small tile shows a beautiful condensed counter "05"; one small tile shows a lime motion graph; a small tile shows a different football surface. Clean white spacing and restrained soft shadows. These are app overlay previews, not physical items for sale.
+Headline "YOUR SESSION. / YOUR SIGNATURE." below a small Pro wordmark. Three exact benefit names integrated just below preview grid. TWO SIDE-BY-SIDE plan cards, annual black with lime indicator. Black CTA with lime text. Lower UI crisp, minimal, high-end creator-product design. No giant hero athlete photograph.
+
+15 / CHROME PRO
+Dark graphite and brushed silver, acid lime reserved for selected controls.
+Upper composition is premium understated sports equipment art: one large modern textured SILVER AND WHITE football, cropped slightly on the right edge, with a large subtle metallic outlined "PRO" behind, careful letterform layering and empty black space. Tiny embossed-looking "JUGGLE DUDE" above, headline "A NEW LOOK / FOR EVERY TOUCH." set small enough not to fight the object. A single clean lime curved trail behind ball, no explosion or flames.
+Three refined feature rows with compact thumbnails on left and labels on right. Plans as TWO SLIM STACKED ROWS; selected yearly lightly silver-tinted with lime radio and bright price. Lime CTA with very subtle gradient. Premium luxury sports catalog, no gold or fake rewards.
+
+16 / SESSION STRIP
+Warm white, energetic editorial football film-strip concept.
+Top: three adjacent narrow vertical panels showing the SAME fictional adult footballer juggling on a concrete court at three moments, consistent person and outfit. First monochrome with clean counter, second monochrome with lime touch markers, third full color with restrained orange flame trail. Panels separated by straight white gutters, no fake film sprockets.
+Below: bold heading "MAKE EVERY / FRAME YOURS." and small Juggle Dude Pro wordmark. Three feature labels in compact row with fine icons. Plans side by side, annual lime-tinted with dark text. Black CTA and tidy renewal/restore/legal area. A small orange rule links the editorial composition. Photo story feels sporty and authentic; no clutter or microscopic text.
+
+17 / LIME CLUB
+Most graphic and daring direction: saturated acid-lime upper 50% with a strong black diagonal stripe, warm-black lower 50%.
+Upper: huge typography "GO / PRO" stacked left, a small photoreal black-and-white football partially overlapping a sweeping flat black circle on right, dynamic but absolutely crisp geometry. Small Juggle Dude wordmark, simple two-word line "PLAY WITH STYLE". No athlete image, no busy texture. A row of three tiny black preview icons with exact benefit names sits within lime area.
+Lower: calm charcoal plan area with TWO BROAD STACKED OPTIONS, bright annual selection border, strong numeric price. White CTA with black lettering. Readable renewal and footer links. A deliberate angular top edge at transition between lime and charcoal, while every interactive control remains softly rounded and horizontal. A confident sportswear graphic translated into excellent app UI.
+
+18 / STYLE SWITCH
+Light warm gray/ivory; a clear product transformation preview.
+Upper 42%: one large rounded rectangular generated still of an adult footballer juggling, split by a fine vertical comparison divider with a small circular handle. Exactly the SAME scene and person on both sides. Left labeled "Original", clean video. Right labeled "Pro look", with tasteful flame trail following the ball, condensed "05 TOUCHES" and a lime ball-motion waveform. Keep overlays inside the right side. Demonstrate visual customization, not stronger athletic performance.
+Below: headline "SAME GAME. / MORE YOU." in bold condensed black. Exact three benefit labels as small outlined pills. Plans TWO SIDE-BY-SIDE outlined cards with annual charcoal fill and lime selected check. Lime CTA, clear renewal note, restore/terms/privacy and safe area. Friendly premium app UX, product value immediately visible.
+
+FINAL CHECK: exactly six full screens, captions 13 SIDELINE, 14 THE TOOLKIT, 15 CHROME PRO, 16 SESSION STRIP, 17 LIME CLUB, 18 STYLE SWITCH. All six include both prices, visible close, purchase CTA, renewal note, restore and legal links. Correct brand spelling. All subscription UI readable. No fake claims, apparel logos, external brands, watermarks, implementation code or old app names. Professional polished sports product design, six distinct art directions.

@@ -2,7 +2,7 @@
 
 Reference inspected: `/Users/hewadmubariz/Downloads/ssstwitter.com_1790536386258.mp4`, 15.4667 seconds, 2160 × 2160, 60 fps. It shows bright moving fronts stretching into translucent curls and wisps around a card. The fading material continues to move, with a broad range of bright and dim densities. Its implementation cannot be determined from the video alone.
 
-The relevant target is that evolving motion, not the reference's UI or its changing rainbow palette. Each KickLab effect keeps its own colour family.
+The relevant target is that evolving motion, not the reference's UI or its changing rainbow palette. Each Juggle Dude effect keeps its own colour family.
 
 ## What changed
 

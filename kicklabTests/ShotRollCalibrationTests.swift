@@ -210,4 +210,62 @@ final class ShotRollCalibrationTests: XCTestCase {
             imageSize: size, intrinsics: k, camera: pose, floor: result.floor))
         XCTAssertGreaterThan(abs(simd_distance(a, middle) - 1), 0.01)
     }
+
+    func testSeparateGapCheckUsesTheFrozenCalibrationAcrossRotationsWithoutRefitting() throws {
+        for roll: Float in [0, .pi/2, .pi, -.pi/2] {
+            let pose = camera(roll: roll, pitch: -.pi/12)
+            let calibration = try fit(pose: pose)
+            let before = calibration.floor.worldFromPlane
+            let check = try calibration.checkSpan(sensorPoints: [pixel(SIMD3(0, 0, -3), camera: pose),
+                pixel(SIMD3(0, 0, -4), camera: pose)], referenceDistanceM: 1)
+            XCTAssertEqual(check.estimatedDistanceM, 1, accuracy: 0.001)
+            XCTAssertTrue(check.withinTolerance)
+            XCTAssertEqual(check.toleranceM, 0.1, accuracy: 0.00001)
+            XCTAssertEqual(calibration.floor.worldFromPlane, before)
+            XCTAssertNil(calibration.independentSpanCheck)
+        }
+    }
+
+    func testGapCheckRejectsReusedFittingSpanInvalidPointsAndInvalidDistances() throws {
+        let calibration = try fit(pose: camera())
+        XCTAssertThrowsError(try calibration.checkSpan(sensorPoints: calibration.sensorPoints, referenceDistanceM: 3))
+        XCTAssertThrowsError(try calibration.checkSpan(sensorPoints: calibration.sensorPoints.reversed(), referenceDistanceM: 3))
+        let good = [pixel(SIMD3(0, 0, -3), camera: camera()), pixel(SIMD3(0, 0, -4), camera: camera())]
+        for points in [[], [good[0]], [good[0], good[0]], [CGPoint(x: .nan, y: 0.7), good[1]],
+                       [CGPoint(x: -0.1, y: 0.7), good[1]], [CGPoint(x: 0.5, y: 0.1), CGPoint(x: 0.5, y: 0.2)]] {
+            XCTAssertThrowsError(try calibration.checkSpan(sensorPoints: points, referenceDistanceM: 1))
+        }
+        for distance: Float in [.nan, .infinity, 0, 0.49, 10.01] {
+            XCTAssertThrowsError(try calibration.checkSpan(sensorPoints: good, referenceDistanceM: distance))
+        }
+    }
+
+    func testNewPhoneGapMismatchIsDetectedWhilePreviousPhoneControlRemainsWithinTolerance() throws {
+        let file = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "independent-span-controls", withExtension: "json"))
+        let rows = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [[String: Any]])
+        func matrix(_ rows: [[Double]]) -> simd_float4x4 {
+            simd_float4x4(columns: (SIMD4(Float(rows[0][0]),Float(rows[1][0]),Float(rows[2][0]),Float(rows[3][0])),
+                SIMD4(Float(rows[0][1]),Float(rows[1][1]),Float(rows[2][1]),Float(rows[3][1])),
+                SIMD4(Float(rows[0][2]),Float(rows[1][2]),Float(rows[2][2]),Float(rows[3][2])),
+                SIMD4(Float(rows[0][3]),Float(rows[1][3]),Float(rows[2][3]),Float(rows[3][3]))))
+        }
+        XCTAssertEqual(rows.count, 2)
+        for row in rows {
+            let saved = try XCTUnwrap(row["calibration"] as? [String: Any])
+            let kk = try XCTUnwrap(saved["intrinsics"] as? [[Double]])
+            let intrinsics = simd_float3x3(columns: (SIMD3(Float(kk[0][0]),Float(kk[1][0]),Float(kk[2][0])),
+                SIMD3(Float(kk[0][1]),Float(kk[1][1]),Float(kk[2][1])),SIMD3(Float(kk[0][2]),Float(kk[1][2]),Float(kk[2][2]))))
+            let pose = matrix(try XCTUnwrap(saved["world_from_camera"] as? [[Double]]))
+            let source = ShotRollFloor(id: "phone", worldFromPlane: matrix(try XCTUnwrap(saved["source_world_from_plane"] as? [[Double]])), boundary: [])
+            let fitPoints = try XCTUnwrap(saved["sensor_points_normalized"] as? [[Double]]).map { CGPoint(x: $0[0], y: $0[1]) }
+            let calibration = try ShotRollCalibration.fit(sensorPoints: fitPoints, referenceDistanceM: 3,
+                imageSize: size, intrinsics: intrinsics, camera: pose, floor: source, timestamp: 1)
+            let points = try XCTUnwrap(row["check_sensor_points"] as? [[Double]]).map { CGPoint(x: $0[0], y: $0[1]) }
+            let before = calibration.floor.worldFromPlane
+            let check = try calibration.checkSpan(sensorPoints: points, referenceDistanceM: 1)
+            XCTAssertEqual(check.estimatedDistanceM, Float(try XCTUnwrap(row["expected_check_span_m"] as? Double)), accuracy: 0.0001)
+            XCTAssertEqual(check.withinTolerance, try XCTUnwrap(row["expected_within_tolerance"] as? Bool))
+            XCTAssertEqual(calibration.floor.worldFromPlane, before)
+        }
+    }
 }

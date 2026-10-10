@@ -11,7 +11,7 @@ private struct HubPage<Content: View>: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("KICKLAB / \(title.uppercased())")
+                    Text("Juggle Dude / \(title.uppercased())")
                         .font(.system(size: 10, weight: .bold)).tracking(2)
                     Text(title).font(.system(size: 34, weight: .black).width(.condensed))
                     Text(subtitle).font(.subheadline)
