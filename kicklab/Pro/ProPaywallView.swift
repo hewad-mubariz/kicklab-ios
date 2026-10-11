@@ -66,6 +66,8 @@ struct ProPaywallView: View {
                             .padding(.horizontal, 8)
                             .contentTransition(.interpolate)
                             .accessibilityIdentifier("pro-renewal-terms")
+                        #if DEBUG
+                        // Testing aid only: customers see the renewal terms above, not raw expiry times.
                         if let end = subscriptions.localAccessUntil {
                             Text("Apple access verified until \(end.formatted(date: .abbreviated, time: .shortened))")
                                 .font(.caption)
@@ -73,6 +75,7 @@ struct ProPaywallView: View {
                                 .multilineTextAlignment(.center)
                                 .accessibilityIdentifier("pro-access-until")
                         }
+                        #endif
                         links
                     }
                     .padding(.horizontal, 16)
