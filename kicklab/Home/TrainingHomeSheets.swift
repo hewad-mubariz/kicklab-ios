@@ -43,33 +43,38 @@ struct TrainingCameraGuide: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    step("iphone.gen3", title: "Prop up your phone",
-                         detail: "Use a stable surface or tripod to keep the camera steady.")
-                    step("viewfinder", title: "Leave room to move",
-                         detail: "Keep your whole body and the ball in view, with space around your feet.")
-                    step("sun.max", title: "Find a well-lit spot",
-                         detail: "Good light and a clear background help the camera follow the ball.")
-                    Button("Got it") { dismiss() }
-                        .font(.body.weight(.semibold))
-                        .frame(maxWidth: .infinity, minHeight: 52)
-                        .foregroundStyle(TrainingHomeStyle.buttonInk)
-                        .background(TrainingHomeStyle.lime, in: RoundedRectangle(cornerRadius: 14))
-                        .accessibilityIdentifier("home-guide-done")
-                }
-                .padding(24)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                step("iphone.gen3", title: "Prop up your phone",
+                     detail: "Rest it on a stable surface or tripod, with the camera facing you. Keep it still while you train.")
+                step("viewfinder", title: "Give yourself room",
+                     detail: "Step back until your whole body and the ball fit in the preview. Leave space above your head and around your feet for the ball to move.")
+                step("sun.max", title: "Keep the ball easy to see",
+                     detail: "Choose a bright spot with light in front of you, rather than behind you. A clear background helps the camera follow the ball.")
             }
-            .background(TrainingHomeStyle.background(scheme))
-            .foregroundStyle(TrainingHomeStyle.ink(scheme))
-            .navigationTitle("Camera setup")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
+            .frame(maxWidth: 520, alignment: .leading)
+            .padding(.horizontal, 24)
+            .padding(.top, 32)
+            .padding(.bottom, 16)
+            .frame(maxWidth: .infinity)
+        }
+        .background(TrainingHomeStyle.background(scheme))
+        .foregroundStyle(TrainingHomeStyle.ink(scheme))
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Button("Continue") { dismiss() }
+                .font(.body.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 52)
+                .foregroundStyle(TrainingHomeStyle.buttonInk)
+                .background(TrainingHomeStyle.lime, in: RoundedRectangle(cornerRadius: 14))
+                .contentShape(RoundedRectangle(cornerRadius: 14))
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("home-guide-done")
+                .frame(maxWidth: 520)
+                .padding(.horizontal, 24)
+                .padding(.top, 12)
+                .padding(.bottom, 16)
+                .frame(maxWidth: .infinity)
+                .background(TrainingHomeStyle.background(scheme))
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
@@ -82,10 +87,12 @@ struct TrainingCameraGuide: View {
                 .foregroundStyle(TrainingHomeStyle.accent(scheme))
                 .frame(width: 30)
             VStack(alignment: .leading, spacing: 6) {
-                Text(title).font(.headline)
+                Text(title).font(.headline).accessibilityAddTraits(.isHeader)
                 Text(detail).font(.subheadline)
                     .foregroundStyle(TrainingHomeStyle.muted(scheme))
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }

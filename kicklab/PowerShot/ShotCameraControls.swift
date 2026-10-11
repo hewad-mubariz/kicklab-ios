@@ -17,6 +17,7 @@ struct ShotCameraPicker: View {
     let frames: ShotSourceFrames
     let pathEnd: Double
     let onPicking: (Bool) -> Void
+    var showsProBadges = false
     @State private var selection: Selection?
     @State private var draft = ShotSourceRange(start: 0, end: 1)
     @State private var cursor = 0.0
@@ -60,7 +61,7 @@ struct ShotCameraPicker: View {
                     Button {
                         spatialEdit = nil; original = false; settings.style = option
                     } label: {
-                        Label(option.title, systemImage: settings.style == option ? "checkmark" : option.symbol)
+                        Label(option.title + (showsProBadges && option != .none ? " · PRO" : ""), systemImage: settings.style == option ? "checkmark" : option.symbol)
                     }
                     .accessibilityIdentifier("shot-camera-" + option.rawValue)
                 }
@@ -68,6 +69,7 @@ struct ShotCameraPicker: View {
                 HStack(spacing: 7) {
                     Image(systemName: settings.style.symbol).foregroundStyle(SessionStyle.mint)
                     Text(settings.style.title).fontWeight(.semibold).lineLimit(1).minimumScaleFactor(0.85)
+                    if showsProBadges && settings.style != .none { ProBadge() }
                     Image(systemName: "chevron.down").font(.system(size: 9, weight: .bold))
                 }
                 .frame(minHeight: 36)

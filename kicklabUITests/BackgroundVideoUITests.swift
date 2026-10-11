@@ -14,21 +14,23 @@ final class BackgroundVideoUITests: XCTestCase {
     func testShotExportMakesProgressAfterHome() throws { try exercise("shot", backgroundSeconds: 25) }
 
     @MainActor
-    func testSavedConfirmationOpensPhotosAndDoesNotRedirectOnReturn() {
+    func testSavedBannerOpensPhotosAndDoesNotRedirectOnReturn() {
         let app = XCUIApplication()
         app.launchArguments = ["--background-video-review", "photos"]
         app.launch()
         let saved = app.buttons["review-saved-video"]
         XCTAssertTrue(saved.waitForExistence(timeout: 20))
         saved.tap()
-        let alert = app.alerts["Video saved to Photos"]
-        XCTAssertTrue(alert.waitForExistence(timeout: 5))
-        alert.buttons["OK"].tap()
+        let banner = app.buttons["replay-saved-toast"]
+        XCTAssertTrue(banner.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.alerts["Video saved to Photos"].exists)
+        banner.tap()
         let photos = XCUIApplication(bundleIdentifier: "com.apple.mobileslideshow")
         XCTAssertTrue(photos.wait(for: .runningForeground, timeout: 10))
         app.activate()
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 5))
         XCTAssertTrue(saved.waitForExistence(timeout: 5))
-        XCTAssertFalse(alert.exists)
+        XCTAssertFalse(app.alerts["Video saved to Photos"].exists)
     }
 
     @MainActor

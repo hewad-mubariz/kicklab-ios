@@ -11,6 +11,12 @@ import SwiftUI
 import UIKit
 
 struct SaveShareView: View {
+    @EnvironmentObject private var subscriptions: SubscriptionStore
+    @State private var showsProPaywall = false
+    private var allowedLook: JugglingReplayLook {
+        JugglingReplayLook(edit: edit, overlays: overlays, showGraph: overlays.graph.enabled)
+            .allowed(isPro: subscriptions.isPro)
+    }
     let summary: SessionSummary
     let edit: SessionEditState
     @ObservedObject var sceneModel: StadiumPreviewModel
@@ -108,14 +114,12 @@ struct SaveShareView: View {
                         .symbolEffect(.bounce, value: saves)
                         .disabled(busy)
                         .sessionEntrance(shown, order: 4, offset: 14)
-                        SessionAction(title: running == .share ? progressTitle : "Share", symbol: "square.and.arrow.up", primary: false,
+                        SessionAction(title: running == .share ? progressTitle : "Share video", symbol: "square.and.arrow.up", primary: false,
                                       progress: running == .share ? exportProgress : nil) {
                             Task { await shareClip() }
                         }
                         .disabled(busy)
                         .sessionEntrance(shown, order: 5, offset: 14)
-                        socialRow.padding(.top, 4).disabled(busy)
-                            .sessionEntrance(shown, order: 6, offset: 14)
                         if let statusMessage {
                             Text(statusMessage).font(.system(size: 12))
                                 .foregroundStyle(SessionStyle.mint)
@@ -145,6 +149,9 @@ struct SaveShareView: View {
         .task(id: version) { await loadThumb() }
         .sensoryFeedback(.success, trigger: saves)
         .sheet(item: $sharePayload) { payload in ActivityView(items: [payload.url]) }
+        .sheet(isPresented: $showsProPaywall) {
+            ProPaywallView(onClose: { showsProPaywall = false }, onUnlocked: { showsProPaywall = false })
+        }
         .sheet(isPresented: $showOverlayEditor) {
             ExportOverlayEditor(preparation: preparation, summary: summary,
                 edit: version == .edited ? edit : SessionEditState(style: .none, intensity: 0),
@@ -197,9 +204,9 @@ struct SaveShareView: View {
                         // Switching Original/Edited softens the old frame until the new one lands.
                         ZStack(alignment: .topLeading) {
                             MetalStillSurface(image: image,
-                                edit: previewEdit,
+                                edit: subscriptions.isPro ? previewEdit : allowedLook.edit,
                                 track: effectTrack, time: thumbnailTime) { statusMessage = $0 }
-                            ExportOverlayLayer(settings: overlays, timeline: counterTimeline, time: thumbnailTime, size: size)
+                            ExportOverlayLayer(settings: allowedLook.overlays, timeline: counterTimeline, time: thumbnailTime, size: size)
                         }
                         .blur(radius: loadingThumb ? 10 : 0)
                         .opacity(loadingThumb ? 0.55 : 1)
@@ -222,14 +229,26 @@ struct SaveShareView: View {
             HStack {
                 Text("\(summary.touches) touches · \(summary.durationLabel)")
                 Spacer()
-                Text(version == .edited && edit.isEdited ? edit.label : "Original look")
+                Text(version == .edited && allowedLook.edit.isEdited ? allowedLook.edit.label : "Original look")
                     .contentTransition(.interpolate)
             }
             .font(.system(size: 11)).foregroundStyle(SessionStyle.secondary)
         }
     }
 
-    private var overlayControls: some View {
+    @ViewBuilder private var overlayControls: some View {
+        if !subscriptions.isPro {
+            Button { showsProPaywall = true } label: {
+                HStack {
+                    Text("Unlock counter styles with Pro").font(.subheadline.weight(.semibold))
+                    Spacer()
+                    ProBadge()
+                }.padding(14).modifier(SessionPanel())
+            }.buttonStyle(.plain)
+        } else { paidOverlayControls }
+    }
+
+    private var paidOverlayControls: some View {
         VStack(spacing: 14) {
             Toggle(isOn: $overlays.counter.enabled) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -275,46 +294,6 @@ struct SaveShareView: View {
         .modifier(SessionPanel())
     }
 
-    private var socialRow: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Share to").font(.system(size: 12, weight: .medium)).foregroundStyle(.white)
-            HStack(spacing: 18) {
-                socialButton("camera", "Instagram")
-                socialButton("music.note", "TikTok")
-                socialButton("play.rectangle.fill", "YouTube")
-                socialButton("ellipsis", "More") { Task { await shareClip() } }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func socialButton(_ icon: String, _ title: String, action: (() -> Void)? = nil) -> some View {
-        Button {
-            if let action { action() }
-            else { Task { await shareClip() } }
-        } label: {
-            Image(systemName: icon)
-                .font(.system(size: 22, weight: .medium))
-                .foregroundStyle(.white)
-                .shadow(color: title == "TikTok" ? .cyan : .clear, radius: 0, x: -1, y: -1)
-                .shadow(color: title == "TikTok" ? .pink : .clear, radius: 0, x: 1, y: 1)
-                .frame(width: 45, height: 42)
-                .background {
-                    if title == "Instagram" {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(LinearGradient(colors: [.purple, .pink, .orange], startPoint: .topTrailing, endPoint: .bottomLeading))
-                            .padding(7)
-                    } else {
-                        RoundedRectangle(cornerRadius: 12).fill(SessionStyle.panel)
-                    }
-                }
-                .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(SessionStyle.rim, lineWidth: 0.7))
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(SessionPressStyle(scale: 0.88))
-        .accessibilityLabel(title)
-    }
-
     private var previewEdit: SessionEditState {
         var value = version == .edited ? edit : SessionEditState(style: .none, intensity: 0)
         if loadingThumb || effectTrack.surfaceMotion == nil { value.ballSkin = .original }
@@ -325,9 +304,9 @@ struct SaveShareView: View {
         loadingThumb = thumb != nil
         let media: ScenePlayback
         do {
-            let ready = version == .edited && edit.ballSkin != .original
+            let ready = subscriptions.isPro && version == .edited && edit.ballSkin != .original
                 ? try await preparation.prepare(summary) : summary
-            media = try await sceneModel.media(summary: ready, selection: version == .edited ? edit.scene : nil)
+            media = try await sceneModel.media(summary: ready, selection: subscriptions.isPro && version == .edited ? edit.scene : nil)
             try Task.checkCancellation()
         } catch is CancellationError { return }
         catch {
@@ -335,7 +314,7 @@ struct SaveShareView: View {
             statusMessage = "Couldn’t load the video preview. \(error.localizedDescription)"; return
         }
         effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
-        if version == .edited, edit.ballSkin != .original {
+        if subscriptions.isPro, version == .edited, edit.ballSkin != .original {
             do {
                 effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: summary.videoURL, track: BallEffectTrack(frames: (preparation.prepared ?? summary).renderTrack))
             } catch is CancellationError { return }
@@ -361,7 +340,7 @@ struct SaveShareView: View {
         guard !isResolving, !burnIn.isExporting else { return nil }
         isResolving = true
         defer { isResolving = false }
-        let edited = version == .edited && edit.isEdited
+        let edited = subscriptions.isPro && version == .edited && edit.isEdited
         let media: ScenePlayback
         do {
             let ready = edited && edit.ballSkin != .original ? try await preparation.prepare(summary) : summary
@@ -371,13 +350,21 @@ struct SaveShareView: View {
                 media = ScenePlayback(url: ready.videoURL, track: ready.renderTrack)
             }
         } catch { statusMessage = "Couldn’t prepare the export. \(error.localizedDescription)"; return nil }
+        guard !Task.isCancelled else { return nil }
         burnIn.export(source: media.url, track: media.track,
             style: edited ? edit.style : .none, intensity: edited ? edit.intensity : 0,
             skin: edited ? edit.ballSkin : .original, environment: edited ? edit.environment : .original, shortEdge: quality == .p1080 ? 1080 : 720,
-            counter: counterTimeline, overlays: overlays,preserveFrameTimes:edited && edit.scene != nil)
+            counter: counterTimeline, overlays: allowedLook.overlays,preserveFrameTimes:edited && edit.scene != nil)
         // Wait until burn-in finishes.
-        while burnIn.isExporting {
-            try? await Task.sleep(nanoseconds: 80_000_000)
+        do {
+            while burnIn.isExporting {
+                try await Task.sleep(for: .milliseconds(80))
+            }
+            try Task.checkCancellation()
+        } catch {
+            await burnIn.cancelAndWait()
+            statusMessage = "Export cancelled. You can try again."
+            return nil
         }
         if burnIn.outputURL == nil { statusMessage = burnIn.status }
         return burnIn.outputURL
@@ -402,7 +389,7 @@ struct SaveShareView: View {
             try await PHPhotoLibrary.shared().performChanges {
                 PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
             }
-            let tag = version == .edited && edit.isEdited ? "Edited" : "Original"
+            let tag = version == .edited && allowedLook.edit.isEdited ? "Edited" : "Original"
             statusMessage = "Saved \(tag) to Photos (\(quality.rawValue))."
             celebrateSave()
         } catch {

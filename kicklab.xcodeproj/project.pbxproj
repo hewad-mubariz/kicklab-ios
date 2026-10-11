@@ -421,20 +421,19 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = config/KickLab.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = G276PSQ2LH;
 				ENABLE_PREVIEWS = YES;
 				GCC_OPTIMIZATION_LEVEL = 2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "config/KickLab-Info.plist";
 				INFOPLIST_KEY_CFBundleName = "Juggle Dude";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Juggle Dude counts your touches from the camera. Video is processed on device and never leaves it.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Juggle Dude uses the camera to record your sessions and count your touches. Videos are analysed on your iPhone and only leave it if you export or share them.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Move your phone to look around the stadium preview.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Juggle Dude saves your juggling replays to Photos so you can share them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -452,7 +451,7 @@
 				"SWIFT_OPTIMIZATION_LEVEL[sdk=iphoneos*]" = "-O";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -463,20 +462,32 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = config/KickLab.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 12;
 				DEVELOPMENT_TEAM = G276PSQ2LH;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_SOURCE_FILE_NAMES = (
+					"$(inherited)",
+					KickLabDetector.mlpackage,
+					KickLabFasterRCNN.mlpackage,
+					KickLabYOLO26MediumBenchmark.mlpackage,
+					KickLabYOLO26MediumFineTuned.mlpackage,
+					KickLabYOLO26MediumRetained.mlpackage,
+					KickLabYOLO26MediumSegmentation.mlpackage,
+					KickLabYOLO26SmallFineTuned.mlpackage,
+					KickLabYOLOXTiny.mlpackage,
+					KickLabYOLOXTinyFineTuned.mlpackage,
+					PersonBoundaryMatte.mlpackage,
+				);
 				GCC_OPTIMIZATION_LEVEL = 2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "config/KickLab-Info.plist";
 				INFOPLIST_KEY_CFBundleName = "Juggle Dude";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Juggle Dude counts your touches from the camera. Video is processed on device and never leaves it.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Juggle Dude uses the camera to record your sessions and count your touches. Videos are analysed on your iPhone and only leave it if you export or share them.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Move your phone to look around the stadium preview.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Juggle Dude saves your juggling replays to Photos so you can share them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -493,7 +504,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = kicklab/Effects/ShotCPUBridge.h;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -514,7 +525,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Juggle Dude.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Juggle Dude";
 			};
 			name = Debug;
@@ -536,7 +547,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Juggle Dude.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Juggle Dude";
 			};
 			name = Release;
@@ -556,7 +567,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = kicklab;
 			};
 			name = Debug;
@@ -576,7 +587,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = kicklab;
 			};
 			name = Release;

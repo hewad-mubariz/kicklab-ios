@@ -23,7 +23,7 @@ struct PostSessionFlowView: View {
     @StateObject private var ballPreparation = SessionEffectsPreparation()
     @StateObject private var sceneModel = StadiumPreviewModel()
     @State private var overlays = ExportOverlaySettings.load()
-    @State private var edit = SessionEditState(style: .fire, intensity: 0.85)
+    @State private var edit = SessionEditState(style: .glowTrail, intensity: 0.85)
     @Namespace private var exportZoom
 
     private var activeSummary: SessionSummary { ballPreparation.prepared ?? summary }

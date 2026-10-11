@@ -1,8 +1,8 @@
 # Juggle Dude account deletion
 
-## Current status — 2026-10-09
+## Current status — 2026-10-11
 
-The signed-in Profile screen includes Delete account, a destructive confirmation, progress and recoverable errors. After the server confirms deletion, the app clears its local Auth session, removes that account's local history/outbox/replays and returns to guest mode. The signed development build is installed on the connected iPhone.
+The signed-in Profile screen includes Delete account, a destructive confirmation, progress and recoverable errors. After the server confirms deletion, the app clears its local Auth session, removes that account's local history/outbox/replays and returns to guest mode. TestFlight 1.0 (8) is installed and opens on the owner's iPhone; its live account-deletion check is still outstanding.
 
 Migration `202610090002_account_deletion.sql` and the `delete-account` Edge Function are deployed to Supabase project `shbdsjvpjdtqbiaevrxy`. The migration was applied through the dashboard, not CLI migration history; reconcile both existing migrations before a future `db push`.
 
@@ -54,4 +54,4 @@ npx --yes deno@2.9.6 test --config supabase/functions/deno.json supabase/functio
 
 Use only a deliberately disposable account for the final device deletion check. A linked Apple account should present native Apple confirmation, then return to guest with its server profile/results/avatar gone. Cancel and network-failure paths must preserve the account. Do not delete the owner's existing account as a test.
 
-The published privacy and terms pages still need their pre-launch deletion wording updated to match the shipped behavior. Deploying this endpoint does not update those pages.
+The published privacy and terms pages were checked live on 2026-10-11 and describe account deletion, subscription-link deletion and separate Apple billing. The 15 deletion/reconciliation backend tests passed again during build-8 preflight. A real disposable Apple-linked account deletion and authorization revocation on the release candidate remain unverified; mocked tests do not establish that end-to-end result.

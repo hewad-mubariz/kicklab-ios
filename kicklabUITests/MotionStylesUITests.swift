@@ -1,6 +1,6 @@
 import XCTest
 
-final class MotionStylesUITests: XCTestCase {
+final class MotionStylesUITests: ProReplayUITestCase {
     override func setUpWithError() throws { continueAfterFailure = false }
 
     @MainActor

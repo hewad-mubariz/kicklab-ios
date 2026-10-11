@@ -5,6 +5,7 @@ import SwiftUI
 struct CaptureDesignReview: View {
     @State private var state: CaptureControlState = .ready
     @State private var lastAction = "Ready"
+    @State private var closed = false
 
     init(initialState: CaptureControlState = .ready) {
         _state = State(initialValue: initialState)
@@ -19,7 +20,11 @@ struct CaptureDesignReview: View {
                                startPoint: .top, endPoint: .bottom).ignoresSafeArea()
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {
-                        Image(systemName: "chevron.left").frame(width: 48, height: 48)
+                        Button { closed = true } label: {
+                            Image(systemName: "chevron.left").frame(width: 48, height: 48)
+                        }
+                        .accessibilityLabel("Close camera")
+                        .accessibilityIdentifier("capture-close")
                         Spacer()
                         CaptureSessionBadge(number: 1, recording: state == .recording,
                                             preparing: state == .preparing)
@@ -44,7 +49,14 @@ struct CaptureDesignReview: View {
                         .padding(.bottom, 16)
                 }.padding(.horizontal, 24).padding(.top, 8)
             }
-        }.preferredColorScheme(.dark)
+        }
+        .overlay {
+            if closed {
+                Color.black.ignoresSafeArea()
+                    .overlay { Text("Camera closed").accessibilityIdentifier("capture-review-closed") }
+            }
+        }
+        .preferredColorScheme(.dark)
     }
 }
 #endif

@@ -4,3 +4,15 @@ project_id = "juggledude"
 # The dashboard's gateway switch accepts only legacy HS256 tokens. This handler
 # validates the caller with Supabase Auth itself and never trusts decoded claims.
 verify_jwt = false
+
+[functions.reconcile-account-deletions]
+# Handler requires a dedicated recovery secret; ordinary user JWTs are rejected.
+verify_jwt = false
+
+[functions.subscription-account]
+# The handler resolves the caller through Supabase Auth, including ES256 sessions.
+verify_jwt = false
+
+[functions.subscription-notifications]
+# Apple V2 JWS signatures, certificate chains, app ID and environment are verified.
+verify_jwt = false

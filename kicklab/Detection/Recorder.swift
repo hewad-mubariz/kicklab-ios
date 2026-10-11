@@ -61,6 +61,25 @@ nonisolated struct RecordedTouch: Identifiable, Hashable {
 }
 
 final class Recorder {
+    enum Failure: LocalizedError {
+        case start, append, finish
+        var errorDescription: String? {
+            switch self {
+            case .start: "The video recorder could not start. Check available storage and try again."
+            case .append: "Video recording stopped unexpectedly. Check available storage and try again."
+            case .finish: "The video could not be finished. Please try recording again."
+            }
+        }
+    }
+    // Injectable writer operations exercise the real recorder's failure/cleanup paths.
+    private let beginWriting: (AVAssetWriter) -> Bool
+    private let appendFrame: (AVAssetWriterInputPixelBufferAdaptor, CVPixelBuffer, CMTime) -> Bool
+    init(beginWriting: @escaping (AVAssetWriter) -> Bool = { $0.startWriting() },
+         appendFrame: @escaping (AVAssetWriterInputPixelBufferAdaptor, CVPixelBuffer, CMTime) -> Bool = {
+             $0.append($1, withPresentationTime: $2)
+         }) {
+        self.beginWriting = beginWriting; self.appendFrame = appendFrame
+    }
     private var writer: AVAssetWriter?
     private var input: AVAssetWriterInput?
     private var adaptor: AVAssetWriterInputPixelBufferAdaptor?
@@ -77,8 +96,11 @@ final class Recorder {
     /// `cameraPosition` tags the file's preferred transform so replay stays
     /// portrait for both back and front lenses (front also mirrored).
     func start(width: Int, height: Int,
-               cameraPosition: AVCaptureDevice.Position = .back) throws {
+               cameraPosition: AVCaptureDevice.Position = .back,
+               pixelsAreUpright: Bool = false) throws {
         stop(completion: nil)
+        // Duration is chosen by the user; check the disk reserve before starting.
+        try VideoSafetyPolicy.requireSpace(bytes: 0)
         let file = FileManager.default.temporaryDirectory
             .appendingPathComponent("juggledude-run-\(UUID().uuidString).mov")
         try? FileManager.default.removeItem(at: file)
@@ -90,7 +112,8 @@ final class Recorder {
             AVVideoHeightKey: height,
         ]
         let input = AVAssetWriterInput(mediaType: .video, outputSettings: settings)
-        input.transform = Self.displayTransform(
+        // Plain video uses RotationCoordinator's already-upright buffers in either orientation.
+        input.transform = pixelsAreUpright ? .identity : Self.displayTransform(
             width: width, height: height, position: cameraPosition)
         // Frames arrive in capture order at capture rate; this lets the writer
         // pull them without buffering the whole run in memory.
@@ -134,18 +157,18 @@ final class Recorder {
         return .identity
     }
 
-    /// Append one frame. Silently ignores frames the writer is not ready for -
-    /// dropping a frame from the recording is better than stalling capture.
+    /// Backpressure drops a frame; encoder failure terminates the recording.
     @discardableResult
-    func append(_ pixelBuffer: CVPixelBuffer, at time: CMTime) -> RecordedFrameIdentity? {
+    func append(_ pixelBuffer: CVPixelBuffer, at time: CMTime) throws -> RecordedFrameIdentity? {
         guard let writer, let input, let adaptor else { return nil }
         if startedAt == nil {
-            guard writer.startWriting() else { return nil }
+            guard beginWriting(writer) else { throw writer.error ?? Failure.start }
             writer.startSession(atSourceTime: time)
             startedAt = time
         }
+        guard writer.status == .writing else { throw writer.error ?? Failure.append }
         guard input.isReadyForMoreMediaData else { droppedFrames += 1; return nil }
-        guard adaptor.append(pixelBuffer, withPresentationTime: time) else { droppedFrames += 1; return nil }
+        guard appendFrame(adaptor, pixelBuffer, time) else { throw writer.error ?? Failure.append }
         let identity = RecordedFrameIdentity(index: writtenFrames, time: CMTimeSubtract(time, startedAt!),
             width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer),
             coordinates: "capture-buffer; normalized upright detector coordinates")
@@ -160,9 +183,9 @@ final class Recorder {
         return max(0, CMTimeGetSeconds(time) - CMTimeGetSeconds(startedAt))
     }
 
-    func stop(completion: ((URL?) -> Void)?) {
+    func stop(completion: ((Result<URL, Error>) -> Void)?) {
         guard let writer, let input else {
-            completion?(nil)
+            completion?(.failure(Failure.finish))
             return
         }
         let file = url
@@ -172,10 +195,19 @@ final class Recorder {
         self.startedAt = nil
 
         guard writer.status == .writing else {
-            completion?(nil)
+            let error = writer.error ?? Failure.finish
+            writer.cancelWriting()
+            if let file { try? FileManager.default.removeItem(at: file) }
+            completion?(.failure(error))
             return
         }
         input.markAsFinished()
-        writer.finishWriting { completion?(writer.status == .completed ? file : nil) }
+        writer.finishWriting {
+            if writer.status == .completed, let file { completion?(.success(file)) }
+            else {
+                if let file { try? FileManager.default.removeItem(at: file) }
+                completion?(.failure(writer.error ?? Failure.finish))
+            }
+        }
     }
 }

@@ -27,6 +27,7 @@ final class SessionHistoryStore: ObservableObject {
     }
 
     func reloadLocal() {
+        guard ProtectedAccountData.isAvailable else { return }
         do {
             var saved = try library.sessions(owner: ownerID)
             // Keep a newly finished session visible while its disk write runs.
@@ -88,6 +89,17 @@ final class SessionHistoryStore: ObservableObject {
         errorMessage = "Your result is saved, but the replay couldn’t be kept. Check the free space on your phone."
     }
 
+    func markRejected(_ result: SavedJugglingResult) async throws {
+        let library = library
+        let saved = try await Task.detached(priority: .utility) {
+            var saved = try library.session(id: result.id, owner: result.ownerID) ?? HistorySession(result: result)
+            saved.syncState = .syncFailed
+            try library.save(saved)
+            return saved
+        }.value
+        didPersist(saved)
+    }
+
     func markSynced(_ result: SavedJugglingResult) async throws {
         // Never replace a known moderation decision with a submission receipt.
         let library = library
@@ -138,6 +150,8 @@ final class SessionHistoryStore: ObservableObject {
             let page = try await service.history(userID: owner, before: before)
             guard current == generation, !Task.isCancelled else { return }
             guard page.items.allSatisfy({ $0.ownerID == owner }) else { throw PlayerDataError.requestFailed }
+            try await ProtectedAccountData.waitUntilAvailable()
+            guard current == generation, !Task.isCancelled else { return }
             for item in page.items { try library.save(item) }
             cursor = page.next; hasMore = page.next != nil
             reloadLocal()

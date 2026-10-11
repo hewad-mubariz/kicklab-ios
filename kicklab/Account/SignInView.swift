@@ -69,10 +69,14 @@ struct SignInView: View {
     private var backdrop: some View {
         ZStack(alignment: .bottom) {
             TrainingHomeStyle.background(scheme)
-            Ellipse()
-                .fill(accent.opacity(scheme == .dark ? 0.16 : 0.14))
-                .frame(width: 520, height: 300)
-                .blur(radius: 90)
+            // A gradient, not a live blur: the glass tray resamples this while it animates.
+            Rectangle()
+                .fill(EllipticalGradient(stops: [
+                    .init(color: accent.opacity(scheme == .dark ? 0.13 : 0.11), location: 0),
+                    .init(color: accent.opacity(scheme == .dark ? 0.08 : 0.07), location: 0.22),
+                    .init(color: accent.opacity(0), location: 0.5)
+                ]))
+                .frame(width: 700, height: 480)
                 .offset(y: 120)
         }
         .ignoresSafeArea()
@@ -341,8 +345,9 @@ struct SignInView: View {
     private func arrive() async {
         if account.user != nil { onContinueWithoutAccount(); return }
         guard !arrived else { return }
-        // On the first launch the opening halo covers the first moments.
-        try? await Task.sleep(for: .milliseconds(presentation == .welcome ? 520 : 80))
+        // On the first launch, wait for the opening halo to finish fading (600 ms hold
+        // plus a 220 ms fade) so the entrance never competes with it for frames.
+        try? await Task.sleep(for: .milliseconds(presentation == .welcome ? 800 : 80))
         arrived = true
     }
 
@@ -453,6 +458,9 @@ private struct SignInProviderButtons: View {
                     if busy == .apple { waiting("Waiting for Apple…").transition(.opacity) }
                 }
                 .opacity(dimmed(.apple) ? 0.35 : 1)
+            // First release: Apple + guest. Keep these controls for the later
+            // Google production/branding and email-delivery rollout.
+            /*
             Button { onSelect(.google) } label: {
                 HStack(spacing: 12) {
                     if busy == .google {
@@ -491,6 +499,7 @@ private struct SignInProviderButtons: View {
             .buttonStyle(SessionPressStyle(scale: 0.97))
             .opacity(dimmed(.email) ? 0.35 : 1)
             .accessibilityIdentifier("signin-email")
+            */
         }
         .animation(SessionMotion.fade, value: busy)
     }
@@ -556,9 +565,13 @@ private struct SignInBallHero: View {
             let diameter = min(geometry.size.height, geometry.size.width * 0.87)
             let travel = geometry.size.height + diameter
             ZStack {
-                Ellipse()
-                    .fill(TrainingHomeStyle.accent(scheme).opacity(scheme == .dark ? 0.05 : 0.06))
-                    .frame(width: diameter * 0.95, height: diameter * 0.7).blur(radius: 32)
+                Rectangle()
+                    .fill(EllipticalGradient(stops: [
+                        .init(color: TrainingHomeStyle.accent(scheme).opacity(scheme == .dark ? 0.05 : 0.06), location: 0),
+                        .init(color: TrainingHomeStyle.accent(scheme).opacity(scheme == .dark ? 0.04 : 0.05), location: 0.25),
+                        .init(color: TrainingHomeStyle.accent(scheme).opacity(0), location: 0.5)
+                    ]))
+                    .frame(width: diameter * 0.95 + 64, height: diameter * 0.7 + 64)
                 SignInFlightCurve()
                     .trim(from: 0, to: arrived ? 1 : 0)
                     .stroke(TrainingHomeStyle.accent(scheme).opacity(0.72), lineWidth: 0.7)
@@ -587,7 +600,7 @@ private struct SignInBallHero: View {
     private func ball(diameter: CGFloat, travel: CGFloat) -> some View {
         KeyframeAnimator(initialValue: BallBounce(), trigger: reduceMotion ? false : arrived) { drop in
             KeyframeAnimator(initialValue: BallBounce(), trigger: reduceMotion ? 0 : hops) { hop in
-                TimelineView(.animation(paused: reduceMotion || !arrived || kicked)) { context in
+                TimelineView(.animation(minimumInterval: 1.0 / 60, paused: reduceMotion || !arrived || kicked)) { context in
                     SignInBall(diameter: diameter,
                                lift: idleLift(context.date, diameter: diameter) - drop.y - hop.y,
                                squash: drop.squash + hop.squash,
@@ -670,10 +683,15 @@ private struct SignInBall: View {
     var body: some View {
         let height = min(1, max(0, lift / (diameter * 1.2)))
         ZStack {
-            Ellipse()
-                .fill(.black.opacity((scheme == .dark ? 0.4 : 0.12) * (1 - height * 0.7) * (grounded ? 1 : 0)))
-                .frame(width: diameter * 0.68 * (1 - height * 0.45), height: 14)
-                .blur(radius: 12)
+            let shade = (scheme == .dark ? 0.4 : 0.12) * (1 - height * 0.7) * (grounded ? 1 : 0)
+            // The bob redraws this every frame, so it is a gradient rather than a live blur.
+            Rectangle()
+                .fill(EllipticalGradient(stops: [
+                    .init(color: .black.opacity(shade * 0.62), location: 0),
+                    .init(color: .black.opacity(shade * 0.3), location: 0.25),
+                    .init(color: .black.opacity(0), location: 0.5)
+                ]))
+                .frame(width: diameter * 0.68 * (1 - height * 0.45) + 24, height: 38)
                 .offset(y: diameter * 0.40)
             Image("signin-ball").resizable().scaledToFit()
                 .frame(width: diameter, height: diameter)

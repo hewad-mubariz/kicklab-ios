@@ -19,12 +19,15 @@ nonisolated final class JugglingContactVerifier {
     }
     private let context = CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly])
     private var frames: [Frame] = []
+    private var pendingFrame: Int?
     private struct Pose {
         var joints: [String: JugglingContactRules.Point] = [:]
         var ankles: [String: FootContactRules.Point] = [:]
         var hips: [String: FootContactRules.Point] = [:]
     }
     private var poseCache: [Int: Pose] = [:]
+    private var handCache: [Int: Bool] = [:]
+    private(set) var handPoseRequests = 0
     private(set) var footChecks = 0
     private(set) var footRecoveries = 0
     private(set) var footCheckMS = 0.0
@@ -39,19 +42,33 @@ nonisolated final class JugglingContactVerifier {
     private(set) var lastError: String?
     private var warmed = false
     private let request = VNDetectHumanBodyPoseRequest()
+    private let handRequest = VNDetectHumanHandPoseRequest()
 
     init() {
-        do { try VisionComputePolicy.configure(request) }
+        do {
+            try VisionComputePolicy.configure(request)
+            try VisionComputePolicy.configure(handRequest)
+        }
         catch { lastError = error.localizedDescription }
     }
 
-    func discardFrames() { frames.removeAll(keepingCapacity: true); poseCache.removeAll(keepingCapacity: true) }
+    func discardFrames() {
+        frames.removeAll(keepingCapacity: true)
+        poseCache.removeAll(keepingCapacity: true)
+        handCache.removeAll(keepingCapacity: true)
+        pendingFrame = nil
+    }
+
+    /// A slow reversal can be confirmed after the rolling image cache expires.
+    /// Pin only its five nearby images, never the intervening video frames.
+    func retainContactFrames(around index: Int?) { pendingFrame = index }
 
     func reset() {
         discardFrames()
         context.clearCaches()
         footChecks = 0; footRecoveries = 0; footCheckMS = 0; poseRequests = 0; poseCacheHits = 0
         checkedContacts = 0
+        handPoseRequests = 0
         rejectedContacts = 0
         lastCheckMS = 0
         totalCheckMS = 0
@@ -72,7 +89,7 @@ nonisolated final class JugglingContactVerifier {
               let pixels else { return }
         context.render(CIImage(color: .black).cropped(to: CGRect(x: 0, y: 0, width: 288, height: 512)), to: pixels)
         do {
-            try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request])
+            try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request, handRequest])
             warmed = true
         } catch {
             lastError = error.localizedDescription
@@ -82,8 +99,12 @@ nonisolated final class JugglingContactVerifier {
     func store(_ pixels: CVPixelBuffer, frameIndex: Int, timestampMs: Int,
                ball: Detection?, orientLandscapeAsPortrait: Bool = true) {
         guard lastError == nil else { return }
-        frames.removeAll { frameIndex - $0.index > 15 || timestampMs - $0.timestampMs > 500 }
+        frames.removeAll { frame in
+            let pinned = pendingFrame.map { ($0 - 1 ... $0 + 3).contains(frame.index) }
+            return (frameIndex - frame.index > 15 || timestampMs - frame.timestampMs > 500) && !(pinned ?? false)
+        }
         let retained = Set(frames.map(\.index)); poseCache = poseCache.filter { retained.contains($0.key) }
+        handCache = handCache.filter { retained.contains($0.key) }
         guard let ball else { return }
         var image = CIImage(cvPixelBuffer: pixels)
         if orientLandscapeAsPortrait && image.extent.width > image.extent.height { image = image.oriented(.right) }
@@ -101,7 +122,7 @@ nonisolated final class JugglingContactVerifier {
 
     func rejectsHandContact(at frameIndex: Int) -> Bool {
         guard lastError == nil else { return false }
-        // Never substitute a frame far from the reversal. Two adjacent views
+        // Never substitute a frame far from the reversal. Two nearby views
         // must agree, so one misplaced wrist cannot remove a genuine touch.
         guard let first = frames.min(by: { abs($0.index - frameIndex) < abs($1.index - frameIndex) }),
               abs(first.index - frameIndex) <= 1,
@@ -113,7 +134,17 @@ nonisolated final class JugglingContactVerifier {
             lastCheckMS = (ProcessInfo.processInfo.systemUptime - start) * 1000
             totalCheckMS += lastCheckMS
         }
-        let rejected = isHand(first) && isHand(second)
+        let firstHand = isHand(first)
+        let secondHand = (firstHand || isTorsoHandCandidate(first)) ? isHand(second) : false
+        var rejected = firstHand && secondHand
+        // A palm can be hidden by the ball in one exposure. For the ambiguous
+        // torso case only, accept two agreeing views out of three, still within
+        // 100 ms of the reversal. Never extend this tolerance to leg contacts.
+        if !rejected, (firstHand || secondHand), isTorsoHandCandidate(first),
+           let third = frames.first(where: { $0.index > second.index && $0.index <= first.index + 3
+               && $0.timestampMs > second.timestampMs && $0.timestampMs - first.timestampMs <= 100 }) {
+            rejected = isHand(third)
+        }
         if rejected { rejectedContacts += 1 }
         return rejected
     }
@@ -148,8 +179,52 @@ nonisolated final class JugglingContactVerifier {
 
     private func isHand(_ frame: Frame) -> Bool {
         guard let pose = pose(for: frame) else { return false }
-        return JugglingContactRules.isHand(ball: .init(x: frame.ball.x, y: frame.ball.y),
-                                           width: frame.ball.width, joints: pose.joints)
+        if JugglingContactRules.isHand(ball: .init(x: frame.ball.x, y: frame.ball.y),
+                                      width: frame.ball.width, joints: pose.joints) { return true }
+        let ball = frame.ball
+        // The new fallback resolves torso/hand overlap only. Near the legs or
+        // head, foreshortening and occlusion remain ambiguous; preserve the
+        // original body rule rather than letting hand landmarks veto a kick.
+        guard isTorsoHandCandidate(frame) else { return false }
+        let wrists = [pose.joints["left_wrist"], pose.joints["right_wrist"]].compactMap { $0 }
+        // Fingers can touch the ball beyond the body model's wrist endpoint,
+        // even when the torso is closer in the flattened image. Look for actual
+        // finger landmarks only when a confident body wrist is already nearby.
+        if let cached = handCache[frame.index] { return cached }
+        do {
+            handPoseRequests += 1
+            try VNImageRequestHandler(cvPixelBuffer: frame.pixels).perform([handRequest])
+            let hands = try (handRequest.results ?? []).map { observation in
+                let recognized = try observation.recognizedPoints(.all)
+                let groups: [[VNHumanHandPoseObservation.JointName]] = [
+                    [.wrist], [.thumbIP, .thumbTip], [.indexDIP, .indexTip],
+                    [.middleDIP, .middleTip], [.ringDIP, .ringTip], [.littleDIP, .littleTip]]
+                return groups.enumerated().flatMap { group, names in
+                    names.compactMap { name -> JugglingContactRules.HandLandmark? in
+                        guard let point = recognized[name] else { return nil }
+                        return .init(finger: group, x: point.location.x, y: 1-point.location.y,
+                                     confidence: Double(point.confidence))
+                    }
+                }
+            }
+            let result = hands.contains { JugglingContactRules.fingersTouchBall(ball: .init(x: ball.x, y: ball.y),
+                width: ball.width, height: ball.height, bodyWrists: wrists, landmarks: $0) }
+            handCache[frame.index] = result
+            return result
+        } catch {
+            lastError = error.localizedDescription
+            return false
+        }
+    }
+
+    private func isTorsoHandCandidate(_ frame: Frame) -> Bool {
+        guard frame.ball.score >= 0.5, let pose = pose(for: frame) else { return false }
+        let ball = frame.ball
+        guard JugglingContactRules.canResolveTorsoOverlap(ball: .init(x: ball.x, y: ball.y),
+            height: ball.height, joints: pose.joints), ball.width > 0, ball.height > 0 else { return false }
+        return [pose.joints["left_wrist"], pose.joints["right_wrist"]].compactMap { $0 }.contains {
+            hypot(($0.x-ball.x)/ball.width, ($0.y-ball.y)/ball.height) <= 2
+        }
     }
 
     private func pose(for frame: Frame) -> Pose? {

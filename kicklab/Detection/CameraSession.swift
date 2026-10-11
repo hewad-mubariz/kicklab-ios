@@ -16,6 +16,19 @@ import CoreVideo
 import Foundation
 
 final class CameraSession: NSObject, ObservableObject {
+    nonisolated enum Pipeline: Sendable { case juggling, videoOnly }
+    private let pipeline: Pipeline
+
+    init(pipeline: Pipeline = .juggling) {
+        self.pipeline = pipeline
+        super.init()
+    }
+
+    /// Plain video capture needs neither a detector nor a floor estimate.
+    @MainActor var canRecord: Bool {
+        isReady && (pipeline == .videoOnly || isTrackingReady) &&
+            recordingRequest == nil && !isFinishingRecording
+    }
     @MainActor @Published private(set) var touchCount = 0
     @MainActor @Published private(set) var ballScore: Double = 0
     @MainActor @Published private(set) var fps: Double = 0
@@ -42,7 +55,14 @@ final class CameraSession: NSObject, ObservableObject {
     @MainActor @Published private(set) var isRecording = false
     @MainActor @Published private(set) var isPreparingRecording = false
     @MainActor @Published private(set) var isFinishingRecording = false
+    /// Preview readiness is separate from tracking so lens switching stays available during warmup.
     @MainActor @Published private(set) var isReady = false
+    @MainActor @Published private(set) var isPreparingTracking = false
+    @MainActor @Published private(set) var isTrackingReady = false
+    @MainActor @Published private(set) var trackingPreparationError: String?
+    @MainActor private var trackingRequest: CaptureRequest?
+    /// A reopen during writer finalization should prepare once cleanup completes.
+    @MainActor private var wantsPreparedPreview = false
     @MainActor @Published private(set) var recordingError: String?
     @MainActor @Published private(set) var processedFrames = 0
     @MainActor @Published private(set) var recordingElapsed: Double = 0
@@ -58,7 +78,9 @@ final class CameraSession: NSObject, ObservableObject {
     @MainActor @Published private(set) var recordingURL: URL?
 
     private let session = AVCaptureSession()
-    /// Session configuration and all detector/counter state belong to this queue.
+    /// Camera configuration never waits behind Core ML loading or inference.
+    private let sessionQueue = DispatchQueue(label: "kicklab.camera.session", qos: .userInitiated)
+    /// All detector/counter state belongs to this queue.
     private let queue = DispatchQueue(label: "kicklab.camera.analysis", qos: .userInitiated)
     private let captureQueue = DispatchQueue(label: "kicklab.camera.capture", qos: .userInitiated)
     @MainActor @Published private(set) var capturePerformance = CaptureCadenceSnapshot()
@@ -78,10 +100,13 @@ final class CameraSession: NSObject, ObservableObject {
     @MainActor @Published private(set) var performance = DetectorPerformanceSnapshot()
     private let performanceMonitor = DetectorPerformance()
     private var detector: BallDetector?
+    private var trackingBaselineMB = 0.0
+    private var trackingPreparationMS = 0.0
     private var counter = StreamingCounter()
     private var contactVerifier: JugglingContactVerifier?
     private var frameIndex = 0
     private var detectedFrames = 0
+    private var analysisFailed = false
     private var lastFpsStamp = CFAbsoluteTimeGetCurrent()
     private var framesSinceStamp = 0
     private var lastPublish = CFAbsoluteTimeGetCurrent()
@@ -103,6 +128,8 @@ final class CameraSession: NSObject, ObservableObject {
     /// Keeps capture rotation correct per lens (front vs back differ).
     private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
     private var rotationObservation: NSKeyValueObservation?
+    // Session-queue only. A video's pixel dimensions cannot change mid-file.
+    private var holdsVideoOrientation = false
 
     @MainActor @Published private(set) var cameraPosition: AVCaptureDevice.Position = .back
 
@@ -110,7 +137,11 @@ final class CameraSession: NSObject, ObservableObject {
 
     @MainActor
     func start() {
-        guard previewRequest == nil else { return }
+        wantsPreparedPreview = true
+        if previewRequest != nil {
+            prepareTracking()
+            return
+        }
         let request = CaptureRequest()
         previewRequest = request
         status = "starting camera"
@@ -122,17 +153,18 @@ final class CameraSession: NSObject, ObservableObject {
                 return
             }
             guard !request.isCancelled, !Task.isCancelled else { return }
-            queue.async { [weak self] in
+            sessionQueue.async { [weak self] in
                 guard let self, !request.isCancelled else { return }
-                // Opening this screen starts only the viewfinder. No model is
-                // loaded and capture callbacks do no analysis until Record.
+                // Show the viewfinder first. Preparation runs independently;
+                // capture callbacks still do no analysis until an explicit Record.
                 let configured = self.configure(position: self.currentPosition)
                 if configured, !request.isCancelled { self.session.startRunning() }
                 Task { @MainActor in
                     guard self.previewRequest === request, !request.isCancelled else { return }
                     self.isReady = configured
                     self.status = configured ? "preview only" : "camera unavailable"
-                    if !configured { self.previewRequest = nil }
+                    if configured { self.prepareTracking() }
+                    else { self.previewRequest = nil }
                 }
             }
         }
@@ -140,15 +172,25 @@ final class CameraSession: NSObject, ObservableObject {
 
     @MainActor
     func stop() {
+        wantsPreparedPreview = false
         previewRequest?.cancel()
         previewRequest = nil
         previewTask?.cancel()
         previewTask = nil
+        trackingRequest?.cancel()
+        trackingRequest = nil
+        isPreparingTracking = false
+        isTrackingReady = false
+        trackingPreparationError = nil
         stopRecording()
         isReady = false
         status = "stopped"
         // Retain the queue owner until the pending stop completes.
-        queue.async { [self] in session.stopRunning() }
+        sessionQueue.async { [self] in session.stopRunning() }
+        queue.async { [self] in
+            // Finalization owns a detector that has actually recorded frames.
+            if activeRecording == nil { releaseTracking() }
+        }
     }
 
     /// Switch the preview lens while no recording is starting or active.
@@ -158,7 +200,7 @@ final class CameraSession: NSObject, ObservableObject {
               let request = previewRequest else { return }
         let next: AVCaptureDevice.Position = cameraPosition == .back ? .front : .back
         isReady = false
-        queue.async { [weak self] in
+        sessionQueue.async { [weak self] in
             guard let self, !request.isCancelled else { return }
             let configured = self.configure(position: next)
             Task { @MainActor in
@@ -167,6 +209,67 @@ final class CameraSession: NSObject, ObservableObject {
                 self.status = configured ? "preview only" : "camera unavailable"
             }
         }
+    }
+
+    /// One bounded warmup while framing the shot; never a continuous preview-analysis loop.
+    /// Repeated calls (including lens changes) do not reload a ready or in-flight model.
+    @MainActor
+    func prepareTracking() {
+        guard pipeline == .juggling, isReady, previewRequest != nil, trackingRequest == nil,
+              recordingRequest == nil, !isFinishingRecording else { return }
+        let request = CaptureRequest()
+        trackingRequest = request
+        isPreparingTracking = true
+        isTrackingReady = false
+        trackingPreparationError = nil
+        queue.async { [weak self] in
+            guard let self, !request.isCancelled else { return }
+            autoreleasepool {
+                do {
+                    let baseline = DetectorPerformance.memoryMB()
+                    let started = ProcessInfo.processInfo.systemUptime
+                    let signature = SessionAnalysisStore.pipelineSignature()
+                    let loaded = try BallDetector()
+                    guard !request.isCancelled else { return }
+                    try loaded.warmUp()
+                    guard !request.isCancelled else { return }
+                    let verifier = JugglingContactVerifier.enabled ? JugglingContactVerifier() : nil
+                    verifier?.warmUp()
+                    guard !request.isCancelled else { return }
+                    if let error = verifier?.lastError {
+                        throw NSError(domain: "CameraPreparation", code: 1,
+                                      userInfo: [NSLocalizedDescriptionKey: error])
+                    }
+                    self.detector = loaded
+                    self.contactVerifier = verifier
+                    self.capturePipelineSignature = signature == SessionAnalysisStore.pipelineSignature() ? signature : nil
+                    self.trackingBaselineMB = baseline
+                    self.trackingPreparationMS = (ProcessInfo.processInfo.systemUptime - started) * 1000
+                    Task { @MainActor in
+                        guard self.trackingRequest === request, !request.isCancelled else { return }
+                        self.isPreparingTracking = false
+                        self.isTrackingReady = true
+                    }
+                } catch {
+                    guard !request.isCancelled else { return }
+                    self.releaseTracking()
+                    Task { @MainActor in
+                        guard self.trackingRequest === request, !request.isCancelled else { return }
+                        self.trackingRequest = nil
+                        self.isPreparingTracking = false
+                        self.isTrackingReady = false
+                        self.trackingPreparationError = error.localizedDescription
+                    }
+                }
+            }
+        }
+    }
+
+    /// Analysis-queue only. Do not retain the model on home, in the editor or in the background.
+    private func releaseTracking() {
+        detector = nil
+        contactVerifier = nil
+        capturePipelineSignature = nil
     }
 
     @MainActor
@@ -180,7 +283,7 @@ final class CameraSession: NSObject, ObservableObject {
                 verifier?.rejectsHandContact(at: $0) ?? false
             }, recordTrace: true, footContactEvidence: JugglingContactVerifier.enabled ? { [weak verifier] in
                 verifier?.footEvidence(at: $0)
-            } : nil)
+            } : nil, retainContactFrames: { [weak verifier] in verifier?.retainContactFrames(around: $0) })
             self?.plausibility.reset()
             self?.frameIndex = 0
             self?.detectedFrames = 0
@@ -189,10 +292,16 @@ final class CameraSession: NSObject, ObservableObject {
 
     @MainActor
     func startRecording() {
-        guard isReady, recordingRequest == nil, !isFinishingRecording else { return }
+        guard canRecord else { return }
+        let trackingRequest = trackingRequest
+        if pipeline == .juggling {
+            guard let trackingRequest, !trackingRequest.isCancelled else { return }
+        }
         let request = CaptureRequest()
         recordingRequest = request
+        wantsPreparedPreview = false
         isPreparingRecording = true
+        isTrackingReady = false
         recordingError = nil
         detectorError = nil
         recordedTouches = []
@@ -207,49 +316,33 @@ final class CameraSession: NSObject, ObservableObject {
         status = "preparing recording"
         queue.async { [weak self] in
             guard let self, !request.isCancelled else { return }
-            do {
-                let baseline = DetectorPerformance.memoryMB()
-                let started = ProcessInfo.processInfo.systemUptime
-                let signatureBeforeLoad = SessionAnalysisStore.pipelineSignature()
-                let loaded = try BallDetector()
-                guard !request.isCancelled else { return }
-                self.detector = loaded
-                self.capturePipelineSignature = signatureBeforeLoad == SessionAnalysisStore.pipelineSignature()
-                    ? signatureBeforeLoad : nil
-                self.performanceMonitor.loaded(model: loaded.modelName, baselineMB: baseline,
-                    milliseconds: (ProcessInfo.processInfo.systemUptime - started) * 1000)
-            } catch {
-                Task { @MainActor in
-                    guard self.recordingRequest === request, !request.isCancelled else { return }
-                    self.recordingError = "Couldn’t start detection: \(error.localizedDescription)"
-                    self.stopRecording()
-                }
-                return
+            if self.pipeline == .juggling {
+                guard let trackingRequest, !trackingRequest.isCancelled, let detector = self.detector else { return }
+                self.performanceMonitor.loaded(model: detector.modelName, baselineMB: self.trackingBaselineMB,
+                                               milliseconds: self.trackingPreparationMS)
             }
             self.touchesThisRun = []
             self.trackThisRun = []
             self.analyzedIdentities = []
             self.analysisEvaluations = []
             // A fresh counter: a run's count should start at zero.
-            let verifier = JugglingContactVerifier.enabled ? JugglingContactVerifier() : nil
-            verifier?.warmUp()
-            guard !request.isCancelled else { return }
-            self.contactVerifier = verifier
+            let verifier = self.contactVerifier
             self.counter = StreamingCounter(rejectsHandContact: { [weak verifier] in
                 verifier?.rejectsHandContact(at: $0) ?? false
             }, recordTrace: true, footContactEvidence: JugglingContactVerifier.enabled ? { [weak verifier] in
                 verifier?.footEvidence(at: $0)
-            } : nil)
+            } : nil, retainContactFrames: { [weak verifier] in verifier?.retainContactFrames(around: $0) })
             self.plausibility.reset()
             self.frameIndex = 0
             self.detectedFrames = 0
+            self.analysisFailed = false
             self.lastBallRect = nil
             self.framesSinceStamp = 0
             self.lastFpsStamp = CFAbsoluteTimeGetCurrent()
             self.lastPublish = 0
             self.compensator.reset()
             self.activeRecording = request
-            self.captureQueue.async {
+            let beginCapture = {
                 guard !request.isCancelled else { return }
                 self.captureRecording = request
                 self.liveBuffer = LiveAnalysisBuffer()
@@ -260,6 +353,15 @@ final class CameraSession: NSObject, ObservableObject {
                 fresh.height = self.captureStats.height
                 fresh.position = self.captureStats.position
                 self.captureStats = fresh
+            }
+            if self.pipeline == .videoOnly {
+                self.sessionQueue.async {
+                    guard !request.isCancelled else { return }
+                    self.holdsVideoOrientation = true
+                    self.captureQueue.async(execute: beginCapture)
+                }
+            } else {
+                self.captureQueue.async(execute: beginCapture)
             }
             // isRecording becomes true when the first frame opens the writer.
         }
@@ -292,28 +394,34 @@ final class CameraSession: NSObject, ObservableObject {
             self.captureStats.analysisReplaced = self.liveBuffer.replaced
             let capture = self.captureStats
             let ledger = self.recorder.frameIdentities
-            self.recorder.stop { url in
+            self.recorder.stop { result in
+                self.sessionQueue.async {
+                    self.holdsVideoOrientation = false
+                    if self.pipeline == .videoOnly { self.updateCaptureOrientation() }
+                }
                 // Serial analysis work has completed before this cleanup runs.
-                self.queue.async { self.finishRecording(request, video: url, capture: capture,
+                self.queue.async { self.finishRecording(request, result: result, capture: capture,
                                                       didWriteFrames: didWriteFrames, ledger: ledger) }
             }
         }
     }
 
-    private func finishRecording(_ request: CaptureRequest, video url: URL?,
+    private func finishRecording(_ request: CaptureRequest, result: Result<URL, Error>,
                                  capture: CaptureCadenceSnapshot, didWriteFrames: Bool, ledger: [RecordedFrameIdentity]) {
+        let url = try? result.get()
         let wasActive = activeRecording === request
         activeRecording = nil
-        let late = wasActive && didWriteFrames ? counter.flush() : []
+        let late = pipeline == .juggling && wasActive && didWriteFrames ? counter.flush() : []
         for touch in late {
             touchesThisRun.append(RecordedTouch(index: touch.index,
                 time: Double(touch.timestampMs) / 1000.0 - recordingStartSeconds,
                 x: touch.x, y: touch.y))
         }
+        let qualityFailed = analysisFailed || contactVerifier?.lastError != nil
         let touches = wasActive ? touchesThisRun : []
         let track = wasActive ? trackThisRun : []
         let count = wasActive ? counter.count : 0
-        if let url, didWriteFrames {
+        if pipeline == .juggling, let url, didWriteFrames, !qualityFailed {
             let analyzed = analyzedIdentities
             let trace = wasActive ? counter.traceSnapshot() : nil
             let timeOrigin = recordingStartSeconds
@@ -329,36 +437,29 @@ final class CameraSession: NSObject, ObservableObject {
         }
         var finalCapture = capture
         finalCapture.analysedFrames = wasActive ? frameIndex : 0
-        if let url {
-            let folder = URL.documentsDirectory.appendingPathComponent("CaptureCadence", isDirectory: true)
-            try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            try? JSONEncoder().encode(finalCapture).write(to: folder.appendingPathComponent(url.deletingPathExtension().lastPathComponent + ".json"))
-        }
-        DetectorRecordingReview.save(video: url, model: detector?.modelName ?? "Not loaded",
-            threshold: detector?.activeBallThreshold ?? 0, frames: frameIndex, count: count,
-            touches: touches, track: track, roiFullFrames: detector?.fullFrameCount ?? 0,
-            roiCropFrames: detector?.cropFrameCount ?? 0,
-            handChecks: contactVerifier?.checkedContacts ?? 0,
-            rejectedHands: contactVerifier?.rejectedContacts ?? 0,
-            handCheckError: contactVerifier?.lastError)
-        contactVerifier = nil
-        detector = nil
-        capturePipelineSignature = nil
+        releaseTracking()
         compensator.reset()
         lastBallRect = nil
         performanceMonitor.finish()
         Task { @MainActor in
+            self.trackingRequest?.cancel()
+            self.trackingRequest = nil
+            self.isTrackingReady = false
             self.isFinishingRecording = false
             self.performance.model = "Not loaded"
             self.performance.captureDrops = finalCapture.captureDrops
             self.capturePerformance = finalCapture
+            if qualityFailed, self.recordingError == nil {
+                self.recordingError = VideoSafetyPolicy.Failure.analysis.localizedDescription
+            }
             self.recordedTouches = touches
             self.recordedTrack = track
             self.recordingURL = url
             self.touchCount = count
             if url == nil, wasActive, self.previewRequest != nil, self.recordingError == nil {
-                self.recordingError = "No video frames were saved. Please try recording again."
+                if case .failure(let error) = result { self.recordingError = error.localizedDescription }
             }
+            if self.wantsPreparedPreview { self.prepareTracking() }
         }
     }
 
@@ -383,7 +484,7 @@ final class CameraSession: NSObject, ObservableObject {
         }
     }
 
-    /// Called on `queue`.
+    /// Called on `sessionQueue`.
     private func configure(position: AVCaptureDevice.Position) -> Bool {
         session.beginConfiguration()
 
@@ -465,19 +566,19 @@ final class CameraSession: NSObject, ObservableObject {
             device: device, previewLayer: nil)
         rotationCoordinator = coordinator
 
-        let applyAngle = { [weak connection] in
-            guard let connection else { return }
-            let angle = coordinator.videoRotationAngleForHorizonLevelCapture
-            if connection.isVideoRotationAngleSupported(angle) {
-                connection.videoRotationAngle = angle
-            }
-        }
-        applyAngle()
+        updateCaptureOrientation()
         rotationObservation = coordinator.observe(
             \.videoRotationAngleForHorizonLevelCapture, options: [.new]
         ) { [weak self] _, _ in
-            self?.queue.async { applyAngle() }
+            self?.sessionQueue.async { self?.updateCaptureOrientation() }
         }
+    }
+
+    private func updateCaptureOrientation() {
+        guard !holdsVideoOrientation, let coordinator = rotationCoordinator,
+              let connection = session.outputs.first?.connection(with: .video) else { return }
+        let angle = coordinator.videoRotationAngleForHorizonLevelCapture
+        if connection.isVideoRotationAngleSupported(angle) { connection.videoRotationAngle = angle }
     }
 }
 
@@ -503,7 +604,8 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
             do {
                 let w = CVPixelBufferGetWidth(pixels)
                 let h = CVPixelBufferGetHeight(pixels)
-                try recorder.start(width: w, height: h, cameraPosition: capturePosition)
+                try recorder.start(width: w, height: h, cameraPosition: capturePosition,
+                                   pixelsAreUpright: pipeline == .videoOnly)
                 captureStartSeconds = sourceTime
             } catch {
                 request.cancel()
@@ -522,8 +624,30 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
             }
         }
         guard !request.isCancelled else { return }
-        let identity = recorder.append(pixels, at: time)
+        let identity: RecordedFrameIdentity?
+        do { identity = try recorder.append(pixels, at: time) }
+        catch {
+            request.cancel()
+            liveBuffer.cancelPending()
+            Task { @MainActor in
+                guard self.recordingRequest === request else { return }
+                self.recordingError = error.localizedDescription
+                self.stopRecording()
+            }
+            return
+        }
         captureStats.duration = max(0, sourceTime - (captureStartSeconds ?? sourceTime))
+        if pipeline == .videoOnly {
+            // Capture cadence is independent of tracking. No model is loaded for this flow.
+            if captureStats.receivedFrames % 6 == 0 {
+                let elapsed = captureStats.duration
+                Task { @MainActor in
+                    guard self.recordingRequest === request, !request.isCancelled else { return }
+                    self.recordingElapsed = elapsed
+                }
+            }
+            return
+        }
         let frame = LiveFrame(pixels: pixels, sourceTime: sourceTime,
                               startTime: captureStartSeconds ?? sourceTime,
                               captureDrops: captureStats.captureDrops, identity: identity)
@@ -557,11 +681,12 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
             catch { inferenceSucceeded = false; return FrameDetections(ball: nil, person: nil) }
         }
         guard !request.isCancelled else { return }
-        if DetectorRecordingReview.memoryGuardExceeded {
+        if !inferenceSucceeded || contactVerifier?.lastError != nil {
+            analysisFailed = true
             request.cancel()
             Task { @MainActor in
                 guard self.recordingRequest === request else { return }
-                self.recordingError = "Experimental detector exceeded its memory test limit. Recording stopped."
+                self.recordingError = VideoSafetyPolicy.Failure.analysis.localizedDescription
                 self.stopRecording()
             }
             return

@@ -11,6 +11,7 @@ struct ProcessingOverlay: View {
     var isPaused = false
     /// Step names and coach's tips; Power Shot passes its own.
     var labels = ProcessingLabels.juggling
+    var videoInfo: VideoProcessingInfo? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
     @State private var model = BallPathModel()
@@ -71,22 +72,66 @@ struct ProcessingOverlay: View {
             Text(labels.heading)
                 .font(.system(size: 11, weight: .semibold)).tracking(1.4).textCase(.uppercase)
                 .foregroundStyle(SessionStyle.mint)
-            Text("\(percent)%")
-                .font(.system(size: 64, weight: .heavy, design: .rounded)).monospacedDigit()
-                .contentTransition(.numericText(value: Double(percent)))
-                .animation(.snappy(duration: 0.3), value: percent)
+            if stepIndex < 4, let videoInfo {
+                progressCard(videoInfo)
+                    .padding(.vertical, 10)
+            } else {
+                percentage(size: 64)
+            }
             ZStack {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(model.finishedAt != nil ? SessionStyle.mint : SessionStyle.secondary)
-                    // Each step name keeps its own width, so a longer one is never cut short.
-                    .fixedSize()
+                    // Longer status messages wrap instead of spilling off-screen.
+                    .fixedSize(horizontal: false, vertical: true)
                     .id(title)
                     .transition(.blurReplace(.upUp))
             }
             .animation(.smooth(duration: 0.4), value: title)
         }
+    }
+
+    private func percentage(size: CGFloat) -> some View {
+        Text("\(percent)%")
+            .font(.system(size: size, weight: .heavy, design: .rounded))
+            .monospacedDigit()
+            .contentTransition(.numericText(value: Double(percent)))
+            .animation(.snappy(duration: 0.3), value: percent)
+    }
+
+    private func progressCard(_ info: VideoProcessingInfo) -> some View {
+        HStack(spacing: 14) {
+            percentage(size: 34)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .frame(width: 96, alignment: .center)
+            Rectangle()
+                .fill(.white.opacity(0.12))
+                .frame(width: 1, height: 26)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                if let resolution = info.resolutionLabel {
+                    Text(resolution)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.85))
+                }
+                Text(info.timingLabel)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.5))
+            }
+            .monospacedDigit()
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 7)
+        .background(.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(.white.opacity(0.075), lineWidth: 1)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("processing-video-workload")
     }
 }
 

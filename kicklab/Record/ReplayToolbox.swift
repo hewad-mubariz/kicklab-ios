@@ -22,6 +22,8 @@ struct ReplayToolbox: View {
     @Binding var page: ReplayTool?
     let onClose: () -> Void
     var showsTouchTools = true
+    var isPro = false
+    var onUnlockTool: (ReplayTool) -> Void = { _ in }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
     @State private var ballKicks: [BallSkin: Int] = [:]
@@ -36,7 +38,8 @@ struct ReplayToolbox: View {
     /// Into a tool or back out of it; the swap leans slightly that way.
     @State private var forward = true
 
-    private let skins: [BallSkin] = [.original, .chrome, .arctic, .matrix, .stealth, .crimson,
+    private let skins: [BallSkin] = [.original, .metal, .lava, .pearl, .volt,
+                                     .chrome, .arctic, .matrix, .stealth, .crimson,
                                      .gold, .galaxy, .graffiti, .aurora, .classic]
 
     var body: some View {
@@ -93,7 +96,7 @@ struct ReplayToolbox: View {
             }
             .sessionEntrance(appeared, offset: 8)
             Spacer(minLength: 8)
-            Button(action: onClose) {
+            Button { commitBall(); onClose() } label: {
                 Image(systemName: "xmark").font(.system(size: 13, weight: .semibold))
                     .frame(width: 32, height: 32)
             }
@@ -117,6 +120,11 @@ struct ReplayToolbox: View {
     }
 
     private func go(_ next: ReplayTool?) {
+        if !isPro, let next, next != .timer {
+            onUnlockTool(next)
+            return
+        }
+        commitBall()
         forward = next != nil
         withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { page = next }
     }
@@ -148,7 +156,8 @@ struct ReplayToolbox: View {
             HStack(spacing: 9) {
                 tile(.effects).sessionEntrance(appeared, order: 3, offset: 14, scale: 0.88)
                 tile(.graph).sessionEntrance(appeared, order: 4, offset: 14, scale: 0.88)
-                backgroundsPreview.sessionEntrance(appeared, order: 5, offset: 14, scale: 0.88)
+                // First release: background replacement and its placeholder stay parked.
+                // backgroundsPreview.sessionEntrance(appeared, order: 5, offset: 14, scale: 0.88)
             }
             }
         }
@@ -159,7 +168,10 @@ struct ReplayToolbox: View {
         Button { go(tool) } label: {
             VStack(spacing: 6) {
                 preview(for: tool).frame(height: 52).accessibilityHidden(true)
-                Text(tool.rawValue).font(.system(size: 11, weight: .medium))
+                HStack(spacing: 4) {
+                    Text(tool.rawValue).font(.system(size: 11, weight: .medium))
+                    if !isPro && tool != .timer { ProBadge() }
+                }
             }.padding(.horizontal, 10).padding(.vertical, 10)
                 .frame(maxWidth: .infinity)
                 .background(LinearGradient(colors: [.white.opacity(0.1), .white.opacity(0.035)],
@@ -170,7 +182,7 @@ struct ReplayToolbox: View {
                 }
                 .contentShape(.rect(cornerRadius: 17))
         }.buttonStyle(SessionPressStyle(scale: 0.92))
-            .accessibilityLabel(tool.rawValue)
+            .accessibilityLabel(tool.rawValue + (!isPro && tool != .timer ? ", Pro" : ""))
             .accessibilityIdentifier("replay-tool-\(tool.rawValue.lowercased())")
     }
 
@@ -226,7 +238,7 @@ struct ReplayToolbox: View {
             }
         case .graph:
             ReplayMotionPicker(style: $motionStyle, showGraph: $showGraph, includeGraph: $includeGraph, snapshot: motionSnapshot,
-                               sourceAspect: sourceAspect, isPlaying: isPlaying, onTogglePlayback: onTogglePlayback)
+                               sourceAspect: sourceAspect, isPlaying: isPlaying, onTogglePlayback: onTogglePlayback, showsProBadges: !isPro)
         case .counter: counterPage
         }
     }
@@ -235,7 +247,7 @@ struct ReplayToolbox: View {
     /// Placement is direct: tapping the counter on the video lets you drag, pinch and twist it.
     private var counterPage: some View {
         VStack(alignment: .leading, spacing: 12) {
-            CounterStyleGrid(item: $counter)
+            CounterStyleGrid(item: $counter, showsProBadges: !isPro)
                 .padding(.horizontal, 16)
             HStack(spacing: 10) {
                 Image(systemName: "hand.draw").font(.system(size: 15)).foregroundStyle(SessionStyle.mint)
@@ -261,7 +273,7 @@ struct ReplayToolbox: View {
             }
         }
         .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 2)
-        .onDisappear(perform: commitBall)
+        .onDisappear { applyBall?.cancel(); applyBall = nil; pendingBall = nil }
     }
 
     private func pick(_ skin: BallSkin) {
@@ -277,7 +289,7 @@ struct ReplayToolbox: View {
 
     private func commitBall() {
         applyBall?.cancel(); applyBall = nil
-        guard let pendingBall else { return }
+        guard page == .ball, let pendingBall else { return }
         edit.ballSkin = pendingBall
         self.pendingBall = nil
     }
@@ -288,6 +300,9 @@ struct ReplayToolbox: View {
             VStack(spacing: 6) {
                 BallPickSlot(skin: skin, selected: selected, picks: ballKicks[skin, default: 0],
                              size: 52, direction: direction)
+                    .overlay(alignment: .topTrailing) {
+                        if !isPro && skin != .original { ProBadge().offset(x: 5, y: -4) }
+                    }
                 Text(skin == .original ? "Original" : skin.title)
                     .font(.system(size: 10, weight: selected ? .semibold : .medium))
                     .foregroundStyle(selected ? SessionStyle.mint : .white.opacity(0.8))
@@ -346,6 +361,9 @@ struct ReplayToolbox: View {
                                 .font(.system(size: 13)).foregroundStyle(.black, SessionStyle.mint).padding(4)
                                 .transition(.sessionPop(scale: 0.2))
                         }
+                    }
+                    .overlay(alignment: .topLeading) {
+                        if !isPro && style != .none { ProBadge().padding(4) }
                     }
                     .sessionKick(effectKicks[style, default: 0], amount: 0.08)
                 Text(style.title)

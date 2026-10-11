@@ -34,12 +34,24 @@ final class ProPaywallUITests: XCTestCase {
         app.buttons["pro-plan-monthly"].tap()
         expectLabel(purchase, contains: "4.99/month")
         purchase.tap()
-        XCTAssertTrue(app.alerts["You’re Pro"].waitForExistence(timeout: 10))
-        app.alerts.buttons["OK"].tap()
-        expectLabel(purchase, contains: "Manage Pro subscription")
-        app.buttons["pro-close"].tap()
-        XCTAssertTrue(app.buttons["profile-pro"].label.contains("Active"))
+        XCTAssertTrue(app.buttons["pro-close"].waitForNonExistence(timeout: 10),
+                      "A completed purchase must return to Profile automatically")
+        let pro = app.buttons["profile-pro"]
+        expectLabel(pro, contains: "Active")
+        XCTAssertTrue(pro.isHittable)
+        XCTAssertFalse(app.alerts["You’re Pro"].exists)
         attach(app, "Verified Pro status")
+        pro.tap()
+        XCTAssertTrue(app.buttons["pro-close"].waitForExistence(timeout: 5))
+        let monthly = app.buttons["pro-plan-monthly"]
+        let yearly = app.buttons["pro-plan-yearly"]
+        XCTAssertTrue(monthly.isSelected, "An active monthly subscription must override the yearly default")
+        XCTAssertTrue(monthly.label.contains("Current plan"))
+        XCTAssertFalse(yearly.isSelected)
+        XCTAssertTrue(monthly.isEnabled)
+        XCTAssertTrue(yearly.isEnabled, "Active subscribers can open Apple's plan management from either card")
+        XCTAssertTrue(app.staticTexts["pro-change-plan-help"].exists)
+        app.buttons["pro-close"].tap()
         app.terminate()
         app.launch()
         app.buttons["home-profile"].tap()
@@ -55,6 +67,31 @@ final class ProPaywallUITests: XCTestCase {
         XCTAssertTrue(app.buttons["pro-close"].isHittable)
         app.buttons["pro-close"].tap()
         XCTAssertTrue(app.buttons["profile-pro"].waitForExistence(timeout: 5))
+    }
+
+    func testActiveSubscriberCanReopenProAndRestore() {
+        let app = openPaywall()
+        let purchase = app.buttons["pro-purchase"]
+        expectLabel(purchase, contains: "29.99/year")
+        purchase.tap()
+        XCTAssertTrue(app.buttons["pro-close"].waitForNonExistence(timeout: 10),
+                      "A completed purchase must return to Profile automatically")
+        let pro = app.buttons["profile-pro"]
+        expectLabel(pro, contains: "Active")
+        pro.tap()
+        XCTAssertTrue(app.buttons["pro-close"].waitForExistence(timeout: 5))
+        expectLabel(purchase, contains: "Manage Pro subscription")
+        XCTAssertTrue(app.buttons["pro-plan-yearly"].isSelected)
+        XCTAssertTrue(app.buttons["pro-plan-yearly"].label.contains("Current plan"))
+        XCTAssertTrue(app.buttons["pro-plan-monthly"].isEnabled)
+        let restore = app.buttons["pro-restore"]
+        for _ in 0..<3 where !restore.isHittable { app.swipeUp() }
+        XCTAssertTrue(restore.isHittable, "Active subscribers must be able to reach Restore")
+        restore.tap()
+        XCTAssertTrue(app.alerts["Pro restored"].waitForExistence(timeout: 10))
+        app.alerts.buttons["OK"].tap()
+        expectLabel(purchase, contains: "Manage Pro subscription")
+        attach(app, "Active subscriber can restore from Pro screen")
     }
 
     private func openPaywall() -> XCUIApplication {

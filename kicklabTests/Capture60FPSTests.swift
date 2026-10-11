@@ -139,6 +139,8 @@ final class Capture60FPSTests: XCTestCase {
             let previewFrames = camera.processedFrames
             try await Task.sleep(for: .milliseconds(300))
             XCTAssertEqual(camera.processedFrames, previewFrames)
+            camera.prepareTracking()
+            try await waitFor { camera.isTrackingReady }
             camera.startRecording()
             try await waitFor { camera.isRecording }
             var peakMemory = 0.0
@@ -193,7 +195,9 @@ final class Capture60FPSTests: XCTestCase {
             try JSONSerialization.data(withJSONObject: reports, options: [.prettyPrinted, .sortedKeys])
                 .write(to: URL.documentsDirectory.appendingPathComponent("capture-60fps-phone-tests.json"))
         }
-        // A cancelled model startup cannot publish frames into a reopened preview.
+        // A cancelled writer startup cannot publish frames into a reopened preview.
+        camera.prepareTracking()
+        try await waitFor { camera.isTrackingReady }
         camera.startRecording()
         camera.stop()
         try await waitFor { !camera.isFinishingRecording }

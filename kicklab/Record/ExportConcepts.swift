@@ -153,6 +153,7 @@ private struct PlaybackRow: View {
 private struct InstantSaveConcept: View {
     let state: String
     let frame: CGImage?
+    @State private var shareItem: ReplayShareItem?
 
     var body: some View {
         ZStack {
@@ -203,21 +204,16 @@ private struct InstantSaveConcept: View {
     }
 
     private var sharePanel: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Share your replay").font(.system(size: 17, weight: .semibold))
-            ShareTargets()
-            HStack(spacing: 10) {
-                Label("Record another", systemImage: "arrow.counterclockwise")
-                    .font(.system(size: 14, weight: .semibold)).frame(maxWidth: .infinity, minHeight: 46)
-                    .background(.white.opacity(0.1), in: .capsule)
-                Text("Done").font(.system(size: 14, weight: .bold)).foregroundStyle(.black)
-                    .frame(width: 96, height: 46).background(SessionStyle.mint, in: .capsule)
-            }
-        }
-        .padding(18)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        ReplaySharePanel(onShare: {
+            let url = SessionDesignReview.fileURL(SessionDesignReview.argument("--session-video") ?? "/tmp/kicklab-design-preview.mp4")
+            shareItem = ReplayShareItem(url: url)
+        }, onClose: {}, onRecordAnother: {}, onDone: {})
         .padding(.horizontal, 16).padding(.bottom, 10)
+        .sheet(item: $shareItem) { item in
+            ReplayShareSheet(url: item.url).presentationDetents([.medium, .large])
+        }
     }
+
 }
 
 // MARK: - B · Export tray

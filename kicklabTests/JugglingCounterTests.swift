@@ -27,6 +27,21 @@ struct JugglingCounterTests {
         #expect(counter.flush().isEmpty)
     }
 
+    @Test func pendingContactImagesAreReleasedAfterDecisionDiscontinuityAndFlush() {
+        var retained: Int?
+        var everRetained = false
+        let counter = StreamingCounter(retainContactFrames: { retained = $0; everRetained = everRetained || $0 != nil })
+        for (i, y) in arc.enumerated() { _ = push(counter, frame: i, time: i * 33, y: y) }
+        #expect(everRetained)
+        counter.flush()
+        #expect(retained == nil)
+        #expect(counter.count == 1)
+        for (i, y) in arc.prefix(11).enumerated() { _ = push(counter, frame: 30+i, time: (30+i)*33, y: y) }
+        #expect(retained != nil)
+        _ = push(counter, frame: 41, time: 41*33, y: 0.7, reliable: false)
+        #expect(retained == nil)
+    }
+
     @Test func skippedFramesCannotCompleteAnOldFall() {
         let counter = StreamingCounter()
         for (i, y) in arc.prefix(8).enumerated() {

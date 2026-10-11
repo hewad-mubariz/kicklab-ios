@@ -6,6 +6,7 @@ struct BallDistanceReadout: View {
     let detail: String
     var paused = false
     var compact = false
+    var accessibilityPrefix = "ball-distance"
 
     var body: some View {
         VStack(alignment: .leading, spacing: compact ? 4 : 8) {
@@ -17,11 +18,11 @@ struct BallDistanceReadout: View {
             Text(value).font(.system(size: compact ? 34 : 56, weight: .semibold, design: .rounded))
                 .monospacedDigit().contentTransition(.numericText())
                 .lineLimit(1).minimumScaleFactor(0.65)
-                .accessibilityIdentifier("ball-distance-value")
+                .accessibilityIdentifier("\(accessibilityPrefix)-value")
             Text(detail).font(.system(size: compact ? 11 : 12, weight: .medium))
                 .foregroundStyle(paused ? Color.orange : SessionStyle.mint)
                 .fixedSize(horizontal: false, vertical: true)
-                .accessibilityIdentifier("ball-distance-detail")
+                .accessibilityIdentifier("\(accessibilityPrefix)-detail")
         }
         .foregroundStyle(.white)
         .accessibilityElement(children: .contain)

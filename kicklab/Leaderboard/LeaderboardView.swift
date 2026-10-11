@@ -70,6 +70,9 @@ struct LeaderboardView: View {
                     rows.padding(.top, 26)
                     yourPlace
                 }
+                Text("Community rankings use scores reported by players’ devices. Scores are not independently verified.")
+                    .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
+                    .padding(.top, 20)
                 if boardState.board != nil, boardState.error != nil {
                     Text("Couldn’t refresh. Showing saved rankings—pull down to try again.")
                         .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))

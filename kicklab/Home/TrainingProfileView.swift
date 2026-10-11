@@ -3,8 +3,6 @@ import SwiftUI
 struct TrainingProfileView: View {
     let personalBest: Int
     @Binding var appearance: String
-    /// Leaves Profile for the main sign-in view.
-    var onSignIn: () -> Void = {}
     @EnvironmentObject private var account: AccountStore
     @EnvironmentObject private var player: PlayerStore
     @AppStorage("kicklab.profile.displayName") private var displayName = ""
@@ -12,6 +10,9 @@ struct TrainingProfileView: View {
     @Environment(\.colorScheme) private var scheme
     @State private var editsName = false
     @State private var confirmsDeletion = false
+    /// Sign-in opens on top of Profile, zooming out of its entry, and returns here.
+    @State private var showsSignIn = false
+    @Namespace private var signInZoom
     @Environment(\.openURL) private var openURL
 
     private var name: String {
@@ -107,6 +108,10 @@ struct TrainingProfileView: View {
                         .disabled(account.isDeleting)
                 }
             }
+            .fullScreenCover(isPresented: $showsSignIn) {
+                SignInView(presentation: .profile) { showsSignIn = false }
+                    .navigationTransition(.zoom(sourceID: "profile-sign-in", in: signInZoom))
+            }
             .sheet(isPresented: $editsName) {
                 if account.user != nil, let profile = player.profile {
                     CloudProfileEditor(profile: profile)
@@ -116,7 +121,7 @@ struct TrainingProfileView: View {
                 Button("Cancel", role: .cancel) { }
                 Button("Delete account", role: .destructive) {
                     Task {
-                        if await account.deleteAccount(cleanup: { await player.removeDeletedAccountData($0) }) {
+                        if await account.deleteAccount(cleanup: { await player.removeDeletedAccountData($0) }), account.errorMessage == nil {
                             dismiss()
                         }
                     }
@@ -153,12 +158,13 @@ struct TrainingProfileView: View {
     }
 
     private var signInEntry: some View {
-        Button(action: onSignIn) {
+        Button { showsSignIn = true } label: {
             HStack(spacing: 14) {
                 ProfileMonolineMark().frame(width: 27, height: 27)
                 VStack(alignment: .leading, spacing: 5) {
                     Text("Sign in to Juggle Dude").font(.body.weight(.semibold))
-                    Text("Apple, Google or email")
+                    // Text("Apple, Google or email") // Restore with the deferred providers.
+                    Text("Continue with Apple")
                         .font(.caption).foregroundStyle(TrainingHomeStyle.muted(scheme))
                 }
                 Spacer(minLength: 4)
@@ -172,6 +178,7 @@ struct TrainingProfileView: View {
             .contentShape(.rect(cornerRadius: 22))
         }
         .buttonStyle(.plain)
+        .matchedTransitionSource(id: "profile-sign-in", in: signInZoom)
         .accessibilityIdentifier("profile-sign-in")
     }
 

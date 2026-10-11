@@ -20,7 +20,7 @@ nonisolated struct VideoAnalysisPacer {
          isBackground: @escaping @Sendable () async -> Bool = {
              await MainActor.run { UIApplication.shared.applicationState == .background }
          },
-         canContinueInBackground: @escaping @Sendable () -> Bool = { VideoWorkExecution.lease?.canContinue == true }) {
+        canContinueInBackground: @escaping @Sendable () -> Bool = { VideoWorkExecution.canAnalyzeInBackground }) {
         self.enabled = enabled
         self.thermalState = thermalState
         self.isBackground = isBackground

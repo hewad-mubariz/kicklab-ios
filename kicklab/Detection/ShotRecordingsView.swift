@@ -2,6 +2,7 @@ import AVKit
 import SwiftUI
 
 struct ShotRecordingsView: View {
+    var distanceTest = false
     @Environment(\.dismiss) private var dismiss
     @State private var library = ShotRecordingStore.Library()
     @State private var loading = true
@@ -11,7 +12,9 @@ struct ShotRecordingsView: View {
         NavigationStack {
             List {
                 Section {
-                    Text("Each shot is saved automatically on this iPhone with its measurement data. You can replay it offline and export it when you return.")
+                    Text(distanceTest
+                        ? "Watch your saved recordings with the roll cutoffs switched off for this replay. The distance updates from saved ball positions; no new recording is needed."
+                        : "Each shot is saved automatically on this iPhone with its measurement data. You can replay it offline and export it when you return.")
                         .font(.callout).foregroundStyle(.secondary)
                 }
                 if loading {
@@ -24,17 +27,21 @@ struct ShotRecordingsView: View {
                 }
                 ForEach(library.recordings) { recording in
                     NavigationLink {
-                        ShotRecordingReplayView(recording: recording)
+                        if distanceTest {
+                            SavedDistanceTestView(recording: recording)
+                        } else {
+                            ShotRecordingReplayView(recording: recording)
+                        }
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "play.circle.fill").font(.largeTitle)
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(recording.date.formatted(date: .abbreviated, time: .shortened))
+                                Text(recording.date.formatted(date: .abbreviated, time: .standard))
                                     .font(.headline)
                                 Text("Video + measurement data · \(ByteCountFormatter.string(fromByteCount: recording.bytes, countStyle: .file))")
                                     .font(.caption).foregroundStyle(.secondary)
                                 if let estimate = recording.lastRollEstimateM {
-                                    Text(String(format: "Last roll estimate: %.2f m · experimental", estimate))
+                                    Text(String(format: distanceTest ? "Original: %.2f m · tap to test" : "Last roll estimate: %.2f m · experimental", estimate))
                                         .font(.caption).foregroundStyle(.orange)
                                 }
                                 if let peak = recording.peakRollingSpeedKMH {
@@ -52,7 +59,7 @@ struct ShotRecordingsView: View {
                     }
                 }
             }
-            .navigationTitle("Saved shots")
+            .navigationTitle(distanceTest ? "Saved tests" : "Saved shots")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }.accessibilityIdentifier("saved-shots-done")
@@ -60,7 +67,7 @@ struct ShotRecordingsView: View {
             }
             .task { await reload() }
             .refreshable { await reload() }
-        }.tint(.primary)
+        }.tint(distanceTest ? SessionStyle.mint : .primary)
     }
 
     private func reload() async {

@@ -17,9 +17,30 @@ nonisolated struct JugglingResultQueue: Sendable {
     }
     func pending(for owner: UUID) throws -> [SavedJugglingResult] {
         guard FileManager.default.fileExists(atPath: folder(owner).path) else { return [] }
-        return try FileManager.default.contentsOfDirectory(at: folder(owner), includingPropertiesForKeys: nil)
-            .filter { $0.pathExtension == "json" }.map { try JSONDecoder().decode(SavedJugglingResult.self, from: Data(contentsOf: $0)) }
-            .filter { $0.ownerID == owner }.sorted { $0.completedAt < $1.completedAt }
+        var results: [SavedJugglingResult] = []
+        for file in try FileManager.default.contentsOfDirectory(at: folder(owner), includingPropertiesForKeys: nil)
+            where file.pathExtension == "json" {
+            // An inaccessible protected file is not corrupt. Let I/O errors retry.
+            let data = try Data(contentsOf: file)
+            do {
+                let result = try JSONDecoder().decode(SavedJugglingResult.self, from: data)
+                if result.ownerID == owner { results.append(result) }
+                else { try quarantine(file, owner: owner) }
+            } catch is DecodingError { try quarantine(file, owner: owner) }
+        }
+        return results.sorted { $0.completedAt < $1.completedAt }
+    }
+    private func quarantine(_ file: URL, owner: UUID) throws {
+        let directory = folder(owner).appendingPathComponent("Rejected", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        // Preserve every rejected payload, including repeated IDs, for recovery.
+        try FileManager.default.moveItem(at: file, to: directory.appendingPathComponent(UUID().uuidString + ".json"))
+    }
+    func reject(_ result: SavedJugglingResult) throws { try quarantine(path(result), owner: result.ownerID) }
+    func rejectedCount(for owner: UUID) throws -> Int {
+        let directory = folder(owner).appendingPathComponent("Rejected", isDirectory: true)
+        guard FileManager.default.fileExists(atPath: directory.path) else { return 0 }
+        return try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil).count
     }
     func remove(_ result: SavedJugglingResult) throws { try FileManager.default.removeItem(at: path(result)) }
 
@@ -109,7 +130,12 @@ final class PlayerStore: ObservableObject {
     @discardableResult
     func removeDeletedAccountData(_ owner: UUID) async -> Bool {
         deletedOwners.insert(owner)
-        try? queue.markDeleted(owner)
+        do { try queue.markDeleted(owner) }
+        catch {
+            // Cleanup is still attempted. Do not promise a durable retry if the
+            // journal itself could not be written (for example, a full disk).
+            errorMessage = "Local cleanup could not be scheduled. If replays remain after reopening, remove the app to clear its local data."
+        }
         let activeSync = userID == owner ? syncTask : nil
         activeSync?.cancel()
         let saves = saveTasks.filter { $0.key.hasPrefix(owner.uuidString + "/") }.map(\.value)
@@ -249,6 +275,7 @@ final class PlayerStore: ObservableObject {
         let task = Task { [self] in
             defer { saveTasks[request.key] = nil; activity.finish() }
             do {
+                try await ProtectedAccountData.waitUntilAvailable()
                 let saved = try await Task.detached(priority: .utility) {
                     try request.persist(library: library, queue: queue)
                 }.value
@@ -263,6 +290,7 @@ final class PlayerStore: ObservableObject {
             // owns the preview's lifetime or gates its presentation.
             do {
                 try Task.checkCancellation()
+                try await ProtectedAccountData.waitUntilAvailable()
                 try await archiveVideo(request.videoURL, request.item, library)
                 try Task.checkCancellation()
                 try await Task.detached(priority: .utility) { try library.finishRequest(request.item) }.value
@@ -293,16 +321,28 @@ final class PlayerStore: ObservableObject {
             let queue = self.queue
             while !Task.isCancelled, self.generation == current {
                 do {
+                    try await ProtectedAccountData.waitUntilAvailable()
                     let revision = self.syncRevision
                     let pending = try await Task.detached(priority: .utility) { try queue.pending(for: owner) }.value
                     guard !Task.isCancelled, self.generation == current else { return }
                     self.pendingCount = pending.count
+                    if (try? queue.rejectedCount(for: owner)) ?? 0 > 0 {
+                        self.errorMessage = "Some results could not sync and are kept on this phone. Contact support if you need help."
+                    }
                     guard let result = pending.first else {
                         if revision != self.syncRevision { continue }
                         return
                     }
-                    try await service.submit(result)
+                    do { try await service.submit(result) }
+                    catch PlayerDataError.rejected {
+                        guard !Task.isCancelled, self.generation == current else { return }
+                        try await self.history.markRejected(result)
+                        try await Task.detached(priority: .utility) { try queue.reject(result) }.value
+                        self.errorMessage = PlayerDataError.rejected.localizedDescription
+                        continue
+                    }
                     guard !Task.isCancelled, !self.deletedOwners.contains(owner) else { return }
+                    try await ProtectedAccountData.waitUntilAvailable()
                     try await self.history.markSynced(result)
                     // A late success still removes only its original account's outbox item.
                     try await Task.detached(priority: .utility) { try queue.remove(result) }.value
@@ -310,6 +350,10 @@ final class PlayerStore: ObservableObject {
                     self.syncFailures = 0
                 } catch {
                     guard !Task.isCancelled, self.generation == current else { return }
+                    if case PlayerDataError.signIn = error {
+                        self.errorMessage = PlayerDataError.signIn.localizedDescription
+                        return // Account refresh/sign-in explicitly resumes the queue.
+                    }
                     // Transient connectivity is routine. Keep the durable result
                     // and retry quietly, with bounded backoff, while the app runs.
                     self.syncFailures = min(self.syncFailures + 1, 7)

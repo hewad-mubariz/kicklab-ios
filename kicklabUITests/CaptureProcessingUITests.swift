@@ -1,6 +1,6 @@
 import XCTest
 
-final class CaptureProcessingUITests: XCTestCase {
+final class CaptureProcessingUITests: ProReplayUITestCase {
     override func setUpWithError() throws { continueAfterFailure = false }
 
     @MainActor

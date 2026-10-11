@@ -2,13 +2,14 @@ import SwiftUI
 
 /// Shared by the live camera and the isolated simulator design review.
 nonisolated enum CaptureControlState: Equatable {
-    case ready, preparing, recording, finishing
+    case ready, warming, preparing, recording, finishing
 
-    var isBusy: Bool { self != .ready }
+    var isBusy: Bool { self == .preparing || self == .recording || self == .finishing }
     var title: String {
         switch self {
         case .ready: "Record"
-        case .preparing: "Preparing…"
+        case .warming: "Getting ready"
+        case .preparing: "Starting…"
         case .recording: "Stop"
         case .finishing: "Finishing…"
         }
@@ -18,6 +19,7 @@ nonisolated enum CaptureControlState: Equatable {
 struct CaptureControls: View {
     let state: CaptureControlState
     var cameraReady: Bool
+    var trackingReady = true
     var onGallery: () -> Void
     var onRecord: () -> Void
     var onFlip: () -> Void
@@ -26,14 +28,14 @@ struct CaptureControls: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            if state == .preparing {
+            if state == .warming || state == .preparing {
                 HStack(alignment: .center, spacing: 12) {
                     ProgressView().tint(SessionStyle.mint)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Preparing ball tracking…")
+                        Text(state == .warming ? "Getting tracking ready…" : "Starting your recording…")
                             .font(.system(size: 15, weight: .semibold))
-                        Text("Recording starts automatically when ready.")
+                        Text(state == .warming ? "Choose your camera while we get ready." : "Just a moment.")
                             .font(.system(size: 12)).foregroundStyle(.white.opacity(0.8))
                     }
                     .fixedSize(horizontal: false, vertical: true)
@@ -107,8 +109,10 @@ struct CaptureControls: View {
             }.foregroundStyle(.white).contentShape(Rectangle())
         }
         .buttonStyle(SessionPressStyle(scale: 0.9))
-        .disabled(state == .preparing || state == .finishing || (state == .ready && !cameraReady))
-        .accessibilityLabel(state == .preparing ? "Preparing ball tracking" :
+        .disabled(state == .warming || state == .preparing || state == .finishing ||
+                  (state == .ready && (!cameraReady || !trackingReady)))
+        .accessibilityLabel(state == .warming ? "Preparing ball tracking" :
+                            state == .preparing ? "Starting recording" :
                             state == .recording ? "Stop Recording" : "Start Recording")
         .accessibilityIdentifier("record-capture-button")
         .accessibilityValue(state.title)
@@ -123,7 +127,7 @@ struct CaptureControls: View {
                                startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 3)
             burstRing
             mark
-            if state == .preparing || state == .finishing {
+            if state == .warming || state == .preparing || state == .finishing {
                 ShutterSpinner().transition(.sessionPop(scale: 0.8))
             }
         }
@@ -148,7 +152,7 @@ struct CaptureControls: View {
     }
 
     private var mark: some View {
-        let square = state != .ready
+        let square = state.isBusy
         let radius: CGFloat = square ? 7 : 27
         let side: CGFloat = square ? 29 : 54
         let fill = LinearGradient(stops: [
@@ -162,7 +166,7 @@ struct CaptureControls: View {
             .overlay { RoundedRectangle(cornerRadius: radius).strokeBorder(rim, lineWidth: 0.75) }
             .frame(width: side, height: side)
             .rotationEffect(.degrees(square || reduceMotion ? 0 : -90))
-            .opacity(state == .preparing || state == .finishing ? 0.4 : 1)
+            .opacity(state == .warming || state == .preparing || state == .finishing ? 0.4 : 1)
             .shadow(color: .red.opacity(state == .recording ? 0.12 : 0.28), radius: 9, y: 3)
     }
 

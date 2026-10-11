@@ -6,6 +6,518 @@ The main priorities are reliable recording and cancellation, bounded video memor
 
 This is a static audit and prioritized review backlog. No application code, database, user media, or cloud configuration was changed for this audit. No new device profiling, UI automation, production security testing, or runtime reproduction was performed. “Confirmed” below means the implementation establishes the behavior or exposure; it does not mean the corresponding failure occurred on a device. Performance impact remains unmeasured unless explicitly described as an arithmetic estimate.
 
+## Launch hardening follow-up — 10 October 2026
+
+The original findings below remain as the audit baseline. This follow-up implements the
+launch safeguards; it does **not** declare the app cleared for public launch. Physical-device
+acceptance remains required, especially phone lock, Photos, memory pressure and StoreKit.
+
+| Findings | Implemented safeguard | Remaining acceptance work |
+| --- | --- | --- |
+| A01 | Recorder startup/append/finalization errors propagate to capture. Backpressure remains nonfatal. Failed analysis/recording cannot submit a score; any finalized usable recording can be saved from the error alert. | Real-device low-storage/encoder failure and recovery UI. |
+| A02, A23 | Player readiness has cancellation and a 15-second timeout. Export waits respect cancellation. Scene ownership includes initial refinement. | Close/reopen and cancel at each native stage on device. |
+| A03 | Decode queue entries independently; retain malformed/rejected payloads in an account-scoped Rejected folder. Permanent server rejection becomes visible local history; valid later results continue. Auth, quota and temporary network failures remain retryable rather than quarantined. | Longer offline catch-up on a physical device. |
+| A04, A17 | At the user’s request, juggling has no fixed duration, frame-count or mask-memory cutoff. Input validity and storage preflight remain: 512 MiB reserve at recording start, plus estimated working space for imports/exports. Only named regenerable export files older than a day are cleaned at launch; originals/history are preserved. | Mask retention still grows with session length; unrestricted operation is not a bounded-memory guarantee. Profile longer dense/sparse clips and low storage on older devices. Shared library storage management remains future work. |
+| A18 | Account sync/persistence waits for protected data to become available. History read errors do not publish an empty library. Complete Protection is retained. | Passcode-lock testing and retry after unlock. |
+| A19 | Removed completed-export reuse based on incomplete track hashes. Each explicit render consumes the current source/track. | Rendering no longer has that cache optimization. Existing editor saved-look behavior remains. |
+| A20, A21 | Shot export fails explicitly if present audio cannot be read/encoded or ends unexpectedly. Both exporters share MOV/full-speed metadata policy above 60 FPS. Shot writer now uses a 60,000-tick media scale; a new test caught and fixed 240 FPS rounding to about 236 FPS. | Actual Photos playback and unusual user audio formats on device. |
+| A22 | Detector/contact failures cannot silently finish an import or submit a live score. Failed live quality is also excluded from persisted completed-analysis evidence. | Device model failures and model accuracy checks; no claim that these guards prove count accuracy. |
+| A24 | Cancel waits for burn-in teardown before retry. Background acquisition has a five-second foreground fallback. A small job journal explains interrupted work after relaunch. | No force-quit resume promise. Shared exporter architecture and complete job restoration remain future work. |
+| A25 | Failed local cleanup no longer promises a durable retry when its journal may be unwritable. The profile stays open to show the warning; it explains reopening and removing local app data if necessary. | Catastrophic disk failure cannot guarantee a journal write. Durable-marker success still supports automatic cleanup on relaunch. |
+| A26 | Server-only reconciliation processes confirmed pending deletions independently of the client. Apple revocation still precedes the pending marker. Worker and ten-minute schedule deployed to Juggle Dude. | Monitor failed jobs and pending-deletion age; production probe had no pending accounts. |
+| A05, A29 | Server-side plausibility bound and 240 new sessions/account/hour, serialized per account; idempotent retries consume no new budget. Live leaderboard clearly describes device-reported scores. | Casual rankings only: this does not verify source or prove scores. Stronger competition still requires evidence verification/moderation. |
+| A31, A32 | README setup and a repeatable `scripts/validate-launch.sh` entry point for backend, Release build and selected logic/media checks. Skipped required checks are reported as incomplete. | Model packages still require approved local provisioning. Physical-device gates are not replaced by a simulator pass. |
+
+Backend deployment evidence: `202610100001_submission_limits.sql` applied through the
+Management API; `reconcile-account-deletions` deployed; cron job
+`juggledude-deletion-recovery` active every ten minutes. A scheduled-format probe returned
+HTTP 200 with zero completed/failed deletions; an unauthenticated request returned 401.
+The 38 existing sessions were unchanged and none violated the new plausibility bound.
+The project predates CLI migration tracking; baseline its existing schema before a future
+`supabase db push`. Recovery uses a dedicated scoped secret, not a service-role key in
+pg_net headers. See [Supabase scheduling](https://supabase.com/docs/guides/functions/schedule-functions),
+[pg_net credential visibility](https://supabase.com/docs/guides/troubleshooting/database-roles-can-read-request-headers-queued-by-pg_net-ad6357),
+and [PostgREST error mapping](https://docs.postgrest.org/en/v14/references/errors.html).
+
+Validation completed: **68 Swift tests passed** (64 XCTest + four Swift Testing),
+**15 backend function tests passed**, and all disposable-database SQL suites passed with
+the new migration installed. The final Release build succeeded with no app-source
+warnings; Xcode emitted its usual unused AppIntents metadata notice. No required tests in
+this selected regression set skipped. New coverage includes recorder failure/retry,
+corrupt/permanently rejected sync entries, cancellation during initial refinement,
+burn-in teardown/retry, export cleanup, interrupted-job journaling, and actual 120/240 FPS
+export duration/cadence/metadata.
+
+Final logs: `/tmp/juggledude-launch-regression.log`,
+`/tmp/juggledude-launch-release-final.log`, and
+`/tmp/juggledude-launch-validation/`. Backend live verification:
+`/tmp/juggledude-backend-verification.json`.
+
+**Open launch gate:** real-phone recording/failure UI, oldest-supported-device peak
+memory/thermal checks within the limits, lock/background and unlock recovery, Photos
+permission denial/save/playback, low storage, and purchase/restore/account deletion on the
+release candidate. The connected phone's availability was requested; no new device run
+was performed in this follow-up. These are not inferred from a simulator pass. App changes
+are in the working tree and require rebuilding/installing; the described backend safeguards
+are already deployed.
+
+## Physical-device video profiling — 10 October 2026
+
+Priority order after the device measurements (cosmetic work deferred):
+
+1. **Foreground import compute policy:** remove the unnecessary CPU restriction only
+   after paired full-clip output checks. Preserve cancellation and safe background/lock
+   behavior; an entitlement alone does not establish that acceleration is available.
+2. **Sustained live tracking:** investigate the warm-device analysis decline from about
+   27 to 10 FPS. Compare a cool-start run and actual ball-in-view counting; saved-video
+   FPS is not evidence of tracking accuracy. Keep existing recording limits meanwhile.
+3. **Long-session evidence:** measure dense mask retention and lower-end devices before
+   raising duration or memory limits. Keep all frames/quality settings unchanged during
+   the performance investigation and retain reproducible evidence for each change.
+
+These are the current video priorities; the production sign-in, StoreKit, data recovery,
+privacy and other real-device release gates above remain required for launch.
+
+Measured the original `IMG_8652.MOV` (759,014,536 bytes, 60.985 seconds,
+4K portrait HEVC Main 10 HDR, nominal 120 FPS) on the connected iPhone 17 Pro Max,
+iOS 26.6.2. This run started at normal thermal pressure while plugged in at 90%
+battery, with Low Power Mode off. App code was optimized (`-O`, whole-module) with
+Debug instrumentation; dependency targets retained Debug compilation because the
+compiler crashed when globally forcing optimized Debug package builds. There was
+no XCTest or debugger attached. A quiet diagnostic screen replaced the animated
+processing overlay. These measurements are not an App Store Release acceptance pass.
+
+The normal 7,200-frame import guard was extended to 8,000 **only for an explicitly
+flagged Debug profiling launch**, to allow this complete source through. The 64 MiB
+mask guard and existing thermal pacing stayed active. No model, confidence threshold,
+analysis cadence, inference precision or processing resolution was changed. The existing
+import pipeline already uses an oriented, tone-mapped 720-pixel-short-edge composition;
+using the original 4K file does not imply inference on native 4K pixels.
+
+| Measurement | Observed result |
+| --- | --- |
+| Full analysis | Completed in 1,332.24 seconds (22m12s), cache bypassed |
+| Analysis frames / model calls | 7,314 / 7,336, including 22 existing crop retries |
+| Output | 4,056 detections; 39 counted touches; zero detector/contact errors |
+| Whole-app memory | Peak **170.39 MiB** in 1 Hz samples; this can miss shorter peaks |
+| Retained masks | **14.70 MiB** (15,409,045 bytes), below 64 MiB |
+| Detector work | 796.23 s, including 754.72 s inference and 26.49 s preprocessing |
+| Median / p95 inference | 101.11 / 114.19 ms |
+| Thermal pacing waits | **502.09 s (8m22s)** |
+| Thermal pressure | Elevated after 2m23s; high after 8m13s; never critical |
+| Battery | Reported 90% throughout while charging; not a battery-drain measurement |
+
+Timings overlap: do not add inference/preprocessing to their enclosing detector total.
+The 2.31 s decoder measurement is synchronous waiting, not total decoder CPU/GPU work.
+The analyzer's own 131.27 MiB peak samples outside inference calls; use the larger
+whole-app sample peak above. Thermal state is iOS pressure, not a temperature in °C.
+The source metadata reports 7,315 frames versus 7,314 produced by the existing composition
+reader. No new skipping was introduced, but this run does not establish one-to-one
+source-frame identity preservation. Saved counter trace and masks are comparison
+evidence; the reported 39 touches have **not** been checked against human ground truth.
+
+A subsequent explicit **15-second partial probe**, using the same processing logic with
+additional metrics, observed `cpu_only = 1`, `background_gpu = 0`. Both the signed app
+and provisioning profile contain the background GPU entitlement. `VideoBackgroundWork`
+selects a CPU-only lease when the runtime reports no background GPU resource; that lease
+also restricts foreground model and image work. This is a confirmed policy issue in the
+probe and a plausible major contributor to the baseline time, **not a measured speedup**
+and not direct compute-device instrumentation from the full baseline binary.
+
+Next optimization candidate: separate foreground acceleration from background resource
+permission, preserving safe background behavior. Before adopting it, compare complete
+tracking/count output on this source and representative clips, and measure thermal and
+memory changes. Do not reduce frame rate, model quality or resolution to obtain speed.
+This clip alone does not justify removing duration limits or increasing the mask budget.
+
+Local evidence (ignored by Git): `artifacts/performance/20261010-IMG8652/` contains the
+sanitized source metadata, source SHA-256, raw report/samples, graph, counter trace,
+track masks, build verification and partial compute probe. The original video was not
+copied into the repository.
+
+### Foreground acceleration experiment and processor evidence
+
+An explicitly flagged Debug experiment allowed the existing foreground model/image
+pipeline to use its normal accelerators despite a CPU-only background lease. It paused
+instead of performing unauthorized GPU work in the background and bypassed all analysis
+cache reads/writes. This is **not enabled for normal launches**.
+
+The original full clip finished in **494.49 s (8m14s)** versus 1,332.24 s (22m12s),
+a 2.69× observed improvement on this device. It processed the same 7,314 composition
+frames and made the same 7,336 model calls / 22 crop retries. Both runs produced
+**39 touches with exactly matching timestamps**. All 4,056 baseline detection-frame
+identities were present, plus two detections at source indices 3,850 and 3,851.
+The common boxes had median IoU 1.0, fifth-percentile IoU 0.9804 and minimum 0.9028.
+Numerical/mask output is not bit-identical; this comparison does not replace human-labelled
+accuracy checks or qualify other videos/devices.
+
+App CPU time fell from 1,060.55 s to 118.02 s; this is process CPU execution, not total
+system energy. The 1 Hz whole-app footprint peak rose from 170.39 to 192.94 MiB
+(the analyzer also sampled 193.25 MiB). Retained masks were 14.705 MiB and thermal
+pacing waits 167.03 s. Both runs started at nominal pressure and reached serious pressure.
+The experiment reached elevated pressure after about 45 s and serious after about 214 s,
+then returned to elevated near 439 s. **It is not a solved-heat claim**: starting temperature
+within each pressure band, other workloads and charging were not controlled.
+
+Separate Instruments Power Profiler captures, outside the full timing comparison:
+
+- Post-analysis idle: 16.10 s trace, 0.00538 app CPU seconds and 7.64 million CPU
+  instructions in exported counters. CPU/GPU impact scores were zero at their displayed
+  precision. The app was not continuing heavy CPU processing after completion.
+- Active model-acceleration probe: 21.04 s trace, 5.364 app CPU seconds and 35.916
+  billion instructions; reported CPU impact scores 1–4 and GPU impact 2–9. Scores
+  are Instruments power-impact estimates, **not watts or utilization percentages**.
+- Display brightness was 78%; the device was plugged in. The zero battery-drain metric
+  while charging must not be interpreted as zero energy consumption. These traces do not
+  provide a physical temperature in °C or identify the sole source of retained heat.
+- The added Core ML instrument exported no model-event rows in this attach capture.
+  GPU activity is observed, but exact model-layer GPU/Neural Engine placement is **not
+  established** by this trace.
+
+See [Apple's Power Profiler guidance](https://developer.apple.com/documentation/xcode/measuring-your-app-s-power-use-with-power-profiler)
+for interpretation. Raw traces, XML counters, output comparisons and the comparison
+plot are retained under the ignored `artifacts/performance/20261010-IMG8652/` directory.
+
+The narrower next candidate accelerates only model prediction while preserving the
+CPU image/Vision pipeline, then switches the model to CPU when the app becomes inactive
+without background GPU permission. It preserves tracker/counter state and retries the
+same immutable prediction input once if an app-state transition invalidates GPU submission.
+Normal jobs retain their original backend. Experiments remain isolated behind Debug-entry
+flags and cannot write production analysis caches. Cancellation (including an operation's
+own CancellationError), failed model reload and background-policy unit checks passed.
+
+### Full model-only acceleration with app switching
+
+The narrower candidate completed the same original source in **552.44 s (9m12s)**,
+starting and ending at **fair/elevated** pressure, never reaching serious or critical in
+this run. It used 157.90 app CPU seconds, with 135.69 s thermal pacing. Sampled whole-app
+peak was **208.78 MiB** and retained masks 14.705 MiB. It started warm and included app
+switches, so its time and heat must not be treated as a controlled head-to-head comparison
+against the nominal-start full-acceleration experiment.
+
+Acceptance evidence for this source:
+
+- Same **7,314 analysis frames, 7,336 model calls, 22 crop retries, 39 touches and all
+  39 exact touch timestamps** as the CPU baseline. Zero detector/contact errors.
+- All 4,056 baseline detection-frame identities retained; the same two additional
+  detections at indices 3,850/3,851 as the broader acceleration experiment. Common box
+  IoU median 1.0, fifth percentile 0.9806, minimum 0.9028. Numerical outputs/masks still
+  differ, so this is output parity at the counted-event level, not bitwise equivalence.
+- Measured lifecycle samples contain **25.61 s in background across two intervals**,
+  with inactive transitions as well. The controller requested a 30 s interval, but the
+  app returned active earlier and entered another background interval later; use the
+  measured lifecycle, not the planned duration. No claim of a sustained locked-phone
+  endurance test is made.
+- The model used CPU while backgrounded and returned to acceleration in foreground;
+  nine backend switches (including initial inactive startup and other inactive transitions)
+  totalled 0.576 s of model reload time. Tracker/counter state was retained. CPU work
+  continued during background samples; frame progress is published every 15 frames,
+  so a temporarily flat progress sample does not by itself establish a stalled worker.
+
+**Decision:** prioritize this model-only policy for qualification, preserving the existing
+CPU image/Vision path and thermal safeguards. Keep it opt-in until representative,
+human-labelled clips and lock/lease-expiration behavior are checked. Do not reduce frame
+rate/resolution, replace the model, or raise video/mask limits on the strength of this one
+source. Live camera heat/throughput remains a separate launch concern.
+
+Validation: **11 focused unit tests passed**, including operation cancellation, cancellation
+before retry, failed backend reload, scope isolation and background permission. Optimized
+Debug physical-device build passed. The final build adds explicit CancellationError
+pass-through to the tested handoff implementation; this addition has unit coverage.
+The latest build was installed and relaunched with no diagnostic arguments after evidence
+was copied. Pro bypass, the 8,000-frame profiling allowance and experimental compute flags
+are not enabled for normal launches. Results, lifecycle samples, config and build logs are
+in `artifacts/performance/20261010-IMG8652/model-handoff/` and its parent directory.
+
+### Release model packaging reduction — build 6 (10 October)
+
+A fresh signed Release archive excludes nine experimental Core ML packages through the app target’s Release-only `EXCLUDED_SOURCE_FILE_NAMES`. All packages remain available on disk and to Debug builds. The actual archive contains exactly `KickLabYOLO26MotionSegmentation.mlmodelc` and `PersonBoundaryMatte.mlmodelc`; both compiled weight files have identical SHA256 hashes to build 5. Tracking/counting and model accuracy settings were not changed for this packaging update.
+
+Measured uncompressed app bundle: **196,260,224 bytes (196.3 MB)** versus build 5’s **522,008,655 bytes (522.0 MB)**, a **62.4% reduction**. This is archive size, not a prediction of Apple’s device-specific download size. Version remains 1.0; build is 6. The previously reviewed OS-only/exempt encryption setting is now recorded as `ITSAppUsesNonExemptEncryption = false`. Release archive and configuration validation passed; only Xcode’s unused AppIntents metadata notice appeared. No repeated video/StoreKit test run was needed for this resource-exclusion change; build 5’s recorded purchase/restore verification limitation remains. Evidence: `artifacts/releases/20261010-testflight-build6/`.
+
+Build 6 upload succeeded at 19:23 CEST. App Store Connect confirmed version 1.0 (6) as Processing. The existing Friends and Family internal group has automatic distribution for Xcode builds enabled; no users, invitations or access permissions were changed.
+
+### TestFlight cleanup and unrestricted juggling (10 October)
+
+The user explicitly requested removing the two-minute recording/import limit and the retained-mask cutoff after the outdoor tests. Removed the live duration stop, import/cache/runtime frame-count checks, and 64 MiB mask stop. Input duration must still be valid; startup disk reserve, export space checks, encoder failure handling and analysis error handling remain. Recorder startup now checks the disk reserve without estimating a fixed recording duration. Model, detector, counting, inference cadence, mask data and the per-chunk fingerprint autorelease-pool fix are unchanged.
+
+Removed temporary outdoor profiling state, persistent five-/ten-minute modes, memory/countdown HUD, extra diagnostic capture files, fingerprint comparison harness, and the profiling Pro bypass. Development review routes and CSV logging are excluded from Release. Existing unit-test helpers remain DEBUG-only. A prior build 4 archive contained the two-minute/mask cutoffs; its upload was interrupted after the user clarified the desired policy. Build 5 supersedes it and is the intended TestFlight candidate.
+
+Build 5 Release archive succeeded with no app-source warnings (only Xcode’s unused AppIntents metadata notice). The compiled binary contains neither temporary profiling switches/harness names nor the old duration/mask-limit error strings. All 40 focused LaunchReliability, ReplayAccess, SessionAnalysis and CaptureAnalysisEvidence tests passed, including acceptance of longer durations and unchanged fingerprint/cache evidence checks. SubscriptionStore tests could not load their StoreKit configuration: `SKInternalErrorDomain Code=3` on configuration, storefront and transaction setup, persisting after a simulator restart. The resulting catalog assertions are not a passing purchase/restore check; verify this flow through TestFlight. No production subscription code or test expectations were changed to hide the environment failure. Evidence: `artifacts/releases/20261010-testflight-build5/`.
+
+Build 5 uploaded successfully to App Store Connect at 18:50 on 10 October; App Store Connect’s Build Uploads list confirmed version 1.0 build 5 as Processing. This is a normal App Store Connect upload eligible for internal and external testing, not an internal-only archive. No tester invitations were sent.
+
+The successful ten-minute run does not establish a flat 300 MB ceiling: retained masks grew to 62.72 MiB and sampled recording footprint peaked at 406.6 MB on that device. Removing app cutoffs does not remove iOS memory pressure termination. Longer/multi-device sessions and the full end-to-end Stop peak after the fingerprint fix still need beta coverage. Earlier notes below describe historical diagnostic settings and limits, not the current shipping policy.
+
+### Model acceleration enabled for normal video processing (10 October, 16:04)
+
+**Confirmed finalization contributor fixed:** `SessionAnalysisStore.sourceDigest` read the source in 1 MiB chunks but FileHandle’s autoreleased buffers accumulated across the loop, briefly retaining approximately the movie’s size. A per-chunk autorelease pool now releases each temporary read buffer after SHA256 consumes it. The digest, masks, retained-mask limit, detector, counting and capture cadence are unchanged. An isolated Mac replay of the actual 234.8 MB five-minute file dropped from 237.8 MB process peak to 4.4 MB with an identical fingerprint. On the actual phone, separate fresh processes fingerprinting the saved 469 MB ten-minute file showed 47.9 → 509.3 MB for the old loop versus 47.2 → 47.2 MB before/after the production fix. The fixed run did not increase its pre-existing 77.4 MB lifetime startup peak; this is not a claim of zero transient allocations. Both phone digests matched exactly.
+
+The fixed optimized Debug build is installed and was reopened normally after the opt-in, read-only fingerprint comparison. All 26 SessionAnalysis/CaptureAnalysisEvidence tests passed, including new chunk-boundary SHA256 equality and cancellation checks plus existing lossless-mask/cache/timeline round trips. Evidence and repeatable isolated benchmarks: `artifacts/performance/20261010-finalization-fingerprint/`. A fresh full recording is still needed to measure the new end-to-end Stop peak; cache serialization/replay allocations were not eliminated or changed. This fixes the confirmed fingerprinting contributor to the earlier 855 MB spike while leaving mask storage and the 64 MiB guard alone, as requested.
+
+
+**Ten-minute outdoor result:** `76ED2504` completed approximately 600 seconds with 36,004 written video frames, zero writer drops, one capture drop, and 12,467 analyzed frames (20.78 FPS average). The 212 reported touches are unverified, not an accuracy score. All 594 recording samples were nominal/fair thermal pressure (313/281); no errors or memory-warning events were recorded. Median sampled recording footprint was 336.5 MB, peak 406.6 MB; the lifetime kernel peak at stop was 422.3 MB. Minute-average footprint rose from 301.5 to 374.8 MB, so this is not a flat-memory result. Retained mask payload reached **62.72 / 64 MiB (98%)**, leaving only 1.28 MiB of headroom.
+
+**Priority remains mask retention and finalization:** the first post-stop sample reached 797.9 MB, and the kernel lifetime peak rose to **855.3 MB**, versus 569.5 MB after the five-minute run. It fell to 258.5 MB by the third post-stop sample. Preserve counting/model accuracy while investigating bounded, lossless disk-backed mask retention and the finalization allocation spike; neither root cause nor a fix has been established by this review. Do not infer unrestricted-duration or multi-device launch readiness from this one successful take. Evidence: `artifacts/performance/20261010-outdoor-ten-minute-results/`. The 469 MB raw video remains retained on the phone; this review copied only logs/reports and did not change app settings or code.
+
+
+**Five-minute outdoor completion and ten-minute test prepared:** the retained `DF083C95` recording is 300.001667 seconds, 720×1280 at approximately 60 FPS (234.8 MB). Capture reported 18,001 written frames, zero writer drops, one capture drop, and 6,084 analyzed frames (20.28 FPS average). Its 59 reported touches are not a ground-truth accuracy result. Recording samples were 273–362 MB (median 313 MB); minute averages rose from 290 to 328 MB, with 29.39 MiB retained masks. Kernel lifetime peak at stop was 380 MB. All recording samples were nominal/fair thermal pressure, with no memory-warning events, stop errors, or critical heat. A manually interrupted ~32-second take is excluded from the completed-run assessment. Model loading and hand-verifier warmup occur before the first saved frame, so they do not consume recording time.
+
+**Unresolved priority:** immediately after Stop, sampled footprint reached 565.7 MB (kernel lifetime peak 569.5 MB), then fell below 200 MB on the following sample. This is a distinct finalization/persistence/replay issue to investigate; hashing and capture-cache serialization overlap the stage, but no allocation trace establishes the cause. It is not evidence of a flat long-term footprint. Logs, raw video, cadence, review, summary and a memory chart are in `artifacts/performance/20261010-outdoor-five-minute-success/`.
+
+The new explicit DEBUG `--profile-live-session --profile-live-10min --profile-pro` configuration persists 600 seconds across reopening, shows a 10:00 countdown, allows 605-second/36,300-frame result handling, and records preparation state separately. The 350 MB app stop remains disabled; the 64 MiB mask guard, storage reserve, and critical-thermal guard remain. Detector, counting, model and frame scheduling were not changed. Build and source-policy checks passed; installed and launched on the phone with its stored 600-second setting verified. No ten-minute recording has been completed yet. Leave the app open at least 30 seconds after Stop to capture finalization and recovery. Evidence: `artifacts/performance/20261010-outdoor-ten-minute/`.
+
+
+Outdoor countdown and restart fix: the phone process had changed after the flags-enabled launch, so the previous test configuration could be lost when reopening the app. Explicit DEBUG outdoor-test activation now persists locally across launches (including the separately requested Pro override); Release ignores these preferences. The camera shows a prominent 05:00 countdown driven by recording elapsed time, resetting before each take. “End outdoor test mode” is available while idle and clears both preferences. The manual test still stops at 300 seconds, keeps the 64 MiB mask/storage/critical-thermal guards, logs memory once per second, and has no 350 MB app-memory stop. Detector-review enablement now follows current test state so ending this mode does not leave the old memory guard active. Actual source compiled and checked in separate macOS processes for enable → reopen → end → reopen, plus Release flag rejection; device build/install evidence is under `artifacts/performance/20261010-outdoor-countdown/`.
+
+
+Outdoor test revision (10 October, 16:57): at the user's explicit request,
+removed the **350 MB whole-app stop** from both the per-frame review guard
+and the one-second manual monitor when `--profile-live-session` is active.
+The purpose is to measure whether the working set plateaus through five minutes.
+The camera banner now explicitly says `no 350 MB stop`; the JSONL header records
+`app_memory_stop_enabled: false` and a null threshold. iOS memory warnings are
+logged as separate events. The five-minute recording timer, retained raw videos,
+CPU/memory/thermal samples, 64 MiB mask guard, storage guard and critical-heat stop
+remain. The older automatic benchmark's 350 MB guard is unchanged and is not
+launched. Normal launch/Release behavior is unchanged. Optimized Debug build
+passed, installed, and launched with `--profile-live-session --profile-pro`.
+Evidence: `artifacts/performance/20261010-outdoor-no-cap/`. A completed five-minute
+recording and its peak memory remain pending; this change does not establish
+that the working set will plateau or that iOS cannot terminate the process.
+
+Outdoor results follow-up: retrieved three completed user recordings without
+restarting the phone. All three stopped with the diagnostic **350,000,000-byte
+current whole-app memory guard** message, at **66.83s, 3.10s and 81.54s**.
+Retained mask payloads were only **14.20, 1.33 and 17.13 MiB**, respectively;
+the 64 MiB mask cap did not trigger. Every thermal sample was **nominal**.
+The one-second memory samples mostly occupied 300–340 MB while active, then
+fell below approximately 100 MB within ten seconds of stopping. Per-frame
+checks can observe short peaks missed by one-second logging; report-at-stop
+memory is measured after cleanup has started. The process lifetime peak reached
+373.25 MB and must not be interpreted as a fresh peak for each recording.
+This supports investigating working-set spikes and the diagnostic ceiling,
+not inferring a universal duration limit or attributing all growth to masks.
+No allocation backtrace yet identifies the responsible detector/Vision/render
+stage; reduced memory after stopping does not rule out every retained resource.
+
+All raw videos were successfully retained. They contain 4,009 / 186 / 4,893
+saved frames at approximately 60 FPS, with zero writer drops; the first take
+had one capture drop, the other two zero. Live analysis averaged 25.50 / 29.52 /
+24.29 FPS, reflecting the existing 30 FPS cap and pending-frame replacements.
+Reported live counts (64 / 1 / 65) are not independently reviewed ground truth.
+Evidence, three videos, cadence reports, diagnostic JSONL and a memory plot:
+`artifacts/performance/20261010-outdoor-results/`. No safeguard was raised or
+removed during this read-only investigation. A full five-minute ball-present
+recording and exact memory-allocation attribution remain unqualified.
+
+Outdoor follow-up (10 October, 16:39): installed and launched an optimized Debug
+build with `--profile-live-session --profile-pro` for the user's manual test.
+This explicit Debug mode allows **300 seconds of live recording**, with 305
+seconds / 18,300 frames permitted for subsequent 60 FPS review processing.
+Normal launches retain the existing limits; Release ignores the override.
+No automatic recording or diagnostic movie deletion occurs. The camera shows
+the five-minute test banner, existing performance HUD, mask usage and log sharing;
+the screen stays awake while the test view is active. Glow Trail remains default.
+Pro access is overridden only for this explicitly flagged Debug launch.
+
+The 64 MiB mask and storage safeguards remain active. Current app footprint over
+350,000,000 bytes or critical thermal pressure stops the test early. The outdoor
+memory check uses current footprint rather than a prior session's lifetime peak.
+One-second JSONL samples record memory/peak, cumulative CPU time, mask bytes,
+thermal pressure, battery, detector FPS/timing, frame drops and recording state.
+Existing capture cadence and counter trace persistence remain enabled. On finish,
+a same-volume hard link retains the raw recording under
+`Documents/OutdoorJugglingTests/<run>/`; failures are reported in the HUD/log.
+Thermal pressure is not a temperature measurement, and CPU time excludes GPU/ANE
+utilization. Two focused limit tests passed and the phone build succeeded.
+Evidence: `artifacts/performance/20261010-outdoor-test/`. Actual five-minute
+ball-present results are **pending the user's recording**, not established by
+installation or by the earlier empty-scene benchmark.
+
+After the paired phone corpus and independent Python comparison below, the user
+requested promotion for outdoor recording tests. Ordinary video-work leases now
+enable model acceleration in the foreground and use the tested CPU fallback
+when inactive without a background GPU grant. Image/Vision policy, live-camera
+configuration, model weights, counting rules and frame cadence are unchanged.
+CPU comparison diagnostics remain explicitly selectable; normal jobs retain
+cache behavior. Denied background runtime still pauses work, and expiration
+still cancels it. No processing permission is created by this optimization.
+
+All **14** focused background-policy/backend-switch tests passed, including new
+normal-launch policy and denied-background cases. The optimized Debug device
+build succeeded and was installed on Hewa's iPhone 17 Pro Max, then launched
+with **no diagnostic arguments** (PID 35943). Fresh outdoor recording accuracy,
+sustained heat and live-camera throughput remain user/device validation items.
+The **120-second duration, 7,200 analysis-frame and 64 MiB mask guards remain**;
+120 FPS imports therefore reach the frame limit at approximately 60 seconds.
+Build, test, install, launch and source-hash evidence is saved in
+`artifacts/performance/20261010-model-promotion/`.
+
+### Multi-clip juggling accuracy qualification (before promotion)
+
+The accuracy set uses actual juggling, not ground-dribbling or power-shot footage:
+`eighteen` (indoor ~30 FPS), `34dd` (indoor ~60 FPS), and two original outdoor
+4K/120 FPS sources (`normal_juggling_2` and `juggling_second_ball_very_far`).
+A held-ball clip and ground-dribbling clip are separate negative controls. They do
+not contribute to positive juggling recall. Source hashes and review provenance
+are frozen in `artifacts/performance/20261010-juggling-accuracy/manifest.json`.
+
+This is a **development regression corpus, not held-out accuracy**. The outdoor
+sources also occur in the lab's field training/review corpus. Existing indoor
+labels were visually reviewed previously; the outdoor references were reviewed
+from complete source-only 12 FPS contact sheets and dense 60 FPS contact
+neighborhoods before reading current phone output. These review images do not
+change the original files fed to the app. Labels are assistant-reviewed, not
+independent human annotations. The second outdoor clip excludes uncertain
+opening/offscreen intervals; two baseline counts fall in those intervals.
+
+The Debug-only `--profile-accuracy-comparison` entry pins image/Vision work to CPU
+in both arms even when iOS declines a background lease, and bypasses all analysis
+cache reads/writes. The candidate adds `--profile-model-accelerated`; normal
+launches keep their existing policy. No source trimming, model replacement,
+resolution/cadence reduction or raised safeguards is used. The ordinary 7,200
+frame and 64 MiB mask limits remain active.
+
+CPU baseline completed all six sources / **6,500 analysis frames**. Both indoor
+clips matched 18/18 reference contacts without extra events. `normal_juggling_2`
+matched 22/24: the high foot touch at 12.16s was rejected as `handContact` despite
+36/36 surrounding frames having ball detections; the final shallow sideways
+contact at 14.48s was followed by `trackLost`. The other outdoor source matched
+22/22 reviewed contacts, but falsely counted a visually confirmed ground bounce
+at 4.083s. The held-ball and dribbling controls both counted zero. These are
+existing baseline counting failures, not acceleration-induced failures.
+
+Python follow-up (10 October): fresh PyTorch inference on all **1,978**
+`normal_juggling_2` composition frames, using the phone model's Motion parent
+and reviewed-mask delta, produced 1,755 ball detections. The current Python
+batch counter with torchvision pose also matched **22/24**, with no extra
+events and the same misses: `hand_touch` at 12.15s and `track_lost` after the
+14.48s sideways contact. Python streaming with the app's basic thresholds but
+without pose counted 23; lab-default streaming/batch counted 22 but missed
+2.335s instead of 12.16s. Therefore totals alone are insufficient. Replaying
+the phone's saved detector inputs through Python reproduced the corresponding
+streaming results. This supports separating these accuracy failures from the
+compute optimization; it does not establish general pipeline equivalence or
+identify the exact pose-versus-geometry cause of the hand veto. Python does
+not use the app's Apple Vision estimator, follower, marginal retry or newer
+contact safeguards. No production algorithms changed. Evidence and executable
+diagnostics: `../kicklab-lab/runs/normal2-python-count-20261010/comparison.json`.
+The older image-generator helper rejected this edited MOV's timestamps;
+the completed run uses the app's actual `EffectVideoGeometry` composition.
+All decoded frame indices/times were validated against the phone trace
+(at most 1ms integer-rounding difference). Temporary lossless working video
+was removed after retaining contact stills, detections, pose joints and results.
+
+Both arms completed. Model acceleration preserved **all 83 emitted touch timestamps
+exactly**, all 6,500 source-frame indices/timestamps and the counter configuration.
+All four juggling clips retained exactly the same detection-frame sets. Both arms
+reported zero detection/contact errors and bypassed caches.
+
+| Source / reviewed scope | Reference contacts | CPU matched / missed / extra | Model-only matched / missed / extra |
+| --- | ---: | --- | --- |
+| Indoor ~30 FPS | 18 | 18 / 0 / 0 | 18 / 0 / 0 |
+| Indoor ~60 FPS | 18 | 18 / 0 / 0 | 18 / 0 / 0 |
+| Outdoor normal juggling 2 | 24 | 22 / 2 / 0 | 22 / 2 / 0 |
+| Outdoor second ball, visible events only | 22 | 22 / 0 / 1 | 22 / 0 / 1 |
+| Held-ball negative control | 0 | 0 emitted | 0 emitted |
+| Ground-dribbling negative control | 0 | 0 emitted | 0 emitted |
+
+The second outdoor clip emitted 25 total counts: 22 matched, one ground-bounce
+false count and two excluded/uncertain edge-of-frame counts. Do not call all 25
+correct or compare that total directly to the 22-reference subset. Across the
+four positive clips, the reviewed scope contains **80/82 matched contacts and
+one extra event**, identically in both arms. This is not a general accuracy claim.
+
+Tracking/mask evidence: no baseline detections were lost. The candidate added
+one held-ball frame (53) and four ground-dribbling frames (108, 171, 236, 278).
+Source-image review places all five boxes on the actual ball. The dribbling
+candidate used 30 marginal crop retries versus 29 for CPU; total model calls
+were 6,530 versus 6,529. Small backend numerical differences can change retry
+selection. On the four juggling clips, minimum common-box IoU ranged from
+0.9551–0.9735. Approximate shared-image-ROI weighted mask IoU medians ranged
+0.9955–0.9969, with a minimum of 0.9494. These are pairwise overlaps, not accuracy
+against segmentation ground truth. The distant dribble mask at frame 199 changed
+more (approximate weighted IoU 0.4072, confidence 0.313→0.870), so masks must not
+be described as identical. No mask availability changed on common frames.
+
+Descriptive performance: CPU took **1,183.95s (19m44s)** versus candidate
+**564.64s (9m25s)**; app CPU time 914.17s versus 143.79s. Sampled memory peaks
+were **163.81 MiB versus 234.59 MiB**; largest retained-mask footprint stayed
+about **25.945 MiB**, below 64 MiB. CPU started nominal and ended serious; the
+candidate started serious and ended fair. Neither reached critical. Six baseline
+samples were backgrounded; the candidate had no background samples (one initial
+inactive sample). Thus these are not controlled cold-start speed/heat comparisons
+or a new background qualification. Thermal pacing, cache rebuilding and unchanged
+source decoding remain part of the measured runtime.
+
+**Decision:** no counted-event regression observed on this development set, but
+keep model acceleration opt-in. Prioritize the existing high-foot hand-veto false
+rejection, ground-bounce false count and shallow sideways/edge-of-frame miss.
+Do not disable hand/ground checks or loosen global thresholds merely to fit these
+clips; preserve the negative controls and add unseen people/scenes for validation.
+No counter changes were made during this compute comparison. The normal app was
+relaunched without diagnostic flags after both arms; temporary phone inputs and
+copied diagnostic folders were removed after local evidence validation.
+
+Reviewable source contact sheets, event timeline and full reports:
+`artifacts/performance/20261010-juggling-accuracy/review.html`.
+`scripts/compare-juggling-accuracy.py` checks completed/uncached/error-free runs,
+unchanged counter configuration and exact per-frame source indices/timestamps,
+then compares event matches and detection geometry. Event matching maximizes
+one-to-one correspondence within 0.12s and then minimizes timing error, with
+excluded intervals applied to both references and predictions. Partial labels
+are refused for full precision/recall. Five synthetic scoring checks passed.
+Optimized Debug device build and **12 compute-policy/cancellation tests passed**.
+
+### Five-minute stationary-camera follow-up
+
+The phone did not return to nominal thermal pressure during a five-minute cooldown.
+A further 60-second quiet diagnostic (no detector/camera, 1.06 CPU seconds total,
+13.4 MiB app memory) still reported serious/high pressure. The subsequent camera run
+was explicitly a **warm-start** test, not a cold-start measurement. The device remained
+connected; room temperature, case, display brightness and other system workloads were
+not controlled. This result cannot attribute all heating to the app or predict a cool
+phone's endurance.
+
+The real RecordView/preview/HUD recorded for 301.40 seconds, using its existing 720p
+back-camera configuration. An explicit Debug launch temporarily extended the duration
+stop to 305 seconds and enabled Pro access for this diagnostic only; production limits,
+model, thermal behavior and analysis cadence were unchanged. The benchmark's early
+stops were 350,000,000 bytes lifetime app footprint or critical thermal pressure.
+
+| Measurement | Observed result |
+| --- | --- |
+| Recording result | Completed the five-minute target; writer finalized successfully |
+| Saved video | 18,085 frames, about 60 FPS; **zero writer drops**, one capture drop |
+| Analysis | 4,525 frames after finalization, about **15.01 FPS** average |
+| Tracking throughput | Minute-one median 26.20 FPS; minute-five median **10.67 FPS** |
+| Memory | Sampled peak 258.16 MiB; kernel lifetime peak **260.02 MiB** |
+| Steady memory | Minute-one median 208.97 MiB; minute-five median 216.05 MiB |
+| After stopping | **85.88 MiB** with preview still active; detector unloaded |
+| Masks | Zero accumulated in this stationary scene |
+| Thermal pressure | High throughout; never critical |
+
+The existing live buffer targets 30 analysis FPS from a 60 FPS recording. It intentionally
+throttled 9,042 camera frames, then replaced 4,517 pending observations when inference
+could not keep up. No new frame-skipping policy was introduced by this profiling work.
+The 4,523 HUD/benchmark count was sampled just before stopping; the finalized capture
+ledger reports 4,525 after pending work completed. Use the latter for total analyzed frames.
+
+This establishes five-minute recording/finalization and controlled baseline memory on
+one warm device. It does **not** test dense ball-mask retention or prove touch accuracy.
+The analysis slowdown is an accuracy risk requiring real juggling footage and a cool-start
+repeat; a smooth 60 FPS recording alone does not establish adequate live tracking.
+Do not remove the normal recording limit based on this stationary run. Next steps are
+foreground/background compute policy investigation, paired output comparisons, then a
+long ball-in-view live run with count ground truth and memory/thermal logging.
+
+The diagnostic recording was deleted by the benchmark after inspecting its duration;
+user recordings and the original `IMG_8652.MOV` were untouched. Metrics, capture cadence,
+CSV and graphs are retained in the evidence folder. The app was relaunched without
+profiling arguments, removing the temporary Pro bypass and duration override. Diagnostic
+build and whitespace validation passed; no automated UI test was used for these runs.
+
 ## Scope
 
 | Area | Source files inventoried | Lines |
@@ -403,3 +915,21 @@ Use a fixed fixture manifest containing content hashes, expected duration/FPS/or
 Choose numeric budgets from the supported devices and product requirements. Compare warm/cold runs, use the same build configuration, and record the OS/model versions. Simulator results can validate logic but do not establish device energy, GPU-background, Photos-playback or file-protection behavior.
 
 For each item, the review decision should be **fix now**, **schedule**, **measure first**, or **accept with a documented reason**. Close an item only when its acceptance check has evidence. Start with A01–A03; the performance work then has a more reliable baseline.
+
+## Shipping resource cleanup — 10 October 2026
+
+Moved optional `PersonBoundaryMatte.mlpackage` and its licenses out of the app target into `resource-backups/20261010-shipping-cleanup/Models/`. Release also excludes this package by name if it is restored for research. This is person-boundary refinement for background replacement, not the ball detector. The existing Apple Vision foreground/person segmentation path handles an absent refiner; its edge quality can differ. The model name lookup remains optional.
+
+Kept all 14 `.jdmaterial` files: the picker, replay and video exporter use them. Moved ten source JPGs into `BallMaterialSources/` under the backup because only the macOS baker needs them. `JUGGLE_DUDE_PRINT_SOURCES` selects that directory; the old environment-variable fallback still works. Rebuilding Classic from its backed-up source produced an identical SHA-256 to the shipped material.
+
+Moved 15 unreferenced image sets into the backup: `bg-stadium-dark`, `bg-stadium-light`, `effect-fire`, `effect-ice`, `effect-galaxy`, `effect-neon`, `icon-free-kick`, `icon-juggling`, `icon-penalties`, `icon-stats`, `icon-target-shoot`, `replay-tool-ball-v1`, `stat-icon-cleat`, `stat-icon-combo`, and `stat-icon-height`. Retained the 33 other image sets, including referenced scene backgrounds for saved-scene compatibility.
+
+The backup manifest records original and backup paths, byte sizes and SHA-256 hashes for 46 files; all hashes were verified after moving. This backup is local to this Mac. Core ML packages remain ignored by Git. No files were discarded. The nine research models excluded in build 6 remain outside Release.
+
+The new Release bundle was inspected: it contains only `KickLabYOLO26MotionSegmentation.mlmodelc`, its weights match build 6, all 14 material hashes match build 6, no source print JPGs remain, all 15 obsolete image sets are absent, and all 33 retained image sets are compiled. No detector, counting, recording-limit or paywall changes were made as part of this cleanup.
+
+Validation: Release build and local unsigned Release archive succeeded. The archived app is 133,624,501 bytes versus build 6's signed archive at 196,260,224 bytes: about 62.6 MB smaller (31.9%). This is uncompressed bundle size, not Apple's device-specific download size; signing and build contents can introduce small differences. Repeated the resource/hash checks against the final archive.
+
+All 17 selected simulator checks passed: three BallCollectionTests (including actual exports for all 14 skins), ten ForegroundMattingTests, and four ScenePreparationTests. An initial Release test build could not compile existing tests that call Debug-only benchmark helpers; the successful run used Debug with the same model exclusions and arm64 only. This does not establish person-cutout edge quality or live performance on an iPhone 11. No tracking weights changed.
+
+Evidence: `artifacts/releases/20261010-resource-cleanup/`, plus durable backup `verification.json`. The local archive is `/tmp/juggledude-resource-audit-20261010/JuggleDude.xcarchive`. No version bump, TestFlight upload, commit or push was performed for this cleanup.

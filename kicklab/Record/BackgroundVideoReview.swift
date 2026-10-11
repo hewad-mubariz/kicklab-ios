@@ -14,10 +14,12 @@ struct BackgroundVideoReview: View {
             Text(model.status).accessibilityIdentifier("background-video-status")
             if SessionDesignReview.argument("--background-video-review") == "photos" {
                 Button("Saved video") { showSaved = true }.accessibilityIdentifier("review-saved-video")
+                if showSaved {
+                    ReplaySavedToast(thumbnail: nil, detail: "1080p · 0:16")
+                }
             }
             Text("\(model.backgroundUpdates) background updates").accessibilityIdentifier("background-video-updates")
         }.task { await model.run() }
-            .videoSavedConfirmation(isPresented: $showSaved)
     }
 }
 

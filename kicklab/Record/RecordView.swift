@@ -2,8 +2,8 @@
 //  RecordView.swift
 //  kicklab
 //
-//  Live juggling capture HUD. Preview runs immediately; detection and recording start only
-//  when you hit Record. Stop finalizes the clip and opens its editor.
+//  Live juggling capture HUD. Preview and a bounded model warmup run on entry.
+//  Detection and recording start only on Record, after tracking is ready.
 //
 
 import AVFoundation
@@ -12,8 +12,10 @@ import PhotosUI
 import SwiftUI
 
 struct RecordView: View {
+    @State private var recoveredVideoSaved = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var subscriptions: SubscriptionStore
     @EnvironmentObject private var account: AccountStore
     @EnvironmentObject private var player: PlayerStore
     @State private var sessionOwner: UUID?
@@ -29,12 +31,11 @@ struct RecordView: View {
     @State private var importError: String?
     @State private var elapsed: TimeInterval = 0
     @State private var timerRunning = false
-    @State private var showDiagnostics = ProcessInfo.processInfo.arguments.contains("--detector-review")
     @State private var comboPeak = 0
     @State private var liveTrail: [BallStyleSample] = []
     @State private var sessionNumber = JugglingSessionIdentity.next()
     @State private var motionPoints: [CaptureMotionPoint] = []
-    private let liveStyle = BallStyle.fire
+    private let liveStyle = BallStyle.glowTrail
     private let liveIntensity = 0.85
 
     @State private var showProcessing = false
@@ -65,10 +66,7 @@ struct RecordView: View {
                     GeometryReader { video in
                         ZStack {
                             CameraPreview(session: camera.captureSession)
-                            if showDiagnostics, let person = camera.personBox {
-                                TrackingCorners(rect: person)
-                            }
-                            if camera.isRecording { ballOverlay(in: video.size) }
+                            if camera.isRecording && subscriptions.isPro { ballOverlay(in: video.size) }
                         }
                     }.ignoresSafeArea()
 
@@ -83,8 +81,8 @@ struct RecordView: View {
                     VStack(spacing: 0) {
                         topBar.sessionEntrance(hudShown, offset: -14)
                         Spacer(minLength: 0)
-                        if showDiagnostics { diagnosticsPanel }
-                        CaptureMetrics(points: motionPoints, touchTimes: camera.recentTouchTimes, time: elapsed)
+                        CaptureMetrics(points: motionPoints, touchTimes: camera.recentTouchTimes, time: elapsed,
+                                       showGraph: subscriptions.isPro, showsTouchMetrics: subscriptions.isPro)
                             .padding(.horizontal, 24).padding(.bottom, 14)
                             .sessionEntrance(hudShown, order: 2)
                         cameraStatus
@@ -114,9 +112,6 @@ struct RecordView: View {
                 return
             }
             #endif
-            if DetectorPhoneBenchmark.requested {
-                await DetectorPhoneBenchmark.run(camera: camera)
-            }
         }
         .onDisappear {
             timerRunning = false
@@ -171,14 +166,19 @@ struct RecordView: View {
                 sessionNumber = JugglingSessionIdentity.begin()
             }
         }
+        .onChange(of: camera.isFinishingRecording) { _, finishing in
+            // Keep the save/review flow synchronized with recorder finalization.
+            if finishing, camera.recordingError == nil, !showProcessing { beginProcessing() }
+            if !finishing, let error = camera.recordingError { importError = error }
+        }
         .onChange(of: camera.recordingError) { _, error in
             guard let error else { return }
             timerRunning = false
             showProcessing = false
-            importError = error
+            if !camera.isFinishingRecording { importError = error }
         }
         .onChange(of: camera.recordingURL) { _, url in
-            guard let url, showProcessing else { return }
+            guard let url, showProcessing, camera.recordingError == nil else { return }
             let summary = SessionSummary.make(
                 touches: camera.touchCount,
                 duration: elapsed,
@@ -209,10 +209,22 @@ struct RecordView: View {
             get: { importError != nil },
             set: { if !$0 { importError = nil } }
         )) {
+            if camera.recordingError != nil, let recovered = camera.recordingURL {
+                Button("Save available video") {
+                    importError = nil
+                    Task {
+                        do {
+                            try await ShotEffectExporter.saveToPhotos(recovered)
+                            recoveredVideoSaved = true
+                        } catch { importError = error.localizedDescription }
+                    }
+                }
+            }
             Button("OK", role: .cancel) { importError = nil }
         } message: {
             Text(importError ?? "Please try another video.")
         }
+        .videoSavedConfirmation(isPresented: $recoveredVideoSaved)
         .fullScreenCover(item: $sessionSummary) { summary in
             PostSessionFlowView(
                 summary: summary,
@@ -310,7 +322,8 @@ struct RecordView: View {
             : importedVideo.isRunning && !importedVideo.canContinueInBackground
                 ? "Keep Juggle Dude open. Processing resumes when you return." : nil
         return ProcessingOverlay(progress: processingProgress, stepIndex: processingStep,
-                                 statusMessage: message, onCancel: cancel, isPaused: importedVideo.isCooling)
+                                 statusMessage: message, onCancel: cancel, isPaused: importedVideo.isCooling,
+                                 videoInfo: importedURL == nil ? nil : importedVideo.processingInfo)
     }
 
     @MainActor
@@ -496,8 +509,10 @@ struct RecordView: View {
                 CaptureSessionBadge(number: sessionNumber, recording: camera.isRecording,
                                     preparing: camera.isPreparingRecording)
             }.zIndex(1)
-            CaptureTouchCounter(count: controlState == .ready ? 0 : camera.touchCount, warn: camera.tooShaky)
-                .allowsHitTesting(false)
+            if subscriptions.isPro {
+                CaptureTouchCounter(count: controlState == .ready ? 0 : camera.touchCount, warn: camera.tooShaky)
+                    .allowsHitTesting(false)
+            }
             if camera.tooShaky {
                 Text("Hold the camera steadier").font(.caption.weight(.semibold)).foregroundStyle(Theme.warn)
                     .transition(.sessionDrop)
@@ -508,7 +523,16 @@ struct RecordView: View {
     }
 
     private var cameraStatus: some View {
-        VStack {
+        VStack(spacing: 8) {
+            if camera.trackingPreparationError != nil, !controlState.isBusy {
+                Text("Tracking couldn’t get ready.")
+                    .font(.system(size: 13)).foregroundStyle(.white.opacity(0.8))
+                Button("Try again") { camera.prepareTracking() }
+                    .font(.system(size: 14, weight: .semibold)).tint(SessionStyle.mint)
+                    .frame(minHeight: 44)
+                    .disabled(!camera.isReady)
+                    .accessibilityIdentifier("capture-retry-preparation")
+            }
             if !camera.isReady && !controlState.isBusy {
                 Text(camera.status == "camera permission denied" ? "Allow camera access in Settings, or choose a video." :
                      camera.status == "camera unavailable" ? "Camera unavailable. Choose a video to get started." : "Starting camera…")
@@ -526,11 +550,12 @@ struct RecordView: View {
     private var controlState: CaptureControlState {
         if showProcessing || camera.isFinishingRecording { return .finishing }
         if camera.isPreparingRecording { return .preparing }
+        if camera.isPreparingTracking { return .warming }
         return camera.isRecording ? .recording : .ready
     }
 
     private var bottomBar: some View {
-        CaptureControls(state: controlState, cameraReady: camera.isReady,
+        CaptureControls(state: controlState, cameraReady: camera.isReady, trackingReady: camera.isTrackingReady,
             onGallery: { showGallery = true },
             onRecord: {
                 if camera.isRecording {
@@ -549,49 +574,7 @@ struct RecordView: View {
         .frame(maxWidth: .infinity)
     }
 
-    // MARK: - Experimental detector diagnostics
 
-    private var diagnosticsPanel: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            if camera.isPreparingRecording {
-                Text("Preparing recording and detection…")
-            } else if !camera.isRecording {
-                Text(camera.isReady ? "Preview only · detection off" : camera.status)
-                    .accessibilityIdentifier("record-detection-idle")
-            } else {
-                HStack {
-                    Text(String(format: "%.0f processed fps", camera.fps))
-                    Spacer()
-                    Text(String(format: "ball %.2f", camera.ballScore))
-                    Spacer()
-                    Text("seen \(camera.detections)")
-                }
-                Text(camera.performance.model)
-                Text(String(format: "inference %.0f ms · detector %.0f ms · p95 %.0f ms",
-                            camera.performance.inferenceMS, camera.performance.totalMS, camera.performance.p95MS))
-                Text(String(format: "app %.0f MB · peak %.0f MB · load %.0f ms",
-                            camera.performance.memoryMB, camera.performance.peakMemoryMB, camera.performance.modelLoadMS))
-                Text("capture drops \(camera.performance.captureDrops) · thermal \(camera.performance.thermal)")
-            }
-            if let log = camera.performance.logURL {
-                ShareLink("Share performance CSV", item: log)
-            }
-            if let err = camera.detectorError {
-                Text(err).foregroundStyle(Theme.warn)
-            }
-        }
-        .font(Theme.mono)
-        .foregroundStyle(.white.opacity(0.8))
-        .padding(12)
-        .background(Theme.panel(RoundedRectangle(cornerRadius: 12)))
-        .padding(.horizontal, 18)
-        .padding(.bottom, 10)
-    }
-
-    private func formatElapsed(_ t: TimeInterval) -> String {
-        let total = max(0, Int(t))
-        return String(format: "%02d:%02d", total / 60, total % 60)
-    }
 }
 
 /// Back-compat alias used by older call sites.

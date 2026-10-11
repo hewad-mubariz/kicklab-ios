@@ -37,8 +37,35 @@ final class ProPaywallNavigationUITests: XCTestCase {
         app.launch()
         let close = app.buttons["pro-close"]
         XCTAssertTrue(close.waitForExistence(timeout: 10))
+        let monthly = app.buttons["pro-plan-monthly"]
+        let yearly = app.buttons["pro-plan-yearly"]
+        monthly.tap()
+        XCTAssertTrue(monthly.isSelected)
+        XCTAssertFalse(yearly.isSelected)
+        yearly.tap()
+        XCTAssertTrue(yearly.isSelected)
+        XCTAssertFalse(monthly.isSelected)
         close.tap()
         XCTAssertTrue(app.buttons["home-profile"].waitForExistence(timeout: 5))
         XCTAssertFalse(close.exists)
+    }
+
+    func testDebugPanelShowsBuildAndNoRestoreAttemptWithoutTriggeringApple() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-kicklab.welcome.completed", "YES", "--session-design", "paywall"]
+        app.launch()
+        let debug = app.buttons["pro-debug-open"]
+        XCTAssertTrue(debug.waitForExistence(timeout: 10))
+        debug.tap()
+        let result = app.staticTexts["pro-debug-restore-result"]
+        if !result.isHittable { app.swipeUp() }
+        XCTAssertTrue(result.waitForExistence(timeout: 5))
+        XCTAssertEqual(result.label, "Not attempted in this launch")
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.name = "Subscription diagnostics D1"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.buttons["Done"].tap()
+        XCTAssertTrue(app.buttons["pro-close"].isHittable)
     }
 }

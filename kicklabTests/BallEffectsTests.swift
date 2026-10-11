@@ -266,12 +266,12 @@ struct BallEffectsTests {
         }
     }
 
-    @Test func everyCatalogSkinHasDistinctBundledArtwork() throws {
+    @Test func everyCatalogSkinHasDistinctArtwork() throws {
         let styles = BallSkin.allCases.filter { $0 != .original }
-        #expect(styles.count == 10)
+        #expect(styles.count == 14)
         var rasters = Set<Data>()
         for skin in styles {
-            #expect(BallSkinSphereRenderer.hasArtwork(for: skin), "Missing bundled texture: \(skin.title)")
+            #expect(BallSkinSphereRenderer.hasArtwork(for: skin), "Missing material: \(skin.title)")
             let image = try #require(BallSkinSphereRenderer.image(skin: skin, time: 1.4))
             let data = try #require(image.dataProvider?.data)
             rasters.insert(data as Data)
@@ -279,8 +279,8 @@ struct BallEffectsTests {
             #expect(bytes[3] == 0) // Material image has no rectangular backdrop.
             #expect(bytes[((image.height/2)*image.width+image.width/2)*4+3] == 255)
         }
-        #expect(rasters.count == 10)
-        #expect(BallSkinSphereRenderer.decodedArtworkBytes <= 6*1024*1024)
+        #expect(rasters.count == 14)
+        #expect(BallSkinSphereRenderer.decodedArtworkBytes <= 14*1024*1024)
         #expect(BallSkinSphereRenderer.image(skin: .original, time: 1.4) == nil)
         // Previous selection IDs still resolve to the new material designs.
         #expect(BallSkin(rawValue: "gold")?.title == "Gold Elite")

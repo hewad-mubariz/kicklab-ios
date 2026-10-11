@@ -24,11 +24,15 @@ struct PickedMovie: Transferable {
         FileRepresentation(contentType: .movie) { movie in
             SentTransferredFile(movie.url)
         } importing: { received in
+            try await VideoSafetyPolicy.validateInput(received.file)
+            try VideoSafetyPolicy.requireCopySpace(received.file, copies: 2)
             let copy = FileManager.default.temporaryDirectory
                 .appendingPathComponent("juggledude-\(UUID().uuidString).mov")
             try? FileManager.default.removeItem(at: copy)
-            try FileManager.default.copyItem(at: received.file, to: copy)
-            try FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: copy.path)
+            do {
+                try FileManager.default.copyItem(at: received.file, to: copy)
+                try FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: copy.path)
+            } catch { try? FileManager.default.removeItem(at: copy); throw error }
             return PickedMovie(url: copy)
         }
     }
@@ -134,20 +138,50 @@ struct FileView: View {
 
 struct CameraPreview: UIViewRepresentable {
     let session: AVCaptureSession
+    var followsDeviceOrientation = false
 
     func makeUIView(context: Context) -> PreviewView {
         let view = PreviewView()
         view.videoPreviewLayer.session = session
         view.videoPreviewLayer.videoGravity = .resizeAspectFill
+        view.followsDeviceOrientation = followsDeviceOrientation
         return view
     }
 
-    func updateUIView(_ uiView: PreviewView, context: Context) {}
+    func updateUIView(_ uiView: PreviewView, context: Context) {
+        uiView.updateOrientation()
+    }
 
     final class PreviewView: UIView {
+        var followsDeviceOrientation = false
+        private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+        private var rotationObservation: NSKeyValueObservation?
+        private var deviceID: String?
         override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }
         var videoPreviewLayer: AVCaptureVideoPreviewLayer {
             layer as! AVCaptureVideoPreviewLayer
+        }
+
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            updateOrientation()
+        }
+
+        func updateOrientation() {
+            guard followsDeviceOrientation,
+                  let input = videoPreviewLayer.session?.inputs.first as? AVCaptureDeviceInput else { return }
+            if deviceID != input.device.uniqueID {
+                rotationObservation?.invalidate()
+                deviceID = input.device.uniqueID
+                let coordinator = AVCaptureDevice.RotationCoordinator(device: input.device, previewLayer: videoPreviewLayer)
+                rotationCoordinator = coordinator
+                rotationObservation = coordinator.observe(\.videoRotationAngleForHorizonLevelPreview, options: [.new]) { [weak self] _, _ in
+                    Task { @MainActor in self?.updateOrientation() }
+                }
+            }
+            guard let coordinator = rotationCoordinator, let connection = videoPreviewLayer.connection else { return }
+            let angle = coordinator.videoRotationAngleForHorizonLevelPreview
+            if connection.isVideoRotationAngleSupported(angle) { connection.videoRotationAngle = angle }
         }
     }
 }

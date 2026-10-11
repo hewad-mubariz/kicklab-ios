@@ -1,5 +1,6 @@
 import Auth
 import Foundation
+import Security
 
 struct AccountIdentity: Equatable, Sendable {
     let id: UUID
@@ -34,6 +35,7 @@ final class SupabaseAccountService: AccountAuthService {
 
     init(configuration: AccountConfiguration) {
         self.configuration = configuration
+        FreshInstallSession.clearIfNeeded(keychainService: "juggledude.auth")
         client = AuthClient(configuration: .init(
             url: configuration.projectURL.appendingPathComponent("auth/v1"),
             headers: ["apikey": configuration.publishableKey],
@@ -139,5 +141,25 @@ final class SupabaseAccountService: AccountAuthService {
     private static func identity(_ user: User) -> AccountIdentity {
         AccountIdentity(id: user.id, email: user.email,
                         name: user.userMetadata["full_name"]?.stringValue ?? user.userMetadata["name"]?.stringValue)
+    }
+}
+
+
+/// iOS keeps Keychain items after an app is deleted, so a reinstall would come back
+/// signed in. UserDefaults is removed with the app, so its marker tells a fresh install
+/// apart from a relaunch. Updates from builds without the marker keep their session:
+/// anyone who already finished the welcome screen is treated as an existing install.
+enum FreshInstallSession {
+    static let markerKey = "juggledude.install.marker"
+    static let welcomeKey = "kicklab.welcome.completed"
+
+    static func clearIfNeeded(keychainService: String, defaults: UserDefaults = .standard) {
+        guard !defaults.bool(forKey: markerKey) else { return }
+        if !defaults.bool(forKey: welcomeKey) {
+            let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
+                                        kSecAttrService as String: keychainService]
+            SecItemDelete(query as CFDictionary)
+        }
+        defaults.set(true, forKey: markerKey)
     }
 }

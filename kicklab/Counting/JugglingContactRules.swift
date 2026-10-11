@@ -8,6 +8,34 @@ nonisolated enum JugglingContactRules {
         var x, y: Double
     }
 
+    struct HandLandmark {
+        /// Zero is the wrist; 1...5 identify the five fingers.
+        var finger: Int
+        var x, y, confidence: Double
+    }
+
+    static func canResolveTorsoOverlap(ball: Point, height: Double, joints: [String: Point]) -> Bool {
+        guard height.isFinite, height > 0,
+              let leftHip = joints["left_hip"], let rightHip = joints["right_hip"],
+              let nose = joints["nose"] else { return false }
+        return ball.y > nose.y && ball.y + height / 2 < min(leftHip.y, rightHip.y)
+    }
+
+    /// Require multiple confident distal finger joints, belonging to the same
+    /// visible hand and associated with this person's wrist. A nearby arm alone
+    /// cannot override the original protection for legal body contacts.
+    static func fingersTouchBall(ball: Point, width: Double, height: Double,
+                                 bodyWrists: [Point], landmarks: [HandLandmark]) -> Bool {
+        guard width.isFinite, height.isFinite, width > 0, height > 0,
+              let wrist = landmarks.first(where: { $0.finger == 0 && $0.confidence >= 0.25 }),
+              bodyWrists.contains(where: { hypot($0.x-wrist.x, $0.y-wrist.y) <= 0.06 }) else { return false }
+        let touching = landmarks.filter {
+            (1...5).contains($0.finger) && $0.confidence >= 0.35 &&
+            hypot(($0.x-ball.x)/(width/2), ($0.y-ball.y)/(height/2)) <= 1.3
+        }
+        return touching.count >= 3 && Set(touching.map(\.finger)).count >= 2
+    }
+
     /// Segment attribution follows the lab's pose.py, including its protection
     /// against a wrist near a legitimate leg touch. Inputs share normalized
     /// upright video coordinates. Only sufficiently confident joints belong here.

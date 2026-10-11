@@ -4,12 +4,13 @@ import SwiftUI
 #if DEBUG
 /// A real encoded clip and cached detections for UI regressions, without running inference.
 struct ShotCameraReviewFixture: View {
+    var style: ShotTrailStyle = .none
     @State private var request: (URL, URL)?
     @State private var problem: String?
     var body: some View {
         Group {
             if let request {
-                ShotEffectsReplayView(video: request.0, style: .none, trackCache: request.1, onClose: {})
+                ShotEffectsReplayView(video: request.0, style: style, trackCache: request.1, onClose: {})
             } else if let problem {
                 Text(problem)
             } else {

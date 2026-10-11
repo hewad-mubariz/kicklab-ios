@@ -15,6 +15,16 @@ struct ReplayEffectsView: View {
     var showsTouchTools = true
     var distanceTimeline: BallDistanceTimeline? = nil
 
+    @EnvironmentObject private var subscriptions: SubscriptionStore
+    @State private var pendingProTool: ReplayTool?
+    @State private var showsProPaywall = false
+
+    private var committedLook: JugglingReplayLook {
+        JugglingReplayLook(edit: edit, overlays: overlays, showGraph: showGraph)
+            .allowed(isPro: subscriptions.isPro)
+    }
+    private var displayedLook: JugglingReplayLook { committedLook }
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var glass
     @State private var shown = false
@@ -29,7 +39,7 @@ struct ReplayEffectsView: View {
     @State private var counterSelected = false
     @State private var showGraph = true
     @State private var showTime = true
-    private var motionStyle: MotionStyle { overlays.graph.style }
+    private var motionStyle: MotionStyle { displayedLook.overlays.graph.style }
     @State private var motionTimeline = MotionStyleTimeline(points: [], touchTimes: [])
     @State private var originalEdit: SessionEditState?
     @State private var originalOverlays: ExportOverlaySettings?
@@ -55,7 +65,6 @@ struct ReplayEffectsView: View {
     /// True while play-from-the-end rewinds; the time observer must not see the old end time.
     @State private var restarting = false
     @State private var showSharePanel = false
-    @State private var showSaveConfirmation = false
     @State private var toast: DownloadToast?
     @State private var shareItem: ReplayShareItem?
 
@@ -75,13 +84,14 @@ struct ReplayEffectsView: View {
                 GlassEffectContainer(spacing: 8) {
                     VStack(spacing: 0) {
                         if showToolbox {
-                            ReplayToolbox(counter: $overlays.counter, edit: $edit,
-                                          showTime: $showTime, showGraph: $showGraph,
-                                          includeGraph: $overlays.graph.enabled, motionStyle: $overlays.graph.style,
+                            ReplayToolbox(counter: lookBinding(\.overlays.counter), edit: lookBinding(\.edit),
+                                          showTime: $showTime, showGraph: lookBinding(\.showGraph),
+                                          includeGraph: lookBinding(\.overlays.graph.enabled), motionStyle: lookBinding(\.overlays.graph.style),
                                           motionSnapshot: motionTimeline.snapshot(at: currentTime, duration: duration),
                                           sourceAspect: sourceSize.width / max(1, sourceSize.height),
                                           isPlaying: isPlaying, onTogglePlayback: togglePlay, page: $toolPage,
-                                          onClose: { showToolbox = false }, showsTouchTools: showsTouchTools)
+                                          onClose: { showToolbox = false }, showsTouchTools: showsTouchTools,
+                                          isPro: subscriptions.isPro, onUnlockTool: unlockTool)
                             .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
                                 // Same spring as the tray's height, so video and panel move as one.
                                 withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { panelTop = top }
@@ -103,9 +113,9 @@ struct ReplayEffectsView: View {
                             }
                             CaptureMetrics(points: motionTimeline.points, touchTimes: motionTimeline.touches,
                                            time: currentTime, duration: duration,
-                                           showGraph: showsTouchTools && showGraph && !effectiveOverlays.graph.enabled, showTime: showTime,
+                                           showGraph: showsTouchTools && displayedLook.showGraph && !effectiveOverlays.graph.enabled, showTime: showTime,
                                            motionStyle: motionStyle, motionTimeline: motionTimeline,
-                                           sourceAspect: sourceSize.width / max(1, sourceSize.height), showsTouchMetrics: showsTouchTools)
+                                           sourceAspect: sourceSize.width / max(1, sourceSize.height), showsTouchMetrics: showsTouchTools && subscriptions.isPro)
                                 .padding(.horizontal, 24).padding(.bottom, 10).allowsHitTesting(false)
                                 .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { playbackTop = $0 }
                                 .sessionEntrance(shown, order: 2)
@@ -139,13 +149,13 @@ struct ReplayEffectsView: View {
             if page == .ball { showBallFrame() }
             if page == nil || page == .timer || page == .graph { restorePreviewPosition() }
         }
-        .onChange(of: edit.ballSkin) { _, _ in prepareSurfaceMotion() }
+        .onChange(of: displayedLook.edit.ballSkin) { _, _ in prepareSurfaceMotion() }
         .onChange(of: summary.needsVisualPreparation) { _, pending in
-            guard !pending, edit.scene == nil else { return }
+            guard !pending, displayedLook.edit.scene == nil else { return }
             effectTrack = BallEffectTrack(frames: summary.renderTrack, touchTimes: summary.touchesMarked.map(\.time))
             prepareSurfaceMotion()
         }
-        .onChange(of: edit.scene) { _, _ in tearDownPlayer(); setUpPlayer() }
+        .onChange(of: displayedLook.edit.scene) { _, _ in tearDownPlayer(); setUpPlayer() }
         .onChange(of: overlays) { old, value in
             if old.graph.enabled != value.graph.enabled {
                 ProductAnalytics.shared.track(.graphToggled(value.graph.enabled))
@@ -164,10 +174,22 @@ struct ReplayEffectsView: View {
             switch phase {
             case .saved:
                 show(.saved); showSharePanel = true
-                showSaveConfirmation = UIApplication.shared.applicationState == .active
             case .failed(let message): show(.failed(message))
             default: break
             }
+        }
+        .onChange(of: subscriptions.isPro) { _, isPro in
+            if !isPro {
+                pendingProTool = nil; counterSelected = false
+                if toolPage != .timer { toolPage = nil }
+            }
+            downloadOutdated()
+        }
+        .sheet(isPresented: $showsProPaywall, onDismiss: finishPaywall) {
+            ProPaywallView(onClose: { showsProPaywall = false }, onUnlocked: {
+                showsProPaywall = false
+            })
+            .presentationDetents([.large])
         }
         .sheet(item: $shareItem) { item in
             ReplayShareSheet(url: item.url).presentationDetents([.medium, .large])
@@ -181,7 +203,6 @@ struct ReplayEffectsView: View {
             shown = true
         }
         .onDisappear { tearDownPlayer() }
-        .videoSavedConfirmation(isPresented: $showSaveConfirmation)
         .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: showToolbox)
         .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: showSharePanel)
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: toast)
@@ -203,7 +224,7 @@ struct ReplayEffectsView: View {
                         .font(.system(size: 11, weight: .semibold)).tracking(1.6)
                         .accessibilityIdentifier("ball-video-editor-title")
                 }
-                if edit.ballSkin != .original {
+                if displayedLook.edit.ballSkin != .original {
                     Text(preparation.isPreparing ? "Preparing ball effects · \(Int(preparation.progress * 100))%"
                          : preparation.error != nil || surfaceMotionError != nil ? "Ball effects unavailable — tap to retry"
                          : surfaceMotionTask != nil ? "Preparing source spin…"
@@ -225,10 +246,13 @@ struct ReplayEffectsView: View {
     // MARK: Download
 
     private func download() {
+        guard !downloader.phase.isBusy else { return }
+        let exportLook = committedLook
+        let exportOverlays = resolvedOverlays(exportLook)
         switch downloader.phase {
         case .preparing, .exporting, .saving:
             return
-        case .saved where !downloader.isStale(edit: edit, overlays: effectiveOverlays):
+        case .saved where !downloader.isStale(edit: committedLook.edit, overlays: resolvedOverlays(committedLook)):
             // Already in Photos: the check reopens the share panel.
             showToolbox = false; counterSelected = false
             showSharePanel = true
@@ -236,7 +260,7 @@ struct ReplayEffectsView: View {
             pause()
             showToolbox = false; counterSelected = false; showSharePanel = false; toast = nil
             Task {
-                await downloader.download(summary: summary, edit: edit, overlays: effectiveOverlays,
+                await downloader.download(summary: summary, edit: exportLook.edit, overlays: exportOverlays,
                                           sceneModel: stadiumPreview, preparation: preparation,
                                           distanceTimeline: distanceTimeline)
             }
@@ -245,7 +269,7 @@ struct ReplayEffectsView: View {
 
     /// An edit after saving means the saved file no longer matches: offer download again.
     private func downloadOutdated() {
-        guard downloader.phase == .saved, downloader.isStale(edit: edit, overlays: effectiveOverlays) else { return }
+        guard downloader.phase == .saved, downloader.isStale(edit: committedLook.edit, overlays: resolvedOverlays(committedLook)) else { return }
         downloader.reset()
         showSharePanel = false
     }
@@ -306,7 +330,7 @@ struct ReplayEffectsView: View {
                             snapshot: motionTimeline.snapshot(at: currentTime, duration: duration), size: size)
                             .allowsHitTesting(false)
                     }
-                    if showsTouchTools && overlays.counter.enabled {
+                    if showsTouchTools && effectiveOverlays.counter.enabled && subscriptions.isPro {
                         if counterSelected {
                             let rect = overlays.counter.placement.rect(in: size)
                             CounterStickerInteraction(placement: $overlays.counter.placement)
@@ -456,7 +480,7 @@ struct ReplayEffectsView: View {
         playbackError = nil
         setupTask = Task {
             do {
-                let media = try await stadiumPreview.media(summary: summary, selection: edit.scene)
+                let media = try await stadiumPreview.media(summary: summary, selection: displayedLook.edit.scene)
                 let url = media.url
                 effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
                 motionSource = summary.videoURL
@@ -496,22 +520,51 @@ struct ReplayEffectsView: View {
     }
 
     private var renderedEdit: SessionEditState {
-        var value = edit
+        var value = displayedLook.edit
         // Never display stale capture masks or invented timer spin while precise
         // effects are being prepared. Original footage stays playable.
         if (summary.needsVisualPreparation && preparation.prepared == nil) || effectTrack.surfaceMotion == nil { value.ballSkin = .original }
         return value
     }
 
-    private var effectiveOverlays: ExportOverlaySettings {
-        var value = overlays
+    private var effectiveOverlays: ExportOverlaySettings { resolvedOverlays(displayedLook) }
+
+    private func resolvedOverlays(_ look: JugglingReplayLook) -> ExportOverlaySettings {
+        var value = look.overlays
         if !showsTouchTools { value.counter.enabled = false }
-        value.graph.enabled = value.graph.enabled && showsTouchTools && showGraph
+        value.graph.enabled = value.graph.enabled && showsTouchTools && look.showGraph
         return value
     }
 
+    private func lookBinding<Value>(_ keyPath: WritableKeyPath<JugglingReplayLook, Value>) -> Binding<Value> {
+        Binding(get: { displayedLook[keyPath: keyPath] }, set: { value in
+            // A tool already open when access expires must not apply another paid edit.
+            guard subscriptions.isPro else { return }
+            var look = displayedLook
+            look[keyPath: keyPath] = value
+            apply(look)
+        })
+    }
+
+    private func apply(_ look: JugglingReplayLook) {
+        edit = look.edit; overlays = look.overlays; showGraph = look.showGraph
+    }
+
+    private func unlockTool(_ tool: ReplayTool) {
+        pendingProTool = tool
+        pause()
+        showsProPaywall = true
+    }
+
+    private func finishPaywall() {
+        // Merely requesting a tool never changes the clip. Open it only after verified access.
+        defer { pendingProTool = nil }
+        guard subscriptions.isPro, let pendingProTool else { return }
+        toolPage = pendingProTool
+    }
+
     private func prepareSurfaceMotion() {
-        guard edit.ballSkin != .original, let url = motionSource,
+        guard displayedLook.edit.ballSkin != .original, let url = motionSource,
               effectTrack.surfaceMotion == nil, surfaceMotionTask == nil else { return }
         let token = UUID(); surfaceMotionGeneration = token; surfaceMotionError = nil
         surfaceMotionTask = Task {
@@ -520,7 +573,7 @@ struct ReplayEffectsView: View {
                 let ready = try await preparation.prepare(summary)
                 try Task.checkCancellation()
                 guard motionSource == url else { return }
-                if edit.scene == nil {
+                if displayedLook.edit.scene == nil {
                     effectTrack = BallEffectTrack(frames: ready.renderTrack, touchTimes: ready.touchesMarked.map(\.time))
                 }
                 let motion = try await BallSurfaceTimeline.prepare(source: url, track: BallEffectTrack(frames: ready.renderTrack))

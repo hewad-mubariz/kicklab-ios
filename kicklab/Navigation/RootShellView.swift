@@ -10,12 +10,10 @@ struct RootShellView: View {
     @State private var capture: HomeCapture?
     @State private var sheet: HomeSheet?
     @State private var showImport = false
-    /// Signing in from Profile returns to the same main sign-in view as the first launch.
-    @State private var signingIn = false
     @State private var importedVideo: PhotosPickerItem?
-    @State private var showsLeaderboard = false
+    // First release: leaderboard navigation is parked, with its implementation retained.
+    // @State private var showsLeaderboard = false
     @State private var showsProfile = false
-    @State private var signInAfterProfile = false
     @State private var showsHistory = false
     @Namespace private var zoom
     private var accountBest: Int { account.user == nil ? personalBest : player.personalBest }
@@ -31,7 +29,7 @@ struct RootShellView: View {
     var body: some View {
         Group {
             // The sign-in view hands over itself once signed in, after its "You're in" moment.
-            if hasEnteredApp && !signingIn {
+            if hasEnteredApp {
                 HomeView(
                     personalBest: accountBest,
                     onJuggling: { capture = HomeCapture(mode: .juggling) },
@@ -39,23 +37,21 @@ struct RootShellView: View {
                     onImport: { showImport = true },
                     onProfile: { showsProfile = true },
                     onSetupGuide: { sheet = .setup },
-                    onLeaderboard: { showsLeaderboard = true },
+                    // onLeaderboard: { showsLeaderboard = true },
                     onHistory: { showsHistory = true },
-                    leaderboardZoom: zoom,
+                    // leaderboardZoom: zoom,
                     profileZoom: zoom
                 )
             } else {
-                SignInView(presentation: signingIn ? .profile : .welcome) {
-                    signingIn = false
+                SignInView(presentation: .welcome) {
                     hasEnteredApp = true
                 }
             }
         }
-        .animation(.smooth(duration: 0.4), value: signingIn)
         .animation(.smooth(duration: 0.4), value: hasEnteredApp)
         .modifier(SoftHaloOpening())
         .overlay(alignment: .top) {
-            if hasEnteredApp && sheet == nil && !showsProfile && !signingIn { AccountErrorBanner().padding() }
+            if hasEnteredApp && sheet == nil && !showsProfile { AccountErrorBanner().padding() }
         }
         // Keep presentation anchored to the root while welcome becomes home.
         .preferredColorScheme(preferredScheme)
@@ -71,22 +67,13 @@ struct RootShellView: View {
                 BallDistanceView()
             }
         }
-        .fullScreenCover(isPresented: $showsLeaderboard) {
-            LeaderboardView(yourName: account.user?.name) { showsLeaderboard = false }
-                .leaderboardZoom(in: zoom)
-                .preferredColorScheme(preferredScheme)
-        }
-        .fullScreenCover(isPresented: $showsProfile, onDismiss: {
-            // Keep the source icon mounted until the reverse zoom has finished.
-            if signInAfterProfile {
-                signInAfterProfile = false
-                signingIn = true
-            }
-        }) {
-            TrainingProfileView(personalBest: accountBest, appearance: $appearance) {
-                signInAfterProfile = true
-                showsProfile = false
-            }
+        // .fullScreenCover(isPresented: $showsLeaderboard) {
+        //     LeaderboardView(yourName: account.user?.name) { showsLeaderboard = false }
+        //         .leaderboardZoom(in: zoom)
+        //         .preferredColorScheme(preferredScheme)
+        // }
+        .fullScreenCover(isPresented: $showsProfile) {
+            TrainingProfileView(personalBest: accountBest, appearance: $appearance)
             .navigationTransition(.zoom(sourceID: "profile", in: zoom))
             .preferredColorScheme(preferredScheme)
         }

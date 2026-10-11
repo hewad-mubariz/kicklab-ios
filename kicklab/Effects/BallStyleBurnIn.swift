@@ -12,36 +12,21 @@ final class BallStyleBurnIn: ObservableObject {
     @Published private(set) var outputURL: URL?
     @Published private(set) var status = ""
 
-    private struct Request: Equatable {
-        let source: URL
-        let style: BallStyle
-        let skin: BallSkin
-        let intensity: Double
-        let environment: EffectEnvironment
-        let shortEdge: Int
-        let counter: ExportCounterTimeline?
-        let overlays: ExportOverlaySettings?
-        let preserveFrameTimes: Bool
-        let maskSignature: Int
-        let distanceTimeline: BallDistanceTimeline?
-        let motionTimeline: MotionStyleTimeline?
-    }
-    private var completedRequest: Request?
     private var worker: Task<Void, Never>?
     func cancel() { worker?.cancel() }
+    func cancelAndWait() async {
+        let task = worker
+        task?.cancel()
+        await task?.value
+    }
 
     func export(source: URL, track: [RecordedFrame], style: BallStyle, intensity: Double,
                 skin: BallSkin = .original, environment: EffectEnvironment = .original, shortEdge: Int = 1080,
                 counter: ExportCounterTimeline? = nil, overlays: ExportOverlaySettings? = nil,preserveFrameTimes:Bool=false,
                 distanceTimeline: BallDistanceTimeline? = nil, motionTimeline: MotionStyleTimeline? = nil) {
         guard !isExporting else { return }
-        var maskHasher = Hasher()
-        for frame in track {
-            maskHasher.combine(frame.time); maskHasher.combine(frame.usesBallMasks)
-            if let mask = frame.ballMask { maskHasher.combine(mask.alpha) }
-        }
-        let request = Request(source: source, style: style, skin: skin, intensity: intensity, environment: environment, shortEdge: shortEdge, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes, maskSignature: maskHasher.finalize(), distanceTimeline: distanceTimeline, motionTimeline: motionTimeline)
-        if completedRequest == request, let outputURL, FileManager.default.fileExists(atPath: outputURL.path) { return }
+        // Each explicit export renders its current inputs. Reusing by a partial
+        // track hash could return an older video after geometry/source changes.
         isExporting = true; progress = 0; outputURL = nil; status = "Preparing video…"
         worker = Task {
             do {
@@ -56,7 +41,11 @@ final class BallStyleBurnIn: ObservableObject {
                     }
                     return try await withTaskCancellationHandler { try await renderTask.value } onCancel: { renderTask.cancel() }
                 }
-                outputURL = url; completedRequest = request; status = "Ready"; progress = 1
+                if Task.isCancelled {
+                    try? FileManager.default.removeItem(at: url)
+                    throw CancellationError()
+                }
+                outputURL = url; status = "Ready"; progress = 1
             } catch is CancellationError {
                 status = "Export stopped. Tap Download to try again."
             } catch {
@@ -87,6 +76,7 @@ final class BallStyleBurnIn: ObservableObject {
         guard let videoTrack = try await asset.loadTracks(withMediaType: .video).first else { throw failure("No video track.") }
         let duration = try await asset.load(.duration)
         let seconds = CMTimeGetSeconds(duration)
+        try VideoSafetyPolicy.requireExportSpace(duration: seconds)
         let composition = try await EffectVideoGeometry.composition(track: videoTrack, duration: duration, shortEdge: shortEdge)
         let size = composition.renderSize
         var effects = BallEffectTrack(frames: track, touchTimes: touchTimes ?? counter?.times ?? [])
@@ -114,19 +104,20 @@ final class BallStyleBurnIn: ObservableObject {
         let temp = FileManager.default.temporaryDirectory
         // AVFoundation drops the QuickTime playback-intent key in MP4 files.
         // High-frame-rate replays need MOV to retain that intent in Photos.
-        let highFrameRate = try await videoTrack.load(.nominalFrameRate) > 60
-        let fileType: AVFileType = highFrameRate ? .mov : .mp4
-        let fileExtension = highFrameRate ? "mov" : "mp4"
+        let frameRate = try await videoTrack.load(.nominalFrameRate)
+        let fileType = VideoExportFormat.fileType(fps: frameRate)
+        let fileExtension = VideoExportFormat.fileExtension(fps: frameRate)
         let silentURL = temp.appendingPathComponent("juggledude-render-\(UUID().uuidString).\(fileExtension)")
         let finalURL = temp.appendingPathComponent("juggledude-edited-\(UUID().uuidString).\(fileExtension)")
-        defer { try? FileManager.default.removeItem(at: silentURL) }
+        var finished = false
+        defer {
+            try? FileManager.default.removeItem(at: silentURL)
+            if !finished { try? FileManager.default.removeItem(at: finalURL) }
+        }
         let writer = try AVAssetWriter(outputURL: silentURL, fileType: fileType)
         // Photos may otherwise interpret 120/240 fps exports as slow motion.
         // Keep the original timestamps and explicitly request full-speed playback.
-        let playbackIntent = AVMutableMetadataItem()
-        playbackIntent.identifier = .quickTimeMetadataFullFrameRatePlaybackIntent
-        playbackIntent.dataType = kCMMetadataBaseDataType_UInt8 as String
-        playbackIntent.value = NSNumber(value: 1)
+        let playbackIntent = VideoExportFormat.playbackIntent()
         writer.metadata = [playbackIntent]
         let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
             AVVideoCodecKey: AVVideoCodecType.h264,
@@ -296,6 +287,8 @@ final class BallStyleBurnIn: ObservableObject {
             catch { try? FileManager.default.removeItem(at: finalURL); throw error }
         }
         try FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: finalURL.path)
+        try Task.checkCancellation()
+        finished = true
         await onProgress(1)
         return finalURL
     }

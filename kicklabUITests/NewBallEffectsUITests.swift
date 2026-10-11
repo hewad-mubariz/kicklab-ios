@@ -1,6 +1,6 @@
 import XCTest
 
-final class NewBallEffectsUITests: XCTestCase {
+final class NewBallEffectsUITests: ProReplayUITestCase {
     @MainActor
     func testAllSixEffectsAreSelectableAndBallSelectionSurvives() throws {
         continueAfterFailure = false

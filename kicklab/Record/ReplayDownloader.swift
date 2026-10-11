@@ -77,10 +77,10 @@ final class ReplayDownloader: ObservableObject {
         } catch is CancellationError {
             if case .saved = phase { outcome = .completed; return }
             outcome = .cancelled
-            burnIn.cancel()
+            await burnIn.cancelAndWait()
             phase = .failed("Saving stopped. Tap Download to try again.")
         } catch {
-            burnIn.cancel()
+            await burnIn.cancelAndWait()
             phase = .failed(error.localizedDescription)
         }
     }
@@ -104,6 +104,7 @@ final class ReplayDownloader: ObservableObject {
         } catch {
             throw error
         }
+        try Task.checkCancellation()
         burnIn.export(source: media.url, track: media.track, style: edit.style, intensity: edit.intensity,
                       skin: edit.ballSkin, environment: edit.environment, shortEdge: 1080,
                       counter: ExportCounterTimeline(touches: summary.touchesMarked, total: summary.touches),
@@ -250,6 +251,23 @@ struct ReplaySavedToast: View {
     var failure: String? = nil
 
     var body: some View {
+        Group {
+            if failure == nil {
+                Button {
+                    VideoSaveCompletion.shared.openPhotos()
+                } label: {
+                    toastContent
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("Open Photos")
+            } else {
+                toastContent
+            }
+        }
+        .accessibilityIdentifier("replay-saved-toast")
+    }
+
+    private var toastContent: some View {
         HStack(spacing: 10) {
             if let failure {
                 Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 18)).foregroundStyle(Theme.warn)
@@ -273,11 +291,8 @@ struct ReplaySavedToast: View {
         .padding(.leading, 8).padding(.trailing, 12).padding(.vertical, 8)
         .frame(maxWidth: 300)
         .glassEffect(.regular, in: .capsule)
+        .contentShape(.capsule)
         .accessibilityElement(children: .combine)
-        .accessibilityIdentifier("replay-saved-toast")
-        .onTapGesture { if failure == nil { VideoSaveCompletion.shared.openPhotos() } }
-        .accessibilityAddTraits(failure == nil ? .isButton : [])
-        .accessibilityHint(failure == nil ? "Open Photos" : "")
     }
 }
 
@@ -294,7 +309,7 @@ struct ReplaySharePanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Share your replay").font(.system(size: 17, weight: .semibold))
+                Text("Your replay is ready").font(.system(size: 17, weight: .semibold))
                     .sessionEntrance(appeared, offset: 8)
                 Spacer()
                 Button(action: onClose) {
@@ -304,14 +319,23 @@ struct ReplaySharePanel: View {
                 .accessibilityLabel("Keep editing")
                 .accessibilityIdentifier("replay-share-close")
             }
-            HStack(spacing: 0) {
-                target("Stories", "camera.fill", AnyShapeStyle(LinearGradient(
-                    colors: [Color(red: 0.98, green: 0.75, blue: 0.2), Color(red: 0.93, green: 0.2, blue: 0.45), Color(red: 0.55, green: 0.25, blue: 0.9)],
-                    startPoint: .bottomLeading, endPoint: .topTrailing)), order: 1)
-                target("TikTok", "music.note", AnyShapeStyle(Color(white: 0.07)), order: 2)
-                target("Messages", "message.fill", AnyShapeStyle(Color(red: 0.2, green: 0.78, blue: 0.35)), order: 3)
-                target("More", "ellipsis", AnyShapeStyle(Color.white.opacity(0.12)), order: 4)
+            Button(action: onShare) {
+                Label {
+                    Text("Share video")
+                } icon: {
+                    Image(systemName: "square.and.arrow.up")
+                        .foregroundStyle(SessionStyle.mint)
+                }
+                .font(.system(size: 15, weight: .semibold))
+                .frame(maxWidth: .infinity, minHeight: 48)
+                .background(.white.opacity(0.1), in: .capsule)
+                .overlay { Capsule().strokeBorder(.white.opacity(0.12), lineWidth: 0.7) }
+                .contentShape(.capsule)
             }
+            .buttonStyle(SessionPressStyle())
+            .sessionEntrance(appeared, order: 1, offset: 10)
+            .accessibilityHint("Choose an app or action in the share sheet")
+            .accessibilityIdentifier("replay-share-video")
             if onRecordAnother != nil || onDone != nil {
                 HStack(spacing: 10) {
                     if let onRecordAnother {
@@ -332,7 +356,7 @@ struct ReplaySharePanel: View {
                         .accessibilityIdentifier("replay-done")
                     }
                 }
-                .sessionEntrance(appeared, order: 5, offset: 10)
+                .sessionEntrance(appeared, order: 2, offset: 10)
             }
         }
         .padding(18)
@@ -343,22 +367,7 @@ struct ReplaySharePanel: View {
         .accessibilityIdentifier("replay-share-panel")
     }
 
-    /// Every target opens the system share sheet for now; it lists Instagram and TikTok when installed.
-    private func target(_ title: String, _ symbol: String, _ fill: AnyShapeStyle, order: Int) -> some View {
-        Button(action: onShare) {
-            VStack(spacing: 7) {
-                Image(systemName: symbol).font(.system(size: 21, weight: .semibold)).foregroundStyle(.white)
-                    .frame(width: 54, height: 54)
-                    .background(fill, in: .circle)
-                    .overlay { Circle().strokeBorder(.white.opacity(0.14), lineWidth: 0.6) }
-                Text(title).font(.system(size: 11, weight: .medium)).foregroundStyle(.white.opacity(0.8))
-            }
-            .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(SessionPressStyle(scale: 0.9))
-        .sessionEntrance(appeared, order: order, offset: 14, scale: 0.85)
-        .accessibilityLabel("Share to \(title)")
-    }
+
 }
 
 struct ReplayShareItem: Identifiable {

@@ -4,6 +4,7 @@ import SwiftUI
 /// counter if it was hidden); placement stays with the drag, pinch and twist on the video.
 struct CounterStyleGrid: View {
     @Binding var item: ExportOverlayItem
+    var showsProBadges = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var kicks: [ExportBadgeStyle: Int] = [:]
 
@@ -40,6 +41,9 @@ struct CounterStyleGrid: View {
                                 .font(.system(size: 13)).foregroundStyle(.black, SessionStyle.mint).padding(4)
                                 .transition(.sessionPop(scale: 0.2))
                         }
+                    }
+                    .overlay(alignment: .topLeading) {
+                        if showsProBadges { ProBadge().padding(4) }
                     }
                     .sessionKick(kicks[style, default: 0], amount: 0.08)
                 Text(style.title)

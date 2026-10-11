@@ -1,4 +1,5 @@
 import AVFoundation
+import CryptoKit
 import simd
 import XCTest
 @testable import kicklab
@@ -159,6 +160,29 @@ final class SessionAnalysisTests: XCTestCase {
         task.cancel()
         do { _ = try await task.value;XCTFail("Expected cancellation") } catch is CancellationError { }
         XCTAssertFalse(FileManager.default.fileExists(atPath:root.appendingPathComponent("cancelled.plist").path))
+    }
+
+    func testSourceFingerprintMatchesSHA256AcrossReadBoundaries() throws {
+        let root = try temporary(), source = root.appendingPathComponent("fingerprint.mov")
+        // Empty, exact chunk boundary, and multiple chunks with a short tail.
+        for length in [0, 1_048_576, 2_097_183] {
+            let bytes = Data((0..<length).map { UInt8(truncatingIfNeeded: $0 &* 31) })
+            try bytes.write(to: source)
+            let expected = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
+            XCTAssertEqual(try SessionAnalysisStore.sourceDigest(source), expected)
+        }
+    }
+
+    func testSourceFingerprintHonorsCancellation() async throws {
+        let source = try temporary().appendingPathComponent("cancel.mov")
+        try Data([1, 2, 3]).write(to: source)
+        let task = Task.detached {
+            while !Task.isCancelled { await Task.yield() }
+            return try SessionAnalysisStore.sourceDigest(source)
+        }
+        task.cancel()
+        do { _ = try await task.value; XCTFail("Cancelled fingerprint completed") }
+        catch is CancellationError { }
     }
 
     func testChangedContentAndPipelineCannotReuseAnOldResult() async throws {

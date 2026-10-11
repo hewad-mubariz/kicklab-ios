@@ -1,18 +1,16 @@
 import SwiftUI
-import StoreKit
 
 /// The way into Juggle Dude Pro from Profile; presents the paywall itself.
 struct ProProfileCard: View {
     @Environment(\.colorScheme) private var scheme
     @EnvironmentObject private var subscriptions: SubscriptionStore
     @State private var showsPaywall = false
-    @State private var managing = false
 
     var body: some View {
-        Button {
-            if subscriptions.isPro { managing = true }
-            else { showsPaywall = true }
-        } label: {
+        VStack(spacing: 8) {
+        // Keep Restore reachable even when StoreKit's cached state still says Pro.
+        // Apple billing remains available from the Pro screen's Manage button.
+        Button { showsPaywall = true } label: {
             HStack(spacing: 14) {
                 Text("PRO")
                     .font(ProPass.display(20)).tracking(1)
@@ -23,7 +21,7 @@ struct ProProfileCard: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(subscriptions.isPro ? "Juggle Dude Pro · Active" : "Juggle Dude Pro").font(.body.weight(.semibold))
                         .accessibilityIdentifier("profile-pro-status")
-                    Text(subscriptions.isPro ? "Manage your subscription" : "Extra effects, ball styles and motion overlays")
+                    Text(subscriptions.isPro ? "Manage your subscription" : "Effects, balls, overlays and shot camera tools")
                         .font(.caption).foregroundStyle(TrainingHomeStyle.muted(scheme))
                 }
                 Spacer(minLength: 4)
@@ -38,12 +36,28 @@ struct ProProfileCard: View {
         }
         .buttonStyle(SessionPressStyle(scale: 0.97))
         .accessibilityIdentifier("profile-pro")
-        .manageSubscriptionsSheet(isPresented: $managing)
-        .onChange(of: managing) { _, value in
-            if !value { Task { await subscriptions.refreshEntitlements() } }
-        }
         .fullScreenCover(isPresented: $showsPaywall) {
             ProPaywallView { showsPaywall = false }
+        }
+        if subscriptions.checkingAccountAccess || subscriptions.accountLinkMessage != nil {
+            VStack(spacing: 6) {
+                if let message = subscriptions.accountLinkMessage {
+                    Text(message).font(.caption).foregroundStyle(TrainingHomeStyle.muted(scheme))
+                        .multilineTextAlignment(.center)
+                }
+                // A purchase owned by another existing account cannot be fixed by retrying.
+                if !subscriptions.accountLinkedElsewhere {
+                Button { Task { await subscriptions.retryAccountSync() } } label: {
+                    HStack(spacing: 6) {
+                        if subscriptions.checkingAccountAccess { ProgressView().controlSize(.small) }
+                        Text(subscriptions.checkingAccountAccess ? "Syncing account…" : "Retry account sync")
+                    }.font(.caption.weight(.semibold))
+                }
+                .disabled(subscriptions.checkingAccountAccess)
+                .accessibilityIdentifier("profile-pro-account-sync")
+                }
+            }.padding(.horizontal, 12)
+        }
         }
     }
 }

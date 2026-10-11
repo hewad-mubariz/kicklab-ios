@@ -80,7 +80,7 @@ do $$ begin
 end $$;
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000003', true);
-select public.submit_juggling_session(gen_random_uuid(), 999, 60000, 'recording', now() - interval '1 minute', '1.0', 'v1');
+select public.submit_juggling_session(gen_random_uuid(), 400, 60000, 'recording', now() - interval '1 minute', '1.0', 'v1');
 do $$ begin
   assert (public.juggling_leaderboard()->>'total_players')::int = 2, 'private profile excluded';
 end $$;

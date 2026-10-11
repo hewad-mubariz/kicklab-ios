@@ -1,6 +1,6 @@
 import XCTest
 
-@MainActor final class ShotCameraUITests: XCTestCase {
+@MainActor final class ShotCameraUITests: ProReplayUITestCase {
     private func openCamera(export: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["--session-design", "shot-camera-fixture"]
@@ -41,7 +41,8 @@ import XCTest
             XCTAssertEqual(app.buttons["shot-camera-original"].label, "Show original")
             picture("Camera controls - " + style, app: app)
         }
-        XCTAssertFalse(app.buttons["shot-effects-save"].isEnabled)
+        // Original footage remains exportable when every paid treatment is off.
+        XCTAssertTrue(app.buttons["shot-effects-save"].isEnabled)
     }
     func testFrameSelectionCancelCommitAndSharedContact() {
         let app = openCamera()

@@ -27,7 +27,8 @@ struct HomeView: View {
                                      actionLabel: "Start session", primary: true, action: onJuggling)
                         .accessibilityIdentifier("module-juggling")
                     TrainingHomeCard(image: "home-power-shot", category: "02 / CREATE",
-                                     title: "BALL DISTANCE", subtitle: "Track a ground roll.\nMake it yours with effects.",
+                                     // Ground-distance copy is deferred: "Track a ground roll.\nMake it yours with effects."
+                                     title: "BALL DISTANCE", subtitle: "Record your shot.\nMake it yours with effects.",
                                      actionLabel: "Record + effects", primary: false, action: onPowerShot)
                         .accessibilityIdentifier("module-power-shot")
                 }
@@ -84,9 +85,10 @@ struct HomeView: View {
                 .tracking(1.5)
                 .accessibilityLabel("Juggle Dude")
             Spacer()
-            if let onLeaderboard {
-                HomeLeaderboardButton(action: onLeaderboard, zoom: leaderboardZoom)
-            }
+            // Deferred from the first release; keep the leaderboard entry for later.
+            // if let onLeaderboard {
+            //     HomeLeaderboardButton(action: onLeaderboard, zoom: leaderboardZoom)
+            // }
             HomeProfileButton(action: onProfile, zoom: profileZoom)
         }
     }

@@ -8,6 +8,8 @@ import StoreKit
 /// strongest price, renewal terms beside the button, and Restore, Terms and Privacy links.
 struct ProPaywallView: View {
     let onClose: () -> Void
+    var onUnlocked: (() -> Void)? = nil
+    @State private var deliveredUnlock = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var plan = ProPlan.yearly
@@ -30,7 +32,21 @@ struct ProPaywallView: View {
                         .frame(height: heroHeight(proxy))
                     VStack(spacing: 12) {
                         features
+                        Text("Recording, basic replays and basic export stay free.")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.75))
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("pro-free-features")
                         plans.padding(.top, 2)
+                        if subscriptions.isPro {
+                            Text("To change plans, tap Monthly or Yearly and choose your plan in Apple’s subscription settings.")
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.75))
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .accessibilityIdentifier("pro-change-plan-help")
+                        }
                         purchase.padding(.top, 2)
                         if let error = subscriptions.catalogError, !subscriptions.isPro {
                             VStack(spacing: 4) {
@@ -40,14 +56,23 @@ struct ProPaywallView: View {
                                     .accessibilityIdentifier("pro-retry")
                             }
                         }
-                        Text(subscriptions.isPro ? "Your Pro subscription is active on this Apple Account. Manage your plan or cancel through Apple." : offer?.renewalTerms ?? "Choose a plan once App Store prices have loaded. Payment is confirmed with Apple.")
-                            .font(.caption2)
-                            .foregroundStyle(.white.opacity(0.6))
+                        Text(subscriptions.isPro ? (subscriptions.isAccountOnlyPro
+                            ? "Pro is active through your Juggle Dude account. Manage billing with the Apple Account used to subscribe."
+                            : "Your Pro subscription is active on this Apple Account. Manage your plan or cancel through Apple.") : offer?.renewalTerms ?? "Choose a plan once App Store prices have loaded. Payment is confirmed with Apple.")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.75))
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
                             .padding(.horizontal, 8)
                             .contentTransition(.interpolate)
                             .accessibilityIdentifier("pro-renewal-terms")
+                        if let end = subscriptions.localAccessUntil {
+                            Text("Apple access verified until \(end.formatted(date: .abbreviated, time: .shortened))")
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.75))
+                                .multilineTextAlignment(.center)
+                                .accessibilityIdentifier("pro-access-until")
+                        }
                         links
                     }
                     .padding(.horizontal, 16)
@@ -62,6 +87,9 @@ struct ProPaywallView: View {
             .ignoresSafeArea(edges: [.top, .bottom])
         }
         .background(ProPass.background.ignoresSafeArea())
+        #if DEBUG
+        .safeAreaInset(edge: .bottom, spacing: 0) { SubscriptionDebugEntry() }
+        #endif
         // Always visible and never delayed, so leaving is as easy as buying.
         .overlay(alignment: .topTrailing) { closeButton }
         .foregroundStyle(.white)
@@ -77,6 +105,9 @@ struct ProPaywallView: View {
             await subscriptions.loadProducts()
         }
         .manageSubscriptionsSheet(isPresented: $managing)
+        .onChange(of: subscriptions.isPro) { _, active in
+            if active { deliverUnlock() }
+        }
         .onChange(of: managing) { _, value in
             if !value { Task { await subscriptions.refreshEntitlements() } }
         }
@@ -93,7 +124,7 @@ struct ProPaywallView: View {
     /// and small ones scroll.
     private func heroHeight(_ proxy: GeometryProxy) -> CGFloat {
         let screen = proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
-        return max(400, screen - 388)
+        return max(400, screen - 418)
     }
 
     private var closeButton: some View {
@@ -128,19 +159,27 @@ struct ProPaywallView: View {
     private var plans: some View {
         HStack(spacing: 10) {
             ForEach(ProPlan.allCases) { option in
-                ProPlanCard(plan: option, offer: subscriptions.offer(for: option), selected: option == plan) {
-                    withAnimation(SessionMotion.snap) { plan = option }
+                // An active subscriber's verified plan takes precedence over the
+                // default offer selection. Plan changes happen in Apple's sheet.
+                ProPlanCard(plan: option, offer: subscriptions.offer(for: option),
+                            selected: option == (subscriptions.activePlan ?? plan),
+                            active: option == subscriptions.activePlan) {
+                    if subscriptions.isPro { managing = true }
+                    else { withAnimation(SessionMotion.snap) { plan = option } }
                 }
+                .accessibilityHint(subscriptions.isPro
+                    ? "Opens Apple’s subscription settings to change your plan."
+                    : "Selects this plan for purchase.")
             }
         }
-        .disabled(working || subscriptions.isPro)
+        .disabled(working || !subscriptions.hasCheckedAccess)
         .sessionEntrance(appeared, order: 8, offset: 18)
     }
 
     private var purchase: some View {
         Button(action: buy) {
             ZStack {
-                if working || subscriptions.loading && offer == nil {
+                if working || (!subscriptions.isPro && subscriptions.checkingAccountAccess) || subscriptions.loading && offer == nil {
                     ProgressView().tint(ProPass.ink).transition(.sessionPop(scale: 0.4))
                 } else {
                     Text(subscriptions.isPro ? "Manage Pro subscription" : offer.map { "Get Pro · \($0.price)/\(plan.period)" } ?? "Plans unavailable")
@@ -155,7 +194,7 @@ struct ProPaywallView: View {
             .contentShape(.capsule)
         }
         .buttonStyle(SessionPressStyle(scale: 0.97))
-        .disabled(working || !subscriptions.hasCheckedAccess || (!subscriptions.isPro && offer == nil))
+        .disabled(working || !subscriptions.hasCheckedAccess || (!subscriptions.isPro && (offer == nil || subscriptions.checkingAccountAccess)))
         .sessionEntrance(appeared, order: 9, offset: 18, scale: 0.96)
         .accessibilityIdentifier("pro-purchase")
     }
@@ -205,7 +244,8 @@ struct ProPaywallView: View {
                 switch try await subscriptions.purchase(purchasedPlan, accountID: account.user?.id) {
                 case .purchased:
                     ProductAnalytics.shared.track(.purchaseFinished(purchasedPlan, .completed))
-                    notice = .init(title: "You’re Pro", message: "Your Juggle Dude Pro subscription is active.")
+                    if onUnlocked != nil { deliverUnlock() }
+                    else { close() }
                 case .cancelled:
                     ProductAnalytics.shared.track(.purchaseFinished(purchasedPlan, .cancelled))
                 case .pending:
@@ -223,15 +263,25 @@ struct ProPaywallView: View {
         }
     }
 
+    private func deliverUnlock() {
+        guard subscriptions.isPro, let onUnlocked, !deliveredUnlock else { return }
+        deliveredUnlock = true
+        onUnlocked()
+    }
+
     private func restore() {
         Task {
             do {
                 let restored = try await subscriptions.restore()
+                if restored && onUnlocked != nil { deliverUnlock(); return }
                 notice = .init(title: restored ? "Pro restored" : "No active subscription",
                                message: restored ? "Your Juggle Dude Pro subscription is active." : "No active Pro subscription was found for this Apple Account.")
             } catch {
                 if let storeError = error as? StoreKitError, case .userCancelled = storeError { return }
-                notice = .init(title: "Restore couldn’t complete", message: "Check your connection and Apple Account, then try again.")
+                notice = .init(title: "Restore couldn’t complete", message:
+                    (error as? SubscriptionFailure)?.errorDescription ?? (subscriptions.isPro
+                        ? "Your Pro access is still active. Apple couldn’t refresh your purchase history. You can keep using Pro and try Restore again later."
+                        : "Apple couldn’t refresh your purchase history. Check your connection and the Apple Account used to subscribe, then try again."))
             }
         }
     }
@@ -320,7 +370,7 @@ private struct ProPassHero: View {
                 .sessionEntrance(appeared, order: 1, offset: -10)
             VStack(alignment: .leading, spacing: -14) {
                 Text("MAKE EVERY")
-                Text("TOUCH YOURS")
+                Text("REPLAY YOURS")
             }
             .font(ProPass.display(58))
             .shadow(color: .black.opacity(0.4), radius: 8, y: 2)
@@ -329,7 +379,7 @@ private struct ProPassHero: View {
             .sessionEntrance(appeared, order: 2, offset: -14)
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
-            Text("Juggling feels better\nwith more style.")
+            Text("Effects, overlays and\nshot camera tools.")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.white.opacity(0.85))
                 .padding(.top, 2)
@@ -475,7 +525,9 @@ private struct ProPlanCard: View {
     let plan: ProPlan
     let offer: ProOffer?
     let selected: Bool
+    let active: Bool
     let action: () -> Void
+    private var badge: String? { active ? "Current plan" : offer?.badge }
 
     var body: some View {
         Button(action: action) {
@@ -504,7 +556,7 @@ private struct ProPlanCard: View {
                     .strokeBorder(selected ? ProPass.lime : .white.opacity(0.12), lineWidth: selected ? 2 : 1)
             }
             .overlay(alignment: .topTrailing) {
-                if let badge = offer?.badge {
+                if let badge {
                     Text(badge)
                         .font(.caption2.weight(.heavy))
                         .foregroundStyle(ProPass.ink)
@@ -517,7 +569,7 @@ private struct ProPlanCard: View {
         }
         .buttonStyle(SessionPressStyle(scale: 0.97))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(plan.title), \(offer?.price ?? "Price unavailable") per \(plan.period)\(offer?.badge.map { ", \($0)" } ?? "")")
+        .accessibilityLabel("\(plan.title), \(offer?.price ?? "Price unavailable") per \(plan.period)\(badge.map { ", \($0)" } ?? "")")
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
         .accessibilityIdentifier("pro-plan-\(plan.rawValue)")
     }

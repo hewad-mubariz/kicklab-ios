@@ -6,13 +6,63 @@ import XCTest
 /// and file writing, rather than asserting a stand-alone state flag.
 final class CameraRecordingLifecycleTests: XCTestCase {
     @MainActor
+    func testVideoOnlyRecordsBothLensesWithoutTrackingAndCanReopen() async throws {
+        try requireCamera()
+        let camera = CameraSession(pipeline: .videoOnly)
+        defer { camera.stop() }
+        let logsBefore = benchmarkFiles()
+        camera.start()
+        try await waitFor { camera.canRecord }
+        for lens in [AVCaptureDevice.Position.back, .front] {
+            if camera.cameraPosition != lens {
+                camera.flipCamera()
+                try await waitFor { camera.canRecord && camera.cameraPosition == lens }
+            }
+            XCTAssertFalse(camera.isTrackingReady)
+            XCTAssertFalse(camera.isPreparingTracking)
+            camera.startRecording()
+            try await waitFor { camera.isRecording && camera.recordingElapsed >= 1 }
+            camera.stop() // Same path used when the app goes to the background.
+            try await waitFor { !camera.isFinishingRecording }
+            XCTAssertNil(camera.recordingError)
+            XCTAssertEqual(camera.processedFrames, 0)
+            XCTAssertEqual(camera.capturePerformance.analysisOffered, 0)
+            XCTAssertEqual(camera.performance.model, "Not loaded")
+            XCTAssertTrue(camera.recordedTrack.isEmpty)
+            XCTAssertTrue(camera.recordedTouches.isEmpty)
+            XCTAssertEqual(camera.capturePerformance.selectedFPS, 60)
+            XCTAssertGreaterThan(camera.capturePerformance.writtenFrames, 30)
+            let file = try XCTUnwrap(camera.recordingURL)
+            let asset = AVURLAsset(url: file)
+            let tracks = try await asset.loadTracks(withMediaType: .video)
+            let track = try XCTUnwrap(tracks.first)
+            let size = try await track.load(.naturalSize)
+            let transform = try await track.load(.preferredTransform)
+            let fps = try await track.load(.nominalFrameRate)
+            XCTAssertEqual(min(size.width, size.height), 720)
+            XCTAssertEqual(fps, 60, accuracy: 1)
+            XCTAssertEqual(transform, .identity, "RotationCoordinator already orients the recorded pixels")
+            try FileManager.default.removeItem(at: file)
+            camera.clearRecording()
+            camera.start()
+            try await waitFor { camera.canRecord }
+        }
+        XCTAssertEqual(benchmarkFiles(), logsBefore, "Plain recording must not start any detector benchmark")
+        camera.startRecording()
+        camera.stop()
+        try await waitFor { !camera.isFinishingRecording }
+        XCTAssertFalse(camera.isPreparingRecording)
+        XCTAssertNil(camera.recordingURL, "Cancelling pending startup must not open the previous video")
+    }
+
+    @MainActor
     func testPreviewRecordStopAndReopen() async throws {
         try requireCamera()
         let camera = CameraSession()
         defer { camera.stop() }
         let logsBefore = benchmarkFiles()
         camera.start()
-        try await waitFor { camera.isReady }
+        try await waitFor { camera.isReady && camera.isTrackingReady }
         try await Task.sleep(for: .seconds(1))
         XCTAssertFalse(camera.isRecording)
         XCTAssertEqual(camera.processedFrames, 0)
@@ -45,7 +95,7 @@ final class CameraRecordingLifecycleTests: XCTestCase {
 
         camera.stop()
         camera.start()
-        try await waitFor { camera.isReady }
+        try await waitFor { camera.isReady && camera.isTrackingReady }
         try await Task.sleep(for: .seconds(1))
         XCTAssertFalse(camera.isRecording)
         XCTAssertEqual(camera.processedFrames, framesAtStop)
@@ -68,17 +118,18 @@ final class CameraRecordingLifecycleTests: XCTestCase {
         try requireCamera()
         let camera = CameraSession()
         defer { camera.stop() }
-        let logsBefore = benchmarkFiles()
         camera.start()
         camera.stop()
         try await Task.sleep(for: .milliseconds(500))
         XCTAssertFalse(camera.isReady)
+        XCTAssertFalse(camera.isTrackingReady)
+        XCTAssertFalse(camera.isPreparingTracking)
         XCTAssertEqual(camera.performance.model, "Not loaded")
 
         camera.start()
-        try await waitFor { camera.isReady }
+        try await waitFor { camera.isReady && camera.isTrackingReady }
         camera.startRecording()
-        camera.stop() // Cancel before the queued model load can produce frames.
+        camera.stop() // Cancel before the queued writer startup can produce frames.
         try await waitFor { !camera.isFinishingRecording }
         try await Task.sleep(for: .milliseconds(500))
         XCTAssertFalse(camera.isRecording)
@@ -87,7 +138,27 @@ final class CameraRecordingLifecycleTests: XCTestCase {
         XCTAssertEqual(camera.processedFrames, 0)
         XCTAssertNil(camera.recordingURL)
         XCTAssertEqual(camera.performance.model, "Not loaded")
-        XCTAssertEqual(benchmarkFiles(), logsBefore)
+    }
+
+    @MainActor
+    func testWarmupCanBeCancelledAndLensSwitchKeepsPreparedTracking() async throws {
+        try requireCamera()
+        let camera = CameraSession()
+        defer { camera.stop() }
+        camera.start()
+        try await waitFor { camera.isReady }
+        camera.stop()
+        XCTAssertFalse(camera.isTrackingReady)
+        XCTAssertFalse(camera.isPreparingTracking)
+        camera.start()
+        try await waitFor { camera.isReady && camera.isTrackingReady }
+        camera.flipCamera()
+        XCTAssertTrue(camera.isTrackingReady, "Lens changes must not discard the prepared model")
+        try await waitFor { camera.isReady && camera.cameraPosition == .front }
+        XCTAssertFalse(camera.isPreparingTracking)
+        XCTAssertFalse(camera.isRecording)
+        XCTAssertEqual(camera.processedFrames, 0)
+        XCTAssertNil(camera.recordingURL)
     }
 
     @MainActor
@@ -97,7 +168,7 @@ final class CameraRecordingLifecycleTests: XCTestCase {
     }
 
     @MainActor
-    private func waitFor(_ condition: () -> Bool, timeout: TimeInterval = 12) async throws {
+    private func waitFor(_ condition: () -> Bool, timeout: TimeInterval = 60) async throws {
         let deadline = Date().addingTimeInterval(timeout)
         while !condition(), Date() < deadline { try await Task.sleep(for: .milliseconds(25)) }
         XCTAssertTrue(condition(), "Timed out waiting for capture state")

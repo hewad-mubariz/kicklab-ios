@@ -5,6 +5,19 @@ nonisolated enum BallDistanceMedia {
     /// Save an upright playback copy. Original sensor pixels, camera poses,
     /// calibration photo and distance observations remain together and untouched.
     static func uprightCopy(of recording: ShotRecording) async throws -> URL {
+        let composition = try await playbackComposition(of: recording)
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("BallDistanceReplay", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let output = folder.appendingPathComponent(UUID().uuidString + ".mov")
+        guard let exporter = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetPassthrough) else {
+            throw ShotRecordingStore.StoreError.incomplete
+        }
+        do { try await exporter.export(to: output, as: .mov); try Task.checkCancellation(); return output }
+        catch { try? FileManager.default.removeItem(at: output); throw error }
+    }
+
+    /// Read-only playback on the original recording clock, without exporting another movie.
+    static func playbackComposition(of recording: ShotRecording) async throws -> AVMutableComposition {
         let manifest = try JSONSerialization.jsonObject(with: Data(contentsOf:
             recording.directory.appendingPathComponent("manifest.json"))) as? [String: Any] ?? [:]
         guard let videoHash = manifest["video_sha256"] as? String,
@@ -33,14 +46,7 @@ nonisolated enum BallDistanceMedia {
            let audio = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) {
             try audio.insertTimeRange(range, of: sourceAudio, at: .zero)
         }
-        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("BallDistanceReplay", isDirectory: true)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let output = folder.appendingPathComponent(UUID().uuidString + ".mov")
-        guard let exporter = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetPassthrough) else {
-            throw ShotRecordingStore.StoreError.incomplete
-        }
-        do { try await exporter.export(to: output, as: .mov); try Task.checkCancellation(); return output }
-        catch { try? FileManager.default.removeItem(at: output); throw error }
+        return composition
     }
 
     static func summary(video: URL, duration: Double, frames: [RecordedFrame]) -> SessionSummary {

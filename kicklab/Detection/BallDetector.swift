@@ -147,7 +147,7 @@ nonisolated final class BallDetector {
 
     func prepareBatch(_ frames: [(pixels: CVPixelBuffer, time: Double)]) throws -> [PreparedFrame] {
         let plan=try batchInputs(frames)
-        let batch=try model.predictions(from:MLArrayBatchProvider(array:plan.inputs),options:MLPredictionOptions())
+        let batch=try predictBatch(plan.inputs)
         let finished=ProcessInfo.processInfo.systemUptime
         return try preparedFrames(plan,outputs:(0..<batch.count).map {batch.features(at:$0)},finished:finished)
     }
@@ -156,14 +156,15 @@ nonisolated final class BallDetector {
     /// predictions. Only the immutable model inputs cross prediction tasks.
     func prepareBatchAsync(_ frames: [(pixels: CVPixelBuffer, time: Double)]) async throws -> [PreparedFrame] {
         let plan=try autoreleasepool {try batchInputs(frames)}
-        let model=self.model
-        let outputs=try await withThrowingTaskGroup(of:(Int,MLFeatureProvider).self) { group in
-            for (i,input) in plan.inputs.enumerated() {
-                group.addTask {(i,try await model.prediction(from:input))}
+        let outputs = try await models.performAsync(cpuOnly: { self.requestedModelCPUOnly }) { model in
+            try await withThrowingTaskGroup(of:(Int,MLFeatureProvider).self) { group in
+                for (i,input) in plan.inputs.enumerated() {
+                    group.addTask {(i,try await model.prediction(from:input))}
+                }
+                var values=[(Int,MLFeatureProvider)]()
+                for try await value in group {values.append(value)}
+                return values.sorted {$0.0<$1.0}.map(\.1)
             }
-            var values=[(Int,MLFeatureProvider)]()
-            for try await value in group {values.append(value)}
-            return values.sorted {$0.0<$1.0}.map(\.1)
         }
         return try preparedFrames(plan,outputs:outputs,finished:ProcessInfo.processInfo.systemUptime)
     }
@@ -229,7 +230,26 @@ nonisolated final class BallDetector {
     private(set) var lastTotalMS: Double = 0
     private var contentRect = CGRect(x: 0, y: 0, width: 1, height: 1)
 
-    private let model: MLModel
+    // Video jobs accelerate the model while active and follow their lease when
+    // backgrounded. Camera work without a video lease keeps its original backend.
+    private var requestedModelCPUOnly: Bool {
+        VideoWorkExecution.followsModelLifecycle ? VideoWorkExecution.modelCPUOnly : models.cpuOnly
+    }
+
+    private func predict(_ input: MLFeatureProvider) throws -> MLFeatureProvider {
+        try models.perform(cpuOnly: { self.requestedModelCPUOnly }) { try $0.prediction(from: input) }
+    }
+
+    private func predictBatch(_ inputs: [MLFeatureProvider]) throws -> MLBatchProvider {
+        try models.perform(cpuOnly: { self.requestedModelCPUOnly }) {
+            try $0.predictions(from: MLArrayBatchProvider(array: inputs), options: MLPredictionOptions())
+        }
+    }
+
+    private let models: ModelComputeSwitch<MLModel>
+    var modelUsesCPUOnly: Bool { models.cpuOnly }
+    var modelComputeSwitches: Int { models.switches }
+    var modelReloadSeconds: Double { models.reloadSeconds }
     private let ciContext: CIContext
     private var scratch: CVPixelBuffer?
     let roiEnabled: Bool
@@ -260,9 +280,12 @@ nonisolated final class BallDetector {
             throw NSError(domain: "KickLab", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "\(resource) not in bundle"])
         }
-        let configuration = MLModelConfiguration()
-        configuration.computeUnits = VideoWorkExecution.cpuOnly ? .cpuOnly : .all
-        self.model = try MLModel(contentsOf: url, configuration: configuration)
+        self.models = try ModelComputeSwitch(cpuOnly: VideoWorkExecution.modelCPUOnly) { cpuOnly in
+            let configuration = MLModelConfiguration()
+            configuration.computeUnits = cpuOnly ? .cpuOnly : .all
+            return try MLModel(contentsOf: url, configuration: configuration)
+        }
+        let model = models.current
         guard let shape = model.modelDescription.inputDescriptionsByName["image"]?.multiArrayConstraint?.shape,
               shape.count == 4, shape[0].intValue == 1, shape[1].intValue == 3,
               shape[2].intValue > 0, shape[3].intValue > 0 else {
@@ -312,6 +335,17 @@ nonisolated final class BallDetector {
             activeBallThreshold = Self.ballThreshold(for: resource)
         }
 
+    }
+
+    /// Pay Core ML's first-prediction cost before recording. Only immutable model
+    /// prediction and reusable preprocessing buffers are warmed: no detection,
+    /// retry, tracking or counting state ever observes this synthetic image.
+    func warmUp() throws {
+        try autoreleasepool {
+            let image = CIImage(color: .black).cropped(to: CGRect(x: 0, y: 0, width: 720, height: 1280))
+            let input = try makeInput(from: image)
+            _ = try predict(input)
+        }
     }
 
     func detect(_ pixelBuffer: CVPixelBuffer, orientLandscapeAsPortrait: Bool = true,
@@ -364,7 +398,7 @@ nonisolated final class BallDetector {
                 input = try makeInput(from: image)
                 let prepared = ProcessInfo.processInfo.systemUptime
                 lastPreprocessMS = (prepared - start) * 1000
-                out = try model.prediction(from: input)
+                out = try predict(input)
                 lastInferenceMS = (ProcessInfo.processInfo.systemUptime - prepared) * 1000
             }
         } catch {
@@ -481,7 +515,7 @@ nonisolated final class BallDetector {
             let began = ProcessInfo.processInfo.systemUptime
             let input = try makeInput(from: crop)
             let prepared = ProcessInfo.processInfo.systemUptime
-            let output = try model.prediction(from: input)
+            let output = try predict(input)
             lastPreprocessMS += (prepared-began)*1000
             lastInferenceMS += (ProcessInfo.processInfo.systemUptime-prepared)*1000
             let result = try Self.decodedValues(output, width: inputWidth, height: inputHeight, clipTo: contentRect)
@@ -518,7 +552,7 @@ nonisolated final class BallDetector {
             let began = ProcessInfo.processInfo.systemUptime
             let input = try makeInput(from: crop)
             let prepared = ProcessInfo.processInfo.systemUptime
-            let output = try model.prediction(from: input)
+            let output = try predict(input)
             lastPreprocessMS += (prepared-began)*1000
             lastInferenceMS += (ProcessInfo.processInfo.systemUptime-prepared)*1000
             let result = try Self.decodedValues(output, width: inputWidth, height: inputHeight,
@@ -568,7 +602,7 @@ nonisolated final class BallDetector {
                 let patch=image.cropped(to:crop).transformed(by:CGAffineTransform(translationX:-crop.minX,y:-crop.minY))
                 let start=ProcessInfo.processInfo.systemUptime
                 let input=try self.makeInput(from:patch), prepared=ProcessInfo.processInfo.systemUptime
-                let output=try self.model.prediction(from:input)
+                let output=try self.predict(input)
                 self.lastPreprocessMS += (prepared-start)*1000
                 self.lastInferenceMS += (ProcessInfo.processInfo.systemUptime-prepared)*1000
                 let content=self.contentRect
@@ -887,11 +921,15 @@ nonisolated extension BallDetector {
         memcpy(copy.dataPointer,source.dataPointer,source.count*MemoryLayout<Float>.size)
         return try MLDictionaryFeatureProvider(dictionary:["image":MLFeatureValue(multiArray:copy)])
     }
-    func reviewSerial(_ input:MLFeatureProvider) throws -> MLFeatureProvider {try model.prediction(from:input)}
+    func reviewSerial(_ input:MLFeatureProvider) throws -> MLFeatureProvider {try predict(input)}
     func reviewBatch(_ inputs:[MLFeatureProvider]) throws -> MLBatchProvider {
-        try model.predictions(from:MLArrayBatchProvider(array:inputs),options:MLPredictionOptions())
+        try predictBatch(inputs)
     }
-    func reviewAsync(_ input:MLFeatureProvider) async throws -> MLFeatureProvider {try await model.prediction(from:input)}
+    func reviewAsync(_ input:MLFeatureProvider) async throws -> MLFeatureProvider {
+        try await models.performAsync(cpuOnly: { self.requestedModelCPUOnly }) {
+            try await $0.prediction(from: input)
+        }
+    }
 }
 #endif
 
@@ -906,7 +944,7 @@ nonisolated extension BallDetector {
         let image = orientedImage(pixels, portrait: false, orientation: nil)
         let rect = CGRect(x: roi.minX, y: image.extent.height-roi.maxY, width: roi.width, height: roi.height)
         let patch = image.cropped(to: rect).transformed(by: CGAffineTransform(translationX: -rect.minX, y: -rect.minY))
-        let output = try model.prediction(from: makeInput(from: patch))
+        let output = try predict(makeInput(from: patch))
         let result = try Self.decodedValues(output, width: inputWidth, height: inputHeight, clipTo: contentRect)
         let score = Double(result[0])
         guard score.isFinite, score > 0 else { return FrameDetections(ball:nil, person:nil) }

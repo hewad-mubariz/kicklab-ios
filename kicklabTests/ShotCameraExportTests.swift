@@ -109,6 +109,38 @@ final class ShotCameraExportTests: XCTestCase {
         return sqrt(squares / Double(max(1, count)))
     }
 
+    func testHighFrameRateExportPreservesDurationCadenceAndPhotosIntent() async throws {
+        let folder = URL.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        for fps in [120, 240] {
+            let source = folder.appendingPathComponent("source-\(fps).mp4")
+            let movie = try PreviewMovie(url: source, size: CGSize(width: 64, height: 64), frameRate: Double(fps))
+            for index in 0..<24 {
+                try await movie.append(movie.buffer(), time: CMTime(value: Int64(index), timescale: Int32(fps)))
+            }
+            let duration = CMTime(value: 24, timescale: Int32(fps))
+            try await movie.finish(duration: duration)
+            let lease = VideoWorkLease(allowed: true, cpuOnly: true, backgroundGPU: false)
+            let exported = try await VideoWorkExecution.$lease.withValue(lease) {
+                try await ShotEffectExporter.render(source: source, track: BallEffectTrack(frames: []), style: .none) { _ in }
+            }
+            defer { try? FileManager.default.removeItem(at: exported) }
+            XCTAssertEqual(exported.pathExtension, "mov")
+            let asset = AVURLAsset(url: exported)
+            let actualDuration = try await asset.load(.duration).seconds
+            XCTAssertEqual(actualDuration, duration.seconds, accuracy: 0.002)
+            let videos = try await asset.loadTracks(withMediaType: .video)
+            let video = try XCTUnwrap(videos.first)
+            let actualFPS = try await video.load(.nominalFrameRate)
+            XCTAssertEqual(actualFPS, Float(fps), accuracy: 1)
+            let metadata = try await asset.load(.metadata)
+            let intent = try XCTUnwrap(metadata.first { $0.identifier == .quickTimeMetadataFullFrameRatePlaybackIntent })
+            let value = try await intent.load(.numberValue)
+            XCTAssertEqual(value, 1)
+        }
+    }
+
     func testRetimedExportsKeepSoundAndFreezeTheRequestedSourceFrame() async throws {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)

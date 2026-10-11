@@ -11,9 +11,11 @@ struct kicklabApp: App {
     @UIApplicationDelegateAdaptor(VideoSaveAppDelegate.self) private var appDelegate
     @StateObject private var account: AccountStore
     @StateObject private var player: PlayerStore
-    @StateObject private var subscriptions = SubscriptionStore()
+    @StateObject private var subscriptions: SubscriptionStore
+    @StateObject private var videoWork = VideoBackgroundWork.shared
     @Environment(\.scenePhase) private var scenePhase
     init() {
+        Task.detached(priority: .utility) { try? VideoSafetyPolicy.cleanExpiredExports() }
         #if DEBUG
         let account = ProfileEditorReview.requested ? ProfileEditorReview.account() :
             (AccountDeletionReview.requested ? AccountDeletionReview.account() :
@@ -22,6 +24,7 @@ struct kicklabApp: App {
         let account = AccountStore.live()
         #endif
         _account = StateObject(wrappedValue: account)
+        _subscriptions = StateObject(wrappedValue: SubscriptionStore.live(account: account))
         #if DEBUG
         _player = StateObject(wrappedValue: ProfileEditorReview.requested ? ProfileEditorReview.player() :
             (AccountDeletionReview.requested ? AccountDeletionReview.player() : PlayerStore.live(account: account)))
@@ -40,15 +43,12 @@ struct kicklabApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
+            #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("--ball-distance-design") {
                 BallDistanceView()
             } else if ProcessInfo.processInfo.arguments.contains("--shot-geometry-capture") {
                 ShotGeometryCaptureView()
-            } else if DetectorPhoneBenchmark.requested ||
-                ProcessInfo.processInfo.arguments.contains("--detector-review") {
-                RecordView()
             } else {
-            #if DEBUG
             if SessionDesignReview.argument("--background-video-review") != nil {
                 BackgroundVideoReview()
             } else if let path = SessionDesignReview.argument("--thermal-review") {
@@ -60,14 +60,19 @@ struct kicklabApp: App {
             } else {
                 ContentView()
             }
+            }
             #else
             ContentView()
             #endif
             }
-            }
             .environmentObject(account)
             .environmentObject(player)
             .environmentObject(subscriptions)
+            .alert("Video task interrupted", isPresented: Binding(
+                get: { videoWork.interruptedMessage != nil },
+                set: { if !$0 { videoWork.interruptedMessage = nil } })) {
+                Button("OK") { videoWork.interruptedMessage = nil }
+            } message: { Text(videoWork.interruptedMessage ?? "") }
             .task {
                 await subscriptions.refreshEntitlements()
                 #if DEBUG
@@ -97,6 +102,7 @@ struct kicklabApp: App {
                 #endif
             }
             .task(id: account.user?.id) { await player.useAccount(account.user) }
+            .task(id: account.user?.id) { await subscriptions.useAccount(account.user?.id) }
             .task {
                 #if DEBUG
                 await ProfileEditorReview.refreshWhileReviewing(player)

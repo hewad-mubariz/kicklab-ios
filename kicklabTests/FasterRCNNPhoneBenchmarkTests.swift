@@ -31,11 +31,11 @@ final class FasterRCNNPhoneBenchmarkTests: XCTestCase {
         try save()
         camera.start()
         let readyDeadline = Date().addingTimeInterval(10)
-        while !camera.isReady, Date() < readyDeadline {
+        while !(camera.isReady && camera.isTrackingReady), Date() < readyDeadline {
             try await Task.sleep(for: .milliseconds(50))
         }
         XCTAssertTrue(camera.isReady)
-        guard camera.isReady else { return }
+        guard camera.isReady && camera.isTrackingReady else { return }
         report["preview_memory_mib"] = DetectorPerformance.memoryMB()
         XCTAssertEqual(camera.processedFrames, 0)
         camera.startRecording()

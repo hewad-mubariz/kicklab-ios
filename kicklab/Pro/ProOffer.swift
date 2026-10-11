@@ -58,9 +58,9 @@ nonisolated enum ProFeature: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .effects: "Extra effects"
+        case .effects: "All effects"
         case .balls: "Ball styles"
-        case .motion: "Motion overlays"
+        case .motion: "Graphs & counters"
         }
     }
 }

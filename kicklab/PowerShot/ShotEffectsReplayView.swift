@@ -16,13 +16,40 @@ struct ShotEffectsReplayView: View {
     private var pinnedGraph: ShotGraphStyle?
     let onClose: () -> Void
 
+    @EnvironmentObject private var subscriptions: SubscriptionStore
+    @State private var look: ShotReplayLook
+    private enum ProRequest {
+        case tool(ShotTool)
+        case look(ShotReplayLook)
+    }
+    @State private var pendingProRequest: ProRequest?
+    @State private var showsProPaywall = false
+    private var committedLook: ShotReplayLook { look.allowed(isPro: subscriptions.isPro) }
+    private var displayedLook: ShotReplayLook { committedLook }
+
+    private var style: ShotTrailStyle {
+        get { displayedLook.style }
+        nonmutating set { changeLook { $0.style = newValue } }
+    }
+    private var intensity: Double {
+        get { displayedLook.intensity }
+        nonmutating set { changeLook { $0.intensity = newValue } }
+    }
+    private var graphStyle: ShotGraphStyle {
+        get { displayedLook.graphStyle }
+        nonmutating set { changeLook { $0.graphStyle = newValue } }
+    }
+    private var showGraph: Bool {
+        get { displayedLook.showGraph }
+        nonmutating set { changeLook { $0.showGraph = newValue } }
+    }
+    private var camera: ShotCameraSettings {
+        get { displayedLook.camera }
+        nonmutating set { changeLook { $0.camera = newValue } }
+    }
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var glass
-    @State private var style: ShotTrailStyle
-    @State private var intensity = 1.0
-    @State private var graphStyle = ShotGraphStyle.comet
-    @State private var showGraph = true
-    @State private var camera = ShotCameraSettings()
     @State private var showOriginal = false
     @State private var replayClock = ShotReplayClock()
     @State private var preparingCamera = false
@@ -43,6 +70,7 @@ struct ShotEffectsReplayView: View {
     @State private var processing: Bool
     @State private var progress = 0.02
     @State private var step = 0
+    @State private var processingInfo: VideoProcessingInfo?
 
     // Editor
     @State private var shown = false
@@ -74,7 +102,6 @@ struct ShotEffectsReplayView: View {
     @State private var thumbnail: CGImage?
     @State private var toast: ShotToast?
     @State private var showSharePanel = false
-    @State private var showSaveConfirmation = false
     @State private var shareItem: ReplayShareItem?
     @State private var exportTask: Task<Void, Never>?
 
@@ -89,23 +116,22 @@ struct ShotEffectsReplayView: View {
     private var strike: Double { camera.strikeTime(track: track ?? BallEffectTrack(frames: []), flight: flight) }
     private var showingSource: Bool { showOriginal || pickingFrame || spatialEdit?.showsSource == true }
     private var canSave: Bool {
-        !showOriginal && !pickingFrame && spatialEdit == nil && !preparingCamera && source != nil &&
-        ((hasBallTrack && style != .none) || (camera.style.changesExport && (!camera.style.needsBall || hasBallTrack || camera.hasManualTarget)))
+        !showOriginal && !pickingFrame && spatialEdit == nil && !preparingCamera && source != nil
     }
 
-    init(video: URL, style: ShotTrailStyle = .limeRibbon, trackCache: URL? = nil,
+    init(video: URL, style: ShotTrailStyle = .glowTrail, trackCache: URL? = nil,
          holdAt: Double? = nil, graph: ShotGraphStyle? = nil, onClose: @escaping () -> Void) {
         self.init(style: style, trackCache: trackCache, holdAt: holdAt, graph: graph, onClose: onClose) { (video, nil) }
     }
 
-    init(style: ShotTrailStyle = .limeRibbon, trackCache: URL? = nil, holdAt: Double? = nil, graph: ShotGraphStyle? = nil,
+    init(style: ShotTrailStyle = .glowTrail, trackCache: URL? = nil, holdAt: Double? = nil, graph: ShotGraphStyle? = nil,
          onClose: @escaping () -> Void, prepare: @escaping @MainActor () async throws -> (URL, BallDistanceTimeline?)) {
         self.prepare = prepare
         pinnedGraph = graph
         self.trackCache = trackCache
         self.holdAt = holdAt
         self.onClose = onClose
-        _style = State(initialValue: style)
+        _look = State(initialValue: ShotReplayLook(style: style))
         let cached = trackCache.map { FileManager.default.fileExists(atPath: $0.path) } ?? false
         _processing = State(initialValue: !cached)
     }
@@ -115,14 +141,14 @@ struct ShotEffectsReplayView: View {
             Color.black.ignoresSafeArea()
             if !processing { editor.transition(.opacity) }
             if processing {
-                ProcessingOverlay(progress: progress, stepIndex: step, onCancel: onClose, labels: .powerShot)
+                ProcessingOverlay(progress: progress, stepIndex: step, onCancel: onClose, labels: .powerShot,
+                                  videoInfo: processingInfo)
                     .transition(.opacity)
             }
         }
         .foregroundStyle(.white).preferredColorScheme(.dark)
         .task { await load() }
         .onDisappear { tearDown() }
-        .videoSavedConfirmation(isPresented: $showSaveConfirmation)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("shot-effects")
     }
@@ -143,13 +169,14 @@ struct ShotEffectsReplayView: View {
                 GlassEffectContainer(spacing: 8) {
                     VStack(spacing: 0) {
                         if showToolbox {
-                            ShotToolbox(style: $style, intensity: $intensity, graphStyle: $graphStyle, showGraph: $showGraph,
-                                        camera: $camera, original: $showOriginal,
+                            ShotToolbox(style: lookBinding(\.style), intensity: lookBinding(\.intensity), graphStyle: lookBinding(\.graphStyle), showGraph: lookBinding(\.showGraph),
+                                        camera: lookBinding(\.camera), original: $showOriginal,
                                         flight: flight, distance: distance, time: currentTime, isPlaying: isPlaying, onTogglePlayback: togglePlay,
                                         hasBallTrack: hasBallTrack, source: source, strike: strike, frames: sourceFrames,
                                         spatialEdit: $spatialEdit, reviewFrames: $reviewFrames,
                                         onPicking: { pickingFrame = $0; pause() }, onSeek: { pause(); seek(to: $0) },
-                                        page: $toolPage, onClose: { showToolbox = false })
+                                        page: $toolPage, onClose: { showToolbox = false },
+                                        isPro: subscriptions.isPro, onUnlockTool: { requestPro(.tool($0)) })
                                 .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
                                     withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { panelTop = top }
                                 }
@@ -160,7 +187,7 @@ struct ShotEffectsReplayView: View {
                                 .padding(.horizontal, 16).padding(.bottom, 10)
                                 .transition(.sessionRise)
                         } else {
-                            if let distance {
+                            if subscriptions.isPro, let distance {
                                 let reading = distance.state(at: currentTime)
                                 BallDistanceReadout(value: reading.valueLabel, detail: reading.status.label,
                                     paused: reading.status == .paused || reading.status == .needsSetup, compact: true)
@@ -175,11 +202,13 @@ struct ShotEffectsReplayView: View {
                                     .padding(.horizontal, 24).padding(.bottom, 12)
                                     .accessibilityIdentifier("shot-effects-problem")
                             }
-                            ShotFlightPanel(style: graphStyle, flight: flight, time: currentTime, showGraph: showGraph,
-                                            palette: style.palette, distance: distance)
-                                .padding(.horizontal, 24).padding(.bottom, 10).allowsHitTesting(false)
-                                .sessionEntrance(shown, order: 2)
-                                .transition(.sessionRise)
+                            if subscriptions.isPro {
+                                ShotFlightPanel(style: graphStyle, flight: flight, time: currentTime, showGraph: showGraph,
+                                                palette: style.palette, distance: distance)
+                                    .padding(.horizontal, 24).padding(.bottom, 10).allowsHitTesting(false)
+                                    .sessionEntrance(shown, order: 2)
+                                    .transition(.sessionRise)
+                            }
                             playbackBar.padding(.horizontal, 24).padding(.bottom, 14)
                                 .sessionEntrance(shown, order: 3)
                                 .transition(.sessionRise)
@@ -225,6 +254,19 @@ struct ShotEffectsReplayView: View {
                 if edit == .impact || edit == .lensArea { seek(to: sourceFrames.nearest(strike)) }
                 if edit == .lensPosition { seek(to: camera.ranges[.lens]?.start ?? strike) }
             }
+        }
+        .onChange(of: subscriptions.isPro) { _, active in
+            if !active {
+                pendingProRequest = nil; showOriginal = false; spatialEdit = nil; pickingFrame = false
+                if toolPage != .effects { toolPage = nil }
+            }
+            saveOutdated()
+        }
+        .sheet(isPresented: $showsProPaywall, onDismiss: finishPaywall) {
+            ProPaywallView(onClose: { showsProPaywall = false }, onUnlocked: {
+                showsProPaywall = false
+            })
+            .presentationDetents([.large])
         }
         .sheet(item: $shareItem) { item in
             ReplayShareSheet(url: item.url).presentationDetents([.medium, .large])
@@ -364,7 +406,8 @@ struct ShotEffectsReplayView: View {
             Spacer(minLength: 0)
             roundButton("arrow.uturn.backward", label: "Reset edits") {
                 withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
-                    style = .limeRibbon; intensity = 1; graphStyle = distance == nil ? .comet : .tape; showGraph = true
+                    look = ShotReplayLook(style: .glowTrail, graphStyle: distance == nil ? .comet : .tape)
+                        .allowed(isPro: subscriptions.isPro)
                     camera = .init(); showOriginal = false
                 }
             }
@@ -380,6 +423,37 @@ struct ShotEffectsReplayView: View {
                 .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: symbol)
         }
         .buttonStyle(.glass).buttonBorderShape(.circle).controlSize(.regular).accessibilityLabel(label)
+    }
+
+    private func changeLook(_ change: (inout ShotReplayLook) -> Void) {
+        var next = committedLook
+        change(&next)
+        guard subscriptions.isPro || !next.requiresPro else {
+            requestPro(.look(next))
+            return
+        }
+        look = next
+    }
+
+    private func lookBinding<Value>(_ keyPath: WritableKeyPath<ShotReplayLook, Value>) -> Binding<Value> {
+        Binding(get: { displayedLook[keyPath: keyPath] }, set: { value in
+            changeLook { $0[keyPath: keyPath] = value }
+        })
+    }
+
+    private func requestPro(_ request: ProRequest) {
+        pendingProRequest = request
+        pause()
+        showsProPaywall = true
+    }
+
+    private func finishPaywall() {
+        defer { pendingProRequest = nil }
+        guard subscriptions.isPro, let pendingProRequest else { return }
+        switch pendingProRequest {
+        case .tool(let tool): toolPage = tool
+        case .look(let requestedLook): look = requestedLook
+        }
     }
 
     // MARK: - Loading
@@ -420,6 +494,8 @@ struct ShotEffectsReplayView: View {
             let item = AVPlayerItem(asset: asset)
             if let videoTrack = try await asset.loadTracks(withMediaType: .video).first {
                 let natural = try await videoTrack.load(.naturalSize)
+                let fps = (try? await videoTrack.load(.nominalFrameRate)) ?? 0
+                processingInfo = VideoProcessingInfo(size: natural, fps: Double(fps), duration: length.seconds)
                 let transform = try await videoTrack.load(.preferredTransform)
                 sourceSize = EffectVideoGeometry.displaySize(naturalSize: natural, transform: transform)
                 item.videoComposition = try await EffectVideoGeometry.composition(track: videoTrack, duration: length, shortEdge: 1080)
@@ -469,15 +545,27 @@ struct ShotEffectsReplayView: View {
     /// The last checkpoint celebrates, then the editor takes over in place, as after juggling.
     private func finishProcessing() async {
         let start = holdAt ?? flight?.end ?? 0
-        if let player, player.currentItem?.status != .readyToPlay {
-            while player.currentItem?.status == .unknown { try? await Task.sleep(for: .milliseconds(40)) }
+        do {
+            try await MediaReadiness.wait {
+                guard let item = player?.currentItem else { throw MediaReadiness.Failure.unavailable }
+                if item.status == .failed { throw item.error ?? MediaReadiness.Failure.unavailable }
+                return item.status == .readyToPlay
+            }
+        } catch is CancellationError { return }
+        catch {
+            trackingProblem = error.localizedDescription
+            processing = false; shown = true
+            return
         }
+        guard !Task.isCancelled else { return }
         // Open on the end of the flight, with the whole trail in the air.
         currentTime = min(duration, max(0, start))
         await player?.seek(to: CMTime(seconds: currentTime, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        guard !Task.isCancelled else { return }
         if processing {
             progress = 1; step = 4
-            try? await Task.sleep(for: .milliseconds(reduceMotion ? 300 : 1200))
+            do { try await Task.sleep(for: .milliseconds(reduceMotion ? 300 : 1200)) }
+            catch { return }
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) { processing = false }
@@ -597,9 +685,9 @@ struct ShotEffectsReplayView: View {
     }
     private func zoomBinding(for edit: ShotCameraSpatialEdit) -> Binding<Double> {
         switch edit {
-        case .follow: return camera.style == .split ? $camera.splitZoom : $camera.followZoom
-        case .impact: return $camera.impactZoom
-        case .lensArea, .lensPosition: return $camera.lensZoom
+        case .follow: return camera.style == .split ? lookBinding(\.camera.splitZoom) : lookBinding(\.camera.followZoom)
+        case .impact: return lookBinding(\.camera.impactZoom)
+        case .lensArea, .lensPosition: return lookBinding(\.camera.lensZoom)
         }
     }
 
@@ -657,6 +745,9 @@ struct ShotEffectsReplayView: View {
     // MARK: - Saving
 
     private func download() {
+        guard !save.isBusy else { return }
+        // Resolve again at export, including after expiration or a restored editor state.
+        let exportLook = committedLook
         switch save {
         case .preparing, .exporting, .saving:
             return
@@ -669,7 +760,7 @@ struct ShotEffectsReplayView: View {
             pause()
             showToolbox = false; showSharePanel = false; toast = nil
             save = .preparing; saveProgress = 0
-            let look = style, strength = intensity, timeline = distance, cameraLook = camera, flightLook = flight
+            let look = exportLook.style, strength = exportLook.intensity, timeline = subscriptions.isPro ? distance : nil, cameraLook = exportLook.camera, flightLook = flight
             let exportClock = ShotReplayClock(settings: cameraLook, track: track, flight: flightLook, duration: duration)
             let jobID = UUID()
             exportID = jobID
@@ -715,7 +806,7 @@ struct ShotEffectsReplayView: View {
                             let name = cameraLook.style == .none ? look.rawValue : cameraLook.style.rawValue + "-" + look.rawValue
                             let directory = SessionDesignReview.fileURL(exportFolder)
                             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-                            let target = directory.appendingPathComponent(name + ".mp4")
+                            let target = directory.appendingPathComponent(name + "." + url.pathExtension)
                             try? FileManager.default.removeItem(at: target)
                             try FileManager.default.copyItem(at: url, to: target)
                         } else { try await ShotEffectExporter.saveToPhotos(url) }
@@ -728,7 +819,6 @@ struct ShotEffectsReplayView: View {
                             savedLook = SavedLook(trail: look, intensity: strength, camera: cameraLook)
                             savedDuration = exportClock.outputDuration
                             save = .saved
-                            showSaveConfirmation = exportFolder == nil && UIApplication.shared.applicationState == .active
                             show(.saved)
                             showSharePanel = true
                         }

@@ -19,13 +19,17 @@ nonisolated enum ShotEffectExporter {
                        distance: BallDistanceTimeline? = nil, camera: ShotCameraSettings = .init(),
                        flight: ShotFlight? = nil, progress: @escaping @Sendable (Double) -> Void) async throws -> URL {
         let sourceDuration = try await AVURLAsset(url: source).load(.duration).seconds
+        try VideoSafetyPolicy.requireExportSpace(duration: sourceDuration)
         let clock = ShotReplayClock(settings: camera, track: track, flight: flight, duration: sourceDuration)
         let asset = try await clock.asset(source: source)
         guard let video = try await asset.loadTracks(withMediaType: .video).first else { throw Failure.noVideo }
         let duration = try await asset.load(.duration)
+        try VideoSafetyPolicy.requireExportSpace(duration: duration.seconds)
         let composition = try await EffectVideoGeometry.composition(track: video, duration: duration, shortEdge: 1080)
         let size = composition.renderSize
-        let output = URL.temporaryDirectory.appendingPathComponent("power-shot-\(UUID().uuidString).mp4")
+        let frameRate = try await video.load(.nominalFrameRate)
+        let fileType = VideoExportFormat.fileType(fps: frameRate)
+        let output = URL.temporaryDirectory.appendingPathComponent("power-shot-\(UUID().uuidString).\(VideoExportFormat.fileExtension(fps: frameRate))")
 
         let reader = try AVAssetReader(asset: asset)
         let frames = AVAssetReaderVideoCompositionOutput(videoTracks: [video], videoSettings: [
@@ -35,11 +39,12 @@ nonisolated enum ShotEffectExporter {
         ])
         frames.videoComposition = composition
         frames.alwaysCopiesSampleData = false
+        guard reader.canAdd(frames) else { throw Failure.writer("Cannot decode this video.") }
         reader.add(frames)
         // Sound gets its own reader: two outputs of one reader can block each other.
         let audioTrack = try await asset.loadTracks(withMediaType: .audio).first
         let soundReader = audioTrack == nil ? nil : try AVAssetReader(asset: asset)
-        var sound: AVAssetReaderOutput? = audioTrack.map { audio in
+        let sound: AVAssetReaderOutput? = audioTrack.map { audio in
             if clock.isOriginal { return AVAssetReaderTrackOutput(track: audio, outputSettings: nil) }
             let output = AVAssetReaderAudioMixOutput(audioTracks: [audio], audioSettings: [
                 AVFormatIDKey: kAudioFormatLinearPCM, AVSampleRateKey: 44_100, AVNumberOfChannelsKey: 2,
@@ -48,9 +53,13 @@ nonisolated enum ShotEffectExporter {
             output.audioTimePitchAlgorithm = .spectral
             return output
         }
-        if let sound, let soundReader, soundReader.canAdd(sound) { soundReader.add(sound) } else { sound = nil }
+        if let sound, let soundReader {
+            guard soundReader.canAdd(sound) else { throw Failure.writer("Cannot decode the source audio.") }
+            soundReader.add(sound)
+        }
 
-        let writer = try AVAssetWriter(outputURL: output, fileType: .mp4)
+        let writer = try AVAssetWriter(outputURL: output, fileType: fileType)
+        writer.metadata = [VideoExportFormat.playbackIntent()]
         var finished = false
         defer {
             if !finished {
@@ -69,15 +78,27 @@ nonisolated enum ShotEffectExporter {
                                         AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2]
         ])
         picture.expectsMediaDataInRealTime = false
+        // 600 ticks cannot represent every 240 fps timestamp. Match juggling's
+        // time scale so encoding does not round frame duration/cadence.
+        picture.mediaTimeScale = 60_000
+        guard writer.canAdd(picture) else { throw Failure.writer("Cannot encode this video.") }
         writer.add(picture)
         let format = try await audioTrack?.load(.formatDescriptions).first
         let audioSettings: [String: Any]? = clock.isOriginal ? nil : [
             AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: 44_100, AVNumberOfChannelsKey: 2, AVEncoderBitRateKey: 128_000
         ]
-        var audioInput = sound == nil ? nil : AVAssetWriterInput(mediaType: .audio, outputSettings: audioSettings,
+        let audioInput = sound == nil ? nil : AVAssetWriterInput(mediaType: .audio, outputSettings: audioSettings,
                                                                sourceFormatHint: clock.isOriginal ? format : nil)
-        if let input = audioInput, writer.canAdd(input) { writer.add(input) } else { audioInput = nil }
-        if audioInput == nil || soundReader?.startReading() != true { audioInput = nil; sound = nil }
+        if let input = audioInput {
+            guard writer.canAdd(input) else { throw Failure.writer("Cannot preserve this audio format.") }
+            writer.add(input)
+            guard soundReader?.startReading() == true else {
+                throw Failure.writer("The source audio could not be opened.")
+            }
+        }
+        let audioRange = try await audioTrack?.load(.timeRange)
+        var audioEnd: Double?
+        var videoFrames = 0
 
         guard reader.startReading() else { throw Failure.writer(reader.error?.localizedDescription ?? "") }
         guard writer.startWriting() else { throw Failure.writer(writer.error?.localizedDescription ?? "") }
@@ -99,9 +120,16 @@ nonisolated enum ShotEffectExporter {
                     try await Task.sleep(for: .milliseconds(4))
                 }
                 guard audioInput.append(next) else { throw Failure.writer(writer.error?.localizedDescription ?? "Couldn’t save the sound.") }
+                let end = CMSampleBufferGetPresentationTimeStamp(next).seconds + CMSampleBufferGetDuration(next).seconds
+                if end.isFinite { audioEnd = max(audioEnd ?? end, end) }
                 pendingSound = sound?.copyNextSampleBuffer()
             }
-            if pendingSound == nil { audioInput.markAsFinished(); soundFinished = true }
+            if pendingSound == nil {
+                guard soundReader?.status == .completed else {
+                    throw Failure.writer("Audio decoding stopped before it finished.")
+                }
+                audioInput.markAsFinished(); soundFinished = true
+            }
         }
         while true {
             try await VideoWorkExecution.checkpoint(requiresGPU: engine != nil)
@@ -124,6 +152,7 @@ nonisolated enum ShotEffectExporter {
                 try await Task.sleep(for: .milliseconds(4))
             }
             guard picture.append(sample) else { throw Failure.writer(writer.error?.localizedDescription ?? "Couldn’t save this frame.") }
+            videoFrames += 1
             progress(min(0.98, time / total))
         }
         try await VideoWorkExecution.checkpoint()
@@ -131,7 +160,15 @@ nonisolated enum ShotEffectExporter {
         try await feedSound(through: .infinity)
         if !soundFinished { audioInput?.markAsFinished() }
         writer.endSession(atSourceTime: duration)
-        if reader.status == .failed { throw Failure.writer(reader.error?.localizedDescription ?? "") }
+        guard reader.status == .completed, videoFrames > 0 else {
+            throw Failure.writer(reader.error?.localizedDescription ?? "Video decoding did not finish.")
+        }
+        if let audioRange, audioRange.duration.seconds > 0 {
+            let expectedEnd = min(duration.seconds, CMTimeRangeGetEnd(audioRange).seconds)
+            guard let audioEnd, audioEnd >= expectedEnd - 0.1 else {
+                throw Failure.writer("The source audio ended unexpectedly. Try another copy of the video.")
+            }
+        }
         await writer.finishWriting()
         guard writer.status == .completed else { throw Failure.writer(writer.error?.localizedDescription ?? "") }
         try Task.checkCancellation()

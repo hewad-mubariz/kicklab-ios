@@ -43,13 +43,13 @@ struct ScenePreparationTests {
     @Test func closingTheSheetKeepsPreparationAndReusesItsResult() async throws {
         let prepared = try preview(), gate = PreparationGate()
         defer { prepared.removeFiles() }
-        let model = StadiumPreviewModel { _, _, progress, stage in
+        let model = StadiumPreviewModel(preparation: { _, _, progress, stage in
             await stage("Finding the player")
             await progress(0.07)
             await gate.enter()
             try Task.checkCancellation()
             return prepared
-        }
+        })
         let session = summary(prepared)
         let presentation = Task { await model.prepare(summary: session) }
         try await waitForWorker(gate)
@@ -70,12 +70,12 @@ struct ScenePreparationTests {
     @Test func explicitCancelDoesNotAllowOverlappingNativeWorkOrPublishLateSuccess() async throws {
         let prepared = try preview(), gate = PreparationGate()
         defer { prepared.removeFiles() }
-        let model = StadiumPreviewModel { _, _, progress, _ in
+        let model = StadiumPreviewModel(preparation: { _, _, progress, _ in
             await gate.enter()
             // Model native calls that return before observing cancellation.
             await progress(0.9)
             return prepared
-        }
+        })
         let session = summary(prepared)
         let run = Task { await model.prepare(summary: session) }
         try await waitForWorker(gate)
@@ -92,15 +92,41 @@ struct ScenePreparationTests {
         #expect(!FileManager.default.fileExists(atPath: prepared.folder.path))
     }
 
+    @Test func explicitCancelIncludesInitialRefinementAndPreventsNativePreparation() async throws {
+        let prepared = try preview(), gate = PreparationGate()
+        defer { prepared.removeFiles() }
+        let nativeGate = PreparationGate()
+        let model = StadiumPreviewModel(refinement: { summary in
+            await gate.enter()
+            try Task.checkCancellation()
+            return summary
+        }, preparation: { _, _, _, _ in
+            await nativeGate.enter()
+            return prepared
+        })
+        let session = summary(prepared)
+        let run = Task { await model.prepare(summary: session) }
+        try await waitForWorker(gate)
+        model.cancelPreparation()
+        await model.prepare(summary: session)
+        #expect(await gate.calls == 1)
+        await gate.release()
+        await run.value
+        #expect(await nativeGate.calls == 0)
+        #expect(model.result == nil)
+        #expect(!model.isPreparing)
+        #expect(model.error?.contains("cancelled") == true)
+    }
+
     @Test func preparationFailureShowsItsStageAndCanBeRetried() async throws {
         let prepared = try preview(), gate = PreparationGate()
         defer { prepared.removeFiles() }
-        let model = StadiumPreviewModel { _, _, _, stage in
+        let model = StadiumPreviewModel(preparation: { _, _, _, stage in
             await stage("Loading player cutout model")
             await gate.enter()
             if await gate.calls == 1 { throw StadiumPreviewPreparer.failure("Model unavailable") }
             return prepared
-        }
+        })
         let session = summary(prepared)
         let run = Task { await model.prepare(summary: session) }
         try await waitForWorker(gate)

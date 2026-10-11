@@ -124,6 +124,7 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
     func begin() {
         guard canBeginRecording, !recording, !finishing else { return }
         do {
+            try VideoSafetyPolicy.requireExportSpace(duration: 15)
             let base = ShotRecordingStore.root
             let folder = base.appendingPathComponent(UUID().uuidString)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -390,7 +391,9 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
         let calibration = recordingCalibration
         let calibrationImage = calibration.map { _ in directory.appendingPathComponent("roll-calibration.png") }
         let date = ISO8601DateFormatter().string(from: recordedAt)
+        #if DEBUG
         let footprint = DetectorRecordingReview.memory()
+        #endif
         writer.finishWriting { [self] in
             Task { @MainActor in
                 defer {
@@ -444,12 +447,14 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
                         data["roll_calibration_reference_distance_m"] = calibration.referenceDistanceM
                         data["roll_calibration_independently_verified"] = false
                     }
+                    #if DEBUG
                     if let footprint {
                         data["stop_app_bytes"] = footprint.current
                         data["kernel_lifetime_peak_bytes"] = footprint.peak
                         data["within_300_MB"] = footprint.peak <= 300_000_000
                         data["memory_note"] = "Kernel lifetime peak at capture stop, before export hashing; not a recording-only delta."
                     }
+                    #endif
                     try JSONSerialization.data(withJSONObject: data, options: [.sortedKeys])
                         .write(to: manifest, options: .atomic)
                     ProductAnalytics.shared.track(.trainingCompleted(.ballDistance, duration: recordingDuration))

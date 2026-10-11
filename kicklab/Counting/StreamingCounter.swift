@@ -28,6 +28,7 @@ nonisolated final class StreamingCounter {
     private let machine: TouchStateMachine
     private let traceRecorder: CounterTraceRecorder?
     private let countsTouches: Bool
+    private let retainContactFrames: ((Int?) -> Void)?
 
     private var stamps: [Int: Int] = [:]
     private var balls: [Int: BallObservation] = [:]
@@ -50,9 +51,10 @@ nonisolated final class StreamingCounter {
     init(config: CounterConfig = CounterConfig(), rejectsHandContact: ((Int) -> Bool)? = nil,
          recordTrace: Bool = false, traceLimit: Int = 18_000,
          footContactEvidence: ((Int) -> FootContactEvidence?)? = nil,
-         countsTouches: Bool = true) {
+         countsTouches: Bool = true, retainContactFrames: ((Int?) -> Void)? = nil) {
         self.config = config
         self.countsTouches = countsTouches
+        self.retainContactFrames = retainContactFrames
         self.machine = TouchStateMachine(config: config)
         self.machine.rejectsHandContact = rejectsHandContact
         self.machine.footContactEvidence = footContactEvidence
@@ -73,6 +75,7 @@ nonisolated final class StreamingCounter {
     func push(frameIndex: Int, timestampMs: Int,
               ball: BallObservation?, person: PersonBox?,
               cameraOffsetY: Double = 0, reliable: Bool = true, sourceFrameIndex: Int? = nil) -> [Touch] {
+        defer { retainContactFrames?(machine.pendingContactFrameIndex) }
         traceRecorder?.append(input: .init(frameIndex: frameIndex, timestampMs: timestampMs,
             sourceFrameIndex: sourceFrameIndex, ball: ball, person: person,
             cameraOffsetY: cameraOffsetY, reliable: reliable))
@@ -113,6 +116,7 @@ nonisolated final class StreamingCounter {
     /// Judge the frames still held in the lookahead window. Call once, at the end.
     @discardableResult
     func flush() -> [Touch] {
+        defer { retainContactFrames?(nil) }
         traceRecorder?.append(input: nil)
         var emitted: [Touch] = []
         guard let last = latest else { return emitted }

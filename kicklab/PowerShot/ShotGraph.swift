@@ -819,6 +819,7 @@ struct ShotGraphPicker: View {
     var distance: BallDistanceTimeline? = nil
     let isPlaying: Bool
     let onTogglePlayback: () -> Void
+    var showsProBadges = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -881,6 +882,9 @@ struct ShotGraphPicker: View {
                             style = option; showGraph = true
                         } label: {
                             ShotGraphOption(style: option, selected: style == option, palette: palette)
+                                .overlay(alignment: .topTrailing) {
+                                    if showsProBadges { ProBadge().padding(8) }
+                                }
                         }
                         .buttonStyle(SessionPressStyle(scale: reduceMotion ? 1 : 0.95))
                         .accessibilityLabel(option.title + (option == .comet ? ", Default" : ""))

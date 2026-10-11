@@ -1,6 +1,6 @@
 import XCTest
 
-final class ReplaySpinStatusUITests: XCTestCase {
+final class ReplaySpinStatusUITests: ProReplayUITestCase {
     @MainActor
     func testReplacementSpinStatusSurvivesSeekingAndReopening() throws {
         #if !targetEnvironment(simulator)

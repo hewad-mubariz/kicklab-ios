@@ -64,12 +64,14 @@ struct SessionDesignReview: View {
                                       onClose: {})
             case "motion-styles": MotionStylesDesignReview()
             case "capture-controls": CaptureDesignReview()
-            case "capture-preparing": CaptureDesignReview(initialState: .preparing)
+            case "capture-preparing": CaptureDesignReview(initialState: .warming)
             case "counter": CounterDesignReview()
             case "effects": ReplayEffectsView(summary: Self.summary, edit: $edit, stadiumPreview: sceneModel, overlays: $overlays, onBack: {})
             case "stats": DetailedStatsView(summary: Self.summary, onSaveShare: {}, onBack: {})
             case "share": SaveShareView(summary: Self.summary, edit: edit, sceneModel: sceneModel, overlays: $overlays, onRecordAnother: {}, onDone: {}, onBack: {})
             case "processing": ProcessingOverlay(progress: 0.65, stepIndex: 2)
+            case "processing-large-video": ProcessingOverlay(progress: 0.35, stepIndex: 1, onCancel: {},
+                videoInfo: VideoProcessingInfo(size: CGSize(width: 2160, height: 3840), fps: 119.88, duration: 16))
             case "processing-cooling": ProcessingOverlay(progress: 0.65, stepIndex: 2,
                 statusMessage: "Cooling down. Your video will continue automatically.", onCancel: {}, isPaused: true)
             case "processing-demo": ProcessingDemo()
@@ -83,6 +85,7 @@ struct SessionDesignReview: View {
                                       holdAt: Self.argument("--shot-hold").flatMap(Double.init),
                                       graph: Self.argument("--shot-graph").flatMap(ShotGraphStyle.init(rawValue:)), onClose: {})
             case "shot-camera-fixture": ShotCameraReviewFixture()
+            case "shot-pro-fixture": ShotCameraReviewFixture(style: .glowTrail)
             case "powershot-effects": PowerShotEffectConceptView(effect: Self.argument("--concept") ?? "tracer",
                                                                  scenePath: Self.argument("--shot-scene"))
             case "shot-graphs": ShotGraphReview(style: Self.argument("--shot-graph").flatMap(ShotGraphStyle.init(rawValue:)) ?? .comet,

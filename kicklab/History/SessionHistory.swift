@@ -1,7 +1,7 @@
 import Foundation
 
 nonisolated struct HistorySession: Codable, Equatable, Identifiable, Sendable {
-    enum SyncState: String, Codable, Sendable { case saving, deviceOnly, pending, synced }
+    enum SyncState: String, Codable, Sendable { case saving, deviceOnly, pending, synced, syncFailed }
     let id: UUID
     let ownerID: UUID?
     let touches: Int
@@ -34,6 +34,7 @@ nonisolated struct HistorySession: Codable, Equatable, Identifiable, Sendable {
         case .deviceOnly: "On this device"
         case .pending: "Saved on this phone"
         case .synced: "Saved to account"
+        case .syncFailed: "Kept on this phone · sync failed"
         }
     }
     var syncIcon: String {
@@ -42,6 +43,7 @@ nonisolated struct HistorySession: Codable, Equatable, Identifiable, Sendable {
         case .deviceOnly: "iphone"
         case .pending: "arrow.trianglehead.2.clockwise.rotate.90"
         case .synced: "checkmark.icloud"
+        case .syncFailed: "exclamationmark.icloud"
         }
     }
 }
@@ -59,7 +61,7 @@ nonisolated struct SessionSaveRequest: Codable, Sendable {
         // The outbox becomes visible only after the history write. Recovery
         // must never downgrade a result already acknowledged by the server.
         if existing == nil { try library.save(item) }
-        if let result, existing?.syncState != .synced { try queue.save(result) }
+        if let result, existing?.syncState != .synced, existing?.syncState != .syncFailed { try queue.save(result) }
         return existing ?? item
     }
 }
@@ -145,7 +147,10 @@ nonisolated struct SessionHistoryLibrary: Sendable {
         guard FileManager.default.fileExists(atPath: folder(owner).path) else { return [] }
         return try FileManager.default.contentsOfDirectory(at: folder(owner), includingPropertiesForKeys: nil)
             .filter { $0.lastPathComponent.hasSuffix(".save-request.json") }
-            .compactMap { try? JSONDecoder().decode(SessionSaveRequest.self, from: Data(contentsOf: $0)) }
+            .compactMap { file -> SessionSaveRequest? in
+                let data = try Data(contentsOf: file)
+                return try? JSONDecoder().decode(SessionSaveRequest.self, from: data)
+            }
             .filter { $0.item.ownerID == owner }
     }
     func session(id: UUID, owner: UUID?) throws -> HistorySession? {
@@ -165,7 +170,10 @@ nonisolated struct SessionHistoryLibrary: Sendable {
         // An unreadable record must not hide every other saved session.
         return try FileManager.default.contentsOfDirectory(at: folder(owner), includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "json" }
-            .compactMap { try? JSONDecoder().decode(HistorySession.self, from: Data(contentsOf: $0)) }
+            .compactMap { file -> HistorySession? in
+                let data = try Data(contentsOf: file)
+                return try? JSONDecoder().decode(HistorySession.self, from: data)
+            }
             .filter { $0.ownerID == owner }
             .sorted { $0.completedAt == $1.completedAt ? $0.id.uuidString > $1.id.uuidString : $0.completedAt > $1.completedAt }
     }
@@ -196,6 +204,7 @@ nonisolated struct SessionHistoryLibrary: Sendable {
         let partial = destination.appendingPathExtension("partial")
         if files.fileExists(atPath: partial.path) { try files.removeItem(at: partial) }
         defer { try? files.removeItem(at: partial) }
+        try VideoSafetyPolicy.requireCopySpace(source)
         try files.copyItem(at: source, to: partial)
         try files.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: partial.path)
         var excluded = partial

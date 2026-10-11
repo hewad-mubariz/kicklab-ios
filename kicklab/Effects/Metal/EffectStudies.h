@@ -52,14 +52,17 @@ float4 labFlameFX(float2 pixel,constant FXUniforms &u,constant float4 *emitters,
     float2 back=normalize(-u.motion.xy*0.08+float2(0.001,-1));
     float2 normal=float2(-back.y,back.x);
     float along=dot(q,back),across=dot(q,normal);
-    float3 field=float3(q*float2(3.8,2.4)-back*t*3.3,t*0.45);
+    float3 field=float3(q*float2(3.8,2.4)-back*t*3.3,t*1.3);
     float n=fireFBM3(field),fine=fireNoise3(field*2.6+float3(9.1,5.4,t*0.4));
     float edge=1.025+(n-0.45)*0.21;
     float rim=lineFX(r-edge,max(aa,0.04))*(0.6+0.4*fine);
     float shell=exp(-pow((r-1.12-n*0.16)/0.22,2.0));
-    float lengthK=1.7+min(1.5,length(u.motion.xy)*0.055);
+    // Each band across the plume reaches its own length and flickers several
+    // times a second, so the tip splits into licks instead of one fixed edge.
+    float lick=fireSmooth3(float3(across*2.2,t*4.2,3.7+t*0.9));
+    float lengthK=(1.7+min(1.5,length(u.motion.xy)*0.055))*(0.65+0.7*lick);
     float flameWidth=max(0.08,0.93*(1-saturate((along-0.55)/lengthK)));
-    float fold=across+sin(along*3.0-t*4.0)*0.11+(n-0.5)*0.36;
+    float fold=across+sin(along*3.0-t*5.0)*0.13+sin(along*5.3-t*7.4+1.3)*0.06+(n-0.5)*0.36;
     float plume=(1-smoothstep(flameWidth*0.30,flameWidth,abs(fold)))
         *smoothstep(0.45,1.05,along)*(1-smoothstep(lengthK,lengthK+0.7,along));
     float hot=smoothstep(0.29,0.75,n+fine*0.22);
@@ -82,8 +85,9 @@ float4 labFlameFX(float2 pixel,constant FXUniforms &u,constant float4 *emitters,
     float wakeHeat=fade*smoothstep(0.3,0.8,texture);
     // The body burns orange to yellow-white; only the very tips drop toward red.
     float3 color=studyWarmFX(saturate(0.72+0.28*hot))*(rim*0.95+shell*hot*0.4)
-        +studyWarmFX(saturate(0.5+0.5*plumeHeat))*(tongues*1.15+wisps*0.7)
+        +studyWarmFX(saturate(0.3+0.7*plumeHeat))*(tongues*1.15+wisps*0.7)
         +studyWarmFX(saturate(0.42+0.55*wakeHeat))*(wake*0.75+strands*0.95);
+    color*=1.0+0.08*sin(t*13.0)+0.05*sin(t*23.7+1.0);
     float light=max(color.r,max(color.g,color.b));
     return float4(color*mask,saturate(light*0.2)*mask);
 }

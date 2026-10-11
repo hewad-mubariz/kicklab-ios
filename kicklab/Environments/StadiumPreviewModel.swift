@@ -8,6 +8,8 @@ final class StadiumPreviewModel: ObservableObject {
     typealias Preparation = @Sendable (URL, [StadiumBallObservation],
         @escaping @Sendable (Double) async -> Void,
         @escaping @Sendable (String) async -> Void) async throws -> PreparedStadiumPreview
+    typealias Refinement = @Sendable (SessionSummary) async throws -> SessionSummary
+    private let refinement: Refinement
     private let preparation: Preparation
     @Published private(set) var progress = 0.0
     @Published private(set) var isPreparing = false
@@ -29,11 +31,18 @@ final class StadiumPreviewModel: ObservableObject {
     private var generation = UUID()
     private var ownedFolder: URL?
 
-    init(preparation: @escaping Preparation = { source, observations, progress, stage in
+    init(refinement: @escaping Refinement = { summary in
+        guard summary.needsVisualPreparation else { return summary }
+        let frames = try await BallVisualRefiner.refineVideo(source: summary.videoURL, frames: summary.track,
+            framesUseCompositionClock: summary.framesUseCompositionClock)
+        var ready = summary; ready.visualTrack = frames; ready.needsVisualPreparation = false
+        return ready
+    }, preparation: @escaping Preparation = { source, observations, progress, stage in
         try await StadiumPreviewPreparer.prepare(source: source, observations: observations,
             onStage: stage, onProgress: progress)
     }) {
         self.preparation = preparation
+        self.refinement = refinement
     }
 
     func prepare(summary: SessionSummary) async {
@@ -56,13 +65,6 @@ final class StadiumPreviewModel: ObservableObject {
         #if DEBUG
         writeDiagnostics(status:"preparing",source:summary.videoURL)
         #endif
-        let visualSummary: SessionSummary
-        do { visualSummary = try await readySummary(summary) }
-        catch { self.error = error.localizedDescription; isPreparing = false; return }
-        let observations = visualSummary.renderTrack.filter { $0.detected && !$0.isVisualMaskRepair }.map {
-            StadiumBallObservation(time:$0.time,
-                bounds:CGRect(x:$0.x-$0.width/2,y:$0.y-$0.height/2,width:$0.width,height:$0.height),confidence:$0.score)
-        }
         let source = summary.videoURL
         let reportProgress: @Sendable (Double) async -> Void = { [weak self] value in
             await self?.receiveProgress(value,token:token)
@@ -71,8 +73,20 @@ final class StadiumPreviewModel: ObservableObject {
         let reportStage: @Sendable (String) async -> Void = { [weak self] stage in
             await self?.receiveStage(stage, token: token)
         }
-        let task = VideoWorkExecution.detached {
-            try await operation(source, observations, reportProgress, reportStage)
+        // Own the entire pipeline, including the initial visual refinement.
+        // Sheet dismissal leaves this task alive; explicit Cancel stops every phase.
+        let task = Task {
+            let visualSummary = try await readySummary(summary)
+            try Task.checkCancellation()
+            let observations = visualSummary.renderTrack.filter { $0.detected && !$0.isVisualMaskRepair }.map {
+                StadiumBallObservation(time: $0.time,
+                    bounds: CGRect(x: $0.x - $0.width/2, y: $0.y - $0.height/2,
+                                   width: $0.width, height: $0.height), confidence: $0.score)
+            }
+            let render = VideoWorkExecution.detached {
+                try await operation(source, observations, reportProgress, reportStage)
+            }
+            return try await withTaskCancellationHandler { try await render.value } onCancel: { render.cancel() }
         }
         worker = task
         do {
@@ -139,11 +153,7 @@ final class StadiumPreviewModel: ObservableObject {
     }
 
     private func readySummary(_ summary: SessionSummary) async throws -> SessionSummary {
-        guard summary.needsVisualPreparation else { return summary }
-        let frames = try await BallVisualRefiner.refineVideo(source: summary.videoURL, frames: summary.track,
-            framesUseCompositionClock: summary.framesUseCompositionClock)
-        var ready = summary; ready.visualTrack = frames; ready.needsVisualPreparation = false
-        return ready
+        try await refinement(summary)
     }
 
     private func receiveRenderProgress(_ value: Double) { renderProgress = value }

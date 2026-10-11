@@ -49,6 +49,7 @@ nonisolated final class DetectorPerformance {
         snapshot.model = model
         snapshot.baselineMemoryMB = baselineMB
         snapshot.modelLoadMS = milliseconds
+        #if DEBUG
         let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("DetectorBenchmarks", isDirectory: true)
         do {
@@ -63,6 +64,7 @@ nonisolated final class DetectorPerformance {
         } catch {
             snapshot.logURL = nil
         }
+        #endif
     }
 
     func droppedFrame() { snapshot.captureDrops += 1 }
@@ -100,8 +102,10 @@ nonisolated final class DetectorPerformance {
             case .critical: snapshot.thermal = "critical"
             @unknown default: snapshot.thermal = "unknown"
             }
+            #if DEBUG
             let row = "\(now),\(inferenceMS),\(preprocessMS),\(totalMS),\(snapshot.p95MS),\(snapshot.processedFPS),\(snapshot.memoryMB),\(snapshot.peakMemoryMB),\(snapshot.captureDrops),\(snapshot.thermal),\(recording)\n"
             try? handle?.write(contentsOf: Data(row.utf8))
+            #endif
         }
         return snapshot
     }

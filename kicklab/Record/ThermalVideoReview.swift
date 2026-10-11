@@ -10,6 +10,9 @@ struct ThermalVideoReview: View {
     @State private var started = false
     @State private var showOverlay = false
     @State private var overlayOnly = false
+    @State private var memoryMiB = 0.0
+    @State private var peakMemoryMiB = 0.0
+    @State private var elapsedSeconds = 0.0
     @StateObject private var analyzer = VideoAnalyzer()
 
     private struct Configuration: Decodable {
@@ -20,6 +23,9 @@ struct ThermalVideoReview: View {
         let clips: [Clip]
         let showOverlay: Bool?
         let overlayOnlySeconds: Double?
+        /// A bounded, explicitly partial diagnostic (for example compute-policy
+        /// inspection). Never treated as a completed count/accuracy baseline.
+        let observationSeconds: Double?
     }
 
     var body: some View {
@@ -35,9 +41,51 @@ struct ThermalVideoReview: View {
                     Text(message).multilineTextAlignment(.center)
                     ProgressView(value: analyzer.progress)
                     Text("\(analyzer.framesRead) frames · \(analyzer.touchCount) touches")
+                    Text("Elapsed \(elapsedSeconds, specifier: "%.0f")s · \(analyzer.progress * 100, specifier: "%.1f")%")
+                    Text("App memory: \(memoryMiB, specifier: "%.1f") MiB\nPeak: \(peakMemoryMiB, specifier: "%.1f") MiB\nBall masks: \(analyzer.profileMetrics["mask_mib", default: 0], specifier: "%.2f") / 64 MiB")
+                        .monospacedDigit()
+                    Text("Thermal: \(thermalLabel) · cooling waits: \(analyzer.profileMetrics["thermal_wait_s", default: 0], specifier: "%.1f")s")
+                        .font(.caption)
+                    Text("Battery: \(batteryLabel) · Low Power Mode: \(ProcessInfo.processInfo.isLowPowerModeEnabled ? "on" : "off")")
+                        .font(.caption)
+                    if let cpuOnly = analyzer.profileMetrics["model_cpu_only"] ?? analyzer.profileMetrics["cpu_only"] {
+                        Text(cpuOnly == 1 ? "Model: CPU only" : "Model: all accelerators allowed")
+                            .font(.caption)
+                    }
+                    Text("Full-frame analysis · unchanged model and counting")
+                        .font(.caption).foregroundStyle(.secondary)
                 }.padding(30)
             }
-        }.task { await run() }.onDisappear { analyzer.cancel() }
+        }.task {
+            await VideoWorkExecution.$modelAccelerationStudy.withValue(
+                ProcessInfo.processInfo.arguments.contains("--profile-model-accelerated")) {
+                await VideoWorkExecution.$foregroundAccelerationStudy.withValue(
+                    ProcessInfo.processInfo.arguments.contains("--profile-foreground-accelerated")) {
+                    await VideoWorkExecution.$accuracyComparison.withValue(
+                        ProcessInfo.processInfo.arguments.contains("--profile-accuracy-comparison")) {
+                        await run()
+                    }
+                }
+            }
+        }.onDisappear { analyzer.cancel() }
+    }
+
+    private var thermalLabel: String {
+        switch ProcessInfo.processInfo.thermalState {
+        case .nominal: "Normal"
+        case .fair: "Elevated"
+        case .serious: "High"
+        case .critical: "Critical — pausing"
+        @unknown default: "Unknown"
+        }
+    }
+
+    private var batteryLabel: String {
+        let device = UIDevice.current
+        guard device.batteryLevel >= 0 else { return "reading…" }
+        let suffix = device.batteryState == .charging ? " (charging)"
+            : device.batteryState == .full ? " (plugged in)" : ""
+        return "\(Int((device.batteryLevel * 100).rounded()))%\(suffix)"
     }
 
     private func cpuSeconds() -> Double {
@@ -87,10 +135,16 @@ struct ThermalVideoReview: View {
             let overallStart = ProcessInfo.processInfo.systemUptime
             let overallCPU = cpuSeconds()
             func sample(_ clip: String, _ phase: String) {
+                memoryMiB = DetectorPerformance.memoryMB()
+                peakMemoryMiB = max(peakMemoryMiB, memoryMiB)
+                elapsedSeconds = ProcessInfo.processInfo.systemUptime - overallStart
                 samples.append(["elapsed_s": ProcessInfo.processInfo.systemUptime - overallStart,
                     "cpu_s": cpuSeconds() - overallCPU, "thermal": ProcessInfo.processInfo.thermalState.rawValue,
-                    "memory_mib": DetectorPerformance.memoryMB(), "clip": clip, "phase": phase,
+                    "memory_mib": memoryMiB, "clip": clip, "phase": phase,
+                    "pipeline": analyzer.profileMetrics,
                     "frames": analyzer.framesRead, "battery": UIDevice.current.batteryLevel,
+                    "low_power_mode": ProcessInfo.processInfo.isLowPowerModeEnabled,
+                    "application_state": UIApplication.shared.applicationState.rawValue,
                     "battery_state": UIDevice.current.batteryState.rawValue])
             }
             func save(_ state: String) throws {
@@ -99,6 +153,11 @@ struct ThermalVideoReview: View {
                     "cpu_s": cpuSeconds() - overallCPU,
                     "device": UIDevice.current.model, "os": ProcessInfo.processInfo.operatingSystemVersionString,
                     "cache_bypassed": ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache"),
+                    "foreground_acceleration_study": VideoWorkExecution.foregroundAccelerationStudy,
+                    "model_acceleration_study": VideoWorkExecution.modelAccelerationStudy,
+                    "accuracy_comparison": VideoWorkExecution.accuracyComparison,
+                    "analysis_frame_limit": NSNull(),
+                    "mask_limit_bytes": NSNull(),
                     "processing_overlay": showOverlay, "overlay_only": overlayOnly,
                     "legacy_overlay_cadence": ProcessInfo.processInfo.arguments.contains("--thermal-original-overlay"),
                     "scope": "Physical file analysis, same production frames/model/counter. iOS thermal pressure and process CPU time; not temperature, watts, live-camera or export measurement."]
@@ -126,6 +185,17 @@ struct ThermalVideoReview: View {
                     repeat {
                         sample(id, "analysis")
                         try save("running")
+                        if let seconds = config.observationSeconds,
+                           ProcessInfo.processInfo.systemUptime - start >= min(60, max(5, seconds)) {
+                            analyzer.cancel()
+                            await analyzer.waitUntilFinished()
+                            sample(id, "partial-observation")
+                            rows.append(["id": id, "partial": true, "frames": analyzer.framesRead,
+                                         "pipeline": analyzer.profileMetrics])
+                            try save("observation-complete")
+                            try status("OBSERVATION COMPLETE · not a full analysis")
+                            return
+                        }
                         try await Task.sleep(for: .seconds(1))
                     } while analyzer.isRunning
                     guard analyzer.status == "done" else { throw ReviewError.analysis(analyzer.status) }
@@ -142,6 +212,8 @@ struct ThermalVideoReview: View {
                     if round == 0 {
                         try SessionAnalysisStore.frameData(analyzer.recordedTrack)
                             .write(to: destination.appendingPathComponent("\(clip.id)-track.plist"))
+                        try SessionAnalysisStore.frameData(analyzer.visualRecoveries)
+                            .write(to: destination.appendingPathComponent("\(clip.id)-recoveries.plist"))
                         if let trace = analyzer.counterTrace {
                             let encoder = PropertyListEncoder(); encoder.outputFormat = .binary
                             try encoder.encode(trace).write(to: destination.appendingPathComponent("\(clip.id)-trace.plist"))
@@ -155,7 +227,19 @@ struct ThermalVideoReview: View {
             analyzer.cancel()
             await analyzer.waitUntilFinished()
             message = "FAILED: \(error)"
-            if let folder { try? Data(message.utf8).write(to: folder.appendingPathComponent("status.txt"), options: .atomic) }
+            if let folder {
+                try? Data(message.utf8).write(to: folder.appendingPathComponent("status.txt"), options: .atomic)
+                let reportURL = folder.appendingPathComponent("report.json")
+                if let data = try? Data(contentsOf: reportURL),
+                   var report = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
+                    report["status"] = "failed"
+                    report["error"] = message
+                    report["pipeline_at_failure"] = analyzer.profileMetrics
+                    if let updated = try? JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]) {
+                        try? updated.write(to: reportURL, options: .atomic)
+                    }
+                }
+            }
         }
     }
     private enum ReviewError: Error { case coolingTimeout, analysis(String) }

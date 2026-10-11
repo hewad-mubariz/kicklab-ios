@@ -132,6 +132,7 @@ nonisolated final class TouchStateMachine {
 
     private var armed = false
     private var apex: TrajectoryPoint?
+    var pendingContactFrameIndex: Int? { armed ? apex?.frameIndex : nil }
     private var arcTopY: Double?
     private var peakFall = 0.0
     private var peakRise = 0.0

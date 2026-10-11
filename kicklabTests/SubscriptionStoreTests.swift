@@ -67,10 +67,81 @@ final class SubscriptionStoreTests: XCTestCase {
         XCTAssertTrue(restored)
     }
 
+    func testRestoreSkipsAppleSyncWhenAlreadyActive() async throws {
+        _ = try await store.purchase(.monthly, accountID: nil)
+        try await waitForStoreKitHistory(.monthly)
+        var syncs = 0
+        let restarted = SubscriptionStore(observeTransactions: false, syncAppStore: { syncs += 1 })
+        let restored = try await restarted.restore()
+        XCTAssertTrue(restored)
+        XCTAssertEqual(syncs, 0, "An active subscription must not trigger the Apple Account prompt")
+    }
+
     func testNoPurchasesRestoresAsFree() async throws {
         let restored = try await store.restore()
         XCTAssertFalse(restored)
         XCTAssertFalse(store.busy)
+    }
+
+    func testAccountRecoveryUnlocksStoreAndSignOutClearsAccountOnlyAccess() async throws {
+        let id = UUID()
+        let service = LinkedAccountFixture(owner: id)
+        let recovered = SubscriptionStore(observeTransactions: false, accountService: service)
+        await recovered.useAccount(id)
+        try await eventually { recovered.isPro && !recovered.checkingAccountAccess }
+        XCTAssertTrue(recovered.isAccountOnlyPro)
+        XCTAssertEqual(recovered.activePlan, .yearly)
+        await recovered.useAccount(nil)
+        XCTAssertFalse(recovered.isPro)
+        XCTAssertFalse(recovered.isAccountOnlyPro)
+    }
+
+    func testLateRenewalIsPickedUpAfterThePeriodEnds() async throws {
+        // The first period ends, Apple briefly reports nothing, then the renewal appears.
+        let source = LateRenewalSource(firstEnd: Date().addingTimeInterval(0.4))
+        let renewing = SubscriptionStore(observeTransactions: false, entitlementSource: source,
+                                         renewalRecheckDelays: [.milliseconds(300), .milliseconds(300)])
+        await renewing.refreshEntitlements()
+        XCTAssertEqual(renewing.activePlan, .monthly)
+        try await eventually { !renewing.isPro }
+        source.renewed = true
+        try await eventually { renewing.isPro }
+        XCTAssertEqual(renewing.activePlan, .monthly)
+    }
+
+    func testPurchaseLinkedElsewhereHidesRetry() async throws {
+        let id = UUID()
+        let store = SubscriptionStore(observeTransactions: false, accountService: ElsewhereAccountFixture())
+        await store.useAccount(id)
+        try await eventually { store.accountLinkMessage != nil && !store.checkingAccountAccess }
+        XCTAssertTrue(store.accountLinkedElsewhere, "Retry cannot fix a purchase owned by another account")
+        await store.useAccount(nil)
+        XCTAssertFalse(store.accountLinkedElsewhere)
+    }
+
+    func testLocalTestingEnvironmentSkipsAccountSyncWithoutError() async throws {
+        let id = UUID()
+        let recovered = SubscriptionStore(observeTransactions: false, accountService: LocalTestingAccountFixture())
+        await recovered.useAccount(id)
+        try await eventually { !recovered.checkingAccountAccess }
+        XCTAssertNil(recovered.accountLinkMessage, "Local StoreKit testing must not show an unfixable sync error")
+        XCTAssertFalse(recovered.isAccountOnlyPro)
+    }
+
+    func testLocalGuestPurchaseSurvivesFailedAccountSyncAndSignOut() async throws {
+        _ = try await store.purchase(.monthly, accountID: nil)
+        try await waitForStoreKitHistory(.monthly)
+        let id = UUID(), service = LinkedAccountFixture(owner: UUID())
+        let recovered = SubscriptionStore(observeTransactions: false, accountService: service)
+        await recovered.useAccount(id)
+        try await eventually { recovered.accountLinkMessage != nil }
+        XCTAssertFalse(recovered.accountLinkedElsewhere, "A failed sync keeps Retry available")
+        XCTAssertEqual(recovered.activePlan, .monthly)
+        XCTAssertFalse(recovered.isAccountOnlyPro)
+        await recovered.useAccount(nil)
+        XCTAssertEqual(recovered.activePlan, .monthly)
+        XCTAssertNil(recovered.accountLinkMessage)
+        XCTAssertFalse(recovered.accountLinkedElsewhere)
     }
 
     func testRefundRemovesAccessThroughTransactionListener() async throws {
@@ -167,5 +238,39 @@ final class SubscriptionStoreTests: XCTestCase {
         let deadline = Date().addingTimeInterval(5)
         while !predicate(), Date() < deadline { try await Task.sleep(for: .milliseconds(50)) }
         XCTAssertTrue(predicate())
+    }
+}
+
+@MainActor
+private struct LinkedAccountFixture: SubscriptionAccountService {
+    let owner: UUID
+    func sync(userID: UUID, signedTransaction: String?, purchaseEnvironment: AppStore.Environment?) async throws -> SubscriptionAccountReply {
+        guard userID == owner else { throw SubscriptionAccountError.unavailable }
+        return SubscriptionAccountReply(userID: owner, productID: ProPlan.yearly.productID,
+            validUntilMS: Date().addingTimeInterval(3600).timeIntervalSince1970 * 1000,
+            environment: "Production", link: "linked")
+    }
+}
+
+private struct LocalTestingAccountFixture: SubscriptionAccountService {
+    func sync(userID: UUID, signedTransaction: String?, purchaseEnvironment: AppStore.Environment?) async throws -> SubscriptionAccountReply {
+        throw SubscriptionAccountError.localTestingOnly
+    }
+}
+
+@MainActor
+private final class LateRenewalSource: LocalSubscriptionEntitlementSource {
+    let firstEnd: Date
+    var renewed = false
+    init(firstEnd: Date) { self.firstEnd = firstEnd }
+    func current() async -> LocalSubscriptionEntitlement? {
+        if renewed { return LocalSubscriptionEntitlement(plan: .monthly, validUntil: Date().addingTimeInterval(180), signedTransaction: nil) }
+        return firstEnd > Date() ? LocalSubscriptionEntitlement(plan: .monthly, validUntil: firstEnd, signedTransaction: nil) : nil
+    }
+}
+
+private struct ElsewhereAccountFixture: SubscriptionAccountService {
+    func sync(userID: UUID, signedTransaction: String?, purchaseEnvironment: AppStore.Environment?) async throws -> SubscriptionAccountReply {
+        SubscriptionAccountReply(userID: userID, productID: nil, validUntilMS: nil, environment: nil, link: "another_account")
     }
 }

@@ -117,7 +117,7 @@ nonisolated enum StadiumPreviewPreparer {
         }
         let refinerURL=personRefinerURL ?? Bundle.main.url(forResource:PersonMatteRefiner.modelName,withExtension:"mlmodelc")
         await onProgress(0.15)
-        await onStage("Loading player cutout model")
+        await onStage("Preparing player cutout")
         let refiner=try refinerURL.map {try PersonMatteRefiner(modelURL:$0,context:context)}
         try Task.checkCancellation()
         let processor = DetailedForegroundMaskProcessor(sourceCrop:calibration.crop,context:context,refiner:refiner)

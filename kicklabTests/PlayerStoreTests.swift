@@ -56,6 +56,53 @@ final class PlayerStoreTests: XCTestCase {
         XCTAssertTrue(try queue.pending(for: a).isEmpty)
     }
 
+    func testCorruptQueueEntryIsPreservedWithoutBlockingValidResults() async throws {
+        let queue = JugglingResultQueue(root: root), good = try result(a)
+        try queue.save(good)
+        let folder = root.appendingPathComponent(a.uuidString)
+        try Data("not-json".utf8).write(to: folder.appendingPathComponent("corrupt.json"))
+        let service = FakePlayerDataService()
+        let store = PlayerStore(service: service, queue: queue)
+        await store.useAccount(identity(a))
+        await waitUntil { service.attempts.count == 1 && store.pendingCount == 0 }
+        XCTAssertEqual(service.attempts.first?.id, good.id)
+        XCTAssertEqual(try queue.rejectedCount(for: a), 1)
+        XCTAssertNotNil(store.errorMessage)
+        let files = try FileManager.default.contentsOfDirectory(at: folder.appendingPathComponent("Rejected"), includingPropertiesForKeys: nil)
+        XCTAssertEqual(try Data(contentsOf: XCTUnwrap(files.first)), Data("not-json".utf8))
+    }
+
+    func testPermanentRejectionDoesNotBlockLaterResultAndSurvivesRestart() async throws {
+        let queue = JugglingResultQueue(root: root)
+        let bad = try SavedJugglingResult(ownerID: a, touches: 9, duration: 20, source: .recording,
+                                         completedAt: Date().addingTimeInterval(-60))
+        let good = try result(a)
+        try queue.save(bad); try queue.save(good)
+        let service = FakePlayerDataService(); service.rejectedIDs = [bad.id]
+        let store = PlayerStore(service: service, queue: queue)
+        await store.useAccount(identity(a))
+        await waitUntil { service.attempts.count == 2 && store.pendingCount == 0 }
+        XCTAssertEqual(service.attempts.map(\.id), [bad.id, good.id])
+        XCTAssertEqual(try queue.rejectedCount(for: a), 1)
+        XCTAssertEqual(try store.history.library.session(id: bad.id, owner: a)?.syncState, .syncFailed)
+        XCTAssertEqual(try store.history.library.session(id: good.id, owner: a)?.syncState, .synced)
+        let restored = PlayerStore(service: service, queue: queue)
+        await restored.useAccount(identity(a))
+        await Task.yield()
+        XCTAssertEqual(service.attempts.count, 2)
+    }
+
+    func testHTTPFailuresKeepAuthenticationAndRateLimitsOutOfRejectionQueue() {
+        for status in [401, 403] {
+            guard case .signIn = PlayerDataError.httpFailure(status: status) else { XCTFail(); continue }
+        }
+        guard case .rateLimited = PlayerDataError.httpFailure(status: 429) else { return XCTFail() }
+        guard case .requestFailed = PlayerDataError.httpFailure(status: 503) else { return XCTFail() }
+        for status in [400, 409, 422] {
+            guard case .rejected = PlayerDataError.httpFailure(status: status) else { XCTFail(); continue }
+        }
+    }
+
     func testNewResultDuringSyncIsAlsoDrained() async throws {
         let service = FakePlayerDataService(); service.pauseSubmit = true
         let store = PlayerStore(service: service, queue: .init(root: root))
@@ -142,6 +189,7 @@ final class PlayerStoreTests: XCTestCase {
 @MainActor
 final class FakePlayerDataService: PlayerDataService {
     var submitFails = false
+    var rejectedIDs: Set<UUID> = []
     var pauseSubmit = false
     var attempts: [SavedJugglingResult] = []
     var submitContinuation: CheckedContinuation<Void, Never>?
@@ -169,6 +217,7 @@ final class FakePlayerDataService: PlayerDataService {
     func submit(_ result: SavedJugglingResult) async throws {
         attempts.append(result)
         if pauseSubmit { await withCheckedContinuation { submitContinuation = $0 } }
+        if rejectedIDs.contains(result.id) { throw PlayerDataError.rejected }
         if submitFails { throw URLError(.notConnectedToInternet) }
     }
     func leaderboard(period: String, country: String?, userID: UUID?) async throws -> JugglingLeaderboard {

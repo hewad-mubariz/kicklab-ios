@@ -1,4 +1,5 @@
 import BackgroundTasks
+import Combine
 import Foundation
 import UIKit
 
@@ -9,6 +10,7 @@ nonisolated final class VideoWorkLease: @unchecked Sendable {
     private let lock = NSLock()
     private var allowed: Bool
     private var cancelled = false
+    private var foreground = true
     private var cancelWorker: (@Sendable () -> Void)?
     private let report: @Sendable (Double, String) -> Void
 
@@ -18,6 +20,8 @@ nonisolated final class VideoWorkLease: @unchecked Sendable {
     }
     var canContinue: Bool { lock.withLock { allowed && !cancelled } }
     var isCancelled: Bool { lock.withLock { cancelled } }
+    var isForeground: Bool { lock.withLock { foreground } }
+    func setForeground(_ value: Bool) { lock.withLock { foreground = value } }
     func expire() {
         let action = lock.withLock { cancelled = true; allowed = false; return cancelWorker }
         action?()
@@ -33,13 +37,44 @@ nonisolated final class VideoWorkLease: @unchecked Sendable {
 
 nonisolated enum VideoWorkExecution {
     @TaskLocal static var lease: VideoWorkLease?
-    static var cpuOnly: Bool { lease?.cpuOnly == true }
+    /// Full image/Vision acceleration remains diagnostic. Normal video jobs
+    /// accelerate only the model and retain their existing image-work policy.
+    @TaskLocal static var foregroundAccelerationStudy = false
+    @TaskLocal static var modelAccelerationStudy = false
+    /// Pin image/Vision work to CPU in both arms of an accuracy comparison,
+    /// including when iOS declines a background lease. Only the model may vary.
+    @TaskLocal static var accuracyComparison = false
+    static var isAnalysisStudy: Bool { accuracyComparison || foregroundAccelerationStudy || modelAccelerationStudy }
+    static var cpuOnly: Bool { accuracyComparison || (!foregroundAccelerationStudy && lease?.cpuOnly == true) }
+    /// A normal video job follows its foreground/background lease. Explicit
+    /// CPU comparison runs retain the old backend unless the candidate is selected.
+    static var followsModelLifecycle: Bool {
+        modelAccelerationStudy || (!accuracyComparison && lease != nil)
+    }
+    static var modelCPUOnly: Bool {
+        if followsModelLifecycle, let lease {
+            return !lease.isForeground && !lease.backgroundGPU
+        }
+        return cpuOnly
+    }
+    static var canAnalyzeInBackground: Bool {
+        lease?.canContinue == true && (!foregroundAccelerationStudy || lease?.backgroundGPU == true)
+    }
 
     /// Detached model/render workers must explicitly inherit their job's lease.
     static func detached<T: Sendable>(_ operation: @escaping @Sendable () async throws -> T) -> Task<T, Error> {
         let current = lease
+        let study = foregroundAccelerationStudy
+        let modelStudy = modelAccelerationStudy
+        let comparison = accuracyComparison
         return Task.detached(priority: .userInitiated) {
-            try await $lease.withValue(current) { try await operation() }
+            try await $lease.withValue(current) {
+                try await $foregroundAccelerationStudy.withValue(study) {
+                    try await $modelAccelerationStudy.withValue(modelStudy) {
+                        try await $accuracyComparison.withValue(comparison) { try await operation() }
+                    }
+                }
+            }
         }
     }
 
@@ -48,7 +83,7 @@ nonisolated enum VideoWorkExecution {
             try Task.checkCancellation()
             if lease?.isCancelled == true { throw CancellationError() }
             let background = await MainActor.run { UIApplication.shared.applicationState == .background }
-            if !background || (lease?.canContinue == true && (!requiresGPU || lease?.backgroundGPU == true)) { return }
+            if !background || (lease?.canContinue == true && (!(requiresGPU || foregroundAccelerationStudy) || lease?.backgroundGPU == true)) { return }
             try await Task.sleep(for: .milliseconds(250))
         }
     }
@@ -57,8 +92,23 @@ nonisolated enum VideoWorkExecution {
 /// iOS owns the background runtime and its progress/cancel Live Activity.
 /// If it declines a request, foreground work still runs and resumes on return.
 @MainActor
-final class VideoBackgroundWork {
+final class VideoBackgroundWork: ObservableObject {
     static let shared = VideoBackgroundWork()
+    @Published var interruptedMessage: String?
+    private let journal = VideoJobJournal(defaults: .standard)
+    private init() {
+        if journal.consumeInterruptedCount() > 0 {
+            interruptedMessage = "A video task was interrupted when the app closed. Check Photos for a saved export. If it is missing, reopen your original video and try again."
+        }
+    }
+    private final class PendingLease {
+        var continuation: CheckedContinuation<VideoWorkLease, Never>?
+        init(_ continuation: CheckedContinuation<VideoWorkLease, Never>) { self.continuation = continuation }
+        @discardableResult func resolve(_ lease: VideoWorkLease) -> Bool {
+            guard let continuation else { return false }
+            self.continuation = nil; continuation.resume(returning: lease); return true
+        }
+    }
     private struct Job {
         let task: BGContinuedProcessingTask
         let lease: VideoWorkLease
@@ -69,7 +119,17 @@ final class VideoBackgroundWork {
                          operation: @escaping @Sendable () async throws -> T) async throws -> T {
         if VideoWorkExecution.lease != nil { return try await operation() }
         let identifier = "com.juggledude.video." + UUID().uuidString
+        journal.begin(identifier, title: title)
+        defer { journal.finish(identifier) }
         let lease = await acquire(identifier: identifier, title: title, requiresGPU: requiresGPU)
+        lease.setForeground(UIApplication.shared.applicationState == .active)
+        let observers = [
+            NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification,
+                object: nil, queue: .main) { _ in lease.setForeground(false) },
+            NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification,
+                object: nil, queue: .main) { _ in lease.setForeground(true) },
+        ]
+        defer { observers.forEach(NotificationCenter.default.removeObserver) }
         let worker = Task {
             try await VideoWorkExecution.$lease.withValue(lease) {
                 try await VideoWorkExecution.checkpoint(requiresGPU: requiresGPU)
@@ -102,10 +162,20 @@ final class VideoBackgroundWork {
         guard !requiresGPU || gpu else { return fallback }
         guard UIApplication.shared.applicationState != .background else { return fallback }
         return await withCheckedContinuation { continuation in
+            let pending = PendingLease(continuation)
+            // Registration succeeding does not guarantee a timely launch callback.
+            // A delayed/denied request must still allow foreground work to start.
+            Task {
+                try? await Task.sleep(for: .seconds(5))
+                if pending.resolve(fallback) {
+                    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: identifier)
+                }
+            }
             let registered = BGTaskScheduler.shared.register(forTaskWithIdentifier: identifier, using: .main) { task in
                 MainActor.assumeIsolated {
+                    guard pending.continuation != nil else { task.setTaskCompleted(success: false); return }
                     guard let task = task as? BGContinuedProcessingTask else {
-                        task.setTaskCompleted(success: false); continuation.resume(returning: fallback); return
+                        task.setTaskCompleted(success: false); pending.resolve(fallback); return
                     }
                     let lease = VideoWorkLease(allowed: true, cpuOnly: !gpu, backgroundGPU: gpu) { value, subtitle in
                         Task { @MainActor in
@@ -117,17 +187,17 @@ final class VideoBackgroundWork {
                     task.progress.totalUnitCount = 100
                     task.expirationHandler = { lease.expire() }
                     self.jobs[identifier] = Job(task: task, lease: lease)
-                    continuation.resume(returning: lease)
+                    pending.resolve(lease)
                 }
             }
-            guard registered else { continuation.resume(returning: fallback); return }
+            guard registered else { pending.resolve(fallback); return }
             let request = BGContinuedProcessingTaskRequest(identifier: identifier, title: title, subtitle: "Preparing your video")
             request.strategy = .fail
             if gpu { request.requiredResources = .gpu }
             do { try BGTaskScheduler.shared.submit(request) }
             catch {
                 NSLog("Video background request unavailable: %@", error.localizedDescription)
-                continuation.resume(returning: fallback)
+                pending.resolve(fallback)
             }
         }
     }

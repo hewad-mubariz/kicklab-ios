@@ -89,7 +89,8 @@ nonisolated enum BallMaterialRenderer {
         }
         let dimension = min(256, max(16, Int(ceil(extent*2))))
         let step = extent*2/Double(dimension)
-        let textureSize = 192, textureCenter = 96.0, textureRadius = 92.0
+        let textureSize = BallSkinSphereRenderer.rasterDimension(for: skin)
+        let textureCenter = Double(textureSize) / 2, textureRadius = textureCenter * (92.0 / 96.0)
         let info = CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
         guard let material = CGContext(data: nil, width: textureSize, height: textureSize,
             bitsPerComponent: 8, bytesPerRow: textureSize*4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: info),
@@ -98,7 +99,7 @@ nonisolated enum BallMaterialRenderer {
         drawSkin(material, center: CGPoint(x:textureCenter,y:textureCenter), radius:textureRadius,skin:skin,time:time,orientation:orientation)
         let raw = Array(UnsafeBufferPointer(start: bytes, count:textureSize*textureSize*4))
         var texture = raw
-        // The print is only prefiltered for minification from the 192 px sphere
+        // The print is only prefiltered for minification from the ball-sized sphere
         // raster: the real print is about as sharp as the video (measured 1.1-1.3 px
         // sigma on reviewed frames), so rim softness and a fixed floor over-blurred it.
         // Motion blur comes from the smear below, not from an isotropic estimate.

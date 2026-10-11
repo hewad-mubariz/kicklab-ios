@@ -229,8 +229,9 @@ private struct SessionHistoryDetail: View {
                         Text("Your account updates automatically when you’re connected.")
                             .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
                     }
-                    Label(eligibility(item), systemImage: item.source == .gallery || item.ownerID == nil ? "lock" : "trophy")
-                        .font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))
+                    // First release: leaderboard eligibility returns with the public board.
+                    // Label(eligibility(item), systemImage: item.source == .gallery || item.ownerID == nil ? "lock" : "trophy")
+                    //     .font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))
 
                     if store.library.videoURL(for: item) != nil {
                         Button("Remove replay from this phone", role: .destructive) { confirmsRemoval = true }
@@ -267,6 +268,7 @@ private struct SessionHistoryDetail: View {
         if item.source == .gallery { return "Private import. Gallery videos don’t count toward the leaderboard." }
         if item.scoreStatus == "rejected" { return "This result is excluded from the leaderboard." }
         if item.touches == 0 { return "No touches counted. This session stays in your history." }
+        if item.syncState == .syncFailed { return "This result could not sync. Your replay stays on this phone. Contact support if you need help." }
         if item.syncState == .pending || item.syncState == .saving { return "Your recorded result updates automatically in the background." }
         if player.profile?.leaderboardVisible == true { return "Eligible for the leaderboard. Your best recorded score counts." }
         return "Private until you turn on leaderboard sharing in Profile."

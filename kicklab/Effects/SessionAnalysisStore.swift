@@ -37,10 +37,15 @@ actor SessionAnalysisStore {
         let handle = try FileHandle(forReadingFrom: source)
         defer { try? handle.close() }
         var hash = SHA256()
-        while let data = try handle.read(upToCount: 1024 * 1024), !data.isEmpty {
+        // FileHandle's Objective-C read buffers can outlive Swift's loop-local
+        // Data on a background task. Drain each chunk before reading the next;
+        // otherwise fingerprinting temporarily retains the whole movie at Stop.
+        while try autoreleasepool(invoking: { () throws -> Bool in
             try Task.checkCancellation()
+            guard let data = try handle.read(upToCount: 1024 * 1024), !data.isEmpty else { return false }
             hash.update(data: data)
-        }
+            return true
+        }) { }
         return hash.finalize().map { String(format: "%02x", $0) }.joined()
     }
 
@@ -63,7 +68,7 @@ actor SessionAnalysisStore {
         let os = ProcessInfo.processInfo.operatingSystemVersionString
         let options = pipelineOptions(arguments:ProcessInfo.processInfo.arguments,defaults:.standard)
         // Increment when detector, composition geometry, counter or repair rules change.
-        return "analysis-v5|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)"
+        return "analysis-v6|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)"
     }
 
     /// Experimental visual execution must not read or overwrite serial artifacts.

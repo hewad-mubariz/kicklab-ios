@@ -29,6 +29,7 @@ import UIKit
 final class VideoAnalyzer: ObservableObject {
     @Published private(set) var isRunning = false
     @Published private(set) var progress: Double = 0
+    @Published private(set) var processingInfo: VideoProcessingInfo?
     @Published private(set) var touchCount = 0
     @Published private(set) var detections = 0
     @Published private(set) var framesRead = 0
@@ -54,12 +55,14 @@ final class VideoAnalyzer: ObservableObject {
 
     #if DEBUG
     @Published private(set) var failureDiagnostic = ""
+    @Published private(set) var profileMetrics: [String: Double] = [:]
     #endif
 
     func analyse(url: URL, visualOnly: Bool = false) {
         guard !isRunning else { return }
         isRunning = true
         progress = 0
+        processingInfo = nil
         touchCount = 0
         detections = 0
         framesRead = 0
@@ -67,6 +70,7 @@ final class VideoAnalyzer: ObservableObject {
         status = "reading…"
         #if DEBUG
         failureDiagnostic = ""
+        profileMetrics = [:]
         #endif
         dropped = 0
         recordedTrack = []
@@ -81,7 +85,7 @@ final class VideoAnalyzer: ObservableObject {
             do {
                 try await VideoBackgroundWork.shared.run(title: visualOnly ? "Preparing video" : "Importing video") { [weak self] in
                     guard let self else { return }
-                    let allowed = VideoWorkExecution.lease?.canContinue == true
+                    let allowed = VideoWorkExecution.canAnalyzeInBackground
                     await MainActor.run { self.canContinueInBackground = allowed }
                     let task = VideoWorkExecution.detached { try await self.run(url: url, visualOnly: visualOnly) }
                     try await withTaskCancellationHandler { _ = try await task.value } onCancel: { task.cancel() }
@@ -136,7 +140,7 @@ final class VideoAnalyzer: ObservableObject {
             // Keep the screen awake only for the foreground-only fallback.
             let wasIdleDisabled = await MainActor.run {
                 let previous = UIApplication.shared.isIdleTimerDisabled
-                if VideoWorkExecution.lease?.canContinue != true { UIApplication.shared.isIdleTimerDisabled = true }
+                if !VideoWorkExecution.canAnalyzeInBackground { UIApplication.shared.isIdleTimerDisabled = true }
                 return previous
             }
             do {
@@ -156,6 +160,9 @@ final class VideoAnalyzer: ObservableObject {
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
 
+        let info = try await VideoProcessingInfo.load(url)
+        try VideoSafetyPolicy.validate(duration: info.duration)
+        await MainActor.run { self.processingInfo = info }
         let lookupStart = ProcessInfo.processInfo.systemUptime
         let sourceDigest = try SessionAnalysisStore.sourceDigest(url)
         let pipelineSignature = SessionAnalysisStore.pipelineSignature()
@@ -167,7 +174,8 @@ final class VideoAnalyzer: ObservableObject {
         // A visual-only result cannot masquerade as a counted import. A complete
         // import remains a valid source of visual observations in either mode.
         let cacheKey = visualOnly ? SessionAnalysisStore.digest(Data("visual-inference|\(visualSignature)|\(sourceDigest)".utf8)) : fullKey
-        let bypassCache = ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache")
+        let bypassCache = VideoWorkExecution.isAnalysisStudy
+            || ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache")
             || ProcessInfo.processInfo.arguments.contains("--effects-follow-review")
         let cached = bypassCache ? nil : await SessionAnalysisStore.shared.loadInference(key:cacheKey)
         let fallback = visualOnly && !batchRequested && cached == nil && !bypassCache
@@ -175,13 +183,14 @@ final class VideoAnalyzer: ObservableObject {
         if let stored = cached ?? fallback {
             try Task.checkCancellation()
             let frames = stored.frames.map(\.frame), touches = stored.recordedTouches
+            let recovered = (stored.visualRecoveries ?? []).map(\.frame)
             let elapsed = ProcessInfo.processInfo.systemUptime - lookupStart
             let trace = await SessionAnalysisStore.shared.loadCounterTrace(sourceDigest: sourceDigest, mode: .file)
             let matchingTrace = trace?.pipelineSignature == pipelineSignature ? trace?.trace : nil
             await MainActor.run {
                 self.counterTrace = matchingTrace
                 self.recordedTrack = frames; self.recordedTouches = touches
-                self.visualRecoveries = (stored.visualRecoveries ?? []).map(\.frame)
+                self.visualRecoveries = recovered
                 self.touchCount = stored.count; self.detections = stored.detections
                 self.dropped = stored.rejected; self.framesRead = stored.framesRead
                 self.videoDuration = stored.duration; self.peakScore = stored.peak
@@ -243,7 +252,9 @@ final class VideoAnalyzer: ObservableObject {
             contactVerifier?.rejectsHandContact(at: $0) ?? false
         }, recordTrace: !visualOnly, footContactEvidence: !visualOnly && JugglingContactVerifier.enabled ? { [weak contactVerifier] in
             contactVerifier?.footEvidence(at: $0)
-        } : nil, countsTouches: !visualOnly)
+        } : nil, countsTouches: !visualOnly, retainContactFrames: { [weak contactVerifier] in
+            contactVerifier?.retainContactFrames(around: $0)
+        })
         var plausibility = BallPlausibility()
         // Same compensation the live path uses, so a file analysed here can be
         // compared directly against the lab's answer on the same footage.
@@ -258,6 +269,8 @@ final class VideoAnalyzer: ObservableObject {
         var detectorSeconds = 0.0, motionSeconds = 0.0, counterSeconds = 0.0
         var contactSeconds = 0.0, publishSeconds = 0.0
 
+        var maskBytes = 0
+        var consecutiveFailures = 0
         var pendingSamples=[CMSampleBuffer](), pendingPredictions=[BallDetector.PreparedFrame]()
         while true {
             let frameStarted = try await pacer.beginFrame { cooling in
@@ -309,6 +322,8 @@ final class VideoAnalyzer: ObservableObject {
             try Task.checkCancellation()
             // Retain the original result for plausibility, motion compensation,
             // contact verification and counting. Extra crops only enter the sidecar.
+            consecutiveFailures = detectionFailed ? consecutiveFailures + 1 : 0
+            guard consecutiveFailures < 5 else { throw VideoSafetyPolicy.Failure.analysis }
             if detectionFailed { visualRecovery?.reset() }
             let visual = detectionFailed ? nil : try autoreleasepool {
                 try visualRecovery?.recover(pixels: pixels,
@@ -364,6 +379,7 @@ final class VideoAnalyzer: ObservableObject {
             let confirmed = counter.push(frameIndex: index, timestampMs: stampMs,
                 ball: ball, person: person, cameraOffsetY: shift, reliable: !compensator.isTooShaky, sourceFrameIndex: index)
             counterSeconds += ProcessInfo.processInfo.systemUptime - counterStart
+            maskBytes += (found.ballMask?.alpha.count ?? 0) + (visual?.ballMask?.alpha.count ?? 0)
             if let detection = found.ball {
                 let b = found.usesBallMasks ? detection : visualRefiner.refine(detection, in: pixels, at: Double(stampMs) / 1000)
                 frames.append(RecordedFrame(time: Double(stampMs) / 1000, x: b.x, y: b.y,
@@ -392,7 +408,25 @@ final class VideoAnalyzer: ObservableObject {
                 let publishStart = ProcessInfo.processInfo.systemUptime
                 let snapshot = (index, counter.count, detected, peak,
                                 plausibility.rejectedSize + plausibility.rejectedJump)
+                #if DEBUG
+                let profile: [String: Double] = [
+                    "cpu_only": VideoWorkExecution.cpuOnly ? 1 : 0,
+                    "model_cpu_only": detector.modelUsesCPUOnly ? 1 : 0,
+                    "model_switches": Double(detector.modelComputeSwitches),
+                    "model_reload_s": detector.modelReloadSeconds,
+                    "background_gpu": VideoWorkExecution.lease?.backgroundGPU == true ? 1 : 0,
+                    "mask_mib": Double(maskBytes) / 1_048_576,
+                    "decode_s": decodeSeconds, "detector_s": detectorSeconds,
+                    "inference_s": inferenceSeconds, "preprocess_s": preprocessSeconds,
+                    "motion_s": motionSeconds, "contact_buffer_s": contactSeconds,
+                    "contact_check_s": (contactVerifier?.totalCheckMS ?? 0) / 1000,
+                    "counter_s": counterSeconds, "thermal_wait_s": pacer.waitingSeconds,
+                    "peak_memory_mib": peakMemory]
+                #endif
                 await MainActor.run {
+                    #if DEBUG
+                    self.profileMetrics = profile
+                    #endif
                     self.framesRead = snapshot.0
                     self.touchCount = snapshot.1
                     self.detections = snapshot.2
@@ -411,8 +445,12 @@ final class VideoAnalyzer: ObservableObject {
             RecordedTouch(index: $0.index, time: Double($0.timestampMs) / 1000, x: $0.x, y: $0.y)
         })
 
+        guard detectionErrors == 0, contactVerifier?.lastError == nil else {
+            throw VideoSafetyPolicy.Failure.analysis
+        }
+
         let trace = counter.traceSnapshot()
-        if let trace {
+        if let trace, !VideoWorkExecution.isAnalysisStudy {
             await SessionAnalysisStore.shared.saveCounterTrace(CounterTraceArchive(sourceDigest: sourceDigest,
                 pipelineSignature: pipelineSignature, mode: .file, timeOriginSeconds: 0, trace: trace))
         }
@@ -421,6 +459,11 @@ final class VideoAnalyzer: ObservableObject {
             values.isEmpty ? 0 : values[min(values.count-1, Int(Double(values.count-1)*p))]
         }
         let metrics: [String: Double] = [
+            "cpu_only": VideoWorkExecution.cpuOnly ? 1 : 0,
+            "model_cpu_only": detector.modelUsesCPUOnly ? 1 : 0,
+            "model_switches": Double(detector.modelComputeSwitches),
+            "model_reload_s": detector.modelReloadSeconds,
+            "background_gpu": VideoWorkExecution.lease?.backgroundGPU == true ? 1 : 0,
             "thermal_wait_s": pacer.waitingSeconds,
             "thermal_peak_state": Double(pacer.peakThermalState),
             "thermal_sleep_events": Double(pacer.pacingSleeps),
@@ -428,6 +471,7 @@ final class VideoAnalyzer: ObservableObject {
             "contact_warmup_ms": contactVerifier?.warmUpMS ?? 0,
             "contact_check_ms": contactVerifier?.totalCheckMS ?? 0,
             "contact_checks": Double(contactVerifier?.checkedContacts ?? 0),
+            "hand_pose_requests": Double(contactVerifier?.handPoseRequests ?? 0),
             "contact_rejections": Double(contactVerifier?.rejectedContacts ?? 0),
             "contact_peak_frames": Double(contactVerifier?.peakBufferedFrames ?? 0),
             "contact_error": contactVerifier?.lastError == nil ? 0 : 1,
@@ -448,6 +492,7 @@ final class VideoAnalyzer: ObservableObject {
             "motion_compensation_s": motionSeconds, "counter_s": counterSeconds,
             "contact_buffer_s": contactSeconds, "progress_publish_s": publishSeconds,
             "mask_frames": Double(frames.filter { $0.ballMask != nil }.count),
+            "all_mask_storage_bytes": Double(maskBytes),
             "mask_storage_bytes": Double(frames.reduce(0) { $0 + ($1.ballMask?.alpha.count ?? 0) })]
         let modelName = detector.modelName
         let resultFollowRows = followRows
@@ -474,7 +519,8 @@ final class VideoAnalyzer: ObservableObject {
                 .write(to:folder.appendingPathComponent("raw-visual.plist"))
         }
         #endif
-        if detectionErrors == 0, (visualRecovery?.errors ?? 0) == 0, SessionAnalysisStore.canStore(frames + recoveredFrames) {
+        if !VideoWorkExecution.isAnalysisStudy, detectionErrors == 0,
+           (visualRecovery?.errors ?? 0) == 0, SessionAnalysisStore.canStore(frames + recoveredFrames) {
             let stored = StoredInference(frames:frames.map(StoredFrame.init),
                 touches:touches.map { [Double($0.index),$0.time,$0.x,$0.y] },count:finalCount,
                 detections:finalDetections,rejected:finalDropped,framesRead:finalFrames,

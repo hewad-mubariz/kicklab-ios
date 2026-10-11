@@ -35,4 +35,36 @@ struct JugglingContactRulesTests {
         overlap["left_wrist"] = Point(x: 0.46, y: 0.70)
         #expect(!JugglingContactRules.isHand(ball: Point(x: 0.46, y: 0.69), width: 0.04, joints: overlap))
     }
+
+    @Test func visibleFingersCanConfirmContactBeyondTheBodyWrist() {
+        let ball = Point(x: 0.5, y: 0.4)
+        let wrist = Point(x: 0.5, y: 0.48)
+        let points: [JugglingContactRules.HandLandmark] = [
+            .init(finger: 0, x: wrist.x, y: wrist.y, confidence: 0.8),
+            .init(finger: 2, x: 0.49, y: 0.43, confidence: 0.8),
+            .init(finger: 2, x: 0.49, y: 0.44, confidence: 0.8),
+            .init(finger: 3, x: 0.51, y: 0.43, confidence: 0.8)]
+        func verdict(_ landmarks: [JugglingContactRules.HandLandmark], wrists: [Point] = [Point(x: 0.5, y: 0.48)]) -> Bool {
+            JugglingContactRules.fingersTouchBall(ball: ball, width: 0.1, height: 0.08,
+                bodyWrists: wrists, landmarks: landmarks)
+        }
+        #expect(verdict(points))
+        #expect(!verdict(Array(points.prefix(3))), "A single finger is insufficient")
+        #expect(!verdict(points, wrists: []), "Must belong to the visible player's body pose")
+        #expect(!verdict(points, wrists: [Point(x: 0.8, y: 0.8)]))
+        #expect(!verdict(points.map { var p = $0; p.confidence = 0.2; return p }))
+        #expect(!verdict(points.map { var p = $0; if p.finger > 0 { p.y += 0.1 }; return p }),
+                "Nearby fingers without ball overlap are insufficient")
+    }
+
+    @Test func fingerFallbackCannotOverrideAmbiguousLegOrHeadContacts() {
+        for y in [0.08, 0.12, 0.47, 0.55, 0.68, 0.93] {
+            #expect(!JugglingContactRules.canResolveTorsoOverlap(ball: Point(x: 0.5, y: y),
+                height: 0.04, joints: figure))
+        }
+        #expect(JugglingContactRules.canResolveTorsoOverlap(ball: Point(x: 0.5, y: 0.3),
+            height: 0.04, joints: figure))
+        #expect(!JugglingContactRules.canResolveTorsoOverlap(ball: Point(x: 0.5, y: 0.3),
+            height: 0.04, joints: [:]))
+    }
 }

@@ -31,6 +31,8 @@ struct ShotToolbox: View {
     let onSeek: (Double) -> Void
     @Binding var page: ShotTool?
     let onClose: () -> Void
+    var isPro = false
+    var onUnlockTool: (ShotTool) -> Void = { _ in }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
     @State private var kicks: [ShotTrailStyle: Int] = [:]
@@ -108,6 +110,10 @@ struct ShotToolbox: View {
     }
 
     private func go(_ next: ShotTool?) {
+        if !isPro, let next, next != .effects {
+            onUnlockTool(next)
+            return
+        }
         forward = next != nil
         withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { page = next }
     }
@@ -134,7 +140,10 @@ struct ShotToolbox: View {
             VStack(spacing: 6) {
                 preview(for: tool).frame(height: 62).accessibilityHidden(true)
                 VStack(spacing: 3) {
-                    Text(tool.rawValue).font(.system(size: 12, weight: .semibold))
+                    HStack(spacing: 4) {
+                        Text(tool.rawValue).font(.system(size: 12, weight: .semibold))
+                        if !isPro && tool != .effects { ProBadge() }
+                    }
                     Text(tool == .effects ? style.title : tool == .graph ? graphStyle.title : camera.style.title)
                         .font(.system(size: 11)).foregroundStyle(.white.opacity(0.55))
                         .contentTransition(.interpolate)
@@ -149,7 +158,7 @@ struct ShotToolbox: View {
             .contentShape(.rect(cornerRadius: 17))
         }
         .buttonStyle(SessionPressStyle(scale: 0.92))
-        .accessibilityLabel(tool.rawValue)
+        .accessibilityLabel(tool.rawValue + (!isPro && tool != .effects ? ", Pro" : ""))
         .accessibilityIdentifier("shot-tool-\(tool.rawValue.lowercased())")
     }
 
@@ -176,12 +185,12 @@ struct ShotToolbox: View {
         case .graph:
             ShotGraphPicker(style: $graphStyle, showGraph: $showGraph, flight: flight, time: time,
                             palette: style.palette, distance: distance,
-                            isPlaying: isPlaying, onTogglePlayback: onTogglePlayback)
+                            isPlaying: isPlaying, onTogglePlayback: onTogglePlayback, showsProBadges: !isPro)
         case .camera:
             ShotCameraPicker(settings: $camera, original: $original, spatialEdit: $spatialEdit, reviewFrames: $reviewFrames, hasBallTrack: hasBallTrack,
                              strike: strike, time: time, isPlaying: isPlaying,
                              onTogglePlayback: onTogglePlayback,
-                             onSeek: onSeek, source: source, frames: frames, pathEnd: flight?.end ?? min(frames.last, strike + 2), onPicking: onPicking)
+                             onSeek: onSeek, source: source, frames: frames, pathEnd: flight?.end ?? min(frames.last, strike + 2), onPicking: onPicking, showsProBadges: !isPro)
         }
     }
 
@@ -241,6 +250,9 @@ struct ShotToolbox: View {
                             .font(.system(size: 13)).foregroundStyle(.black, SessionStyle.mint).padding(4)
                             .transition(.sessionPop(scale: 0.2))
                     }
+                }
+                .overlay(alignment: .topLeading) {
+                    if !isPro && ShotReplayLook.trailRequiresPro(option) { ProBadge().padding(4) }
                 }
                 .sessionKick(kicks[option, default: 0], amount: 0.08)
                 Text(option.title)

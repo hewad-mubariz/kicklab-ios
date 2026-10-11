@@ -82,7 +82,8 @@ struct CloudProfileEditor: View {
                             .font(.footnote).foregroundStyle(.red)
                     }
                     countryCard
-                    leaderboardCard
+                    // First release: restore this with the public leaderboard.
+                    // leaderboardCard
                     if let error {
                         Label(error, systemImage: "exclamationmark.circle")
                             .font(.footnote).foregroundStyle(.red)

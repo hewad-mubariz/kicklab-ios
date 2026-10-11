@@ -3,7 +3,7 @@ import XCTest
 /// Runs the saved-recording editor on a staged, real phone capture. The raw
 /// archive written by VideoAnalyzer is compared externally with the foreground
 /// reference, so a responsive editor alone cannot hide lost background frames.
-final class VisualPreparationLifecycleUITests: XCTestCase {
+final class VisualPreparationLifecycleUITests: ProReplayUITestCase {
     @MainActor
     func testPreparationSurvivesBackgroundAndReturnsToResponsiveEditor() throws {
         #if targetEnvironment(simulator)

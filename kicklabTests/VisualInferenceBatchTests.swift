@@ -29,6 +29,24 @@ final class VisualInferenceBatchTests: XCTestCase {
         XCTAssertEqual(a.ballMask?.alpha,b.ballMask?.alpha,file:file,line:line)
         XCTAssertEqual(a.usesBallMasks,b.usesBallMasks,file:file,line:line)
     }
+    func testPreviewWarmupPreservesFirstFrameDetectionsMasksAndHistory() throws {
+        let cold = try detector(), warmed = try detector()
+        try warmed.warmUp()
+        let frames = [try pixels("hand-mask-gap-100", width: 720, height: 1280),
+                      try pixels("hand-mask-gap-105", width: 720, height: 1280),
+                      try pixels("hand-mask-gap-101", width: 640, height: 360)]
+        var detectedBalls = 0
+        for (index, frame) in frames.enumerated() {
+            let reference = try cold.detect(frame, orientLandscapeAsPortrait: false, timestamp: Double(index) / 60)
+            let candidate = try warmed.detect(frame, orientLandscapeAsPortrait: false, timestamp: Double(index) / 60)
+            if reference.ball != nil { detectedBalls += 1 }
+            assertSame(reference, candidate)
+            XCTAssertEqual(cold.lastFollowKind, warmed.lastFollowKind)
+            XCTAssertEqual(cold.lastFollowCalls, warmed.lastFollowCalls)
+        }
+        XCTAssertGreaterThan(detectedBalls, 0, "The comparison must include actual ball detections")
+    }
+
     func testBatchIsOptInAndNeverAppliesToCountedImports() {
         XCTAssertEqual(BallDetector.visualBatchSize(visualOnly:true,arguments:[]),1)
         XCTAssertEqual(BallDetector.visualBatchSize(visualOnly:true,arguments:["--visual-batch2"]),2)

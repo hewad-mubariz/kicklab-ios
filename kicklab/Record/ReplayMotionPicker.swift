@@ -8,6 +8,7 @@ struct ReplayMotionPicker: View {
     let sourceAspect: CGFloat
     let isPlaying: Bool
     let onTogglePlayback: () -> Void
+    var showsProBadges = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -84,6 +85,9 @@ struct ReplayMotionPicker: View {
                                 style = option; showGraph = true
                             } label: {
                                 MotionStyleOption(style: option, selected: style == option)
+                                    .overlay(alignment: .topTrailing) {
+                                        if showsProBadges { ProBadge().padding(8) }
+                                    }
                             }
                             .buttonStyle(SessionPressStyle(scale: reduceMotion ? 1 : 0.97))
                             .accessibilityLabel(option.title + (option == .ballMotion ? ", Default" : ""))

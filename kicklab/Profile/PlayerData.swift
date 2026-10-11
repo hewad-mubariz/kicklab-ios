@@ -58,7 +58,15 @@ struct JugglingLeaderboard: Decodable, Sendable {
 }
 
 nonisolated enum PlayerDataError: LocalizedError {
-    case unavailable, signIn, invalidResult, requestFailed, invalidProfile
+    case unavailable, signIn, invalidResult, requestFailed, invalidProfile, rejected, rateLimited
+    static func httpFailure(status: Int) -> PlayerDataError {
+        switch status {
+        case 401, 403: .signIn
+        case 400, 409, 422: .rejected
+        case 429: .rateLimited
+        default: .requestFailed
+        }
+    }
     var errorDescription: String? {
         switch self {
         case .unavailable: "Account storage is unavailable in this build."
@@ -66,6 +74,8 @@ nonisolated enum PlayerDataError: LocalizedError {
         case .invalidResult: "This session could not be saved."
         case .requestFailed: "We couldn’t sync with Juggle Dude. Check your connection and try again."
         case .invalidProfile: "Choose a name of 1–40 characters and a valid country."
+        case .rejected: "This result could not sync. It is kept on this phone; contact support if you need help."
+        case .rateLimited: "Sync is temporarily busy. Your sessions are saved and will retry later."
         }
     }
 }
@@ -181,7 +191,8 @@ final class SupabasePlayerService: PlayerDataService {
         let (data, response) = try await session.data(for: request)
         guard let response = response as? HTTPURLResponse, (200...299).contains(response.statusCode) else {
             // Server errors can contain identifiers and request data. Keep them out of UI/logs.
-            throw PlayerDataError.requestFailed
+            throw (response as? HTTPURLResponse).map { PlayerDataError.httpFailure(status: $0.statusCode) }
+                ?? PlayerDataError.requestFailed
         }
         return data
     }

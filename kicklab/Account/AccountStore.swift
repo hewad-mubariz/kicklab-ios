@@ -124,7 +124,7 @@ final class AccountStore: ObservableObject {
             user = nil; pendingEmail = nil; resendAfter = .distantPast
             completedCallbacks.removeAll()
             if !(await cleanup(id)) {
-                errorMessage = "Your account was deleted. Some local replays couldn’t be removed yet; Juggle Dude will retry when you reopen it."
+                errorMessage = "Your account was deleted. Some local replays couldn’t be removed. Reopen the app to retry; if they remain, remove the app to clear its local data."
             }
             return true
         } catch {
