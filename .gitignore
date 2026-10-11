@@ -9,6 +9,23 @@ xcuserdata/
 # Experiment renders, checkpoints and test results (several GB, files over GitHub's 100 MB limit)
 artifacts/
 
+# Local release media, recording investigations and resource backups.
+# Preserve these on disk; they are not part of the source checkout.
+/marketing/app-store-20261010/
+/marketing/subscription-review-20261010/
+/design/ball-distance-recording-review-20261010/
+/design/processing-tips/
+/resource-backups/
+
+# Offline ball-material reference images; keep their reproduction README tracked.
+/design/ball-collection-01/*.png
+/design/ball-collection-01/material-sources/*.png
+/design/ball-collection-01/material-sources/*.jpg
+
+# Generated Python bytecode
+__pycache__/
+*.py[cod]
+
 # macOS
 .DS_Store
 

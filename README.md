@@ -1,5 +1,8 @@
 # Juggle Dude iOS
 
+The [four-week post-launch plan](docs/post-launch/README.md) records the agreed
+priority order, weekly shipping scope, leaderboard rules and release checks.
+
 Open `kicklab.xcodeproj` and use the `JuggleDude` scheme. The current target is iOS 26.5;
 use Xcode with that SDK. Core ML packages in `kicklab/Models` and local account/analytics
 configuration are excluded from Git. Obtain the approved
@@ -12,6 +15,11 @@ and offline ball-print sources are backed up outside the app target in
 The model backup is local and remains ignored by Git. All 14 runtime ball materials
 remain bundled; material-generation instructions are in
 `design/ball-collection-01/material-sources/README.md`.
+
+Local release media, recording investigations, offline material reference images
+and resource backups are preserved on this Mac and excluded from Git. Their exact
+paths are listed in `.gitignore`; they are not included in a fresh clone. The
+material-generation README and bundled runtime materials remain tracked.
 
 Launch validation:
 
