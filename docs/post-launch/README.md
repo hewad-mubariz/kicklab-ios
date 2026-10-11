@@ -3,8 +3,9 @@
 Documented: 2026-10-11. Status: planned; no implementation is completed by this document.
 Week 1 starts after the first public release, rather than on the documentation date.
 
-The first month's priorities are trustworthy counting, dependable sessions on older
-devices, and a fair leaderboard. Replay quality and shot-camera improvements follow.
+The first month's priorities are trustworthy counting, better ball detection and
+tracking, dependable sessions on older devices, and a fair leaderboard. Replay quality
+and shot-camera improvements follow.
 Google/email rollout is a small early release alongside that work. TikTok sign-in,
 additional effects and production trick recognition can follow later.
 
@@ -17,14 +18,20 @@ These are planning allocations, not guarantees that every investigation will suc
 
 | Week | Implementation allocation | Verification / fixes | Intended release |
 | --- | --- | --- | --- |
-| 1 | 4 days: contact accuracy, older-device reliability and provider setup | 1 day | Core reliability update |
+| 1 | 4 days: detection baseline, contact accuracy, older-device reliability and provider setup | 1 day | Core reliability update |
 | 2 | 1 day: Google/email; 3 days: reviewed leaderboard beta | 1 day | Sign-in rollout and a gated leaderboard beta |
-| 3 | 2 days: ball replacement; 1 day: effects; 1 day: UI | 1 day | Cleaner replays and smoother effects |
-| 4 | 1 day: shot camera; 2 days: measurement validation | 2 days | Camera improvements; measurement beta only if validated |
+| 3 | 3 days: detection/tracking and ball replacement; 1 day: essential effects/UI fixes | 1 day | More continuous tracking and cleaner replays |
+| 4 | 1 day: shot camera; 2 days: far-ball detection and measurement validation if time permits | 2 days | Camera/detection improvements; measurement beta only if validated |
 
-The dependency order is contact accuracy and session reliability, then ranked streak
-validation, then the public leaderboard. Authentication must work before ranked
-submissions. Measurement validity determines which camera setup the shot feature supports.
+The dependency order is detection/contact accuracy and session reliability, then
+ranked streak validation, then the public leaderboard. Authentication must work before
+ranked submissions. Far-ball detection and tracking must be validated before expanding
+shot measurements. Measurement validity determines the supported camera setup.
+
+The added detection work uses the same four-week budget: cosmetic UI work and broader
+effect enhancements become stretch scope, and measurement expansion is conditional.
+Full model retraining is not a guaranteed first-month deliverable; ship bounded,
+validated improvements and carry larger experiments into the next cycle.
 
 ## Prioritized backlog
 
@@ -35,21 +42,59 @@ are separated because their priority and release scope differ.
 | --- | --- | --- | --- | --- | --- |
 | 1 | 4 | One-hand touches mistaken for chest/head | Critical | High | Fix known cases while preserving valid touches. |
 | 2 | 3 | iPhone 11/12 live counting | Critical | High | Improve live performance and provide reliable record-then-analyse fallback. |
-| 3 | 1 | Google and email sign-in | High | Low–medium | Complete production rollout and verify account continuity. |
-| 4 | 2 | Fair leaderboard | High | High | Small opt-in beta with reviewed scores after counting validation. |
-| 5 | 8 | Ball masking and replacement | High | Medium–high | Remove original-ball edge leakage and improve preview/export consistency. |
-| 6 | 6 | UI edge cases and transitions | Medium | Low–medium | Address usability problems throughout the month; bound cosmetic work. |
-| 7 | 9 | Existing fire/rainbow effects and execution cost | Medium | Medium | Optimize current effects; additional effects are stretch work. |
-| 8 | 10 | Distance-shot camera experience | Medium | Medium | Improve placement guidance, framing and recording feedback. |
-| 9 | 5 | Real speed and distance travelled | Medium | High | Validate a defined measurement mode; ship only if supported by evidence. |
-| 10 | 7 | Around the World recognition | Later | High | Optional feasibility prototype; no production commitment this month. |
-| 11 | 1 | TikTok sign-in | Low | Medium | Defer until there is clear demand. |
+| 3 | Added follow-up | Model accuracy, far-ball detection and continuous tracking | High | High | Benchmark in Week 1; bounded accuracy/continuity improvements in Week 3 and far-ball work in Week 4. |
+| 4 | 1 | Google and email sign-in | High | Low–medium | Complete production rollout and verify account continuity. |
+| 5 | 2 | Fair leaderboard | High | High | Small opt-in beta with reviewed scores after counting validation. |
+| 6 | 8 | Ball masking and replacement | High | Medium–high | Remove original-ball edge leakage and improve preview/export consistency. |
+| 7 | 6 | UI edge cases and transitions | Medium | Low–medium | Address usability problems throughout the month; cosmetic work is stretch scope. |
+| 8 | 9 | Existing fire/rainbow effects and execution cost | Medium | Medium | Fix essential performance issues; broader enhancements and new effects are stretch work. |
+| 9 | 10 | Distance-shot camera experience | Medium | Medium | Improve placement guidance, framing and recording feedback. |
+| 10 | 5 | Real speed and distance travelled | Medium | High | Validate a defined measurement mode if detection work leaves time; ship only with supporting evidence. |
+| 11 | 7 | Around the World recognition | Later | High | Optional feasibility prototype; no production commitment this month. |
+| 12 | 1 | TikTok sign-in | Low | Medium | Defer until there is clear demand. |
 
 An edge case that blocks recording, loses a session or prevents saving is a critical
 fix regardless of the general UI priority above.
 
+## Model improvements: accuracy, far balls and continuous tracking
+
+Treat these as three related goals. Improving the detector and improving continuity
+across frames both matter; a visually smooth prediction is not proof the ball was detected.
+
+| Goal | Planned work | Evidence of improvement |
+| --- | --- | --- |
+| Better ball detection | Collect and label missed balls and false positives across ball designs, lighting, backgrounds, fast motion and partial occlusion. Compare detector tuning and targeted fine-tuning candidates against the current model. | Higher detection recall without an unacceptable rise in false positives; stable ball location/size and no counting regression. |
+| Far-ball detection | Add small/distant-ball examples and confusing background objects. Evaluate targeted crops, selective higher-resolution analysis and distant-ball recovery within device budgets. | Better recall for visible small balls, fewer false detections on background objects and a documented supported range. |
+| Continuous ball detection/tracking | Reduce flickering detections, short dropouts and switches to another ball/object. Improve short-gap recovery and reacquisition after occlusion or leaving/re-entering the frame. | Fewer and shorter gaps while the ball is visible, fewer identity switches and faster correct reacquisition. |
+
+- [ ] Establish a versioned baseline in Week 1, covering both live capture and imported
+  video. Include iPhone 11/12 and a newer device, near/far balls and difficult negatives.
+- [ ] Split training/tuning and evaluation by recording/session, and by player where
+  practical; do not place adjacent frames from the same recording in both sets.
+- [ ] Measure precision, recall and location/size error. Break results down by the
+  ball's pixel size at detector input, visibility, lighting and device. Do not promise
+  a distance in metres unless camera setup and ball size are controlled.
+- [ ] Measure visible-ball coverage, gap duration, identity switches and reacquisition
+  time. Label full occlusions/out-of-frame intervals separately from missed visible balls.
+- [ ] Keep observed detections distinct from predictions. Bound any gap recovery and
+  stop or mark tracking uncertain when evidence is insufficient; do not invent touches,
+  bridge ranked streaks or calculate speed/distance from unsupported predictions.
+- [ ] Compare model changes and tracking-policy changes separately so the source of
+  an improvement or regression is clear. Include masks/replacement quality in evaluation.
+- [ ] Record model/data versions and evaluate inference latency, memory, dropped frames
+  and thermal behaviour on physical devices before replacing the shipped model.
+- [ ] Keep the existing model available for rollback. Ship a candidate only after
+  held-out accuracy, counting and device-performance checks pass.
+
+**Release gate:** set numerical targets and acceptable tradeoffs after the Week 1
+baseline, before evaluating candidates. Ship only measured improvements within the
+older-device budget. Broad retraining or a larger model moves to the next cycle if
+the bounded experiments do not meet those checks.
+
 ## Week 1: Core session reliability
 
+- [ ] Establish the detection and tracking baseline described above and identify the
+  highest-impact missed-ball, far-ball and dropout cases.
 - [ ] Assemble labelled recordings of one-hand taps near the face/chest, catches,
   throws, ground bounces, genuine chest/head touches and normal foot juggling.
   Include different lighting, camera angles and partial occlusion; hold back some
@@ -113,26 +158,32 @@ obvious abuse, but plausible numbers do not prove legitimate contacts. Automatic
 verification beyond the reviewed beta requires separate validation; reviewing only
 top scores would leave lower positions less protected.
 
-## Week 3: Replay quality, effects and UI
+## Week 3: Detection continuity, replay quality, effects and UI
 
+- [ ] Address the highest-impact detection and short-gap tracking failures from the
+  baseline; compare held-out results before and after each candidate change.
 - [ ] Remove visible original-ball edges during replacement, especially in fast
   movement and partial occlusion; do not hide leakage by indiscriminately enlarging
   the replacement over the player's body.
 - [ ] Check replacement shape, size and timing across consecutive frames.
 - [ ] Align preview and saved-video ball coverage and placement. Verify both paths.
-- [ ] Profile fire/rainbow effects, remove unnecessary work, reuse rendering resources
-  and support lighter quality on slower devices.
+- [ ] Fix essential fire/rainbow performance problems using profiling. Broader resource
+  reuse, lighter quality options and visual enhancements follow if the detection work
+  leaves capacity.
 - [ ] Set performance targets using Week 1's baseline and record before/after results.
   Improved rendering must not worsen counting accuracy or session completion.
 - [ ] Fix loading feedback, cancellation, retries, back navigation, save confirmation
   and interrupted flows. Polish transitions after the functional issues.
 
-**Release gate:** representative clips show cleaner ball coverage in preview and
-export, effects stay within the measured device budgets, and saving still succeeds.
+**Release gate:** visible-ball tracking improves without unsupported gap filling;
+representative clips show cleaner ball coverage in preview and export, effects stay
+within the measured device budgets, and saving still succeeds.
 Additional effects are optional only after these checks pass.
 
 ## Week 4: Shot camera and measurement validation
 
+- [ ] Prioritize far-ball detection/recovery on the supported shot setup. Validate
+  visible small-ball recall and false positives before extending measurement range.
 - [ ] Improve camera placement guidance, framing, ball visibility, setup readiness
   and tracking-loss feedback.
 - [ ] Define each result precisely: distance from the starting point, total distance
@@ -171,7 +222,7 @@ recognition separate from ranked scoring until independently validated.
   those events do not establish counting accuracy and do not represent every user.
 - If ahead of schedule, pull forward one lightweight effect or the ATW experiment.
 - If behind schedule, cut new effects, cosmetic transitions and measurement expansion
-  first. Preserve counting accuracy, older-device verification and leaderboard fairness.
+  first. Preserve detection/counting accuracy, older-device verification and leaderboard fairness.
 - Keep TikTok sign-in, broad automatic anti-cheat, unrestricted airborne measurements
   and production trick recognition in the follow-up backlog.
 - Mark checkboxes only after verification. Record each shipped version, evidence and
