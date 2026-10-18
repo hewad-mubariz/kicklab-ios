@@ -24,6 +24,7 @@
 //  v[20] arc turn   cos, sin of the swing, principal column (px), horizon row (px)
 //  v[21] arc scene  the phone's focal (px), its height, the kicker's depth, the backdrop's depth (m)
 //  v[22] arc layers background fill (0 – 1), fill reach around the kicker (px), view centre offset x, y (px)
+//  v[23] arc fill   softening of what other frames fill in behind the kicker (px), how far the softening fades out (px), -, -
 //  In frozen-arc mode the atlas texture holds the layers: painted-out background (rgb), kicker outline (a).
 #pragma once
 
@@ -173,8 +174,32 @@ float4 shotArcPixel(SHOT_TEXTURE source, SHOT_TEXTURE layers, constant ShotCamer
             near = max(near, layers.sample(linear, uv + float2(cos(angle), sin(angle)) * reach).a);
         }
         // Only where the kicker stood (and a thin rim): elsewhere the frozen frame, shadow and all, stays.
-        float fill = smoothstep(.15f, .5f, near) * u.v[22].x;
+        float fill = smoothstep(.1f, .5f, near) * u.v[22].x;
         if (fill > 0) color = mix(color, float4(layers.sample(linear, uv).rgb, 1), fill);
+        // What other frames fill in behind the kicker is softened, and the softening fades out over a
+        // short distance, so the fill-in melts into the frozen background instead of reading as a patch
+        // from another moment. Away from where he stood, the background stays sharp.
+        float soft = u.v[23].x;
+        if (soft > .3f && u.v[22].x > 0) {
+            float2 wide = float2(u.v[23].y, u.v[23].y) / size;
+            float around = near;
+            for (int i = 0; i < 8; i++) {
+                float angle = float(i) * .7853982f;
+                around = max(around, layers.sample(linear, uv + float2(cos(angle), sin(angle)) * wide).a);
+            }
+            float softness = smoothstep(.05f, .5f, around) * u.v[22].x;
+            if (softness > .01f) {
+                float4 sum = color;
+                for (int i = 0; i < 12; i++) {
+                    float r = soft * sqrt((float(i) + .5f) / 12.f), angle = float(i) * 2.39996f;
+                    float2 tap = uv + float2(cos(angle), sin(angle)) * r / size;
+                    float4 c = source.sample(linear, tap);
+                    if (fill > 0) c = mix(c, float4(layers.sample(linear, tap).rgb, 1), fill);
+                    sum += c;
+                }
+                color = mix(color, sum / 13.f, softness);
+            }
+        }
     }
     // The kicker: a cut-out standing at his own depth.
     if (dz > 1e-5f) {

@@ -312,7 +312,7 @@ final class ShotCameraTests: XCTestCase {
                 && u[9].w < 0.01 && u[10].w < 0.01 && (layout || u[12].x < 0.01) && u[14].y < 0.01 && u[15].w < 0.01
                 && f.captions.allSatisfy { $0.alpha < 0.02 }
         }
-        for move in ShotCameraMove.allCases where move != .tilt && move != .replay && move != .arc {
+        for move in ShotCameraMove.allCases where ![.tilt, .replay, .arc, .slowmo].contains(move) {
             let eased = plan([clip(move, 0.4, 1.4)])
             let middle = eased.frame(output: eased.timeline.outputTime(for: 0.9), size: size)
             XCTAssertFalse(isOriginal(middle), "\(move.title) shows inside its block")
@@ -337,6 +337,29 @@ final class ShotCameraTests: XCTestCase {
         XCTAssertGreaterThan(cut.frame(output: 1.4 - 0.001, size: size).uniforms[1].z, 1.05, "Cut keeps the move until the block's last frame")
         XCTAssertTrue(ShotMoveSettings.controls(for: .follow).contains(.ending))
         XCTAssertFalse(ShotMoveSettings.controls(for: .tilt).contains(.ending), "Tilt Punch keeps its own ending")
+    }
+
+    func testSlowMotionLandsWhereYouAreAndOnlySlowsTime() {
+        // Added with the playhead at 1.6 s: half a second around it, nowhere near the strike.
+        let range = ShotCameraMove.slowmo.defaultRange(strike: 0.5, flightEnd: 1.3, playhead: 1.6, duration: 2.5)
+        XCTAssertEqual(range.lowerBound, 1.35, accuracy: 0.001)
+        XCTAssertEqual(range.upperBound, 1.85, accuracy: 0.001)
+        var track = ShotCameraTrack()
+        let id = track.insert(.slowmo, range: range, duration: 2.5)
+        // Stretched by its edge like any block.
+        track.trim(id, edge: .end, to: 2.2, duration: 2.5, snaps: [], within: 0)
+        let clip = try! XCTUnwrap(track.clip(id))
+        XCTAssertEqual(clip.end, 2.2, accuracy: 0.001)
+        let timeline = ShotEditTimeline(track: track, duration: 2.5)
+        // Four times slower, less a little for easing in and out.
+        let extra = clip.length / clip.settings.rate - clip.length
+        XCTAssertGreaterThan(timeline.outputDuration, 2.5 + extra * 0.6, "The block plays slower")
+        XCTAssertLessThanOrEqual(timeline.outputDuration, 2.5 + extra + 0.001)
+        XCTAssertFalse(ShotSlowMotion.stretches(in: timeline, track: track).isEmpty, "with smooth frames where the device can")
+        // Time only: the picture stays the recording's own.
+        let plan = ShotCameraPlan(track: track, ball: flight(), flight: nil, duration: 2.5, aspect: 9.0 / 16)
+        XCTAssertFalse(plan.frame(output: timeline.outputTime(for: 1.8), size: CGSize(width: 180, height: 320)).isActive)
+        XCTAssertFalse(ShotMoveSettings.controls(for: .slowmo).contains(.ending))
     }
 
     func testFrozenArcSwingsAroundTheKickerAndReturnsToTheRealView() throws {

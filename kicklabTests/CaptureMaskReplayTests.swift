@@ -26,7 +26,7 @@ final class CaptureMaskReplayTests: XCTestCase {
         return result
     }
 
-    func testRecordedMasksAreReanalysedOnTheUploadClockWithoutChangingLiveStats() async throws {
+    func testRecordedMasksAreReanalysedOnTheSourceClockWithoutChangingLiveStats() async throws {
         let defaults = UserDefaults.standard
         let previous = defaults.object(forKey: "experimentalBallModel")
         defaults.set("motionModel", forKey: "experimentalBallModel")
@@ -45,7 +45,8 @@ final class CaptureMaskReplayTests: XCTestCase {
         }
         let oldTrack = BallEffectTrack(frames: live)
         let oldEligible = renderTimes.filter { oldTrack.mask(at: $0) != nil }.count
-        XCTAssertLessThan(oldEligible, renderTimes.count / 2, "The fixture must reproduce the live/composition clock mismatch")
+        XCTAssertEqual(renderTimes, rawTimes, "Composition must preserve every irregular source timestamp")
+        XCTAssertEqual(oldEligible, renderTimes.count, "Saved-frame masks must stay on their original frames")
         let refined = try await BallVisualRefiner.refineVideo(source: url, frames: live)
         let uploaded = VideoAnalyzer()
         uploaded.analyse(url: url)
@@ -68,7 +69,7 @@ final class CaptureMaskReplayTests: XCTestCase {
         }
         let visual = BallEffectTrack(frames: refined)
         let eligible = renderTimes.filter { visual.mask(at: $0) != nil }.count
-        XCTAssertGreaterThan(eligible, oldEligible)
+        XCTAssertGreaterThan(eligible, 0)
         XCTAssertTrue(refined.allSatisfy { row in renderTimes.contains { abs($0 - row.time) < 0.003 } })
         let marks = [RecordedTouch(index: 1, time: 0.4, x: 0.45, y: 0.45)]
         var summary = SessionSummary.make(touches: 7, duration: 2, bestCombo: 7, personalBest: 7,

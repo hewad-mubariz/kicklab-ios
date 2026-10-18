@@ -49,6 +49,27 @@ The iPhone 14 cutoff is a configurable product default, not a claim that every l
 phone has passed physical-device qualification. Previous distant/fast-ball misses at
 288 and the earlier isolated iPhone 17 GPU stall remain part of release validation.
 
+**Source-frame timing follow-up, 18 October:** an indoor live recording contained a
+7.703-second opening gap followed by approximately 60 fps footage. Its nominal average
+was only 46 fps, which the old composition used to reduce 1,519 source frames to 1,166.
+The shared decoder now uses the source track's timestamps unless a caller explicitly
+requests retiming. Both exporters retain the appropriate high-frame-rate MOV format,
+and analysis cache version 14 invalidates artifacts prepared on the old clock.
+
+The [timing validation report](benchmarks/touch-counting/source-frame-timing-20261018.json)
+records exact source/composition timestamp agreement for all 1,519 earlier indoor,
+2,193 fresh indoor and 1,877 outdoor 120 fps frames. Fifteen checks passed on iPhone 11,
+including RF replay, masks and customized exports; fourteen passed on Simulator,
+including Power Shot retiming and audio. The additional RF replay check could not
+complete on Simulator because pose-model weights were missing, but passed on the phone.
+Evidence is in `artifacts/ball-replacement-review-20261018/`.
+
+This fixes export cadence, not the original recording startup stall or incomplete
+replacement-ball coverage. The startup issue still needs repeated cold-start capture
+validation before a launch decision. Indoor ball-edge/blur refinement is a candidate
+for post-launch quality work. Keeping previously skipped frames can increase processing
+time for affected clips. No TestFlight upload was made.
+
 The juggling pipeline separates camera coordination from analysis:
 
 - `CameraSession` owns camera permissions/configuration, capture and recording lifecycle,

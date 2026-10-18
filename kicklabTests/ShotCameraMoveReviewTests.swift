@@ -33,18 +33,19 @@ final class ShotCameraMoveReviewTests: XCTestCase {
     func test10_ImpactRipple() async throws { try await review(.ripple) }
     func test11_LaunchWarp() async throws { try await review(.warp) }
     func test12_SpeedRamp() async throws { try await review(.ramp) }
-    func test13_FreezeAndPath() async throws { try await review(.freeze) }
-    func test14_FrozenArc() async throws { try await review(.arc) }
-    func test15_InstantReplay() async throws { try await review(.replay) }
-    func test16_BallLens() async throws { try await review(.lens) }
-    func test17_Spotlight() async throws { try await review(.spotlight) }
-    func test18_RackFocus() async throws { try await review(.focus) }
-    func test19_BallStrobe() async throws { try await review(.strobe) }
-    func test20_TargetLock() async throws { try await review(.lock) }
+    func test13_SlowMotion() async throws { try await review(.slowmo) }
+    func test14_FreezeAndPath() async throws { try await review(.freeze) }
+    func test15_FrozenArc() async throws { try await review(.arc) }
+    func test16_InstantReplay() async throws { try await review(.replay) }
+    func test17_BallLens() async throws { try await review(.lens) }
+    func test18_Spotlight() async throws { try await review(.spotlight) }
+    func test19_RackFocus() async throws { try await review(.focus) }
+    func test20_BallStrobe() async throws { try await review(.strobe) }
+    func test21_TargetLock() async throws { try await review(.lock) }
 
     /// Frozen Arc on imported kicks, when `artifacts/imported-shots/` holds clip + track cache pairs
     /// (`name.mp4` with `name.plist`). They stay out of git; without them this test is skipped.
-    func test21_FrozenArcOnImportedClips() async throws {
+    func test22_FrozenArcOnImportedClips() async throws {
         let folder = Self.repository.appendingPathComponent("artifacts/imported-shots")
         let clips = ((try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? [])
             .filter { $0.pathExtension == "mp4" && FileManager.default.fileExists(atPath: $0.deletingPathExtension().appendingPathExtension("plist").path) }
@@ -59,7 +60,7 @@ final class ShotCameraMoveReviewTests: XCTestCase {
     private static let order: [ShotCameraMove] = [
         .follow, .chase, .broadcast, .handoff, .split, .duo,
         .impact, .tilt, .recoil, .ripple, .warp,
-        .ramp, .freeze, .arc, .replay,
+        .ramp, .slowmo, .freeze, .arc, .replay,
         .lens, .spotlight, .focus, .strobe, .lock,
     ]
 
@@ -154,7 +155,10 @@ final class ShotCameraMoveReviewTests: XCTestCase {
         let quiet = outside.map { $0.change }.sorted()
         let grain = quiet.isEmpty ? 0 : quiet[quiet.count / 2]
         XCTAssertFalse(insideTimes.isEmpty, "\(move.title) has frames in its block")
-        XCTAssertGreaterThan(strongest.change, max(0.0015, grain * 3), "\(move.title) should visibly change the picture inside its block")
+        // Slow Motion changes time, not the picture; its timing is checked above.
+        if move != .slowmo {
+            XCTAssertGreaterThan(strongest.change, max(0.0015, grain * 3), "\(move.title) should visibly change the picture inside its block")
+        }
         XCTAssertLessThan(ending.change, 0.03, String(format: "%@ should end on the original, but its last frame (%.2f s) still differs by %.1f%%",
                                                       move.title, ending.at, ending.change * 100))
         let leaks = outside.filter { $0.change > 0.015 }
@@ -179,10 +183,10 @@ final class ShotCameraMoveReviewTests: XCTestCase {
             return nil
         }
         switch move {
-        case .ramp:
+        case .ramp, .slowmo:
             let slowest = timeline.segments.compactMap { rate($0.kind) }.min() ?? 1
-            XCTAssertEqual(slowest, clip.settings.rate, accuracy: 0.02, "Speed Ramp slows to its rate")
-            XCTAssertGreaterThan(timeline.outputDuration, duration + 0.2, "Speed Ramp makes the video longer")
+            XCTAssertEqual(slowest, clip.settings.rate, accuracy: 0.02, "\(move.title) slows to its rate")
+            XCTAssertGreaterThan(timeline.outputDuration, duration + 0.2, "\(move.title) makes the video longer")
         case .freeze, .arc:
             let hold = timeline.segments.first { $0.kind == .hold }?.outputLength ?? 0
             XCTAssertEqual(hold, min(move == .arc ? 4 : 3, max(0.2, clip.settings.hold)), accuracy: 0.02, "\(move.title) holds for its hold time")

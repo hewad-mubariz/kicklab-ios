@@ -62,7 +62,7 @@ nonisolated struct ShotEditTimeline: Equatable, Sendable {
         for clip in track.clips where clip.move.retimes {
             let a = min(self.duration, max(cursor, clip.start)), b = min(self.duration, max(a, clip.end))
             switch clip.move {
-            case .ramp:
+            case .ramp, .slowmo:
                 play(to: a)
                 let rate = min(1, max(0.1, clip.settings.rate))
                 if clip.settings.smooth {

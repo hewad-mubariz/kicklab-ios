@@ -277,6 +277,11 @@ struct ShotMoveSketch: View {
             gc.stroke(path, with: .color(Self.lime), style: StrokeStyle(lineWidth: 2, lineCap: .round))
             let flightP = u < 0.6 ? 0 : min(1, (u - 0.6) / 0.3)
             drawBall(&gc, at: map(ball(flightP)))
+        case .slowmo:
+            // The ball drifts across at a crawl, with its speed on it.
+            drawPicture(&gc, size)
+            drawBall(&gc, at: map(ball(0.15 + 0.25 * u)))
+            label(&gc, "×0.25", at: CGPoint(x: 8, y: 10))
         case .arc:
             // Frozen on contact, the backdrop slides behind the kicker as the camera swings round him.
             let hold = u > 0.12 && u < 0.88
