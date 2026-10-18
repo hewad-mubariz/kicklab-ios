@@ -27,6 +27,25 @@ struct SessionDesignReview: View {
     }
 
     static var summary: SessionSummary {
+        if let name = argument("--rf-full-app-review"), name == URL(fileURLWithPath: name).lastPathComponent,
+           name.hasPrefix("RFValidation-") {
+            let folder = URL.documentsDirectory.appendingPathComponent(name)
+            if let data = try? Data(contentsOf: folder.appendingPathComponent("track.plist")),
+               let frames = try? PropertyListDecoder().decode([StoredFrame].self, from: data),
+               let values = try? Data(contentsOf: folder.appendingPathComponent("touches.json")),
+               let rows = (try? JSONSerialization.jsonObject(with: values)) as? [[Double]] {
+                let touches = rows.map { RecordedTouch(index: Int($0[0]), time: $0[1], x: $0[2], y: $0[3]) }
+                var result = SessionSummary.make(touches: touches.count, duration: 30, bestCombo: touches.count,
+                    personalBest: touches.count, videoURL: folder.appendingPathComponent("source.mov"),
+                    touchesMarked: touches, track: frames.map(\.frame))
+                if let data = try? Data(contentsOf: folder.appendingPathComponent("visual-track.plist")),
+                   let frames = try? PropertyListDecoder().decode([StoredFrame].self, from: data) {
+                    result.visualTrack = frames.map(\.frame)
+                } else { result.needsVisualPreparation = true }
+                return result
+            }
+        }
+
         let video = fileURL(argument("--session-video") ?? "/tmp/kicklab-design-preview.mp4")
         if requestedScreen == "motion-replay" {
             return SessionSummary(
@@ -67,6 +86,8 @@ struct SessionDesignReview: View {
             case "capture-preparing": CaptureDesignReview(initialState: .warming)
             case "counter": CounterDesignReview()
             case "effects": ReplayEffectsView(summary: Self.summary, edit: $edit, stadiumPreview: sceneModel, overlays: $overlays, onBack: {})
+            case "rf-post-session": PostSessionFlowView(summary: Self.summary,
+                onFinished: {}, onRecordAnother: {}, recordsPersonalBest: false)
             case "stats": DetailedStatsView(summary: Self.summary, onSaveShare: {}, onBack: {})
             case "share": SaveShareView(summary: Self.summary, edit: edit, sceneModel: sceneModel, overlays: $overlays, onRecordAnother: {}, onDone: {}, onBack: {})
             case "processing": ProcessingOverlay(progress: 0.65, stepIndex: 2)

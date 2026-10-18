@@ -14,8 +14,13 @@ struct ShotToolbox: View {
     @Binding var intensity: Double
     @Binding var graphStyle: ShotGraphStyle
     @Binding var showGraph: Bool
-    @Binding var camera: ShotCameraSettings
+    @Binding var camera: ShotCameraTrack
+    @Binding var cameraSelection: UUID?
+    @Binding var targetEdit: UUID?
     @Binding var original: Bool
+    let plan: ShotCameraPlan?
+    let still: CGImage?
+    let duration: Double
     let flight: ShotFlight?
     var distance: BallDistanceTimeline? = nil
     let time: Double
@@ -23,16 +28,15 @@ struct ShotToolbox: View {
     let onTogglePlayback: () -> Void
     let hasBallTrack: Bool
     let source: URL?
-    let strike: Double
     let frames: ShotSourceFrames
-    @Binding var spatialEdit: ShotCameraSpatialEdit?
-    @Binding var reviewFrames: [Double]
-    let onPicking: (Bool) -> Void
     let onSeek: (Double) -> Void
+    let onPreview: (ShotCameraClip) -> Void
     @Binding var page: ShotTool?
     let onClose: () -> Void
     var isPro = false
     var onUnlockTool: (ShotTool) -> Void = { _ in }
+    /// Smooth slow-motion frames are being made in the background.
+    var makingSmoothMotion = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
     @State private var kicks: [ShotTrailStyle: Int] = [:]
@@ -124,6 +128,14 @@ struct ShotToolbox: View {
         withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { trayHeight = height }
     }
 
+    private var cameraSummary: String {
+        switch camera.clips.count {
+        case 0: "Add moves"
+        case 1: camera.clips[0].move.title
+        default: "\(camera.clips.count) moves"
+        }
+    }
+
     // MARK: - Grid
 
     private var grid: some View {
@@ -144,7 +156,7 @@ struct ShotToolbox: View {
                         Text(tool.rawValue).font(.system(size: 12, weight: .semibold))
                         if !isPro && tool != .effects { ProBadge() }
                     }
-                    Text(tool == .effects ? style.title : tool == .graph ? graphStyle.title : camera.style.title)
+                    Text(tool == .effects ? style.title : tool == .graph ? graphStyle.title : cameraSummary)
                         .font(.system(size: 11)).foregroundStyle(.white.opacity(0.55))
                         .contentTransition(.interpolate)
                 }
@@ -171,9 +183,10 @@ struct ShotToolbox: View {
             ShotGraphThumbnail(style: graphStyle, palette: style.palette)
                 .clipShape(.rect(cornerRadius: 10))
         case .camera:
-            Image(systemName: camera.style == .none ? "viewfinder" : camera.style.symbol)
-                .font(.system(size: 32, weight: .light)).foregroundStyle(SessionStyle.mint)
+            Image(systemName: camera.clips.first?.move.symbol ?? "video.badge.plus")
+                .font(.system(size: 30, weight: .light)).foregroundStyle(SessionStyle.mint)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentTransition(.symbolEffect(.replace))
         }
     }
 
@@ -187,10 +200,10 @@ struct ShotToolbox: View {
                             palette: style.palette, distance: distance,
                             isPlaying: isPlaying, onTogglePlayback: onTogglePlayback, showsProBadges: !isPro)
         case .camera:
-            ShotCameraPicker(settings: $camera, original: $original, spatialEdit: $spatialEdit, reviewFrames: $reviewFrames, hasBallTrack: hasBallTrack,
-                             strike: strike, time: time, isPlaying: isPlaying,
-                             onTogglePlayback: onTogglePlayback,
-                             onSeek: onSeek, source: source, frames: frames, pathEnd: flight?.end ?? min(frames.last, strike + 2), onPicking: onPicking, showsProBadges: !isPro)
+            ShotCameraEditor(track: $camera, selection: $cameraSelection, original: $original, targetEdit: $targetEdit,
+                             plan: plan, still: still, duration: duration, frames: frames, source: source, time: time,
+                             isPlaying: isPlaying, hasBallTrack: hasBallTrack, onSeek: onSeek,
+                             onTogglePlayback: onTogglePlayback, onPreview: onPreview, makingSmoothMotion: makingSmoothMotion)
         }
     }
 

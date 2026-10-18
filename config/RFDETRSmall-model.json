@@ -1,0 +1,57 @@
+{
+  "resource": "RFDETRSmallRecovery040FP16",
+  "candidate": "rfsmall-confidence040-shared-288-384",
+  "source_package": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/runs/v2/20261017-rfdetr-shared-resolution-001/RFSharedResolution.mlpackage",
+  "precision": "FP16",
+  "input_type": "FP32",
+  "foreground_compute": "cpuAndGPU with cpuOnly fallback",
+  "background_compute": "cpuOnly",
+  "ball_threshold": 0.4,
+  "person_threshold": 0.5,
+  "files": [
+    {
+      "path": "Data/com.apple.CoreML/model.mlmodel",
+      "bytes": 711419,
+      "sha256": "e0c3e470cdb87c6abc5421641a915d3c0bcfca78c07fa1d6f077d3984aa4120c"
+    },
+    {
+      "path": "Data/com.apple.CoreML/weights/weight.bin",
+      "bytes": 61864768,
+      "sha256": "c8c1b8d5392397e5d67692879bb192c5d8e57c6673fdaa8a904b2ab73977e0cc"
+    },
+    {
+      "path": "Manifest.json",
+      "bytes": 617,
+      "sha256": "4494645218d0a70d0232d2dc860b52d084627b098b75d2333404b0db2609a8f0"
+    }
+  ],
+  "status": "Integrated into Juggle Dude 1.0.1 (22) for local validation only. No TestFlight upload.",
+  "prior_audit": "benchmarks/touch-counting/final-validation-20261015/rf-integration-audit.json",
+  "numerical_gate_note": "Historical 201-frame export check exceeded strict score-delta 0.03 on two below-threshold inputs; no threshold flips outside the 0.01 margin. Full-video comparisons are required before promotion.",
+  "source_candidate": "v2.0.0-dev.7-rfsmall-confidence040",
+  "checkpoint_sha256": "632cdb7b9159a2789f2ebc0c85b0dc9d164f989d861940a176e7a5763c534123",
+  "weights_comparison": {
+    "reference_checkpoint_sha256": "e837bedaa7357643958c78c37104dcd12808bd9bd8db10385c61c2d974149b94",
+    "identical_state_dict_tensors": 545,
+    "different_tensors": 0,
+    "evidence": "artifacts/rf-integration-audit-20261015/graph-and-provenance.json"
+  },
+  "validation_report": "benchmarks/touch-counting/main-integration-20261018.json",
+  "input_functions": {
+    "rf288": [
+      1,
+      3,
+      288,
+      288
+    ],
+    "rf384": [
+      1,
+      3,
+      384,
+      384
+    ]
+  },
+  "default_function": "rf288",
+  "device_policy": "local-device-v1: explicit iPhone 14+ allowlist uses rf384; all other identifiers use rf288",
+  "device_policy_validation_report": "benchmarks/touch-counting/rf-local-profile-20261018.json"
+}

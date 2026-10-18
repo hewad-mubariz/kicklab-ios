@@ -60,7 +60,7 @@ nonisolated enum ProFeature: String, CaseIterable, Identifiable {
         switch self {
         case .effects: "All effects"
         case .balls: "Ball styles"
-        case .motion: "Graphs & counters"
+        case .motion: "Graphs & counter styles"
         }
     }
 }

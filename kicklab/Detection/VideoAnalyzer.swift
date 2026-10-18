@@ -54,6 +54,7 @@ final class VideoAnalyzer: ObservableObject {
     private var worker: Task<Void, Never>?
 
     #if DEBUG
+    var finalTestFiles: FinalTestFiles?
     @Published private(set) var failureDiagnostic = ""
     @Published private(set) var profileMetrics: [String: Double] = [:]
     #endif
@@ -174,7 +175,13 @@ final class VideoAnalyzer: ObservableObject {
         // A visual-only result cannot masquerade as a counted import. A complete
         // import remains a valid source of visual observations in either mode.
         let cacheKey = visualOnly ? SessionAnalysisStore.digest(Data("visual-inference|\(visualSignature)|\(sourceDigest)".utf8)) : fullKey
-        let bypassCache = VideoWorkExecution.isAnalysisStudy
+        #if DEBUG
+        let validationFiles = await self.finalTestFiles
+        let isFinalValidation = validationFiles != nil
+        #else
+        let isFinalValidation = false
+        #endif
+        let bypassCache = isFinalValidation || VideoWorkExecution.isAnalysisStudy
             || ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache")
             || ProcessInfo.processInfo.arguments.contains("--effects-follow-review")
         let cached = bypassCache ? nil : await SessionAnalysisStore.shared.loadInference(key:cacheKey)
@@ -248,14 +255,15 @@ final class VideoAnalyzer: ObservableObject {
         let contactVerifier = !visualOnly && JugglingContactVerifier.enabled ? JugglingContactVerifier() : nil
         contactVerifier?.warmUp()
         try Task.checkCancellation()
-        let counter = StreamingCounter(rejectsHandContact: { [weak contactVerifier] in
-            contactVerifier?.rejectsHandContact(at: $0) ?? false
-        }, recordTrace: !visualOnly, footContactEvidence: !visualOnly && JugglingContactVerifier.enabled ? { [weak contactVerifier] in
-            contactVerifier?.footEvidence(at: $0)
-        } : nil, countsTouches: !visualOnly, retainContactFrames: { [weak contactVerifier] in
-            contactVerifier?.retainContactFrames(around: $0)
-        })
-        var plausibility = BallPlausibility()
+        let counter = ContactCounterFactory.make(verifier: contactVerifier,
+            mode: visualOnly ? .visualOnly : .counting)
+        #if DEBUG
+        if let validationFiles {
+            counter.debugDiagnosticObserver = { validationFiles.append($0, to: "analysis-contacts.jsonl") }
+        }
+        #endif
+        var plausibility = BallPlausibility(policy: detector.plausibilityPolicy)
+        var playerTracker = ActiveJugglerTracker()
         // Same compensation the live path uses, so a file analysed here can be
         // compared directly against the lab's answer on the same footage.
         let compensator = MotionCompensator()
@@ -345,9 +353,7 @@ final class VideoAnalyzer: ObservableObject {
             inferenceSeconds += detector.lastInferenceMS / 1000
             detectorSeconds += detector.lastTotalMS / 1000
             peakMemory = max(peakMemory, DetectorPerformance.memoryMB())
-            if let ball = found.ball {
-                found.ball = plausibility.accept(ball, frame: index)
-            }
+            found = plausibility.filter(found, frame: index, timestampMs: stampMs)
             if let b = found.ball {
                 detected += 1
                 peak = max(peak, b.score)
@@ -365,19 +371,21 @@ final class VideoAnalyzer: ObservableObject {
                                 width: $0.width, height: $0.height,
                                 confidence: $0.score)
             }
-            let person = found.person.map {
+            let candidates = found.people.isEmpty ? found.person.map { [$0] } ?? [] : found.people
+            let player = playerTracker.update(people: candidates.map {
                 PersonBox(x: $0.x, y: $0.y, width: $0.width, height: $0.height)
-            }
+            }, ball: ball, timestampMs: stampMs)
+            let person = player.canMatchPose ? player.box : nil
             let contactStart = ProcessInfo.processInfo.systemUptime
             if compensator.isTooShaky { contactVerifier?.discardFrames() }
             else {
                 contactVerifier?.store(pixels, frameIndex: index, timestampMs: stampMs,
-                                       ball: found.ball, orientLandscapeAsPortrait: false)
+                                       ball: found.ball, orientLandscapeAsPortrait: false, player: player)
             }
             contactSeconds += ProcessInfo.processInfo.systemUptime - contactStart
             let counterStart = ProcessInfo.processInfo.systemUptime
             let confirmed = counter.push(frameIndex: index, timestampMs: stampMs,
-                ball: ball, person: person, cameraOffsetY: shift, reliable: !compensator.isTooShaky, sourceFrameIndex: index)
+                ball: ball, person: person, cameraOffsetY: shift, reliable: !compensator.isTooShaky, sourceFrameIndex: index, player: player)
             counterSeconds += ProcessInfo.processInfo.systemUptime - counterStart
             maskBytes += (found.ballMask?.alpha.count ?? 0) + (visual?.ballMask?.alpha.count ?? 0)
             if let detection = found.ball {
@@ -450,7 +458,7 @@ final class VideoAnalyzer: ObservableObject {
         }
 
         let trace = counter.traceSnapshot()
-        if let trace, !VideoWorkExecution.isAnalysisStudy {
+        if let trace, !isFinalValidation, !VideoWorkExecution.isAnalysisStudy {
             await SessionAnalysisStore.shared.saveCounterTrace(CounterTraceArchive(sourceDigest: sourceDigest,
                 pipelineSignature: pipelineSignature, mode: .file, timeOriginSeconds: 0, trace: trace))
         }
@@ -519,7 +527,7 @@ final class VideoAnalyzer: ObservableObject {
                 .write(to:folder.appendingPathComponent("raw-visual.plist"))
         }
         #endif
-        if !VideoWorkExecution.isAnalysisStudy, detectionErrors == 0,
+        if !isFinalValidation, !VideoWorkExecution.isAnalysisStudy, detectionErrors == 0,
            (visualRecovery?.errors ?? 0) == 0, SessionAnalysisStore.canStore(frames + recoveredFrames) {
             let stored = StoredInference(frames:frames.map(StoredFrame.init),
                 touches:touches.map { [Double($0.index),$0.time,$0.x,$0.y] },count:finalCount,

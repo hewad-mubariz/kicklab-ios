@@ -1,0 +1,209 @@
+{
+  "schema": "kicklab.rf-local-profile.v1",
+  "date": "2026-10-18",
+  "status": "local checkpoint validated; not consolidated into main app or uploaded to TestFlight",
+  "source": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-local-profile-20261018/source",
+  "parent": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-selective-effects-20261017/source",
+  "bundle": "com.juggledude.rfprofile.debug",
+  "build": "2026101801",
+  "policy": {
+    "known_iPhone14_and_newer": 384,
+    "older_and_SE": 288,
+    "unrecognized": 288,
+    "offline": true,
+    "fixed_for_process": true,
+    "remote_configuration": false,
+    "source": "benchmarks/rf-local-profile/RFDeviceProfile.swift",
+    "mapping_source": "https://github.com/devicekit/DeviceKit/blob/master/Source/Device.generated.swift",
+    "mapping_checked": "2026-10-18"
+  },
+  "integration": [
+    "buffered live RF worker",
+    "saved-video detector (juggling, shots, distance, effects)",
+    "actual input shape validation",
+    "resolution/function/graph/precision/compute-policy cache identity",
+    "isolated external debug-study cache namespace"
+  ],
+  "unchanged": [
+    "RF checkpoint weights and thresholds",
+    "camera recording resolution",
+    "tracker and counter rules",
+    "main app runtime working tree",
+    "original installed RF Small 1707"
+  ],
+  "shared_model": {
+    "checkpoint_sha256": "632cdb7b9159a2789f2ebc0c85b0dc9d164f989d861940a176e7a5763c534123",
+    "compiled_bytes": 62628857,
+    "files": {
+      "analytics/coremldata.bin": {
+        "bytes": 243,
+        "sha256": "afb728c60d9e737b12f3e2ac6ed7eed70f955ad4afc077c7f7070ce62f984bba"
+      },
+      "coremldata.bin": {
+        "bytes": 352,
+        "sha256": "2fd63d26cc1ce66091d59ab985c7891ffc3cf88cdc2ba212221ef89ec98d6306"
+      },
+      "metadata.json": {
+        "bytes": 7901,
+        "sha256": "d94b4793791067533cf9d09af401d2e376c29e5b0ba2b19907eeb44dd310f480"
+      },
+      "model.mil": {
+        "bytes": 755593,
+        "sha256": "300ebd2bc8fadf0029d4a210b0774308b9f5dc151565eb981a8eddc8afa74d7a"
+      },
+      "weights/weight.bin": {
+        "bytes": 61864768,
+        "sha256": "c8c1b8d5392397e5d67692879bb192c5d8e57c6673fdaa8a904b2ab73977e0cc"
+      }
+    },
+    "debug_and_release_bundle_hashes_verified": true
+  },
+  "builds": {
+    "debug_build_for_testing": "passed",
+    "unsigned_release_build": "passed",
+    "initial_release_command": "wrong scheme name; corrected with existing TouchCountingDebug scheme and Release configuration; no source repair required"
+  },
+  "phones": {
+    "iphone11": {
+      "selection": {
+        "automatic": true,
+        "cache_identity": "rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf288|rgb288|fp16|cpuAndGPU-cpuFallback-v1",
+        "function": "rf288",
+        "hardware": "iPhone12,5",
+        "live_compute": "CPU (compatibility)",
+        "policy": "local-device-v1",
+        "resolution": 288,
+        "saved_compute": "CPU (compatibility)"
+      },
+      "targeted_tests": {
+        "passed": 52,
+        "failed": 0,
+        "skipped": 0
+      },
+      "paced_replay": {
+        "admitted_frames": 887,
+        "count": 31,
+        "elapsed_seconds": 30.028796166661778,
+        "late_source_skips": 0,
+        "mask_frames": 200,
+        "memory_mib": 38.517173767089844,
+        "mode": "paced",
+        "processed_frames": 887,
+        "source_frames": 1773,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 517,
+        "updated": "2026-10-18T07:38:07Z",
+        "last_source_seconds": 29.578333333333333,
+        "rf_submissions": 292,
+        "late_replies": 0,
+        "overflow_drops": 0
+      },
+      "original_app_preserved": true
+    },
+    "iphone17": {
+      "selection": {
+        "automatic": true,
+        "cache_identity": "rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1",
+        "function": "rf384",
+        "hardware": "iPhone18,2",
+        "live_compute": "CPU + GPU",
+        "policy": "local-device-v1",
+        "resolution": 384,
+        "saved_compute": "CPU + GPU"
+      },
+      "targeted_tests": {
+        "passed": 52,
+        "failed": 0,
+        "skipped": 0
+      },
+      "paced_replay": {
+        "admitted_frames": 887,
+        "count": 29,
+        "elapsed_seconds": 29.929200541664613,
+        "late_source_skips": 0,
+        "mask_frames": 208,
+        "memory_mib": 88.06448364257812,
+        "mode": "paced",
+        "processed_frames": 887,
+        "source_frames": 1773,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 514,
+        "updated": "2026-10-18T07:41:59Z",
+        "last_source_seconds": 29.578333333333333,
+        "rf_submissions": 293,
+        "late_replies": 0,
+        "overflow_drops": 0
+      },
+      "original_app_preserved": true
+    }
+  },
+  "changed_source_files": {
+    "config/TouchCountingDebug-Info.plist": {
+      "sha256": "ef95a4e392104a8c9e831dfed1606a5042640adf1a15c609aabb2d0eff5e5d23",
+      "bytes": 1007
+    },
+    "kicklab/Detection/BallDetector.swift": {
+      "sha256": "b2c213dac3d2e2f8a8e3a496a44ebf406fe867ea92735434d8de9c16b18c1812",
+      "bytes": 63460
+    },
+    "kicklab/Detection/RFBufferedLivePipeline.swift": {
+      "sha256": "9d14c772ff85f0e7ad9d4d35d4ae1ea17d8f43d80ec04cbea7898bea2e2fb3d8",
+      "bytes": 45660
+    },
+    "kicklab/Detection/RFDeviceProfile.swift": {
+      "sha256": "70d97514653c71a75098fa4aff0ee2874401a6d40d6ddf2dce4c9986cfde95cc",
+      "bytes": 2652
+    },
+    "kicklab/Detection/RFSegBridge.swift": {
+      "sha256": "833efec25497d129242c6300b021b1fe890724f792322a385de08d729b90422a",
+      "bytes": 12505
+    },
+    "kicklab/Detection/RFSmallModel.swift": {
+      "sha256": "3a2b95139b057049c8cb3f40c9394fec676f439ef95b230ac5bff27e511af352",
+      "bytes": 1323
+    },
+    "kicklab/Effects/SessionAnalysisStore.swift": {
+      "sha256": "bbfb2c648123979e8da2f8156cc4484da82014729344f0434a9353ae3fbbfb1d",
+      "bytes": 19833
+    },
+    "kicklab.xcodeproj/project.pbxproj": {
+      "sha256": "2bca5eff7d51b425690086ca1bb446281efba3e121abe2af4b4831ea78e6335a",
+      "bytes": 40716
+    },
+    "kicklabTests/DetectorSelectionTests.swift": {
+      "sha256": "32b507faf833fb3a6a71a227e64578430dcfc87d966291c9c44432051edd0ea1",
+      "bytes": 2960
+    },
+    "kicklabTests/RFDeviceProfileTests.swift": {
+      "sha256": "ee5a0aa88416cb5cf6c8afea9dc52b503b58cad81ea7a43d4f3125ebc4ceb3d4",
+      "bytes": 7711
+    },
+    "kicklabTests/SessionAnalysisTests.swift": {
+      "sha256": "1016c60284a1fbb68dabc7bf6b449d64985810d6b0382a593285ad6ccb9b6b18",
+      "bytes": 17944
+    }
+  },
+  "limits": [
+    "iPhone 14/Plus/Pro sustained thermal qualification remains outstanding; identifier tests are not performance qualification.",
+    "Development rear clip replay is not a new camera recording or labelled counting accuracy.",
+    "One iPhone 17 replay stalled during GPU inference and ended early; cause unresolved, retained below.",
+    "Existing replacement outline misses and iPhone 11 UI effect selection issue are outside this checkpoint."
+  ],
+  "incomplete_iphone17_run": {
+    "status": "excluded from full-replay pass; interruption cause unresolved",
+    "source_frames": 1250,
+    "last_source_seconds": 20.841666666666665,
+    "elapsed_seconds": 64.0095089583192,
+    "longest_prediction_ms": 42961.986833339324,
+    "thermal_states": [
+      0
+    ],
+    "retained_path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-local-profile-20261018/iphone17/automatic-rear",
+    "clean_retry_recorded": true,
+    "test_runner_now_rejects_short_source_intervals": true
+  }
+}

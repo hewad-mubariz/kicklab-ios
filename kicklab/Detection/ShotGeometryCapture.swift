@@ -60,8 +60,38 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
     private var preserveFailureStatus = false
     private var recordedAt = Date()
     private var backgroundSave: UIBackgroundTaskIdentifier = .invalid
+    #if POWER_SHOT_DEBUG
+    @Published private(set) var labDiagnostics = PowerShotDiagnostics()
+    @Published private(set) var labLastSavedDirectory: URL?
+    var labReference = PowerShotFieldReference()
+    @Published private(set) var labEvidenceOnly = false
+    private var labRequestedFPS = 0
+    private var labHasCameraFrame = false
+    private var labPendingFrame: Int?
+    private var labStopReason = "user_stop"
+
+    func setLabEvidenceOnly(_ enabled: Bool) {
+        guard !recording, !finishing else { return }
+        labEvidenceOnly = enabled
+        resetRollExperiment(releaseDetector: false)
+    }
+
+    private func labEvent(_ kind: String, _ details: [String: Any] = [:]) {
+        guard recording else { return }
+        var event = details
+        event["event"] = kind
+        event["capture_timestamp_s"] = session.currentFrame?.timestamp
+        do { try writeRollEvent(event) }
+        catch { abort(); showFailure("Diagnostic data could not be saved: \(error.localizedDescription)") }
+    }
+    private var labPreviousFrame: Double?
+    private var labLastPublish = -Double.infinity
+    #endif
 
     func prepare() async {
+        #if POWER_SHOT_DEBUG
+        labHasCameraFrame = false
+        #endif
         rollPreviewActive = false
         ready = false
         groundReadiness.reset()
@@ -116,6 +146,16 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
         let config = ARWorldTrackingConfiguration()
         config.worldAlignment = .gravity
         config.planeDetection = [.horizontal]
+        #if POWER_SHOT_DEBUG
+        // Prefer temporal resolution for launch/goal-line review; preserve the
+        // actual clock and report delivered cadence rather than assuming 60 fps.
+        if let format = ARWorldTrackingConfiguration.supportedVideoFormats
+            .filter({ $0.framesPerSecond >= 60 && $0.imageResolution.width <= 1920 })
+            .max(by: { $0.imageResolution.width < $1.imageResolution.width }) {
+            config.videoFormat = format
+        }
+        labRequestedFPS = config.videoFormat.framesPerSecond
+        #endif
         // Preserve actual frame timestamps; no frame-rate conversion is applied.
         rollPreviewActive = true
         session.run(config, options: [.resetTracking, .removeExistingAnchors])
@@ -134,6 +174,11 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
             }
             log = try FileHandle(forWritingTo: path)
             directory = folder
+            #if POWER_SHOT_DEBUG
+            try labReference.save(to: folder)
+            labDiagnostics = PowerShotDiagnostics()
+            labPendingFrame = nil; labStopReason = "user_stop"
+            #endif
             // The preview has already loaded the single detector. Keep it warm
             // so recording does not spend its first seconds loading the model.
             resetRollExperiment(releaseDetector: false)
@@ -165,8 +210,17 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
             preserveFailureStatus = false
             recordedAt = Date()
             recording = true
+            #if !POWER_SHOT_DEBUG
             ProductAnalytics.shared.track(.trainingStarted(.ballDistance))
+            #endif
             status = "Recording — hold the phone steady"
+            #if POWER_SHOT_DEBUG
+            labEvent("capture_setup", ["mode": labEvidenceOnly ? "evidence_only" : "ar_estimates",
+                "requested_fps": labRequestedFPS, "calibrated": recordingCalibration != nil,
+                "ground_ready": ready, "ground_tracking_required_to_record": !labEvidenceOnly,
+                "trial_reference_at_start": try JSONSerialization.jsonObject(with: JSONEncoder().encode(labReference)),
+                "note": "Original camera movie and delivered AR frames are retained. Detection runs at bounded cadence, not every video frame."])
+            #endif
         } catch { abort(); showFailure("Could not start: \(error.localizedDescription)") }
     }
 
@@ -188,6 +242,20 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
         case .normal: normal = true
         default: normal = false
         }
+        #if POWER_SHOT_DEBUG
+        labHasCameraFrame = rollPreviewActive
+        let frameInterval = labPreviousFrame.map { frame.timestamp - $0 }
+        labPreviousFrame = frame.timestamp
+        if frame.timestamp - labLastPublish >= 0.25 {
+            labLastPublish = frame.timestamp
+            labDiagnostics.tracking = String(describing: frame.camera.trackingState)
+            labDiagnostics.captureFPS = frameInterval.flatMap { $0 > 0 ? 1 / $0 : nil } ?? 0
+            labDiagnostics.savedFrames = saved; labDiagnostics.droppedFrames = dropped
+            labDiagnostics.elapsed = recording ? frame.timestamp - (origin ?? frame.timestamp) : 0
+            labDiagnostics.exposureMS = frame.camera.exposureDuration * 1000
+            labDiagnostics.thermal = String(describing: ProcessInfo.processInfo.thermalState)
+        }
+        #endif
         let anchors = frame.anchors.compactMap { $0 as? ARPlaneAnchor }
             .filter { $0.alignment == .horizontal }
         let cameraPosition = SIMD3<Float>(frame.camera.transform.columns.3.x,
@@ -216,7 +284,12 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
         updateRollFloors(frame, anchors: anchors)
         validateRollCalibration(frame, anchors: anchors)
         if rollDistanceEnabled, !normal {
-            if recording, rollTracker.origin != nil { rollTracker.invalidate() }
+            if recording, rollTracker.origin != nil {
+                rollTracker.invalidate()
+                #if POWER_SHOT_DEBUG
+                labDiagnostics.lastInvalidation = "camera_tracking_lost"
+                #endif
+            }
             rollDisplay.isLive = false; rollDisplay.canSetStart = false
             rollDisplay.speedKMH = nil; rollDisplay.peakRollingSpeedKMH = nil
             rollDisplay.speedStatus = "Speed paused — camera tracking lost"
@@ -249,8 +322,19 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
             return
         }
         guard let directory, let log else { return }
-        guard frame.timestamp > lastTimestamp else { dropped += 1; return }
-        if let origin, frame.timestamp-origin >= 15 { stop(); return }
+        guard frame.timestamp > lastTimestamp else {
+            dropped += 1
+            #if POWER_SHOT_DEBUG
+            labEvent("video_frame_dropped", ["reason": "nonmonotonic_timestamp", "rejected_capture_timestamp_s": frame.timestamp])
+            #endif
+            return
+        }
+        if let origin, frame.timestamp-origin >= 15 {
+            #if POWER_SHOT_DEBUG
+            labStopReason = "duration_limit"
+            #endif
+            stop(); return
+        }
         do {
             let pixels = frame.capturedImage
             let width = CVPixelBufferGetWidth(pixels), height = CVPixelBufferGetHeight(pixels)
@@ -275,7 +359,11 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
             }
             guard dimensions == [width, height] else { throw CocoaError(.fileWriteUnknown) }
             guard let input, input.isReadyForMoreMediaData, let adaptor else {
-                dropped += 1; return
+                dropped += 1
+                #if POWER_SHOT_DEBUG
+                labEvent("video_frame_dropped", ["reason": "writer_backpressure", "rejected_capture_timestamp_s": frame.timestamp])
+                #endif
+                return
             }
             guard adaptor.append(pixels, withPresentationTime: CMTime(seconds: frame.timestamp,
                                   preferredTimescale: 1_000_000_000)) else {
@@ -302,7 +390,7 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
                      "center_local_m": [plane.center.x, plane.center.y, plane.center.z],
                      "extent_m": [plane.planeExtent.width, plane.planeExtent.height]]
                 }
-            let row: [String: Any] = [
+            var row: [String: Any] = [
                 "frame": saved, "time_s": frame.timestamp-(origin ?? frame.timestamp),
                 "capture_timestamp_s": frame.timestamp, "image_size": dimensions,
                 "intrinsics": (0..<3).map { r in (0..<3).map { Double(camera.intrinsics[$0][r]) } },
@@ -310,15 +398,40 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
                 "tracking_state": normal ? "normal" : "limited_or_unavailable",
                 "horizontal_planes": planes,
             ]
+            #if POWER_SHOT_DEBUG
+            row["tracking_reason"] = String(describing: camera.trackingState)
+            row["exposure_duration_s"] = camera.exposureDuration
+            row["exposure_offset_ev"] = camera.exposureOffset
+            row["ambient_intensity_lumens"] = frame.lightEstimate?.ambientIntensity
+            row["frame_interval_s"] = frameInterval
+            row["thermal_state"] = String(describing: ProcessInfo.processInfo.thermalState)
+            row["selected_floor_id"] = selectedRollFloorID
+            row["ground_ready"] = ready
+            row["detector_busy"] = rollBusy
+            row["detector_schedule"] = PowerShotCapturePolicy.detectorSchedule(
+                calibrating: calibrationSnapshot != nil, busy: rollBusy,
+                elapsed: frame.timestamp - lastRollSubmission, recording: true)
+            row["requested_fps"] = labRequestedFPS
+            row["world_mapping_status"] = String(describing: frame.worldMappingStatus)
+            row["feature_point_count"] = frame.rawFeaturePoints?.points.count
+            row["ambient_color_temperature_kelvin"] = frame.lightEstimate?.ambientColorTemperature
+            row["last_invalidation_reason"] = labDiagnostics.lastInvalidation
+            #endif
             var data = try JSONSerialization.data(withJSONObject: row, options: [.sortedKeys])
             data.append(10)
             try log.write(contentsOf: data)
             lastTimestamp = frame.timestamp; saved += 1
             if !normal { limited += 1 }
             if ready { groundReadyFrames += 1 }
+            #if POWER_SHOT_DEBUG
+            // Preserve detector output even when the camera pose cannot support
+            // geometry. receiveRoll still rejects measurement under lost tracking.
+            if rollEnabledForRecording { submitRollFrame(frame, anchors: anchors, sourceFrame: saved - 1) }
+            #else
             if normal, rollEnabledForRecording {
                 submitRollFrame(frame, anchors: anchors, sourceFrame: saved - 1)
             }
+            #endif
         } catch {
             showFailure("Capture failed: \(error.localizedDescription)")
             abort()
@@ -330,6 +443,10 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
     }
 
     private func abort() {
+        #if POWER_SHOT_DEBUG
+        // Keep any partial movie and logs in place, with an explicit failure event.
+        try? writeRollEvent(["event": "capture_aborted", "reason": status, "saved_frames": saved])
+        #endif
         recording = false; finishing = false
         rollGeneration += 1; rollDetector.release()
         try? rollLog?.close(); rollLog = nil
@@ -352,6 +469,12 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
 
     func stop() {
         guard recording else { return }
+        #if POWER_SHOT_DEBUG
+        labEvent("capture_stopping", ["reason": labStopReason, "saved_frames": saved,
+            "writer_dropped_frames": dropped, "pending_detector_source_frame": labPendingFrame as Any? ?? NSNull(),
+            "pending_result_policy": "Any pending inference is discarded; the source video frame remains available for offline analysis."])
+        guard recording else { return }
+        #endif
         recording = false
         guard let writer, let directory, saved > 0 else {
             abort(); showFailure("No video frames were saved"); return
@@ -391,6 +514,10 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
         let calibration = recordingCalibration
         let calibrationImage = calibration.map { _ in directory.appendingPathComponent("roll-calibration.png") }
         let date = ISO8601DateFormatter().string(from: recordedAt)
+        #if POWER_SHOT_DEBUG
+        let captureMode = labEvidenceOnly ? "evidence_only" : "ar_estimates"
+        let stopReason = labStopReason, requestedFPS = labRequestedFPS
+        #endif
         #if DEBUG
         let footprint = DetectorRecordingReview.memory()
         #endif
@@ -455,9 +582,38 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
                         data["memory_note"] = "Kernel lifetime peak at capture stop, before export hashing; not a recording-only delta."
                     }
                     #endif
+                    #if POWER_SHOT_DEBUG
+                    data["lab_schema"] = "kicklab.power-shot-lab.v2"
+                    data["capture_mode"] = captureMode
+                    data["stop_reason"] = stopReason
+                    data["requested_capture_fps"] = requestedFPS
+                    data["video_is_encoded_camera_original"] = true
+                    data["capture_completeness_note"] = "Video frames have matched geometry rows; drops and inference skips are explicit. No guarantee of sensor delivery, ball visibility, or physical accuracy."
+                    data["recording_duration_s"] = recordingDuration
+                    data["app_bundle_id"] = Bundle.main.bundleIdentifier
+                    data["app_build"] = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion")
+                    data["os_version"] = UIDevice.current.systemVersion
+                    var system = utsname(); uname(&system)
+                    data["device_model"] = withUnsafeBytes(of: &system.machine) { bytes in
+                        String(decoding: bytes.prefix(while: { $0 != 0 }), as: UTF8.self)
+                    }
+                    data["detector_resource"] = BallDetector.configuredResourceName
+                    data["field_reference"] = PowerShotFieldReference.filename
+                    data["field_reference_note"] = "Editable observer labels; not part of immutable sensor hashes or automatically verified ground truth."
+                    data["raw_projection_note"] = "Ground-tangent projections continue after tracker rejection. They are not validated shot distance or launch speed."
+                    data["distance_gate_max_mps"] = 6
+                    data["distance_gate_slack_m"] = 0.12
+                    data["distance_gate_max_gap_s"] = 0.8
+                    data["detector_submission_interval_s"] = 0.1
+                    #endif
                     try JSONSerialization.data(withJSONObject: data, options: [.sortedKeys])
                         .write(to: manifest, options: .atomic)
+                    #if POWER_SHOT_DEBUG
+                    self.labLastSavedDirectory = directory
+                    #endif
+                    #if !POWER_SHOT_DEBUG
                     ProductAnalytics.shared.track(.trainingCompleted(.ballDistance, duration: recordingDuration))
+                    #endif
                     self.files = [video, frames, manifest] + (rollFile.map { [$0] } ?? []) + (calibrationImage.map { [$0] } ?? [])
                     self.status = bad == 0 ? "Saved to Saved shots — video + data" :
                         "Saved to Saved shots. Camera tracking was limited during this shot."
@@ -473,7 +629,17 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
             invalidateRollCalibration("Camera tracking failed — calibrate again")
             // A finished movie may still be hashing/writing its manifest.
             // A later camera failure must not cancel or overwrite that save.
+            #if POWER_SHOT_DEBUG
+            labHasCameraFrame = false
+            if recording {
+                labStopReason = "session_failure"
+                labEvent("camera_session_failed", ["reason": error.localizedDescription])
+                // Salvage already-written evidence when only AR tracking fails.
+                stop()
+            }
+            #else
             if recording { abort() }
+            #endif
         }
     }
 
@@ -481,6 +647,10 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
         MainActor.assumeIsolated {
             ready = false; groundReadiness.reset()
             invalidateRollCalibration("Camera interrupted — calibrate again")
+            #if POWER_SHOT_DEBUG
+            labHasCameraFrame = false
+            labStopReason = "session_interrupted"
+            #endif
             stop()
         }
     }
@@ -497,6 +667,9 @@ private struct ShotRollObservation {
     let camera: simd_float4x4
     let floor: ShotRollFloor
     let projection: ShotRollGeometry.Projection
+    #if POWER_SHOT_DEBUG
+    var uncalibratedContact: SIMD3<Float>?
+    #endif
 }
 
 extension ShotGeometryCapture {
@@ -593,6 +766,9 @@ extension ShotGeometryCapture {
         calibrationStatus = reason
         rollTracker.invalidate(); rollLatest = nil
         rollDisplay.markCalibrationLost(calibrationRecoveryMessage)
+        #if POWER_SHOT_DEBUG
+        labDiagnostics.lastInvalidation = reason
+        #endif
         if recording {
             do {
                 try writeRollEvent(["event": "calibration_invalidated", "calibration_id": calibration.id,
@@ -671,13 +847,23 @@ extension ShotGeometryCapture {
 
     var canChooseRollFloor: Bool { !recording || rollTracker.origin == nil || rollTracker.needsNewStart }
     var canBeginRecording: Bool {
-        ready && calibrationSnapshot == nil &&
+        #if POWER_SHOT_DEBUG
+        if labEvidenceOnly {
+            return PowerShotCapturePolicy.canCaptureEvidence(cameraActive: rollPreviewActive,
+                hasFrame: labHasCameraFrame && session.currentFrame != nil, calibrating: calibrationSnapshot != nil)
+        }
+        #endif
+        return ready && calibrationSnapshot == nil &&
             (!rollDistanceEnabled || (!calibrationNeedsRetry && rollDisplay.canSetStart))
     }
 
     func pause() {
         calibrationSnapshot = nil
         rollPreviewActive = false
+        #if POWER_SHOT_DEBUG
+        labHasCameraFrame = false
+        labStopReason = "camera_paused_or_app_backgrounded"
+        #endif
         stop()
         rollGeneration += 1; rollDetector.release()
         rollLatest = nil; rollDisplay.canSetStart = false; rollDisplay.isLive = false
@@ -732,7 +918,12 @@ extension ShotGeometryCapture {
         }
         if let selectedRollFloorID, !floors.contains(where: { $0.id == selectedRollFloorID }) {
             self.selectedRollFloorID = nil; rollFloorChosenByUser = false
-            if rollTracker.origin != nil { rollTracker.invalidate() }
+            if rollTracker.origin != nil {
+                rollTracker.invalidate()
+                #if POWER_SHOT_DEBUG
+                labDiagnostics.lastInvalidation = "selected_floor_lost"
+                #endif
+            }
         }
         if floors.count > 1, !rollFloorChosenByUser {
             selectedRollFloorID = nil
@@ -743,8 +934,14 @@ extension ShotGeometryCapture {
     }
 
     private func submitRollFrame(_ frame: ARFrame, anchors: [ARPlaneAnchor], sourceFrame: Int?) {
+        #if POWER_SHOT_DEBUG
+        guard PowerShotCapturePolicy.detectorSchedule(calibrating: calibrationSnapshot != nil,
+            busy: rollBusy, elapsed: frame.timestamp - lastRollSubmission, recording: recording) == "submit" else { return }
+        labPendingFrame = sourceFrame
+        #else
         guard calibrationSnapshot == nil, !rollBusy,
               frame.timestamp - lastRollSubmission >= (recording ? 0.1 : 0.25) else { return }
+        #endif
         rollBusy = true; lastRollSubmission = frame.timestamp
         let generation = rollGeneration
         var cvToAR = matrix_identity_float4x4
@@ -761,6 +958,9 @@ extension ShotGeometryCapture {
             Task { @MainActor in
                 self.rollBusy = false
                 guard self.rollGeneration == generation else { return }
+                #if POWER_SHOT_DEBUG
+                self.labPendingFrame = nil
+                #endif
                 guard self.rollPreviewActive, self.rollDistanceEnabled, !self.finishing,
                       sourceFrame == nil || (self.recording && self.rollEnabledForRecording) else { return }
                 self.receiveRoll(result, sourceFrame: sourceFrame, timestamp: timestamp,
@@ -778,6 +978,16 @@ extension ShotGeometryCapture {
             "model": result.model, "confidence": result.confidence,
             "threshold": result.threshold, "detector_ms": result.milliseconds,
             "physical_scale_verified": false, "ground_contact_verified": false]
+        #if POWER_SHOT_DEBUG
+        event["observation_age_s"] = session.currentFrame.map { $0.timestamp - timestamp }
+        event["measurement_gate"] = "not_armed"
+        if let upright = result.uprightBallRect {
+            let sensor = rotation.sensorRect(upright)
+            event["sensor_box_normalized"] = [sensor.minX, sensor.minY, sensor.maxX, sensor.maxY]
+            event["sensor_box_size_px"] = [sensor.width * size.width, sensor.height * size.height]
+        }
+        event["detector_error"] = result.error
+        #endif
         if let sourceFrame { event["source_frame"] = sourceFrame; rollSamples += 1 }
         rollModel = result.model
         rollDisplay.isLive = false; rollDisplay.canSetStart = false
@@ -799,6 +1009,9 @@ extension ShotGeometryCapture {
             if let speed = rollDisplay.speedKMH { event["rolling_speed_kmh"] = speed }
             if let peak = rollDisplay.peakRollingSpeedKMH { event["peak_rolling_speed_kmh"] = peak }
             if let distance = rollDisplay.distanceM { event["last_display_distance_m"] = distance }
+            #if POWER_SHOT_DEBUG
+            labDiagnostics.annotate(&event)
+            #endif
             if sourceFrame != nil {
                 do { try writeRollEvent(event) }
                 catch { abort(); showFailure("Roll measurement data could not be saved") }
@@ -806,13 +1019,22 @@ extension ShotGeometryCapture {
         }
         guard let current = session.currentFrame, case .normal = current.camera.trackingState,
               current.timestamp - timestamp <= 0.7 else {
+            #if POWER_SHOT_DEBUG
+            event["measurement_gate"] = "stale_observation"
+            #endif
             rollDisplay.status = "Waiting for a fresh ball observation…"; return
         }
         if let error = result.error {
+            #if POWER_SHOT_DEBUG
+            event["measurement_gate"] = "detector_error"
+            #endif
             event["detector_error"] = error
             rollDisplay.status = "Ball tracker unavailable: \(error)"; return
         }
         guard let upright = result.uprightBallRect else {
+            #if POWER_SHOT_DEBUG
+            event["measurement_gate"] = "ball_not_found"
+            #endif
             rollDisplay.status = rollDisplay.distanceM == nil
                 ? "Ball not found — keep it fully in view"
                 : "Ball not visible — holding last estimate"
@@ -822,19 +1044,35 @@ extension ShotGeometryCapture {
         rollDisplay.sensorBallRect = sensor
         event["sensor_box_normalized"] = [sensor.minX, sensor.minY, sensor.maxX, sensor.maxY]
         guard !calibrationNeedsRetry else {
+            #if POWER_SHOT_DEBUG
+            event["measurement_gate"] = "calibration_invalidated"
+            #endif
             rollDisplay.status = calibrationRecoveryMessage; return
         }
         guard let selectedRollFloorID,
               let mapped = floors.first(where: { $0.id == selectedRollFloorID }) else {
+            #if POWER_SHOT_DEBUG
+            event["measurement_gate"] = "no_selected_floor"
+            #endif
             rollDisplay.status = rollFloors.count > 1 ? "Choose a floor for this test" : "Scan the floor around the ball"; return
         }
         if let lockedRollFloor, !mapped.stableRelative(to: lockedRollFloor) {
             rollTracker.invalidate(); self.lockedRollFloor = nil; lockedRollCamera = nil
+            #if POWER_SHOT_DEBUG
+            labDiagnostics.lastInvalidation = "floor_changed"
+            #endif
         }
         if let reference = lockedRollCamera {
             let movement = simd_distance(reference.columns.3, camera.columns.3)
             let alignment = simd_dot(reference.columns.2, camera.columns.2)
+            #if POWER_SHOT_DEBUG
+            event["camera_movement_m"] = movement
+            event["camera_angle_change_deg"] = acos(max(-1, min(1, alignment))) * 180 / .pi
+            #endif
             if movement > 0.05 || alignment < cos(Float(3) * .pi / 180) {
+                #if POWER_SHOT_DEBUG
+                labDiagnostics.lastInvalidation = "camera_moved"
+                #endif
                 rollTracker.invalidate(); lockedRollCamera = nil; lockedRollFloor = nil
             }
         }
@@ -844,6 +1082,9 @@ extension ShotGeometryCapture {
             width: sensor.width * size.width, height: sensor.height * size.height)
         guard let projection = ShotRollGeometry.project(sensorBounds: bounds, imageSize: size,
                 intrinsics: intrinsics, worldFromCamera: camera, floor: floor) else {
+            #if POWER_SHOT_DEBUG
+            event["measurement_gate"] = "geometry_rejected"
+            #endif
             rollDisplay.status = "Ball shape unclear — keep it fully visible"; return
         }
         // Coverage remains in AR's original map. A fitted floor offset must
@@ -855,6 +1096,9 @@ extension ShotGeometryCapture {
         if let sourceFrame {
             rollLatest = ShotRollObservation(sourceFrame: sourceFrame, timestamp: timestamp,
                 camera: camera, floor: mapped, projection: projection)
+            #if POWER_SHOT_DEBUG
+            rollLatest?.uncalibratedContact = rawProjection?.worldContact
+            #endif
         }
         rollDisplay.sensorContact = CGPoint(x: projection.sensorContact.x / size.width,
                                             y: projection.sensorContact.y / size.height)
@@ -877,6 +1121,14 @@ extension ShotGeometryCapture {
         event["radius_estimate_m"] = projection.radiusM
         event["silhouette_edge_rms_px"] = projection.edgeRMSPixels
         event["inside_current_mapped_boundary"] = inside
+        #if POWER_SHOT_DEBUG
+        if let rawProjection {
+            event["uncalibrated_world_contact_m"] = [rawProjection.worldContact.x, rawProjection.worldContact.y, rawProjection.worldContact.z]
+        }
+        #endif
+        #if POWER_SHOT_DEBUG
+        event["measurement_gate"] = inside ? "ready" : "outside_mapped_floor"
+        #endif
         if sourceFrame == nil {
             rollDisplay.status = inside
                 ? "Ball found — record, then tap Set start"
@@ -884,11 +1136,18 @@ extension ShotGeometryCapture {
             return
         }
         if rollTracker.needsNewStart {
+            #if POWER_SHOT_DEBUG
+            event["measurement_gate"] = "new_start_required"
+            #endif
             rollDisplay.status = "Tracking changed — set start again"
         } else if rollTracker.origin == nil {
             if rollCalibration != nil { rollDisplay.speedStatus = "Set start to estimate speed" }
             rollDisplay.status = inside ? "Ball found — tap Set start, then roll" : "Scan more floor around the starting ball"
         } else if rollTracker.observe(point: projection.worldContact, time: timestamp) {
+            #if POWER_SHOT_DEBUG
+            event["measurement_gate"] = inside ? "accepted" : "accepted_outside_mapped_floor"
+            for (key, value) in rollTracker.debugStep { event[key] = value }
+            #endif
             rollDisplay.distanceM = rollTracker.distanceM; rollDisplay.isLive = true
             if let gap = rollTracker.recoveredPreRollGapS {
                 event["pre_roll_gap_recovered_s"] = gap
@@ -909,11 +1168,19 @@ extension ShotGeometryCapture {
                 : "Beyond scanned floor • estimate only"
             if let distance = rollTracker.distanceM { event["distance_from_start_m"] = distance }
         } else {
+            #if POWER_SHOT_DEBUG
+            event["measurement_gate"] = rollTracker.debugRejection ?? "track_interrupted"
+            labDiagnostics.lastInvalidation = rollTracker.debugRejection ?? "track_interrupted"
+            for (key, value) in rollTracker.debugStep { event[key] = value }
+            #endif
             rollDisplay.status = "Ball track interrupted — set start again"
         }
     }
 
     func setRollStart() {
+        #if POWER_SHOT_DEBUG
+        guard !labEvidenceOnly else { return }
+        #endif
         guard recording, rollEnabledForRecording, !calibrationNeedsRetry, rollDisplay.canSetStart,
               let latest = rollLatest, let current = session.currentFrame,
               current.timestamp - latest.timestamp <= 0.35,
@@ -924,6 +1191,17 @@ extension ShotGeometryCapture {
         lockedRollFloor = latest.floor; lockedRollCamera = latest.camera
         rollTracker.arm(point: latest.projection.worldContact, time: latest.timestamp)
         rollTrial += 1; rollDisplay.trial = rollTrial
+        #if POWER_SHOT_DEBUG
+        var labStart: [String: Any] = ["event": "set_start", "capture_timestamp_s": latest.timestamp,
+            "world_contact_m": [latest.projection.worldContact.x, latest.projection.worldContact.y, latest.projection.worldContact.z]]
+        if let point = latest.uncalibratedContact { labStart["uncalibrated_world_contact_m"] = [point.x, point.y, point.z] }
+        labDiagnostics.annotate(&labStart)
+        // The paired raw origin makes calibrated/uncalibrated comparison possible
+        // on the same shot, without another outdoor visit for that comparison.
+        labEvent("uncalibrated_start", ["trial": rollTrial, "source_frame": latest.sourceFrame,
+            "observation_capture_timestamp_s": latest.timestamp,
+            "world_contact_m": labStart["uncalibrated_world_contact_m"] ?? NSNull()])
+        #endif
         rollDisplay.distanceM = 0; rollDisplay.isLive = true
         rollDisplay.speedKMH = nil; rollDisplay.peakRollingSpeedKMH = nil
         rollDisplay.speedStatus = rollCalibration == nil ? "Calibrate distance to estimate speed" : "Collecting motion…"

@@ -5,22 +5,49 @@ import Foundation
 nonisolated final class ModelComputeSwitch<Model> {
     private var model: Model
     private let load: (Bool) throws -> Model
+    private let allowsCPUFallbackOnLoadFailure: Bool
+    /// A failed accelerated load pins this worker to its working CPU model.
+    /// Foreground lifecycle changes must not retry an unsupported execution plan
+    /// for every frame. Prediction failures remain errors, as before.
+    private(set) var acceleratedLoadFailure: String?
     private(set) var cpuOnly: Bool
     private(set) var switches = 0
     private(set) var reloadSeconds = 0.0
 
-    init(cpuOnly: Bool, load: @escaping (Bool) throws -> Model) throws {
+    init(cpuOnly: Bool, allowsCPUFallbackOnLoadFailure: Bool = false,
+         load: @escaping (Bool) throws -> Model) throws {
         self.load = load
-        self.model = try load(cpuOnly)
-        self.cpuOnly = cpuOnly
+        self.allowsCPUFallbackOnLoadFailure = allowsCPUFallbackOnLoadFailure
+        do {
+            self.model = try load(cpuOnly)
+            self.cpuOnly = cpuOnly
+        } catch is CancellationError { throw CancellationError() }
+        catch {
+            guard !cpuOnly, allowsCPUFallbackOnLoadFailure else { throw error }
+            try Task.checkCancellation()
+            self.model = try load(true)
+            self.cpuOnly = true
+            self.acceleratedLoadFailure = error.localizedDescription
+        }
     }
 
     var current: Model { model }
 
     private func select(cpuOnly requested: Bool) throws -> Model {
+        let requested = requested || acceleratedLoadFailure != nil
         if requested != cpuOnly {
             let start = ProcessInfo.processInfo.systemUptime
-            let replacement = try load(requested)
+            let replacement: Model
+            do { replacement = try load(requested) }
+            catch is CancellationError { throw CancellationError() }
+            catch {
+                guard !requested, cpuOnly, allowsCPUFallbackOnLoadFailure else { throw error }
+                try Task.checkCancellation()
+                // This worker already has a valid CPU model. Retain it.
+                acceleratedLoadFailure = error.localizedDescription
+                reloadSeconds += ProcessInfo.processInfo.systemUptime - start
+                return model
+            }
             model = replacement
             cpuOnly = requested
             switches += 1

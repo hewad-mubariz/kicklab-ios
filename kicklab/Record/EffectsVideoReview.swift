@@ -39,6 +39,11 @@ struct EffectsVideoReview: View {
 
     private func run() async {
         guard summary == nil, !analyzer.isRunning else { return }
+        // Keep this explicitly launched local diagnostic in the foreground for
+        // its analysis/export measurement, then restore the user's idle policy.
+        let previousIdle = UIApplication.shared.isIdleTimerDisabled
+        UIApplication.shared.isIdleTimerDisabled = true
+        defer { UIApplication.shared.isIdleTimerDisabled = previousIdle }
         showShare = ProcessInfo.processInfo.arguments.contains("--effects-share")
         if let env = SessionDesignReview.argument("--effects-environment").flatMap(EffectEnvironment.init(rawValue:)) { edit.environment = env }
         if let style = SessionDesignReview.argument("--effects-style").flatMap(BallStyle.init(rawValue:)) { edit.style = style }

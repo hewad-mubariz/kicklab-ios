@@ -21,17 +21,16 @@ final class ShotCameraLookTemp: XCTestCase {
         app.buttons["shot-tool-camera"].tap()
         Thread.sleep(forTimeInterval: 1.5)
         attach(app, "2 camera page")
-        app.buttons["shot-camera-frames"].tap()
+        app.buttons["shot-camera-move-impact"].tap()
         Thread.sleep(forTimeInterval: 3)
-        attach(app, "3 frame steps")
-        app.buttons["shot-camera-follow"].tap()
+        attach(app, "3 impact block")
+        app.buttons["shot-camera-done"].tap()
+        app.buttons["shot-camera-move-chase"].tap()
         Thread.sleep(forTimeInterval: 3)
-        attach(app, "4 follow")
-        app.buttons["shot-camera-frames"].tap()
-        Thread.sleep(forTimeInterval: 2)
+        attach(app, "4 impact then chase")
         app.buttons["shot-close-tools"].tap()
         Thread.sleep(forTimeInterval: 2)
-        attach(app, "5 frames in replay")
+        attach(app, "5 camera track in replay")
     }
 
     @MainActor

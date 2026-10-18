@@ -31,3 +31,5 @@ static inline float smoothstep(float a,float b,float x) { float t=saturate((x-a)
 template<class T> static inline T mix(T a,T b,float t) { return a+(b-a)*t; }
 template<class T,class F> static inline T as_type(F v) { static_assert(sizeof(T)==sizeof(F)); T out; memcpy(&out,&v,sizeof(v)); return out; }
 static inline bool all(simd_int2 v) { return v.x && v.y; }
+static inline float2 floor(float2 v) { return simd_make_float2(floorf(v.x), floorf(v.y)); }
+static inline float2 clamp(float2 x, float2 a, float2 b) { return simd_clamp(x, a, b); }

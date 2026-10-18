@@ -236,19 +236,7 @@ struct SaveShareView: View {
         }
     }
 
-    @ViewBuilder private var overlayControls: some View {
-        if !subscriptions.isPro {
-            Button { showsProPaywall = true } label: {
-                HStack {
-                    Text("Unlock counter styles with Pro").font(.subheadline.weight(.semibold))
-                    Spacer()
-                    ProBadge()
-                }.padding(14).modifier(SessionPanel())
-            }.buttonStyle(.plain)
-        } else { paidOverlayControls }
-    }
-
-    private var paidOverlayControls: some View {
+    private var overlayControls: some View {
         VStack(spacing: 14) {
             Toggle(isOn: $overlays.counter.enabled) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -257,12 +245,23 @@ struct SaveShareView: View {
                         .font(.system(size: 11)).foregroundStyle(SessionStyle.secondary)
                 }
             }
-            if overlays.hasVisibleOverlays {
+            Toggle(isOn: $overlays.showTimer) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Include timer").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
+                    Text("Show elapsed time on your video")
+                        .font(.system(size: 11)).foregroundStyle(SessionStyle.secondary)
+                }
+            }
+            if overlays.counter.enabled {
                 Group {
-                Button { showOverlayEditor = true } label: {
+                Button {
+                    if subscriptions.isPro { showOverlayEditor = true }
+                    else { showsProPaywall = true }
+                } label: {
                     HStack(spacing: 10) {
                         Image(systemName: "slider.horizontal.3")
-                        Text("Customize touch counter").font(.system(size: 13, weight: .semibold))
+                        Text(subscriptions.isPro ? "Customize touch counter" : "More counter styles with Pro")
+                            .font(.system(size: 13, weight: .semibold))
                         Spacer()
                         Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold))
                     }.foregroundStyle(SessionStyle.mint).padding(.vertical, 8)
@@ -296,6 +295,7 @@ struct SaveShareView: View {
 
     private var previewEdit: SessionEditState {
         var value = version == .edited ? edit : SessionEditState(style: .none, intensity: 0)
+        if summary.needsVisualPreparation && preparation.prepared == nil { value.style = .none }
         if loadingThumb || effectTrack.surfaceMotion == nil { value.ballSkin = .original }
         return value
     }
@@ -304,8 +304,8 @@ struct SaveShareView: View {
         loadingThumb = thumb != nil
         let media: ScenePlayback
         do {
-            let ready = subscriptions.isPro && version == .edited && edit.ballSkin != .original
-                ? try await preparation.prepare(summary) : summary
+            let ready = subscriptions.isPro && version == .edited
+                ? try await preparation.prepare(summary, for: edit) : summary
             media = try await sceneModel.media(summary: ready, selection: subscriptions.isPro && version == .edited ? edit.scene : nil)
             try Task.checkCancellation()
         } catch is CancellationError { return }
@@ -343,7 +343,7 @@ struct SaveShareView: View {
         let edited = subscriptions.isPro && version == .edited && edit.isEdited
         let media: ScenePlayback
         do {
-            let ready = edited && edit.ballSkin != .original ? try await preparation.prepare(summary) : summary
+            let ready = edited ? try await preparation.prepare(summary, for: edit) : summary
             if edited, let selection = edit.scene {
                 media = try await sceneModel.media(summary: ready, selection: selection)
             } else {

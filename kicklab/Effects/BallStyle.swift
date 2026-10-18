@@ -165,6 +165,9 @@ nonisolated struct SessionEditState: Hashable, Sendable {
     var ballSkin: BallSkin = .original
     var environment: EffectEnvironment = .original
     var scene: SceneSelection? = nil
+    /// Every visible ball-following effect needs the completed source-pixel track.
+    /// Counter/timer-only exports can use the saved touch timeline immediately.
+    var requiresVisualTrack: Bool { ballSkin != .original || (style != .none && intensity > 0) }
     var isEdited: Bool { scene != nil || environment != .original || ballSkin != .original || (style != .none && intensity > 0.02) }
     var label: String {
         [scene?.environment.title,

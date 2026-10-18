@@ -128,10 +128,9 @@ extension BallVisualRefiner {
         }
         let asset = AVURLAsset(url: source)
         if frames.contains(where: \.usesBallMasks) {
-            // Live capture can drop frames. Its irregular mask timestamps do
-            // not match the composition's regular replay/export timestamps.
-            // Analyse the saved pixels afresh; never widen mask age tolerance
-            // or reuse an old silhouette across a missing observation.
+            // Live counting observes only a subset of saved frames. Reconstruct
+            // dense masks from the saved pixels on the shared source-frame clock;
+            // never reuse an old silhouette across a missing observation.
             let fresh = try await VideoAnalyzer.replayTrack(source: source) { onProgress?($0 * 0.9) }
             return try await BallMaskGapRefiner.refine(source: source, frames: fresh) { onProgress?(0.9 + $0 * 0.1) }
         }

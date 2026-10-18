@@ -13,8 +13,8 @@ struct FootContactEvidenceTests {
                          beforeY: Double = 0.50, afterY: Double = 0.54) -> FootContactEvidence {
         func sample(_ ms: Int, _ y: Double) -> FootContactRules.Sample {
             .init(timestampMs: ms, ballX: 0.5, ballY: y, width: 0.18, height: 0.10,
-                  confidence: confidence, ankles: ["right": .init(x: ms < time ? 0.45 : 0.5, y: 0.6)],
-                  hips: ["right": .init(x: 0.5, y: 0.3)])
+                  confidence: confidence, ankles: [.right: .init(x: ms < time ? 0.45 : 0.5, y: 0.6)],
+                  hips: [.right: .init(x: 0.5, y: 0.3)])
         }
         return .init(before: sample(time-99,beforeY), contact: sample(time,0.6), after: sample(time+66,afterY))
     }
@@ -35,11 +35,11 @@ struct FootContactEvidenceTests {
 
     @Test func MissingUncertainOrUnrelatedAnkleCannotRescueTheFloor() {
         let e = samples()
-        for point in [FootContactRules.Point(x: 0.5,y: 0.6,confidence: 0.1),
+        for point in [PoseLandmark(x: 0.5,y: 0.6,confidence: 0.1),
                       .init(x: 0.5,y: 0.6,confidence: .nan), .init(x: 0.9,y: 0.6)] {
             let c = FootContactRules.Sample(timestampMs: e.contact.timestampMs, ballX: e.contact.ballX,
                 ballY: e.contact.ballY,width: e.contact.width,height: e.contact.height,confidence: 0.9,
-                ankles: ["right":point], hips: e.contact.hips)
+                ankles: [.right:point], hips: e.contact.hips)
             #expect(!FootContactEvidence(before: e.before,contact: c,after: e.after).confirms)
         }
         let empty = FootContactRules.Sample(timestampMs: e.contact.timestampMs,ballX: 0.5,ballY: 0.6,
@@ -65,9 +65,9 @@ struct FootContactEvidenceTests {
         let values = old.enumerated().map { i,s in
             FootContactRules.Sample(timestampMs: s.timestampMs,ballX: s.ballX,ballY: s.ballY,
                 width: s.width,height: s.height,confidence: s.confidence,
-                ankles: ["right": .init(x: ankleX[i],y: 0.6,confidence: i == 2 ? afterConfidence : 1)],
+                ankles: [.right: .init(x: ankleX[i],y: 0.6,confidence: i == 2 ? afterConfidence : 1)],
                 hips: i == 2 && afterHipConfidence == nil ? [:] :
-                    ["right": .init(x: hipX[i],y: 0.3,confidence: i == 2 ? afterHipConfidence! : 1)])
+                    [.right: .init(x: hipX[i],y: 0.3,confidence: i == 2 ? afterHipConfidence! : 1)])
         }
         return .init(before: values[0],contact: values[1],after: values[2])
     }
@@ -94,6 +94,15 @@ struct FootContactEvidenceTests {
         #expect(!gradualMotion(afterHipConfidence: 0.49).confirms)
         #expect(!gradualMotion(afterHipConfidence: nil).confirms)
         #expect(!gradualMotion(afterHipConfidence: .nan).confirms)
+    }
+
+    @Test func stationaryFootWithALatePoseJumpCannotRescueAFloorBounce() throws {
+        let url = try #require(Bundle(for: BundleToken.self).url(forResource: "ground-ankle-jitter", withExtension: "json"))
+        let e = try JSONDecoder().decode(FootContactEvidence.self, from: Data(contentsOf: url))
+        #expect(FootContactRules.confirms(before: e.before, contact: e.contact, after: e.after,
+                                        requireBalancedMotion: false), "Reproduce the v5 false positive")
+        #expect(!e.confirms, "Stationary feet; Vision moved an ankle mostly after the bounce")
+        #expect(!gradualMotion(ankleX: [0.482,0.5,0.59]).confirms)
     }
 
     private func machine(hand: Bool = false, evidence: FootContactEvidence?) -> TouchStateMachine {

@@ -21,6 +21,12 @@ import Foundation
 /// Trajectory thresholds preserve soft legal touches. Hand/arm exclusion uses
 /// contact evidence rather than raising the impulse threshold for every touch.
 nonisolated struct CounterConfig: Codable, Equatable, Sendable {
+    /// Missing in historical traces means their original frame-based behavior.
+    var timeAwareTrajectory: Bool? = true
+    /// Nil keeps historical foot/floor decisions exactly replayable.
+    var cadenceAwareGroundContact: Bool? = true
+    /// Nil preserves historical person-box floor estimates in saved traces.
+    var stabilizesPlayerGround: Bool? = true
     var medianWindow = 3
     var smoothingWindow = 3
     var velocityThreshold = 0.05
@@ -34,6 +40,12 @@ nonisolated struct CounterConfig: Codable, Equatable, Sendable {
     var minFallAmplitude = 0.02
     var minFallBallHeights = 0.10
     var minRiseAmplitude = 0.007
+    /// A confirmed rising run can reach the required displacement while slowing
+    /// below the velocity threshold. Missing in old traces means legacy behavior.
+    var completesRiseWhileSlowing: Bool? = true
+    /// An observed descent may resume after a short detector outage at high
+    /// FPS. Do not infer a reversal inside the gap. Nil preserves old traces.
+    var preservesFallingArcAcrossShortGap: Bool? = true
     /// Keep soft touches; a separate hand verifier rejects observed handling.
     var minTouchImpulse = 0.2
     var touchCooldownMs = 180
@@ -77,6 +89,20 @@ nonisolated struct PersonBox: Codable, Equatable, Sendable {
 
 nonisolated enum MotionState { case falling, rising, unknown }
 
+/// Previous rules are retained for exact replay of saved traces.
+nonisolated enum GroundContactPolicy: Equatable, Sendable {
+    case legacyCenter, observedBoundary, supportedBoundary, plantedFeet, corroboratedFeet
+    var revision: String {
+        switch self {
+        case .legacyCenter: "counter-v5"
+        case .observedBoundary: "counter-v6"
+        case .supportedBoundary: "counter-v7"
+        case .plantedFeet: "counter-v8"
+        case .corroboratedFeet: "counter-v9"
+        }
+    }
+}
+
 nonisolated struct TrajectoryPoint {
     var frameIndex: Int
     var timestampMs: Int
@@ -85,6 +111,9 @@ nonisolated struct TrajectoryPoint {
     var confidence: Double
     var valid: Bool
     var motion: MotionState
+    /// Time supported by consecutive real observations in this direction.
+    /// Nil keeps the established dense-frame confirmation rule.
+    var motionEvidenceMs: Double? = nil
 }
 
 nonisolated struct Touch: Codable, Equatable, Sendable {
@@ -100,7 +129,7 @@ nonisolated struct Touch: Codable, Equatable, Sendable {
 nonisolated enum RejectionReason: String, Codable, Sendable {
     case amplitudeTooSmall, insufficientImpulse, groundBounce, cooldown
     case unsupportedByDetection, noPersonRegion, outsidePersonRegion, trackLost
-    case handContact
+    case handContact, disallowedBodyContact, heldBall
 }
 
 /// One accepted or rejected trajectory proposal. Missing fields indicate a
@@ -109,6 +138,7 @@ nonisolated struct CounterDecision: Codable, Equatable, Sendable {
     let frameIndex, timestampMs: Int
     let rejection: RejectionReason?
     var handRejected: Bool? = nil
+    var bodyContactAllowed: Bool? = nil
     var footConfirmed: Bool? = nil
     var footEvidence: FootContactEvidence? = nil
     var fall: Double? = nil
@@ -116,6 +146,12 @@ nonisolated struct CounterDecision: Codable, Equatable, Sendable {
     var rise: Double? = nil
     var impulse: Double? = nil
     var ground: Double? = nil
+    /// Corroborated, unsmoothed lower ball edge in trajectory coordinates.
+    var observedBallBottom: Double? = nil
+    var plantedFeetConfirmed: Bool? = nil
+    var groundEvidence: GroundContactEvidence? = nil
+    var handlingEvidence: BallHandlingEvidence? = nil
+    var handlingChecked: Bool? = nil
 }
 
 // MARK: - State machine
@@ -127,6 +163,7 @@ nonisolated struct CounterDecision: Codable, Equatable, Sendable {
 /// for live use is the *trajectory* feeding it, handled in `StreamingCounter`.
 nonisolated final class TouchStateMachine {
     private let config: CounterConfig
+    private let groundPolicy: GroundContactPolicy
     private(set) var touches: [Touch] = []
     private(set) var rejected: [(frame: Int, reason: RejectionReason)] = []
 
@@ -140,20 +177,36 @@ nonisolated final class TouchStateMachine {
     private var risingRun = 0
     private var gapRun = 0
     private var lastTouchMs: Int?
+    private var lastValidPoint: TrajectoryPoint?
 
     /// Per-frame body geometry, filled by the caller as frames arrive.
     var personBoxes: [Int: PersonBox] = [:]
+    /// Presence without a value means the selected player has no reliable floor.
+    var playerGroundFrames: Set<Int> = []
+    var playerGrounds: [Int: Double] = [:]
     /// Real detections only, in the same frame-height units as the trajectory.
     /// The streaming caller bounds this history and clears it at discontinuities.
     var ballHeights: [Int: Double] = [:]
+    var observedBalls: [Int: BallObservation] = [:]
+    /// Bottom of the visible image, in the same compensated coordinates.
+    var imageBottoms: [Int: Double] = [:]
     var detectedFrames: Set<Int> = []
     var rejectsHandContact: ((Int) -> Bool)?
+    var allowsBodyContact: ((Int) -> Bool)?
     var footContactEvidence: ((Int) -> FootContactEvidence?)?
+    var groundContactEvidence: ((Int) -> GroundContactEvidence?)?
+    var handlingEvidence: ((Int) -> BallHandlingEvidence?)?
     var onDecision: ((CounterDecision) -> Void)?
 
     var count: Int { touches.count }
 
-    init(config: CounterConfig) { self.config = config }
+    init(config: CounterConfig, groundPolicy: GroundContactPolicy = .corroboratedFeet) {
+        self.config = config
+        self.groundPolicy = groundPolicy
+    }
+
+    private var fallEvidenceMs = 0.0
+    private var riseEvidenceMs = 0.0
 
     private func resetArc(restartTopY: Double? = nil) {
         armed = false
@@ -162,6 +215,8 @@ nonisolated final class TouchStateMachine {
         peakRise = 0
         fallingRun = 0
         risingRun = 0
+        fallEvidenceMs = 0
+        riseEvidenceMs = 0
         arcTopY = restartTopY
     }
 
@@ -182,7 +237,10 @@ nonisolated final class TouchStateMachine {
     func push(_ point: TrajectoryPoint) -> Touch? {
         guard point.valid else {
             gapRun += 1
-            if gapRun > config.maxGapFrames {
+            let mayResumeDescent = config.preservesFallingArcAcrossShortGap == true
+                && armed && lastValidPoint?.motion == .falling
+                && point.timestampMs-(lastValidPoint?.timestampMs ?? point.timestampMs) <= config.maxGapDurationMs
+            if gapRun > config.maxGapFrames && !mayResumeDescent {
                 // A long disappearance invalidates the arc: we cannot claim a
                 // reversal we never saw completed.
                 if armed, let a = apex {
@@ -192,7 +250,17 @@ nonisolated final class TouchStateMachine {
             }
             return nil
         }
+        if config.preservesFallingArcAcrossShortGap == true, gapRun > config.maxGapFrames,
+           let previous = lastValidPoint {
+            // Keep only a continuing observed descent. A ball returning above
+            // its old position could have bounced off-screen and starts anew.
+            if point.timestampMs-previous.timestampMs > config.maxGapDurationMs
+                || previous.motion != .falling || point.motion != .falling || point.y < previous.y {
+                discardPendingArc()
+            }
+        }
         gapRun = 0
+        lastValidPoint = point
 
         if !armed {
             arcTopY = arcTopY.map { min($0, point.y) } ?? point.y
@@ -202,8 +270,12 @@ nonisolated final class TouchStateMachine {
         case .falling:
             fallingRun += 1
             risingRun = 0
+            fallEvidenceMs += point.motionEvidenceMs ?? TimedTrajectory.referenceIntervalMs
+            riseEvidenceMs = 0
             peakFall = max(peakFall, point.vy)
-            if fallingRun >= config.minStateFrames && !armed { armed = true }
+            if confirmedDirection(at: point, frames: fallingRun, milliseconds: fallEvidenceMs), !armed {
+                armed = true
+            }
             if armed, apex == nil || point.y > apex!.y {
                 // A new low point restarts the outgoing half of the measurement.
                 apex = point
@@ -213,29 +285,42 @@ nonisolated final class TouchStateMachine {
         case .rising:
             risingRun += 1
             fallingRun = 0
+            riseEvidenceMs += point.motionEvidenceMs ?? TimedTrajectory.referenceIntervalMs
+            fallEvidenceMs = 0
             peakRise = max(peakRise, -point.vy)
-            // Confirm only once the ball has climbed back out of the reversal;
-            // a fixed frame offset would reject slow rises.
-            if armed, let a = apex,
-               risingRun >= config.minStateFrames,
-               a.y - point.y >= config.minRiseAmplitude {
-                let touch = evaluate(apex: a, confirmation: point,
-                                     arcTopY: arcTopY ?? a.y,
-                                     impulse: peakFall + peakRise)
-                resetArc(restartTopY: point.y)
-                if let t = touch {
-                    touches.append(t)
-                    lastTouchMs = t.timestampMs
-                    return t
-                }
-                return nil
-            }
+            return confirmRise(at: point)
 
         case .unknown:
             // Near the apex the sign of a noisy velocity is meaningless.
             if armed, apex == nil || point.y > apex!.y { apex = point }
+            // Keep the required rising run and displacement. A neutral frame
+            // does not establish a rise, but can finish one already observed.
+            if config.completesRiseWhileSlowing == true, point.vy <= 0 {
+                return confirmRise(at: point)
+            }
         }
         return nil
+    }
+
+    private func confirmRise(at point: TrajectoryPoint) -> Touch? {
+        guard armed, let a = apex,
+              confirmedDirection(at: point, frames: risingRun, milliseconds: riseEvidenceMs),
+              a.y - point.y >= config.minRiseAmplitude else { return nil }
+        let touch = evaluate(apex: a, confirmation: point,
+                             arcTopY: arcTopY ?? a.y, impulse: peakFall + peakRise)
+        resetArc(restartTopY: point.y)
+        if let touch {
+            touches.append(touch)
+            lastTouchMs = touch.timestampMs
+        }
+        return touch
+    }
+
+    private func confirmedDirection(at point: TrajectoryPoint, frames: Int, milliseconds: Double) -> Bool {
+        guard point.motionEvidenceMs != nil else { return frames >= config.minStateFrames }
+        // Preserve the evidence duration of two 30 FPS direction samples. The
+        // tolerance only covers integer-millisecond timestamp rounding.
+        return milliseconds >= Double(config.minStateFrames) * TimedTrajectory.referenceIntervalMs - 2
     }
 
     private func evaluate(apex: TrajectoryPoint, confirmation: TrajectoryPoint,
@@ -244,13 +329,34 @@ nonisolated final class TouchStateMachine {
         let riseAmplitude = apex.y - confirmation.y
         let requiredFall = fallThreshold(at: apex.frameIndex)
         let ground = effectiveGround(apex.frameIndex)
+        let observedBottom = groundPolicy != .legacyCenter ? observedBallBottom(around: apex) : nil
+        let supportedBoundary = groundPolicy == .supportedBoundary || groundPolicy == .plantedFeet || groundPolicy == .corroboratedFeet
+        let boundaryTolerance = supportedBoundary
+            // A screen-sized margin grows too large for distant low kicks.
+            ? min(config.groundTolerance, (ballHeights[apex.frameIndex] ?? 0) * 0.1)
+            : config.groundTolerance
         var handRejected: Bool?
+        var bodyContactAllowed: Bool?
         var footConfirmed: Bool?
         var footEvidence: FootContactEvidence?
+        var groundEvidence: GroundContactEvidence?
+        var handling: BallHandlingEvidence?
+        var handlingChecked: Bool?
+        var plantedFeetConfirmed: Bool?
+        let sparseGround = config.cadenceAwareGroundContact == true && apex.motionEvidenceMs != nil
+        func confirmsFoot(_ evidence: FootContactEvidence) -> Bool {
+            evidence.contact.timestampMs == apex.timestampMs &&
+                (FootContactRules.confirms(before: evidence.before, contact: evidence.contact,
+                    after: evidence.after, requireBalancedMotion: groundPolicy != .legacyCenter)
+                    || (sparseGround && evidence.confirmsExtendedMotion))
+        }
         func record(_ reason: RejectionReason?) {
             onDecision?(CounterDecision(frameIndex: apex.frameIndex, timestampMs: apex.timestampMs,
-                rejection: reason, handRejected: handRejected, footConfirmed: footConfirmed, footEvidence: footEvidence, fall: fallAmplitude,
-                requiredFall: requiredFall, rise: riseAmplitude, impulse: impulse, ground: ground))
+                rejection: reason, handRejected: handRejected, bodyContactAllowed: bodyContactAllowed,
+                footConfirmed: footConfirmed, footEvidence: footEvidence, fall: fallAmplitude,
+                requiredFall: requiredFall, rise: riseAmplitude, impulse: impulse, ground: ground,
+                observedBallBottom: observedBottom, plantedFeetConfirmed: plantedFeetConfirmed,
+                groundEvidence: groundEvidence, handlingEvidence: handling, handlingChecked: handlingChecked))
         }
         func reject(_ reason: RejectionReason) -> Touch? {
             rejected.append((apex.frameIndex, reason))
@@ -265,16 +371,35 @@ nonisolated final class TouchStateMachine {
         if impulse < config.minTouchImpulse { return reject(.insufficientImpulse) }
 
         if let ground,
-           apex.y >= ground - config.groundTolerance {
+           apex.y >= ground - config.groundTolerance
+            || (observedBottom.map { $0 >= ground - boundaryTolerance } ?? false) {
             let region = nearestRegion(apex.frameIndex)
             let eligible = hasDetectionSupport(apex.frameIndex)
                 && region?.contains(apex.x, apex.y, margin: config.roiMargin) == true
                 && (lastTouchMs.map { apex.timestampMs - $0 >= config.touchCooldownMs } ?? true)
             if eligible, let provider = footContactEvidence {
                 footEvidence = provider(apex.frameIndex)
-                footConfirmed = footEvidence.map { $0.contact.timestampMs == apex.timestampMs && $0.confirms } ?? false
+                footConfirmed = footEvidence.map(confirmsFoot) ?? false
             }
-            if footConfirmed != true { return reject(.groundBounce) }
+            if footConfirmed != true {
+                // A person-box bottom is only a rough floor proxy. In a view
+                // from above, a toe tap can project below it. Preserve the old
+                // centre gate, but require additional evidence for the NEW
+                // lower-edge gate: the impact leaves the image, or both feet
+                // are confidently stationary while the ball reverses.
+                let originalGate = apex.y >= ground - config.groundTolerance
+                let clipped = observedBottom.map { bottom in
+                    guard let edge = imageBottoms[apex.frameIndex],
+                          let height = ballHeights[apex.frameIndex] else { return false }
+                    return bottom >= edge - height*0.05
+                } ?? false
+                let stationary = footEvidence.map {
+                    $0.contact.timestampMs == apex.timestampMs && FootContactRules.stationaryFeet($0)
+                } ?? false
+                if !supportedBoundary || originalGate || clipped || stationary {
+                    return reject(.groundBounce)
+                }
+            }
         }
 
         if let last = lastTouchMs, apex.timestampMs - last < config.touchCooldownMs {
@@ -288,8 +413,38 @@ nonisolated final class TouchStateMachine {
             return reject(.outsidePersonRegion)
         }
 
+        // Check the whole lower-body area, not just a person-box floor line.
+        // Perspective and trajectory smoothing can put a real floor impact
+        // above that line. This gate requires positive, sustained pose evidence.
+        if (groundPolicy == .plantedFeet || groundPolicy == .corroboratedFeet), let person = nearestPerson(apex.frameIndex),
+           apex.y + (ballHeights[apex.frameIndex] ?? 0)/2 >= person.bottom-person.height*0.35,
+           let provider = groundContactEvidence {
+            groundEvidence = provider(apex.frameIndex)
+            plantedFeetConfirmed = groundEvidence.map {
+                $0.contactMs == apex.timestampMs && $0.confirmsGroundContact(
+                    corroboratingWeakAnkles: groundPolicy == .corroboratedFeet,
+                    cadenceAware: sparseGround)
+            } ?? false
+            if plantedFeetConfirmed == true {
+                // A resolved kick can still rescue the contact. Reuse a prior
+                // check when the body-box ground gate already requested it.
+                if footConfirmed == nil, let provider = footContactEvidence {
+                    footEvidence = provider(apex.frameIndex)
+                    footConfirmed = footEvidence.map(confirmsFoot) ?? false
+                }
+                if footConfirmed != true { return reject(.groundBounce) }
+            }
+        }
+
+        bodyContactAllowed = allowsBodyContact?(apex.frameIndex)
+        if bodyContactAllowed == false { return reject(.disallowedBodyContact) }
         handRejected = rejectsHandContact?(apex.frameIndex)
         if handRejected == true { return reject(.handContact) }
+        if let provider = handlingEvidence {
+            handlingChecked = true
+            handling = provider(apex.frameIndex)
+            if handling?.contactMs == apex.timestampMs, handling?.state == .held { return reject(.heldBall) }
+        }
         record(nil)
 
         return Touch(index: touches.count, frameIndex: apex.frameIndex,
@@ -303,10 +458,39 @@ nonisolated final class TouchStateMachine {
     /// observations (no new lookahead); sparse evidence keeps the old fallback.
     /// This still assumes the player's feet are near the ground and in frame.
     private func effectiveGround(_ frame: Int) -> Double? {
+        if config.stabilizesPlayerGround == true, playerGroundFrames.contains(frame) {
+            guard let ground = playerGrounds[frame] else { return nil }
+            let nearby = (-config.supportWindowFrames...config.supportWindowFrames)
+                .compactMap { playerGrounds[frame+$0] }.sorted()
+            return nearby.count >= 3 ? nearby[nearby.count/2] : ground
+        }
         let bottoms = (-config.supportWindowFrames...config.supportWindowFrames)
             .compactMap { personBoxes[frame + $0]?.bottom }.filter(\.isFinite).sorted()
         guard bottoms.count >= 3 else { return nearestPerson(frame)?.bottom }
         return bottoms[bottoms.count / 2]
+    }
+
+    private func observedBallBottom(around apex: TrajectoryPoint) -> Double? {
+        let heights = (-config.supportWindowFrames...config.supportWindowFrames)
+            .compactMap { ballHeights[apex.frameIndex+$0] }
+            .filter { $0.isFinite && $0 > 0 && $0 < 1 }.sorted()
+        let typicalHeight = heights.count >= 3 ? heights[heights.count/2] : nil
+        let bottoms = (-2...2).compactMap { offset -> (bottom: Double, height: Double)? in
+            guard let ball = observedBalls[apex.frameIndex+offset],
+                  abs(ball.timestampMs-apex.timestampMs) <= 100,
+                  ball.y.isFinite, ball.height.isFinite, ball.confidence.isFinite,
+                  ball.confidence >= 0.5, ball.height > 0, ball.height < 1 else { return nil }
+            // One oversized box must not turn a good kick into a floor event.
+            let height = min(ball.height, typicalHeight.map { 1.35*$0 } ?? ball.height)
+            return (ball.y+height/2, height)
+        }.sorted { $0.bottom > $1.bottom }
+        guard bottoms.count >= 2 else { return nil }
+        // A fast impact may reach the floor in only one exposure. Keep that
+        // boundary when a second observed edge corroborates it within a ball
+        // radius. Otherwise ignore the isolated low outlier.
+        let first = bottoms[0], second = bottoms[1]
+        return first.bottom-second.bottom <= min(first.height, second.height)/2
+            ? first.bottom : second.bottom
     }
 
     private func fallThreshold(at frame: Int) -> Double {

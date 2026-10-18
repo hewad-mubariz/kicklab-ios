@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-18",
+  "scope": "Preserve source frame timing through shared preparation, replay, and customized export; retain explicit retiming and the high-frame-rate MOV format.",
+  "status": "Implemented and validated locally. No TestFlight upload. Broader release qualification remains separate.",
+  "implementation": [
+    "EffectVideoGeometry sets sourceTrackIDForFrameTiming when no frame-duration override is supplied.",
+    "The source minimum frame duration supplies empty-edit fallback and mask-gap sizing; the nominal average no longer resamples normal replay/export.",
+    "Explicit frame-duration overrides continue using their requested composition clock.",
+    "Both exporters select MOV/MP4 from the effective composition cadence so long gaps do not hide 120/240 fps content.",
+    "Analysis signature advanced to analysis-v14-source-frame-timing-v1 to invalidate masks/inference/spin cached on the old clock."
+  ],
+  "real_clip_composition_checks": [
+    {
+      "clip": "iphone17-earlier-original.mov",
+      "source_frames": 1519,
+      "before_composed_frames": 1166,
+      "after_composed_frames": 1519,
+      "maximum_timestamp_error_seconds": 0
+    },
+    {
+      "clip": "iphone17-latest-original.mov",
+      "source_frames": 2193,
+      "before_composed_frames": 2191,
+      "after_composed_frames": 2193,
+      "maximum_timestamp_error_seconds": 0
+    },
+    {
+      "clip": "juggledude-edited-4F4090E9-1611-43EA-993B-1DFADCB2BE1D.MOV",
+      "source_frames": 1877,
+      "before_composed_frames": 1877,
+      "after_composed_frames": 1877,
+      "maximum_timestamp_error_seconds": 0
+    }
+  ],
+  "tests": {
+    "iphone11": {
+      "passed": 15,
+      "failed": 0,
+      "includes": [
+        "RF dense visual preparation and imported-analysis alignment",
+        "unchanged saved live statistics",
+        "still-preview mask clock",
+        "60/120 fps gapped sources",
+        "customized export timestamps and MOV/MP4 choice",
+        "explicit frame-rate override",
+        "mask-gap repair"
+      ],
+      "evidence": "iphone11-cadence.xcresult"
+    },
+    "simulator": {
+      "passed": 14,
+      "failed": 0,
+      "includes": [
+        "timing/export/mask regressions",
+        "high-frame-rate Power Shot export",
+        "retimed Power Shot sound and freeze frame"
+      ],
+      "evidence": "cadence-final-tests.xcresult"
+    },
+    "additional_simulator_rf_replay": {
+      "status": "Failed because Simulator pose-model weights were missing; Core ML backend errors were also logged. Same test passed on the physical iPhone 11.",
+      "evidence": "capture-source-clock.xcresult"
+    }
+  },
+  "remaining": [
+    {
+      "issue": "7.703-second opening gap in earlier original capture",
+      "status": "Not fixed",
+      "recommendation": "Validate repeated cold recording starts before deciding whether to defer. New raw take did not reproduce it."
+    },
+    {
+      "issue": "Original patterned ball visible beyond replacement boundary and unstable blur/coverage indoors",
+      "status": "Not fixed",
+      "recommendation": "Candidate for post-launch quality work if remaining visual quality is accepted; keep this separate from the completed timing fix."
+    }
+  ],
+  "limits": [
+    "Source timestamps are preserved, including gaps already present; missing captured frames cannot be recovered.",
+    "The full user clips were compared through the production composition decoder; customized export encoding was tested with small generated 60/120 fps gap fixtures.",
+    "Retaining previously skipped frames can increase preparation/export time for affected clips.",
+    "No new phone-17 build was installed by this task because another task was building/installing camera changes on that phone.",
+    "No changes to RF model choice, live counting rules, microphone capture, or ball coverage were made."
+  ],
+  "evidence_root": "artifacts/ball-replacement-review-20261018",
+  "apple_reference": "https://developer.apple.com/documentation/avfoundation/avvideocomposition/sourcetrackidforframetiming"
+}

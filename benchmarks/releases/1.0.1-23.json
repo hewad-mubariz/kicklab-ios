@@ -1,0 +1,27 @@
+{
+  "version": "1.0.1",
+  "build": "23",
+  "test_result": "passed",
+  "selected_tests": 45,
+  "failures": 0,
+  "test_configuration": "Debug / iOS Simulator 26.5",
+  "test_suites": [
+    "LaunchReliabilityTests (10)",
+    "ModernVideoAPITests (5)",
+    "ShotCameraTests (27)",
+    "ShotCameraMoveReviewTests (3: coverage, slow motion, Frozen Arc)"
+  ],
+  "physical_timing_tests": "Prior iPhone 11 run: 15 passed, evidence in artifacts/ball-replacement-review-20261018/iphone11-cadence.xcresult",
+  "archive_status": "succeeded",
+  "upload_status": "succeeded",
+  "known_limitations": [
+    "Recording startup gap trigger still requires repeated cold-start validation.",
+    "Indoor blurred ball replacement can expose the original ball around its edges.",
+    "Prior iPhone 11 custom freeze-export colour check missed tolerance by 1/255; current simulator camera checks pass.",
+    "Live recordings remain silent."
+  ],
+  "app_store_review_submitted": false,
+  "upload_completed_at": "2026-10-18T17:29:23+02:00",
+  "app_store_connect_status": "processed / Ready to Submit",
+  "app_store_connect_build_id": "0014be5a-233b-4c1d-8802-df8bd73cdac0"
+}

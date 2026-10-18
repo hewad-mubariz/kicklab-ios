@@ -3,6 +3,33 @@ import XCTest
 @testable import kicklab
 
 final class BallMaskTests: XCTestCase {
+    func testRetainedMasksAreLosslessIncludingCoverageEdgesAndIncompressiblePixels() {
+        var state: UInt64 = 42
+        for (width, height) in [(1, 1), (1, 128), (128, 1), (17, 31), (128, 128)] {
+            for mode in 0..<4 {
+                let alpha = (0..<width * height).map { i -> UInt8 in
+                    state = state &* 6364136223846793005 &+ 1
+                    if mode == 0 { return 0 }
+                    if mode == 1 { return 255 }
+                    if mode == 2 { return UInt8((i / 17) % 256) }
+                    return UInt8(truncatingIfNeeded: state >> 32)
+                }
+                let original = BallMask(rect: CGRect(x: 0.2, y: 0.3, width: 0.1, height: 0.2),
+                    width: width, height: height, alpha: alpha)
+                let compact = original.compacted()
+                XCTAssertEqual(compact.alpha, alpha)
+                XCTAssertEqual(compact.compacted().alpha, alpha)
+                XCTAssertEqual(compact.expanded().alpha, alpha)
+                XCTAssertLessThanOrEqual(compact.storageByteCount, alpha.count)
+                for y in 0...21 { for x in 0...21 {
+                    let px = 0.19 + Double(x) * 0.006, py = 0.29 + Double(y) * 0.011
+                    XCTAssertEqual(compact.coverage(x: px, y: py), original.coverage(x: px, y: py))
+                } }
+                if width * height > 3 && mode < 2 { XCTAssertEqual(compact.storageByteCount, 3) }
+            }
+        }
+    }
+
     func testSeparableCoverageMatchesTwoDimensionalKernelAtEdgesAndAllSizes() {
         var state: UInt64 = 0xB411
         for (w, h) in [(1,1), (1,8), (8,1), (8,8), (17,31), (64,97), (128,128)] {
@@ -73,6 +100,14 @@ final class BallMaskTests: XCTestCase {
         let size = CGSize(width:160,height:160), content = CGRect(x:0,y:0,width:1,height:1)
         let mask = try XCTUnwrap(BallMask.decode(out,content:content,sourceSize:size,threshold:0.5,sourceBorder:4))
         let coverage = BallReplacementCoverage(mask:mask,fitted:nil,size:size)
+        let retainedCoverage = BallReplacementCoverage(mask:mask.compacted(),fitted:nil,size:size)
+        XCTAssertEqual(retainedCoverage.footprint.center, coverage.footprint.center)
+        XCTAssertEqual(retainedCoverage.footprint.radius, coverage.footprint.radius)
+        for y in stride(from: 70.0, through: 110.0, by: 1.0) {
+            for x in stride(from: 60.0, through: 100.0, by: 1.0) {
+                XCTAssertEqual(retainedCoverage.coverage(x: x, y: y), coverage.coverage(x: x, y: y))
+            }
+        }
         XCTAssertTrue(coverage.reconstructsBody)
         XCTAssertEqual(coverage.footprint.center.x,80,accuracy:1)
         XCTAssertEqual(coverage.footprint.center.y,90,accuracy:1)

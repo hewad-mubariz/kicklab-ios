@@ -1,0 +1,40 @@
+{
+  "resource": "RFDETRSmallRecovery040FP32",
+  "candidate": "v2.0.0-dev.8-rfsmall-confidence040-fp32",
+  "checkpoint_sha256": "e837bedaa7357643958c78c37104dcd12808bd9bd8db10385c61c2d974149b94",
+  "input": [
+    1,
+    3,
+    384,
+    384
+  ],
+  "precision": "FP32",
+  "foreground_compute": "cpuAndGPU",
+  "background_compute": "cpuOnly",
+  "ball_threshold": 0.4,
+  "person_threshold": 0.5,
+  "source_package": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/runs/v2/20261014-rfdetr-small-confidence040-fp32-001/float32/rfdetr-seg-small_fp32.mlpackage",
+  "files": [
+    {
+      "path": "Data/com.apple.CoreML/model.mlmodel",
+      "sha256": "bfa9e5975fe8d78f0cb99a1f438b6c9c66dfab3abb5417a0e477d09a20658d36",
+      "bytes": 320940
+    },
+    {
+      "path": "Data/com.apple.CoreML/weights/weight.bin",
+      "sha256": "5db8788baac1139ce9729fa8e1ede287853ffede1e6bade77577627374f90fbb",
+      "bytes": 122807104
+    },
+    {
+      "path": "Manifest.json",
+      "sha256": "f5d44f035f3dd44a60b90adec0df19ef0415d7750a7e5de3f9ce992ba1a267bf",
+      "bytes": 617
+    },
+    {
+      "path": "executorch_debug_handle_mapping.json",
+      "sha256": "69b72bf330a957a2a1e3d92df84ffc4cd4da124000cf4c0ec820ee6cdd4e3552",
+      "bytes": 309238
+    }
+  ],
+  "status": "Integrated for main-app device testing; release validation pending."
+}

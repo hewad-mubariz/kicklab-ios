@@ -8,6 +8,16 @@ struct ExportOverlayLayer: View {
     let size: CGSize
 
     var body: some View {
+        if settings.showTimer, let timer = TimerOverlayAppearance.image(time: time) {
+            let rect = TimerOverlayAppearance.rect(in: size)
+            Image(decorative: timer, scale: 1).resizable()
+                .frame(width: rect.width, height: rect.height)
+                .position(x: rect.midX, y: rect.midY)
+                .allowsHitTesting(false)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Elapsed time").accessibilityValue(ExportPreviewTime.label(at: time))
+                .accessibilityIdentifier("replay-elapsed-time")
+        }
         if settings.counter.enabled,
            let badge = ExportOverlayRenderer.image(style: settings.counter.style,
                 time: time, counter: timeline.state(at: time)) {
@@ -160,7 +170,7 @@ struct ExportOverlayEditor: View {
 
     private func prepare() async {
         do {
-            let ready = edit.ballSkin != .original ? try await preparation.prepare(summary) : summary
+            let ready = try await preparation.prepare(summary, for: edit)
             let media = try await sceneModel.media(summary: ready, selection: edit.scene)
             let url = media.url
             effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))

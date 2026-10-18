@@ -1,0 +1,12 @@
+RF-DETR Seg Small
+
+RF-DETR by Roboflow, Inc. Apache License 2.0.
+Upstream: https://github.com/roboflow/rf-detr
+The full Apache 2.0 license is included as RF-DETR-LICENSE.txt.
+
+Locally fine-tuned recovery checkpoint (epoch 4):
+SHA-256 e837bedaa7357643958c78c37104dcd12808bd9bd8db10385c61c2d974149b94
+Candidate v2.0.0-dev.8-rfsmall-confidence040-fp32.
+Converted locally to a fixed 384 × 384 FP32 Core ML program.
+Ball confidence threshold 0.40; person threshold 0.50.
+Model provenance and payload hashes: config/RFDETRSmall-model.json in the source repository.

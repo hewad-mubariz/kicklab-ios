@@ -25,7 +25,7 @@ final class SessionAnalysisTests: XCTestCase {
         return url
     }
 
-    func testNormalRelaunchSharesModelSelectionButChangedAnalysisSettingsInvalidate() throws {
+    func testRFSmallRelaunchSharesEffectiveSettingsAndKeepsOldModelCachesSeparate() throws {
         let name="BallPreparation.\(UUID().uuidString)"
         let defaults=try XCTUnwrap(UserDefaults(suiteName:name))
         defer { defaults.removePersistentDomain(forName:name) }
@@ -33,21 +33,27 @@ final class SessionAnalysisTests: XCTestCase {
         XCTAssertEqual(clean,SessionAnalysisStore.pipelineOptions(arguments:["--yolo26-motion-model-only"],defaults:defaults))
         XCTAssertEqual(clean,SessionAnalysisStore.pipelineOptions(arguments:["--ssdlite"],defaults:defaults),
             "Retired model flags cannot switch the app or create a different model cache")
-        let retiredSSDLiteOptions = clean.replacingOccurrences(of: "KickLabYOLO26MotionSegmentation", with: "KickLabDetector")
+        let retiredSSDLiteOptions = clean.replacingOccurrences(of: BallDetector.productionResourceName, with: "KickLabDetector")
         XCTAssertNotEqual(clean,retiredSSDLiteOptions,"Old SSDLite inference retains its separate model identity")
         defaults.set("motionModel",forKey:"experimentalBallModel")
         let normal=SessionAnalysisStore.pipelineOptions(arguments:[],defaults:defaults)
+        XCTAssertTrue(normal.contains(RFSmallModel.fp16.pipelineIdentity))
+        XCTAssertTrue(normal.contains("ball=0.40"))
+        XCTAssertTrue(normal.contains("association=rf-v1"), "Association changes must invalidate pre-fix analysis caches")
         XCTAssertEqual(clean,normal)
         XCTAssertEqual(normal,SessionAnalysisStore.pipelineOptions(arguments:["--yolo26-motion-model-only"],defaults:defaults))
         for value in ["segmentation","medium","default","unknown"] {
             defaults.set(value,forKey:"experimentalBallModel")
             XCTAssertEqual(normal,SessionAnalysisStore.pipelineOptions(arguments:[],defaults:defaults))
         }
-        for flag in ["--disable-marginal-retry","--disable-ball-confirmation","--juggling-no-hand-check","--yolo26-motion-segmentation"] {
-            XCTAssertNotEqual(normal,SessionAnalysisStore.pipelineOptions(arguments:[flag],defaults:defaults))
+        XCTAssertEqual(normal, SessionAnalysisStore.pipelineOptions(arguments: ["--juggling-no-hand-check"], defaults: defaults),
+                       "A retired hand-check flag cannot change the effective policy or its cache")
+        for flag in ["--disable-marginal-retry","--disable-ball-confirmation","--yolo26-motion-segmentation"] {
+            XCTAssertEqual(normal,SessionAnalysisStore.pipelineOptions(arguments:[flag],defaults:defaults),
+                           "YOLO-only recovery flags do not change RF-DETR inference")
         }
         defaults.set("motion",forKey:"experimentalBallModel")
-        XCTAssertNotEqual(SessionAnalysisStore.pipelineOptions(arguments:[],defaults:defaults),
+        XCTAssertEqual(SessionAnalysisStore.pipelineOptions(arguments:[],defaults:defaults),
             SessionAnalysisStore.pipelineOptions(arguments:["--yolo26-motion-model-only"],defaults:defaults))
     }
 
@@ -59,8 +65,10 @@ final class SessionAnalysisTests: XCTestCase {
             return x*x+y*y < 10000 ? 255 : 0
         }
         f.ballMask=BallMask(rect:CGRect(x:0.2,y:0.3,width:0.2,height:0.2),width:128,height:128,alpha:alpha)
-        let frames=Array(repeating:f,count:2200) // 34.4 MiB of exact alpha bytes.
-        XCTAssertGreaterThan(frames.count*alpha.count,32*1024*1024)
+        f.ballMask = f.ballMask?.compacted()
+        let frames=Array(repeating:f,count:9000) // 140.6 MiB if all masks were expanded.
+        XCTAssertGreaterThan(frames.count*alpha.count,128*1024*1024)
+        XCTAssertTrue(SessionAnalysisStore.canStore(frames))
         _ = try await store.prepare(key:"long") { _ in frames }
         let disk=try Data(contentsOf:folder.appendingPathComponent("long.plist"))
         XCTAssertLessThan(disk.count,4*1024*1024)
@@ -69,7 +77,10 @@ final class SessionAnalysisTests: XCTestCase {
             XCTFail("A completed long recording repeated its model pass"); return []
         }
         XCTAssertEqual(loaded.count,frames.count)
-        for item in loaded { XCTAssertEqual(item.ballMask?.alpha,alpha); XCTAssertEqual(item.identity,f.identity) }
+        for item in loaded {
+            XCTAssertEqual(item.ballMask?.alpha,alpha); XCTAssertEqual(item.identity,f.identity)
+            XCTAssertEqual(item.ballMask?.storageByteCount, f.ballMask?.storageByteCount)
+        }
         let hits=await reopened.diskHits
         XCTAssertEqual(hits,1)
     }

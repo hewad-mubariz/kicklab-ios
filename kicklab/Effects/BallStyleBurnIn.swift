@@ -59,6 +59,46 @@ final class BallStyleBurnIn: ObservableObject {
         NSError(domain: "KickLab.Export", code: 50, userInfo: [NSLocalizedDescriptionKey: message])
     }
 
+    nonisolated static func bitrate(for outputSize: CGSize) -> Int {
+        min(outputSize.width, outputSize.height) >= 1080 ? 14_000_000 : 7_000_000
+    }
+
+    /// Bypass composition only when it would apply neither a transform nor a
+    /// color conversion. Unknown/HDR formats, effects and resized video retain
+    /// the established composition path.
+    nonisolated static func canReadDirectly(naturalSize: CGSize, outputSize: CGSize,
+                                          transform: CGAffineTransform, formats: [CMFormatDescription]) -> Bool {
+        guard naturalSize == outputSize, transform.isIdentity, !formats.isEmpty else { return false }
+        return formats.allSatisfy { format in
+            let dimensions = CMVideoFormatDescriptionGetPresentationDimensions(format,
+                usePixelAspectRatio: true, useCleanAperture: true)
+            return dimensions == naturalSize
+                && CMFormatDescriptionGetExtension(format, extensionKey: kCMFormatDescriptionExtension_ColorPrimaries) as? String == AVVideoColorPrimaries_ITU_R_709_2
+                && CMFormatDescriptionGetExtension(format, extensionKey: kCMFormatDescriptionExtension_TransferFunction) as? String == AVVideoTransferFunction_ITU_R_709_2
+                && CMFormatDescriptionGetExtension(format, extensionKey: kCMFormatDescriptionExtension_YCbCrMatrix) as? String == AVVideoYCbCrMatrix_ITU_R_709_2
+        }
+    }
+
+    /// The composition already produced upright SDR BGRA pixels. A basic
+    /// counter/timer export can copy these into its writable buffer directly,
+    /// avoiding a GPU render followed immediately by a CPU overlay readback.
+    nonisolated static func copyBGRA(_ source: CVPixelBuffer, to target: CVPixelBuffer) -> Bool {
+        let width = CVPixelBufferGetWidth(source), height = CVPixelBufferGetHeight(source)
+        guard CVPixelBufferGetPixelFormatType(source) == kCVPixelFormatType_32BGRA,
+              CVPixelBufferGetPixelFormatType(target) == kCVPixelFormatType_32BGRA,
+              CVPixelBufferGetWidth(target) == width, CVPixelBufferGetHeight(target) == height,
+              CVPixelBufferLockBaseAddress(source, .readOnly) == kCVReturnSuccess else { return false }
+        defer { CVPixelBufferUnlockBaseAddress(source, .readOnly) }
+        guard CVPixelBufferLockBaseAddress(target, []) == kCVReturnSuccess else { return false }
+        defer { CVPixelBufferUnlockBaseAddress(target, []) }
+        guard let src = CVPixelBufferGetBaseAddress(source), let dst = CVPixelBufferGetBaseAddress(target) else { return false }
+        let srcStride = CVPixelBufferGetBytesPerRow(source), dstStride = CVPixelBufferGetBytesPerRow(target)
+        for row in 0..<height {
+            memcpy(dst.advanced(by: row * dstStride), src.advanced(by: row * srcStride), width * 4)
+        }
+        return true
+    }
+
     /// Used by the app and real-video integration harness. Never falls back to an
     /// unedited source when rendering fails. Source audio is muxed back losslessly.
     nonisolated static func render(source: URL, track: [RecordedFrame], style: BallStyle,
@@ -89,7 +129,11 @@ final class BallStyleBurnIn: ObservableObject {
             }, touchTimes: touchTimes ?? counter?.times ?? []) : nil
         let reader = try AVAssetReader(asset: asset)
         let output: AVAssetReaderOutput
-        if preserveFrameTimes {
+        let basic = style == .none && skin == .original && environment == .original
+        let directSource = basic && !preserveFrameTimes
+            ? try await canReadDirectly(naturalSize: videoTrack.load(.naturalSize), outputSize: size,
+                transform: videoTrack.load(.preferredTransform), formats: videoTrack.load(.formatDescriptions)) : false
+        if preserveFrameTimes || directSource {
             // Prepared scenes are already upright SDR. Read their actual frames
             // instead of resampling a second time from estimated nominal FPS.
             guard try await videoTrack.load(.preferredTransform).isIdentity else {throw failure("The prepared scene has an unexpected orientation.")}
@@ -104,7 +148,8 @@ final class BallStyleBurnIn: ObservableObject {
         let temp = FileManager.default.temporaryDirectory
         // AVFoundation drops the QuickTime playback-intent key in MP4 files.
         // High-frame-rate replays need MOV to retain that intent in Photos.
-        let frameRate = try await videoTrack.load(.nominalFrameRate)
+        // A recording gap must not disguise 120/240 fps footage as low-rate MP4.
+        let frameRate = Float(1 / composition.frameDuration.seconds)
         let fileType = VideoExportFormat.fileType(fps: frameRate)
         let fileExtension = VideoExportFormat.fileExtension(fps: frameRate)
         let silentURL = temp.appendingPathComponent("juggledude-render-\(UUID().uuidString).\(fileExtension)")
@@ -124,7 +169,7 @@ final class BallStyleBurnIn: ObservableObject {
             AVVideoWidthKey: Int(size.width), AVVideoHeightKey: Int(size.height),
             AVVideoColorPropertiesKey: [AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
                 AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2, AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2],
-            AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: shortEdge >= 1080 ? 14_000_000 : 7_000_000]])
+            AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: bitrate(for: size)]])
         input.expectsMediaDataInRealTime = false
         input.mediaTimeScale = 60_000
         let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: [
@@ -141,8 +186,8 @@ final class BallStyleBurnIn: ObservableObject {
         let needsGPU = (style != .none && intensity > 0) || environment != .original
         try await VideoWorkExecution.checkpoint(requiresGPU: needsGPU)
         let engine = needsGPU ? try MetalEffectEngine() : nil
-        let ci = engine.map { CIContext(mtlDevice: $0.device, options: [.cacheIntermediates: false]) }
-            ?? CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly, .cacheIntermediates: false])
+        var ci = engine.map { CIContext(mtlDevice: $0.device, options: [.cacheIntermediates: false]) }
+        let canCopyComposedPixels = !preserveFrameTimes && !needsGPU && skin == .original
         var frameCount = 0
         do {
             while true {
@@ -169,12 +214,17 @@ final class BallStyleBurnIn: ObservableObject {
                     var target: CVPixelBuffer?
                     guard CVPixelBufferPoolCreatePixelBuffer(kCFAllocatorDefault, pool, &target) == kCVReturnSuccess,
                           let target else { throw failure("Cannot allocate video frame.") }
-                    var image=CIImage(cvPixelBuffer:pixels)
-                    if preserveFrameTimes,image.extent.size != size {
-                        image=image.applyingFilter("CILanczosScaleTransform",parameters:[kCIInputScaleKey:size.height/image.extent.height,
-                            kCIInputAspectRatioKey:(size.width/image.extent.width)/(size.height/image.extent.height)])
+                    if !(canCopyComposedPixels && copyBGRA(pixels, to: target)) {
+                        if ci == nil {
+                            ci = CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly, .cacheIntermediates: false])
+                        }
+                        var image=CIImage(cvPixelBuffer:pixels)
+                        if preserveFrameTimes,image.extent.size != size {
+                            image=image.applyingFilter("CILanczosScaleTransform",parameters:[kCIInputScaleKey:size.height/image.extent.height,
+                                kCIInputAspectRatioKey:(size.width/image.extent.width)/(size.height/image.extent.height)])
+                        }
+                        ci?.render(image, to: target)
                     }
-                    ci.render(image, to: target)
                     #if DEBUG
                     try PipelineParityReview.exportPixels(target, time: time, stage: "source")
                     #endif

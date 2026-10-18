@@ -1,5 +1,34 @@
 # Juggle Dude account setup
 
+## Current rollout status — 2026-10-12
+
+The submitted first release remains **Apple sign-in + guest**. The Google and email controls in `SignInView.swift` remain commented out. The owner explicitly requested that they be added only in a later update after App Store approval. This setup pass changed no iOS source, build, installation, or App Store submission.
+
+Google's setup is ready for that later rollout:
+
+- **Audience:** External, **In production**.
+- **Branding:** **Verified and published**. Google confirms: “Your branding has been verified and is being shown to users.”
+- **Name and logo:** Juggle Dude, with the existing default app icon.
+- **Website:** `https://juggledude.com/`; privacy: `https://juggledude.com/privacy/`; terms: `https://juggledude.com/terms/`.
+- **Support and developer contact:** `hewadmubariz@gmail.com`, the eligible Google account already configured.
+- **Authorized domains:** `juggledude.com` and the existing `shbdsjvpjdtqbiaevrxy.supabase.co` callback host. Callback and credentials were not changed.
+- **Ownership:** `juggledude.com` verified as a Domain property in Google Search Console by a root DNS TXT record at GoDaddy. Keep that verification TXT record.
+- **Data access:** only `openid`, `userinfo.email`, and `userinfo.profile`; no sensitive or restricted scopes. Google says data-access verification is not required.
+
+The website privacy policy and terms now describe Google/email sign-in where offered and explicitly say the first App Store release offers Apple sign-in. Website commit `3681e1a` was pushed to `main` and deployed; type checking and the production build passed, and both live policy pages returned HTTP 200 with the 12 October 2026 revision. Local evidence is in `artifacts/google-branding-20261012/`, including `branding-verified-published.png` and `status.json`.
+
+Before the later app rollout, enable the controls only with the owner's instruction and test Google sign-in, cancellation, session recovery, and sign-out on that build. This pass verified the Google configuration, not a newly enabled on-device flow. Google consent-screen branding does not replace the Supabase host used by the iOS browser authentication prompt; a custom auth domain is a separate change.
+
+**AWS — verified later on 12 October:** SES production access is granted in Europe (Stockholm), `eu-north-1`. The console reports **50,000 emails per 24 hours**, **14 emails/second**, and **Healthy** account status. The `juggledude.com` identity is verified; DKIM signing is successful/enabled with 2048-bit keys and custom MAIL FROM `mail.juggledude.com` is successful. Public DNS includes SES SPF and DMARC `p=quarantine`.
+
+Supabase custom SMTP is enabled with the existing Stockholm endpoint, port 587, sender name Juggle Dude, and a 60-second minimum interval per recipient. Its separate project-wide email rate limit is still **30/hour** and was left unchanged. Bounce and complaint suppression is enabled, with no suppressed addresses at inspection. Email feedback forwarding is enabled; no SNS feedback topics are configured, and SES onboarding reports event monitoring not set up. Before enabling email sign-in for a public audience, agree an appropriate Supabase hourly limit and establish a monitored feedback/alert destination. These are separate from the approved SES sending quota.
+
+With the owner's explicit authorization, one test was requested through Supabase Auth for `hewadmubariz@gmail.com` at **09:43 Europe/Berlin**. The request used `create_user: false` and PKCE; HTTP 200 was returned. The delivered message was observed in the Gmail **Inbox**, with subject “Your Juggle Dude sign-in link”, sender `Juggle Dude <noreply@juggledude.com>`, `mailed-by: mail.juggledude.com`, `signed-by: juggledude.com`, and TLS. This proves the current Supabase → SES → Gmail delivery path and branding. The recipient was already verified in SES, so delivery to a previously unverified recipient was not independently exercised; production permission is confirmed by the SES console. The sign-in link was not consumed by the agent, and no app or provider setting was changed. Evidence: `artifacts/ses-production-20261012/`.
+
+Historical sandbox limits below must not be treated as the current verified state. The public support mailbox was confirmed in the later release work; the earlier note below about needing an inbound mailbox is historical.
+
+The sections below record the earlier implementation and tests; this dated rollout status takes precedence over earlier statements about Testing mode, draft policies, and pending AWS approval.
+
 ## Projects and callbacks
 
 | Setting | Value |

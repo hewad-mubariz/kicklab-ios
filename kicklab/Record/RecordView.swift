@@ -47,6 +47,7 @@ struct RecordView: View {
     @State private var hudShown = false
 
     #if DEBUG
+    @AppStorage("debug.touchOutlines") private var showTouchOutlines = true
     @State private var processingReviewStarted = false
     private var processingReviewPath: String? { SessionDesignReview.argument("--capture-processing-video") }
     #else
@@ -67,6 +68,13 @@ struct RecordView: View {
                         ZStack {
                             CameraPreview(session: camera.captureSession)
                             if camera.isRecording && subscriptions.isPro { ballOverlay(in: video.size) }
+                            #if DEBUG
+                            if camera.isRecording && showTouchOutlines {
+                                ActivePlayerDebugOverlay(players: camera.activePlayers, selection: camera.activePlayer,
+                                                         fillsFrame: true)
+                                LiveTouchDebugOverlay(event: camera.touchDiagnostic)
+                            }
+                            #endif
                         }
                     }.ignoresSafeArea()
 
@@ -86,6 +94,9 @@ struct RecordView: View {
                             .padding(.horizontal, 24).padding(.bottom, 14)
                             .sessionEntrance(hudShown, order: 2)
                         cameraStatus
+                        #if DEBUG && TOUCH_COUNTING_DEBUG
+                        DebugFrameTestControls(camera: camera)
+                        #endif
                         bottomBar.sessionEntrance(hudShown, order: 3, offset: 28)
                     }
                 }
@@ -100,6 +111,8 @@ struct RecordView: View {
             }
         }
         .statusBarHidden(false)
+        .debugRuntimeOverlay(performance: camera.performance, capture: camera.capturePerformance,
+                             recording: camera.isRecording)
         .preferredColorScheme(.dark)
         .onAppear {
             if galleryItem == nil, processingReviewPath == nil { camera.start() }
@@ -179,7 +192,7 @@ struct RecordView: View {
         }
         .onChange(of: camera.recordingURL) { _, url in
             guard let url, showProcessing, camera.recordingError == nil else { return }
-            let summary = SessionSummary.make(
+            var summary = SessionSummary.make(
                 touches: camera.touchCount,
                 duration: elapsed,
                 bestCombo: max(comboPeak, camera.touchCount),
@@ -188,6 +201,7 @@ struct RecordView: View {
                 touchesMarked: camera.recordedTouches,
                 track: camera.recordedTrack, sessionNumber: sessionNumber
             )
+            summary.debugContacts = camera.recordedDiagnostics
             pendingSummary = summary
             finishProcessing(with: summary)
             saveAccountResult(summary, source: .recording)
@@ -312,6 +326,7 @@ struct RecordView: View {
             videoURL: url, touchesMarked: importedVideo.recordedTouches,
             track: importedVideo.recordedTrack, sessionNumber: JugglingSessionIdentity.begin())
         if !importedVideo.visualRecoveries.isEmpty { summary.visualTrack = importedVideo.renderTrack }
+        summary.debugContacts = importedVideo.counterTrace?.diagnostics ?? []
         finishProcessing(with: summary, framesUseCompositionClock: true)
         saveAccountResult(summary, source: .gallery)
     }
@@ -509,10 +524,8 @@ struct RecordView: View {
                 CaptureSessionBadge(number: sessionNumber, recording: camera.isRecording,
                                     preparing: camera.isPreparingRecording)
             }.zIndex(1)
-            if subscriptions.isPro {
-                CaptureTouchCounter(count: controlState == .ready ? 0 : camera.touchCount, warn: camera.tooShaky)
-                    .allowsHitTesting(false)
-            }
+            CaptureTouchCounter(count: controlState == .ready ? 0 : camera.touchCount, warn: camera.tooShaky)
+                .allowsHitTesting(false)
             if camera.tooShaky {
                 Text("Hold the camera steadier").font(.caption.weight(.semibold)).foregroundStyle(Theme.warn)
                     .transition(.sessionDrop)

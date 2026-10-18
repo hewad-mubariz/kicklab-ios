@@ -16,20 +16,48 @@ nonisolated enum ShotEffectExporter {
     }
 
     static func render(source: URL, track: BallEffectTrack, style: ShotTrailStyle, intensity: Double = 1,
-                       distance: BallDistanceTimeline? = nil, camera: ShotCameraSettings = .init(),
-                       flight: ShotFlight? = nil, progress: @escaping @Sendable (Double) -> Void) async throws -> URL {
-        let sourceDuration = try await AVURLAsset(url: source).load(.duration).seconds
+                       distance: BallDistanceTimeline? = nil, camera: ShotCameraTrack = .init(),
+                       flight: ShotFlight? = nil, atlas: ShotSpriteAtlas? = nil, arc: ShotArcLayers? = nil,
+                       slowMotion: ShotSlowMotion? = nil,
+                       progress: @escaping @Sendable (Double) -> Void) async throws -> URL {
+        let original = AVURLAsset(url: source)
+        let sourceDuration = try await original.load(.duration).seconds
         try VideoSafetyPolicy.requireExportSpace(duration: sourceDuration)
-        let clock = ShotReplayClock(settings: camera, track: track, flight: flight, duration: sourceDuration)
-        let asset = try await clock.asset(source: source)
+        guard let sourceVideo = try await original.loadTracks(withMediaType: .video).first else { throw Failure.noVideo }
+        let upright = EffectVideoGeometry.displaySize(naturalSize: try await sourceVideo.load(.naturalSize),
+                                                      transform: try await sourceVideo.load(.preferredTransform))
+        let sourceRate = Double(try await sourceVideo.load(.nominalFrameRate))
+        // The same plan and clock as the preview, so the saved video matches what was edited.
+        let plan = ShotCameraPlan(track: camera, ball: track, flight: flight, duration: sourceDuration,
+                                  aspect: Double(upright.width / max(1, upright.height)), frameDuration: 1 / (sourceRate > 0 ? sourceRate : 30))
+        let clock = plan.timeline
+        // Stamps are cut from the source for exactly this plan's moments.
+        let sprites = atlas?.stamps == plan.stamps ? atlas : try await ShotSpriteAtlas.build(source: source, stamps: plan.stamps)
+        // Frozen Arc's layers, cut at its frozen moment.
+        var layers = arc
+        if let moment = plan.arcMoment, layers?.matches(moment) != true {
+            layers = try await ShotArcLayers.build(source: source, ball: track, time: moment)
+        }
+        // Slow motion with new in-between frames, rendered now if the editor had not finished it.
+        let slowed = ShotSlowMotion.stretches(in: clock, track: camera)
+        var smooth = slowMotion?.covers(slowed, of: source) == true ? slowMotion : nil
+        if smooth == nil, !slowed.isEmpty, ShotSlowMotion.isAvailable {
+            smooth = try await ShotSlowMotion.render(source: source, stretches: slowed)
+        }
+        let asset = try await clock.asset(source: source, smooth: smooth)
         guard let video = try await asset.loadTracks(withMediaType: .video).first else { throw Failure.noVideo }
         let duration = try await asset.load(.duration)
         try VideoSafetyPolicy.requireExportSpace(duration: duration.seconds)
-        let composition = try await EffectVideoGeometry.composition(track: video, duration: duration, shortEdge: 1080)
+        // A retimed composition reports its average rate (fewer frames over a longer time), so the
+        // saved video keeps the source's own cadence instead: holds and slow stretches stay smooth.
+        let frameRate = clock.isOriginal ? try await video.load(.nominalFrameRate) : Float(sourceRate > 0 ? sourceRate : 30)
+        let composition = try await EffectVideoGeometry.composition(
+            track: video, duration: duration, shortEdge: 1080,
+            frameDuration: clock.isOriginal ? nil : CMTime(seconds: 1 / Double(frameRate), preferredTimescale: 60_000))
         let size = composition.renderSize
-        let frameRate = try await video.load(.nominalFrameRate)
-        let fileType = VideoExportFormat.fileType(fps: frameRate)
-        let output = URL.temporaryDirectory.appendingPathComponent("power-shot-\(UUID().uuidString).\(VideoExportFormat.fileExtension(fps: frameRate))")
+        let outputFrameRate = Float(1 / composition.frameDuration.seconds)
+        let fileType = VideoExportFormat.fileType(fps: outputFrameRate)
+        let output = URL.temporaryDirectory.appendingPathComponent("power-shot-\(UUID().uuidString).\(VideoExportFormat.fileExtension(fps: outputFrameRate))")
 
         let reader = try AVAssetReader(asset: asset)
         let frames = AVAssetReaderVideoCompositionOutput(videoTracks: [video], videoSettings: [
@@ -99,6 +127,13 @@ nonisolated enum ShotEffectExporter {
         let audioRange = try await audioTrack?.load(.timeRange)
         var audioEnd: Double?
         var videoFrames = 0
+        // Frames go in through an adaptor so retimed stretches can be filled at a steady cadence.
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: picture, sourcePixelBufferAttributes: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+            kCVPixelBufferWidthKey as String: Int(size.width), kCVPixelBufferHeightKey as String: Int(size.height),
+            kCVPixelBufferMetalCompatibilityKey as String: true,
+            kCVPixelBufferIOSurfacePropertiesKey as String: [String: Int]()
+        ])
 
         guard reader.startReading() else { throw Failure.writer(reader.error?.localizedDescription ?? "") }
         guard writer.startWriting() else { throw Failure.writer(writer.error?.localizedDescription ?? "") }
@@ -131,30 +166,74 @@ nonisolated enum ShotEffectExporter {
                 audioInput.markAsFinished(); soundFinished = true
             }
         }
-        while true {
-            try await VideoWorkExecution.checkpoint(requiresGPU: engine != nil)
-            guard let sample = frames.copyNextSampleBuffer() else { break }
-            guard let pixels = CMSampleBufferGetImageBuffer(sample) else { continue }
-            let time = CMSampleBufferGetPresentationTimeStamp(sample).seconds
-            let sourceTime = clock.sourceTime(for: time)
-            let frame = EffectFrame.shot(size: size, sourceSize: size, style: style, intensity: intensity, track: track, time: sourceTime)
-            let cameraFrame = ShotCameraFrame.make(settings: camera, track: track, flight: flight, size: size, time: sourceTime)
-            if (frame.intensity > 0.005 && frame.visibility > 0.005) || cameraFrame.isActive {
-                if let engine { try engine.composite(frame, pixelBuffer: pixels, camera: cameraFrame) }
-                else { try ShotCPURenderer.composite(frame, pixelBuffer: pixels, camera: cameraFrame) }
+        /// A pristine copy of a decoded picture, so a held or slowed stretch can be drawn again.
+        func duplicate(_ source: CVPixelBuffer) throws -> CVPixelBuffer {
+            var copy: CVPixelBuffer?
+            if let pool = adaptor.pixelBufferPool { CVPixelBufferPoolCreatePixelBuffer(nil, pool, &copy) }
+            guard let copy else { throw Failure.writer("Cannot prepare a replay frame.") }
+            CVPixelBufferLockBaseAddress(source, .readOnly); CVPixelBufferLockBaseAddress(copy, [])
+            defer { CVPixelBufferUnlockBaseAddress(source, .readOnly); CVPixelBufferUnlockBaseAddress(copy, []) }
+            guard let from = CVPixelBufferGetBaseAddress(source), let to = CVPixelBufferGetBaseAddress(copy) else {
+                throw Failure.writer("Cannot prepare a replay frame.")
             }
+            let rowFrom = CVPixelBufferGetBytesPerRow(source), rowTo = CVPixelBufferGetBytesPerRow(copy)
+            for y in 0..<min(CVPixelBufferGetHeight(source), CVPixelBufferGetHeight(copy)) {
+                memcpy(to + y * rowTo, from + y * rowFrom, min(rowFrom, rowTo))
+            }
+            return copy
+        }
+        // Holds, slow motion and rewinds arrive as long frames. Camera moves keep animating
+        // through them, so those stretches are drawn at the source's own cadence.
+        let step = 1 / Double(frameRate > 0 ? frameRate : 30)
+        var held: (pixels: CVPixelBuffer, time: Double)?
+        func fill(until end: Double) async throws {
+            guard !clock.isOriginal, let last = held else { return }
+            var t = last.time + step
+            while t < end - step * 0.5 {
+                try await draw(try duplicate(last.pixels), at: t)
+                t += step
+            }
+        }
+        func draw(_ pixels: CVPixelBuffer, at time: Double) async throws {
+            let location = clock.locate(time)
+            let sourceTime = location.source
+            let frame = EffectFrame.shot(size: size, sourceSize: size, style: style, intensity: intensity, track: track, time: sourceTime)
+            let cameraFrame = camera.isEmpty ? ShotCameraFrame(size: size) : plan.frame(location: location, size: size)
+            if (frame.intensity > 0.005 && frame.visibility > 0.005) || cameraFrame.isActive {
+                if let engine { try engine.composite(frame, pixelBuffer: pixels, camera: cameraFrame, atlas: sprites, arc: layers) }
+                else { try ShotCPURenderer.composite(frame, pixelBuffer: pixels, camera: cameraFrame, atlas: sprites, arc: layers) }
+            }
+            if !cameraFrame.captions.isEmpty { try drawCaptions(cameraFrame.captions, on: pixels, size: size) }
             // A recorded roll keeps its distance badge, as the earlier editor saved it.
             if let distance { try drawBadge(distance.state(at: sourceTime), on: pixels, size: size) }
             try await feedSound(through: time + 0.25)
             while !picture.isReadyForMoreMediaData {
                 try await VideoWorkExecution.checkpoint(requiresGPU: engine != nil)
                 guard writer.status == .writing else { throw Failure.writer(writer.error?.localizedDescription ?? "Video encoding stopped.") }
+                // A silent hold has no sound until it ends, and the writer can stop taking pictures
+                // until it has sound to interleave: hand it the next sound early instead of waiting.
+                if let audioInput, !soundFinished, audioInput.isReadyForMoreMediaData, let next = pendingSound {
+                    try await feedSound(through: CMSampleBufferGetPresentationTimeStamp(next).seconds)
+                    continue
+                }
                 try await Task.sleep(for: .milliseconds(4))
             }
-            guard picture.append(sample) else { throw Failure.writer(writer.error?.localizedDescription ?? "Couldn’t save this frame.") }
+            guard adaptor.append(pixels, withPresentationTime: CMTime(seconds: time, preferredTimescale: 60_000)) else {
+                throw Failure.writer(writer.error?.localizedDescription ?? "Couldn’t save this frame.")
+            }
             videoFrames += 1
             progress(min(0.98, time / total))
         }
+        while true {
+            try await VideoWorkExecution.checkpoint(requiresGPU: engine != nil)
+            guard let sample = frames.copyNextSampleBuffer() else { break }
+            guard let pixels = CMSampleBufferGetImageBuffer(sample) else { continue }
+            let time = CMSampleBufferGetPresentationTimeStamp(sample).seconds
+            try await fill(until: time)
+            if !clock.isOriginal { held = (try duplicate(pixels), time) }
+            try await draw(pixels, at: time)
+        }
+        try await fill(until: duration.seconds)
         try await VideoWorkExecution.checkpoint()
         picture.markAsFinished()
         try await feedSound(through: .infinity)
@@ -188,6 +267,18 @@ nonisolated enum ShotEffectExporter {
         }
         context.translateBy(x: 0, y: size.height); context.scaleBy(x: 1, y: -1)
         BallDistanceBadgeRenderer.draw(in: context, size: size, state: state)
+    }
+
+    private static func drawCaptions(_ captions: [ShotCaption], on pixels: CVPixelBuffer, size: CGSize) throws {
+        CVPixelBufferLockBaseAddress(pixels, [])
+        defer { CVPixelBufferUnlockBaseAddress(pixels, []) }
+        guard let context = CGContext(data: CVPixelBufferGetBaseAddress(pixels), width: Int(size.width), height: Int(size.height),
+                                      bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(pixels),
+                                      space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue) else {
+            throw Failure.writer("Cannot draw the replay captions.")
+        }
+        ShotCaptionRenderer.draw(captions, in: context, height: size.height)
     }
 
     static func authorizePhotos() async throws {

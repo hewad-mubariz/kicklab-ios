@@ -43,7 +43,7 @@ struct ShotEffectsReplayView: View {
         get { displayedLook.showGraph }
         nonmutating set { changeLook { $0.showGraph = newValue } }
     }
-    private var camera: ShotCameraSettings {
+    private var camera: ShotCameraTrack {
         get { displayedLook.camera }
         nonmutating set { changeLook { $0.camera = newValue } }
     }
@@ -51,15 +51,32 @@ struct ShotEffectsReplayView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var glass
     @State private var showOriginal = false
-    @State private var replayClock = ShotReplayClock()
+    /// The clock of the player's current item; follows the plan once its replay is rebuilt.
+    @State private var playbackTimeline = ShotEditTimeline()
+    /// The camera track, worked out for the current edit.
+    @State private var plan: ShotCameraPlan?
+    @State private var atlas: ShotSpriteAtlas?
+    @State private var atlasTask: Task<Void, Never>?
+    /// Frozen Arc's layers, cut at its frozen moment.
+    @State private var arcLayers: ShotArcLayers?
+    @State private var arcTask: Task<Void, Never>?
+    /// Slowed stretches rendered with in-between frames, and the render playing now.
+    @State private var slowMotion: ShotSlowMotion?
+    @State private var slowMotionTask: Task<Void, Never>?
+    @State private var playbackSlowMotion: ShotSlowMotion?
+    @State private var makingSlowMotion = false
+    @State private var still: CGImage?
+    @State private var cameraSelection: UUID?
+    @State private var targetEdit: UUID?
+    @State private var outputTime = 0.0
+    /// Output time at which a block preview stops.
+    @State private var previewEnd: Double?
+    @State private var pendingPreview: UUID?
     @State private var preparingCamera = false
     @State private var cameraTask: Task<Void, Never>?
     @State private var cameraRevision = 0
     @State private var sourceFrames = ShotSourceFrames()
     @State private var frameIndexTask: Task<Void, Never>?
-    @State private var pickingFrame = false
-    @State private var spatialEdit: ShotCameraSpatialEdit?
-    @State private var reviewFrames: [Double] = []
     @State private var track: BallEffectTrack?
     @State private var flight: ShotFlight?
     @State private var trackingProblem: String?
@@ -109,14 +126,14 @@ struct ShotEffectsReplayView: View {
     private struct SavedLook: Equatable {
         let trail: ShotTrailStyle
         let intensity: Double
-        let camera: ShotCameraSettings
+        let camera: ShotCameraTrack
     }
     private var currentLook: SavedLook { SavedLook(trail: style, intensity: intensity, camera: camera) }
     private var hasBallTrack: Bool { track?.samples.isEmpty == false }
-    private var strike: Double { camera.strikeTime(track: track ?? BallEffectTrack(frames: []), flight: flight) }
-    private var showingSource: Bool { showOriginal || pickingFrame || spatialEdit?.showsSource == true }
+    private var strike: Double { plan?.strike ?? camera.strike ?? flight?.launch ?? 0 }
+    private var showingSource: Bool { showOriginal || targetEdit != nil }
     private var canSave: Bool {
-        !showOriginal && !pickingFrame && spatialEdit == nil && !preparingCamera && source != nil
+        !showOriginal && targetEdit == nil && !preparingCamera && source != nil
     }
 
     init(video: URL, style: ShotTrailStyle = .glowTrail, trackCache: URL? = nil,
@@ -170,13 +187,14 @@ struct ShotEffectsReplayView: View {
                     VStack(spacing: 0) {
                         if showToolbox {
                             ShotToolbox(style: lookBinding(\.style), intensity: lookBinding(\.intensity), graphStyle: lookBinding(\.graphStyle), showGraph: lookBinding(\.showGraph),
-                                        camera: lookBinding(\.camera), original: $showOriginal,
+                                        camera: lookBinding(\.camera), cameraSelection: $cameraSelection, targetEdit: $targetEdit,
+                                        original: $showOriginal, plan: plan, still: still, duration: duration,
                                         flight: flight, distance: distance, time: currentTime, isPlaying: isPlaying, onTogglePlayback: togglePlay,
-                                        hasBallTrack: hasBallTrack, source: source, strike: strike, frames: sourceFrames,
-                                        spatialEdit: $spatialEdit, reviewFrames: $reviewFrames,
-                                        onPicking: { pickingFrame = $0; pause() }, onSeek: { pause(); seek(to: $0) },
+                                        hasBallTrack: hasBallTrack, source: source, frames: sourceFrames,
+                                        onSeek: { pause(); seek(to: $0) }, onPreview: preview,
                                         page: $toolPage, onClose: { showToolbox = false },
-                                        isPro: subscriptions.isPro, onUnlockTool: { requestPro(.tool($0)) })
+                                        isPro: subscriptions.isPro, onUnlockTool: { requestPro(.tool($0)) },
+                                        makingSmoothMotion: makingSlowMotion)
                                 .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
                                     withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { panelTop = top }
                                 }
@@ -212,11 +230,6 @@ struct ShotEffectsReplayView: View {
                             playbackBar.padding(.horizontal, 24).padding(.bottom, 14)
                                 .sessionEntrance(shown, order: 3)
                                 .transition(.sessionRise)
-                            if camera.style == .frames && !showOriginal {
-                                ShotCameraFilmstrip(source: source, times: reviewFrames, time: currentTime,
-                                                    strike: strike, onSeek: { pause(); seek(to: $0) })
-                                    .padding(.horizontal, 24).padding(.bottom, 10)
-                            }
                             bottomControls.padding(.horizontal, 24).padding(.bottom, 16)
                                 .sessionEntrance(shown, order: 4, offset: 24)
                         }
@@ -227,37 +240,33 @@ struct ShotEffectsReplayView: View {
             }
         }
         .onChange(of: showToolbox) { _, open in
-            if !open { if toolPage == .graph { pause() }; pickingFrame = false; spatialEdit = nil; toolPage = nil; panelTop = 0 }
+            if !open { if toolPage == .graph { pause() }; cameraSelection = nil; targetEdit = nil; toolPage = nil; panelTop = 0 }
         }
         .onChange(of: toolPage) { _, page in
-            if page != .camera { showOriginal = false; pickingFrame = false; spatialEdit = nil }
+            if page != .camera { showOriginal = false; cameraSelection = nil; targetEdit = nil }
             if page != .graph && !loopPreview { pause() }
             // Effects loop the flight, so every pick is seen on the moving ball.
             if page == .effects { startPreviewLoop() } else { stopPreviewLoop() }
             if page != .effects { restorePreviewPosition() }
+            // The camera editor opens on the strike, with its flag under the playhead, on a real frame.
+            if page == .camera, !sourceFrames.isEmpty { pause(); seek(to: sourceFrames.nearest(plan?.strike ?? currentTime)) }
         }
         .onChange(of: style) { _, next in
             ProductAnalytics.shared.track(.effectSelected(.ballDistance, effect: next.rawValue))
             saveOutdated()
         }
         .onChange(of: intensity) { _, _ in saveOutdated() }
-        .onChange(of: camera) { old, next in
+        .onChange(of: camera) { _, _ in
             saveOutdated()
-            let changedMoment = old.style != next.style || old.strike != next.strike || old.freezeFrame != next.freezeFrame
-            if changedMoment { pause() }
-            updateCameraMedia(seekTo: changedMoment ? cameraPreviewTime : nil)
+            rebuildPlan()
+            updateCameraMedia()
         }
-        .onChange(of: showingSource) { _, _ in pause(); updateCameraMedia() }
-        .onChange(of: spatialEdit) { _, edit in
-            pause()
-            if let edit {
-                if edit == .impact || edit == .lensArea { seek(to: sourceFrames.nearest(strike)) }
-                if edit == .lensPosition { seek(to: camera.ranges[.lens]?.start ?? strike) }
-            }
+        .onChange(of: targetEdit) { _, edit in
+            if let clip = camera.clip(edit) { pause(); seek(to: max(clip.start, min(clip.end, strike))) }
         }
         .onChange(of: subscriptions.isPro) { _, active in
             if !active {
-                pendingProRequest = nil; showOriginal = false; spatialEdit = nil; pickingFrame = false
+                pendingProRequest = nil; showOriginal = false; cameraSelection = nil; targetEdit = nil
                 if toolPage != .effects { toolPage = nil }
             }
             saveOutdated()
@@ -324,11 +333,13 @@ struct ShotEffectsReplayView: View {
                 if let player {
                     ShotVideoSurface(player: player, style: showingSource || !hasBallTrack ? .none : style, intensity: intensity,
                                      track: track ?? BallEffectTrack(frames: []),
-                                     camera: showingSource ? .init() : camera, flight: flight, clock: replayClock) { playbackError = $0 }
+                                     plan: showingSource ? nil : plan, timeline: playbackTimeline,
+                                     atlas: atlas?.stamps == plan?.stamps ? atlas : nil,
+                                     arc: arcLayers?.matches(plan?.arcMoment) == true ? arcLayers : nil) { playbackError = $0 }
                         .transition(.opacity)
-                    if (pickingFrame || spatialEdit?.showsSource == true), let source {
-                        ShotSourceStill(source: source, time: sourceFrames.nearest(currentTime))
-                            .allowsHitTesting(false)
+                    if !showingSource, let plan, !camera.isEmpty {
+                        ShotCaptionOverlay(captions: plan.frame(location: playbackTimeline.locate(outputTime), size: sourceSize).captions,
+                                           canvas: sourceSize)
                     }
                     LinearGradient(stops: [.init(color: .black.opacity(0.4), location: 0),
                                            .init(color: .clear, location: 0.32),
@@ -336,7 +347,7 @@ struct ShotEffectsReplayView: View {
                                            .init(color: .black.opacity(0.8), location: 1)],
                                    startPoint: .top, endPoint: .bottom)
                         .allowsHitTesting(false)
-                        .opacity(spatialEdit != nil || pickingFrame ? 0 : 1)
+                        .opacity(targetEdit != nil ? 0 : 1)
                 }
                 if player == nil || playbackError != nil {
                     VStack(spacing: 10) {
@@ -348,9 +359,14 @@ struct ShotEffectsReplayView: View {
             }
             .frame(width: size.width, height: size.height)
             .overlay {
-                if let spatialEdit {
-                    ShotCameraTargetEditor(edit: spatialEdit, point: targetBinding(for: spatialEdit),
-                                           zoom: zoomBinding(for: spatialEdit), lensRadius: camera.lensSize.radius)
+                if let targetEdit, let clip = camera.clip(targetEdit) {
+                    ShotTargetPicker(point: clip.settings.target?.cgPoint, tint: clip.move.tint) { point in
+                        var next = camera
+                        next.update(clip.id) { $0.target = ShotCameraPoint(x: point.x, y: point.y) }
+                        camera = next
+                        withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { self.targetEdit = nil }
+                    }
+                    .transition(.opacity)
                 }
             }
             .overlay {
@@ -368,7 +384,7 @@ struct ShotEffectsReplayView: View {
         VStack(spacing: 0) {
             Slider(value: Binding(get: { currentTime }, set: { value in
                 currentTime = value
-                player?.seek(to: CMTime(seconds: replayClock.outputTime(for: value), preferredTimescale: 60_000),
+                player?.seek(to: CMTime(seconds: playbackTimeline.outputTime(for: value), preferredTimescale: 60_000),
                              toleranceBefore: .zero, toleranceAfter: .zero)
             }), in: 0...max(0.1, duration)) { editing in
                 isScrubbing = editing
@@ -408,7 +424,7 @@ struct ShotEffectsReplayView: View {
                 withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
                     look = ShotReplayLook(style: .glowTrail, graphStyle: distance == nil ? .comet : .tape)
                         .allowed(isPro: subscriptions.isPro)
-                    camera = .init(); showOriginal = false
+                    camera = .init(); showOriginal = false; cameraSelection = nil
                 }
             }
             .accessibilityIdentifier("shot-effects-reset")
@@ -479,7 +495,7 @@ struct ShotEffectsReplayView: View {
         do {
             let length = try await asset.load(.duration)
             duration = max(0.1, length.seconds)
-            replayClock = ShotReplayClock(duration: duration)
+            playbackTimeline = ShotEditTimeline(duration: duration)
             sourceFrames = ShotSourceFrames(duration: duration)
             frameIndexTask = Task {
                 do {
@@ -540,6 +556,85 @@ struct ShotEffectsReplayView: View {
     private func ready(_ found: BallEffectTrack) {
         track = found
         flight = ShotFlight.find(in: found, aspect: Double(sourceSize.width / max(1, sourceSize.height)))
+        plan = nil
+        rebuildPlan()
+        loadStill()
+    }
+
+    /// The strike frame, for the camera move cards.
+    private func loadStill() {
+        guard let source else { return }
+        let at = strike
+        Task {
+            let generator = AVAssetImageGenerator(asset: AVURLAsset(url: source))
+            generator.appliesPreferredTrackTransform = true
+            generator.maximumSize = CGSize(width: 360, height: 360)
+            still = try? await generator.image(at: CMTime(seconds: at, preferredTimescale: 600)).image
+        }
+    }
+
+    /// Works the camera track out again after an edit; the sprite sheet follows when its moments change.
+    private func rebuildPlan() {
+        guard let track else { plan = nil; return }
+        if let plan, plan.matches(track: camera, duration: duration) { return }
+        let frameDuration = sourceFrames.isEmpty ? 1.0 / 60 : sourceFrames.frameDuration(at: 0)
+        let next = ShotCameraPlan(track: camera, ball: track, flight: flight, duration: duration,
+                                  aspect: Double(sourceSize.width / max(1, sourceSize.height)), frameDuration: frameDuration)
+        plan = next
+        let slowed = ShotSlowMotion.stretches(in: next.timeline, track: camera)
+        if let source, !slowed.isEmpty, ShotSlowMotion.isAvailable, slowMotion?.covers(slowed, of: source) != true {
+            slowMotionTask?.cancel()
+            makingSlowMotion = true
+            slowMotionTask = Task {
+                // Smooth frames take a few seconds; until then slow motion plays as before.
+                let made = try? await ShotSlowMotion.render(source: source, stretches: slowed)
+                guard !Task.isCancelled else { return }
+                makingSlowMotion = false
+                guard let made else { return }
+                slowMotion = made
+                updateCameraMedia()
+            }
+        }
+        if let moment = next.arcMoment, arcLayers?.matches(moment) != true, let source {
+            arcTask?.cancel()
+            arcTask = Task {
+                let built = try? await ShotArcLayers.build(source: source, ball: track, time: moment)
+                guard !Task.isCancelled else { return }
+                arcLayers = built
+            }
+        }
+        guard next.stamps != atlas?.stamps else { return }
+        atlasTask?.cancel()
+        guard let source, !next.stamps.isEmpty else { atlas = nil; return }
+        atlasTask = Task {
+            let built = try? await ShotSpriteAtlas.build(source: source, stamps: next.stamps)
+            guard !Task.isCancelled else { return }
+            atlas = built
+        }
+    }
+
+    /// Plays one block from just before it to just after it (after the replay is rebuilt, if needed).
+    private func preview(_ clip: ShotCameraClip) {
+        pendingPreview = clip.id
+        if !preparingCamera { startPendingPreview() }
+    }
+
+    private func startPendingPreview() {
+        guard let id = pendingPreview, let clip = camera.clip(id), let player else { return }
+        pendingPreview = nil
+        let from = max(0, clip.start - 0.35)
+        let ends = playbackTimeline.segments.filter { $0.clip == id }.map(\.outputEnd)
+        let end = max(ends.max() ?? 0, playbackTimeline.outputTime(for: min(duration, clip.end + 0.3)))
+        previewEnd = min(playbackTimeline.outputDuration, end + 0.2)
+        currentTime = from
+        restarting = true
+        player.seek(to: CMTime(seconds: playbackTimeline.outputTime(for: from), preferredTimescale: 60_000),
+                    toleranceBefore: .zero, toleranceAfter: .zero) { _ in
+            Task { @MainActor in
+                restarting = false
+                player.play(); isPlaying = true
+            }
+        }
     }
 
     /// The last checkpoint celebrates, then the editor takes over in place, as after juggling.
@@ -571,10 +666,20 @@ struct ShotEffectsReplayView: View {
             withTransaction(transaction) { processing = false }
         }
         withAnimation(SessionMotion.animation(SessionMotion.settle, reduceMotion: reduceMotion)) { shown = true }
-        if reviewFrames.isEmpty {
-            reviewFrames = Array(Set([strike, strike + 0.25, strike + 0.5].map { sourceFrames.nearest($0) })).sorted()
-        }
         #if DEBUG
+        // Design review: place moves, open the camera page, select a block.
+        if let names = SessionDesignReview.argument("--shot-camera-moves") {
+            var next = camera
+            for move in names.split(separator: ",").compactMap({ ShotCameraMove(rawValue: String($0)) }) {
+                let preferred = move.defaultRange(strike: strike, flightEnd: plan?.flightEnd ?? strike + 1, playhead: currentTime, duration: duration)
+                next.insert(move, range: next.fit(preferred, duration: duration) ?? preferred, duration: duration)
+            }
+            camera = next
+        }
+        if SessionDesignReview.argument("--shot-open-tool") == "camera" { showToolbox = true; toolPage = .camera }
+        if let index = SessionDesignReview.argument("--shot-camera-select").flatMap(Int.init), camera.clips.indices.contains(index) {
+            cameraSelection = camera.clips[index].id
+        }
         if SessionDesignReview.argument("--shot-export-to") != nil { download() }
         #endif
     }
@@ -594,11 +699,15 @@ struct ShotEffectsReplayView: View {
                                                       queue: .main) { now in
             MainActor.assumeIsolated {
                 guard !isScrubbing, !restarting else { return }
-                let seconds = replayClock.sourceTime(for: now.seconds)
+                let seconds = playbackTimeline.sourceTime(for: now.seconds)
                 if seconds.isFinite { currentTime = max(0, seconds) }
-                if now.seconds >= replayClock.outputDuration - 0.03 {
-                    if loopPreview { player.seek(to: CMTime(seconds: replayClock.outputTime(for: loopStart), preferredTimescale: 60_000)); player.play() }
-                    else { isPlaying = false }
+                outputTime = now.seconds
+                if let previewEnd, isPlaying, now.seconds >= previewEnd {
+                    self.previewEnd = nil
+                    pause()
+                } else if now.seconds >= playbackTimeline.outputDuration - 0.03 {
+                    if loopPreview { player.seek(to: CMTime(seconds: playbackTimeline.outputTime(for: loopStart), preferredTimescale: 60_000)); player.play() }
+                    else { isPlaying = false; previewEnd = nil }
                 }
             }
         }
@@ -607,29 +716,22 @@ struct ShotEffectsReplayView: View {
     /// Effects loop from just before the kick, so the trail is seen straight away.
     private var loopStart: Double { max(0, (flight?.launch ?? 0) - 0.6) }
 
-    private var cameraPreviewTime: Double {
-        switch camera.style {
-        case .follow, .split: return flight.map { ($0.launch + $0.end) / 2 } ?? currentTime
-        case .ramp: return max(0, strike - 0.4)
-        case .freeze: return camera.freezeFrame ?? strike
-        case .impact, .tilt, .lens, .frames: return strike
-        case .none: return currentTime
-        }
-    }
-
     private func seek(to sourceTime: Double) {
         guard let player else { return }
         currentTime = min(duration, max(0, sourceTime))
-        player.seek(to: CMTime(seconds: replayClock.outputTime(for: currentTime), preferredTimescale: 60_000),
+        outputTime = playbackTimeline.outputTime(for: currentTime)
+        player.seek(to: CMTime(seconds: outputTime, preferredTimescale: 60_000),
                     toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
     private func updateCameraMedia(seekTo requested: Double? = nil) {
         guard let source, let player else { return }
-        let settings = showingSource ? ShotCameraSettings() : camera
-        let next = ShotReplayClock(settings: settings, track: track ?? BallEffectTrack(frames: []), flight: flight, duration: duration)
-        if next == replayClock && !preparingCamera {
+        let next = plan?.timeline ?? ShotEditTimeline(track: camera, duration: duration)
+        let slowed = ShotSlowMotion.stretches(in: next, track: camera)
+        let smooth = slowMotion?.covers(slowed, of: source) == true ? slowMotion : nil
+        if next == playbackTimeline && smooth === playbackSlowMotion && !preparingCamera {
             if let requested { seek(to: requested) }
+            if pendingPreview != nil { startPendingPreview() }
             return
         }
         cameraRevision += 1
@@ -642,52 +744,30 @@ struct ShotEffectsReplayView: View {
             defer { if revision == cameraRevision { preparingCamera = false } }
             do {
                 try await Task.sleep(for: .milliseconds(100))
-                let asset = try await next.asset(source: source)
+                let asset = try await next.asset(source: source, smooth: smooth)
                 let item = AVPlayerItem(asset: asset)
                 item.audioTimePitchAlgorithm = .spectral
                 if let video = try await asset.loadTracks(withMediaType: .video).first {
+                    // A retimed replay reports its average rate; play it at the recording's own.
+                    let cadence = sourceFrames.isEmpty ? nil : CMTime(seconds: sourceFrames.frameDuration(at: 0), preferredTimescale: 60_000)
                     item.videoComposition = try await EffectVideoGeometry.composition(
-                        track: video, duration: asset.load(.duration), shortEdge: 1080)
+                        track: video, duration: asset.load(.duration), shortEdge: 1080, frameDuration: next.isOriginal ? nil : cadence)
                 }
                 guard !Task.isCancelled, revision == cameraRevision else { return }
-                replayClock = next
+                playbackTimeline = next
+                playbackSlowMotion = smooth
                 player.replaceCurrentItem(with: item)
                 currentTime = position
-                await player.seek(to: CMTime(seconds: next.outputTime(for: position), preferredTimescale: 60_000),
+                outputTime = next.outputTime(for: position)
+                await player.seek(to: CMTime(seconds: outputTime, preferredTimescale: 60_000),
                                   toleranceBefore: .zero, toleranceAfter: .zero)
+                if revision == cameraRevision { preparingCamera = false; startPendingPreview() }
             } catch is CancellationError {
                 return
             } catch {
                 guard !Task.isCancelled, revision == cameraRevision else { return }
                 show(.failed("Couldn’t prepare this replay. " + error.localizedDescription))
             }
-        }
-    }
-
-    private func targetBinding(for edit: ShotCameraSpatialEdit) -> Binding<ShotCameraPoint> {
-        Binding(get: {
-            let fallback = track?.sample(at: edit == .follow ? currentTime : strike)?.center ?? CGPoint(x: 0.5, y: 0.5)
-            let point = ShotCameraPoint(x: fallback.x, y: fallback.y)
-            switch edit {
-            case .follow: return camera.followTarget ?? point
-            case .impact: return camera.impactTarget ?? point
-            case .lensArea: return camera.lensTarget ?? point
-            case .lensPosition: return camera.lensPosition
-            }
-        }, set: { value in
-            switch edit {
-            case .follow: camera.followTarget = value
-            case .impact: camera.impactTarget = value
-            case .lensArea: camera.lensTarget = value
-            case .lensPosition: camera.lensPosition = value
-            }
-        })
-    }
-    private func zoomBinding(for edit: ShotCameraSpatialEdit) -> Binding<Double> {
-        switch edit {
-        case .follow: return camera.style == .split ? lookBinding(\.camera.splitZoom) : lookBinding(\.camera.followZoom)
-        case .impact: return lookBinding(\.camera.impactZoom)
-        case .lensArea, .lensPosition: return lookBinding(\.camera.lensZoom)
         }
     }
 
@@ -716,7 +796,7 @@ struct ShotEffectsReplayView: View {
         guard let player, !isPlaying else { return }
         if positionBeforePreview == nil { positionBeforePreview = currentTime }
         currentTime = loopStart
-        player.seek(to: CMTime(seconds: replayClock.outputTime(for: loopStart), preferredTimescale: 60_000), toleranceBefore: .zero, toleranceAfter: .zero)
+        player.seek(to: CMTime(seconds: playbackTimeline.outputTime(for: loopStart), preferredTimescale: 60_000), toleranceBefore: .zero, toleranceAfter: .zero)
         player.play(); isPlaying = true
     }
 
@@ -730,7 +810,7 @@ struct ShotEffectsReplayView: View {
         guard let position = positionBeforePreview, let player, !isPlaying else { return }
         positionBeforePreview = nil
         currentTime = position
-        player.seek(to: CMTime(seconds: replayClock.outputTime(for: position), preferredTimescale: 60_000), toleranceBefore: .zero, toleranceAfter: .zero)
+        player.seek(to: CMTime(seconds: playbackTimeline.outputTime(for: position), preferredTimescale: 60_000), toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
     private func tearDown() {
@@ -761,7 +841,8 @@ struct ShotEffectsReplayView: View {
             showToolbox = false; showSharePanel = false; toast = nil
             save = .preparing; saveProgress = 0
             let look = exportLook.style, strength = exportLook.intensity, timeline = subscriptions.isPro ? distance : nil, cameraLook = exportLook.camera, flightLook = flight
-            let exportClock = ShotReplayClock(settings: cameraLook, track: track, flight: flightLook, duration: duration)
+            let exportClock = ShotEditTimeline(track: cameraLook, duration: duration)
+            let stamps = plan?.stamps ?? [], readyAtlas = atlas, readyArc = arcLayers, readySlowMotion = slowMotion
             let jobID = UUID()
             exportID = jobID
             ProductAnalytics.shared.track(.exportStarted(.ballDistance, effect: look.rawValue, graph: false))
@@ -784,9 +865,12 @@ struct ShotEffectsReplayView: View {
                     }
                     let url = try await runSave(exportFolder: exportFolder) {
                         await MainActor.run { needsForeground = VideoWorkExecution.lease?.canContinue != true }
+                        // Ball Strobe and freeze ghosts need their sprite sheet before the first frame.
+                        let atlasLook = readyAtlas?.stamps == stamps ? readyAtlas : try await ShotSpriteAtlas.build(source: source, stamps: stamps)
                         let worker = VideoWorkExecution.detached {
                             try await ShotEffectExporter.render(source: source, track: track, style: look, intensity: strength,
-                                distance: timeline, camera: cameraLook, flight: flightLook) { amount in
+                                distance: timeline, camera: cameraLook, flight: flightLook, atlas: atlasLook, arc: readyArc,
+                                slowMotion: readySlowMotion) { amount in
                                     VideoWorkExecution.lease?.progress(amount * 0.96, subtitle: "Rendering your shot")
                                     Task { @MainActor in
                                         if exportID == jobID && save.isBusy {
@@ -803,7 +887,7 @@ struct ShotEffectsReplayView: View {
                         VideoWorkExecution.lease?.progress(0.98, subtitle: "Saving to Photos")
                         #if DEBUG
                         if let exportFolder {
-                            let name = cameraLook.style == .none ? look.rawValue : cameraLook.style.rawValue + "-" + look.rawValue
+                            let name = cameraLook.isEmpty ? look.rawValue : cameraLook.clips.map(\.move.rawValue).joined(separator: "+") + "-" + look.rawValue
                             let directory = SessionDesignReview.fileURL(exportFolder)
                             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
                             let target = directory.appendingPathComponent(name + "." + url.pathExtension)

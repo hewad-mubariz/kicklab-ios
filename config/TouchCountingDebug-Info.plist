@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.juggledude.video.*</string>
+	</array>
+	<key>CFBundleDisplayName</key>
+	<string>Touch Counting Debug</string>
+	<key>CFBundleName</key>
+	<string>Touch Counting Debug</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>Record juggling sessions to test counting head, knee and foot touches on your iPhone.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Save your test replays to Photos.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>processing</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+</dict>
+</plist>

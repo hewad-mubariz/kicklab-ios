@@ -9,11 +9,16 @@ nonisolated struct LiveAnalysisBuffer<Frame> {
     private(set) var throttled = 0
     private(set) var replaced = 0
     private(set) var offered = 0
-    let framesPerSecond: Double
+    private(set) var framesPerSecond: Double
 
     init(framesPerSecond: Double = 30) {
-        precondition(framesPerSecond > 0)
+        precondition(framesPerSecond.isFinite && framesPerSecond > 0)
         self.framesPerSecond = framesPerSecond
+    }
+
+    mutating func setFramesPerSecond(_ value: Double) {
+        precondition(value.isFinite && value > 0)
+        framesPerSecond = value
     }
 
     mutating func offer(_ frame: Frame, at time: Double) -> Frame? {
@@ -43,4 +48,45 @@ nonisolated struct LiveAnalysisBuffer<Frame> {
     }
 
     mutating func cancelPending() { pending = nil }
+}
+
+/// Only schedules inference. Recording and all counter timestamps keep their
+/// original capture clock. Missing a ball while a player is present is active.
+nonisolated struct LiveAnalysisCadence {
+    private var emptySince: Double?
+    private var coolerSince: Double?
+    private var coolingTarget: Double?
+    private(set) var thermalFPS = 30.0
+    private(set) var isIdle = false
+    var framesPerSecond: Double { isIdle ? min(5, thermalFPS) : thermalFPS }
+
+    mutating func observe(time: Double, hasBall: Bool, hasPerson: Bool,
+                          thermal: ProcessInfo.ThermalState) {
+        guard time.isFinite else { return }
+        let target: Double
+        switch thermal {
+        case .nominal: target = 30
+        case .fair: target = 20
+        case .serious: target = 15
+        case .critical: target = 10
+        @unknown default: target = 15
+        }
+        if target <= thermalFPS {
+            thermalFPS = target
+            coolerSince = nil; coolingTarget = nil
+        } else {
+            if coolingTarget != target { coolerSince = time; coolingTarget = target }
+            if let since = coolerSince, time - since >= 10 {
+                thermalFPS = target
+                coolerSince = nil; coolingTarget = nil
+            }
+        }
+        if hasBall || hasPerson {
+            emptySince = nil
+            isIdle = false
+        } else {
+            if emptySince == nil { emptySince = time }
+            isIdle = time - (emptySince ?? time) >= 2
+        }
+    }
 }

@@ -4,6 +4,62 @@ import XCTest
 final class ModelComputeSwitchTests: XCTestCase {
     private enum Failure: Error { case unavailable }
 
+    func testAcceleratedLoadFailureUsesCPUAndDoesNotRetryEachForegroundFrame() async throws {
+        var loads = [Bool]()
+        let backend = try ModelComputeSwitch(cpuOnly: false, allowsCPUFallbackOnLoadFailure: true) { cpu in
+            loads.append(cpu)
+            if !cpu { throw Failure.unavailable }
+            return "cpu model"
+        }
+        XCTAssertEqual(loads, [false, true])
+        XCTAssertTrue(backend.cpuOnly)
+        XCTAssertNotNil(backend.acceleratedLoadFailure)
+        for requested in [false, false, true, false] {
+            XCTAssertEqual(try backend.perform(cpuOnly: { requested }) { $0 }, "cpu model")
+        }
+        let result = try await backend.performAsync(cpuOnly: { false }) { $0 }
+        XCTAssertEqual(result, "cpu model")
+        XCTAssertEqual(loads, [false, true])
+        XCTAssertEqual(backend.switches, 0)
+    }
+
+    func testFailedForegroundLoadRetainsTheExistingCPUModel() throws {
+        var loads = [Bool]()
+        let backend = try ModelComputeSwitch(cpuOnly: true, allowsCPUFallbackOnLoadFailure: true) { cpu in
+            loads.append(cpu)
+            if !cpu { throw Failure.unavailable }
+            return "existing cpu model"
+        }
+        for _ in 0..<3 {
+            XCTAssertEqual(try backend.perform(cpuOnly: { false }) { $0 }, "existing cpu model")
+        }
+        XCTAssertEqual(loads, [true, false])
+        XCTAssertTrue(backend.cpuOnly)
+        XCTAssertNotNil(backend.acceleratedLoadFailure)
+        XCTAssertEqual(backend.switches, 0)
+    }
+
+    func testLoadFallbackIsOptInAndDoesNotHideCPUFailure() throws {
+        var loads = [Bool]()
+        XCTAssertThrowsError(try ModelComputeSwitch<Bool>(cpuOnly: false) { cpu in
+            loads.append(cpu); throw Failure.unavailable
+        })
+        XCTAssertEqual(loads, [false])
+        loads = []
+        XCTAssertThrowsError(try ModelComputeSwitch<Bool>(cpuOnly: false, allowsCPUFallbackOnLoadFailure: true) { cpu in
+            loads.append(cpu); throw Failure.unavailable
+        })
+        XCTAssertEqual(loads, [false, true])
+    }
+
+    func testCancelledAcceleratedLoadDoesNotTryCPU() throws {
+        var loads = [Bool]()
+        XCTAssertThrowsError(try ModelComputeSwitch<Bool>(cpuOnly: false, allowsCPUFallbackOnLoadFailure: true) { cpu in
+            loads.append(cpu); throw CancellationError()
+        }) { XCTAssertTrue($0 is CancellationError) }
+        XCTAssertEqual(loads, [false])
+    }
+
     func testBackgroundTransitionRetriesSameInputOnCPU() throws {
         var background = false
         var loads = [Bool]()

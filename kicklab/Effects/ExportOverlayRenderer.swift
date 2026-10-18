@@ -21,6 +21,9 @@ nonisolated enum ExportOverlayRenderer {
 
     static func draw(in ctx: CGContext, size: CGSize, settings: ExportOverlaySettings,
                      time: Double, counter: ExportCounterState) {
+        if settings.showTimer {
+            TimerOverlayAppearance.draw(in: ctx, rect: TimerOverlayAppearance.rect(in: size), time: time)
+        }
         guard settings.counter.enabled else { return }
         let item = settings.counter, rect = item.placement.rect(in: size)
         ctx.saveGState()

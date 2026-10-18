@@ -39,6 +39,9 @@ struct SessionSummary: Sendable {
     /// requested once, only by features which actually need them.
     var needsVisualPreparation = false
     var framesUseCompositionClock = false
+    /// A position sidecar cannot be reused as precise replacement-mask evidence.
+    var visualTrackIsPositionsOnly = false
+    var debugContacts: [TouchDebugEvent] = []
     var renderTrack: [RecordedFrame] { visualTrack ?? track }
 
     var isNewBest: Bool { touches > 0 && touches >= personalBest }

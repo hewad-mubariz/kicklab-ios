@@ -7,7 +7,14 @@ struct JugglingContactStabilityTests {
         let url = try #require(Bundle(for: FixtureBundle.self)
             .url(forResource: "contact-counter-34dd", withExtension: "json"))
         let raw = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
-        let counter = StreamingCounter()
+        struct FootFixture: Decodable { let name: String; let evidence: FootContactEvidence }
+        let footURL = try #require(Bundle(for: FixtureBundle.self)
+            .url(forResource: "foot-ground-evidence", withExtension: "json"))
+        let foot = try #require(JSONDecoder().decode([FootFixture].self, from: Data(contentsOf: footURL))
+            .first { $0.name == "sep30-284" }?.evidence)
+        // The lower ball edge at the second kick now enters the ground band.
+        // Its real foot evidence must preserve the contact, as it does in-app.
+        let counter = StreamingCounter(footContactEvidence: { $0 == 284 ? foot : nil })
         for row in raw["rows"] as! [[String: Any]] {
             let frame = row["frame"] as! Int, ms = Int((row["time"] as! Double) * 1000)
             let ball = (row["ball"] as? [Double]).map {

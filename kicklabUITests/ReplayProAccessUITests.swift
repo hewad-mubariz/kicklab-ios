@@ -21,8 +21,8 @@ final class ReplayProAccessUITests: XCTestCase {
 
     func testFreeJugglingBlocksEveryPaidToolBeforeItChangesTheVideo() {
         let app = juggling()
-        XCTAssertTrue(app.descendants(matching: .any)["capture-elapsed-time"].firstMatch.waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["replay-select-counter"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["replay-elapsed-time"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["replay-select-counter"].exists)
         XCTAssertFalse(app.otherElements["capture-motion-graph"].exists)
         app.buttons["replay-customize"].tap()
         XCTAssertFalse(app.buttons["replay-tool-timer"].label.contains("Pro"))
@@ -31,7 +31,19 @@ final class ReplayProAccessUITests: XCTestCase {
         XCTAssertFalse(app.buttons["pro-close"].exists)
         app.buttons["replay-tools-back"].tap()
 
-        for tool in ["counter", "ball", "effects", "graph"] {
+        XCTAssertFalse(app.buttons["replay-tool-counter"].label.contains("Pro"))
+        app.buttons["replay-tool-counter"].tap()
+        XCTAssertTrue(app.buttons["counter-style-normal"].waitForExistence(timeout: 5))
+        app.buttons["counter-style-normal"].tap()
+        XCTAssertFalse(app.buttons["pro-close"].exists)
+        app.buttons["counter-style-jelly"].tap()
+        XCTAssertTrue(app.buttons["pro-close"].waitForExistence(timeout: 5))
+        app.buttons["pro-close"].tap()
+        XCTAssertTrue(app.buttons["counter-style-normal"].isSelected)
+        XCTAssertFalse(app.buttons["counter-style-jelly"].isSelected)
+        app.buttons["replay-tools-back"].tap()
+
+        for tool in ["ball", "effects", "graph"] {
             XCTAssertTrue(app.buttons["replay-tool-\(tool)"].label.contains("Pro"))
             app.buttons["replay-tool-\(tool)"].tap()
             XCTAssertTrue(app.buttons["pro-close"].waitForExistence(timeout: 5))
@@ -39,12 +51,12 @@ final class ReplayProAccessUITests: XCTestCase {
             XCTAssertTrue(app.buttons["replay-tool-\(tool)"].waitForExistence(timeout: 5))
             XCTAssertFalse(app.buttons["replay-tools-back"].exists, "Locked tool must never open")
             XCTAssertFalse(app.buttons["counter-style-jelly"].exists)
-            XCTAssertFalse(app.buttons["replay-select-counter"].exists)
+            XCTAssertTrue(app.buttons["replay-select-counter"].exists)
             XCTAssertFalse(app.otherElements["capture-motion-graph"].exists)
         }
         app.buttons["replay-close-tools"].tap()
         XCTAssertTrue(app.buttons["replay-export"].isEnabled)
-        XCTAssertTrue(app.descendants(matching: .any)["capture-elapsed-time"].firstMatch.exists)
+        XCTAssertTrue(app.descendants(matching: .any)["replay-elapsed-time"].firstMatch.exists)
         attach(app, "Free replay unchanged after cancelling each paid tool")
     }
 
@@ -75,10 +87,13 @@ final class ReplayProAccessUITests: XCTestCase {
         try store.expireSubscription(productIdentifier: "com.hewad.juggledude.pro.monthly")
         app.terminate(); app.launch()
         XCTAssertTrue(app.buttons["replay-customize"].waitForExistence(timeout: 15))
-        XCTAssertFalse(app.buttons["replay-select-counter"].exists)
+        XCTAssertTrue(app.buttons["replay-select-counter"].exists)
         XCTAssertFalse(graph.exists)
         app.buttons["replay-customize"].tap()
         app.buttons["replay-tool-counter"].tap()
+        XCTAssertTrue(app.buttons["counter-style-normal"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["pro-close"].exists)
+        app.buttons["counter-style-jelly"].tap()
         XCTAssertTrue(app.buttons["pro-close"].waitForExistence(timeout: 5))
     }
 
@@ -107,7 +122,7 @@ final class ReplayProAccessUITests: XCTestCase {
             app.buttons["pro-close"].tap()
             XCTAssertTrue(app.buttons["shot-tool-\(tool)"].waitForExistence(timeout: 5))
             XCTAssertFalse(app.buttons["shot-tools-back"].exists)
-            XCTAssertFalse(app.buttons["shot-camera-chooser"].exists)
+            XCTAssertFalse(app.descendants(matching: .any)["shot-camera-timeline"].exists)
         }
     }
 
@@ -128,9 +143,10 @@ final class ReplayProAccessUITests: XCTestCase {
         assertNoProBadges(app)
         app.buttons["shot-tools-back"].tap()
         app.buttons["shot-tool-camera"].tap()
-        app.buttons["shot-camera-chooser"].tap()
-        XCTAssertFalse(app.buttons["shot-camera-impact"].label.contains("PRO"))
-        app.buttons["shot-camera-impact"].tap()
+        XCTAssertTrue(app.buttons["shot-camera-move-impact"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["shot-camera-move-impact"].label.contains("Pro"))
+        app.buttons["shot-camera-move-impact"].tap()
+        XCTAssertTrue(app.buttons["shot-camera-block-impact"].waitForExistence(timeout: 5))
         assertNoProBadges(app)
         XCTAssertFalse(app.buttons["pro-close"].exists)
         app.buttons["shot-close-tools"].tap()

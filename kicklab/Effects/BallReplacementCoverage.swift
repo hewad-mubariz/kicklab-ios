@@ -28,7 +28,10 @@ nonisolated struct BallReplacementCoverage {
     /// The image-edge fit is trusted within this band around the mask circle.
     static let fitBand = 0.06
 
-    init(mask: BallMask, fitted: BallReplacementFootprint?, size: CGSize, smear: CGVector = .zero) {
+    init(mask storedMask: BallMask, fitted: BallReplacementFootprint?, size: CGSize, smear: CGVector = .zero) {
+        // A renderer owns only its current frame. Expand once here as well as
+        // at track lookup, so direct callers never decode inside pixel loops.
+        let mask = storedMask.expanded()
         self.mask = mask
         let scale = max(0.25, min(size.width, size.height)/720)
         let length = hypot(smear.dx, smear.dy)

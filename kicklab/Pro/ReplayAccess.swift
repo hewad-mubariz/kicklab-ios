@@ -8,14 +8,15 @@ nonisolated struct JugglingReplayLook: Equatable {
     var showGraph: Bool
 
     var requiresPro: Bool {
-        edit.isEdited || overlays.counter.enabled || overlays.graph.enabled || showGraph
+        edit.isEdited || (overlays.counter.enabled && overlays.counter.style.requiresPro)
+            || overlays.graph.enabled || showGraph
     }
 
     func allowed(isPro: Bool) -> Self {
         guard !isPro else { return self }
         var free = self
         free.edit = SessionEditState(style: .none, intensity: edit.intensity)
-        free.overlays.counter.enabled = false
+        free.overlays.counter.style = .normal
         free.overlays.graph.enabled = false
         free.showGraph = false
         return free
@@ -27,10 +28,10 @@ nonisolated struct ShotReplayLook: Equatable {
     var intensity: Double = 1
     var graphStyle: ShotGraphStyle = .comet
     var showGraph = true
-    var camera = ShotCameraSettings()
+    var camera = ShotCameraTrack()
 
     var requiresPro: Bool {
-        Self.trailRequiresPro(style) || showGraph || camera.style != .none
+        Self.trailRequiresPro(style) || showGraph || !camera.isEmpty
     }
 
     static func trailRequiresPro(_ style: ShotTrailStyle) -> Bool {

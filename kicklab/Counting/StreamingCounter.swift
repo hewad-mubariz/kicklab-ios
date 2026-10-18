@@ -33,6 +33,7 @@ nonisolated final class StreamingCounter {
     private var stamps: [Int: Int] = [:]
     private var balls: [Int: BallObservation] = [:]
     private var cameraOffsets: [Int: Double] = [:]
+    private var playerGround = PlayerGroundEstimate()
     private var latest: Int?
     private var next: Int?
 
@@ -47,21 +48,50 @@ nonisolated final class StreamingCounter {
     /// The most recently judged point - smoothed position, velocity and motion
     /// state. The annotated replay shows these, the way the Python renderer does.
     private(set) var lastPoint: TrajectoryPoint?
+    private(set) var latestDiagnostic: TouchDebugEvent?
+
+    #if DEBUG
+    /// Observation only; runs even after the bounded replay trace is full.
+    var debugDiagnosticObserver: ((TouchDebugEvent) -> Void)?
+    #endif
 
     init(config: CounterConfig = CounterConfig(), rejectsHandContact: ((Int) -> Bool)? = nil,
          recordTrace: Bool = false, traceLimit: Int = 18_000,
          footContactEvidence: ((Int) -> FootContactEvidence?)? = nil,
-         countsTouches: Bool = true, retainContactFrames: ((Int?) -> Void)? = nil) {
+         countsTouches: Bool = true, retainContactFrames: ((Int?) -> Void)? = nil,
+         allowsBodyContact: ((Int) -> Bool)? = nil,
+         diagnoseContact: ((CounterDecision, BallObservation?) -> TouchDebugEvent?)? = nil,
+         groundPolicy: GroundContactPolicy = .corroboratedFeet,
+         groundContactEvidence: ((Int) -> GroundContactEvidence?)? = nil,
+         handlingEvidence: ((Int) -> BallHandlingEvidence?)? = nil) {
         self.config = config
         self.countsTouches = countsTouches
         self.retainContactFrames = retainContactFrames
-        self.machine = TouchStateMachine(config: config)
+        self.machine = TouchStateMachine(config: config, groundPolicy: groundPolicy)
         self.machine.rejectsHandContact = rejectsHandContact
+        self.machine.allowsBodyContact = allowsBodyContact
         self.machine.footContactEvidence = footContactEvidence
+        self.machine.groundContactEvidence = groundContactEvidence
+        self.machine.handlingEvidence = handlingEvidence
         let recorder = recordTrace ? CounterTraceRecorder(config: config,
-            usesHandVerifier: rejectsHandContact != nil, usesFootVerifier: footContactEvidence != nil, limit: traceLimit) : nil
+            usesHandVerifier: rejectsHandContact != nil, usesFootVerifier: footContactEvidence != nil,
+            usesBodyVerifier: allowsBodyContact != nil, usesGroundVerifier: groundContactEvidence != nil,
+            usesHandlingVerifier: handlingEvidence != nil, limit: traceLimit, revision: groundPolicy.revision) : nil
         self.traceRecorder = recorder
-        self.machine.onDecision = { [weak recorder] in recorder?.append(decision: $0) }
+        self.machine.onDecision = { [weak self, weak recorder] decision in
+            recorder?.append(decision: decision)
+            guard let self, let diagnoseContact else { return }
+            var ball = self.balls[decision.frameIndex]
+            // The trajectory is motion-compensated; the overlay uses pixels
+            // from the original frame, just like accepted touch markers.
+            if ball != nil { ball!.y -= self.cameraOffsets[decision.frameIndex] ?? 0 }
+            guard let diagnostic = diagnoseContact(decision, ball) else { return }
+            self.latestDiagnostic = diagnostic
+            #if DEBUG
+            self.debugDiagnosticObserver?(diagnostic)
+            #endif
+            recorder?.append(diagnostic: diagnostic)
+        }
     }
 
     func traceSnapshot() -> CounterTrace? { traceRecorder?.snapshot(touches: touches) }
@@ -74,11 +104,11 @@ nonisolated final class StreamingCounter {
     @discardableResult
     func push(frameIndex: Int, timestampMs: Int,
               ball: BallObservation?, person: PersonBox?,
-              cameraOffsetY: Double = 0, reliable: Bool = true, sourceFrameIndex: Int? = nil) -> [Touch] {
+              cameraOffsetY: Double = 0, reliable: Bool = true, sourceFrameIndex: Int? = nil, player: ActivePlayerSelection? = nil) -> [Touch] {
         defer { retainContactFrames?(machine.pendingContactFrameIndex) }
         traceRecorder?.append(input: .init(frameIndex: frameIndex, timestampMs: timestampMs,
             sourceFrameIndex: sourceFrameIndex, ball: ball, person: person,
-            cameraOffsetY: cameraOffsetY, reliable: reliable))
+            cameraOffsetY: cameraOffsetY, reliable: reliable, player: player))
         guard reliable, cameraOffsetY.isFinite else {
             breakContinuity()
             return []
@@ -89,9 +119,11 @@ nonisolated final class StreamingCounter {
         }
         stamps[frameIndex] = timestampMs
         cameraOffsets[frameIndex] = cameraOffsetY
+        machine.imageBottoms[frameIndex] = 1 + cameraOffsetY
         if var ball {
             ball.y += cameraOffsetY
             balls[frameIndex] = ball
+            machine.observedBalls[frameIndex] = ball
             if ball.height.isFinite, ball.height > 0, ball.height < 1 {
                 machine.ballHeights[frameIndex] = ball.height
             }
@@ -100,6 +132,12 @@ nonisolated final class StreamingCounter {
         if var person {
             person.y += cameraOffsetY
             machine.personBoxes[frameIndex] = person
+        }
+        if config.stabilizesPlayerGround == true, let player {
+            machine.playerGroundFrames.insert(frameIndex)
+            if let ground = playerGround.update(player: player, timestampMs: timestampMs) {
+                machine.playerGrounds[frameIndex] = ground+cameraOffsetY
+            }
         }
         latest = frameIndex
         if next == nil { next = frameIndex }
@@ -142,7 +180,12 @@ nonisolated final class StreamingCounter {
     private func breakContinuity() {
         machine.discardPendingArc()
         machine.personBoxes.removeAll(keepingCapacity: true)
+        machine.playerGroundFrames.removeAll(keepingCapacity: true)
+        machine.playerGrounds.removeAll(keepingCapacity: true)
+        playerGround.reset()
         machine.ballHeights.removeAll(keepingCapacity: true)
+        machine.observedBalls.removeAll(keepingCapacity: true)
+        machine.imageBottoms.removeAll(keepingCapacity: true)
         machine.detectedFrames.removeAll(keepingCapacity: true)
         stamps.removeAll(keepingCapacity: true)
         balls.removeAll(keepingCapacity: true)
@@ -200,6 +243,12 @@ nonisolated final class StreamingCounter {
                                    valid: false, motion: .unknown)
         }
 
+        if config.timeAwareTrajectory == true,
+           let point = TimedTrajectory.point(at: frame, in: run, stamps: stamps,
+                                            filled: filled, observed: balls, config: config) {
+            return point
+        }
+
         let ys = run.map { filled[$0]!.y }
         let xs = run.map { filled[$0]!.x }
         let smoothedY = movingAverage(medianFilter(ys, config.medianWindow), config.smoothingWindow)
@@ -232,7 +281,11 @@ nonisolated final class StreamingCounter {
         balls = balls.filter { $0.key >= cutoff }
         cameraOffsets = cameraOffsets.filter { $0.key >= cutoff }
         machine.ballHeights = machine.ballHeights.filter { $0.key >= cutoff }
+        machine.observedBalls = machine.observedBalls.filter { $0.key >= cutoff }
+        machine.imageBottoms = machine.imageBottoms.filter { $0.key >= cutoff }
         machine.personBoxes = machine.personBoxes.filter { $0.key >= cutoff }
+        machine.playerGroundFrames = machine.playerGroundFrames.filter { $0 >= cutoff }
+        machine.playerGrounds = machine.playerGrounds.filter { $0.key >= cutoff }
         machine.detectedFrames = machine.detectedFrames.filter { $0 >= cutoff }
     }
 }

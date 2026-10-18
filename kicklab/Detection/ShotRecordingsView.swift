@@ -81,8 +81,9 @@ struct ShotRecordingsView: View {
     }
 }
 
-private struct ShotRecordingReplayView: View {
+struct ShotRecordingReplayView: View {
     let recording: ShotRecording
+    var allowsFieldNotes = true
     @Environment(\.scenePhase) private var scenePhase
     @State private var player: AVPlayer?
     @State private var preparing = false
@@ -97,7 +98,11 @@ private struct ShotRecordingReplayView: View {
                     VideoPlayer(player: player).frame(height: 320)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                 } else if error == nil { ProgressView("Opening replay").frame(height: 320) }
+                #if POWER_SHOT_DEBUG
+                if allowsFieldNotes { PowerShotReferenceEditor(directory: recording.directory) }
+                #else
                 ShotEffectsButton(recording: recording) { player?.pause() }
+                #endif
                 VStack(alignment: .leading, spacing: 8) {
                     Label("Saved on this iPhone", systemImage: "checkmark.circle.fill")
                         .font(.headline).foregroundStyle(.green)

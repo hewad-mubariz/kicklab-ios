@@ -1,0 +1,151 @@
+{
+  "sourceDigest": "bbb5eb2192f8d92972da29918bdc753683feb5feb247277f1984661872645e6d",
+  "scope": "selected_reviewed_events",
+  "provenance": "Assistant visual review of source video contact windows; same recording used for development. Includes three known genuine misses and one remaining ground false count.",
+  "events": [
+    {
+      "frame": 805,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 28.706
+    },
+    {
+      "frame": 883,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 31.706
+    },
+    {
+      "frame": 951,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 34.307
+    },
+    {
+      "frame": 1050,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 38.107
+    },
+    {
+      "frame": 1112,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 40.541
+    },
+    {
+      "frame": 1218,
+      "label": "foot",
+      "counts": true,
+      "time_s": 44.675
+    },
+    {
+      "frame": 1280,
+      "label": "head",
+      "counts": true,
+      "time_s": 47.209
+    },
+    {
+      "frame": 1372,
+      "label": "chest",
+      "counts": true,
+      "time_s": 50.876
+    },
+    {
+      "frame": 1654,
+      "label": "foot",
+      "counts": true,
+      "time_s": 63.378
+    },
+    {
+      "frame": 1670,
+      "label": "foot",
+      "counts": true,
+      "time_s": 64.245
+    },
+    {
+      "frame": 1677,
+      "label": "foot",
+      "counts": true,
+      "time_s": 64.645
+    },
+    {
+      "frame": 1836,
+      "label": "foot",
+      "counts": true,
+      "time_s": 72.146
+    },
+    {
+      "frame": 1870,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 73.813
+    },
+    {
+      "frame": 1904,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 75.513
+    },
+    {
+      "frame": 1916,
+      "label": "foot",
+      "counts": true,
+      "time_s": 76.314
+    },
+    {
+      "frame": 1995,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 80.014
+    },
+    {
+      "frame": 2094,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 86.715
+    },
+    {
+      "frame": 2737,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 117.354
+    },
+    {
+      "frame": 3224,
+      "label": "foot",
+      "counts": true,
+      "time_s": 143.058
+    },
+    {
+      "frame": 3256,
+      "label": "pickup",
+      "counts": false,
+      "time_s": 144.558
+    },
+    {
+      "frame": 3485,
+      "label": "ground",
+      "counts": false,
+      "time_s": 157.694
+    },
+    {
+      "frame": 3607,
+      "label": "held",
+      "counts": false,
+      "time_s": 163.395
+    },
+    {
+      "frame": 4117,
+      "label": "knee",
+      "counts": true,
+      "time_s": 189.433
+    },
+    {
+      "frame": 4159,
+      "label": "raisedFoot",
+      "counts": true,
+      "time_s": 191.567
+    }
+  ]
+}

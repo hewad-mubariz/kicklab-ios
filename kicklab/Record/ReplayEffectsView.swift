@@ -38,7 +38,6 @@ struct ReplayEffectsView: View {
     @State private var loopPreview = false
     @State private var counterSelected = false
     @State private var showGraph = true
-    @State private var showTime = true
     private var motionStyle: MotionStyle { displayedLook.overlays.graph.style }
     @State private var motionTimeline = MotionStyleTimeline(points: [], touchTimes: [])
     @State private var originalEdit: SessionEditState?
@@ -49,6 +48,10 @@ struct ReplayEffectsView: View {
     @State private var duration: Double = 1
     @State private var timeObserver: Any?
     @State private var sourceSize = CGSize(width: 9, height: 16)
+    #if DEBUG
+    @AppStorage("debug.touchOutlines") private var showTouchOutlines = true
+    @State private var debugContacts: [TouchDebugEvent] = []
+    #endif
     @State private var effectTrack = BallEffectTrack(frames: [])
     @State private var isScrubbing = false
     @State private var resumeAfterScrub = false
@@ -70,7 +73,7 @@ struct ReplayEffectsView: View {
 
     private enum DownloadToast: Equatable { case saved, failed(String) }
 
-    var body: some View {
+    private var content: some View {
         ZStack {
             Color.black.ignoresSafeArea()
             videoCanvas.ignoresSafeArea()
@@ -84,8 +87,8 @@ struct ReplayEffectsView: View {
                 GlassEffectContainer(spacing: 8) {
                     VStack(spacing: 0) {
                         if showToolbox {
-                            ReplayToolbox(counter: lookBinding(\.overlays.counter), edit: lookBinding(\.edit),
-                                          showTime: $showTime, showGraph: lookBinding(\.showGraph),
+                            ReplayToolbox(counter: counterBinding, edit: lookBinding(\.edit),
+                                          showTime: $overlays.showTimer, showGraph: lookBinding(\.showGraph),
                                           includeGraph: lookBinding(\.overlays.graph.enabled), motionStyle: lookBinding(\.overlays.graph.style),
                                           motionSnapshot: motionTimeline.snapshot(at: currentTime, duration: duration),
                                           sourceAspect: sourceSize.width / max(1, sourceSize.height),
@@ -113,7 +116,7 @@ struct ReplayEffectsView: View {
                             }
                             CaptureMetrics(points: motionTimeline.points, touchTimes: motionTimeline.touches,
                                            time: currentTime, duration: duration,
-                                           showGraph: showsTouchTools && displayedLook.showGraph && !effectiveOverlays.graph.enabled, showTime: showTime,
+                                           showGraph: showsTouchTools && displayedLook.showGraph && !effectiveOverlays.graph.enabled, showTime: false,
                                            motionStyle: motionStyle, motionTimeline: motionTimeline,
                                            sourceAspect: sourceSize.width / max(1, sourceSize.height), showsTouchMetrics: showsTouchTools && subscriptions.isPro)
                                 .padding(.horizontal, 24).padding(.bottom, 10).allowsHitTesting(false)
@@ -135,8 +138,22 @@ struct ReplayEffectsView: View {
                 }
             }
         }
-        .foregroundStyle(.white).preferredColorScheme(.dark)
+    }
+
+    private var observedContent: some View {
+        content.foregroundStyle(.white).preferredColorScheme(.dark)
         .statusBarHidden(false)
+        .debugRuntimeOverlay(topInset: 180, onOpenTests: { pause() })
+        .onChange(of: Int(currentTime)) { _, _ in
+            #if DEBUG
+            FinalTestCoordinator.shared.replaySample(summary.videoURL, position: currentTime, playing: isPlaying)
+            #endif
+        }
+        .onChange(of: playbackError) { _, error in
+            #if DEBUG
+            if let error { FinalTestCoordinator.shared.replayFailed(summary.videoURL, message: error) }
+            #endif
+        }
         .onChange(of: showToolbox) { _, open in
             if !open { if toolPage == .graph { pause() }; toolPage = nil; panelTop = 0 }
         }
@@ -149,11 +166,14 @@ struct ReplayEffectsView: View {
             if page == .ball { showBallFrame() }
             if page == nil || page == .timer || page == .graph { restorePreviewPosition() }
         }
-        .onChange(of: displayedLook.edit.ballSkin) { _, _ in prepareSurfaceMotion() }
+        .onChange(of: displayedLook.edit.ballSkin) { _, _ in prepareVisualEffects() }
+        .onChange(of: displayedLook.edit.requiresVisualTrack) { _, required in
+            if required { prepareVisualEffects() }
+        }
         .onChange(of: summary.needsVisualPreparation) { _, pending in
             guard !pending, displayedLook.edit.scene == nil else { return }
             effectTrack = BallEffectTrack(frames: summary.renderTrack, touchTimes: summary.touchesMarked.map(\.time))
-            prepareSurfaceMotion()
+            prepareVisualEffects()
         }
         .onChange(of: displayedLook.edit.scene) { _, _ in tearDownPlayer(); setUpPlayer() }
         .onChange(of: overlays) { old, value in
@@ -170,7 +190,10 @@ struct ReplayEffectsView: View {
             downloadOutdated()
         }
         .onChange(of: showGraph) { _, _ in downloadOutdated() }
-        .onChange(of: downloader.phase) { _, phase in
+    }
+
+    var body: some View {
+        observedContent.onChange(of: downloader.phase) { _, phase in
             switch phase {
             case .saved:
                 show(.saved); showSharePanel = true
@@ -181,7 +204,7 @@ struct ReplayEffectsView: View {
         .onChange(of: subscriptions.isPro) { _, isPro in
             if !isPro {
                 pendingProTool = nil; counterSelected = false
-                if toolPage != .timer { toolPage = nil }
+                if toolPage?.requiresPro == true { toolPage = nil }
             }
             downloadOutdated()
         }
@@ -202,7 +225,12 @@ struct ReplayEffectsView: View {
             setUpPlayer()
             shown = true
         }
-        .onDisappear { tearDownPlayer() }
+        .onDisappear {
+            #if DEBUG
+            FinalTestCoordinator.shared.replayClosed(summary.videoURL)
+            #endif
+            tearDownPlayer()
+        }
         .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: showToolbox)
         .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: showSharePanel)
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: toast)
@@ -224,15 +252,13 @@ struct ReplayEffectsView: View {
                         .font(.system(size: 11, weight: .semibold)).tracking(1.6)
                         .accessibilityIdentifier("ball-video-editor-title")
                 }
-                if displayedLook.edit.ballSkin != .original {
-                    Text(preparation.isPreparing ? "Preparing ball effects · \(Int(preparation.progress * 100))%"
-                         : preparation.error != nil || surfaceMotionError != nil ? "Ball effects unavailable — tap to retry"
-                         : surfaceMotionTask != nil ? "Preparing source spin…"
-                         : effectTrack.surfaceMotion?.status(at: currentTime).label ?? "Spin uncertain")
+                if let status = effectsStatus {
+                    Text(status)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.white.opacity(0.8))
-                        .accessibilityIdentifier("replay-spin-status")
-                        .onTapGesture { prepareSurfaceMotion() }
+                        .accessibilityIdentifier(displayedLook.edit.ballSkin == .original
+                            ? "replay-effects-status" : "replay-spin-status")
+                        .onTapGesture { prepareVisualEffects() }
                 }
             }
             Spacer(minLength: 0)
@@ -325,12 +351,17 @@ struct ReplayEffectsView: View {
                         .allowsHitTesting(false)
                     ExportOverlayLayer(settings: effectiveOverlays,
                         timeline: .init(touches: summary.touchesMarked, total: summary.touches), time: currentTime, size: size)
+                    #if DEBUG
+                    if showsTouchTools && showTouchOutlines, let event = TouchDebugEvent.visible(in: debugContacts, at: currentTime) {
+                        TouchDebugOverlay(event: event, sourceSize: sourceSize)
+                    }
+                    #endif
                     if effectiveOverlays.graph.enabled {
                         ExportMotionGraphLayer(style: motionStyle,
                             snapshot: motionTimeline.snapshot(at: currentTime, duration: duration), size: size)
                             .allowsHitTesting(false)
                     }
-                    if showsTouchTools && effectiveOverlays.counter.enabled && subscriptions.isPro {
+                    if showsTouchTools && effectiveOverlays.counter.enabled {
                         if counterSelected {
                             let rect = overlays.counter.placement.rect(in: size)
                             CounterStickerInteraction(placement: $overlays.counter.placement)
@@ -424,7 +455,7 @@ struct ReplayEffectsView: View {
                     withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
                         if let originalEdit { edit = originalEdit }
                         if let originalOverlays { overlays = originalOverlays }
-                        showGraph = true; showTime = true
+                        showGraph = true
                         overlays.graph.style = .ballMotion
                     }
                 }
@@ -484,7 +515,7 @@ struct ReplayEffectsView: View {
                 let url = media.url
                 effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
                 motionSource = summary.videoURL
-                prepareSurfaceMotion()
+                prepareVisualEffects()
                 try Task.checkCancellation()
                 let asset = AVURLAsset(url: url)
                 if let track = try await asset.loadTracks(withMediaType: .video).first {
@@ -493,6 +524,22 @@ struct ReplayEffectsView: View {
                     sourceSize = EffectVideoGeometry.displaySize(naturalSize: natural, transform: transform)
                 }
                 duration = max(0.1, CMTimeGetSeconds(try await asset.load(.duration)))
+                #if DEBUG
+                debugContacts = summary.debugContacts
+                if let complete = await FinalTestCoordinator.shared.liveContacts(summary.videoURL) { debugContacts = complete }
+                if showsTouchTools, debugContacts.isEmpty {
+                    let source = summary.videoURL
+                    let digest = await Task.detached(priority: .utility) {
+                        try? SessionAnalysisStore.sourceDigest(source)
+                    }.value
+                    if let digest {
+                        let mode: CounterTraceArchive.Mode = summary.framesUseCompositionClock ? .file : .capture
+                        if let archive = await SessionAnalysisStore.shared.loadCounterTrace(sourceDigest: digest, mode: mode) {
+                            debugContacts = (archive.trace.diagnostics ?? []).map { $0.relative(to: archive.timeOriginSeconds) }
+                        }
+                    }
+                }
+                #endif
                 try Task.checkCancellation()
                 let item = AVPlayerItem(asset: asset)
                 if let videoTrack = try await asset.loadTracks(withMediaType: .video).first {
@@ -503,9 +550,17 @@ struct ReplayEffectsView: View {
                 p.isMuted = false
                 player = p
                 currentTime = max(0, duration - 1.0 / 30)
+                #if DEBUG && TOUCH_COUNTING_DEBUG
+                if let hold = SessionDesignReview.argument("--touch-debug-hold").flatMap(Double.init), hold.isFinite {
+                    currentTime = min(max(0, hold), duration)
+                }
+                #endif
                 await p.seek(to: CMTime(seconds: currentTime, preferredTimescale: 600),
                              toleranceBefore: .zero, toleranceAfter: .zero)
                 let interval = CMTime(seconds: 1.0 / 60, preferredTimescale: 600)
+                #if DEBUG
+                FinalTestCoordinator.shared.replayOpened(summary.videoURL, duration: duration)
+                #endif
                 timeObserver = p.addPeriodicTimeObserver(forInterval: interval, queue: .main) { time in
                     guard !isScrubbing, !restarting else { return }
                     let seconds = CMTimeGetSeconds(time)
@@ -515,15 +570,36 @@ struct ReplayEffectsView: View {
                     }
                 }
             } catch is CancellationError { }
-            catch { playbackError = "Couldn’t open this video. \(error.localizedDescription)" }
+            catch {
+                playbackError = "Couldn’t open this video. \(error.localizedDescription)"
+                #if DEBUG
+                FinalTestCoordinator.shared.replayFailed(summary.videoURL, message: error.localizedDescription)
+                #endif
+            }
         }
+    }
+
+    private var effectsStatus: String? {
+        guard displayedLook.edit.requiresVisualTrack else { return nil }
+        if preparation.isPreparing || (summary.needsVisualPreparation && preparation.prepared == nil) {
+            if preparation.error != nil || surfaceMotionError != nil { return "Effects unavailable — tap to retry" }
+            return "Preparing effects · \(Int(preparation.progress * 100))%"
+        }
+        guard displayedLook.edit.ballSkin != .original else { return "Effects ready" }
+        if surfaceMotionError != nil { return "Ball effects unavailable — tap to retry" }
+        if surfaceMotionTask != nil { return "Preparing source spin…" }
+        return effectTrack.surfaceMotion?.status(at: currentTime).label ?? "Spin uncertain"
     }
 
     private var renderedEdit: SessionEditState {
         var value = displayedLook.edit
-        // Never display stale capture masks or invented timer spin while precise
-        // effects are being prepared. Original footage stays playable.
-        if (summary.needsVisualPreparation && preparation.prepared == nil) || effectTrack.surfaceMotion == nil { value.ballSkin = .original }
+        // Keep the source and counter playable while the shared visual track is
+        // prepared. A sparse live trajectory is not a finished effects preview.
+        if summary.needsVisualPreparation && preparation.prepared == nil {
+            value.style = .none
+            value.ballSkin = .original
+        }
+        if effectTrack.surfaceMotion == nil { value.ballSkin = .original }
         return value
     }
 
@@ -534,6 +610,13 @@ struct ReplayEffectsView: View {
         if !showsTouchTools { value.counter.enabled = false }
         value.graph.enabled = value.graph.enabled && showsTouchTools && look.showGraph
         return value
+    }
+
+    private var counterBinding: Binding<ExportOverlayItem> {
+        Binding(get: { displayedLook.overlays.counter }, set: { item in
+            guard subscriptions.isPro || !item.style.requiresPro else { unlockTool(.counter); return }
+            overlays.counter = item
+        })
     }
 
     private func lookBinding<Value>(_ keyPath: WritableKeyPath<JugglingReplayLook, Value>) -> Binding<Value> {
@@ -563,23 +646,27 @@ struct ReplayEffectsView: View {
         toolPage = pendingProTool
     }
 
-    private func prepareSurfaceMotion() {
-        guard displayedLook.edit.ballSkin != .original, let url = motionSource,
-              effectTrack.surfaceMotion == nil, surfaceMotionTask == nil else { return }
+    private func prepareVisualEffects() {
+        let needsTrack = displayedLook.edit.requiresVisualTrack
+            && summary.needsVisualPreparation && preparation.prepared == nil
+        let needsSpin = displayedLook.edit.ballSkin != .original && effectTrack.surfaceMotion == nil
+        guard needsTrack || needsSpin, let url = motionSource, surfaceMotionTask == nil else { return }
         let token = UUID(); surfaceMotionGeneration = token; surfaceMotionError = nil
         surfaceMotionTask = Task {
             defer { if surfaceMotionGeneration == token { surfaceMotionTask = nil } }
             do {
-                let ready = try await preparation.prepare(summary)
+                let ready = try await preparation.prepare(summary, for: displayedLook.edit)
                 try Task.checkCancellation()
                 guard motionSource == url else { return }
                 if displayedLook.edit.scene == nil {
                     effectTrack = BallEffectTrack(frames: ready.renderTrack, touchTimes: ready.touchesMarked.map(\.time))
                 }
-                let motion = try await BallSurfaceTimeline.prepare(source: url, track: BallEffectTrack(frames: ready.renderTrack))
-                try Task.checkCancellation()
-                guard motionSource == url else { return }
-                effectTrack.surfaceMotion = motion
+                if displayedLook.edit.ballSkin != .original {
+                    let motion = try await BallSurfaceTimeline.prepare(source: url, track: BallEffectTrack(frames: ready.renderTrack))
+                    try Task.checkCancellation()
+                    guard motionSource == url, surfaceMotionGeneration == token else { return }
+                    effectTrack.surfaceMotion = motion
+                }
             } catch is CancellationError { }
             catch {
                 if surfaceMotionGeneration == token { surfaceMotionError = error.localizedDescription }
