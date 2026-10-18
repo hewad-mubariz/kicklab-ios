@@ -2,15 +2,15 @@ import Testing
 @testable import kicklab
 
 struct JugglingContactRulesTests {
-    typealias Point = JugglingContactRules.Point
-    private var figure: [String: Point] { [
-        "nose": Point(x: 0.5, y: 0.12),
-        "left_shoulder": Point(x: 0.44, y: 0.22), "right_shoulder": Point(x: 0.56, y: 0.22),
-        "left_elbow": Point(x: 0.42, y: 0.34), "right_elbow": Point(x: 0.58, y: 0.34),
-        "left_wrist": Point(x: 0.42, y: 0.46), "right_wrist": Point(x: 0.58, y: 0.46),
-        "left_hip": Point(x: 0.46, y: 0.48), "right_hip": Point(x: 0.54, y: 0.48),
-        "left_knee": Point(x: 0.46, y: 0.68), "right_knee": Point(x: 0.54, y: 0.68),
-        "left_ankle": Point(x: 0.46, y: 0.88), "right_ankle": Point(x: 0.54, y: 0.88)] }
+    typealias Point = PosePoint
+    private var figure: [BodyJoint: Point] { [
+        .nose: Point(x: 0.5, y: 0.12),
+        .leftShoulder: Point(x: 0.44, y: 0.22), .rightShoulder: Point(x: 0.56, y: 0.22),
+        .leftElbow: Point(x: 0.42, y: 0.34), .rightElbow: Point(x: 0.58, y: 0.34),
+        .leftWrist: Point(x: 0.42, y: 0.46), .rightWrist: Point(x: 0.58, y: 0.46),
+        .leftHip: Point(x: 0.46, y: 0.48), .rightHip: Point(x: 0.54, y: 0.48),
+        .leftKnee: Point(x: 0.46, y: 0.68), .rightKnee: Point(x: 0.54, y: 0.68),
+        .leftAnkle: Point(x: 0.46, y: 0.88), .rightAnkle: Point(x: 0.54, y: 0.88)] }
 
     @Test func handsDoNotCountButLegsHeadAndChestRemainEligible() {
         #expect(JugglingContactRules.isHand(ball: Point(x: 0.42, y: 0.44), width: 0.04, joints: figure))
@@ -24,27 +24,27 @@ struct JugglingContactRulesTests {
         let ball = Point(x: 0.5, y: 0.46)
         #expect(!JugglingContactRules.isHand(ball: ball, width: 0.06, joints: figure))
         var gripping = figure
-        gripping["left_wrist"] = Point(x: 0.465, y: 0.46)
-        gripping["right_wrist"] = Point(x: 0.535, y: 0.46)
+        gripping[.leftWrist] = Point(x: 0.465, y: 0.46)
+        gripping[.rightWrist] = Point(x: 0.535, y: 0.46)
         #expect(JugglingContactRules.isHand(ball: ball, width: 0.06, joints: gripping))
     }
 
     @Test func missingPoseAndAmbiguousArmLegOverlapDoNotInventAHand() {
         #expect(!JugglingContactRules.isHand(ball: Point(x: 0.5, y: 0.5), width: 0.05, joints: [:]))
         var overlap = figure
-        overlap["left_wrist"] = Point(x: 0.46, y: 0.70)
+        overlap[.leftWrist] = Point(x: 0.46, y: 0.70)
         #expect(!JugglingContactRules.isHand(ball: Point(x: 0.46, y: 0.69), width: 0.04, joints: overlap))
     }
 
     @Test func visibleFingersCanConfirmContactBeyondTheBodyWrist() {
         let ball = Point(x: 0.5, y: 0.4)
         let wrist = Point(x: 0.5, y: 0.48)
-        let points: [JugglingContactRules.HandLandmark] = [
+        let points: [HandLandmark] = [
             .init(finger: 0, x: wrist.x, y: wrist.y, confidence: 0.8),
             .init(finger: 2, x: 0.49, y: 0.43, confidence: 0.8),
             .init(finger: 2, x: 0.49, y: 0.44, confidence: 0.8),
             .init(finger: 3, x: 0.51, y: 0.43, confidence: 0.8)]
-        func verdict(_ landmarks: [JugglingContactRules.HandLandmark], wrists: [Point] = [Point(x: 0.5, y: 0.48)]) -> Bool {
+        func verdict(_ landmarks: [HandLandmark], wrists: [Point] = [Point(x: 0.5, y: 0.48)]) -> Bool {
             JugglingContactRules.fingersTouchBall(ball: ball, width: 0.1, height: 0.08,
                 bodyWrists: wrists, landmarks: landmarks)
         }

@@ -50,6 +50,12 @@ final class CameraSession: NSObject, ObservableObject {
     /// the view can fire one pulse per touch without re-firing on every frame.
     @MainActor @Published private(set) var lastTouchAt: CGPoint?
     @MainActor @Published private(set) var lastTouchToken = 0
+    @MainActor @Published private(set) var touchDiagnostic: TouchDebugEvent?
+    #if DEBUG
+    @MainActor @Published private(set) var activePlayers: [ActiveJugglerTracker.Player] = []
+    @MainActor @Published private(set) var activePlayer: ActivePlayerSelection?
+    #endif
+    @MainActor private(set) var recordedDiagnostics: [TouchDebugEvent] = []
     /// Detections thrown out as impossible - wrong size, or teleporting.
     @MainActor @Published private(set) var implausible = 0
     @MainActor @Published private(set) var isRecording = false
@@ -86,43 +92,31 @@ final class CameraSession: NSObject, ObservableObject {
     @MainActor @Published private(set) var capturePerformance = CaptureCadenceSnapshot()
     // These fields belong only to captureQueue.
     private var captureRecording: CaptureRequest?
-    private var liveBuffer = LiveAnalysisBuffer<LiveFrame>()
+    private var liveBuffer = LiveAnalysisBuffer<LiveAnalysisFrame>()
     private var captureStats = CaptureCadenceSnapshot()
     private var captureStartSeconds: Double?
     private var capturePosition: AVCaptureDevice.Position = .back
-    private struct LiveFrame {
-        let pixels: CVPixelBuffer
-        let sourceTime: Double
-        let startTime: Double
-        let captureDrops: Int
-        let identity: RecordedFrameIdentity?
+    #if DEBUG
+    private var lastDebugCapturePublish = 0.0 // captureQueue, wall clock
+    #endif
+    #if DEBUG && TOUCH_COUNTING_DEBUG
+    @MainActor @Published private(set) var debugFrameProfile = DebugFrameProfile.normal
+    @MainActor @Published private(set) var debugFrameTest = DebugFrameTestSnapshot()
+    private var debugFrameRun = DebugFrameTestRun(profile: .normal) // captureQueue
+    private var finishedDebugFrameTest = DebugFrameTestSnapshot() // analysis queue
+
+    @MainActor func setDebugFrameProfile(_ profile: DebugFrameProfile) {
+        guard recordingRequest == nil, !isFinishingRecording else { return }
+        debugFrameProfile = profile
+        debugFrameTest = .init(profile: profile)
     }
+    #endif
     @MainActor @Published private(set) var performance = DetectorPerformanceSnapshot()
-    private let performanceMonitor = DetectorPerformance()
-    private var detector: BallDetector?
-    private var trackingBaselineMB = 0.0
-    private var trackingPreparationMS = 0.0
-    private var counter = StreamingCounter()
-    private var contactVerifier: JugglingContactVerifier?
-    private var frameIndex = 0
-    private var detectedFrames = 0
-    private var analysisFailed = false
-    private var lastFpsStamp = CFAbsoluteTimeGetCurrent()
-    private var framesSinceStamp = 0
-    private var lastPublish = CFAbsoluteTimeGetCurrent()
+    private let liveAnalysis = LiveJugglingAnalysis()
     private let recorder = Recorder()
-    private let compensator = MotionCompensator()
-    private var plausibility = BallPlausibility()
-    private var lastBallRect: CGRect?
     /// Enabled in normal capture; disabling it is a diagnostic comparison.
     var motionCompensationEnabled = true
     private var activeRecording: CaptureRequest?
-    private var touchesThisRun: [RecordedTouch] = []
-    private var trackThisRun: [RecordedFrame] = []
-    private var analyzedIdentities: [RecordedFrameIdentity] = []
-    private var analysisEvaluations: [CaptureAnalysisEvidence.Evaluation] = []
-    private var capturePipelineSignature: String?
-    private var recordingStartSeconds: Double = 0
     private var currentPosition: AVCaptureDevice.Position = .back
     private var videoInput: AVCaptureDeviceInput?
     /// Keeps capture rotation correct per lens (front vs back differ).
@@ -226,25 +220,7 @@ final class CameraSession: NSObject, ObservableObject {
             guard let self, !request.isCancelled else { return }
             autoreleasepool {
                 do {
-                    let baseline = DetectorPerformance.memoryMB()
-                    let started = ProcessInfo.processInfo.systemUptime
-                    let signature = SessionAnalysisStore.pipelineSignature()
-                    let loaded = try BallDetector()
-                    guard !request.isCancelled else { return }
-                    try loaded.warmUp()
-                    guard !request.isCancelled else { return }
-                    let verifier = JugglingContactVerifier.enabled ? JugglingContactVerifier() : nil
-                    verifier?.warmUp()
-                    guard !request.isCancelled else { return }
-                    if let error = verifier?.lastError {
-                        throw NSError(domain: "CameraPreparation", code: 1,
-                                      userInfo: [NSLocalizedDescriptionKey: error])
-                    }
-                    self.detector = loaded
-                    self.contactVerifier = verifier
-                    self.capturePipelineSignature = signature == SessionAnalysisStore.pipelineSignature() ? signature : nil
-                    self.trackingBaselineMB = baseline
-                    self.trackingPreparationMS = (ProcessInfo.processInfo.systemUptime - started) * 1000
+                    guard try self.liveAnalysis.prepare(request: request) else { return }
                     Task { @MainActor in
                         guard self.trackingRequest === request, !request.isCancelled else { return }
                         self.isPreparingTracking = false
@@ -267,26 +243,20 @@ final class CameraSession: NSObject, ObservableObject {
 
     /// Analysis-queue only. Do not retain the model on home, in the editor or in the background.
     private func releaseTracking() {
-        detector = nil
-        contactVerifier = nil
-        capturePipelineSignature = nil
+        liveAnalysis.release()
     }
 
     @MainActor
     func reset() {
         touchCount = 0
+        touchDiagnostic = nil
+        #if DEBUG
+        activePlayers = []; activePlayer = nil
+        #endif
+        recordedDiagnostics = []
         detections = 0
         queue.async { [weak self] in
-            let verifier = self?.contactVerifier
-            verifier?.reset()
-            self?.counter = StreamingCounter(rejectsHandContact: { [weak verifier] in
-                verifier?.rejectsHandContact(at: $0) ?? false
-            }, recordTrace: true, footContactEvidence: JugglingContactVerifier.enabled ? { [weak verifier] in
-                verifier?.footEvidence(at: $0)
-            } : nil, retainContactFrames: { [weak verifier] in verifier?.retainContactFrames(around: $0) })
-            self?.plausibility.reset()
-            self?.frameIndex = 0
-            self?.detectedFrames = 0
+            self?.liveAnalysis.resetCounter()
         }
     }
 
@@ -308,44 +278,41 @@ final class CameraSession: NSObject, ObservableObject {
         recordedTrack = []
         recordingURL = nil
         touchCount = 0
+        touchDiagnostic = nil
+        #if DEBUG
+        activePlayers = []; activePlayer = nil
+        #endif
+        recordedDiagnostics = []
         detections = 0
         processedFrames = 0
         recordingElapsed = 0
         recentTouchTimes = []
         performance = DetectorPerformanceSnapshot()
+        #if DEBUG && TOUCH_COUNTING_DEBUG
+        let frameProfile = debugFrameProfile
+        debugFrameTest = .init(profile: frameProfile)
+        #endif
+        #if DEBUG
+        let finalTestFiles = pipeline == .juggling ? FinalTestCoordinator.shared.beginCapture(self) : nil
+        #endif
         status = "preparing recording"
         queue.async { [weak self] in
             guard let self, !request.isCancelled else { return }
             if self.pipeline == .juggling {
-                guard let trackingRequest, !trackingRequest.isCancelled, let detector = self.detector else { return }
-                self.performanceMonitor.loaded(model: detector.modelName, baselineMB: self.trackingBaselineMB,
-                                               milliseconds: self.trackingPreparationMS)
+                guard let trackingRequest, !trackingRequest.isCancelled, self.liveAnalysis.isPrepared else { return }
             }
-            self.touchesThisRun = []
-            self.trackThisRun = []
-            self.analyzedIdentities = []
-            self.analysisEvaluations = []
-            // A fresh counter: a run's count should start at zero.
-            let verifier = self.contactVerifier
-            self.counter = StreamingCounter(rejectsHandContact: { [weak verifier] in
-                verifier?.rejectsHandContact(at: $0) ?? false
-            }, recordTrace: true, footContactEvidence: JugglingContactVerifier.enabled ? { [weak verifier] in
-                verifier?.footEvidence(at: $0)
-            } : nil, retainContactFrames: { [weak verifier] in verifier?.retainContactFrames(around: $0) })
-            self.plausibility.reset()
-            self.frameIndex = 0
-            self.detectedFrames = 0
-            self.analysisFailed = false
-            self.lastBallRect = nil
-            self.framesSinceStamp = 0
-            self.lastFpsStamp = CFAbsoluteTimeGetCurrent()
-            self.lastPublish = 0
-            self.compensator.reset()
+            #if DEBUG
+            self.liveAnalysis.finalTestFiles = finalTestFiles
+            #endif
+            self.liveAnalysis.beginRecording()
             self.activeRecording = request
             let beginCapture = {
                 guard !request.isCancelled else { return }
                 self.captureRecording = request
                 self.liveBuffer = LiveAnalysisBuffer()
+                #if DEBUG && TOUCH_COUNTING_DEBUG
+                self.debugFrameRun = .init(profile: frameProfile)
+                #endif
                 self.captureStartSeconds = nil
                 var fresh = CaptureCadenceSnapshot()
                 fresh.selectedFPS = self.captureStats.selectedFPS
@@ -375,6 +342,9 @@ final class CameraSession: NSObject, ObservableObject {
     @MainActor
     func stopRecording() {
         guard let request = recordingRequest else { return }
+        #if DEBUG
+        FinalTestCoordinator.shared.captureStopping(self)
+        #endif
         request.cancel()
         recordingRequest = nil
         isRecording = false
@@ -393,6 +363,9 @@ final class CameraSession: NSObject, ObservableObject {
             self.captureStats.analysisThrottled = self.liveBuffer.throttled
             self.captureStats.analysisReplaced = self.liveBuffer.replaced
             let capture = self.captureStats
+            #if DEBUG && TOUCH_COUNTING_DEBUG
+            let debugTest = self.debugFrameRun.snapshot
+            #endif
             let ledger = self.recorder.frameIdentities
             self.recorder.stop { result in
                 self.sessionQueue.async {
@@ -400,8 +373,13 @@ final class CameraSession: NSObject, ObservableObject {
                     if self.pipeline == .videoOnly { self.updateCaptureOrientation() }
                 }
                 // Serial analysis work has completed before this cleanup runs.
-                self.queue.async { self.finishRecording(request, result: result, capture: capture,
-                                                      didWriteFrames: didWriteFrames, ledger: ledger) }
+                self.queue.async {
+                    #if DEBUG && TOUCH_COUNTING_DEBUG
+                    self.finishedDebugFrameTest = debugTest
+                    #endif
+                    self.finishRecording(request, result: result, capture: capture,
+                                         didWriteFrames: didWriteFrames, ledger: ledger)
+                }
             }
         }
     }
@@ -411,54 +389,53 @@ final class CameraSession: NSObject, ObservableObject {
         let url = try? result.get()
         let wasActive = activeRecording === request
         activeRecording = nil
-        let late = pipeline == .juggling && wasActive && didWriteFrames ? counter.flush() : []
-        for touch in late {
-            touchesThisRun.append(RecordedTouch(index: touch.index,
-                time: Double(touch.timestampMs) / 1000.0 - recordingStartSeconds,
-                x: touch.x, y: touch.y))
-        }
-        let qualityFailed = analysisFailed || contactVerifier?.lastError != nil
-        let touches = wasActive ? touchesThisRun : []
-        let track = wasActive ? trackThisRun : []
-        let count = wasActive ? counter.count : 0
-        if pipeline == .juggling, let url, didWriteFrames, !qualityFailed {
-            let analyzed = analyzedIdentities
-            let trace = wasActive ? counter.traceSnapshot() : nil
-            let timeOrigin = recordingStartSeconds
-            let signature = capturePipelineSignature
-            let evidence = wasActive && signature == SessionAnalysisStore.pipelineSignature()
-                ? signature.map { CaptureAnalysisEvidence(version: 1, pipelineSignature: $0,
-                                                         evaluations: analysisEvaluations) } : nil
-            Task.detached(priority:.utility) {
-                await CaptureSessionTimeline.persist(source:url,frames:ledger,analyzed:analyzed,
-                    observations:track,touches:touches,count:count, counterTrace:trace,
-                    timeOriginSeconds:timeOrigin,evidence:evidence)
+        let analysis = liveAnalysis.finish(flush: pipeline == .juggling && wasActive && didWriteFrames,
+                                           wasActive: wasActive)
+        if pipeline == .juggling, let url, didWriteFrames, !analysis.qualityFailed {
+            Task.detached(priority: .utility) {
+                await CaptureSessionTimeline.persist(source: url, frames: ledger, analyzed: analysis.analyzed,
+                    observations: analysis.track, touches: analysis.touches, count: analysis.count,
+                    counterTrace: analysis.trace, timeOriginSeconds: analysis.timeOrigin, evidence: analysis.evidence)
             }
         }
         var finalCapture = capture
-        finalCapture.analysedFrames = wasActive ? frameIndex : 0
-        releaseTracking()
-        compensator.reset()
-        lastBallRect = nil
-        performanceMonitor.finish()
+        finalCapture.analysedFrames = analysis.frameCount
+        #if DEBUG && TOUCH_COUNTING_DEBUG
+        var debugTest = finishedDebugFrameTest
+        debugTest.captureDrops = capture.captureDrops
+        debugTest.writerDrops = capture.writerDrops
+        debugTest.replaced = capture.analysisReplaced
+        if pipeline == .juggling, wasActive, didWriteFrames {
+            let report = DebugFrameTestReport(recordedAt: Date(), videoFile: url?.lastPathComponent,
+                test: debugTest, capture: finalCapture, touches: analysis.count, analysisFailed: analysis.qualityFailed)
+            DispatchQueue.global(qos: .utility).async { report.save() }
+        }
+        #endif
         Task { @MainActor in
             self.trackingRequest?.cancel()
             self.trackingRequest = nil
             self.isTrackingReady = false
             self.isFinishingRecording = false
+            self.recordedDiagnostics = analysis.diagnostics
             self.performance.model = "Not loaded"
             self.performance.captureDrops = finalCapture.captureDrops
             self.capturePerformance = finalCapture
-            if qualityFailed, self.recordingError == nil {
+            #if DEBUG && TOUCH_COUNTING_DEBUG
+            self.debugFrameTest = debugTest
+            #endif
+            if analysis.qualityFailed, self.recordingError == nil {
                 self.recordingError = VideoSafetyPolicy.Failure.analysis.localizedDescription
             }
-            self.recordedTouches = touches
-            self.recordedTrack = track
+            self.recordedTouches = analysis.touches
+            self.recordedTrack = analysis.track
             self.recordingURL = url
-            self.touchCount = count
+            self.touchCount = analysis.count
             if url == nil, wasActive, self.previewRequest != nil, self.recordingError == nil {
                 if case .failure(let error) = result { self.recordingError = error.localizedDescription }
             }
+            #if DEBUG
+            FinalTestCoordinator.shared.captureFinished(self, traceComplete: analysis.trace?.complete == true, touches: analysis.touches)
+            #endif
             if self.wantsPreparedPreview { self.prepareTracking() }
         }
     }
@@ -637,6 +614,22 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
             return
         }
         captureStats.duration = max(0, sourceTime - (captureStartSeconds ?? sourceTime))
+        #if DEBUG
+        let now = ProcessInfo.processInfo.systemUptime
+        if now - lastDebugCapturePublish >= 1 {
+            lastDebugCapturePublish = now
+            var snapshot = captureStats
+            snapshot.writtenFrames = recorder.writtenFrames
+            snapshot.writerDrops = recorder.droppedFrames
+            snapshot.analysisOffered = liveBuffer.offered
+            snapshot.analysisThrottled = liveBuffer.throttled
+            snapshot.analysisReplaced = liveBuffer.replaced
+            Task { @MainActor in
+                guard self.recordingRequest === request, !request.isCancelled else { return }
+                self.capturePerformance = snapshot
+            }
+        }
+        #endif
         if pipeline == .videoOnly {
             // Capture cadence is independent of tracking. No model is loaded for this flow.
             if captureStats.receivedFrames % 6 == 0 {
@@ -648,168 +641,73 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
             }
             return
         }
-        let frame = LiveFrame(pixels: pixels, sourceTime: sourceTime,
+        #if DEBUG && TOUCH_COUNTING_DEBUG
+        let shouldAnalyze = debugFrameRun.allows(sourceTime)
+        if let stats = debugFrameRun.observe(at: sourceTime, capture: captureStats,
+                                            writerDrops: recorder.droppedFrames, replaced: liveBuffer.replaced) {
+            Task { @MainActor in
+                guard self.recordingRequest === request, !request.isCancelled else { return }
+                self.debugFrameTest = stats
+            }
+        }
+        guard shouldAnalyze else { return }
+        #endif
+        let hostClock = CMClockGetHostTimeClock()
+        let exposure = session.synchronizationClock.map { CMSyncConvertTime(time, from: $0, to: hostClock) } ?? time
+        let exposureAge = CMTimeSubtract(CMClockGetTime(hostClock), exposure).seconds
+        let due = ProcessInfo.processInfo.systemUptime - (exposureAge.isFinite ? max(0, exposureAge) : 0)
+        let frame = LiveAnalysisFrame(pixels: pixels, sourceTime: sourceTime,
                               startTime: captureStartSeconds ?? sourceTime,
-                              captureDrops: captureStats.captureDrops, identity: identity)
+                              captureDrops: captureStats.captureDrops, identity: identity, sourceDueUptime: due)
         if let work = liveBuffer.offer(frame, at: sourceTime) { submit(work, request: request) }
     }
 
     /// Invoked only on captureQueue. The callback releases the active frame
     /// before selecting the newest pending observation; there is no backlog.
-    private func submit(_ frame: LiveFrame, request: CaptureRequest) {
+    private func submit(_ frame: LiveAnalysisFrame, request: CaptureRequest) {
+        #if DEBUG && TOUCH_COUNTING_DEBUG
+        debugFrameRun.submitted(at: frame.sourceTime)
+        #endif
         queue.async { [weak self] in
             guard let self else { return }
             autoreleasepool { self.analyse(frame, request: request) }
+            let targetFPS = self.liveAnalysis.recommendedFramesPerSecond
             self.captureQueue.async {
                 guard self.captureRecording === request, !request.isCancelled else { return }
+                self.liveBuffer.setFramesPerSecond(targetFPS)
                 if let next = self.liveBuffer.finish() { self.submit(next, request: request) }
             }
         }
     }
 
-    private func analyse(_ frame: LiveFrame, request: CaptureRequest) {
-        guard activeRecording === request, !request.isCancelled, let detector else { return }
-        let pixels = frame.pixels
-        let sourceTime = frame.sourceTime
-        recordingStartSeconds = frame.startTime
-        let stampMs = Int(sourceTime * 1000)
-        let index = frameIndex
-        frameIndex += 1
-        var inferenceSucceeded = true
-        var found = autoreleasepool { () -> FrameDetections in
-            do { return try detector.detect(pixels, timestamp: sourceTime) }
-            catch { inferenceSucceeded = false; return FrameDetections(ball: nil, person: nil) }
-        }
-        guard !request.isCancelled else { return }
-        if !inferenceSucceeded || contactVerifier?.lastError != nil {
-            analysisFailed = true
+    private func analyse(_ frame: LiveAnalysisFrame, request: CaptureRequest) {
+        guard activeRecording === request, !request.isCancelled else { return }
+        let snapshot: LiveAnalysisUpdate
+        do {
+            guard let update = try liveAnalysis.process(frame, request: request,
+                motionCompensationEnabled: motionCompensationEnabled) else { return }
+            snapshot = update
+        } catch {
             request.cancel()
             Task { @MainActor in
                 guard self.recordingRequest === request else { return }
-                self.recordingError = VideoSafetyPolicy.Failure.analysis.localizedDescription
+                self.recordingError = error.localizedDescription
                 self.stopRecording()
             }
             return
         }
-        let performance = performanceMonitor.observe(inferenceMS: detector.lastInferenceMS,
-            preprocessMS: detector.lastPreprocessMS, totalMS: detector.lastTotalMS, recording: true, captureDrops: frame.captureDrops,
-            roiFullFrames: detector.fullFrameCount, roiCropFrames: detector.cropFrameCount)
-        // Drop detections that cannot be the ball we have been following. See
-        // BallPlausibility: a stationary object in the room scoring 0.06 was
-        // being counted as touches every time the real ball flickered.
-        var rejectedByPlausibility = false
-        if let ball = found.ball {
-            found.ball = plausibility.accept(ball, frame: index)
-            rejectedByPlausibility = found.ball == nil
-        }
-        if found.ball != nil { detectedFrames += 1 }
-        lastBallRect = found.ball.map {
-            CGRect(x: $0.x - $0.width / 2, y: $0.y - $0.height / 2,
-                   width: $0.width, height: $0.height)
-        }
-
-        // Measure background motion while excluding the current ball. The
-        // counter applies the same offset to ball and player geometry and
-        // returns touch markers in the original video coordinates.
-        compensator.excludeBall = lastBallRect
-        let shift = motionCompensationEnabled ? compensator.update(pixels) : 0
-        let ball = found.ball.map {
-            BallObservation(frameIndex: index, timestampMs: stampMs,
-                            x: $0.x, y: $0.y,
-                            width: $0.width, height: $0.height,
-                            confidence: $0.score)
-        }
-        let person = found.person.map {
-            PersonBox(x: $0.x, y: $0.y, width: $0.width, height: $0.height)
-        }
-        // Hold the count while the camera is moving too much to judge. Missing a
-        // touch is recoverable; inventing one is not, and the user can see why.
-        let shaky = compensator.isTooShaky
-        if shaky { contactVerifier?.discardFrames() }
-        else { contactVerifier?.store(pixels, frameIndex: index, timestampMs: stampMs, ball: found.ball) }
-        let confirmed = counter.push(frameIndex: index, timestampMs: stampMs,
-                                     ball: ball, person: person,
-                                     cameraOffsetY: shift, reliable: !shaky, sourceFrameIndex: frame.identity?.index)
-        if !request.isCancelled {
-            if let identity = frame.identity {
-                analyzedIdentities.append(identity)
-                analysisEvaluations.append(.init(identity: identity, outcome: .classify(
-                    succeeded: inferenceSucceeded, hasBall: found.ball != nil,
-                    hasMask: found.ballMask != nil, maskModel: detector.hasMaskOutputs,
-                    rejected: rejectedByPlausibility,
-                    direct: detector.lastFollowKind == "detector" && detector.lastFollowCalls == 1)))
-            }
-            let judged = counter.lastPoint
-            if let b = found.ball {
-                trackThisRun.append(RecordedFrame(
-                    time: Double(stampMs) / 1000.0 - recordingStartSeconds,
-                    x: b.x, y: b.y, width: b.width, height: b.height, score: b.score,
-                    smoothedX: judged?.x ?? b.x,
-                    smoothedY: judged?.y ?? b.y,
-                    vy: judged?.vy ?? 0,
-                    motion: judged?.motion ?? .unknown,
-                    detected: true,
-                    person: person, ballMask: found.ballMask, usesBallMasks: found.usesBallMasks, identity: frame.identity))
-            }
-            for touch in confirmed {
-                touchesThisRun.append(RecordedTouch(
-                    index: touch.index,
-                    time: Double(touch.timestampMs) / 1000.0 - recordingStartSeconds,
-                    x: touch.x, y: touch.y))
-            }
-        }
-
-        framesSinceStamp += 1
-        let now = CFAbsoluteTimeGetCurrent()
-        var measuredFps: Double?
-        if now - lastFpsStamp >= 1.0 {
-            measuredFps = Double(framesSinceStamp) / (now - lastFpsStamp)
-            framesSinceStamp = 0
-            lastFpsStamp = now
-        }
-
-        // Publish at ~8Hz. Thirty SwiftUI updates a second, each redrawing the
-        // whole view tree, competes with the capture pipeline for no benefit -
-        // nobody reads a counter faster than this.
-        guard now - lastPublish >= 0.125 || measuredFps != nil || !confirmed.isEmpty
-        else { return }
-        lastPublish = now
-        // No consumer currently displays this snapshot; avoid a GPU readback
-        // on every UI update while measuring live detector performance.
-        detector.wantsModelInputSnapshot = false
-
-        let liveTime = max(0, sourceTime - recordingStartSeconds)
-        let recentTimes = touchesThisRun.suffix(8).map(\.time)
-        let snapshot = (
-            count: counter.count,
-            score: found.ball?.score ?? 0,
-            detected: detectedFrames,
-            size: detector.lastInputSize,
-            image: detector.lastModelInput,
-            ballRect: found.ball.map {
-                CGRect(x: $0.x - $0.width / 2, y: $0.y - $0.height / 2,
-                       width: $0.width, height: $0.height)
-            },
-            personRect: found.person.map {
-                CGRect(x: $0.x - $0.width / 2, y: $0.y - $0.height / 2,
-                       width: $0.width, height: $0.height)
-            },
-            fps: measuredFps,
-            error: detector.lastError,
-            shift: shift,
-            shaky: shaky,
-            touched: confirmed.last.map { CGPoint(x: $0.x, y: $0.y) },
-            dropped: plausibility.rejectedSize + plausibility.rejectedJump,
-            vy: counter.lastPoint?.vy ?? 0
-        )
 
         Task { @MainActor in
             // A stopped (or previous) take must not repopulate the idle HUD.
             guard self.recordingRequest === request, !request.isCancelled else { return }
-            self.recordingElapsed = liveTime
-            self.recentTouchTimes = recentTimes
-            self.processedFrames = index + 1
+            self.recordingElapsed = snapshot.liveTime
+            self.recentTouchTimes = snapshot.recentTimes
+            self.processedFrames = snapshot.processedFrames
             self.touchCount = snapshot.count
+            self.touchDiagnostic = snapshot.diagnostic
+            #if DEBUG
+            self.activePlayers = snapshot.players; self.activePlayer = snapshot.player
+            #endif
             self.ballScore = snapshot.score
             self.detections = snapshot.detected
             self.inputSize = "\(Int(snapshot.size.width))x\(Int(snapshot.size.height))"
@@ -819,7 +717,7 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
             self.ballVelocityY = snapshot.vy
             if let f = snapshot.fps { self.fps = f }
             self.detectorError = snapshot.error
-            self.performance = performance
+            self.performance = snapshot.performance
             self.cameraShift = snapshot.shift
             self.tooShaky = snapshot.shaky
             if let at = snapshot.touched {

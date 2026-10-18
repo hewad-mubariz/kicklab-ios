@@ -4,19 +4,37 @@ import CoreML
 
 final class DetectorSelectionTests: XCTestCase {
     @MainActor
-    func testNormalModelBundlesTheValidatedMaskExport() throws {
+    func testNormalModelBundlesTheRFSmallFP16Export() throws {
         let resource = BallDetector.configuredResourceName
+        XCTAssertEqual(resource, RFSmallModel.fp16.rawValue)
         let url = try XCTUnwrap(Bundle.main.url(forResource: resource, withExtension: "mlmodelc"))
-        let model = try MLModel(contentsOf: url)
-        let metadata = try XCTUnwrap(model.modelDescription.metadata[.creatorDefinedKey] as? [String: String])
-        XCTAssertEqual(metadata["precision"], "p3_features_fp32")
-        XCTAssertEqual(Double(metadata["ball_threshold"] ?? ""), 0.30)
-        XCTAssertNotNil(model.modelDescription.outputDescriptionsByName["mask_prototypes"])
-        XCTAssertNotNil(model.modelDescription.outputDescriptionsByName["mask_coefficients"])
+        let configuration = MLModelConfiguration()
+        configuration.computeUnits = .cpuOnly
+        configuration.functionName = RFDeviceProfile.current.functionName
+        let model = try MLModel(contentsOf: url, configuration: configuration)
+        XCTAssertNoThrow(try RFSegBridge.validate(model.modelDescription, outputType: .float16))
+        XCTAssertEqual(BallDetector.ballThreshold(for: resource), 0.40)
+    }
+
+    @MainActor
+    func testRFExportsMatchExplicitPrecisionContracts() throws {
+        for variant in [RFSmallModel.fp16] {
+            let url = try XCTUnwrap(Bundle.main.url(forResource: variant.rawValue, withExtension: "mlmodelc"))
+            let config = MLModelConfiguration()
+            config.computeUnits = .cpuOnly
+            config.functionName = RFDeviceProfile.current.functionName
+            let model = try MLModel(contentsOf: url, configuration: config)
+            XCTAssertNoThrow(try RFSegBridge.validate(model.modelDescription, outputType: variant.outputType))
+            XCTAssertThrowsError(try RFSegBridge.validate(model.modelDescription,
+                outputType: variant == .fp16 ? .float32 : .float16))
+            XCTAssertEqual(BallDetector.ballThreshold(for: variant.rawValue), 0.40)
+            XCTAssertEqual(variant.foregroundComputeUnits, .cpuAndGPU)
+        }
+        XCTAssertNotEqual(RFSmallModel.fp16.pipelineIdentity, RFSmallModel.fp32.pipelineIdentity)
     }
 
     func testStandaloneStudiesCanExplicitlyLookUpOtherModels() {
-        XCTAssertEqual(BallDetector.resourceName(for: []), "KickLabYOLO26MotionSegmentation")
+        XCTAssertEqual(BallDetector.resourceName(for: []), "RFDETRSmallRecovery040FP16")
         XCTAssertEqual(BallDetector.resourceName(for: ["--yolox-finetuned"]),
                        "KickLabYOLOXTinyFineTuned")
         XCTAssertEqual(BallDetector.resourceName(for: ["--yolox"]), "KickLabYOLOXTiny")

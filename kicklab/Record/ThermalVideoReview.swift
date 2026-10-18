@@ -49,10 +49,10 @@ struct ThermalVideoReview: View {
                     Text("Battery: \(batteryLabel) · Low Power Mode: \(ProcessInfo.processInfo.isLowPowerModeEnabled ? "on" : "off")")
                         .font(.caption)
                     if let cpuOnly = analyzer.profileMetrics["model_cpu_only"] ?? analyzer.profileMetrics["cpu_only"] {
-                        Text(cpuOnly == 1 ? "Model: CPU only" : "Model: all accelerators allowed")
+                        Text(cpuOnly == 1 ? "Model: CPU only" : "Model: \(analyzer.analyzedModel)")
                             .font(.caption)
                     }
-                    Text("Full-frame analysis · unchanged model and counting")
+                    Text("Full-frame analysis · unchanged counting rules")
                         .font(.caption).foregroundStyle(.secondary)
                 }.padding(30)
             }

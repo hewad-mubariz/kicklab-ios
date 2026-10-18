@@ -30,10 +30,13 @@ final class ShotBackgroundExportTests: XCTestCase {
     func testCPUAndMetalKeepEveryShotLookAndCamera() throws {
         let engine = try MetalEffectEngine(), track = track(), size = CGSize(width: 180, height: 320)
         // Cover every material and every spatial camera; timing-only cameras use this same renderer.
+        let moves: [ShotCameraMove?] = [nil] + ShotCameraMove.allCases.filter { $0 != .focus && !$0.retimes }
         for (i, style) in ShotTrailStyle.allCases.enumerated() {
-            let cameras: [ShotCameraStyle] = [.none, .follow, .impact, .lens, .tilt, .split, .freeze]
-            let camera = ShotCameraFrame.make(settings: .init(style: cameras[i % cameras.count], strike: 0.2), track: track,
-                                              flight: nil, size: size, time: 0.7)
+            let move = moves[i % moves.count]
+            let clips = move.map { [ShotCameraClip(move: $0, start: 0.1, end: 1)] } ?? []
+            let plan = ShotCameraPlan(track: ShotCameraTrack(clips: clips, strike: 0.2), ball: track, flight: nil,
+                                      duration: 1, aspect: Double(size.width / size.height))
+            let camera = plan.frame(output: 0.7, size: size)
             let frame = EffectFrame.shot(size: size, sourceSize: size, style: style, intensity: 1, track: track, time: 0.7)
             let cpu = try buffer(), gpu = try buffer()
             try engine.composite(frame, pixelBuffer: gpu, camera: camera)
@@ -49,7 +52,10 @@ final class ShotBackgroundExportTests: XCTestCase {
             differences.sort()
             let mean = Double(differences.reduce(0, +)) / Double(differences.count)
             XCTAssertLessThan(mean, 2, "\(style): mean pixel difference")
-            XCTAssertLessThan(differences[differences.count * 99 / 100], 18, "\(style): 99th percentile difference")
+            // A zoomed camera enlarges the trail's few CPU/GPU particle differences (they reach 200 on single
+            // pixels even with no camera), so the tail allowance grows with the zoom; the mean stays strict.
+            let zoom = Double(camera.uniforms[1].z)
+            XCTAssertLessThan(Double(differences[differences.count * 99 / 100]), 18 + 10 * max(0, zoom - 1), "\(style): 99th percentile difference")
         }
     }
 

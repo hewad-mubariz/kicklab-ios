@@ -22,11 +22,11 @@ final class DetectorPreferenceTests: XCTestCase {
         }
     }
 
-    func testAppAlwaysUsesMotionDespiteLegacyPreferencesAndLaunchFlags() throws {
+    func testAppAlwaysUsesRFSmallDespiteLegacyPreferencesAndLaunchFlags() throws {
         let name="KickLab.DetectorSelectionTests.\(UUID().uuidString)"
         let defaults=try XCTUnwrap(UserDefaults(suiteName:name))
         defer { defaults.removePersistentDomain(forName:name) }
-        XCTAssertEqual(BallDetector.configuredResourceName(arguments:[],defaults:defaults),"KickLabYOLO26MotionSegmentation")
+        XCTAssertEqual(BallDetector.configuredResourceName(arguments:[],defaults:defaults),"RFDETRSmallRecovery040FP16")
         let launches: [[String]] = [[], ["--ssdlite"], ["--fasterrcnn"], ["--yolox"],
             ["--yolox-roi"], ["--yolo26-medium-retained"], ["--yolo26-medium-segmentation"],
             ["--select-segmentation-pilot"], ["--yolo26-motion-model-only"],
@@ -36,8 +36,19 @@ final class DetectorPreferenceTests: XCTestCase {
             let reopened=try XCTUnwrap(UserDefaults(suiteName:name))
             for arguments in launches {
                 XCTAssertEqual(BallDetector.configuredResourceName(arguments:arguments,defaults:reopened),
-                    "KickLabYOLO26MotionSegmentation", "Legacy preference \(value), arguments \(arguments)")
+                    "RFDETRSmallRecovery040FP16", "Legacy preference \(value), arguments \(arguments)")
             }
         }
+    }
+
+    func testPrecisionStudyIsScopedToSeparateDebugApp() {
+        #if DEBUG && TOUCH_COUNTING_DEBUG
+        XCTAssertEqual(BallDetector.configuredResourceName(arguments: ["--rf-fp16-study"], defaults: .standard), RFSmallModel.fp16.rawValue)
+        XCTAssertEqual(BallDetector.configuredResourceName(arguments: ["--rf-fp32-study"], defaults: .standard), RFSmallModel.fp32.rawValue)
+        #else
+        for flag in ["--rf-fp16-study", "--rf-fp32-study"] {
+            XCTAssertEqual(BallDetector.configuredResourceName(arguments: [flag], defaults: .standard), BallDetector.productionResourceName)
+        }
+        #endif
     }
 }

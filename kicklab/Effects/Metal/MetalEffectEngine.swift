@@ -76,6 +76,9 @@ nonisolated final class MetalEffectEngine {
     private var cache: CVMetalTextureCache?
     private var scratch: MTLTexture?
     private var cameraScratch: MTLTexture?
+    private var cameraBlur: MTLTexture?
+    private var focusBlur: MPSImageGaussianBlur?
+    private var focusSigma: Float = 0
     private var blurNear: MPSImageGaussianBlur?
     private var blurFar: MPSImageGaussianBlur?
     private var blurRadius: Float = -1
@@ -133,7 +136,7 @@ nonisolated final class MetalEffectEngine {
 
     /// Caller controls presentation / completion. A single queue orders reuse of targets.
     func encode(_ frame: EffectFrame, into target: MTLTexture, source: MTLTexture? = nil, material: MTLTexture? = nil,
-                camera: ShotCameraFrame? = nil,
+                camera: ShotCameraFrame? = nil, atlas: ShotSpriteAtlas? = nil, arc: ShotArcLayers? = nil,
                 command: MTLCommandBuffer) throws {
         if let camera, camera.isActive, let source {
             if cameraScratch?.width != target.width || cameraScratch?.height != target.height {
@@ -143,18 +146,38 @@ nonisolated final class MetalEffectEngine {
                 throw Failure.unavailable("The camera effects renderer is unavailable.")
             }
             try encode(frame, into: cameraScratch, source: source, material: material, command: command)
+            // Rack Focus reads a blurred copy of the picture.
+            var blurred: MTLTexture = cameraScratch
+            if camera.needsBlur {
+                if cameraBlur?.width != target.width || cameraBlur?.height != target.height {
+                    cameraBlur = try texture(width: target.width, height: target.height)
+                }
+                let sigma = max(2, Float(target.width) / 720 * 7.5)
+                if focusBlur == nil || focusSigma != sigma {
+                    focusBlur = MPSImageGaussianBlur(device: device, sigma: sigma); focusSigma = sigma
+                    focusBlur?.edgeMode = .clamp
+                }
+                if let cameraBlur, let focusBlur {
+                    focusBlur.encode(commandBuffer: command, sourceTexture: cameraScratch, destinationTexture: cameraBlur)
+                    blurred = cameraBlur
+                }
+            }
             guard let encoder = command.makeComputeCommandEncoder() else {
                 throw Failure.unavailable("Couldn’t draw the camera effect.")
             }
-            var uniforms = camera.uniforms
-            var path = camera.path
-            if path.isEmpty { path = [.zero] }
+            let sprites = camera.usesArcLayers ? arc?.texture(device: device) : atlas?.texture(device: device)
+            let uniforms = camera.uniforms(hasAtlas: sprites != nil)
+            let path = camera.path.isEmpty ? [SIMD4<Float>.zero] : camera.path
+            let stamps = camera.stamps.isEmpty ? [SIMD4<Float>.zero] : camera.stamps
             encoder.label = "Power Shot camera and replay"
-            encoder.setBytes(&uniforms, length: MemoryLayout<ShotCameraFrame.Uniforms>.stride, index: 0)
+            uniforms.withUnsafeBytes { encoder.setBytes($0.baseAddress!, length: $0.count, index: 0) }
             path.withUnsafeBytes { encoder.setBytes($0.baseAddress!, length: $0.count, index: 1) }
+            stamps.withUnsafeBytes { encoder.setBytes($0.baseAddress!, length: $0.count, index: 2) }
             encoder.setTexture(cameraScratch, index: 0)
             encoder.setTexture(target, index: 1)
             encoder.setTexture(source, index: 2)
+            encoder.setTexture(sprites ?? cameraScratch, index: 3)
+            encoder.setTexture(blurred, index: 4)
             dispatch(encoder, pipeline, target)
             return
         }
@@ -226,15 +249,17 @@ nonisolated final class MetalEffectEngine {
         }
     }
 
-    func render(_ frame: EffectFrame, into target: MTLTexture, source: MTLTexture? = nil, camera: ShotCameraFrame? = nil) throws {
+    func render(_ frame: EffectFrame, into target: MTLTexture, source: MTLTexture? = nil, camera: ShotCameraFrame? = nil,
+                atlas: ShotSpriteAtlas? = nil, arc: ShotArcLayers? = nil) throws {
         guard let command = resources.queue.makeCommandBuffer() else { throw Failure.unavailable("Cannot start effect rendering.") }
-        try encode(frame, into: target, source: source, camera: camera, command: command)
+        try encode(frame, into: target, source: source, camera: camera, atlas: atlas, arc: arc, command: command)
         command.commit(); command.waitUntilCompleted()
         if let error = command.error { throw error }
     }
 
     /// The decoded video is copied before compositing to avoid read/write hazards.
-    func composite(_ frame: EffectFrame, pixelBuffer: CVPixelBuffer, camera: ShotCameraFrame? = nil) throws {
+    func composite(_ frame: EffectFrame, pixelBuffer: CVPixelBuffer, camera: ShotCameraFrame? = nil, atlas: ShotSpriteAtlas? = nil,
+                   arc: ShotArcLayers? = nil) throws {
         let w = CVPixelBufferGetWidth(pixelBuffer), h = CVPixelBufferGetHeight(pixelBuffer)
         var ref: CVMetalTexture?
         guard let cache, CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, cache, pixelBuffer, nil,
@@ -245,11 +270,11 @@ nonisolated final class MetalEffectEngine {
             throw Failure.unavailable("Cannot prepare the video texture.")
         }
         copy.copy(from: output, to: scratch); copy.endEncoding()
-        try encode(frame, into: output, source: scratch, camera: camera, command: command)
+        try encode(frame, into: output, source: scratch, camera: camera, atlas: atlas, arc: arc, command: command)
         command.commit(); command.waitUntilCompleted()
         if let error = command.error { throw error }
         withExtendedLifetime(ref) {}
     }
 
-    func releaseCameraTargets() { cameraScratch = nil }
+    func releaseCameraTargets() { cameraScratch = nil; cameraBlur = nil }
 }

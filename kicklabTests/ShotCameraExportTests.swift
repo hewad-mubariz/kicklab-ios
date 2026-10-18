@@ -66,12 +66,17 @@ final class ShotCameraExportTests: XCTestCase {
         return (combined, BallEffectTrack(frames: frames))
     }
 
-    private func meanBlue(_ asset: AVAsset, at time: Double) async throws -> Double {
+    private func meanBlue(_ asset: AVAsset, at time: Double, region: CGRect? = nil) async throws -> Double {
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
         generator.requestedTimeToleranceBefore = .zero
         generator.requestedTimeToleranceAfter = .zero
-        let image = try await generator.image(at: CMTime(seconds: time, preferredTimescale: 60_000)).image
+        var image = try await generator.image(at: CMTime(seconds: time, preferredTimescale: 60_000)).image
+        if let region {
+            image = try XCTUnwrap(image.cropping(to: CGRect(x: region.minX * Double(image.width),
+                y: region.minY * Double(image.height), width: region.width * Double(image.width),
+                height: region.height * Double(image.height))))
+        }
         let width = image.width, height = image.height
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
         let context = try XCTUnwrap(CGContext(data: &bytes, width: width, height: height, bitsPerComponent: 8,
@@ -141,6 +146,12 @@ final class ShotCameraExportTests: XCTestCase {
         }
     }
 
+    private func clip(_ move: ShotCameraMove, _ start: Double, _ end: Double, _ change: (inout ShotMoveSettings) -> Void = { _ in }) -> ShotCameraClip {
+        var settings = ShotMoveSettings.defaults(for: move)
+        change(&settings)
+        return ShotCameraClip(move: move, start: start, end: end, settings: settings)
+    }
+
     func testRetimedExportsKeepSoundAndFreezeTheRequestedSourceFrame() async throws {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -149,24 +160,29 @@ final class ShotCameraExportTests: XCTestCase {
         do { (source, track) = try await fixture(folder: folder, size: CGSize(width: 320, height: 180), sound: true) }
         catch { XCTFail("Source sound fixture failed: \(error)"); return }
         let sourceDuration = try await AVURLAsset(url: source).load(.duration).seconds
-        for style in [ShotCameraStyle.ramp, .freeze] {
-            let camera = ShotCameraSettings(style: style, strike: 0.3)
-            let clock = ShotReplayClock(settings: camera, track: track, flight: nil, duration: sourceDuration)
+        let cases = [clip(.ramp, 0.2, 0.48) { $0.rate = 0.25; $0.smooth = false }, clip(.freeze, 0.3, 1.2) { $0.hold = 0.65 }]
+        for move in cases {
+            let camera = ShotCameraTrack(clips: [move], strike: 0.3)
+            let timeline = ShotEditTimeline(track: camera, duration: sourceDuration)
             let output: URL
             do { output = try await ShotEffectExporter.render(source: source, track: track, style: .none, camera: camera) { _ in } }
-            catch { XCTFail("\(style.title) export failed: \(error)"); return }
+            catch { XCTFail("\(move.move.title) export failed: \(error)"); return }
             defer { try? FileManager.default.removeItem(at: output) }
             let asset = AVURLAsset(url: output)
             let actualDuration = try await asset.load(.duration).seconds
-            XCTAssertEqual(actualDuration, clock.outputDuration, accuracy: 0.06)
+            XCTAssertEqual(actualDuration, timeline.outputDuration, accuracy: 0.06)
+            let sourceRate = try await AVURLAsset(url: source).loadTracks(withMediaType: .video).first!.load(.nominalFrameRate)
+            let pictures = try await asset.loadTracks(withMediaType: .video).first!
+            let rate = try await pictures.load(.nominalFrameRate)
+            XCTAssertEqual(Double(rate), Double(sourceRate), accuracy: 1.5, "Held and slowed stretches keep the source's frame rate")
             let tracks = try await asset.loadTracks(withMediaType: .audio)
             XCTAssertEqual(tracks.count, 1, "A replay must keep its soundtrack")
             let audible = try await rms(asset, from: 0.04, to: 0.15)
             XCTAssertGreaterThan(audible, 0.05)
-            if style == .freeze {
+            if move.move == .freeze {
                 let quiet = try await rms(asset, from: 0.5, to: 0.7)
                 XCTAssertLessThan(quiet, 0.008, "The inserted freeze has silence, not misplaced contact sound")
-                let a = try await meanBlue(asset, at: 0.45), b = try await meanBlue(asset, at: 0.75)
+                let a = try await meanBlue(asset, at: 0.6), b = try await meanBlue(asset, at: 0.8)
                 XCTAssertEqual(a, b, accuracy: 2, "The pixels hold on one source frame")
                 let resumed = try await meanBlue(asset, at: 1.2)
                 XCTAssertGreaterThan(resumed, b + 12, "The original footage resumes after the hold")
@@ -187,30 +203,59 @@ final class ShotCameraExportTests: XCTestCase {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: folder) }
         let (source, track) = try await fixture(folder: folder, size: CGSize(width: 320, height: 180), sound: true)
-        for style in [ShotCameraStyle.ramp, .freeze] {
-            var settings = ShotCameraSettings(style: style, strike: 0.3)
-            settings.ranges[.ramp] = ShotSourceRange(start: 0.5, end: 0.9)
-            settings.rampRate = 0.5; settings.smoothRamp = true
-            settings.freezeFrame = 0.5; settings.freezeHold = 1.1
-            let clock = ShotReplayClock(settings: settings, track: track, flight: nil, duration: 1.2)
-            let output = try await ShotEffectExporter.render(source: source, track: track, style: .none, camera: settings) { _ in }
+        for move in [clip(.ramp, 0.5, 0.9) { $0.rate = 0.5; $0.smooth = true }, clip(.freeze, 0.5, 1.2) { $0.hold = 1.1 }] {
+            let camera = ShotCameraTrack(clips: [move], strike: 0.3)
+            let timeline = ShotEditTimeline(track: camera, duration: 1.2)
+            let output = try await ShotEffectExporter.render(source: source, track: track, style: .none, camera: camera) { _ in }
             defer { try? FileManager.default.removeItem(at: output) }
             let asset = AVURLAsset(url: output)
             let duration = try await asset.load(.duration).seconds
-            XCTAssertEqual(duration, clock.outputDuration, accuracy: 0.035)
+            XCTAssertEqual(duration, timeline.outputDuration, accuracy: 0.035)
             let audible = try await rms(asset, from: 0.1, to: 0.3)
             XCTAssertGreaterThan(audible, 0.05)
-            if style == .freeze {
-                let a = try await meanBlue(asset, at: 0.7), b = try await meanBlue(asset, at: 1.4)
+            if move.move == .freeze {
+                // Freeze deliberately animates the path and ball stamps. Compare recorded
+                // background pixels away from those graphics to verify the held source frame.
+                let background = CGRect(x: 0.05, y: 0.35, width: 0.2, height: 0.3)
+                let a = try await meanBlue(asset, at: 0.8, region: background)
+                let b = try await meanBlue(asset, at: 1.4, region: background)
+                if abs(a - b) > 2 {
+                    for (name, url) in [("Freeze source", source), ("Freeze output", output)] {
+                        let attachment = XCTAttachment(contentsOfFile: url)
+                        attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
+                    }
+                }
                 XCTAssertEqual(a, b, accuracy: 2)
                 let quiet = try await rms(asset, from: 0.8, to: 1.2)
                 XCTAssertLessThan(quiet, 0.008)
             } else {
-                let a = try await meanBlue(asset, at: clock.outputTime(for: 0.7))
+                let a = try await meanBlue(asset, at: timeline.outputTime(for: 0.7))
                 let original = try await meanBlue(AVURLAsset(url: source), at: 0.7)
                 XCTAssertEqual(a, original, accuracy: 6)
             }
         }
+    }
+
+    func testInstantReplayRewindsSilentlyThenReplaysSlowly() async throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (source, track) = try await fixture(folder: folder, size: CGSize(width: 320, height: 180), sound: true)
+        let camera = ShotCameraTrack(clips: [clip(.replay, 0.3, 0.9) { $0.rate = 0.5 }], strike: 0.3)
+        let timeline = ShotEditTimeline(track: camera, duration: 1.2)
+        let output = try await ShotEffectExporter.render(source: source, track: track, style: .none, camera: camera) { _ in }
+        defer { try? FileManager.default.removeItem(at: output) }
+        let asset = AVURLAsset(url: output)
+        let duration = try await asset.load(.duration).seconds
+        XCTAssertEqual(duration, timeline.outputDuration, accuracy: 0.05)
+        let rewind = try XCTUnwrap(timeline.segments.first { $0.kind == .rewind })
+        let early = try await meanBlue(asset, at: rewind.outputStart + rewind.outputLength * 0.15)
+        let late = try await meanBlue(asset, at: rewind.outputStart + rewind.outputLength * 0.85)
+        XCTAssertGreaterThan(early, late + 4, "The rewind shows earlier and earlier frames")
+        let quiet = try await rms(asset, from: rewind.outputStart + 0.02, to: rewind.outputEnd - 0.02)
+        XCTAssertLessThan(quiet, 0.008, "The rewind is silent")
+        let audible = try await rms(asset, from: 0.04, to: 0.25)
+        XCTAssertGreaterThan(audible, 0.05)
     }
 
     func testCameraOnlyExportWorksForBothVideoOrientations() async throws {
@@ -219,8 +264,8 @@ final class ShotCameraExportTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: folder) }
         for size in [CGSize(width: 320, height: 180), CGSize(width: 180, height: 320)] {
             let (source, track) = try await fixture(folder: folder, size: size, sound: false)
-            for style in [ShotCameraStyle.follow, .impact, .lens, .tilt, .split] {
-                let camera = ShotCameraSettings(style: style, strike: 0.3)
+            for move in [ShotCameraMove.follow, .impact, .lens, .tilt, .split, .duo, .chase, .spotlight, .lock, .strobe, .focus] {
+                let camera = ShotCameraTrack(clips: [clip(move, 0, 1.2)], strike: 0.3)
                 let output = try await ShotEffectExporter.render(source: source, track: track, style: .none, camera: camera) { _ in }
                 defer { try? FileManager.default.removeItem(at: output) }
                 let asset = AVURLAsset(url: output)

@@ -6,6 +6,12 @@ import StoreKit
 /// Account syncing never delays delivery of a local purchase or camera/replay work.
 @MainActor
 final class SubscriptionStore: ObservableObject {
+    /// This separate local app is for unrestricted feature testing, without purchases.
+    #if DEBUG && TOUCH_COUNTING_DEBUG
+    static let isFreeDebugBuild = true
+    #else
+    static let isFreeDebugBuild = false
+    #endif
     @Published private(set) var products: [ProPlan: Product] = [:]
     @Published private(set) var activePlan: ProPlan?
     @Published private(set) var hasCheckedAccess = false
@@ -22,7 +28,8 @@ final class SubscriptionStore: ObservableObject {
     @Published private(set) var debugRestoreTime: Date?
     @Published private(set) var debugAppTransaction = "Not checked"
     var debugAccessSource: String {
-        localPlan != nil ? "Verified Apple transaction" : isAccountOnlyPro ? "Verified account recovery" : "No active access"
+        if Self.isFreeDebugBuild { return "Free debug build" }
+        return localPlan != nil ? "Verified Apple transaction" : isAccountOnlyPro ? "Verified account recovery" : "No active access"
     }
     var debugAccountState: String {
         guard accountLink.userID != nil else { return "Guest · account sync skipped" }
@@ -82,7 +89,7 @@ final class SubscriptionStore: ObservableObject {
 
     enum Operation { case idle, purchasing, restoring }
     enum PurchaseOutcome: Equatable { case purchased, cancelled, pending }
-    var isPro: Bool { activePlan != nil }
+    var isPro: Bool { Self.isFreeDebugBuild || activePlan != nil }
     var busy: Bool { operation != .idle }
     private var updates: Task<Void, Never>?
     private var entitlementRefresh: Task<Void, Never>?
@@ -102,6 +109,10 @@ final class SubscriptionStore: ObservableObject {
         self.entitlementSource = entitlementSource ?? StoreKitEntitlementSource()
         self.syncAppStore = syncAppStore
         accountLink = SubscriptionAccountLink(service: accountService)
+        if Self.isFreeDebugBuild {
+            hasCheckedAccess = true
+            return
+        }
         accountObservation = accountLink.$plan.sink { [weak self] plan in
             guard let self else { return }
             self.activePlan = self.localPlan ?? plan
@@ -122,6 +133,7 @@ final class SubscriptionStore: ObservableObject {
     deinit { updates?.cancel(); accountSync?.cancel(); localExpiry?.cancel(); renewalCheck?.cancel() }
 
     static func live(account: AccountStore) -> SubscriptionStore {
+        if isFreeDebugBuild { return SubscriptionStore(observeTransactions: false) }
         guard let config = try? AccountConfiguration.load() else { return SubscriptionStore() }
         return SubscriptionStore(accountService: SupabaseSubscriptionService(config: config) { [weak account] id in
             guard let account else { throw SubscriptionAccountError.unavailable }
@@ -130,6 +142,7 @@ final class SubscriptionStore: ObservableObject {
     }
 
     func useAccount(_ id: UUID?) async {
+        guard !Self.isFreeDebugBuild else { return }
         accountSync?.cancel()
         accountLink.useAccount(id)
         await refreshEntitlements()
@@ -153,6 +166,7 @@ final class SubscriptionStore: ObservableObject {
     }
 
     func loadProducts() async {
+        guard !Self.isFreeDebugBuild else { return }
         guard !loading else { return }
         loading = true
         catalogError = nil
@@ -174,6 +188,7 @@ final class SubscriptionStore: ObservableObject {
     }
 
     func refreshEntitlements() async {
+        guard !Self.isFreeDebugBuild else { return }
         refreshRequested = true
         if let entitlementRefresh {
             await entitlementRefresh.value
@@ -238,6 +253,7 @@ final class SubscriptionStore: ObservableObject {
     }
 
     func purchase(_ plan: ProPlan, accountID: UUID?) async throws -> PurchaseOutcome {
+        guard !Self.isFreeDebugBuild else { throw SubscriptionFailure.unavailable }
         guard !busy, !checkingAccountAccess else { throw SubscriptionFailure.busy }
         guard let product = products[plan] else { throw SubscriptionFailure.unavailable }
         operation = .purchasing
@@ -266,6 +282,7 @@ final class SubscriptionStore: ObservableObject {
 
     /// AppStore.sync may show an account prompt, so call only from an explicit Restore tap.
     func restore() async throws -> Bool {
+        if Self.isFreeDebugBuild { return true }
         guard !busy else { throw SubscriptionFailure.busy }
         operation = .restoring
         defer { operation = .idle }

@@ -19,10 +19,10 @@ actor SessionAnalysisStore {
     private(set) var memoryHits = 0
     private(set) var diskHits = 0
     private static let byteLimit = 128 * 1024 * 1024
-    nonisolated static let decodedMaskLimit = 128 * 1024 * 1024
+    nonisolated static let retainedMaskLimit = 128 * 1024 * 1024
 
     nonisolated static func canStore(_ frames: [RecordedFrame]) -> Bool {
-        frames.reduce(0) { $0 + ($1.ballMask?.alpha.count ?? 0) } <= decodedMaskLimit
+        frames.reduce(0) { $0 + ($1.ballMask?.compacted().storageByteCount ?? 0) } <= retainedMaskLimit
     }
 
     init(folder: URL = URL.cachesDirectory.appendingPathComponent("SessionAnalysis-v1", isDirectory: true)) {
@@ -68,7 +68,7 @@ actor SessionAnalysisStore {
         let os = ProcessInfo.processInfo.operatingSystemVersionString
         let options = pipelineOptions(arguments:ProcessInfo.processInfo.arguments,defaults:.standard)
         // Increment when detector, composition geometry, counter or repair rules change.
-        return "analysis-v6|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)"
+        return "analysis-v13-rfshared-buffered-live-v1|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)" + CountingPolicy.current.bodySignature + CountingPolicy.current.handlingSignature + TimedTrajectory.signature + GroundContactEvidence.signature + ActiveJugglerTracker.signature + PlayerGroundEstimate.signature
     }
 
     /// Experimental visual execution must not read or overwrite serial artifacts.
@@ -82,8 +82,22 @@ actor SessionAnalysisStore {
 
     /// Key effective settings, not how they were selected. A development launch
     /// and normal relaunch with the same model must share completed artifacts.
-    nonisolated static func pipelineOptions(arguments: [String], defaults: UserDefaults) -> String {
+    nonisolated private static let studyCacheSession = UUID().uuidString
+
+    nonisolated static func pipelineOptions(arguments: [String], defaults: UserDefaults,
+                                            resolution: RFInputResolution = RFDeviceProfile.current) -> String {
         let resource=BallDetector.configuredResourceName(arguments:arguments,defaults:defaults)
+        if let rfModel = RFSmallModel(rawValue: resource) {
+            var identity = rfModel.pipelineIdentity(resolution: resolution)
+            #if DEBUG && TOUCH_COUNTING_DEBUG
+            if let flag = arguments.firstIndex(of: "--rf-input-study"), arguments.indices.contains(flag + 1) {
+                identity += "|external-study=\(arguments[flag + 1])|session=\(studyCacheSession)"
+            }
+            #endif
+            return [resource, identity, "ball=0.40", "person=0.50",
+                    "association=rf-v1",
+                    "hands=\(CountingPolicy.configured(arguments: arguments).verifiesContacts)"].joined(separator: "|")
+        }
         let guarded=resource == "KickLabYOLO26MotionSegmentation" &&
             (arguments.contains("--yolo26-motion-segmentation") ||
              (!arguments.contains("--yolo26-motion-model-only") && defaults.string(forKey:"experimentalBallModel") == "motion"))
@@ -91,7 +105,7 @@ actor SessionAnalysisStore {
         return [resource,"guarded=\(guarded)","roi=\(roi)",
             "retry=\(!arguments.contains("--disable-marginal-retry"))",
             "confirmation=\(!arguments.contains("--disable-ball-confirmation"))",
-            "hands=\(!arguments.contains("--juggling-no-hand-check"))"].joined(separator:"|")
+            "hands=\(CountingPolicy.configured(arguments: arguments).verifiesContacts)"].joined(separator:"|")
     }
 
     func saveCapture(_ data: Data, key: String) {
@@ -293,8 +307,10 @@ nonisolated struct StoredFrame: Codable, Sendable {
         var bytes=0
         for frame in frames {
             guard frame.isValid else { return false }
-            bytes += (frame.maskWidth ?? 0)*(frame.maskHeight ?? 0)
-            guard bytes <= SessionAnalysisStore.decodedMaskLimit else { return false }
+            // Reconstructed masks remain compressed. Each individual decode is
+            // still bounded to 128×128 by isValid, including legacy raw masks.
+            bytes += frame.rawAlpha?.count ?? frame.packedAlpha?.count ?? 0
+            guard bytes <= SessionAnalysisStore.retainedMaskLimit else { return false }
         }
         return true
     }
@@ -306,8 +322,9 @@ nonisolated struct StoredFrame: Codable, Sendable {
         motion = f.motion == .falling ? -1 : f.motion == .rising ? 1 : 0
         maskRect = f.ballMask.map { [$0.rect.minX,$0.rect.minY,$0.rect.width,$0.rect.height] }
         maskWidth = f.ballMask?.width; maskHeight = f.ballMask?.height
-        packedAlpha = f.ballMask.flatMap { Self.pack($0.alpha) }
-        rawAlpha = packedAlpha == nil ? f.ballMask.map { Data($0.alpha) } : nil
+        let alpha = f.ballMask?.alpha
+        packedAlpha = alpha.flatMap { Self.pack($0) }
+        rawAlpha = packedAlpha == nil ? alpha.map { Data($0) } : nil
         usesMasks = f.usesBallMasks; repair = f.isVisualMaskRepair; identity = f.identity
         visualRecovery = f.isVisualRecovery ? true : nil
     }
@@ -333,7 +350,7 @@ nonisolated struct StoredFrame: Codable, Sendable {
             person:person.map { PersonBox(x:$0[0],y:$0[1],width:$0[2],height:$0[3]) },
             usesBallMasks:usesMasks,isVisualMaskRepair:repair)
         if let r = maskRect, let w = maskWidth, let h = maskHeight, let alpha {
-            f.ballMask = BallMask(rect:CGRect(x:r[0],y:r[1],width:r[2],height:r[3]),width:w,height:h,alpha:Array(alpha))
+            f.ballMask = BallMask(rect:CGRect(x:r[0],y:r[1],width:r[2],height:r[3]),width:w,height:h,alpha:Array(alpha)).compacted()
         }
         f.identity = identity
         f.isVisualRecovery = visualRecovery == true

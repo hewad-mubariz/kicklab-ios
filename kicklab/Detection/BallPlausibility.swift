@@ -4,7 +4,11 @@
 //
 //  Reject detections that cannot be the ball we have been watching.
 //
-//  Measured from a real run that miscounted: a large stationary object in the
+//  The legacy policy below was measured with the earlier detector. RF-DETR uses
+//  a separate, elapsed-time association policy; its scores cannot reuse the
+//  legacy trust threshold. Neither policy synthesizes a ball observation.
+//
+//  Legacy evidence: a large stationary object in the
 //  room scored 0.05-0.13 as a ball, 21 times, always at x 0.29 y 0.13, with a box
 //  0.53 of frame width against the real ball's 0.29. Whenever the real ball's
 //  detection flickered - and scores swing from 0.98 to 0.05 between frames - the
@@ -32,6 +36,27 @@
 import Foundation
 
 nonisolated struct BallPlausibility {
+    enum Policy: Sendable {
+        case legacy
+        case rfDetrAssociationV1
+
+        static func forResource(_ resource: String) -> Self {
+            RFSmallModel(rawValue: resource) != nil ? .rfDetrAssociationV1 : .legacy
+        }
+    }
+
+    let policy: Policy
+
+    init(policy: Policy = .legacy) { self.policy = policy }
+
+    private struct TimedDetection {
+        let detection: Detection
+        let timestampMs: Int
+    }
+    private var recent: TimedDetection?
+    private var preceding: TimedDetection?
+    private var hasStrongAnchor = false
+
     /// Above this, a detection is trusted whatever its size or position.
     ///
     ///0.25, not 0.45. The first version used 0.45 and cost 13 touches of 33 on a
@@ -73,7 +98,8 @@ nonisolated struct BallPlausibility {
     }
 
     /// Returns the detection if it is plausibly the ball, otherwise nil.
-    mutating func accept(_ d: Detection, frame: Int) -> Detection? {
+    mutating func accept(_ d: Detection, frame: Int, timestampMs: Int) -> Detection? {
+        if policy == .rfDetrAssociationV1 { return associate(d, timestampMs: timestampMs) }
         if d.score >= trustedScore {
             remember(d, frame: frame)
             return d
@@ -100,6 +126,61 @@ nonisolated struct BallPlausibility {
         return d
     }
 
+    /// A rejected box must not leave its segmentation mask attached to a frame.
+    mutating func filter(_ found: FrameDetections, frame: Int, timestampMs: Int) -> FrameDetections {
+        var result = found
+        if let ball = found.ball {
+            result.ball = accept(ball, frame: frame, timestampMs: timestampMs)
+            if result.ball == nil { result.ballMask = nil }
+        }
+        return result
+    }
+
+    /// RF-DETR scores are not calibrated like the legacy detector's scores.
+    /// Keep its 0.40 detection threshold; only weak, spatially disconnected
+    /// observations are withheld from an established trajectory. No predicted
+    /// position is emitted as evidence and rejected objects cannot move the anchor.
+    private mutating func associate(_ d: Detection, timestampMs: Int) -> Detection? {
+        let strongScore = 0.70
+        if let recent, timestampMs <= recent.timestampMs || timestampMs - recent.timestampMs > 350 {
+            self.recent = nil
+            preceding = nil
+            hasStrongAnchor = false
+        }
+
+        if let recent, hasStrongAnchor, d.score < strongScore {
+            let elapsed = Double(timestampMs - recent.timestampMs) / 1000
+            let last = recent.detection
+            var speedX = 0.0, speedY = 0.0
+            if let preceding {
+                let gap = recent.timestampMs - preceding.timestampMs
+                if (8...150).contains(gap) {
+                    let seconds = Double(gap) / 1000
+                    speedX = abs(last.x - preceding.detection.x) / seconds
+                    speedY = abs(last.y - preceding.detection.y) / seconds
+                }
+            }
+            // Allow 1.5 previous ball diameters of localization/contact motion,
+            // recent speed in either direction (including a kick reversal), and
+            // half a frame per second of extra motion uncertainty. Use elapsed
+            // time, never analysed-frame count; the candidate cannot enlarge its
+            // own allowance by returning an oversized box.
+            let allowanceX = 1.5 * last.width + (speedX + 0.5) * elapsed
+            let allowanceY = 1.5 * last.height + (speedY + 0.5) * elapsed
+            if abs(d.x - last.x) > allowanceX || abs(d.y - last.y) > allowanceY {
+                rejectedJump += 1
+                return nil
+            }
+        }
+
+        // Weak startup detections alone must not lock out a real ball entering
+        // the frame. A long gap also starts a new association, not a permanent veto.
+        hasStrongAnchor = hasStrongAnchor || d.score >= strongScore
+        preceding = recent
+        recent = TimedDetection(detection: d, timestampMs: timestampMs)
+        return d
+    }
+
     /// Learn only from detections good enough to define what the ball looks like.
     private mutating func remember(_ d: Detection, frame: Int) {
         lastAccepted = (d.x, d.y, frame)
@@ -113,5 +194,8 @@ nonisolated struct BallPlausibility {
         lastAccepted = nil
         rejectedSize = 0
         rejectedJump = 0
+        recent = nil
+        preceding = nil
+        hasStrongAnchor = false
     }
 }

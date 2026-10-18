@@ -18,8 +18,13 @@ nonisolated struct BallEffectTrack: Sendable {
     let usesBallMasks: Bool
     static let maximumGap = 0.12
 
+    /// The kicker's box wherever the detector saw a person, for cameras that frame him.
+    private(set) var people: [(time: Double, box: PersonBox)] = []
+
     init(frames: [RecordedFrame], touchTimes: [Double] = []) {
         self.touchTimes = touchTimes.filter { $0.isFinite && $0 >= 0 }.sorted()
+        people = frames.compactMap { f in f.person.map { (f.time, $0) } }
+            .filter { $0.time.isFinite && $0.box.width > 0 && $0.box.height > 0 }.sorted { $0.time < $1.time }
         let masked = frames.filter { $0.detected && $0.score.isFinite && $0.score >= 0.05
             && $0.time.isFinite && $0.x.isFinite && $0.y.isFinite
             && $0.width.isFinite && $0.height.isFinite && $0.width > 0 && $0.height > 0 }
@@ -79,7 +84,23 @@ nonisolated struct BallEffectTrack: Sendable {
         let candidates = [lo-1, lo].filter { maskTimes.indices.contains($0) }
         guard let nearest = candidates.min(by: { abs(maskTimes[$0]-time) < abs(maskTimes[$1]-time) }),
               abs(maskTimes[nearest]-time) < 0.003 else { return nil }
-        return masks[nearest]
+        return masks[nearest]?.expanded()
+    }
+
+    /// The person box at a moment, interpolated across short misses (≤ 0.25 s).
+    func person(at time: Double) -> PersonBox? {
+        guard time.isFinite, !people.isEmpty else { return nil }
+        let after = people.firstIndex { $0.time >= time } ?? people.count
+        if after < people.count, abs(people[after].time - time) < 0.001 { return people[after].box }
+        if after > 0, after < people.count {
+            let a = people[after - 1], b = people[after]
+            guard b.time - a.time <= 0.25 else { return time - a.time < b.time - time ? a.box : b.box }
+            let f = (time - a.time) / (b.time - a.time)
+            return PersonBox(x: a.box.x + (b.box.x - a.box.x) * f, y: a.box.y + (b.box.y - a.box.y) * f,
+                             width: a.box.width + (b.box.width - a.box.width) * f,
+                             height: a.box.height + (b.box.height - a.box.height) * f)
+        }
+        return after == 0 ? people[0].box : people[people.count - 1].box
     }
 
     func sample(at time: Double) -> BallStyleSample? {

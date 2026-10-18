@@ -28,6 +28,7 @@ nonisolated struct Detection {
 nonisolated struct FrameDetections {
     var ball: Detection?
     var person: Detection?
+    var people: [Detection] = []
     var ballMask: BallMask? = nil
     var usesBallMasks: Bool = false
 }
@@ -45,9 +46,12 @@ nonisolated final class BallDetector {
     /// The experimental model uses portrait input; SSDLite retains its 320 square.
     private let inputWidth: Int
     private let inputHeight: Int
+    var modelInputSize: CGSize { CGSize(width: inputWidth, height: inputHeight) }
     private let preservesAspect: Bool
     private let isYOLOX: Bool
     private let isYOLO26: Bool
+    private let isRFDETR: Bool
+    private let rfSeg: RFSegBridge
     let marginalRetryEnabled: Bool
     private let marginalRetry = MarginalBallRetry()
     let directConfirmationEnabled: Bool
@@ -62,6 +66,7 @@ nonisolated final class BallDetector {
     let hasMaskOutputs: Bool
     let modelName: String
     let activeBallThreshold: Double
+    var plausibilityPolicy: BallPlausibility.Policy { isRFDETR ? .rfDetrAssociationV1 : .legacy }
     private let batchModelCompatible: Bool
     var supportsFrameBatching: Bool { batchModelCompatible && !roiEnabled && !guardedRecoveryEnabled }
     var supportsDistantVisualRecovery: Bool {
@@ -181,7 +186,7 @@ nonisolated final class BallDetector {
     }
     static let ballThreshold = 0.05
     static let personThreshold = 0.5
-    static let productionResourceName = "KickLabYOLO26MotionSegmentation"
+    static let productionResourceName = RFSmallModel.fp16.rawValue
 
     static var configuredResourceName: String {
         configuredResourceName(arguments: ProcessInfo.processInfo.arguments, defaults: .standard)
@@ -191,12 +196,20 @@ nonisolated final class BallDetector {
     /// selections and launch flags must not silently change the production model.
     /// Keep the inputs injectable to cover upgraded installs and old launch setups.
     static func configuredResourceName(arguments: [String], defaults: UserDefaults) -> String {
-        productionResourceName
+        // Full-pipeline comparisons are opt-in in the separate debug app only.
+        // Normal app launches, including Release, cannot select a study export.
+        #if DEBUG && TOUCH_COUNTING_DEBUG
+        if arguments.contains("--rf-fp16-study") { return RFSmallModel.fp16.rawValue }
+        if arguments.contains("--rf-fp32-study") { return RFSmallModel.fp32.rawValue }
+        #endif
+        return productionResourceName
     }
 
     /// Explicit lookup for standalone model studies. App configuration does not
     /// use this selector; studies must inject a resource into the detector.
     static func resourceName(for arguments: [String]) -> String {
+        if arguments.contains("--rf-fp16-study") { return RFSmallModel.fp16.rawValue }
+        if arguments.contains("--rf-fp32-study") { return RFSmallModel.fp32.rawValue }
         if arguments.contains("--ssdlite") { return "KickLabDetector" }
         if arguments.contains("--yolo26-motion-segmentation") || arguments.contains("--yolo26-motion-model-only") { return "KickLabYOLO26MotionSegmentation" }
         if arguments.contains("--yolo26-medium-retained") { return "KickLabYOLO26MediumRetained" }
@@ -218,6 +231,7 @@ nonisolated final class BallDetector {
 
     static func ballThreshold(for resource: String) -> Double {
         switch resource {
+        case RFSmallModel.fp32.rawValue, RFSmallModel.fp16.rawValue: return 0.40
         case "KickLabYOLO26SmallFineTuned", "KickLabYOLO26MediumBenchmark": return 0.30
         case "KickLabYOLOXTinyFineTuned": return 0.10
         case "KickLabFasterRCNN": return 0.40
@@ -250,6 +264,11 @@ nonisolated final class BallDetector {
     var modelUsesCPUOnly: Bool { models.cpuOnly }
     var modelComputeSwitches: Int { models.switches }
     var modelReloadSeconds: Double { models.reloadSeconds }
+    var modelComputeDescription: String {
+        if models.acceleratedLoadFailure != nil { return "CPU (compatibility)" }
+        if models.cpuOnly { return "CPU" }
+        return isRFDETR ? "CPU + GPU" : "Automatic"
+    }
     private let ciContext: CIContext
     private var scratch: CVPixelBuffer?
     let roiEnabled: Bool
@@ -274,19 +293,26 @@ nonisolated final class BallDetector {
     /// Why the last frame produced nothing, when it produced nothing.
     private(set) var lastError: String?
 
-    init(resourceName: String? = nil, modelURL: URL? = nil, useROI: Bool? = nil, useMarginalRetry: Bool? = nil, useDirectConfirmation: Bool? = nil) throws {
+    init(resourceName: String? = nil, modelURL: URL? = nil, rfResolution: RFInputResolution = RFDeviceProfile.current, useROI: Bool? = nil, useMarginalRetry: Bool? = nil, useDirectConfirmation: Bool? = nil) throws {
         let resource = resourceName ?? Self.configuredResourceName
-        guard let url = modelURL ?? Bundle.main.url(forResource: resource, withExtension: "mlmodelc") else {
+        let rfModel = RFSmallModel(rawValue: resource)
+        isRFDETR = rfModel != nil
+        let studyURL = Self.rfInputStudyURL(rfModel)
+        let usesSharedModel = rfModel == .fp16 && modelURL == nil && studyURL == nil
+        guard let url = modelURL ?? studyURL ?? Bundle.main.url(forResource: resource, withExtension: "mlmodelc") else {
             throw NSError(domain: "KickLab", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "\(resource) not in bundle"])
         }
-        self.models = try ModelComputeSwitch(cpuOnly: VideoWorkExecution.modelCPUOnly) { cpuOnly in
+        self.models = try ModelComputeSwitch(cpuOnly: VideoWorkExecution.modelCPUOnly,
+                                            allowsCPUFallbackOnLoadFailure: rfModel != nil) { cpuOnly in
             let configuration = MLModelConfiguration()
-            configuration.computeUnits = cpuOnly ? .cpuOnly : .all
+            if usesSharedModel { configuration.functionName = rfResolution.functionName }
+            configuration.computeUnits = cpuOnly ? .cpuOnly
+                : (rfModel?.foregroundComputeUnits ?? .all)
             return try MLModel(contentsOf: url, configuration: configuration)
         }
         let model = models.current
-        guard let shape = model.modelDescription.inputDescriptionsByName["image"]?.multiArrayConstraint?.shape,
+        guard let shape = model.modelDescription.inputDescriptionsByName[isRFDETR ? "tensors" : "image"]?.multiArrayConstraint?.shape,
               shape.count == 4, shape[0].intValue == 1, shape[1].intValue == 3,
               shape[2].intValue > 0, shape[3].intValue > 0 else {
             throw NSError(domain: "KickLab", code: 5,
@@ -294,6 +320,12 @@ nonisolated final class BallDetector {
         }
         inputHeight = shape[2].intValue
         inputWidth = shape[3].intValue
+        let rfEdge = try rfModel.map { try RFSegBridge.validate(model.modelDescription, outputType: $0.outputType) }
+        if usesSharedModel, rfEdge != rfResolution.rawValue {
+            throw NSError(domain: "KickLab", code: 8,
+                          userInfo: [NSLocalizedDescriptionKey: "RF device profile input mismatch"])
+        }
+        rfSeg = RFSegBridge(edge: rfEdge ?? RFInputNormalization.edge)
         isYOLOX = resource == "KickLabYOLOXTiny" || resource == "KickLabYOLOXTinyFineTuned"
         let isMotionModel = resource == "KickLabYOLO26MotionSegmentation"
         let arguments=ProcessInfo.processInfo.arguments
@@ -306,24 +338,27 @@ nonisolated final class BallDetector {
         // follower which changes otherwise valid detections and juggling counts.
         guardedRecoveryEnabled = isMotionModel && !repairedExport && (arguments.contains("--yolo26-motion-segmentation")
             || (!arguments.contains("--yolo26-motion-model-only") && UserDefaults.standard.string(forKey:"experimentalBallModel") == "motion"))
-        hasMaskOutputs = isMotionModel || resource == "KickLabYOLO26MediumSegmentation"
-        isYOLO26 = hasMaskOutputs || resource == "KickLabYOLO26SmallFineTuned"
+        hasMaskOutputs = isRFDETR || isMotionModel || resource == "KickLabYOLO26MediumSegmentation"
+        isYOLO26 = (!isRFDETR && hasMaskOutputs) || resource == "KickLabYOLO26SmallFineTuned"
             || resource == "KickLabYOLO26MediumBenchmark" || resource == "KickLabYOLO26MediumFineTuned" || resource == "KickLabYOLO26MediumRetained"
-        ciContext = isYOLO26
+        ciContext = (isYOLO26 || isRFDETR)
             ? CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly, .workingColorSpace: NSNull(), .cacheIntermediates: !guardedRecoveryEnabled])
             : CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly])
         roiEnabled = resource == "KickLabYOLOXTinyFineTuned"
             && (useROI ?? ProcessInfo.processInfo.arguments.contains("--yolox-roi"))
         preservesAspect = resource == "KickLabFasterRCNN" || isYOLOX || isYOLO26
-        modelName = marginalRetryEnabled ? "YOLO26-M revised masks + marginal retry" : guardedRecoveryEnabled ? "YOLO26-M motion + masks + native recovery (test)" : isMotionModel ? "YOLO26-M motion + masks (model-only test)" : hasMaskOutputs ? "YOLO26-M + masks (pilot)" : roiEnabled ? "YOLOX-Tiny crop v3 (test)" :
+        let studySuffix = (modelURL != nil || studyURL != nil) ? " · external study" : ""
+        modelName = rfModel.map { $0.displayName(resolution: rfEdge.flatMap(RFInputResolution.init(rawValue:)) ?? rfResolution) + studySuffix } ?? (marginalRetryEnabled ? "YOLO26-M revised masks + marginal retry" : guardedRecoveryEnabled ? "YOLO26-M motion + masks + native recovery (test)" : isMotionModel ? "YOLO26-M motion + masks (model-only test)" : hasMaskOutputs ? "YOLO26-M + masks (pilot)" : roiEnabled ? "YOLOX-Tiny crop v3 (test)" :
             resource == "KickLabYOLO26MediumRetained" ? "YOLO26-M retained (control)" :
             resource == "KickLabYOLO26MediumFineTuned" ? "YOLO26-M fine-tuned (test)" :
             resource == "KickLabYOLO26MediumBenchmark" ? "YOLO26-M pretrained (benchmark)" :
             isYOLO26 ? "YOLO26-S epoch 3 (test)" :
             resource == "KickLabYOLOXTinyFineTuned" ? "YOLOX-Tiny epoch 2 (test)" :
             isYOLOX ? "YOLOX-Tiny (experimental)" :
-            (preservesAspect ? "Faster R-CNN (experimental)" : "SSDLite")
-        if resource == "KickLabYOLO26MediumFineTuned" || resource == "KickLabYOLO26MediumRetained" || hasMaskOutputs {
+            (preservesAspect ? "Faster R-CNN (experimental)" : "SSDLite"))
+        if isRFDETR {
+            activeBallThreshold = Self.ballThreshold(for: resource)
+        } else if resource == "KickLabYOLO26MediumFineTuned" || resource == "KickLabYOLO26MediumRetained" || hasMaskOutputs {
             let metadata = model.modelDescription.metadata[.creatorDefinedKey] as? [String: String]
             guard let value = metadata?["ball_threshold"], let threshold = Double(value),
                   threshold.isFinite, threshold > 0, threshold < 1 else {
@@ -337,6 +372,20 @@ nonisolated final class BallDetector {
 
     }
 
+    /// Debug-only input-size study: the same RF weights exported at a smaller
+    /// square input, staged as Documents/<name>.mlmodelc by the test harness.
+    private static func rfInputStudyURL(_ rfModel: RFSmallModel?) -> URL? {
+        #if DEBUG && TOUCH_COUNTING_DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        guard rfModel != nil, let flag = arguments.firstIndex(of: "--rf-input-study"),
+              arguments.indices.contains(flag + 1) else { return nil }
+        let name = URL(fileURLWithPath: arguments[flag + 1]).lastPathComponent
+        return URL.documentsDirectory.appendingPathComponent(name + ".mlmodelc")
+        #else
+        return nil
+        #endif
+    }
+
     /// Pay Core ML's first-prediction cost before recording. Only immutable model
     /// prediction and reusable preprocessing buffers are warmed: no detection,
     /// retry, tracking or counting state ever observes this synthetic image.
@@ -348,12 +397,59 @@ nonisolated final class BallDetector {
         }
     }
 
+    /// Offline position repair uses the same RF weights/threshold, without
+    /// mask decoding or temporal detector state. Live detection is unchanged.
+    func effectPosition(in pixels: CVPixelBuffer) throws -> Detection? {
+        guard isRFDETR else { throw NSError(domain: "SelectiveEffects.Model", code: 1) }
+        let image = orientedImage(pixels, portrait: false, orientation: nil)
+        let output = try predict(makeInput(from: image))
+        return try rfSeg.decode(output, sourceSize: image.extent.size, threshold: activeBallThreshold,
+            includeAuxiliary: false, includeMasks: false).ball
+    }
+
     func detect(_ pixelBuffer: CVPixelBuffer, orientLandscapeAsPortrait: Bool = true,
                 timestamp: Double? = nil,
                 imageOrientation: CGImagePropertyOrientation? = nil) throws -> FrameDetections {
         try detectFrame(pixelBuffer,orientLandscapeAsPortrait:orientLandscapeAsPortrait,
                         timestamp:timestamp,imageOrientation:imageOrientation,prepared:nil)
     }
+
+    #if DEBUG && BALL_DETECTION_DEBUG
+    /// A single model observation for the standalone camera debug app. No mask
+    /// decoding, temporal confirmation, recovery, tracking or contact analysis.
+    func detectsBall(in pixelBuffer: CVPixelBuffer) throws -> Bool {
+        let image = orientedImage(pixelBuffer, portrait: false, orientation: nil)
+        let output = try predict(makeInput(from: image))
+        if isRFDETR {
+            return try rfSeg.decode(output, sourceSize: image.extent.size, threshold: activeBallThreshold).ball != nil
+        }
+        let values = try Self.decodedValues(output, width: inputWidth, height: inputHeight,
+                                            clipTo: contentRect)
+        guard Double(values[Slot.ballScore]) >= activeBallThreshold else { return false }
+        let box = values[Slot.ballBox..<(Slot.ballBox + 4)]
+        return box.allSatisfy { $0.isFinite } && values[Slot.ballBox + 2] > 0
+            && values[Slot.ballBox + 3] > 0
+    }
+
+    /// Wall scoring needs the ball and person boxes, but no segmentation mask.
+    func wallTargetDetections(in pixelBuffer: CVPixelBuffer, threshold: Double) throws -> FrameDetections {
+        guard isRFDETR else { return FrameDetections(ball: nil, person: nil) }
+        let image = orientedImage(pixelBuffer, portrait: false, orientation: nil)
+        let output = try predict(makeInput(from: image))
+        return try rfSeg.decode(output, sourceSize: image.extent.size, threshold: threshold, includeMasks: false)
+    }
+
+    func wallTargetBall(in pixelBuffer: CVPixelBuffer, threshold: Double) throws -> Detection? {
+        try wallTargetDetections(in: pixelBuffer, threshold: threshold).ball
+    }
+
+    func wallTargetCandidates(in pixels: CVPixelBuffer, crop: CGRect) throws -> [Detection] {
+        guard isRFDETR else { return [] }
+        let output = try predict(rfSeg.wallInput(pixels, crop: crop))
+        let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
+        return try rfSeg.wallCandidates(output).compactMap { WallBallTracker.map($0, from: crop, size: size) }
+    }
+    #endif
 
     private func detectFrame(_ pixelBuffer: CVPixelBuffer, orientLandscapeAsPortrait: Bool,
                              timestamp: Double?, imageOrientation: CGImagePropertyOrientation?,
@@ -404,6 +500,13 @@ nonisolated final class BallDetector {
         } catch {
             lastError = error.localizedDescription
             throw error
+        }
+        if isRFDETR {
+            do {
+                let decoded = try rfSeg.decode(out, sourceSize: lastInputSize, threshold: activeBallThreshold)
+                lastError = nil
+                return decoded
+            } catch { lastError = error.localizedDescription; throw error }
         }
         #if DEBUG
         if let timestamp {
@@ -592,6 +695,7 @@ nonisolated final class BallDetector {
         }
         let flow = nativePixels.update(image, size: size)
         var person: Detection?
+    var people: [Detection] = []
         lastInferenceMS=0; lastPreprocessMS=0
         let result = try guardedFollower.step(time: timestamp, size: size, flow: flow, sceneCut: changed) { view in
             try autoreleasepool {
@@ -781,6 +885,7 @@ nonisolated final class BallDetector {
 
     /// Camera frame to RGB 0-1 for SSD/Faster R-CNN, or official BGR 0-255 for YOLOX.
     private func makeInput(from image: CIImage) throws -> MLFeatureProvider {
+        if isRFDETR { return try rfSeg.input(image: image, context: ciContext) }
         if inputArray == nil {
             let array = try MLMultiArray(shape: [1, 3, NSNumber(value: inputHeight), NSNumber(value: inputWidth)],
                                         dataType: .float32)
@@ -916,10 +1021,15 @@ nonisolated extension BallDetector {
     /// Immutable real inputs for bounded execution-mode measurements only.
     func reviewInput(_ pixels: CVPixelBuffer) throws -> MLFeatureProvider {
         let input=try makeInput(from:orientedImage(pixels,portrait:false,orientation:nil))
-        let source=input.featureValue(for:"image")!.multiArrayValue!
+        let name = isRFDETR ? "tensors" : "image"
+        guard let source = input.featureValue(for: name)?.multiArrayValue,
+              source.dataType == .float32 else {
+            throw NSError(domain: "KickLab", code: 5,
+                          userInfo: [NSLocalizedDescriptionKey: "Unsupported review input"])
+        }
         let copy=try MLMultiArray(shape:source.shape,dataType:.float32)
         memcpy(copy.dataPointer,source.dataPointer,source.count*MemoryLayout<Float>.size)
-        return try MLDictionaryFeatureProvider(dictionary:["image":MLFeatureValue(multiArray:copy)])
+        return try MLDictionaryFeatureProvider(dictionary:[name:MLFeatureValue(multiArray:copy)])
     }
     func reviewSerial(_ input:MLFeatureProvider) throws -> MLFeatureProvider {try predict(input)}
     func reviewBatch(_ inputs:[MLFeatureProvider]) throws -> MLBatchProvider {

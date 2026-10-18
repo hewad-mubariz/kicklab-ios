@@ -1,0 +1,235 @@
+import Foundation
+
+/// Nearby observations for checking planted feet independently of the ball's
+/// motion-blurred box size. Only candidate contacts request these poses.
+nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
+    struct Sample: Codable, Equatable, Sendable {
+        let timestampMs: Int
+        let ballX, ballY, width, height, confidence, imageAspect: Double
+        let ankles, hips: [BodySide: PoseLandmark]
+    }
+    let contactMs: Int
+    let samples: [Sample]
+    var checksBallBelowFeet: Bool? = nil
+
+    static let signature = "|cadence-ground-v1"
+
+    func confirmsGroundContact(corroboratingWeakAnkles: Bool, cadenceAware: Bool = false) -> Bool {
+        confirmsPlantedFeet(corroboratingWeakAnkles: corroboratingWeakAnkles)
+            || (checksBallBelowFeet == true && confirmsBallBelowFeet)
+            || (cadenceAware && confirmsSparsePlantedFeet)
+    }
+
+    /// A ball center crossing below BOTH confident ankles, then rising again,
+    /// supplies floor evidence even when small pose drift prevents a planted-
+    /// feet verdict. A visible kick can still rescue this in the caller.
+    var confirmsBallBelowFeet: Bool {
+        let views = samples.sorted { $0.timestampMs < $1.timestampMs }
+        guard (7...13).contains(views.count),
+              Set(views.map(\.timestampMs)).count == views.count,
+              let contact = views.first(where: { $0.timestampMs == contactMs }),
+              views.allSatisfy({ s in
+                  [s.ballX,s.ballY,s.width,s.height,s.confidence,s.imageAspect].allSatisfy(\.isFinite)
+                    && (0...1).contains(s.ballX) && (0...1).contains(s.ballY)
+                    && s.width > 0 && s.width <= 1 && s.height > 0 && s.height <= 1
+                    && s.imageAspect > 0 && abs(s.imageAspect-contact.imageAspect) < 0.001
+                    && (-350...150).contains(s.timestampMs-contactMs)
+              }) else { return false }
+        let scale = median(views.map(\.height))
+        let strong = views.filter { s in
+            s.confidence >= 0.5 && BodySide.allCases.allSatisfy { side in
+                guard let a = s.ankles[side], let h = s.hips[side] else { return false }
+                return [a,h].allSatisfy {
+                    [$0.x,$0.y,$0.confidence].allSatisfy(\.isFinite)
+                        && (0...1).contains($0.x) && (0...1).contains($0.y) && $0.confidence >= 0.5
+                } && a.y > h.y
+            }
+        }
+        guard strong.count >= 7, strong.contains(where: { $0.timestampMs == contactMs }),
+              strong.first!.timestampMs <= contactMs-200,
+              strong.last!.timestampMs >= contactMs+25,
+              zip(strong,strong.dropFirst()).allSatisfy({ $1.timestampMs-$0.timestampMs <= 110 }),
+              strong.map(\.height).max()! <= 1.35*strong.map(\.height).min()!,
+              strong.map(\.width).max()! <= 1.35*strong.map(\.width).min()! else { return false }
+        let below = strong.filter { s in
+            let left = s.ankles[.left]!, right = s.ankles[.right]!
+            return abs(s.timestampMs-contactMs) <= 67 && s.ballY >= max(left.y,right.y)
+                && s.ballX >= min(left.x,right.x)-s.width/2
+                && s.ballX <= max(left.x,right.x)+s.width/2
+        }
+        let approach = strong.filter {
+            $0.timestampMs <= contactMs-50 && $0.ballY+$0.height/2
+                < min($0.ankles[.left]!.y,$0.ankles[.right]!.y)-0.1*scale
+        }
+        let departure = strong.contains {
+            $0.timestampMs >= contactMs+25 && contact.ballY-$0.ballY >= 0.2*scale
+        }
+        return below.count >= 2 && approach.count >= 2 && departure
+    }
+
+    /// A clear approach toward two planted feet is positive floor evidence.
+    /// Missing/occluded pose and unresolved small taps remain inconclusive.
+    var confirmsPlantedFeet: Bool {
+        confirmsPlantedFeet(corroboratingWeakAnkles: false)
+    }
+
+    func confirmsPlantedFeet(corroboratingWeakAnkles: Bool) -> Bool {
+        let ordered = samples.sorted { $0.timestampMs < $1.timestampMs }
+        guard ordered.count <= 13, ordered.count >= 7,
+              Set(ordered.map(\.timestampMs)).count == ordered.count,
+              ordered.allSatisfy({ s in
+                  [s.ballX,s.ballY,s.width,s.height,s.confidence,s.imageAspect].allSatisfy(\.isFinite)
+                    && s.width > 0 && s.height > 0 && s.width <= 1 && s.height <= 1 && s.imageAspect > 0
+                    && (-350...150).contains(s.timestampMs-contactMs)
+              }), let contact = ordered.first(where: { $0.timestampMs == contactMs }),
+              contact.confidence >= 0.5 else { return false }
+        let aspect = contact.imageAspect
+        guard ordered.allSatisfy({ abs($0.imageAspect-aspect) < 0.001 }) else { return false }
+        let scale = median(ordered.map(\.height))
+        let strong = ordered.filter { s in
+            s.confidence >= 0.5 && BodySide.allCases.allSatisfy { side in
+                guard let ankle = s.ankles[side], let hip = s.hips[side] else { return false }
+                return [ankle,hip].allSatisfy {
+                    [$0.x,$0.y,$0.confidence].allSatisfy(\.isFinite)
+                        && (0...1).contains($0.x) && (0...1).contains($0.y) && $0.confidence >= 0.5
+                } && ankle.y > hip.y
+            }
+        }
+        let strongTimes = Set(strong.map(\.timestampMs))
+        var valid = strong
+        if corroboratingWeakAnkles {
+            // A partially hidden ankle may corroborate its two immediately
+            // adjacent, confident observations. Keep its ACTUAL position: do
+            // not interpolate a missing ankle or fill a missing camera frame.
+            valid = ordered.enumerated().compactMap { index, s in
+                if strongTimes.contains(s.timestampMs) { return s }
+                guard index > 0, index < ordered.count-1, s.confidence >= 0.5 else { return nil }
+                let before = ordered[index-1], after = ordered[index+1]
+                guard strongTimes.contains(before.timestampMs), strongTimes.contains(after.timestampMs),
+                      s.timestampMs-before.timestampMs <= 100, after.timestampMs-s.timestampMs <= 100,
+                      after.timestampMs-before.timestampMs <= 150 else { return nil }
+                let t = Double(s.timestampMs-before.timestampMs)/Double(after.timestampMs-before.timestampMs)
+                for side in BodySide.allCases {
+                    guard let ankle = s.ankles[side], let hip = s.hips[side],
+                          [ankle,hip].allSatisfy({
+                              [$0.x,$0.y,$0.confidence].allSatisfy(\.isFinite)
+                                && (0...1).contains($0.x) && (0...1).contains($0.y)
+                          }), ankle.confidence >= 0.3, hip.confidence >= 0.5,
+                          ankle.y > hip.y else { return nil }
+                    let a = before.ankles[side]!, b = after.ankles[side]!
+                    let expectedX = a.x+(b.x-a.x)*t, expectedY = a.y+(b.y-a.y)*t
+                    guard hypot((ankle.x-expectedX)*aspect, ankle.y-expectedY) <= 0.2*scale else { return nil }
+                }
+                return s
+            }
+            // Old observations before a gap must not invalidate a complete,
+            // continuous 200 ms approach that follows it. Never bridge the gap.
+            if valid.count > 1, let lastGap = (1..<valid.count).last(where: {
+                valid[$0].timestampMs-valid[$0-1].timestampMs > 110
+            }) { valid = Array(valid[lastGap...]) }
+            // Corroborated weak views close a short confidence hole; they do
+            // not replace the minimum number of confident observations.
+            guard valid.filter({ strongTimes.contains($0.timestampMs) }).count >= 7 else { return false }
+        }
+        // The short impact window alone can make a genuine small kick look
+        // stationary. Include at least 200 ms of the approach and a real view
+        // after the reversal; never bridge a long hole in pose evidence.
+        guard valid.count >= 7, valid.first!.timestampMs <= contactMs-200,
+              valid.last!.timestampMs >= contactMs+25,
+              zip(valid,valid.dropFirst()).allSatisfy({ $1.timestampMs-$0.timestampMs <= 110 }) else { return false }
+        let clearApproach = valid.filter { s in
+            s.timestampMs <= contactMs-50 && s.ballY+s.height/2
+                < min(s.ankles[.left]!.y,s.ankles[.right]!.y)-0.1*scale
+        }
+        let nearFeet = valid.filter { s in
+            abs(s.timestampMs-contactMs) <= 67 && s.ballY+s.height/2
+                >= max(s.ankles[.left]!.y,s.ankles[.right]!.y)-0.25*scale
+        }
+        guard clearApproach.count >= 2, nearFeet.count >= 2 else { return false }
+        return stableFeet(raw: valid, smoothed: valid, aspect: aspect, scale: scale)
+    }
+
+    /// Five or six real 15 FPS views can cover the same approach/release time
+    /// as a dense window. Require every joint to be confident, a continuous
+    /// 200 ms approach, a real release, and the existing motion bounds.
+    private var confirmsSparsePlantedFeet: Bool {
+        let ordered = samples.sorted { $0.timestampMs < $1.timestampMs }
+        guard (5...6).contains(ordered.count),
+              Set(ordered.map(\.timestampMs)).count == ordered.count,
+              let contact = ordered.first(where: { $0.timestampMs == contactMs }),
+              ordered.allSatisfy({ s in
+                  [s.ballX,s.ballY,s.width,s.height,s.confidence,s.imageAspect].allSatisfy(\.isFinite)
+                    && (0...1).contains(s.ballX) && (0...1).contains(s.ballY)
+                    && s.width > 0 && s.width <= 1 && s.height > 0 && s.height <= 1
+                    && s.confidence >= 0.5 && s.imageAspect > 0
+                    && abs(s.imageAspect-contact.imageAspect) < 0.001
+                    && (-350...150).contains(s.timestampMs-contactMs)
+                    && BodySide.allCases.allSatisfy { side in
+                        guard let ankle = s.ankles[side], let hip = s.hips[side] else { return false }
+                        return [ankle,hip].allSatisfy {
+                            [$0.x,$0.y,$0.confidence].allSatisfy(\.isFinite)
+                                && (0...1).contains($0.x) && (0...1).contains($0.y) && $0.confidence >= 0.5
+                        } && ankle.y > hip.y
+                    }
+              }),
+              zip(ordered,ordered.dropFirst()).allSatisfy({ (40...75).contains($1.timestampMs-$0.timestampMs) }),
+              let start = ordered.lastIndex(where: { $0.timestampMs <= contactMs-200 }),
+              ordered[start].timestampMs >= contactMs-275,
+              ordered.last!.timestampMs >= contactMs+50,
+              ordered.map(\.height).max()! <= 1.35*ordered.map(\.height).min()!,
+              ordered.map(\.width).max()! <= 1.35*ordered.map(\.width).min()! else { return false }
+        let window = Array(ordered[start...])
+        guard window.count >= 5 else { return false }
+        let scale = median(ordered.map(\.height))
+        let approach = window.filter {
+            $0.timestampMs <= contactMs-50 && $0.ballY+$0.height/2
+                < min($0.ankles[.left]!.y,$0.ankles[.right]!.y)-0.1*scale
+        }
+        let near = window.filter {
+            abs($0.timestampMs-contactMs) <= 67 && $0.ballY+$0.height/2
+                >= max($0.ankles[.left]!.y,$0.ankles[.right]!.y)-0.25*scale
+        }
+        guard approach.count >= 2, near.count >= 2,
+              contact.ballY >= max(contact.ankles[.left]!.y,contact.ankles[.right]!.y)+0.1*scale,
+              window.contains(where: { $0.timestampMs >= contactMs+50 && contact.ballY-$0.ballY >= 0.2*scale }) else { return false }
+        // Older views still bound raw movement. Smooth only the complete
+        // 200 ms approach/release window, never bridge or synthesize a frame.
+        return stableFeet(raw: ordered, smoothed: window, aspect: contact.imageAspect, scale: scale)
+    }
+
+    private func stableFeet(raw: [Sample], smoothed: [Sample], aspect: Double, scale: Double) -> Bool {
+        for side in BodySide.allCases {
+            func image(_ views: [Sample]) -> [Vector] { views.map { s in
+                Vector(x: s.ankles[side]!.x*aspect/scale, y: s.ankles[side]!.y/scale)
+            } }
+            func relative(_ views: [Sample]) -> [Vector] { views.map { s in
+                let left = s.hips[.left]!, right = s.hips[.right]!, ankle = s.ankles[side]!
+                return Vector(x: (ankle.x-(left.x+right.x)/2)*aspect/scale,
+                              y: (ankle.y-(left.y+right.y)/2)/scale)
+            } }
+            // Require stability in BOTH image and pelvis-relative coordinates.
+            // A whole-body jump or camera movement cannot establish planted feet.
+            for (points, smoothingPoints) in [(image(raw),image(smoothed)),(relative(raw),relative(smoothed))] {
+                guard diameter(points) <= 0.5 else { return false }
+                let smoothed = (1..<smoothingPoints.count-1).map { i in
+                    Vector(x: median(smoothingPoints[i-1...i+1].map(\.x)), y: median(smoothingPoints[i-1...i+1].map(\.y)))
+                }
+                // Median-of-three removes isolated ankle jitter; the raw-motion
+                // bound above prevents smoothing away a large, real movement.
+                guard diameter(smoothed) <= 0.2 else { return false }
+            }
+        }
+        return true
+    }
+
+    private struct Vector { let x, y: Double }
+    private func median(_ values: [Double]) -> Double {
+        let sorted = values.sorted()
+        return sorted[sorted.count/2]
+    }
+    private func diameter(_ points: [Vector]) -> Double {
+        points.reduce(0) { result, a in
+            max(result, points.map { hypot(a.x-$0.x,a.y-$0.y) }.max() ?? 0)
+        }
+    }
+}

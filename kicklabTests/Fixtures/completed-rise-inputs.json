@@ -1,0 +1,2464 @@
+{
+  "source": "low.mov",
+  "source_sha256": "6e250e0976e4c584adef498bbe43cb5d7705ef374f1c7437f0cfe0d53f331e81",
+  "scope": "Recorded production inputs around three visually labelled low foot contacts. These establish candidate generation only; pose/hand/ground acceptance requires the separate device replay.",
+  "cases": [
+    {
+      "contact_frame": 121,
+      "inputs": [
+        {
+          "frameIndex": 103,
+          "timestampMs": 3464,
+          "sourceFrameIndex": 103,
+          "ball": {
+            "frameIndex": 103,
+            "timestampMs": 3464,
+            "x": 0.6569444868299696,
+            "y": 0.5316406488418579,
+            "width": 0.13055557674831814,
+            "height": 0.07343751192092896,
+            "confidence": 0.90087890625
+          },
+          "person": {
+            "x": 0.5173611111111112,
+            "y": 0.38457030057907104,
+            "width": 0.34444448682996964,
+            "height": 0.455078125
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 104,
+          "timestampMs": 3498,
+          "sourceFrameIndex": 104,
+          "ball": {
+            "frameIndex": 104,
+            "timestampMs": 3498,
+            "x": 0.6666666666666666,
+            "y": 0.518750011920929,
+            "width": 0.125,
+            "height": 0.06953123211860657,
+            "confidence": 0.9296875
+          },
+          "person": {
+            "x": 0.519444465637207,
+            "y": 0.38134765625,
+            "width": 0.34444448682996964,
+            "height": 0.4615234136581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 105,
+          "timestampMs": 3531,
+          "sourceFrameIndex": 105,
+          "ball": {
+            "frameIndex": 105,
+            "timestampMs": 3531,
+            "x": 0.6715278625488281,
+            "y": 0.5113281011581421,
+            "width": 0.1236111323038737,
+            "height": 0.06874999403953552,
+            "confidence": 0.9462890625
+          },
+          "person": {
+            "x": 0.5236110687255859,
+            "y": 0.37958982586860657,
+            "width": 0.3402777247958713,
+            "height": 0.46660155057907104
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 106,
+          "timestampMs": 3564,
+          "sourceFrameIndex": 106,
+          "ball": {
+            "frameIndex": 106,
+            "timestampMs": 3564,
+            "x": 0.6784723069932725,
+            "y": 0.507031261920929,
+            "width": 0.1236111323038737,
+            "height": 0.06796875596046448,
+            "confidence": 0.94970703125
+          },
+          "person": {
+            "x": 0.5187499788072374,
+            "y": 0.3783203065395355,
+            "width": 0.3513888782925076,
+            "height": 0.46992188692092896
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 107,
+          "timestampMs": 3598,
+          "sourceFrameIndex": 107,
+          "ball": {
+            "frameIndex": 107,
+            "timestampMs": 3598,
+            "x": 0.6840277777777778,
+            "y": 0.5062500238418579,
+            "width": 0.125,
+            "height": 0.06874996423721313,
+            "confidence": 0.94140625
+          },
+          "person": {
+            "x": 0.5121527777777778,
+            "y": 0.37529295682907104,
+            "width": 0.3659722540113661,
+            "height": 0.46660158038139343
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 108,
+          "timestampMs": 3631,
+          "sourceFrameIndex": 108,
+          "ball": {
+            "frameIndex": 108,
+            "timestampMs": 3631,
+            "x": 0.6888888676961263,
+            "y": 0.507617175579071,
+            "width": 0.1277777353922526,
+            "height": 0.068359375,
+            "confidence": 0.94287109375
+          },
+          "person": {
+            "x": 0.5,
+            "y": 0.37480467557907104,
+            "width": 0.38333336512247723,
+            "height": 0.462890625
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 109,
+          "timestampMs": 3664,
+          "sourceFrameIndex": 109,
+          "ball": {
+            "frameIndex": 109,
+            "timestampMs": 3664,
+            "x": 0.6923611958821615,
+            "y": 0.512890636920929,
+            "width": 0.1263888676961263,
+            "height": 0.06796875596046448,
+            "confidence": 0.93798828125
+          },
+          "person": {
+            "x": 0.4833333757188585,
+            "y": 0.3759765625,
+            "width": 0.41666671964857316,
+            "height": 0.45820310711860657
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 110,
+          "timestampMs": 3698,
+          "sourceFrameIndex": 110,
+          "ball": {
+            "frameIndex": 110,
+            "timestampMs": 3698,
+            "x": 0.6972221798366971,
+            "y": 0.521484375,
+            "width": 0.125,
+            "height": 0.06875002384185791,
+            "confidence": 0.93994140625
+          },
+          "person": {
+            "x": 0.47777779897054035,
+            "y": 0.3778320252895355,
+            "width": 0.44305552376641166,
+            "height": 0.45527344942092896
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 111,
+          "timestampMs": 3731,
+          "sourceFrameIndex": 111,
+          "ball": {
+            "frameIndex": 111,
+            "timestampMs": 3731,
+            "x": 0.7027777565850152,
+            "y": 0.5328124761581421,
+            "width": 0.125,
+            "height": 0.06874999403953552,
+            "confidence": 0.93505859375
+          },
+          "person": {
+            "x": 0.4904513888888889,
+            "y": 0.3773437440395355,
+            "width": 0.46909719043307835,
+            "height": 0.45234376192092896
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 112,
+          "timestampMs": 3764,
+          "sourceFrameIndex": 112,
+          "ball": {
+            "frameIndex": 112,
+            "timestampMs": 3764,
+            "x": 0.7062499788072374,
+            "y": 0.5417969226837158,
+            "width": 0.1277777353922526,
+            "height": 0.07499998807907104,
+            "confidence": 0.9287109375
+          },
+          "person": {
+            "x": 0.5015625423855252,
+            "y": 0.37451171875,
+            "width": 0.47881942325168186,
+            "height": 0.4541015625
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 113,
+          "timestampMs": 3798,
+          "sourceFrameIndex": 113,
+          "ball": {
+            "frameIndex": 113,
+            "timestampMs": 3798,
+            "x": 0.7041666242811415,
+            "y": 0.530078113079071,
+            "width": 0.125,
+            "height": 0.07265624403953552,
+            "confidence": 0.9130859375
+          },
+          "person": {
+            "x": 0.5041667090521919,
+            "y": 0.3724609315395355,
+            "width": 0.4708333545260959,
+            "height": 0.45820313692092896
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 114,
+          "timestampMs": 3831,
+          "sourceFrameIndex": 114,
+          "ball": {
+            "frameIndex": 114,
+            "timestampMs": 3831,
+            "x": 0.699305534362793,
+            "y": 0.520312488079071,
+            "width": 0.1277777353922526,
+            "height": 0.07187497615814209,
+            "confidence": 0.93408203125
+          },
+          "person": {
+            "x": 0.49878470102945965,
+            "y": 0.36943358182907104,
+            "width": 0.44548606872558594,
+            "height": 0.4658203125
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 115,
+          "timestampMs": 3864,
+          "sourceFrameIndex": 115,
+          "ball": {
+            "frameIndex": 115,
+            "timestampMs": 3864,
+            "x": 0.6937499576144748,
+            "y": 0.514453113079071,
+            "width": 0.1291666030883789,
+            "height": 0.07265624403953552,
+            "confidence": 0.94873046875
+          },
+          "person": {
+            "x": 0.4895833333333333,
+            "y": 0.37226563692092896,
+            "width": 0.41111114290025497,
+            "height": 0.4742187559604645
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 116,
+          "timestampMs": 3898,
+          "sourceFrameIndex": 116,
+          "ball": {
+            "frameIndex": 116,
+            "timestampMs": 3898,
+            "x": 0.6881944868299696,
+            "y": 0.51171875,
+            "width": 0.1291666030883789,
+            "height": 0.07343748211860657,
+            "confidence": 0.93896484375
+          },
+          "person": {
+            "x": 0.4932291242811415,
+            "y": 0.3819335699081421,
+            "width": 0.4149305025736491,
+            "height": 0.4916015565395355
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 117,
+          "timestampMs": 3931,
+          "sourceFrameIndex": 117,
+          "ball": {
+            "frameIndex": 117,
+            "timestampMs": 3931,
+            "x": 0.6826388041178385,
+            "y": 0.51171875,
+            "width": 0.13055557674831814,
+            "height": 0.07343748211860657,
+            "confidence": 0.9404296875
+          },
+          "person": {
+            "x": 0.4967013994852702,
+            "y": 0.3832031190395355,
+            "width": 0.41354168785942924,
+            "height": 0.48750001192092896
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 118,
+          "timestampMs": 3964,
+          "sourceFrameIndex": 118,
+          "ball": {
+            "frameIndex": 118,
+            "timestampMs": 3964,
+            "x": 0.6753472222222222,
+            "y": 0.515625,
+            "width": 0.1284722222222222,
+            "height": 0.07265627384185791,
+            "confidence": 0.94775390625
+          },
+          "person": {
+            "x": 0.4980902671813965,
+            "y": 0.38896483182907104,
+            "width": 0.4052082697550456,
+            "height": 0.4775390625
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 119,
+          "timestampMs": 3998,
+          "sourceFrameIndex": 119,
+          "ball": {
+            "frameIndex": 119,
+            "timestampMs": 3998,
+            "x": 0.6708333757188585,
+            "y": 0.5234375,
+            "width": 0.12777784135606554,
+            "height": 0.07265627384185791,
+            "confidence": 0.93408203125
+          },
+          "person": {
+            "x": 0.5097221798366971,
+            "y": 0.3935546875,
+            "width": 0.3861111005147298,
+            "height": 0.46601560711860657
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 120,
+          "timestampMs": 4031,
+          "sourceFrameIndex": 120,
+          "ball": {
+            "frameIndex": 120,
+            "timestampMs": 4031,
+            "x": 0.6624999576144748,
+            "y": 0.533984363079071,
+            "width": 0.1291666030883789,
+            "height": 0.07421875,
+            "confidence": 0.92578125
+          },
+          "person": {
+            "x": 0.5250000423855252,
+            "y": 0.3968749940395355,
+            "width": 0.36527771419949,
+            "height": 0.45937496423721313
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 121,
+          "timestampMs": 4064,
+          "sourceFrameIndex": 121,
+          "ball": {
+            "frameIndex": 121,
+            "timestampMs": 4064,
+            "x": 0.6583333545260959,
+            "y": 0.5406249761581421,
+            "width": 0.1277777353922526,
+            "height": 0.07421875,
+            "confidence": 0.92529296875
+          },
+          "person": {
+            "x": 0.5232639312744141,
+            "y": 0.3968750238418579,
+            "width": 0.36597220102945965,
+            "height": 0.4585937559604645
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 122,
+          "timestampMs": 4097,
+          "sourceFrameIndex": 122,
+          "ball": {
+            "frameIndex": 122,
+            "timestampMs": 4097,
+            "x": 0.6541666454739041,
+            "y": 0.533984363079071,
+            "width": 0.1277777353922526,
+            "height": 0.07578122615814209,
+            "confidence": 0.89306640625
+          },
+          "person": {
+            "x": 0.5218749576144748,
+            "y": 0.39580076932907104,
+            "width": 0.3729166454739041,
+            "height": 0.4583984315395355
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 123,
+          "timestampMs": 4131,
+          "sourceFrameIndex": 123,
+          "ball": {
+            "frameIndex": 123,
+            "timestampMs": 4131,
+            "x": 0.6517361534966363,
+            "y": 0.5285155773162842,
+            "width": 0.1284722222222222,
+            "height": 0.07499998807907104,
+            "confidence": 0.91552734375
+          },
+          "person": {
+            "x": 0.5215278201633029,
+            "y": 0.3924804925918579,
+            "width": 0.3722221586439345,
+            "height": 0.4658203423023224
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 124,
+          "timestampMs": 4164,
+          "sourceFrameIndex": 124,
+          "ball": {
+            "frameIndex": 124,
+            "timestampMs": 4164,
+            "x": 0.6506944232516818,
+            "y": 0.525390625,
+            "width": 0.1277777353922526,
+            "height": 0.07500001788139343,
+            "confidence": 0.93505859375
+          },
+          "person": {
+            "x": 0.5145833757188585,
+            "y": 0.3897460997104645,
+            "width": 0.38055557674831814,
+            "height": 0.47285157442092896
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 125,
+          "timestampMs": 4197,
+          "sourceFrameIndex": 125,
+          "ball": {
+            "frameIndex": 125,
+            "timestampMs": 4197,
+            "x": 0.6493055555555556,
+            "y": 0.5249999761581421,
+            "width": 0.1277777353922526,
+            "height": 0.07343751192092896,
+            "confidence": 0.9443359375
+          },
+          "person": {
+            "x": 0.5069444444444444,
+            "y": 0.3876953125,
+            "width": 0.38749996821085614,
+            "height": 0.4761718511581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 126,
+          "timestampMs": 4231,
+          "sourceFrameIndex": 126,
+          "ball": {
+            "frameIndex": 126,
+            "timestampMs": 4231,
+            "x": 0.6465278201633029,
+            "y": 0.529101550579071,
+            "width": 0.12777784135606554,
+            "height": 0.072265625,
+            "confidence": 0.9404296875
+          },
+          "person": {
+            "x": 0.49861107932196724,
+            "y": 0.38720703125,
+            "width": 0.39722220102945965,
+            "height": 0.47480466961860657
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 127,
+          "timestampMs": 4264,
+          "sourceFrameIndex": 127,
+          "ball": {
+            "frameIndex": 127,
+            "timestampMs": 4264,
+            "x": 0.6451388465033637,
+            "y": 0.5355468988418579,
+            "width": 0.12777784135606554,
+            "height": 0.07109373807907104,
+            "confidence": 0.93359375
+          },
+          "person": {
+            "x": 0.49097220102945965,
+            "y": 0.3838867247104645,
+            "width": 0.4027777777777778,
+            "height": 0.46503907442092896
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 128,
+          "timestampMs": 4297,
+          "sourceFrameIndex": 128,
+          "ball": {
+            "frameIndex": 128,
+            "timestampMs": 4297,
+            "x": 0.6440972222222222,
+            "y": 0.5453125238418579,
+            "width": 0.1284722222222222,
+            "height": 0.07109373807907104,
+            "confidence": 0.94921875
+          },
+          "person": {
+            "x": 0.4729166560702854,
+            "y": 0.3858398497104645,
+            "width": 0.42777771419949,
+            "height": 0.46269530057907104
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 129,
+          "timestampMs": 4331,
+          "sourceFrameIndex": 129,
+          "ball": {
+            "frameIndex": 129,
+            "timestampMs": 4331,
+            "x": 0.6416666242811415,
+            "y": 0.5582031011581421,
+            "width": 0.125,
+            "height": 0.07109373807907104,
+            "confidence": 0.91748046875
+          },
+          "person": {
+            "x": 0.4557291666666667,
+            "y": 0.3875976502895355,
+            "width": 0.45104169845581055,
+            "height": 0.45527344942092896
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 130,
+          "timestampMs": 4364,
+          "sourceFrameIndex": 130,
+          "ball": {
+            "frameIndex": 130,
+            "timestampMs": 4364,
+            "x": 0.6493055555555556,
+            "y": 0.5613281726837158,
+            "width": 0.12361102634006077,
+            "height": 0.07343751192092896,
+            "confidence": 0.921875
+          },
+          "person": {
+            "x": 0.44947920905219185,
+            "y": 0.38798826932907104,
+            "width": 0.4454861217074924,
+            "height": 0.4576171636581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 131,
+          "timestampMs": 4397,
+          "sourceFrameIndex": 131,
+          "ball": {
+            "frameIndex": 131,
+            "timestampMs": 4397,
+            "x": 0.6548610263400607,
+            "y": 0.548046886920929,
+            "width": 0.1263888676961263,
+            "height": 0.07187497615814209,
+            "confidence": 0.9208984375
+          },
+          "person": {
+            "x": 0.4564236005147298,
+            "y": 0.3856445550918579,
+            "width": 0.4538193808661567,
+            "height": 0.4599609673023224
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 132,
+          "timestampMs": 4431,
+          "sourceFrameIndex": 132,
+          "ball": {
+            "frameIndex": 132,
+            "timestampMs": 4431,
+            "x": 0.6590277353922526,
+            "y": 0.537109375,
+            "width": 0.12777784135606554,
+            "height": 0.07343745231628418,
+            "confidence": 0.93603515625
+          },
+          "person": {
+            "x": 0.45694446563720703,
+            "y": 0.38261717557907104,
+            "width": 0.43611107932196724,
+            "height": 0.4722656011581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 133,
+          "timestampMs": 4464,
+          "sourceFrameIndex": 133,
+          "ball": {
+            "frameIndex": 133,
+            "timestampMs": 4464,
+            "x": 0.6645833121405708,
+            "y": 0.529296875,
+            "width": 0.1277777353922526,
+            "height": 0.07265627384185791,
+            "confidence": 0.927734375
+          },
+          "person": {
+            "x": 0.4439236323038737,
+            "y": 0.3822265863418579,
+            "width": 0.4357638888888889,
+            "height": 0.4863281548023224
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 134,
+          "timestampMs": 4497,
+          "sourceFrameIndex": 134,
+          "ball": {
+            "frameIndex": 134,
+            "timestampMs": 4497,
+            "x": 0.6694444020589193,
+            "y": 0.5238281488418579,
+            "width": 0.12777784135606554,
+            "height": 0.07265621423721313,
+            "confidence": 0.93408203125
+          },
+          "person": {
+            "x": 0.4383680555555556,
+            "y": 0.3858398199081421,
+            "width": 0.43437496821085614,
+            "height": 0.4970702826976776
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 135,
+          "timestampMs": 4531,
+          "sourceFrameIndex": 135,
+          "ball": {
+            "frameIndex": 135,
+            "timestampMs": 4531,
+            "x": 0.6746527353922526,
+            "y": 0.522265613079071,
+            "width": 0.1256943808661567,
+            "height": 0.07187497615814209,
+            "confidence": 0.93408203125
+          },
+          "person": {
+            "x": 0.4383680555555556,
+            "y": 0.3863281309604645,
+            "width": 0.4288194444444444,
+            "height": 0.49531251192092896
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 136,
+          "timestampMs": 4564,
+          "sourceFrameIndex": 136,
+          "ball": {
+            "frameIndex": 136,
+            "timestampMs": 4564,
+            "x": 0.6784723069932725,
+            "y": 0.5228515863418579,
+            "width": 0.1263888676961263,
+            "height": 0.07148438692092896,
+            "confidence": 0.943359375
+          },
+          "person": {
+            "x": 0.44947920905219185,
+            "y": 0.3871093690395355,
+            "width": 0.414930608537462,
+            "height": 0.49140626192092896
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 137,
+          "timestampMs": 4597,
+          "sourceFrameIndex": 137,
+          "ball": {
+            "frameIndex": 137,
+            "timestampMs": 4597,
+            "x": 0.6826389100816515,
+            "y": 0.52734375,
+            "width": 0.12916670905219185,
+            "height": 0.07109376788139343,
+            "confidence": 0.9365234375
+          },
+          "person": {
+            "x": 0.46822918785942924,
+            "y": 0.39033204317092896,
+            "width": 0.39131948682996964,
+            "height": 0.48652341961860657
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 138,
+          "timestampMs": 4631,
+          "sourceFrameIndex": 138,
+          "ball": {
+            "frameIndex": 138,
+            "timestampMs": 4631,
+            "x": 0.6861111323038737,
+            "y": 0.5343749523162842,
+            "width": 0.125,
+            "height": 0.07109373807907104,
+            "confidence": 0.91943359375
+          },
+          "person": {
+            "x": 0.5006944868299696,
+            "y": 0.3935546875,
+            "width": 0.38333331214057076,
+            "height": 0.4769531488418579
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 139,
+          "timestampMs": 4664,
+          "sourceFrameIndex": 139,
+          "ball": {
+            "frameIndex": 139,
+            "timestampMs": 4664,
+            "x": 0.6923610899183485,
+            "y": 0.5414062738418579,
+            "width": 0.1277777353922526,
+            "height": 0.07499998807907104,
+            "confidence": 0.91357421875
+          },
+          "person": {
+            "x": 0.5159722434149848,
+            "y": 0.3921875059604645,
+            "width": 0.4027777777777778,
+            "height": 0.47734373807907104
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        }
+      ]
+    },
+    {
+      "contact_frame": 471,
+      "inputs": [
+        {
+          "frameIndex": 453,
+          "timestampMs": 15125,
+          "sourceFrameIndex": 453,
+          "ball": {
+            "frameIndex": 453,
+            "timestampMs": 15125,
+            "x": 0.39722220102945965,
+            "y": 0.6240234375,
+            "width": 0.14583333333333334,
+            "height": 0.08476567268371582,
+            "confidence": 0.931640625
+          },
+          "person": {
+            "x": 0.2743055555555556,
+            "y": 0.42900389432907104,
+            "width": 0.38055557674831814,
+            "height": 0.5029296875
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 454,
+          "timestampMs": 15159,
+          "sourceFrameIndex": 454,
+          "ball": {
+            "frameIndex": 454,
+            "timestampMs": 15159,
+            "x": 0.3958333333333333,
+            "y": 0.6156250238418579,
+            "width": 0.15000004238552517,
+            "height": 0.09218746423721313,
+            "confidence": 0.92822265625
+          },
+          "person": {
+            "x": 0.2675347328186035,
+            "y": 0.4266601502895355,
+            "width": 0.38576391008165145,
+            "height": 0.507617175579071
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 455,
+          "timestampMs": 15192,
+          "sourceFrameIndex": 455,
+          "ball": {
+            "frameIndex": 455,
+            "timestampMs": 15192,
+            "x": 0.39305559794108075,
+            "y": 0.6089843511581421,
+            "width": 0.1486111217074924,
+            "height": 0.09296876192092896,
+            "confidence": 0.89208984375
+          },
+          "person": {
+            "x": 0.26545143127441406,
+            "y": 0.4247070252895355,
+            "width": 0.38993056615193683,
+            "height": 0.5091796517372131
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 456,
+          "timestampMs": 15225,
+          "sourceFrameIndex": 456,
+          "ball": {
+            "frameIndex": 456,
+            "timestampMs": 15225,
+            "x": 0.39114581214057076,
+            "y": 0.6000000238418579,
+            "width": 0.15243058734469944,
+            "height": 0.08515626192092896,
+            "confidence": 0.90234375
+          },
+          "person": {
+            "x": 0.2659722434149848,
+            "y": 0.4219726324081421,
+            "width": 0.38333336512247723,
+            "height": 0.5169922113418579
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 457,
+          "timestampMs": 15259,
+          "sourceFrameIndex": 457,
+          "ball": {
+            "frameIndex": 457,
+            "timestampMs": 15259,
+            "x": 0.38767358991834855,
+            "y": 0.6015625,
+            "width": 0.1579861111111111,
+            "height": 0.08749997615814209,
+            "confidence": 0.8076171875
+          },
+          "person": {
+            "x": 0.2659722434149848,
+            "y": 0.4203124940395355,
+            "width": 0.3777777883741591,
+            "height": 0.518750011920929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 458,
+          "timestampMs": 15292,
+          "sourceFrameIndex": 458,
+          "ball": {
+            "frameIndex": 458,
+            "timestampMs": 15292,
+            "x": 0.38472217983669704,
+            "y": 0.609375,
+            "width": 0.1625000105963813,
+            "height": 0.09765625,
+            "confidence": 0.90771484375
+          },
+          "person": {
+            "x": 0.26927079094780815,
+            "y": 0.42265623807907104,
+            "width": 0.3656250105963813,
+            "height": 0.5171874761581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 459,
+          "timestampMs": 15325,
+          "sourceFrameIndex": 459,
+          "ball": {
+            "frameIndex": 459,
+            "timestampMs": 15325,
+            "x": 0.38402779897054035,
+            "y": 0.6117187738418579,
+            "width": 0.1638888782925076,
+            "height": 0.08750003576278687,
+            "confidence": 0.916015625
+          },
+          "person": {
+            "x": 0.2684027883741591,
+            "y": 0.42822265625,
+            "width": 0.3576388888888889,
+            "height": 0.5154297351837158
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 460,
+          "timestampMs": 15358,
+          "sourceFrameIndex": 460,
+          "ball": {
+            "frameIndex": 460,
+            "timestampMs": 15358,
+            "x": 0.39114581214057076,
+            "y": 0.6208984851837158,
+            "width": 0.15104166666666666,
+            "height": 0.08476561307907104,
+            "confidence": 0.9267578125
+          },
+          "person": {
+            "x": 0.2689236534966363,
+            "y": 0.43046873807907104,
+            "width": 0.3829861217074924,
+            "height": 0.51171875
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 461,
+          "timestampMs": 15392,
+          "sourceFrameIndex": 461,
+          "ball": {
+            "frameIndex": 461,
+            "timestampMs": 15392,
+            "x": 0.39184029897054035,
+            "y": 0.6351562738418579,
+            "width": 0.145486142900255,
+            "height": 0.0859375,
+            "confidence": 0.9140625
+          },
+          "person": {
+            "x": 0.2873263888888889,
+            "y": 0.43046873807907104,
+            "width": 0.42118051317003036,
+            "height": 0.5085937976837158
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 462,
+          "timestampMs": 15425,
+          "sourceFrameIndex": 462,
+          "ball": {
+            "frameIndex": 462,
+            "timestampMs": 15425,
+            "x": 0.3930555449591743,
+            "y": 0.6410156488418579,
+            "width": 0.14444446563720703,
+            "height": 0.08671873807907104,
+            "confidence": 0.9287109375
+          },
+          "person": {
+            "x": 0.30364582273695206,
+            "y": 0.4292968809604645,
+            "width": 0.4468749364217122,
+            "height": 0.516406238079071
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 463,
+          "timestampMs": 15458,
+          "sourceFrameIndex": 463,
+          "ball": {
+            "frameIndex": 463,
+            "timestampMs": 15458,
+            "x": 0.38680553436279297,
+            "y": 0.630859375,
+            "width": 0.1472222540113661,
+            "height": 0.08828127384185791,
+            "confidence": 0.869140625
+          },
+          "person": {
+            "x": 0.3055555555555556,
+            "y": 0.4247070252895355,
+            "width": 0.45694441265530056,
+            "height": 0.521679699420929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 464,
+          "timestampMs": 15492,
+          "sourceFrameIndex": 464,
+          "ball": {
+            "frameIndex": 464,
+            "timestampMs": 15492,
+            "x": 0.3819444444444444,
+            "y": 0.620312511920929,
+            "width": 0.14861106872558594,
+            "height": 0.08749997615814209,
+            "confidence": 0.9150390625
+          },
+          "person": {
+            "x": 0.2965277565850152,
+            "y": 0.42314451932907104,
+            "width": 0.46111106872558594,
+            "height": 0.5302734375
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 465,
+          "timestampMs": 15525,
+          "sourceFrameIndex": 465,
+          "ball": {
+            "frameIndex": 465,
+            "timestampMs": 15525,
+            "x": 0.3751736217074924,
+            "y": 0.6140625476837158,
+            "width": 0.15104166666666666,
+            "height": 0.08671873807907104,
+            "confidence": 0.9248046875
+          },
+          "person": {
+            "x": 0.2843749788072374,
+            "y": 0.4203125238418579,
+            "width": 0.4590277671813965,
+            "height": 0.53125
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 466,
+          "timestampMs": 15558,
+          "sourceFrameIndex": 466,
+          "ball": {
+            "frameIndex": 466,
+            "timestampMs": 15558,
+            "x": 0.3680555555555556,
+            "y": 0.6128906011581421,
+            "width": 0.15138891008165148,
+            "height": 0.08828121423721313,
+            "confidence": 0.91064453125
+          },
+          "person": {
+            "x": 0.2677083545260959,
+            "y": 0.41914063692092896,
+            "width": 0.44930553436279297,
+            "height": 0.5296875238418579
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 467,
+          "timestampMs": 15592,
+          "sourceFrameIndex": 467,
+          "ball": {
+            "frameIndex": 467,
+            "timestampMs": 15592,
+            "x": 0.3630208439297146,
+            "y": 0.6148437261581421,
+            "width": 0.15312502119276258,
+            "height": 0.09140628576278687,
+            "confidence": 0.91748046875
+          },
+          "person": {
+            "x": 0.25069448682996964,
+            "y": 0.41845703125,
+            "width": 0.4472222328186035,
+            "height": 0.5169922113418579
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 468,
+          "timestampMs": 15625,
+          "sourceFrameIndex": 468,
+          "ball": {
+            "frameIndex": 468,
+            "timestampMs": 15625,
+            "x": 0.35642358991834855,
+            "y": 0.6175781488418579,
+            "width": 0.15520832273695204,
+            "height": 0.08906251192092896,
+            "confidence": 0.9228515625
+          },
+          "person": {
+            "x": 0.23020834392971462,
+            "y": 0.4227539002895355,
+            "width": 0.45069440205891925,
+            "height": 0.511523425579071
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 469,
+          "timestampMs": 15658,
+          "sourceFrameIndex": 469,
+          "ball": {
+            "frameIndex": 469,
+            "timestampMs": 15658,
+            "x": 0.3494791454739041,
+            "y": 0.6285156011581421,
+            "width": 0.1579861111111111,
+            "height": 0.09296876192092896,
+            "confidence": 0.888671875
+          },
+          "person": {
+            "x": 0.21614583333333334,
+            "y": 0.42705079913139343,
+            "width": 0.4288194444444444,
+            "height": 0.506054699420929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 470,
+          "timestampMs": 15692,
+          "sourceFrameIndex": 470,
+          "ball": {
+            "frameIndex": 470,
+            "timestampMs": 15692,
+            "x": 0.3451388676961263,
+            "y": 0.6390625238418579,
+            "width": 0.15416669845581055,
+            "height": 0.08984375,
+            "confidence": 0.90625
+          },
+          "person": {
+            "x": 0.20381943384806314,
+            "y": 0.4297851622104645,
+            "width": 0.40347223811679417,
+            "height": 0.5005859732627869
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 471,
+          "timestampMs": 15725,
+          "sourceFrameIndex": 471,
+          "ball": {
+            "frameIndex": 471,
+            "timestampMs": 15725,
+            "x": 0.3411458333333333,
+            "y": 0.6468750238418579,
+            "width": 0.15243053436279297,
+            "height": 0.08750003576278687,
+            "confidence": 0.91748046875
+          },
+          "person": {
+            "x": 0.1980902353922526,
+            "y": 0.43281251192092896,
+            "width": 0.39131943384806317,
+            "height": 0.5015624761581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 472,
+          "timestampMs": 15758,
+          "sourceFrameIndex": 472,
+          "ball": {
+            "frameIndex": 472,
+            "timestampMs": 15758,
+            "x": 0.3335069550408257,
+            "y": 0.6402343511581421,
+            "width": 0.15243053436279297,
+            "height": 0.08828121423721313,
+            "confidence": 0.9150390625
+          },
+          "person": {
+            "x": 0.19791666666666666,
+            "y": 0.43017578125,
+            "width": 0.38611112700568306,
+            "height": 0.5052734613418579
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 473,
+          "timestampMs": 15792,
+          "sourceFrameIndex": 473,
+          "ball": {
+            "frameIndex": 473,
+            "timestampMs": 15792,
+            "x": 0.32413196563720703,
+            "y": 0.6312500238418579,
+            "width": 0.15034723281860352,
+            "height": 0.0859375,
+            "confidence": 0.90234375
+          },
+          "person": {
+            "x": 0.20104164547390407,
+            "y": 0.4261718690395355,
+            "width": 0.37569443384806317,
+            "height": 0.507031261920929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 474,
+          "timestampMs": 15825,
+          "sourceFrameIndex": 474,
+          "ball": {
+            "frameIndex": 474,
+            "timestampMs": 15825,
+            "x": 0.31736108991834855,
+            "y": 0.6273437738418579,
+            "width": 0.15416669845581055,
+            "height": 0.08906251192092896,
+            "confidence": 0.8896484375
+          },
+          "person": {
+            "x": 0.20503467983669704,
+            "y": 0.4227539002895355,
+            "width": 0.3704861005147298,
+            "height": 0.5208984017372131
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 475,
+          "timestampMs": 15858,
+          "sourceFrameIndex": 475,
+          "ball": {
+            "frameIndex": 475,
+            "timestampMs": 15858,
+            "x": 0.3088541560702854,
+            "y": 0.6283203363418579,
+            "width": 0.1545138888888889,
+            "height": 0.08945316076278687,
+            "confidence": 0.88818359375
+          },
+          "person": {
+            "x": 0.21302085452609593,
+            "y": 0.42041015625,
+            "width": 0.3517361217074924,
+            "height": 0.5232422351837158
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 476,
+          "timestampMs": 15892,
+          "sourceFrameIndex": 476,
+          "ball": {
+            "frameIndex": 476,
+            "timestampMs": 15892,
+            "x": 0.30069446563720703,
+            "y": 0.6361328363418579,
+            "width": 0.15694443384806314,
+            "height": 0.09882813692092896,
+            "confidence": 0.91357421875
+          },
+          "person": {
+            "x": 0.2204861111111111,
+            "y": 0.42265623807907104,
+            "width": 0.3423611323038737,
+            "height": 0.5249999761581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 477,
+          "timestampMs": 15925,
+          "sourceFrameIndex": 477,
+          "ball": {
+            "frameIndex": 477,
+            "timestampMs": 15925,
+            "x": 0.2927083439297146,
+            "y": 0.6410156488418579,
+            "width": 0.16319444444444445,
+            "height": 0.09375,
+            "confidence": 0.89697265625
+          },
+          "person": {
+            "x": 0.23402775658501518,
+            "y": 0.42705076932907104,
+            "width": 0.3347222540113661,
+            "height": 0.5263671875
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 478,
+          "timestampMs": 15958,
+          "sourceFrameIndex": 478,
+          "ball": {
+            "frameIndex": 478,
+            "timestampMs": 15958,
+            "x": 0.28506946563720703,
+            "y": 0.6515624523162842,
+            "width": 0.16319444444444445,
+            "height": 0.09296876192092896,
+            "confidence": 0.88671875
+          },
+          "person": {
+            "x": 0.2486111323038737,
+            "y": 0.43359375,
+            "width": 0.3541666666666667,
+            "height": 0.52734375
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 479,
+          "timestampMs": 15992,
+          "sourceFrameIndex": 479,
+          "ball": {
+            "frameIndex": 479,
+            "timestampMs": 15992,
+            "x": 0.2821180555555556,
+            "y": 0.6632812023162842,
+            "width": 0.16493055555555555,
+            "height": 0.09062498807907104,
+            "confidence": 0.91748046875
+          },
+          "person": {
+            "x": 0.27465279897054035,
+            "y": 0.44189453125,
+            "width": 0.37291669845581055,
+            "height": 0.5333983898162842
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 480,
+          "timestampMs": 16025,
+          "sourceFrameIndex": 480,
+          "ball": {
+            "frameIndex": 480,
+            "timestampMs": 16025,
+            "x": 0.2829861111111111,
+            "y": 0.6656249761581421,
+            "width": 0.16458331214057076,
+            "height": 0.09375,
+            "confidence": 0.9091796875
+          },
+          "person": {
+            "x": 0.2935763994852702,
+            "y": 0.44218748807907104,
+            "width": 0.3920138676961263,
+            "height": 0.5359375476837158
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 481,
+          "timestampMs": 16058,
+          "sourceFrameIndex": 481,
+          "ball": {
+            "frameIndex": 481,
+            "timestampMs": 16058,
+            "x": 0.28611108991834855,
+            "y": 0.6546875238418579,
+            "width": 0.1597222222222222,
+            "height": 0.09843748807907104,
+            "confidence": 0.90087890625
+          },
+          "person": {
+            "x": 0.29809029897054035,
+            "y": 0.4378906190395355,
+            "width": 0.4010416666666667,
+            "height": 0.534375011920929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 482,
+          "timestampMs": 16091,
+          "sourceFrameIndex": 482,
+          "ball": {
+            "frameIndex": 482,
+            "timestampMs": 16091,
+            "x": 0.29131942325168186,
+            "y": 0.6421874761581421,
+            "width": 0.15625,
+            "height": 0.09375,
+            "confidence": 0.8740234375
+          },
+          "person": {
+            "x": 0.2980902459886339,
+            "y": 0.4312500059604645,
+            "width": 0.4093749788072374,
+            "height": 0.532031238079071
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 483,
+          "timestampMs": 16125,
+          "sourceFrameIndex": 483,
+          "ball": {
+            "frameIndex": 483,
+            "timestampMs": 16125,
+            "x": 0.2940972646077474,
+            "y": 0.6371093988418579,
+            "width": 0.15902778837415907,
+            "height": 0.09843748807907104,
+            "confidence": 0.8876953125
+          },
+          "person": {
+            "x": 0.29201391008165145,
+            "y": 0.42939454317092896,
+            "width": 0.4131944444444444,
+            "height": 0.5373046398162842
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 484,
+          "timestampMs": 16158,
+          "sourceFrameIndex": 484,
+          "ball": {
+            "frameIndex": 484,
+            "timestampMs": 16158,
+            "x": 0.2982638676961263,
+            "y": 0.633593738079071,
+            "width": 0.15902778837415907,
+            "height": 0.09921872615814209,
+            "confidence": 0.84130859375
+          },
+          "person": {
+            "x": 0.28611108991834855,
+            "y": 0.4281250238418579,
+            "width": 0.43194447623358834,
+            "height": 0.5367187261581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 485,
+          "timestampMs": 16191,
+          "sourceFrameIndex": 485,
+          "ball": {
+            "frameIndex": 485,
+            "timestampMs": 16191,
+            "x": 0.30347220102945965,
+            "y": 0.6335937976837158,
+            "width": 0.1597222222222222,
+            "height": 0.09843748807907104,
+            "confidence": 0.87646484375
+          },
+          "person": {
+            "x": 0.2845486534966363,
+            "y": 0.4273437261581421,
+            "width": 0.4628472328186035,
+            "height": 0.5257812738418579
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 486,
+          "timestampMs": 16225,
+          "sourceFrameIndex": 486,
+          "ball": {
+            "frameIndex": 486,
+            "timestampMs": 16225,
+            "x": 0.30763891008165145,
+            "y": 0.6363281011581421,
+            "width": 0.15694443384806314,
+            "height": 0.09531253576278687,
+            "confidence": 0.84814453125
+          },
+          "person": {
+            "x": 0.2855902777777778,
+            "y": 0.43095701932907104,
+            "width": 0.4982638888888889,
+            "height": 0.5232422351837158
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 487,
+          "timestampMs": 16258,
+          "sourceFrameIndex": 487,
+          "ball": {
+            "frameIndex": 487,
+            "timestampMs": 16258,
+            "x": 0.31440967983669704,
+            "y": 0.6441406011581421,
+            "width": 0.15729167726304796,
+            "height": 0.09531253576278687,
+            "confidence": 0.90673828125
+          },
+          "person": {
+            "x": 0.2833333545260959,
+            "y": 0.43291014432907104,
+            "width": 0.5277777777777778,
+            "height": 0.5193359851837158
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 488,
+          "timestampMs": 16291,
+          "sourceFrameIndex": 488,
+          "ball": {
+            "frameIndex": 488,
+            "timestampMs": 16291,
+            "x": 0.31874995761447483,
+            "y": 0.653124988079071,
+            "width": 0.15555556615193686,
+            "height": 0.09140622615814209,
+            "confidence": 0.9189453125
+          },
+          "person": {
+            "x": 0.28194443384806317,
+            "y": 0.4375976324081421,
+            "width": 0.5402777989705404,
+            "height": 0.5185546875
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 489,
+          "timestampMs": 16325,
+          "sourceFrameIndex": 489,
+          "ball": {
+            "frameIndex": 489,
+            "timestampMs": 16325,
+            "x": 0.32100698682996964,
+            "y": 0.6566406488418579,
+            "width": 0.15520832273695204,
+            "height": 0.09218746423721313,
+            "confidence": 0.92822265625
+          },
+          "person": {
+            "x": 0.28194448682996964,
+            "y": 0.43876951932907104,
+            "width": 0.5416667196485732,
+            "height": 0.5201171636581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        }
+      ]
+    },
+    {
+      "contact_frame": 1472,
+      "inputs": [
+        {
+          "frameIndex": 1454,
+          "timestampMs": 48475,
+          "sourceFrameIndex": 1454,
+          "ball": {
+            "frameIndex": 1454,
+            "timestampMs": 48475,
+            "x": 0.605555534362793,
+            "y": 0.653515636920929,
+            "width": 0.15694448682996961,
+            "height": 0.09218752384185791,
+            "confidence": 0.9228515625
+          },
+          "person": {
+            "x": 0.3687499894036187,
+            "y": 0.45361328125,
+            "width": 0.5944443808661567,
+            "height": 0.5474609136581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1455,
+          "timestampMs": 48509,
+          "sourceFrameIndex": 1455,
+          "ball": {
+            "frameIndex": 1455,
+            "timestampMs": 48509,
+            "x": 0.6055556403266059,
+            "y": 0.6414062976837158,
+            "width": 0.15833335452609593,
+            "height": 0.08671873807907104,
+            "confidence": 0.947265625
+          },
+          "person": {
+            "x": 0.3668402565850152,
+            "y": 0.44697263836860657,
+            "width": 0.5857638782925076,
+            "height": 0.562304675579071
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1456,
+          "timestampMs": 48542,
+          "sourceFrameIndex": 1456,
+          "ball": {
+            "frameIndex": 1456,
+            "timestampMs": 48542,
+            "x": 0.605555534362793,
+            "y": 0.635937511920929,
+            "width": 0.1597222222222222,
+            "height": 0.08828127384185791,
+            "confidence": 0.94482421875
+          },
+          "person": {
+            "x": 0.3647569550408257,
+            "y": 0.4442383050918579,
+            "width": 0.5732639100816515,
+            "height": 0.5732421875
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1457,
+          "timestampMs": 48575,
+          "sourceFrameIndex": 1457,
+          "ball": {
+            "frameIndex": 1457,
+            "timestampMs": 48575,
+            "x": 0.6062499152289497,
+            "y": 0.6324218511581421,
+            "width": 0.16111108991834852,
+            "height": 0.08750003576278687,
+            "confidence": 0.94580078125
+          },
+          "person": {
+            "x": 0.36597220102945965,
+            "y": 0.44697266817092896,
+            "width": 0.5694444444444444,
+            "height": 0.5912109613418579
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1458,
+          "timestampMs": 48609,
+          "sourceFrameIndex": 1458,
+          "ball": {
+            "frameIndex": 1458,
+            "timestampMs": 48609,
+            "x": 0.6048611534966363,
+            "y": 0.6343749761581421,
+            "width": 0.16111108991834852,
+            "height": 0.08671873807907104,
+            "confidence": 0.9462890625
+          },
+          "person": {
+            "x": 0.3736111323038737,
+            "y": 0.45244142413139343,
+            "width": 0.5680555237664117,
+            "height": 0.595898449420929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1459,
+          "timestampMs": 48642,
+          "sourceFrameIndex": 1459,
+          "ball": {
+            "frameIndex": 1459,
+            "timestampMs": 48642,
+            "x": 0.6048611534966363,
+            "y": 0.638671875,
+            "width": 0.16111108991834852,
+            "height": 0.08671879768371582,
+            "confidence": 0.95263671875
+          },
+          "person": {
+            "x": 0.38402779897054035,
+            "y": 0.4559570252895355,
+            "width": 0.5611110793219672,
+            "height": 0.588085949420929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1460,
+          "timestampMs": 48675,
+          "sourceFrameIndex": 1460,
+          "ball": {
+            "frameIndex": 1460,
+            "timestampMs": 48675,
+            "x": 0.6041666666666666,
+            "y": 0.6476562023162842,
+            "width": 0.16249995761447483,
+            "height": 0.08671873807907104,
+            "confidence": 0.94677734375
+          },
+          "person": {
+            "x": 0.3958333333333333,
+            "y": 0.46171876788139343,
+            "width": 0.5388889312744141,
+            "height": 0.577343761920929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1461,
+          "timestampMs": 48708,
+          "sourceFrameIndex": 1461,
+          "ball": {
+            "frameIndex": 1461,
+            "timestampMs": 48708,
+            "x": 0.6027777989705404,
+            "y": 0.6597656011581421,
+            "width": 0.1597222222222222,
+            "height": 0.0859375,
+            "confidence": 0.93701171875
+          },
+          "person": {
+            "x": 0.4140625,
+            "y": 0.46757811307907104,
+            "width": 0.49965280956692165,
+            "height": 0.5671875476837158
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1462,
+          "timestampMs": 48742,
+          "sourceFrameIndex": 1462,
+          "ball": {
+            "frameIndex": 1462,
+            "timestampMs": 48742,
+            "x": 0.6090277565850152,
+            "y": 0.671875,
+            "width": 0.15694448682996961,
+            "height": 0.08906245231628418,
+            "confidence": 0.94091796875
+          },
+          "person": {
+            "x": 0.43628470102945965,
+            "y": 0.46796876192092896,
+            "width": 0.4774305555555556,
+            "height": 0.5656249523162842
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1463,
+          "timestampMs": 48775,
+          "sourceFrameIndex": 1463,
+          "ball": {
+            "frameIndex": 1463,
+            "timestampMs": 48775,
+            "x": 0.6215277777777778,
+            "y": 0.6636718511581421,
+            "width": 0.1597222222222222,
+            "height": 0.09218746423721313,
+            "confidence": 0.92529296875
+          },
+          "person": {
+            "x": 0.4425347116258409,
+            "y": 0.46923828125,
+            "width": 0.48993057674831814,
+            "height": 0.5669921636581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1464,
+          "timestampMs": 48808,
+          "sourceFrameIndex": 1464,
+          "ball": {
+            "frameIndex": 1464,
+            "timestampMs": 48808,
+            "x": 0.6298610899183485,
+            "y": 0.650390625,
+            "width": 0.1597222222222222,
+            "height": 0.09140622615814209,
+            "confidence": 0.93359375
+          },
+          "person": {
+            "x": 0.4432291454739041,
+            "y": 0.46796876192092896,
+            "width": 0.5052083333333334,
+            "height": 0.5687500238418579
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1465,
+          "timestampMs": 48842,
+          "sourceFrameIndex": 1465,
+          "ball": {
+            "frameIndex": 1465,
+            "timestampMs": 48842,
+            "x": 0.6374999152289497,
+            "y": 0.640820324420929,
+            "width": 0.16111108991834852,
+            "height": 0.091796875,
+            "confidence": 0.9453125
+          },
+          "person": {
+            "x": 0.4383680555555556,
+            "y": 0.4637695550918579,
+            "width": 0.510763857099745,
+            "height": 0.5771484375
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1466,
+          "timestampMs": 48875,
+          "sourceFrameIndex": 1466,
+          "ball": {
+            "frameIndex": 1466,
+            "timestampMs": 48875,
+            "x": 0.6479166878594292,
+            "y": 0.6355469226837158,
+            "width": 0.16388893127441406,
+            "height": 0.09062498807907104,
+            "confidence": 0.95654296875
+          },
+          "person": {
+            "x": 0.4333333439297146,
+            "y": 0.46015626192092896,
+            "width": 0.5097222858005099,
+            "height": 0.5851562023162842
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1467,
+          "timestampMs": 48908,
+          "sourceFrameIndex": 1467,
+          "ball": {
+            "frameIndex": 1467,
+            "timestampMs": 48908,
+            "x": 0.6555555131700304,
+            "y": 0.6332031488418579,
+            "width": 0.16111108991834852,
+            "height": 0.09140628576278687,
+            "confidence": 0.95068359375
+          },
+          "person": {
+            "x": 0.43194447623358834,
+            "y": 0.46025389432907104,
+            "width": 0.5125000211927626,
+            "height": 0.5865234136581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1468,
+          "timestampMs": 48942,
+          "sourceFrameIndex": 1468,
+          "ball": {
+            "frameIndex": 1468,
+            "timestampMs": 48942,
+            "x": 0.6631944444444444,
+            "y": 0.634765625,
+            "width": 0.16249995761447483,
+            "height": 0.09062504768371582,
+            "confidence": 0.947265625
+          },
+          "person": {
+            "x": 0.4175347222222222,
+            "y": 0.46220701932907104,
+            "width": 0.5427082909478081,
+            "height": 0.5865234136581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1469,
+          "timestampMs": 48975,
+          "sourceFrameIndex": 1469,
+          "ball": {
+            "frameIndex": 1469,
+            "timestampMs": 48975,
+            "x": 0.6701388888888888,
+            "y": 0.6410156488418579,
+            "width": 0.16388893127441406,
+            "height": 0.09218746423721313,
+            "confidence": 0.9482421875
+          },
+          "person": {
+            "x": 0.40555556615193683,
+            "y": 0.46728515625,
+            "width": 0.5722222858005099,
+            "height": 0.5787109136581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1470,
+          "timestampMs": 49008,
+          "sourceFrameIndex": 1470,
+          "ball": {
+            "frameIndex": 1470,
+            "timestampMs": 49008,
+            "x": 0.675694465637207,
+            "y": 0.6507812738418579,
+            "width": 0.1597222222222222,
+            "height": 0.08984375,
+            "confidence": 0.93798828125
+          },
+          "person": {
+            "x": 0.40225696563720703,
+            "y": 0.46875,
+            "width": 0.5815972222222222,
+            "height": 0.5695312023162842
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1471,
+          "timestampMs": 49042,
+          "sourceFrameIndex": 1471,
+          "ball": {
+            "frameIndex": 1471,
+            "timestampMs": 49042,
+            "x": 0.6829861534966363,
+            "y": 0.665234386920929,
+            "width": 0.1604166030883789,
+            "height": 0.09218752384185791,
+            "confidence": 0.93505859375
+          },
+          "person": {
+            "x": 0.41111108991834855,
+            "y": 0.4657226800918579,
+            "width": 0.5833333333333334,
+            "height": 0.5654296875
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1472,
+          "timestampMs": 49075,
+          "sourceFrameIndex": 1472,
+          "ball": {
+            "frameIndex": 1472,
+            "timestampMs": 49075,
+            "x": 0.6895833545260959,
+            "y": 0.6744140386581421,
+            "width": 0.16249995761447483,
+            "height": 0.09101563692092896,
+            "confidence": 0.93798828125
+          },
+          "person": {
+            "x": 0.4388888676961263,
+            "y": 0.4610351324081421,
+            "width": 0.6111111111111112,
+            "height": 0.5716797113418579
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1473,
+          "timestampMs": 49108,
+          "sourceFrameIndex": 1473,
+          "ball": {
+            "frameIndex": 1473,
+            "timestampMs": 49108,
+            "x": 0.6871528625488281,
+            "y": 0.6652343273162842,
+            "width": 0.16458331214057076,
+            "height": 0.09062498807907104,
+            "confidence": 0.943359375
+          },
+          "person": {
+            "x": 0.4376736217074924,
+            "y": 0.45585939288139343,
+            "width": 0.5871527989705404,
+            "height": 0.581250011920929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1474,
+          "timestampMs": 49142,
+          "sourceFrameIndex": 1474,
+          "ball": {
+            "frameIndex": 1474,
+            "timestampMs": 49142,
+            "x": 0.6815971798366971,
+            "y": 0.6568359136581421,
+            "width": 0.16597228580051,
+            "height": 0.087890625,
+            "confidence": 0.93701171875
+          },
+          "person": {
+            "x": 0.42847220102945965,
+            "y": 0.45439451932907104,
+            "width": 0.5486111111111112,
+            "height": 0.5927734375
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1475,
+          "timestampMs": 49175,
+          "sourceFrameIndex": 1475,
+          "ball": {
+            "frameIndex": 1475,
+            "timestampMs": 49175,
+            "x": 0.6749999788072374,
+            "y": 0.6546875238418579,
+            "width": 0.16388893127441406,
+            "height": 0.09140628576278687,
+            "confidence": 0.93798828125
+          },
+          "person": {
+            "x": 0.43559032016330296,
+            "y": 0.46142578125,
+            "width": 0.553819497426351,
+            "height": 0.6083984375
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1476,
+          "timestampMs": 49208,
+          "sourceFrameIndex": 1476,
+          "ball": {
+            "frameIndex": 1476,
+            "timestampMs": 49208,
+            "x": 0.6694444020589193,
+            "y": 0.6546875238418579,
+            "width": 0.16388882531060112,
+            "height": 0.09140628576278687,
+            "confidence": 0.9384765625
+          },
+          "person": {
+            "x": 0.43333329094780815,
+            "y": 0.4676758050918579,
+            "width": 0.5486110581292046,
+            "height": 0.6162109375
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1477,
+          "timestampMs": 49242,
+          "sourceFrameIndex": 1477,
+          "ball": {
+            "frameIndex": 1477,
+            "timestampMs": 49242,
+            "x": 0.6638889312744141,
+            "y": 0.6585937738418579,
+            "width": 0.16666666666666666,
+            "height": 0.09140628576278687,
+            "confidence": 0.95166015625
+          },
+          "person": {
+            "x": 0.4402777353922526,
+            "y": 0.47197264432907104,
+            "width": 0.5416666136847602,
+            "height": 0.6123046875
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1478,
+          "timestampMs": 49275,
+          "sourceFrameIndex": 1478,
+          "ball": {
+            "frameIndex": 1478,
+            "timestampMs": 49275,
+            "x": 0.6555555131700304,
+            "y": 0.667187511920929,
+            "width": 0.16388882531060112,
+            "height": 0.09218752384185791,
+            "confidence": 0.95263671875
+          },
+          "person": {
+            "x": 0.4527777565850152,
+            "y": 0.47773438692092896,
+            "width": 0.5236110687255859,
+            "height": 0.6015625
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1479,
+          "timestampMs": 49308,
+          "sourceFrameIndex": 1479,
+          "ball": {
+            "frameIndex": 1479,
+            "timestampMs": 49308,
+            "x": 0.6482639312744141,
+            "y": 0.6792968511581421,
+            "width": 0.16458331214057076,
+            "height": 0.09296876192092896,
+            "confidence": 0.93115234375
+          },
+          "person": {
+            "x": 0.47864580154418945,
+            "y": 0.4820312559604645,
+            "width": 0.4857638676961263,
+            "height": 0.590624988079071
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1480,
+          "timestampMs": 49341,
+          "sourceFrameIndex": 1480,
+          "ball": {
+            "frameIndex": 1480,
+            "timestampMs": 49341,
+            "x": 0.6437500847710503,
+            "y": 0.6925780773162842,
+            "width": 0.16527779897054037,
+            "height": 0.09453123807907104,
+            "confidence": 0.93798828125
+          },
+          "person": {
+            "x": 0.4812500211927626,
+            "y": 0.48359373211860657,
+            "width": 0.4861111111111111,
+            "height": 0.586718738079071
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1481,
+          "timestampMs": 49375,
+          "sourceFrameIndex": 1481,
+          "ball": {
+            "frameIndex": 1481,
+            "timestampMs": 49375,
+            "x": 0.6444443596733941,
+            "y": 0.6878906488418579,
+            "width": 0.16527779897054037,
+            "height": 0.09687501192092896,
+            "confidence": 0.9326171875
+          },
+          "person": {
+            "x": 0.48055553436279297,
+            "y": 0.4844726622104645,
+            "width": 0.49444447623358834,
+            "height": 0.5865234732627869
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1482,
+          "timestampMs": 49408,
+          "sourceFrameIndex": 1482,
+          "ball": {
+            "frameIndex": 1482,
+            "timestampMs": 49408,
+            "x": 0.6381944020589193,
+            "y": 0.6792968511581421,
+            "width": 0.16527779897054037,
+            "height": 0.10390621423721313,
+            "confidence": 0.9150390625
+          },
+          "person": {
+            "x": 0.47708336512247723,
+            "y": 0.48408204317092896,
+            "width": 0.5055555767483182,
+            "height": 0.5888671875
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1483,
+          "timestampMs": 49441,
+          "sourceFrameIndex": 1483,
+          "ball": {
+            "frameIndex": 1483,
+            "timestampMs": 49441,
+            "x": 0.6319444444444444,
+            "y": 0.669140636920929,
+            "width": 0.16805564032660592,
+            "height": 0.09765625,
+            "confidence": 0.93310546875
+          },
+          "person": {
+            "x": 0.47725693384806317,
+            "y": 0.48173829913139343,
+            "width": 0.5163193808661567,
+            "height": 0.591992199420929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1484,
+          "timestampMs": 49475,
+          "sourceFrameIndex": 1484,
+          "ball": {
+            "frameIndex": 1484,
+            "timestampMs": 49475,
+            "x": 0.6256944868299696,
+            "y": 0.6652343273162842,
+            "width": 0.1694445080227322,
+            "height": 0.09687501192092896,
+            "confidence": 0.94140625
+          },
+          "person": {
+            "x": 0.4730902777777778,
+            "y": 0.4813476502895355,
+            "width": 0.520486142900255,
+            "height": 0.595898449420929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1485,
+          "timestampMs": 49508,
+          "sourceFrameIndex": 1485,
+          "ball": {
+            "frameIndex": 1485,
+            "timestampMs": 49508,
+            "x": 0.6187500423855252,
+            "y": 0.6656249761581421,
+            "width": 0.17083326975504556,
+            "height": 0.09765625,
+            "confidence": 0.93603515625
+          },
+          "person": {
+            "x": 0.46892356872558594,
+            "y": 0.48173826932907104,
+            "width": 0.5190971692403158,
+            "height": 0.5943359136581421
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1486,
+          "timestampMs": 49541,
+          "sourceFrameIndex": 1486,
+          "ball": {
+            "frameIndex": 1486,
+            "timestampMs": 49541,
+            "x": 0.613194465637207,
+            "y": 0.669140636920929,
+            "width": 0.1708333757188585,
+            "height": 0.09609377384185791,
+            "confidence": 0.9521484375
+          },
+          "person": {
+            "x": 0.4675347540113661,
+            "y": 0.4844726622104645,
+            "width": 0.5177083545260959,
+            "height": 0.595898449420929
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1487,
+          "timestampMs": 49575,
+          "sourceFrameIndex": 1487,
+          "ball": {
+            "frameIndex": 1487,
+            "timestampMs": 49575,
+            "x": 0.6069444020589193,
+            "y": 0.677734375,
+            "width": 0.1694445080227322,
+            "height": 0.09609377384185791,
+            "confidence": 0.95703125
+          },
+          "person": {
+            "x": 0.4520833757188585,
+            "y": 0.49189454317092896,
+            "width": 0.5375000105963813,
+            "height": 0.5998046398162842
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1488,
+          "timestampMs": 49608,
+          "sourceFrameIndex": 1488,
+          "ball": {
+            "frameIndex": 1488,
+            "timestampMs": 49608,
+            "x": 0.6020833121405708,
+            "y": 0.6898437738418579,
+            "width": 0.1708333757188585,
+            "height": 0.09765625,
+            "confidence": 0.94189453125
+          },
+          "person": {
+            "x": 0.43767356872558594,
+            "y": 0.4942382872104645,
+            "width": 0.5607638359069824,
+            "height": 0.597460925579071
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1489,
+          "timestampMs": 49641,
+          "sourceFrameIndex": 1489,
+          "ball": {
+            "frameIndex": 1489,
+            "timestampMs": 49641,
+            "x": 0.5965277353922526,
+            "y": 0.705078125,
+            "width": 0.16666666666666666,
+            "height": 0.09609377384185791,
+            "confidence": 0.92529296875
+          },
+          "person": {
+            "x": 0.4305555555555556,
+            "y": 0.4921875,
+            "width": 0.5680555237664117,
+            "height": 0.5945312976837158
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        },
+        {
+          "frameIndex": 1490,
+          "timestampMs": 49675,
+          "sourceFrameIndex": 1490,
+          "ball": {
+            "frameIndex": 1490,
+            "timestampMs": 49675,
+            "x": 0.5930555131700304,
+            "y": 0.71875,
+            "width": 0.16666666666666666,
+            "height": 0.09609377384185791,
+            "confidence": 0.92822265625
+          },
+          "person": {
+            "x": 0.4263888994852702,
+            "y": 0.4898437261581421,
+            "width": 0.5791667302449545,
+            "height": 0.5921875238418579
+          },
+          "cameraOffsetY": 0.0,
+          "reliable": true
+        }
+      ]
+    }
+  ]
+}

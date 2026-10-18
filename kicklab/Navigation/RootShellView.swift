@@ -49,7 +49,16 @@ struct RootShellView: View {
             }
         }
         .animation(.smooth(duration: 0.4), value: hasEnteredApp)
+        #if DEBUG && TOUCH_COUNTING_DEBUG
+        .safeAreaInset(edge: .top, spacing: 0) {
+            Text("Touch test · Clear chest allowed")
+                .font(.caption.weight(.semibold))
+                .frame(maxWidth: .infinity).padding(.vertical, 6)
+                .background(.yellow.opacity(0.2))
+        }
+        #endif
         .modifier(SoftHaloOpening())
+        .debugRuntimeOverlay()
         .overlay(alignment: .top) {
             if hasEnteredApp && sheet == nil && !showsProfile { AccountErrorBanner().padding() }
         }

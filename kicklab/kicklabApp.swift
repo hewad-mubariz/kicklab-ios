@@ -6,6 +6,7 @@
 import SwiftUI
 import StoreKit
 
+#if !BALL_DETECTION_DEBUG && !POWER_SHOT_DEBUG
 @main
 struct kicklabApp: App {
     @UIApplicationDelegateAdaptor(VideoSaveAppDelegate.self) private var appDelegate
@@ -32,6 +33,9 @@ struct kicklabApp: App {
         _player = StateObject(wrappedValue: PlayerStore.live(account: account))
         #endif
         #if DEBUG
+        #if TOUCH_COUNTING_DEBUG
+        UserDefaults.standard.set(true, forKey: "kicklab.welcome.completed")
+        #endif
         // Reset once before the first view is created. A UserDefaults launch
         // override would keep forcing false even after the guest button writes true.
         if ProcessInfo.processInfo.arguments.contains("--reset-welcome") {
@@ -76,6 +80,17 @@ struct kicklabApp: App {
             .task {
                 await subscriptions.refreshEntitlements()
                 #if DEBUG
+                if let folder = SessionDesignReview.argument("--touch-contact-replay") {
+                    await TouchContactReplay.run(folderName: folder)
+                }
+                if let folder = SessionDesignReview.argument("--rf-full-app-check") {
+                    await RFAppValidation.run(folderName: folder)
+                }
+                #if TOUCH_COUNTING_DEBUG
+                if let folder = SessionDesignReview.argument("--frame-rate-replay") {
+                    await FrameRateReplay.run(folderName: folder)
+                }
+                #endif
                 // Read-only device smoke check outside StoreKit Test's local catalog.
                 if ProcessInfo.processInfo.arguments.contains("--verify-subscription-catalog") {
                     await subscriptions.loadProducts()
@@ -129,3 +144,4 @@ struct kicklabApp: App {
         }
     }
 }
+#endif

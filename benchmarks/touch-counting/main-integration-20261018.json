@@ -1,0 +1,144 @@
+{
+  "date": "2026-10-18",
+  "app": {
+    "name": "Juggle Dude",
+    "bundle_id": "com.juggledude",
+    "version": "1.0.1",
+    "build": 22,
+    "scheme": "JuggleDude"
+  },
+  "status": "Local testing checkpoint; not release-qualified; no TestFlight upload.",
+  "scope": [
+    "Shared-weight RF-DETR rf288/rf384 package and local hardware policy",
+    "Buffered live pipeline and selective effects preparation",
+    "Current main-app juggling contact/ground/handling rules retained",
+    "Current main-app Power Shot camera timeline, moves and exports retained"
+  ],
+  "builds": {
+    "debug": "passed",
+    "release_unsigned": "passed",
+    "pinned_model_hashes": "passed",
+    "compiled_model_bytes": 62628865,
+    "compiled_model_count": 1
+  },
+  "devices": {
+    "iphone11": {
+      "hardware": "iPhone12,5",
+      "function": "rf288",
+      "backend": "CPU (compatibility)",
+      "paced_replay": {
+        "expected_end_seconds": 30,
+        "last_source_seconds": 29.998333333333335,
+        "elapsed_seconds": 30.465215083328076,
+        "source_frames": 1796,
+        "admitted_frames": 898,
+        "processed_frames": 898,
+        "count": 32,
+        "late_source_skips": 0,
+        "trace_replay_exact": true
+      },
+      "pipeline": {
+        "late_replies": 0,
+        "overflow_drops": 0,
+        "quality_failed": false,
+        "errors": [],
+        "counter": {
+          "maximum_queue_depth": 10,
+          "outstanding": 0,
+          "processed": 898,
+          "queue_capacity": 32
+        }
+      },
+      "fire_export": {
+        "source_sha256": "b055c16c3b7ec53c9dfb5859bb1a0728b3c535511789d7182abd60dc3ce746b9",
+        "duration": 8.07,
+        "count": 2,
+        "elapsed_seconds": 8.595877083338564,
+        "export_seconds": 3.124269624997396,
+        "positions_only": true,
+        "touches_unchanged": true,
+        "thermal_before": 0,
+        "thermal_after": 0
+      },
+      "regression_tests": {
+        "total": 272,
+        "passed": 271,
+        "failed": 1,
+        "remaining_failure": "Custom freeze export background blue-channel comparison differs by 3/255, exceeding tolerance 2. Root cause unresolved; no production workaround applied.",
+        "evidence": [
+          "iphone11-unit-signed.xcresult",
+          "iphone11-freeze-owned-frame.xcresult",
+          "simulator-freeze-diagnostic.xcresult"
+        ],
+        "additional_check": "The same custom-freeze assertion passes on Simulator; the iPhone 11 deviation is still unresolved."
+      },
+      "normal_launch": "Normal main-app home screen verified by Xcode screenshot; user subsequently clarified black-screen report concerned iPhone 17."
+    },
+    "iphone17": {
+      "hardware": "iPhone18,2",
+      "function": "rf384",
+      "backend": "CPU + GPU",
+      "paced_replay": {
+        "expected_end_seconds": 30,
+        "last_source_seconds": 29.998333333333335,
+        "elapsed_seconds": 30.351896916690748,
+        "source_frames": 1796,
+        "admitted_frames": 898,
+        "processed_frames": 898,
+        "count": 30,
+        "late_source_skips": 0,
+        "trace_replay_exact": true
+      },
+      "pipeline": {
+        "late_replies": 0,
+        "overflow_drops": 0,
+        "quality_failed": false,
+        "errors": [],
+        "counter": {
+          "maximum_queue_depth": 8,
+          "outstanding": 0,
+          "processed": 898,
+          "queue_capacity": 32
+        }
+      },
+      "fire_export": {
+        "source_sha256": "b055c16c3b7ec53c9dfb5859bb1a0728b3c535511789d7182abd60dc3ce746b9",
+        "duration": 8.07,
+        "count": 3,
+        "elapsed_seconds": 1.8286747916718014,
+        "export_seconds": 1.2295576250180602,
+        "positions_only": true,
+        "touches_unchanged": true,
+        "thermal_before": 0,
+        "thermal_after": 0
+      },
+      "regression_tests": {
+        "initial_total": 272,
+        "initial_passed": 271,
+        "initial_failed": 1,
+        "fixed_failure": "Slow-motion test used a host filesystem fixture path; now uses bundled resource. Focused rerun passed.",
+        "evidence": [
+          "iphone17-unit.xcresult",
+          "iphone17-slow-motion.xcresult"
+        ]
+      },
+      "display_recovery": {
+        "app_running_during_black_screen": false,
+        "prior_launch_error": "SOS active",
+        "action": "User confirmed no emergency call; devicectl full reboot",
+        "result": "User confirmed unlocked, screen normal",
+        "cause": "Not established; black screen observed while app process was absent.",
+        "verification": "Xcode screenshot 2026-10-18 10:31:23 shows Juggle Dude home."
+      },
+      "final_install": "Final main Debug build installed after reboot; normal no-argument launch succeeded and home screen visibly verified with rf384."
+    }
+  },
+  "limitations": [
+    "Different resolutions produced different counts; these runs do not establish equal counting accuracy.",
+    "No physical iPhone 14 qualification in this checkpoint.",
+    "Prior distant/fast-ball misses at 288 and isolated iPhone 17 GPU stall remain release-validation items.",
+    "Main camera UI checks have not passed: navigation/setup failures; StoreKit UI fixture setup also failed on phone and simulator.",
+    "iPhone 17 live-camera harness timed out, then iOS refused launch with SOS active. Device black-screen recovery is tracked separately from model results."
+  ],
+  "evidence_root": "artifacts/main-integration-20261018"
+}

@@ -4,20 +4,12 @@ import Foundation
 /// and ground bounces add nothing. This helper supplies a conservative hand veto;
 /// it does not claim to label every remaining touch's body part.
 nonisolated enum JugglingContactRules {
-    struct Point {
-        var x, y: Double
-    }
+    typealias Point = PosePoint
 
-    struct HandLandmark {
-        /// Zero is the wrist; 1...5 identify the five fingers.
-        var finger: Int
-        var x, y, confidence: Double
-    }
-
-    static func canResolveTorsoOverlap(ball: Point, height: Double, joints: [String: Point]) -> Bool {
+    static func canResolveTorsoOverlap(ball: Point, height: Double, joints: [BodyJoint: Point]) -> Bool {
         guard height.isFinite, height > 0,
-              let leftHip = joints["left_hip"], let rightHip = joints["right_hip"],
-              let nose = joints["nose"] else { return false }
+              let leftHip = joints[.leftHip], let rightHip = joints[.rightHip],
+              let nose = joints[.nose] else { return false }
         return ball.y > nose.y && ball.y + height / 2 < min(leftHip.y, rightHip.y)
     }
 
@@ -39,7 +31,7 @@ nonisolated enum JugglingContactRules {
     /// Segment attribution follows the lab's pose.py, including its protection
     /// against a wrist near a legitimate leg touch. Inputs share normalized
     /// upright video coordinates. Only sufficiently confident joints belong here.
-    static func isHand(ball: Point, width: Double, joints: [String: Point]) -> Bool {
+    static func isHand(ball: Point, width: Double, joints: [BodyJoint: Point]) -> Bool {
         func distance(_ a: Point, _ b: Point) -> Double { hypot(a.x - b.x, a.y - b.y) }
         func middle(_ a: Point, _ b: Point) -> Point {
             Point(x: (a.x + b.x) / 2, y: (a.y + b.y) / 2)
@@ -54,31 +46,31 @@ nonisolated enum JugglingContactRules {
             return (distance(ball, Point(x: a.x + t * dx, y: a.y + t * dy)), t)
         }
         // A midpoint alone confuses arms hanging beside a torso with a grip.
-        if width > 0, let left = joints["left_wrist"], let right = joints["right_wrist"],
+        if width > 0, let left = joints[.leftWrist], let right = joints[.rightWrist],
            distance(ball, middle(left, right)) <= 0.07, distance(left, right) <= 1.5 * width {
             return true
         }
         var hand = Double.infinity, legal = Double.infinity
-        for side in ["left", "right"] {
-            if let hip = joints[side + "_hip"], let knee = joints[side + "_knee"] {
+        for side in BodySide.allCases {
+            if let hip = joints[side.hip], let knee = joints[side.knee] {
                 legal = min(legal, segment(hip, knee).0)
             }
-            if let knee = joints[side + "_knee"], let ankle = joints[side + "_ankle"] {
+            if let knee = joints[side.knee], let ankle = joints[side.ankle] {
                 legal = min(legal, segment(knee, extend(knee, ankle, by: 0.6)).0)
             }
-            if let shoulder = joints[side + "_shoulder"], let elbow = joints[side + "_elbow"] {
+            if let shoulder = joints[side.shoulder], let elbow = joints[side.elbow] {
                 let (d, along) = segment(shoulder, elbow)
                 if along < 0.3 { legal = min(legal, d) } else { hand = min(hand, d) }
             }
-            if let elbow = joints[side + "_elbow"], let wrist = joints[side + "_wrist"] {
+            if let elbow = joints[side.elbow], let wrist = joints[side.wrist] {
                 hand = min(hand, segment(elbow, wrist).0)
             }
         }
-        if let ls = joints["left_shoulder"], let rs = joints["right_shoulder"],
-           let lh = joints["left_hip"], let rh = joints["right_hip"] {
+        if let ls = joints[.leftShoulder], let rs = joints[.rightShoulder],
+           let lh = joints[.leftHip], let rh = joints[.rightHip] {
             let shoulders = middle(ls, rs)
             legal = min(legal, segment(shoulders, middle(lh, rh)).0)
-            if let nose = joints["nose"] {
+            if let nose = joints[.nose] {
                 legal = min(legal, segment(nose, extend(shoulders, nose, by: 0.5)).0)
             }
         }

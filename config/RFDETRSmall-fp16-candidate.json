@@ -1,0 +1,51 @@
+{
+  "resource": "RFDETRSmallRecovery040FP16",
+  "candidate": "v2.0.0-dev.8-rfsmall-confidence040-fp16",
+  "source_package": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/runs/v2/20261014-rfdetr-small-confidence040-001/float16/rfdetr-seg-small_fp16.mlpackage",
+  "precision": "FP16",
+  "input_type": "FP32",
+  "input": [
+    1,
+    3,
+    384,
+    384
+  ],
+  "foreground_compute": "cpuAndGPU",
+  "background_compute": "cpuOnly",
+  "ball_threshold": 0.4,
+  "person_threshold": 0.5,
+  "files": [
+    {
+      "path": "Data/com.apple.CoreML/model.mlmodel",
+      "sha256": "7e4605c3fb113fffeb3bb41cade1dbc0bbc3ba861f1c13c94ab557999062e0f2",
+      "bytes": 355558
+    },
+    {
+      "path": "Data/com.apple.CoreML/weights/weight.bin",
+      "sha256": "b060b3ac8819598542a90cdd4c8de33472ef55a1803726a9b9e97cc074aae190",
+      "bytes": 61416896
+    },
+    {
+      "path": "Manifest.json",
+      "sha256": "d6136d501cdd7be0a9e0580bbe3c1927f1ddd8aa56ec80341898e23612da2241",
+      "bytes": 617
+    },
+    {
+      "path": "executorch_debug_handle_mapping.json",
+      "sha256": "24af4f99dfd6bb0defb0454c017169b1c491236f745a529aed8dca538d2a9a22",
+      "bytes": 320885
+    }
+  ],
+  "status": "Main-app validation build 1.0.1 (20) installed. Seven clips / 14,590 source frames per variant / 160 accepted events preserve exact timestamps. Main-app fresh analysis and counter/timer export passed. Live-camera validation and release approval pending; no TestFlight upload.",
+  "prior_audit": "benchmarks/touch-counting/final-validation-20261015/rf-integration-audit.json",
+  "numerical_gate_note": "Historical 201-frame export check exceeded strict score-delta 0.03 on two below-threshold inputs; no threshold flips outside the 0.01 margin. Full-video comparisons are required before promotion.",
+  "source_candidate": "v2.0.0-dev.7-rfsmall-confidence040",
+  "checkpoint_sha256": "632cdb7b9159a2789f2ebc0c85b0dc9d164f989d861940a176e7a5763c534123",
+  "weights_comparison": {
+    "reference_checkpoint_sha256": "e837bedaa7357643958c78c37104dcd12808bd9bd8db10385c61c2d974149b94",
+    "identical_state_dict_tensors": 545,
+    "different_tensors": 0,
+    "evidence": "artifacts/rf-integration-audit-20261015/graph-and-provenance.json"
+  },
+  "validation_report": "benchmarks/touch-counting/final-validation-20261015/rf-fp16-validation.json"
+}

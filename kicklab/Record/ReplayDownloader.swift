@@ -56,6 +56,12 @@ final class ReplayDownloader: ObservableObject {
                   sceneModel: StadiumPreviewModel, preparation: SessionEffectsPreparation,
                   distanceTimeline: BallDistanceTimeline? = nil) async {
         guard !phase.isBusy else { return }
+        #if DEBUG
+        if FinalTestCoordinator.shared.analysisRunning, FinalTestCoordinator.shared.matches(summary.videoURL) {
+            phase = .failed("Wait for the validation analysis to finish before exporting."); return
+        }
+        FinalTestCoordinator.shared.exportStarted(summary.videoURL, settings: overlays)
+        #endif
         phase = .preparing
         let analyticsStart = ContinuousClock.now
         let activity: ProductEvent.Activity = distanceTimeline == nil ? .juggling : .ballDistance
@@ -74,14 +80,23 @@ final class ReplayDownloader: ObservableObject {
                     sceneModel: sceneModel, preparation: preparation, distanceTimeline: distanceTimeline)
             }
             outcome = .completed
+            #if DEBUG
+            await FinalTestCoordinator.shared.exportFinished(summary.videoURL, output: savedURL, error: nil)
+            #endif
         } catch is CancellationError {
             if case .saved = phase { outcome = .completed; return }
             outcome = .cancelled
             await burnIn.cancelAndWait()
             phase = .failed("Saving stopped. Tap Download to try again.")
+            #if DEBUG
+            await FinalTestCoordinator.shared.exportFinished(summary.videoURL, output: nil, error: "Export cancelled")
+            #endif
         } catch {
             await burnIn.cancelAndWait()
             phase = .failed(error.localizedDescription)
+            #if DEBUG
+            await FinalTestCoordinator.shared.exportFinished(summary.videoURL, output: nil, error: error.localizedDescription)
+            #endif
         }
     }
 
@@ -95,7 +110,7 @@ final class ReplayDownloader: ObservableObject {
         }
         let media: ScenePlayback
         do {
-            let ready = edit.ballSkin != .original ? try await preparation.prepare(summary) : summary
+            let ready = try await preparation.prepare(summary, for: edit)
             if let selection = edit.scene {
                 media = try await sceneModel.media(summary: ready, selection: selection)
             } else {
@@ -116,13 +131,23 @@ final class ReplayDownloader: ObservableObject {
             try await VideoWorkExecution.checkpoint()
             VideoWorkExecution.lease?.progress(burnIn.progress * 0.96, subtitle: "Saving your replay")
             phase = .exporting(burnIn.progress)
+            #if DEBUG
+            FinalTestCoordinator.shared.exportProgress(summary.videoURL, progress: burnIn.progress, saving: false)
+            #endif
             try await Task.sleep(for: .milliseconds(80))
         }
         guard let url = burnIn.outputURL else {
             throw NSError(domain: "ReplayExport", code: 2, userInfo: [NSLocalizedDescriptionKey: burnIn.status.isEmpty ? "Couldn’t render your replay." : burnIn.status])
         }
+        #if DEBUG && TOUCH_COUNTING_DEBUG
+        RFEffectsRoutingAudit.exported(source: summary.videoURL, output: url, track: media.track,
+            edit: edit, count: summary.touches, touches: summary.touchesMarked)
+        #endif
         try await VideoWorkExecution.checkpoint()
         phase = .saving
+        #if DEBUG
+        FinalTestCoordinator.shared.exportProgress(summary.videoURL, progress: 1, saving: true)
+        #endif
         do {
             try await PHPhotoLibrary.shared().performChanges {
                 PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)

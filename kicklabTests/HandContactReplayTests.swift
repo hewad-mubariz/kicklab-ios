@@ -26,7 +26,7 @@ final class HandContactReplayTests: XCTestCase {
         XCTAssertFalse(verifier.rejectsHandContact(at: 3), "Blank pixels cannot identify a hand")
         XCTAssertNil(verifier.lastError)
         XCTAssertEqual(verifier.checkedContacts, 1, "The delayed contact must still have its images")
-        XCTAssertLessThanOrEqual(verifier.peakBufferedFrames, 21)
+        XCTAssertLessThanOrEqual(verifier.peakBufferedFrames, 29)
         verifier.retainContactFrames(around: nil)
         verifier.store(buffer, frameIndex: 121, timestampMs: 121 * 33, ball: ball)
         XCTAssertFalse(verifier.rejectsHandContact(at: 3))

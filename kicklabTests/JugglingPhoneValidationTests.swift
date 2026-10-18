@@ -95,7 +95,7 @@ final class JugglingPhoneValidationTests: XCTestCase {
         let detector = try BallDetector(resourceName: "KickLabYOLOXTinyFineTuned", useROI: true)
         let verifier = JugglingContactVerifier()
         let counter = StreamingCounter(rejectsHandContact: { verifier.rejectsHandContact(at: $0) })
-        var plausibility = BallPlausibility()
+        var plausibility = BallPlausibility(policy: detector.plausibilityPolicy)
         var frames: [RecordedFrame] = []
         var costs: [Double] = []
         var index = 0
@@ -106,7 +106,7 @@ final class JugglingPhoneValidationTests: XCTestCase {
                 guard let pixels = CMSampleBufferGetImageBuffer(sample) else { return }
                 let time = CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sample)), stamp = Int(time * 1000)
                 var found = try detector.detect(pixels, orientLandscapeAsPortrait: false, timestamp: time)
-                if let ball = found.ball { found.ball = plausibility.accept(ball, frame: index) }
+                found = plausibility.filter(found, frame: index, timestampMs: stamp)
                 let person = found.person.map { PersonBox(x: $0.x, y: $0.y, width: $0.width, height: $0.height) }
                 verifier.store(pixels, frameIndex: index, timestampMs: stamp, ball: found.ball, orientLandscapeAsPortrait: false)
                 let observation = found.ball.map { BallObservation(frameIndex: index, timestampMs: stamp,

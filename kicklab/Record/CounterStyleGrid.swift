@@ -5,6 +5,7 @@ import SwiftUI
 struct CounterStyleGrid: View {
     @Binding var item: ExportOverlayItem
     var showsProBadges = false
+    var onUnlock: () -> Void = {}
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var kicks: [ExportBadgeStyle: Int] = [:]
 
@@ -19,6 +20,7 @@ struct CounterStyleGrid: View {
     private func tile(_ style: ExportBadgeStyle) -> some View {
         let selected = item.style == style
         return Button {
+            guard !showsProBadges || !style.requiresPro else { onUnlock(); return }
             kicks[style, default: 0] += 1
             withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) {
                 item.style = style
@@ -43,7 +45,7 @@ struct CounterStyleGrid: View {
                         }
                     }
                     .overlay(alignment: .topLeading) {
-                        if showsProBadges { ProBadge().padding(4) }
+                        if showsProBadges && style.requiresPro { ProBadge().padding(4) }
                     }
                     .sessionKick(kicks[style, default: 0], amount: 0.08)
                 Text(style.title)

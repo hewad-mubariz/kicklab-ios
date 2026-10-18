@@ -4,6 +4,7 @@ import Foundation
 nonisolated enum ExportBadgeStyle: String, CaseIterable, Identifiable, Codable, Sendable {
     case normal, classic, odometer, broadcast, comic, neon, molten, glitch, graffiti, jelly, goldCoin, chalk
     var id: String { rawValue }
+    var requiresPro: Bool { self != .normal }
     var title: String {
         switch self {
         case .normal: "Normal"
@@ -132,16 +133,18 @@ nonisolated struct ExportGraphSettings: Codable, Equatable, Sendable {
 nonisolated struct ExportOverlaySettings: Codable, Equatable, Sendable {
     var counter = ExportOverlayItem(enabled: true, style: .normal, placement: .init(x: 0.04, y: 0.08, scale: 0.65))
     var graph = ExportGraphSettings()
-    var hasVisibleOverlays: Bool { counter.enabled || graph.enabled }
+    var showTimer = true
+    var hasVisibleOverlays: Bool { counter.enabled || graph.enabled || showTimer }
 
     init() {}
 
-    private enum CodingKeys: String, CodingKey { case counter, graph }
+    private enum CodingKeys: String, CodingKey { case counter, graph, showTimer }
     init(from decoder: any Decoder) throws {
         self.init()
         let values = try decoder.container(keyedBy: CodingKeys.self)
         counter = try values.decodeIfPresent(ExportOverlayItem.self, forKey: .counter) ?? counter
         graph = try values.decodeIfPresent(ExportGraphSettings.self, forKey: .graph) ?? graph
+        showTimer = try values.decodeIfPresent(Bool.self, forKey: .showTimer) ?? showTimer
     }
 
     static func load(defaults: UserDefaults = .standard) -> Self {
@@ -175,7 +178,7 @@ nonisolated struct ExportOverlaySettings: Codable, Equatable, Sendable {
     }
 }
 
-/// Playback controls only; this label is never drawn into the exported video.
+/// Shared elapsed-time formatting for playback and the exported timer.
 nonisolated enum ExportPreviewTime {
     static func seconds(at time: Double) -> Int {
         Int(time.isFinite ? min(9_999_999, max(0, time)).rounded(.down) : 0)

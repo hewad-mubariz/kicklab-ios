@@ -3,6 +3,7 @@ import SwiftUI
 enum ReplayTool: String, Identifiable {
     case counter = "Counter", timer = "Timer", ball = "Ball", effects = "Effects", graph = "Graph"
     var id: String { rawValue }
+    var requiresPro: Bool { self != .counter && self != .timer }
 }
 
 /// The Customize panel. Tools open in place, like a tray: the panel's height glides to fit
@@ -120,7 +121,7 @@ struct ReplayToolbox: View {
     }
 
     private func go(_ next: ReplayTool?) {
-        if !isPro, let next, next != .timer {
+        if !isPro, let next, next.requiresPro {
             onUnlockTool(next)
             return
         }
@@ -170,7 +171,7 @@ struct ReplayToolbox: View {
                 preview(for: tool).frame(height: 52).accessibilityHidden(true)
                 HStack(spacing: 4) {
                     Text(tool.rawValue).font(.system(size: 11, weight: .medium))
-                    if !isPro && tool != .timer { ProBadge() }
+                    if !isPro && tool.requiresPro { ProBadge() }
                 }
             }.padding(.horizontal, 10).padding(.vertical, 10)
                 .frame(maxWidth: .infinity)
@@ -182,7 +183,7 @@ struct ReplayToolbox: View {
                 }
                 .contentShape(.rect(cornerRadius: 17))
         }.buttonStyle(SessionPressStyle(scale: 0.92))
-            .accessibilityLabel(tool.rawValue + (!isPro && tool != .timer ? ", Pro" : ""))
+            .accessibilityLabel(tool.rawValue + (!isPro && tool.requiresPro ? ", Pro" : ""))
             .accessibilityIdentifier("replay-tool-\(tool.rawValue.lowercased())")
     }
 
@@ -233,7 +234,7 @@ struct ReplayToolbox: View {
         case .ball: ballPage
         case .effects: effectsPage
         case .timer:
-            togglePage(title: "Show elapsed time", note: "Time appears in the playback readout.", isOn: $showTime) {
+            togglePage(title: "Show elapsed time", note: "Include the timer in your replay and saved video.", isOn: $showTime) {
                 TimerPreview()
             }
         case .graph:
@@ -247,7 +248,7 @@ struct ReplayToolbox: View {
     /// Placement is direct: tapping the counter on the video lets you drag, pinch and twist it.
     private var counterPage: some View {
         VStack(alignment: .leading, spacing: 12) {
-            CounterStyleGrid(item: $counter, showsProBadges: !isPro)
+            CounterStyleGrid(item: $counter, showsProBadges: !isPro, onUnlock: { onUnlockTool(.counter) })
                 .padding(.horizontal, 16)
             HStack(spacing: 10) {
                 Image(systemName: "hand.draw").font(.system(size: 15)).foregroundStyle(SessionStyle.mint)

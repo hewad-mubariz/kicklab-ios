@@ -61,7 +61,7 @@ private final class BackgroundVideoReviewModel: ObservableObject {
                                     smoothedY: 0.8 - f * 0.5, vy: 0, motion: .unknown, detected: true, person: nil)
                             }
                             return try await ShotEffectExporter.render(source: source, track: BallEffectTrack(frames: frames),
-                                style: .fireTrail, camera: ShotCameraSettings(style: .split)) { value in
+                                style: .fireTrail, camera: ShotCameraTrack(clips: [ShotCameraClip(move: .split, start: 0, end: 20)])) { value in
                                     VideoWorkExecution.lease?.progress(0.2 + value * 0.8, subtitle: "Exporting shot")
                                     if mode == "shot-cancel" && value >= 0.3 { VideoWorkExecution.lease?.expire() }
                                     Task { await self.record(progress: value, phase: "Exporting") }

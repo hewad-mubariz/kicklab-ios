@@ -54,7 +54,7 @@ struct TrainingProfileView: View {
                             }
                         }
                     }
-                    ProProfileCard()
+                    if !SubscriptionStore.isFreeDebugBuild { ProProfileCard() }
                     record
                     NavigationLink {
                         SessionHistoryContent(store: player.history)

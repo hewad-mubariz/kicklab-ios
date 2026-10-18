@@ -51,6 +51,7 @@ final class ExportOverlayPersistenceTests: XCTestCase {
 
     func testGraphPreferencesRoundTripAndInvalidateSavedReplay() throws {
         var settings = ExportOverlaySettings()
+        settings.showTimer = false
         settings.counter.enabled = false
         XCTAssertFalse(settings.hasVisibleOverlays)
         let original = settings
@@ -64,6 +65,17 @@ final class ExportOverlayPersistenceTests: XCTestCase {
         let restored = try JSONDecoder().decode(ExportOverlaySettings.self, from: oldStyle)
         XCTAssertTrue(restored.graph.enabled)
         XCTAssertEqual(restored.graph.style, .ballMotion)
+    }
+
+    func testTimerDefaultsOnForExistingUsersAndItsToggleSurvivesRelaunch() throws {
+        var settings = try JSONDecoder().decode(ExportOverlaySettings.self, from: Data("{}".utf8))
+        XCTAssertTrue(settings.showTimer)
+        settings.counter.enabled = false
+        XCTAssertTrue(settings.hasVisibleOverlays, "A timer-only export still needs rendering")
+        settings.showTimer = false
+        XCTAssertFalse(settings.hasVisibleOverlays)
+        XCTAssertEqual(try JSONDecoder().decode(ExportOverlaySettings.self,
+            from: JSONEncoder().encode(settings)), settings)
     }
 }
 

@@ -155,6 +155,7 @@ struct ExportOverlayTests {
             return CGPoint(x: xSum / weight, y: ySum / weight)
         }
         var settings = ExportOverlaySettings()
+        settings.showTimer = false
         settings.counter.style = .odometer
         settings.counter.placement = .init(x: 0.5, y: 0.5)
         let upright = centroid(try render(settings))

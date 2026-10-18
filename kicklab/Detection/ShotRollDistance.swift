@@ -262,6 +262,10 @@ nonisolated struct ShotRollTracker {
     private var hasLeftStartArea = false
     private(set) var recoveredPreRollGapS: Double?
     private(set) var speed = ShotRollSpeedEstimator()
+    #if POWER_SHOT_DEBUG
+    private(set) var debugStep: [String: Double] = [:]
+    private(set) var debugRejection: String?
+    #endif
 
     mutating func reset() { self = Self() }
 
@@ -270,6 +274,9 @@ nonisolated struct ShotRollTracker {
         distanceM = 0; needsNewStart = false
         hasLeftStartArea = false; recoveredPreRollGapS = nil
         speed.reset(); speed.observe(point: point, time: time)
+        #if POWER_SHOT_DEBUG
+        debugStep = [:]; debugRejection = nil
+        #endif
     }
 
     mutating func invalidate() {
@@ -278,6 +285,9 @@ nonisolated struct ShotRollTracker {
 
     mutating func observe(point: SIMD3<Float>, time: Double) -> Bool {
         recoveredPreRollGapS = nil
+        #if POWER_SHOT_DEBUG
+        debugStep = [:]
+        #endif
         guard let origin, !needsNewStart, time.isFinite,
               [point.x, point.y, point.z].allSatisfy(\.isFinite) else { return false }
         let distance = simd_distance(point, origin)
@@ -285,6 +295,10 @@ nonisolated struct ShotRollTracker {
             let dt = time - lastTime
             guard dt > 0 else { return false }
             let step = simd_distance(point, lastPoint)
+            #if POWER_SHOT_DEBUG
+            debugStep = ["tracker_interval_s": dt, "tracker_step_m": Double(step),
+                         "tracker_step_limit_m": Double(Float(dt) * 6 + 0.12)]
+            #endif
             // A hand can briefly hide the resting ball before the push. Only
             // recover near the original start, before leaving that area; never
             // bridge missing motion or keep an old speed window across the gap.
@@ -292,7 +306,11 @@ nonisolated struct ShotRollTracker {
                 && distance <= 0.08 && simd_distance(lastPoint, origin) <= 0.08
                 && step <= 0.03
             guard (dt <= 0.8 || recoverAtStart), step <= Float(dt) * 6 + 0.12 else {
-                invalidate(); return false
+                invalidate()
+                #if POWER_SHOT_DEBUG
+                debugRejection = dt > 0.8 && !recoverAtStart ? "observation_gap" : "movement_limit"
+                #endif
+                return false
             }
             if recoverAtStart {
                 // observe below clears the live window for this gap while

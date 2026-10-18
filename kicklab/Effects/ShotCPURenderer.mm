@@ -5,7 +5,7 @@
 
 namespace {
 struct FXUniforms { float4 viewport,ball,motion,region,control,tint,environment; };
-struct ShotCameraUniforms { float4 viewport,crop,lens,guide,inset,layout; };
+struct ShotCameraUniforms { float4 v[24]; };
 #include "Metal/ShotShaderMath.h"
 #include "Metal/ShotTrails.h"
 
@@ -46,7 +46,8 @@ static void store(uint8_t *p,float4 c) { p[0]=lroundf(saturate(c.z)*255);p[1]=lr
 }
 
 bool KLRenderShotCPU(CVPixelBufferRef pixels,const void *uniforms,const simd_float4 *trail,
-                     const void *camera,const simd_float4 *path,bool effects,bool cameraActive) {
+                     const void *camera,const simd_float4 *path,const simd_float4 *stamps,
+                     const uint8_t *atlasBytes,int atlasWidth,int atlasHeight,bool effects,bool cameraActive) {
     if(CVPixelBufferGetPixelFormatType(pixels)!=kCVPixelFormatType_32BGRA || CVPixelBufferLockBaseAddress(pixels,0)!=kCVReturnSuccess)return false;
     auto bytes=(uint8_t *)CVPixelBufferGetBaseAddress(pixels);
     if(!bytes){CVPixelBufferUnlockBaseAddress(pixels,0);return false;}
@@ -82,8 +83,20 @@ bool KLRenderShotCPU(CVPixelBufferRef pixels,const void *uniforms,const simd_flo
     if(cameraActive){
         std::vector<uint8_t> composited(bytes,bytes+stride*h);
         CPUTexture source{composited.data(),w,h,stride},raw{original.data(),w,h,stride};
+        CPUTexture atlas=atlasBytes&&atlasWidth>0&&atlasHeight>0?CPUTexture{atlasBytes,atlasWidth,atlasHeight,atlasWidth*4}:source;
+        // Rack Focus reads a blurred copy of the picture.
+        std::vector<uint8_t> soft;
+        CPUTexture blurred=source;
+        if(cam.v[10].w>.001f){
+            Tile tile(size_t(w)*h);
+            for(int y=0;y<h;y++)for(int x=0;x<w;x++)tile[size_t(y)*w+x]=source.pixel(x,y);
+            Tile b=blur(tile,w,h,max(2.f,7.5f*w/720.f));
+            soft.resize(size_t(w)*h*4);
+            for(size_t i=0;i<b.size();i++)store(soft.data()+i*4,b[i]);
+            blurred=CPUTexture{soft.data(),w,h,w*4};
+        }
         dispatch_apply(h,dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),^(size_t y){
-            for(int x=0;x<w;x++)store(bytes+y*stride+x*4,shotCameraPixel(source,raw,cam,path,float2(x+.5f,y+.5f)));
+            for(int x=0;x<w;x++)store(bytes+y*stride+x*4,shotCameraPixel(source,raw,atlas,blurred,cam,path,stamps,float2(x+.5f,y+.5f)));
         });
     }
     CVPixelBufferUnlockBaseAddress(pixels,0);return true;

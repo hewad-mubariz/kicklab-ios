@@ -19,12 +19,10 @@ if [[ "$lane" == backend || "$lane" == all ]]; then
 fi
 
 if [[ "$lane" == release || "$lane" == logic || "$lane" == all ]]; then
-  for model in KickLabYOLO26MotionSegmentation; do
-    if [[ ! -f "kicklab/Models/$model.mlpackage/Manifest.json" ]]; then
-      echo "INCOMPLETE: missing local model $model; obtain the approved model package before building"
-      exit 2
-    fi
-  done
+  if ! python3 scripts/install-rf-model.py --check; then
+    echo "INCOMPLETE: install the manifest-pinned shared RF package with scripts/install-rf-model.py SOURCE.mlpackage"
+    exit 2
+  fi
 fi
 
 if [[ "$lane" == release || "$lane" == all ]]; then

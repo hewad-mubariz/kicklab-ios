@@ -24,16 +24,19 @@ struct ShotVideoSurface: UIViewRepresentable {
     let style: ShotTrailStyle
     var intensity = 1.0
     let track: BallEffectTrack
-    var camera = ShotCameraSettings()
-    var flight: ShotFlight?
-    var clock = ShotReplayClock()
+    /// The camera track, worked out for this edit. Nil shows the original framing.
+    var plan: ShotCameraPlan?
+    /// The clock of the player's current item (it may lag a fresh plan while it is rebuilt).
+    var timeline = ShotEditTimeline()
+    var atlas: ShotSpriteAtlas?
+    var arc: ShotArcLayers?
     var onFailure: (String) -> Void = { _ in }
 
     func makeUIView(context: Context) -> EffectVideoView { EffectVideoView() }
     func updateUIView(_ view: EffectVideoView, context: Context) {
         view.onFailure = onFailure
         view.configure(player: player, shot: style, intensity: intensity, track: track,
-                       camera: camera, flight: flight, clock: clock)
+                       plan: plan, timeline: timeline, atlas: atlas, arc: arc)
     }
     static func dismantleUIView(_ view: EffectVideoView, coordinator: ()) { view.stop() }
 }
@@ -68,9 +71,11 @@ final class EffectVideoView: MTKView {
     private var edit = SessionEditState()
     /// Set for a Power Shot replay; juggling replays build their frame from `edit`.
     private var shot: (style: ShotTrailStyle, intensity: Double)?
-    private var shotCamera = ShotCameraSettings()
-    private var shotFlight: ShotFlight?
-    private var shotClock = ShotReplayClock()
+    private var shotPlan: ShotCameraPlan?
+    private var shotTimeline = ShotEditTimeline()
+    private var shotAtlas: ShotSpriteAtlas?
+    private var shotArc: ShotArcLayers?
+    private var shotLocation: ShotEditTimeline.Location?
     private var track = BallEffectTrack(frames: [])
     private var dirty = true
     private var previousSize = CGSize.zero
@@ -156,13 +161,15 @@ final class EffectVideoView: MTKView {
     }
 
     func configure(player: AVPlayer, shot style: ShotTrailStyle, intensity: Double, track: BallEffectTrack,
-                   camera: ShotCameraSettings = .init(), flight: ShotFlight? = nil, clock: ShotReplayClock = .init()) {
+                   plan: ShotCameraPlan? = nil, timeline: ShotEditTimeline = .init(), atlas: ShotSpriteAtlas? = nil,
+                   arc: ShotArcLayers? = nil) {
         if shot?.style != style || shot?.intensity != intensity || self.track.samples.count != track.samples.count ||
-            shotCamera != camera || shotClock != clock || shotFlight != flight {
+            shotPlan !== plan || shotTimeline != timeline || shotAtlas !== atlas || shotArc !== arc {
             dirty = true; setNeedsDisplay()
+            if shotTimeline != timeline { shotLocation = nil }
         }
         shot = (style, intensity)
-        shotCamera = camera; shotFlight = flight; shotClock = clock
+        shotPlan = plan; shotTimeline = timeline; shotAtlas = atlas; shotArc = arc
         configure(player: player, edit: SessionEditState(style: .none, intensity: 0), track: track)
     }
 
@@ -201,8 +208,21 @@ final class EffectVideoView: MTKView {
                     pixels = frame
                     let stamp = displayed.isValid ? displayed : requested
                     let decodedTime = max(0, CMTimeGetSeconds(stamp))
-                    frameTime = shot == nil ? decodedTime : shotClock.sourceTime(for: decodedTime)
+                    if shot == nil { frameTime = decodedTime }
+                    else {
+                        let location = shotTimeline.locate(decodedTime)
+                        shotLocation = location; frameTime = location.source
+                    }
                     dirty = true
+                }
+            }
+            // A hold, slow motion or rewind shows one decoded frame for a while; camera moves
+            // keep animating through it, so keep drawing at the display's pace while playing.
+            if shot != nil, shotPlan?.track.isEmpty == false, player.rate != 0, !shotTimeline.isOriginal {
+                let now = CMTimeGetSeconds(requested)
+                if now.isFinite {
+                    let location = shotTimeline.locate(now)
+                    shotLocation = location; frameTime = location.source; dirty = true
                 }
             }
         }
@@ -248,10 +268,11 @@ final class EffectVideoView: MTKView {
             #if DEBUG
             let materialMS = (ProcessInfo.processInfo.systemUptime - materialStart) * 1000
             #endif
-            let camera = shot.map { _ in ShotCameraFrame.make(settings: shotCamera, track: track,
-                                                              flight: shotFlight, size: size, time: frameTime) }
+            let camera = shot == nil ? nil : shotPlan.map { plan in
+                plan.frame(location: shotLocation ?? shotTimeline.locate(shotTimeline.outputTime(for: frameTime)), size: size)
+            }
             try engine.encode(frame, into: drawable.texture, source: source, material: material?.texture,
-                              camera: camera, command: command)
+                              camera: camera, atlas: shotAtlas, arc: shotArc, command: command)
             command.present(drawable)
             let retainedPixels = pixels
             let semaphore = inFlight

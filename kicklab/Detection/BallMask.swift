@@ -9,14 +9,70 @@ nonisolated struct BallMask: Sendable {
     let rect: CGRect
     let width: Int
     let height: Int
-    let alpha: [UInt8]
+    private let rawAlpha: [UInt8]
+    private let runEnds: [UInt16]
+    private let runValues: [UInt8]
+
+    init(rect: CGRect, width: Int, height: Int, alpha: [UInt8]) {
+        self.rect = rect; self.width = width; self.height = height
+        rawAlpha = alpha; runEnds = []; runValues = []
+    }
+
+    private init(rect: CGRect, width: Int, height: Int, ends: [UInt16], values: [UInt8]) {
+        self.rect = rect; self.width = width; self.height = height
+        rawAlpha = []; runEnds = ends; runValues = values
+    }
+
+    /// Retained masks use exact runs, while the current render frame can expand
+    /// temporarily. Never cache decoded masks for the whole recording.
+    var storageByteCount: Int { rawAlpha.count + runEnds.count * 2 + runValues.count }
+    var alpha: [UInt8] {
+        guard !runEnds.isEmpty else { return rawAlpha }
+        var result = [UInt8](repeating: 0, count: width * height)
+        var start = 0
+        for i in runEnds.indices {
+            let end = Int(runEnds[i])
+            for j in start..<end { result[j] = runValues[i] }
+            start = end
+        }
+        return result
+    }
+
+    func compacted() -> Self {
+        guard runEnds.isEmpty, rawAlpha.count == width * height,
+              !rawAlpha.isEmpty, rawAlpha.count <= Int(UInt16.max) else { return self }
+        var ends: [UInt16] = [], values: [UInt8] = []
+        var i = 0
+        while i < rawAlpha.count {
+            let value = rawAlpha[i]
+            repeat { i += 1 } while i < rawAlpha.count && rawAlpha[i] == value
+            ends.append(UInt16(i)); values.append(value)
+            // Incompressible masks retain their original representation.
+            if ends.count * 3 >= rawAlpha.count { return self }
+        }
+        return Self(rect: rect, width: width, height: height, ends: ends, values: values)
+    }
+
+    func expanded() -> Self {
+        runEnds.isEmpty ? self : Self(rect: rect, width: width, height: height, alpha: alpha)
+    }
+
+    private func value(at index: Int) -> UInt8 {
+        guard !runEnds.isEmpty else { return rawAlpha[index] }
+        var low = 0, high = runEnds.count
+        while low < high {
+            let mid = (low + high) / 2
+            if Int(runEnds[mid]) <= index { low = mid + 1 } else { high = mid }
+        }
+        return runValues[low]
+    }
 
     func coverage(x: Double, y: Double) -> Double {
         let u = (x - rect.minX) / rect.width * Double(width) - 0.5
         let v = (y - rect.minY) / rect.height * Double(height) - 0.5
         guard u >= 0, v >= 0, u < Double(width - 1), v < Double(height - 1) else { return 0 }
         let ix = Int(u), iy = Int(v), fx = u - Double(ix), fy = v - Double(iy)
-        func a(_ x: Int, _ y: Int) -> Double { Double(alpha[y * width + x]) / 255 }
+        func a(_ x: Int, _ y: Int) -> Double { Double(value(at: y * width + x)) / 255 }
         return (a(ix, iy) * (1-fx) + a(ix+1, iy) * fx) * (1-fy)
             + (a(ix, iy+1) * (1-fx) + a(ix+1, iy+1) * fx) * fy
     }
