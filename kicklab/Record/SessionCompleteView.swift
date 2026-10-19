@@ -47,7 +47,6 @@ struct SessionCompleteView: View {
         .preferredColorScheme(.dark)
         .task { await loadThumb() }
         .onAppear {
-            JugglingRecords.recordIfNeeded(summary.touches)
             withAnimation(reduceMotion ? nil : .easeOut(duration: 0.6)) { appeared = true }
         }
     }

@@ -1,0 +1,110 @@
+{
+  "version": "1.0.0",
+  "build": "26",
+  "branch": "main",
+  "base_commit": "d07b333279d08d7841943a39b10ec1b85431a3ff",
+  "scope": "Existing main release plus account-deletion guest-score repair, Apple confirmation explanation and version preparation.",
+  "excluded_feature_work": {
+    "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+    "preserved_commit": "b4b125a",
+    "pushed_to_origin": true,
+    "included_in_candidate": false
+  },
+  "account_deletion_fix": [
+    "Signed-in replay scores no longer write into the guest personal-best cache.",
+    "Confirmed account deletion rebuilds the guest best from retained guest history.",
+    "Account history/outbox deletion continues to preserve other accounts and Photos exports.",
+    "Deletion confirmation uses the approved wording: “Confirm your identity with Apple to delete your Juggle Dude account.” Native Apple verification is unchanged."
+  ],
+  "verification": {
+    "simulator_regression": {
+      "result": "Passed",
+      "passed": 117,
+      "failed": 0,
+      "skipped": 0,
+      "configuration": "Debug / iOS Simulator 26.5",
+      "suites": [
+        "AccountDeletionAPITests",
+        "AccountStoreTests",
+        "FreshInstallSessionTests",
+        "PlayerStoreTests",
+        "SessionHistoryTests",
+        "LaunchReliabilityTests",
+        "ModernVideoAPITests",
+        "ShotCameraTests",
+        "ShotCameraMoveReviewTests",
+        "AccountDeletionUITests"
+      ],
+      "result_bundle": "artifacts/releases/20261019-replacement/main-regression.xcresult",
+      "source_commit": "30e4603",
+      "scope_note": "Completed before the deletion-message-only update; subsequent focused UI verification is recorded with local build artifacts."
+    },
+    "deletion_and_recovery_function_tests": {
+      "passed": 15,
+      "failed": 0
+    },
+    "isolated_postgres_tests": "passed, including recorded/imported score cascade and other-account preservation",
+    "production_deletion_audit": "read-only: 1 Auth account, 1 profile, 36 sessions; no orphan profiles/sessions or pending deletions",
+    "real_apple_deletion_and_revocation": "not performed",
+    "latest_local_build": {
+      "source_commit": "713c75779bd8fdc97c426c44b8f6c353a0c36b36",
+      "configuration": "Release",
+      "installation_and_launch": "confirmed",
+      "artifact_directory": "artifacts/releases/20261019-local26-confirm-identity",
+      "user_test_result": "not recorded; user explicitly authorized upload"
+    }
+  },
+  "archive_status": "succeeded_and_verified",
+  "upload_status": "succeeded",
+  "app_store_review_submitted": false,
+  "release_status": "available_to_internal_testflight_testers",
+  "submission_instruction": "User explicitly authorized App Store Connect upload and TestFlight on 2026-10-19. Do not submit to App Review or release without separate explicit instruction.",
+  "previous_submission": {
+    "app_store_version": "1.0",
+    "build": "13",
+    "submission_id": "3276fa6b-128a-49bb-95fc-c4e6b682d2c2",
+    "status": "Removed",
+    "replacement_submitted": false
+  },
+  "before_submission": [
+    "Physical-device check of the exact candidate, including disposable Apple account deletion and revocation.",
+    "Confirm purchase, recording/replay/export behavior on the candidate.",
+    "Prepare the requested physical-device review walkthrough and updated notes for RF-DETR.",
+    "Confirm the App Store version field matches the candidate before selecting its build.",
+    "Obtain separate explicit authorization before App Review submission."
+  ],
+  "known_limitations": [
+    "Legacy guest scores without retained guest history cannot be distinguished from contaminated account scores and are not preserved through account-deletion cleanup.",
+    "The inherited main build has existing Swift concurrency warnings; this release preparation does not change the camera pipeline.",
+    "Recording startup timing and blurred-ball replacement limitations from build 23 remain; newer feature-branch fixes are excluded at user request.",
+    "Live recordings remain silent."
+  ],
+  "local_preparation_completed_at": "2026-10-19T14:39:11+02:00",
+  "previous_local_archive": {
+    "archive_path": "artifacts/releases/20261019-replacement/JuggleDude-1.0.0-26.xcarchive",
+    "archive_verification": "artifacts/releases/20261019-replacement/archive-verification.json",
+    "status": "succeeded; superseded by deletion-message update"
+  },
+  "source_commit": "713c75779bd8fdc97c426c44b8f6c353a0c36b36",
+  "upload": {
+    "uploaded_at": "2026-10-19T13:36:09.755Z",
+    "artifact_directory": "artifacts/releases/20261019-upload26",
+    "archive_path": "artifacts/releases/20261019-upload26/JuggleDude-1.0.0-26.xcarchive",
+    "archive_verification": "artifacts/releases/20261019-upload26/archive-verification.json",
+    "upload_log": "artifacts/releases/20261019-upload26/upload.log",
+    "result": "EXPORT SUCCEEDED"
+  },
+  "testflight": {
+    "build_id": "74472978-902d-4e1e-ac51-f4391136ce16",
+    "url": "https://appstoreconnect.apple.com/teams/9b7830cc-2a57-43c6-813e-db0800261e24/apps/6820780610/testflight/ios/74472978-902d-4e1e-ac51-f4391136ce16",
+    "processing": "complete",
+    "displayed_status": "Ready to Submit",
+    "internal_group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "internal_testers": 2,
+    "available_for_internal_testing": true,
+    "verified_at": "2026-10-19T13:41:39.748648+00:00",
+    "screenshot": "artifacts/releases/20261019-upload26/testflight-build26.png",
+    "app_review_submitted": false
+  }
+}

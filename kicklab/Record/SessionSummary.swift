@@ -162,9 +162,15 @@ enum JugglingRecords {
         UserDefaults.standard.integer(forKey: bestKey)
     }
 
-    static func recordIfNeeded(_ touches: Int) {
-        guard touches > personalBest else { return }
-        UserDefaults.standard.set(touches, forKey: bestKey)
+    static func recordIfNeeded(_ touches: Int, ownerID: UUID?, defaults: UserDefaults = .standard) {
+        guard ownerID == nil, touches > defaults.integer(forKey: bestKey) else { return }
+        defaults.set(touches, forKey: bestKey)
+    }
+
+    /// Older replays also wrote account scores into this device-only cache.
+    /// Rebuild it from retained guest history after confirmed account deletion.
+    static func restoreGuestBest(_ touches: Int, defaults: UserDefaults = .standard) {
+        defaults.set(max(0, touches), forKey: bestKey)
     }
 }
 

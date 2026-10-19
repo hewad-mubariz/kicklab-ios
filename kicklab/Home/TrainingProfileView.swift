@@ -142,7 +142,7 @@ struct TrainingProfileView: View {
                     }
                 }
             } message: {
-                Text("This permanently removes your account, profile photo, saved results and this account’s local replays. You’ll be signed out. Clips exported to Photos and guest sessions stay on this phone. Apple subscriptions must be cancelled separately.")
+                Text("This permanently removes your account, profile photo, saved results and this account’s local replays. You’ll be signed out.\n\nIf your account is linked to Apple, you’ll be asked to confirm your identity with Apple.\n\nClips exported to Photos and guest sessions stay on this phone. Apple subscriptions must be cancelled separately.")
             }
         }
         .presentationDetents([.large])

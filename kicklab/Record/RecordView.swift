@@ -246,7 +246,8 @@ struct RecordView: View {
                         hudShown = true
                     }
                 },
-                historySessionID: resultID
+                historySessionID: resultID,
+                ownerID: sessionOwner
             )
             .onAppear {
                 // Cover is up — drop overlay underneath without a black flash.
