@@ -6,7 +6,10 @@ enum AccountDeletionReview {
     static var requested: Bool { ProcessInfo.processInfo.arguments.contains("--account-deletion-review") }
     static func account() -> AccountStore { AccountStore(service: ReviewService()) }
     static func player() -> PlayerStore {
-        PlayerStore(service: nil, queue: .init(root: .temporaryDirectory.appendingPathComponent("JuggleDudeDeletionReview-" + UUID().uuidString)))
+        if ProcessInfo.processInfo.arguments.contains("--account-deletion-legacy-best") {
+            UserDefaults.standard.set(350, forKey: "kicklab.juggling.personalBest")
+        }
+        return PlayerStore(service: nil, queue: .init(root: .temporaryDirectory.appendingPathComponent("JuggleDudeDeletionReview-" + UUID().uuidString)))
     }
 }
 

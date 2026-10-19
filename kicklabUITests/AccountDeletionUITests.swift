@@ -13,6 +13,8 @@ final class AccountDeletionUITests: XCTestCase {
         app.buttons["profile-delete-account"].tap()
         app.alerts["Delete your account?"].buttons["Delete account"].tap()
         XCTAssertTrue(app.buttons["home-profile"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.otherElements["home-personal-best"].label.contains("Your first record"),
+                      "The deleted account's legacy count must not reappear as a guest record")
         app.buttons["home-profile"].tap()
         XCTAssertTrue(app.buttons["profile-sign-in"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["profile-delete-account"].exists)
@@ -30,7 +32,8 @@ final class AccountDeletionUITests: XCTestCase {
 
     private func openProfile(failure: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["--account-deletion-review", "-kicklab.welcome.completed", "YES"]
+        app.launchArguments = ["--account-deletion-review", "--account-deletion-legacy-best",
+                               "-kicklab.welcome.completed", "YES"]
         if failure { app.launchArguments.append("--account-deletion-failure") }
         app.launch()
         XCTAssertTrue(app.buttons["home-profile"].waitForExistence(timeout: 12))

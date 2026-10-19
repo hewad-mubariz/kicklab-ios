@@ -75,6 +75,7 @@ final class PlayerStore: ObservableObject {
     @Published var errorMessage: String?
     private let service: (any PlayerDataService)?
     private let queue: JugglingResultQueue
+    private let guestDefaults: UserDefaults
     private var generation = UUID()
     private var syncTask: Task<Void, Never>?
     private var retryTask: Task<Void, Never>?
@@ -87,11 +88,13 @@ final class PlayerStore: ObservableObject {
     private let monitor = NWPathMonitor()
 
     init(service: (any PlayerDataService)?, queue: JugglingResultQueue = .init(),
+         guestDefaults: UserDefaults = .standard,
          syncRetryDelay: Duration = .seconds(3),
          archiveVideo: @escaping @Sendable (URL, HistorySession, SessionHistoryLibrary) async throws -> Void = {
              try await $2.retainVideo($0, for: $1)
          }) {
         self.service = service; self.queue = queue
+        self.guestDefaults = guestDefaults
         self.archiveVideo = archiveVideo; self.syncRetryDelay = syncRetryDelay
         history = SessionHistoryStore(service: service, queue: queue,
             library: SessionHistoryLibrary(root: queue.root.appendingPathComponent("History", isDirectory: true)))
@@ -151,11 +154,13 @@ final class PlayerStore: ObservableObject {
         for task in saves { await task.value }
         let queue = queue, library = history.library
         do {
-            try await Task.detached(priority: .utility) {
+            let guestBest = try await Task.detached(priority: .utility) {
                 try queue.removeAccount(owner)
                 try library.removeAccount(owner)
-                try queue.finishDeletion(owner)
+                return try library.sessions(owner: nil).map(\.touches).max() ?? 0
             }.value
+            JugglingRecords.restoreGuestBest(guestBest, defaults: guestDefaults)
+            try queue.finishDeletion(owner)
             return true
         } catch { return false }
     }

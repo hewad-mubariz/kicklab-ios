@@ -18,6 +18,7 @@ struct PostSessionFlowView: View {
     var onFinished: () -> Void
     var onRecordAnother: () -> Void
     var recordsPersonalBest = true
+    var ownerID: UUID? = nil
 
     @State private var path = NavigationPath()
     @StateObject private var ballPreparation = SessionEffectsPreparation()
@@ -72,6 +73,8 @@ struct PostSessionFlowView: View {
                 }
             }
         }
-        .onAppear { if recordsPersonalBest { JugglingRecords.recordIfNeeded(summary.touches) } }
+        .onAppear {
+            if recordsPersonalBest { JugglingRecords.recordIfNeeded(summary.touches, ownerID: ownerID) }
+        }
     }
 }

@@ -260,7 +260,8 @@ struct RecordView: View {
                         try? await Task.sleep(for: .milliseconds(220))
                         hudShown = true
                     }
-                }
+                },
+                ownerID: sessionOwner
             )
             .onAppear {
                 // Cover is up — drop overlay underneath without a black flash.

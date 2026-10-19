@@ -71,6 +71,44 @@ final class SessionHistoryTests: XCTestCase {
         XCTAssertNil(restored.userID, "A stale identity cannot reactivate a deleted account")
     }
 
+    func testAccountScoresCannotRaiseGuestBestAndDeletionRepairsLegacyCount() async throws {
+        let suite = "DeletionBest-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let key = "kicklab.juggling.personalBest"
+        JugglingRecords.recordIfNeeded(17, ownerID: nil, defaults: defaults)
+        JugglingRecords.recordIfNeeded(350, ownerID: owner, defaults: defaults)
+        XCTAssertEqual(defaults.integer(forKey: key), 17)
+
+        // Reproduce a cache left by a signed-in replay from an older build.
+        defaults.set(350, forKey: key)
+        let guest = HistorySession(id: UUID(), ownerID: nil, touches: 17, durationMS: 1000,
+            source: .recording, completedAt: Date(), syncState: .deviceOnly)
+        try library.save(guest)
+        let saved = try result(touches: 350)
+        try queue.save(saved); try library.save(HistorySession(result: saved))
+        let player = PlayerStore(service: nil, queue: queue, guestDefaults: defaults)
+        await player.useAccount(.init(id: owner, email: nil, name: nil))
+        let removed = await player.removeDeletedAccountData(owner)
+        XCTAssertTrue(removed)
+        XCTAssertEqual(defaults.integer(forKey: key), 17, "Only the retained guest result may remain")
+        XCTAssertEqual(player.personalBest, 0)
+        XCTAssertEqual(player.history.items, [guest])
+        XCTAssertTrue(try library.sessions(owner: owner).isEmpty)
+        XCTAssertTrue(try queue.pending(for: owner).isEmpty)
+    }
+
+    func testDeletingAccountWithoutGuestHistoryClearsLegacyCount() async throws {
+        let suite = "DeletionBest-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(350, forKey: "kicklab.juggling.personalBest")
+        let player = PlayerStore(service: nil, queue: queue, guestDefaults: defaults)
+        let removed = await player.removeDeletedAccountData(owner)
+        XCTAssertTrue(removed)
+        XCTAssertEqual(defaults.integer(forKey: "kicklab.juggling.personalBest"), 0)
+    }
+
     func testExistingOutboxAppearsOfflineThenSurvivesSuccessfulSyncAndRestart() async throws {
         let saved = try result()
         try queue.save(saved) // Upgrade from the old outbox-only build.

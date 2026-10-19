@@ -1,6 +1,32 @@
 # Juggle Dude account deletion
 
-## Current status — 2026-10-11
+## Replacement release audit — 2026-10-19
+
+The existing main branch had a separate display-cache bug: opening a signed-in
+juggling replay also wrote that account's score into the device-wide guest personal
+best. Returning to guest mode after deleting the account could therefore display the
+old count even after its history and server account had been removed.
+
+The replacement candidate passes the recording's original account ownership into
+the replay and only writes guest scores into the guest cache. After confirmed account
+deletion, cleanup rebuilds that cache from retained guest history (zero if none),
+while preserving other accounts and Photos exports. Older guest best values without
+a retained guest history entry cannot be distinguished from contaminated account
+values and are not carried through that cleanup.
+
+The read-only production audit found one account, one profile, 36 session rows,
+no profiles without Auth users, no sessions without profiles, and no pending account
+deletions. No production account was deleted for this audit. The local SQL test now
+creates both recorded/imported results before deleting a disposable Auth user,
+asserts their counts cascade away, and verifies another account's result survives.
+All 117 selected iOS regression checks passed, including both deletion UI tests
+and the new legacy-count checks, with no failures or skipped tests. The 15
+deletion/recovery function tests and isolated PostgreSQL suite also passed. Results
+are saved under `artifacts/releases/20261019-replacement/`. The local 1.0.0 (26)
+Release archive succeeded; upload and submission are held at the user’s request.
+A fresh physical-device Apple authorization/revocation flow remains a separate check.
+
+## Historical status — 2026-10-11
 
 The signed-in Profile screen includes Delete account, a destructive confirmation, progress and recoverable errors. After the server confirms deletion, the app clears its local Auth session, removes that account's local history/outbox/replays and returns to guest mode. TestFlight 1.0 (8) is installed and opens on the owner's iPhone; its live account-deletion check is still outstanding.
 
