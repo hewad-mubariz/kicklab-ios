@@ -8,6 +8,7 @@ struct HomeView: View {
     let onProfile: () -> Void
     let onSetupGuide: () -> Void
     var onLeaderboard: (() -> Void)? = nil
+    var onLeaderboardRules: (() -> Void)? = nil
     var onHistory: (() -> Void)? = nil
     /// Lets the leaderboard zoom out of its button.
     var leaderboardZoom: Namespace.ID? = nil
@@ -30,6 +31,9 @@ struct HomeView: View {
                                      title: "BALL DISTANCE", subtitle: "Record your shot.\nMake it yours with effects.",
                                      actionLabel: "Record + effects", primary: false, action: onPowerShot)
                         .accessibilityIdentifier("module-power-shot")
+                }
+                if let onLeaderboard, let onLeaderboardRules {
+                    HomeLeaderboardPreview(onOpen: onLeaderboard, onRules: onLeaderboardRules).padding(.top, 18)
                 }
                 personalBestRow.padding(.vertical, 22)
                 if let onHistory {
@@ -86,10 +90,9 @@ struct HomeView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
             Spacer(minLength: 0)
-            // Deferred from the first release; keep the leaderboard entry for later.
-            // if let onLeaderboard {
-            //     HomeLeaderboardButton(action: onLeaderboard, zoom: leaderboardZoom)
-            // }
+            if let onLeaderboard {
+                HomeLeaderboardButton(action: onLeaderboard, zoom: leaderboardZoom)
+            }
             HomeProfileButton(action: onProfile, zoom: profileZoom)
         }
     }

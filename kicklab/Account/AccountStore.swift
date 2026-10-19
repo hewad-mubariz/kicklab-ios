@@ -13,13 +13,15 @@ final class AccountStore: ObservableObject {
     @Published private(set) var resendAfter: Date = .distantPast
     @Published var errorMessage: String?
     private let service: (any AccountAuthService)?
+    private let now: () -> Date
     private var observation: Task<Void, Never>?
     private var completedCallbacks = Set<URL>()
     private var handlingCallback = false
     private var deletedUserIDs = Set<UUID>()
 
-    init(service: (any AccountAuthService)?) {
+    init(service: (any AccountAuthService)?, now: @escaping () -> Date = { Date() }) {
         self.service = service
+        self.now = now
         guard let service else { isRestoring = false; return }
         let changes = service.changes
         observation = Task { [weak self] in
@@ -46,6 +48,9 @@ final class AccountStore: ObservableObject {
         guard let service else { errorMessage = AccountFailure.configuration.localizedDescription; return }
         guard provider != .email else { return }
         errorMessage = nil; isBusy = true
+        // Google replaces the SDK's shared PKCE verifier before opening the browser.
+        // Cancellation cannot make a previously sent email link usable again.
+        if provider == .google { pendingEmail = nil }
         ProductAnalytics.shared.track(.signInStarted(provider))
         defer { isBusy = false }
         do {
@@ -67,13 +72,15 @@ final class AccountStore: ObservableObject {
         guard !isBusy else { return false }
         guard let service else { errorMessage = AccountFailure.configuration.localizedDescription; return false }
         guard let email = AccountConfiguration.normalizedEmail(value) else { errorMessage = AccountFailure.invalidEmail.localizedDescription; return false }
-        guard Date() >= resendAfter else { return false }
+        guard now() >= resendAfter else { return false }
         errorMessage = nil; isBusy = true
+        // The SDK replaces the verifier before sending, even if delivery fails.
+        pendingEmail = nil
         defer { isBusy = false }
         do {
             try await service.sendLink(email: email)
             pendingEmail = email
-            resendAfter = Date().addingTimeInterval(60)
+            resendAfter = now().addingTimeInterval(60)
             ProductAnalytics.shared.track(.emailLinkRequested(.completed))
             return true
         } catch {
@@ -170,7 +177,7 @@ final class AccountStore: ObservableObject {
         if callback {
             errorMessage = "This link has expired or was opened on a different device. Request a new link here and open it on this device."
         } else if let auth = error as? AuthError, auth.errorCode.rawValue == "over_email_send_rate_limit" || auth.errorCode.rawValue == "over_request_rate_limit" {
-            resendAfter = Date().addingTimeInterval(60)
+            resendAfter = now().addingTimeInterval(60)
             errorMessage = "Too many attempts. Wait a minute, then try again."
         } else if let auth = error as? AuthError, auth.errorCode == .emailAddressNotAuthorized {
             errorMessage = "Email sign-in isn’t available for this address yet. Please use Google or Apple for now."

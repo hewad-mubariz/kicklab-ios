@@ -66,6 +66,7 @@ nonisolated struct JugglingResultQueue: Sendable {
 @MainActor
 final class PlayerStore: ObservableObject {
     let history: SessionHistoryStore
+    let leaderboardReview: LeaderboardReviewStore
     @Published private(set) var userID: UUID?
     @Published private(set) var profile: PlayerProfile?
     @Published private(set) var avatarData: Data?
@@ -88,20 +89,35 @@ final class PlayerStore: ObservableObject {
     private let monitor = NWPathMonitor()
 
     init(service: (any PlayerDataService)?, queue: JugglingResultQueue = .init(),
+         reviewService: (any LeaderboardReviewService)? = nil,
          guestDefaults: UserDefaults = .standard,
          syncRetryDelay: Duration = .seconds(3),
          archiveVideo: @escaping @Sendable (URL, HistorySession, SessionHistoryLibrary) async throws -> Void = {
              try await $2.retainVideo($0, for: $1)
          }) {
         self.service = service; self.queue = queue
+        // Touch checks are postponed: without a service nothing is fetched or sent,
+        // including a check an earlier build queued.
+        leaderboardReview = LeaderboardReviewStore(service: LeaderboardRules.touchChecks ? reviewService : nil, root: queue.root)
         self.guestDefaults = guestDefaults
         self.archiveVideo = archiveVideo; self.syncRetryDelay = syncRetryDelay
         history = SessionHistoryStore(service: service, queue: queue,
             library: SessionHistoryLibrary(root: queue.root.appendingPathComponent("History", isDirectory: true)))
         monitor.pathUpdateHandler = { [weak self] path in
-            if path.status == .satisfied { Task { @MainActor [weak self] in self?.syncPending() } }
+            guard path.status == .satisfied else { return }
+            Task { @MainActor [weak self] in
+                self?.syncPending()
+                self?.leaderboardReview.sendQueued()
+            }
         }
         monitor.start(queue: DispatchQueue(label: "juggledude.result-sync"))
+        leaderboardReview.resolveQueued = { [weak self] id in self?.queuedSubmissionSource(id) }
+    }
+
+    /// A queued leaderboard submission's session, once history has loaded it.
+    private func queuedSubmissionSource(_ id: UUID) -> LeaderboardReviewStore.QueuedSource? {
+        guard let item = history.items.first(where: { $0.id == id && $0.ownerID == userID }) else { return nil }
+        return (item, history.replayURL(for: item))
     }
     deinit { syncTask?.cancel(); retryTask?.cancel(); monitor.cancel() }
 
@@ -110,10 +126,12 @@ final class PlayerStore: ObservableObject {
         if SessionHistoryReview.requested { return SessionHistoryReview.store() }
         #endif
         guard let config = try? AccountConfiguration.load() else { return PlayerStore(service: nil) }
-        return PlayerStore(service: SupabasePlayerService(config: config) { [weak account] id in
+        let token: (UUID) async throws -> String = { [weak account] id in
             guard let account else { throw PlayerDataError.signIn }
             return try await account.accessToken(for: id)
-        })
+        }
+        return PlayerStore(service: SupabasePlayerService(config: config, token: token),
+            reviewService: SupabaseLeaderboardReviewService(config: config, token: token))
     }
 
     func useAccount(_ identity: AccountIdentity?) async {
@@ -125,6 +143,7 @@ final class PlayerStore: ObservableObject {
         userID = identity?.id; profile = nil; avatarData = nil; pendingCount = 0; personalBest = 0
         errorMessage = nil; isSaving = false
         history.useAccount(identity?.id)
+        leaderboardReview.useAccount(identity?.id)
         await refresh()
     }
 
@@ -149,6 +168,7 @@ final class PlayerStore: ObservableObject {
             userID = nil; profile = nil; avatarData = nil; personalBest = 0; pendingCount = 0
             isSaving = false; errorMessage = nil
             history.useAccount(nil)
+            leaderboardReview.useAccount(nil)
         }
         await activeSync?.value
         for task in saves { await task.value }
@@ -168,6 +188,7 @@ final class PlayerStore: ObservableObject {
     func refresh() async {
         await resumeSaves()
         syncPending()
+        leaderboardReview.sendQueued()
         guard let id = userID, let service else { return }
         let current = generation
         do {
@@ -249,13 +270,17 @@ final class PlayerStore: ObservableObject {
               summary.duration > 0, summary.duration <= 86400 else {
             errorMessage = PlayerDataError.invalidResult.localizedDescription; return nil
         }
-        let item: HistorySession
+        var item: HistorySession
+        let review = summary.leaderboardTouchReview
+        let streak = RankedStreakProposal.suggest(touchTimes: summary.touchesMarked.map(\.time),
+            boundaries: review?.streakBoundaries ?? [], duration: summary.duration)
         do {
             let result: SavedJugglingResult?
             if let owner {
                 let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-                let saved = try SavedJugglingResult(id: id, ownerID: owner, touches: summary.touches,
+                var saved = try SavedJugglingResult(id: id, ownerID: owner, touches: summary.touches,
                     duration: summary.duration, source: source, completedAt: completedAt, appVersion: version)
+                saved.rank(streak)
                 result = saved
                 item = HistorySession(result: saved)
             } else {
@@ -264,6 +289,9 @@ final class PlayerStore: ObservableObject {
                     completedAt: completedAt, syncState: .deviceOnly)
                 result = nil
             }
+            item.touchReview = review
+            item.rankedProposal = result?.streak ?? streak
+            item.touchTimesMS = summary.touchesMarked.map { Int(($0.time * 1000).rounded()) }
             let request = SessionSaveRequest(item: item, result: result, videoURL: summary.videoURL)
             if let task = saveTasks[request.key] { return task }
             history.showImmediately(item, videoURL: summary.videoURL)
@@ -353,6 +381,8 @@ final class PlayerStore: ObservableObject {
                     try await Task.detached(priority: .utility) { try queue.remove(result) }.value
                     guard self.generation == current else { return }
                     self.syncFailures = 0
+                    // A submission waiting for this session to reach the account can go now.
+                    self.leaderboardReview.sendQueued()
                 } catch {
                     guard !Task.isCancelled, self.generation == current else { return }
                     if case PlayerDataError.signIn = error {
@@ -391,7 +421,8 @@ final class PlayerStore: ObservableObject {
         try Task.checkCancellation()
         func entry(_ row: RankedPlayer) -> LeaderboardEntry {
             LeaderboardEntry(rank: row.rank, name: row.displayName, touches: row.touches,
-                isYou: row.isYou, photo: urls[row.userID])
+                isYou: row.isYou, photo: urls[row.userID], attemptID: row.attemptID, sessionID: row.sessionID,
+                streakDurationMS: row.streakDurationMS, countryCode: row.countryCode)
         }
         return (board.entries.map(entry), board.aroundMe.map(entry))
     }

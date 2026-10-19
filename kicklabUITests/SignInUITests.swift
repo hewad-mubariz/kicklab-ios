@@ -12,21 +12,23 @@ final class SignInUITests: XCTestCase {
             app.launch()
             let guest = app.buttons["signin-guest"]
             XCTAssertTrue(guest.waitForExistence(timeout: 15))
-            XCTAssertTrue(guest.isHittable)
-            XCTAssertTrue(app.buttons["signin-apple"].isHittable)
-            // Restore these expectations with the deferred sign-in providers.
-            // XCTAssertTrue(app.buttons["signin-google"].isHittable)
-            // XCTAssertTrue(app.buttons["signin-email"].isHittable)
-            XCTAssertFalse(app.buttons["signin-google"].exists)
-            XCTAssertFalse(app.buttons["signin-email"].exists)
+            for identifier in ["signin-apple", "signin-google", "signin-email", "signin-guest"] {
+                reveal(app.buttons[identifier], in: app)
+            }
             attach(app, "Welcome - \(appearance)")
-            /* Email flow retained for its later release.
+            reveal(app.buttons["signin-email"], in: app)
             app.buttons["signin-email"].tap()
-            XCTAssertTrue(app.textFields["email-address"].waitForExistence(timeout: 3))
+            let email = app.textFields["email-address"]
+            XCTAssertTrue(email.waitForExistence(timeout: 3))
             XCTAssertFalse(app.buttons["email-send"].isEnabled)
+            email.tap()
+            email.typeText("not-an-email")
+            XCTAssertFalse(app.buttons["email-send"].isEnabled)
+            email.typeText("@example.com")
+            XCTAssertTrue(app.buttons["email-send"].isEnabled)
             attach(app, "Email sign in - \(appearance)")
             app.buttons["email-close"].tap()
-            */
+            reveal(guest, in: app)
             guest.tap()
             XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout: 5))
             XCTAssertFalse(app.buttons["home-leaderboard"].exists)
@@ -37,23 +39,23 @@ final class SignInUITests: XCTestCase {
             app.buttons["profile-sign-in"].tap()
             // Sign-in opens on top of Profile and returns to it.
             XCTAssertTrue(app.buttons["signin-not-now"].waitForExistence(timeout: 5))
-            XCTAssertTrue(app.buttons["signin-apple"].isHittable)
-            XCTAssertFalse(app.buttons["signin-google"].exists)
-            XCTAssertFalse(app.buttons["signin-email"].exists)
+            for identifier in ["signin-apple", "signin-google", "signin-email"] {
+                reveal(app.buttons[identifier], in: app)
+            }
             XCTAssertFalse(app.buttons["profile-sign-in"].isHittable)
             attach(app, "Profile sign in - \(appearance)")
-            /* Email flow retained for its later release.
             app.buttons["signin-email"].tap()
             XCTAssertTrue(app.textFields["email-address"].waitForExistence(timeout: 3))
             app.buttons["email-close"].tap()
-            */
             for identifier in ["signin-terms", "signin-privacy"] {
+                reveal(app.buttons[identifier], in: app)
                 app.buttons[identifier].tap()
                 let browser = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
                 XCTAssertTrue(browser.wait(for: .runningForeground, timeout: 5))
                 app.activate()
                 XCTAssertTrue(app.buttons["signin-not-now"].waitForExistence(timeout: 5))
             }
+            reveal(app.buttons["signin-not-now"], in: app)
             app.buttons["signin-not-now"].tap()
             XCTAssertTrue(app.buttons["profile-sign-in"].waitForExistence(timeout: 5))
             XCTAssertFalse(app.buttons["signin-not-now"].exists)
@@ -69,13 +71,12 @@ final class SignInUITests: XCTestCase {
         app.launchArguments = ["--reset-welcome"]
         app.launch()
         XCTAssertTrue(app.buttons["signin-guest"].waitForExistence(timeout: 15))
-        /* Email flow retained for its later release.
+        reveal(app.buttons["signin-google"], in: app)
+        reveal(app.buttons["signin-email"], in: app)
         app.buttons["signin-email"].tap()
         XCTAssertTrue(app.textFields["email-address"].waitForExistence(timeout: 3))
         app.buttons["email-close"].tap()
-        */
-        XCTAssertFalse(app.buttons["signin-google"].exists)
-        XCTAssertFalse(app.buttons["signin-email"].exists)
+        reveal(app.buttons["signin-guest"], in: app)
         app.buttons["signin-guest"].tap()
         XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout: 5))
         app.terminate()
@@ -91,6 +92,9 @@ final class SignInUITests: XCTestCase {
             app.navigationBars["Settings"].buttons.element(boundBy: 0).tap()
             app.buttons["profile-sign-in"].tap()
             XCTAssertTrue(app.buttons["signin-apple"].waitForExistence(timeout: 3))
+            for identifier in ["signin-apple", "signin-google", "signin-email", "signin-not-now"] {
+                reveal(app.buttons[identifier], in: app)
+            }
             attach(app, "Sign in appearance switched - \(appearance)")
             app.buttons["signin-not-now"].tap()
             XCTAssertTrue(app.buttons["profile-sign-in"].waitForExistence(timeout: 5))
@@ -110,15 +114,22 @@ final class SignInUITests: XCTestCase {
                                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
         XCTAssertTrue(app.buttons["signin-guest"].waitForExistence(timeout: 15))
-        // for identifier in ["signin-apple", "signin-google", "signin-email", "signin-guest", "signin-privacy"] {
-        for identifier in ["signin-apple", "signin-guest", "signin-privacy"] {
-            let button = app.buttons[identifier]
-            for _ in 0..<6 where !button.isHittable { app.swipeUp() }
-            XCTAssertTrue(button.isHittable, "\(identifier) must remain accessible at large text sizes")
+        for identifier in ["signin-apple", "signin-google", "signin-email", "signin-guest", "signin-privacy"] {
+            reveal(app.buttons[identifier], in: app)
         }
         attach(app, "Welcome - accessibility text")
+        reveal(app.buttons["signin-guest"], in: app)
         app.buttons["signin-guest"].tap()
         XCTAssertTrue(app.buttons["home-profile"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    private func reveal(_ element: XCUIElement, in app: XCUIApplication,
+                        file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(element.waitForExistence(timeout: 5), file: file, line: line)
+        for _ in 0..<6 where !element.isHittable { app.swipeUp() }
+        for _ in 0..<6 where !element.isHittable { app.swipeDown() }
+        XCTAssertTrue(element.isHittable, "\(element.identifier) must remain reachable", file: file, line: line)
     }
 
     @MainActor

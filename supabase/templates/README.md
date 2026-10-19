@@ -1,6 +1,6 @@
 # Authentication emails
 
-Both templates were deployed to the Juggle Dude Supabase project on 2026-10-09 and updated to Universal Links later that evening. Custom SMTP uses Amazon SES in `eu-north-1`. On 2026-10-12, SES production approval was verified and a Supabase sign-in email reached the owner's Gmail inbox with the branded sender, domain signature, and TLS. See [current rollout status](../../docs/auth-setup.md#current-rollout-status--2026-10-12) for quotas and remaining rollout settings. The submitted app still offers Apple sign-in and guest mode only.
+Both templates were deployed to the Juggle Dude Supabase project on 2026-10-09 and updated to Universal Links later that evening. Custom SMTP uses Amazon SES in `eu-north-1`. On 2026-10-12, SES production approval was verified and a Supabase sign-in email reached the owner's Gmail inbox with the branded sender, domain signature, and TLS. See [current rollout status](../../docs/auth-setup.md#current-rollout-status--2026-10-18) for quotas and remaining rollout settings. Google/email controls are enabled in the post-launch source; a new build and sign-in verification remain pending.
 
 | Supabase template | Subject | Source |
 | --- | --- | --- |

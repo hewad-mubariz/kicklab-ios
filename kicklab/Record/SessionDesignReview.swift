@@ -119,7 +119,7 @@ struct SessionDesignReview: View {
                 else { ProPaywallView { closedPaywall = true } }
             case "leaderboard":
                 if closedLeaderboard { ContentView() }
-                else { LeaderboardView { closedLeaderboard = true } }
+                else { LeaderboardView(onClose: { closedLeaderboard = true }) }
             case "leaderboard-concept": LeaderboardConceptView(concept: Self.argument("--concept") ?? "A",
                                                                state: Self.argument("--lb-state") ?? "main")
             case "signin-concept": SignInConceptView(concept: Self.argument("--concept") ?? "A",

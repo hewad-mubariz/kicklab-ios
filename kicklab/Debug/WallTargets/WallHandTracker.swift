@@ -39,8 +39,9 @@ nonisolated final class WallHandTracker {
 
     func reset() { lastAttempt = -.infinity; snapshot = nil }
 
-    func observe(_ pixels: CVPixelBuffer, at t: Double) {
-        guard t - lastAttempt >= 0.08 else { return }
+    @discardableResult
+    func observe(_ pixels: CVPixelBuffer, at t: Double) -> Bool {
+        guard t - lastAttempt >= 0.08 else { return false }
         lastAttempt = t
         do {
             try VNImageRequestHandler(cvPixelBuffer: pixels, orientation: .up).perform([request])
@@ -63,6 +64,7 @@ nonisolated final class WallHandTracker {
             }
             snapshot = .init(t: t, wrists: wrists, personCount: people.count, bodies: bodies)
         } catch { snapshot = nil }
+        return true
     }
 
     func state(ball: CGPoint, diameter: Double, aspect: Double, person: CGRect?, at t: Double) -> WallHandState {

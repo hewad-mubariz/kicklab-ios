@@ -12,12 +12,213 @@ final class WallTargetsTests: XCTestCase {
         return WallTargetsModel(defaults: defaults)
     }
 
+    private func prepareRound(_ model: WallTargetsModel, at start: Date) {
+        model.newRound()
+        model.setCorners(corners)
+        model.validateMappingForTest()
+        model.finishReference(Array(repeating: 0.04, count: 6))
+        XCTAssertTrue(model.startPlay(at: start))
+    }
+
+    private func clear(_ model: WallTargetsModel, at end: Date) {
+        for box in 1...6 {
+            model.record(box: box, u: Double((box - 1) % 3) + 0.5,
+                         v: Double((box - 1) / 3) + 0.5, at: end)
+        }
+    }
+
+    func testConfirmedCueIsSynchronousAndOnlyFollowsAnAcceptedScore() {
+        let model = model(), start = Date(timeIntervalSince1970: 100)
+        var cues: [Bool] = []
+        func hit(_ box: Int, borderline: Bool = false) -> WallImpactDetector.Impact {
+            .init(t: 1, x: 600, y: 210, d: 44, turn: 70,
+                  u: Double((box - 1) % 3) + 0.5, v: Double((box - 1) / 3) + 0.5,
+                  box: box, borderline: borderline)
+        }
+        func deliver(_ impact: WallImpactDetector.Impact) -> Bool {
+            model.accept(impact, at: start.addingTimeInterval(5)) { cleared in
+                // The score already exists when feedback is requested; no view
+                // observation, render pass or async task is needed for the cue.
+                XCTAssertEqual(model.lastHit?.box, impact.box)
+                XCTAssertEqual(cleared, model.boxesHit.count == 6)
+                cues.append(cleared)
+            }
+        }
+        XCTAssertFalse(deliver(hit(1)))
+        prepareRound(model, at: start)
+        model.showContactPreview(hit(1))
+        XCTAssertTrue(cues.isEmpty)
+        XCTAssertFalse(deliver(hit(1, borderline: true)))
+        var outside = hit(1)
+        outside.box = nil; outside.u = -0.5
+        XCTAssertFalse(deliver(outside))
+        XCTAssertTrue(cues.isEmpty)
+        XCTAssertTrue(deliver(hit(1)))
+        XCTAssertEqual(cues, [false])
+        model.applyAlignment(.init(status: .obscured, corners: corners, revision: 2), at: start)
+        XCTAssertFalse(deliver(hit(2)))
+        XCTAssertEqual(cues, [false])
+        model.applyAlignment(.init(status: .ready, corners: corners, revision: 3), at: start)
+        for box in 2...6 { XCTAssertTrue(deliver(hit(box))) }
+        XCTAssertEqual(cues, [false, false, false, false, false, true])
+        XCTAssertEqual(model.gameScreen, .results)
+        XCTAssertFalse(deliver(hit(6)))
+        XCTAssertEqual(cues.count, 6)
+    }
+
+    func testPersonalBestPersistsOnlyForCompletedFasterRounds() {
+        let suite = "WallTargetsTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let model = WallTargetsModel(defaults: defaults)
+        let start = Date(timeIntervalSince1970: 100)
+        prepareRound(model, at: start)
+        // Repeated contacts on one target are not a completed wall.
+        for _ in 0..<6 { model.record(box: 1, u: 0.5, v: 0.5, at: start.addingTimeInterval(1)) }
+        XCTAssertNil(model.bestClearTime)
+        XCTAssertNil(model.clearedAt)
+        model.finishSession(at: start.addingTimeInterval(2))
+        XCTAssertNil(WallTargetsModel(defaults: defaults).bestClearTime)
+        prepareRound(model, at: start)
+        clear(model, at: start.addingTimeInterval(20))
+        XCTAssertEqual(model.bestClearTime, 20)
+        XCTAssertTrue(model.isNewBest)
+        XCTAssertEqual(model.gameScreen, .results)
+        XCTAssertEqual(WallTargetsModel(defaults: defaults).bestClearTime, 20)
+        for duration in [25.0, 20.0, 15.0] {
+            prepareRound(model, at: start)
+            XCTAssertEqual(model.previousBest, 20)
+            XCTAssertFalse(model.isNewBest)
+            clear(model, at: start.addingTimeInterval(duration))
+            XCTAssertEqual(model.bestClearTime, min(20, duration))
+            XCTAssertEqual(model.isNewBest, duration < 20)
+        }
+        XCTAssertEqual(WallTargetsModel(defaults: defaults).bestClearTime, 15)
+    }
+
+    func testBestTimeExcludesAlignmentPauseAndCannotChangeAfterFinish() {
+        let model = model(), start = Date(timeIntervalSince1970: 100)
+        prepareRound(model, at: start)
+        model.applyAlignment(.init(status: .obscured, corners: corners, revision: 2), at: start.addingTimeInterval(3))
+        model.applyAlignment(.init(status: .ready, corners: corners, revision: 3), at: start.addingTimeInterval(10))
+        clear(model, at: start.addingTimeInterval(17))
+        XCTAssertEqual(model.clearTime, 10)
+        XCTAssertEqual(model.bestClearTime, 10)
+        clear(model, at: start.addingTimeInterval(30))
+        XCTAssertEqual(model.clears.count, 1)
+        XCTAssertEqual(model.bestClearTime, 10)
+    }
+
+    func testReplayWaitsForSavedRecordingAndRequiresFreshSetup() {
+        let model = model(), start = Date(timeIntervalSince1970: 100)
+        prepareRound(model, at: start)
+        clear(model, at: start.addingTimeInterval(12))
+        for state: WallRecordingState in [.recording, .saving] {
+            model.recordingState = state
+            XCTAssertFalse(model.beginGameSetup())
+            XCTAssertEqual(model.gameScreen, .results)
+            XCTAssertEqual(model.hits.count, 6)
+            XCTAssertEqual(model.clearTime, 12)
+        }
+        model.recordingState = .saved
+        XCTAssertTrue(model.beginGameSetup())
+        XCTAssertEqual(model.recordingState, .idle)
+        XCTAssertEqual(model.gameScreen, .board)
+        XCTAssertTrue(model.hits.isEmpty)
+        XCTAssertNil(model.wallReference)
+        XCTAssertNil(model.mappingReport)
+        XCTAssertNil(model.roundStart)
+        XCTAssertEqual(model.bestClearTime, 12)
+        XCTAssertFalse(model.isNewBest)
+        XCTAssertFalse(model.startPlay())
+    }
+
+    func testIntroCannotStartScoringWithPreviouslyValidSetup() {
+        let model = model()
+        prepareRound(model, at: Date())
+        model.showGameIntro()
+        XCTAssertEqual(model.gameScreen, .intro)
+        XCTAssertFalse(model.isPlaying)
+        XCTAssertFalse(model.startPlay())
+        model.record(box: 1, u: 0.5, v: 0.5)
+        XCTAssertTrue(model.hits.isEmpty)
+        XCTAssertTrue(model.beginGameSetup())
+        XCTAssertEqual(model.calibration, .required)
+        XCTAssertNil(model.roundStart)
+    }
+
+    func testManualCornersStillRequireNewMappingAndBallSamples() {
+        let model = model()
+        prepareRound(model, at: Date())
+        model.showGameIntro()
+        XCTAssertTrue(model.beginGameSetup(usingCurrentCorners: true))
+        XCTAssertEqual(model.calibration, .ready)
+        XCTAssertEqual(model.corners, corners)
+        XCTAssertNil(model.wallReference)
+        XCTAssertNil(model.mappingReport)
+        XCTAssertFalse(model.startPlay())
+    }
+
+    func testFailedRecordingAllowsAnExplicitNewAttemptAfterStopping() {
+        let model = model()
+        prepareRound(model, at: Date())
+        model.finishSession()
+        model.recordingState = .failed("disk full")
+        XCTAssertTrue(model.beginGameSetup())
+        XCTAssertNil(model.wallReference)
+        XCTAssertFalse(model.startPlay())
+        XCTAssertNil(model.bestClearTime)
+    }
+
+    func testRetryRemovesOldReferenceFailureOverlayBeforeMappingCheck() {
+        let model = model()
+        for freshGame in [false, true] {
+            model.setCorners(corners)
+            XCTAssertFalse(model.finishReference([]))
+            XCTAssertTrue(model.referenceFailed)
+            if freshGame { XCTAssertTrue(model.beginGameSetup()) }
+            else { model.beginCalibration() }
+            XCTAssertFalse(model.referenceFailed)
+            XCTAssertFalse(model.isPlaying)
+        }
+    }
+
+    func testTentativeContactNeverAwardsAndClearsWhenGameOrGeometryEnds() {
+        let model = model()
+        let impact = WallImpactDetector.Impact(t: 1, x: 600, y: 210, d: 44, turn: 70, u: 1.5, v: 0.5, box: 2)
+        model.showContactPreview(impact)
+        model.showGoCue()
+        XCTAssertNil(model.contactPreview)
+        XCTAssertFalse(model.showingGo)
+        model.setCorners(corners); model.validateMappingForTest()
+        model.finishReference(Array(repeating: 0.04, count: 6))
+        XCTAssertTrue(model.startPlay())
+        model.showGoCue()
+        XCTAssertTrue(model.showingGo)
+        model.applyAlignment(.init(status: .obscured, corners: corners, revision: 1))
+        model.showContactPreview(impact)
+        XCTAssertEqual(model.contactPreview, impact)
+        XCTAssertTrue(model.hits.isEmpty)
+        XCTAssertNil(model.clearedAt)
+        model.applyAlignment(.init(status: .shifted, corners: corners, revision: 2))
+        XCTAssertNil(model.contactPreview)
+        model.showContactPreview(impact)
+        XCTAssertNil(model.contactPreview)
+        model.applyAlignment(.init(status: .ready, corners: corners, revision: 3))
+        model.showContactPreview(impact)
+        model.finishSession()
+        XCTAssertNil(model.contactPreview)
+        XCTAssertFalse(model.showingGo)
+        XCTAssertTrue(model.hits.isEmpty)
+    }
+
     func testScoringRequiresCalibrationAndExplicitPlay() {
         let model = model()
         XCTAssertFalse(model.startPlay())
         model.record(box: 1, u: 0.5, v: 0.5)
         XCTAssertTrue(model.hits.isEmpty)
         XCTAssertTrue(model.setCorners(corners))
+        model.validateMappingForTest()
         model.record(box: 1, u: 0.5, v: 0.5)
         XCTAssertTrue(model.hits.isEmpty)
         XCTAssertTrue(model.finishReference(Array(repeating: 0.04, count: 6)))
@@ -41,7 +242,7 @@ final class WallTargetsTests: XCTestCase {
 
     func testFailedSearchAndInterruptionCannotScore() {
         let model = model()
-        model.setCorners(corners)
+        model.setCorners(corners); model.validateMappingForTest()
         model.finishReference(Array(repeating: 0.04, count: 6))
         model.startPlay()
         model.beginCalibration()
@@ -49,7 +250,7 @@ final class WallTargetsTests: XCTestCase {
         model.calibrationFailed()
         XCTAssertFalse(model.startPlay())
         XCTAssertTrue(model.hits.isEmpty)
-        model.setCorners(corners)
+        model.setCorners(corners); model.validateMappingForTest()
         model.finishReference(Array(repeating: 0.04, count: 6))
         model.startPlay()
         model.invalidateCalibration()
@@ -59,7 +260,7 @@ final class WallTargetsTests: XCTestCase {
 
     func testCountdownStartsClockAndOutsideEventsDoNotRestartItOrTheNextRound() {
         let model = model()
-        model.setCorners(corners)
+        model.setCorners(corners); model.validateMappingForTest()
         model.finishReference(Array(repeating: 0.04, count: 6))
         let start = Date(timeIntervalSince1970: 100)
         model.startPlay(at: start)
@@ -76,7 +277,37 @@ final class WallTargetsTests: XCTestCase {
         model.record(box: nil, u: -1, v: 0, at: start.addingTimeInterval(20))
         XCTAssertEqual(model.boxesHit.count, 6)
         model.record(box: 1, u: 0.5, v: 0.5, at: start.addingTimeInterval(21))
+        XCTAssertEqual(model.boxesHit.count, 6)
+        XCTAssertFalse(model.isPlaying)
+        XCTAssertTrue(model.sessionEnded)
+        XCTAssertFalse(model.startPlay())
+        XCTAssertEqual(model.elapsed(at: start.addingTimeInterval(30)), 6)
+        model.newRound()
+        XCTAssertTrue(model.hits.isEmpty)
+        XCTAssertTrue(model.startPlay(at: start.addingTimeInterval(31)))
+        model.record(box: 1, u: 0.5, v: 0.5, at: start.addingTimeInterval(32))
         XCTAssertEqual(model.boxesHit, [1])
+    }
+
+    func testStoppingPreservesImpactCoordinatesAndFreezesTimer() {
+        let model = model()
+        model.setCorners(corners); model.validateMappingForTest()
+        model.finishReference(Array(repeating: 0.04, count: 6))
+        let start = Date(timeIntervalSince1970: 100)
+        model.startPlay(at: start)
+        model.record(box: 1, u: 0.22, v: 0.76, at: start.addingTimeInterval(1))
+        model.record(box: 1, u: 0.74, v: 0.31, at: start.addingTimeInterval(2))
+        model.applyAlignment(.init(status: .obscured, corners: corners, revision: 2), at: start.addingTimeInterval(3))
+        model.finishSession(at: start.addingTimeInterval(5))
+        model.finishSession(at: start.addingTimeInterval(10))
+        XCTAssertEqual(model.hits.map(\.u), [0.22, 0.74])
+        XCTAssertEqual(model.hits.map(\.v), [0.76, 0.31])
+        XCTAssertEqual(model.elapsed(at: start.addingTimeInterval(20)), 3)
+        XCTAssertEqual(model.timerStatus, "STOPPED")
+        model.applyAlignment(.init(status: .ready, corners: corners, revision: 3))
+        model.record(box: 2, u: 1.5, v: 0.5)
+        XCTAssertEqual(model.hits.count, 2)
+        XCTAssertFalse(model.startPlay())
     }
 
     func testCalibrationRejectsCrossedCollapsedAndOffscreenCorners() {
@@ -142,6 +373,36 @@ final class WallTargetsTests: XCTestCase {
         XCTAssertTrue(trajectory(depthOnly: true, bounce: false).isEmpty)
     }
 
+    func testMatureVisibleTurnConfirmsEarlyButDepthOnlyKeepsFullWindow() {
+        let board = WallBoard(topLeft: .zero, topRight: CGPoint(x: 1280, y: 0),
+            bottomRight: CGPoint(x: 1280, y: 720), bottomLeft: CGPoint(x: 0, y: 720))!
+        for fps in [20.0, 30.0, 60.0] {
+            for scenario in ["turn", "depth", "edge"] {
+                let depthOnly = scenario == "depth"
+                var detector = WallImpactDetector(board: board,
+                    reference: WallBallReference(Array(repeating: 44.0 / 1280, count: 6)), imageWidth: 1280)
+                detector.processingFPS = fps
+                var found: [WallImpactDetector.Impact] = [], reported: Double?
+                for frame in 0..<Int(fps * 2) {
+                    let t = Double(frame) / fps
+                    let centre = scenario == "edge" ? 440.0 : 600.0
+                    detector.add(.init(t: t, x: depthOnly ? centre : centre - abs(t - 1) * 240,
+                        y: 210, d: 44 + abs(t - 1) * 120, hand: .clear))
+                    let hits = detector.impacts(now: t)
+                    if !hits.isEmpty { reported = t }
+                    found += hits
+                }
+                XCTAssertEqual(found.count, 1)
+                XCTAssertEqual(found.first?.t ?? 0, 1, accuracy: 0.001)
+                if depthOnly || scenario == "edge" { XCTAssertGreaterThanOrEqual(reported ?? 0, 1.4) }
+                else {
+                    XCTAssertGreaterThan(reported ?? 0, 1.18)
+                    XCTAssertLessThan(reported ?? 10, 1.35)
+                }
+            }
+        }
+    }
+
     func testSingleFrameSizeGlitchIsNotAFrontalRebound() {
         let board = WallBoard(topLeft: .zero, topRight: CGPoint(x: 1280, y: 0),
                               bottomRight: CGPoint(x: 1280, y: 720), bottomLeft: CGPoint(x: 0, y: 720))!
@@ -193,7 +454,7 @@ final class WallTargetsTests: XCTestCase {
     }
     func testReferencePhaseCannotScoreAndSixValidSamplesAreRequired() {
         let m = model()
-        m.setCorners(corners)
+        m.setCorners(corners); m.validateMappingForTest()
         XCTAssertFalse(m.startPlay())
         m.beginReference()
         for box in 1...6 {

@@ -1,8 +1,102 @@
 # Juggle Dude account setup
 
-## Current rollout status — 2026-10-12
+## Google option paused — 2026-10-22
 
-The submitted first release remains **Apple sign-in + guest**. The Google and email controls in `SignInView.swift` remain commented out. The owner explicitly requested that they be added only in a later update after App Store approval. This setup pass changed no iOS source, build, installation, or App Store submission.
+At the owner's request, the shared welcome/Profile screen now offers **Apple, email
+and guest** only. The Google button is removed, and email errors no longer suggest
+Google as an alternative. Existing auth/session handling and provider configuration
+remain intact so current development sessions can still restore. Google can return
+after the branded-domain setup below and an on-device authorization check.
+
+Verification: all 18 account-store tests and all three sign-in UI tests passed on
+the iPhone 17 Pro simulator, covering Google absence on welcome/Profile, Apple/email
+availability, email validation/back navigation, guest persistence, appearance changes,
+large text and legal-link navigation. Evidence:
+`artifacts/google-signin-deferred/20261022/SignIn.xcresult`. No phone installation or
+App Store upload was performed for this change.
+
+## Branded sign-in domain deferred — 2026-10-22
+
+The owner deferred the custom domain until upgrading Supabase. The project remains
+on Free. The dashboard currently lists Pro from $25/month and custom domains as an
+additional $10/month per domain; taxes, compute and usage may add to that amount.
+No paid plan, domain, DNS or provider setting was changed.
+
+The retained Google integration starts at the existing Supabase project host, which iOS displays
+in its browser authentication consent sheet. Google's verified app name/logo does
+not replace that initial host. This is a branding limitation, not a failed sign-in.
+
+The app now supports an optional `SUPABASE_AUTH_URL` HTTPS origin for a future
+`https://auth.juggledude.com` deployment. It is **absent from the active configuration**,
+so runtime routing is unchanged. The example plist only includes a commented example.
+Auth and email verification use that optional origin; data APIs and Keychain session/
+PKCE storage keep the original `SUPABASE_URL` identity. The 25 focused configuration,
+account-store and email-link simulator tests passed. This does not verify a deployed
+custom domain or external Google sign-in.
+
+When the owner chooses to resume:
+
+1. Confirm the then-current paid-plan/add-on cost and configure the branded domain
+   through Supabase, including its DNS verification and certificate.
+2. Add `https://auth.juggledude.com/auth/v1/callback` to the existing Google Web OAuth
+   client **before activating** the custom domain. Retain the original callback;
+   Supabase changes its advertised callback upon activation.
+3. Activate and verify the domain, then set `SUPABASE_AUTH_URL` in the app's private
+   configuration. Keep `SUPABASE_URL`, publishable key and app callback unchanged.
+4. Check Google completion/cancellation, email links, Apple sign-in, session refresh
+   and restoration, sign-out and deletion on a device before rollout.
+
+Reference: [Supabase custom-domain setup](https://supabase.com/docs/guides/platform/custom-domains).
+
+## Current rollout status — 2026-10-18
+
+The owner authorized the Google/email rollout on
+`codex/post-launch-signin-leaderboard-ball-edges`, with building deferred.
+The source now exposes **Apple, Google, email and guest** on the shared welcome/Profile
+sign-in screen. Google uses the existing browser OAuth/PKCE flow; email uses the
+existing passwordless form, resend cooldown and verified-domain callback. No provider
+configuration, authentication protocol or purchase entitlement was changed.
+
+The follow-up source review fixes pending-email recovery: starting Google clears the
+old pending email because the SDK replaces its shared PKCE verifier, even if the
+browser is subsequently cancelled. A failed resend also clears the previous pending
+link and returns to the email form with the error visible. Cancelling native Apple
+sign-in preserves a pending email link. The cooldown is preserved across provider
+changes; three focused regression cases cover these behaviors.
+
+The existing UI checks now cover all providers, email validation/back navigation,
+guest continuation and large-text reachability. They do not submit email requests
+or complete external Google authorization. The Swift unit/UI checks have **not been
+executed** for this change; syntax-only parsing and `git diff --check` passed. No
+project build, device installation, email request or upload was performed.
+
+**Read-only live checks, 18 October:** Supabase `/auth/v1/settings` returned HTTP 200
+with Apple, Google and email enabled, sign-ups enabled and email auto-confirmation
+disabled. Both the website's association file and Apple's standard association CDN
+returned HTTP 200 with `G276PSQ2LH.com.juggledude` and the two `/auth/email` paths.
+The owner reconfirmed SES approval and completed Google branding. These checks verify
+provider availability and link association, not actual delivery or completion of a
+fresh sign-in. Evidence: `artifacts/signin-rollout-20261018/readiness.json`.
+
+Before rollout, build and run the account/link/history/subscription regression checks,
+then verify Google authorization/cancellation, email delivery and completion, expired
+links, relaunch/session restoration, sign-out and existing purchase access on the
+candidate. Provider enablement and link association were checked again above; the
+detailed SES quotas and Supabase sending-limit notes below were last inspected on
+12 October. Recheck the project-wide email limit and delivery monitoring before
+public rollout; SES production approval does not set those Supabase limits.
+
+Guest history is retained in its device-only guest library and becomes visible again
+after sign-out. Signing in does not claim guest results or merge different account
+histories. This is the existing ownership behavior; automatic migration/account
+linking is not part of enabling the provider buttons.
+
+### Provider setup verified — 2026-10-12
+
+The submitted first release offered **Apple sign-in + guest**. At this setup checkpoint,
+the Google and email controls remained commented out for a later update. That setup
+pass changed no iOS source, build, installation, or App Store submission; the
+18 October source rollout above supersedes the hidden-controls status.
 
 Google's setup is ready for that later rollout:
 

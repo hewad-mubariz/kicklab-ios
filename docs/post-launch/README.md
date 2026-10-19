@@ -1,16 +1,272 @@
 # Four-week post-launch plan
 
-Documented: 2026-10-11. Release priorities updated: 2026-10-12.
-Status: planned; no implementation is completed by this document.
+Documented: 2026-10-11. Product priorities updated: 2026-10-19.
+Status: in progress; implementation and verification status must be read separately.
 Week 1 starts after the first public release, rather than on the documentation date.
 
 The first month's priorities are trustworthy counting, better ball detection and
-tracking, dependable sessions on older devices, and a fair leaderboard. Replay quality
-and shot-camera improvements follow.
+tracking, dependable sessions on older devices, and a fair leaderboard. Ball
+replacement quality in recordings made inside the app is the current highest
+priority (owner update, 19 October). Leaderboard work is deferred until this core
+feature is ready; additional effects and shot-camera enhancements follow.
 The first post-launch update is limited to the improved counter and older-device
 session reliability. Leaderboard submissions and voluntary video sharing follow in
 a separate release. Google/email rollout must not delay the counter update. TikTok
 sign-in, additional effects and production trick recognition can follow later.
+
+## Next three product targets — 18 October 2026
+
+The owner selected these three targets on 18 October. On 19 October the owner
+moved ball replacement ahead of the remaining leaderboard work. This update
+supersedes the ordering below; the current candidate's release checks continue.
+
+1. **Google and email sign-in.** Enable the existing flows after verifying provider
+   readiness, cancellation/retry, expired links, restored sessions and preservation
+   of guest history and account/subscription access. The controls are enabled in
+   source as of 18 October. **22 October update:** Google is removed from the
+   welcome/Profile choices until a branded Supabase auth domain is configured;
+   Apple, email and guest remain available. Existing guest history stays in its
+   separate local library.
+   The [account setup notes](../auth-setup.md) record completed Google branding and
+   SES production setup; email sending limits and delivery monitoring still need
+   an explicit rollout decision.
+2. **Reviewed leaderboard beta.** Implement continuous ranked streaks, deliberate
+   original-video submission, pending/approved/rejected states and backend-controlled
+   approval. Start with reviewed scores and separate optional training-data consent
+   from score review. Confirm the proposed contact policy before implementing scoring;
+   the 18 October design draft below recommends including clean knee/thigh contacts.
+3. **Ball replacement — current highest priority (updated 19 October).**
+   Treat this as a core-feature quality milestone. Prioritize recordings made inside
+   Juggle Dude: recover missing ball regions, preserve hands/feet, remove original-ball
+   fringes and stabilize the replacement across replay and saved exports, with
+   acceptable preparation cost on older phones. Imported outdoor 4K/120 fps footage
+   is a comparison and regression control, not the acceptance target. Keep appearance
+   repairs separate from touch evidence and preserve existing counts. New cosmetic
+   effects, trick recognition and shot-camera enhancements must not displace this work.
+
+### Current ball replacement implementation — 19 October
+
+The current branch now contains a local candidate; it has not been uploaded or
+approved for release. [Validation evidence](../../benchmarks/rf-ball-replacement/20261019-consensus-integration/report.json)
+tracks checks and limitations separately from implementation.
+
+- Retain the established modest-addition crop repair. Require agreement between
+  current-frame crop contexts for larger repairs, removing false hand ownership,
+  and temporal fragment nominations. Cap actual extra model calls at 240 and
+  reserve enough calls for each remaining planned frame, including both required
+  contexts for mandatory agreement.
+- Detect fragments even when the detector box shrinks alongside the mask. Nearby
+  original observations only select a retry; current pixels determine the repair.
+- Preserve decoder sampling through mask fusion, compression and disk caches.
+  Regridding must not silently change the renderer's estimate of edge dilation.
+- Reject image-edge fits that abandon supported ball interiors. Real in-app
+  panel/finger examples are included in regression fixtures at multiple scales.
+- Reconstruct soft-edge background contribution only where neighboring current-frame
+  samples agree. Textured/uncertain backgrounds and foreground cutouts keep the
+  source-over fallback. Replay, still previews and export use the same service.
+
+The counter and live capture pipeline are unchanged. These changes improve the
+replacement in replay/export of footage recorded inside the app. Long blur streaks,
+full silhouette accuracy and phone performance still require qualification; this
+is not a claim of complete matting or release readiness.
+
+20 October memory follow-up: fixed an RF input-buffer ownership leak when mask
+repair changes crop dimensions. `CVPixelBufferCreate` now writes into a fresh local
+reference before assigning the owned buffer. On the latest 22.94-second phone
+recording, isolated crop-repair peak fell from 315 to 126 MiB and settled replay
+from 279 to 80 MiB. All 939 frame/mask records and 1,373 spin entries remained
+identical; the original 16 touches and markers were preserved. Eleven RF bridge
+tests pass, including a weak-reference check that resized buffers are released.
+These isolated measurements do not reproduce the full app session's reported
+600 MB peak; long-session/older-device qualification remains open.
+[Memory evidence](../../benchmarks/rf-ball-replacement/20261020-preparation-memory/report.json)
+
+20 October visual follow-up: replacement quality on in-app footage remains open.
+The latest original and saved export both contain 1,373 frames with identical
+timestamps. Reviewed contacts retain old-ball fringes and render a sharper,
+rounder replacement than the photographed ball. Close-up model inference alone
+did not resolve this. A trial retaining more mask interior made little visible
+improvement and failed an outdoor contour regression; it was removed. The
+current renderer and camera settings remain unchanged.
+
+Debug capture reports now include periodic shutter duration, ISO and exposure
+target offset, so the next short Final tests recording can establish actual
+capture conditions. These readings are diagnostic, not frame-exact exposure
+metadata and not rendering inputs. The next visual work needs source-consistent
+blur and soft-edge source removal, with foreground/older sharp-video controls.
+[Visual investigation and examples](../../benchmarks/rf-ball-replacement/20261020-live-quality/report.json)
+
+20 October edge candidate, verified on the next 25.99-second in-app recording:
+the existing source-spin preparation now estimates photographic blur from
+consistent opposite-side image edges. When supported, replacement coverage keeps
+that soft opacity instead of making it opaque again from semantic ball ownership.
+Foreground hand/foot cuts remain applied. Ambiguous evidence retains the existing
+estimate; the earlier 22.94-second clip abstains and is not improved by this change.
+This is a partial visual improvement, not a complete solution to original-ball
+fringes or trail-ring alignment.
+
+The local iPhone 17 Pro Max export completed in 27.06 seconds, peaking at 127.89 MiB
+in the isolated owned-track harness (mask preparation and the warm regular UI were
+not measured). All 1,556 source/export timestamps and prior source-spin entries
+match. The sharp outdoor 4K/120 fps control abstains; all 77 comparison PNGs are
+byte-identical. The final focused simulator suite passed 25 tests. Normal debug
+recordings now also save periodic optics readings to `Documents/CaptureDiagnostics`,
+without requiring Final tests or changing camera exposure settings. Build 26 was
+installed locally; there was no upload.
+[Candidate evidence and limits](../../benchmarks/rf-ball-replacement/20261020-edge-fix/report.json)
+
+### Ball replacement implementation sequence
+
+1. **Evidence-based mask recovery.** Compare current image edges and nearby original
+   observations to detect incomplete masks, including fragments whose detection box
+   has also shrunk. Test agreement between different current-frame crop contexts
+   before accepting added or removed coverage. A high detection score or agreement
+   between model calls is supporting evidence, not proof that an outline is correct.
+   Prioritize suspicious frames within an inference-call budget; do not run several
+   retries on every frame. Preserve the original counter observations.
+   Compare a tracked-crop-first appearance pass against the current full-frame pass
+   plus retries. It must use sparse original capture observations and reacquire when
+   tracking is uncertain; a study guided by dense full-frame inference cannot prove
+   the proposed cost saving. Keep this separate from live counting.
+2. **Visibility and blur compositing.** Keep the physical ball outline, visible
+   surface and motion-blurred edge opacity distinct. Preserve fingers and feet in
+   front. Removing the photographed ball's colour from a blurred boundary also
+   requires a trustworthy estimate of the underlying scene; a soft overlay alone
+   cannot do this. Prototype a bounded local/temporal reconstruction and verify it
+   against known-background controls before allowing it near moving limbs. Retain
+   source pixels when the evidence is insufficient.
+3. **Temporal consistency and shared geometry.** Stabilize uncertain size/shape
+   changes using nearby evidence while preserving real contact reversals and scale
+   changes. Replay, export and attached effects should use the same appearance
+   geometry and visibility. Verify source-spin independently of mask coverage.
+4. **Capture quality and release qualification.** Measure exposure/ISO/focus alongside
+   delivered/written frames, inference cost, memory and thermal state. Compare app
+   720p60, a diagnostic 1080p60 capture and a native-camera reference under matching
+   light/framing before changing defaults. Judge the result on fresh in-app recordings
+   and older-device performance, plus the existing hand/foot/distant-ball controls.
+
+The 19 October research direction is a bounded refinement of the existing pipeline,
+not a commitment to a new model or an unconditional increase in capture quality.
+RF-DETR provides [instance segmentation](https://rfdetr.roboflow.com/latest/learn/run/segmentation/);
+recovering edge opacity and foreground/background colour is a separate compositing
+problem. [Background Matting V2](https://arxiv.org/abs/2012.07810) illustrates the need
+for background evidence, but its person-matting implementation is not being adopted
+or treated as an on-device football solution.
+
+### Ball replacement handoff
+
+- **Known issue:** the original patterned ball can remain visible outside the
+  replacement, and coverage can flicker around fast contacts/indoor motion blur.
+  The source-frame timing fix preserves captured frames; it does not solve these
+  outline/coverage errors or recover frames missing from the original recording.
+- **Evidence:** the [replacement comparison](../../benchmarks/touch-counting/rf-ball-replacement-20261018.json)
+  compares 288/384 preparations of the same 29.6-second indoor recording. The
+  report is also mirrored in the sibling lab repository at
+  `benchmarks/v2/rf-ball-replacement-20261018.json`. Local visual evidence and exports
+  live under `artifacts/rf-ball-replacement-20261018/`; these are not bundled Git assets.
+- **Finding:** 384 improved outline continuity on this clip, but did not eliminate
+  blur/edge errors. Full preparation on iPhone 11 was expensive. This one clip/skin
+  is development evidence, not an independent quality evaluation.
+- **Test-build candidate:** bounded higher-resolution repair of weak/missing
+  outlines, followed by edge/blur refinement. Do not indiscriminately enlarge the
+  replacement over the player or require a full 384 pass on every older-device clip.
+- **18 October isolated follow-up:** the [live/replay path audit](../../benchmarks/touch-counting/ball-replacement-path-audit-20261018.json)
+  confirms the recording-screen glow trail consumes delayed counter snapshots:
+  200 ms tracking buffering, contact processing, then roughly 8 Hz UI publication.
+  Correct live appearance needs a coherent camera-frame/observation path; raising
+  SwiftUI refresh rate alone cannot align those historical positions.
+  A focused `BallReplacementCoverage` correction now retains valid mask lobes at
+  the source-frame boundary. The previously failing photographed fast-ball test
+  and 71 other rendering tests pass in an isolated simulator; counting is unchanged.
+  Separately, an offline RF384 crop experiment produced masks for all four missing
+  frames among 12 selected indoor stills and improved a truncated outline with
+  Pearl, Gold and Stealth. That initial crop experiment was **not enabled in the app**:
+  automatic selection/identity checks, occlusion controls, motion continuity and
+  device cost remain unqualified. One pre-existing simulator reanalysis test also
+  failed with “Ball tracking was interrupted”; the broader suite is not all green.
+  No physical phone was accessed or installed during this follow-up.
+- **18 October combined test build:** [integration report](../../benchmarks/touch-counting/ball-replacement-integrated-20261018.json).
+  Build **1.0.1 (24)** is installed in the main Juggle Dude app on iPhone 17 Pro Max.
+  Live glow now renders a matched source frame and observation together, using
+  one replaceable packet and the existing Metal compositor. The preview inherits
+  the tracker's roughly 200 ms delay, draws at up to 30 Hz, and reveals the normal
+  camera if tracking stalls. Counting and recorded-video timing are unchanged.
+  Replay/export now run a bounded RF crop pass after existing gap repair. It uses
+  current pixels, strict identity/size/alpha-support checks, thermal pacing and
+  at most 240 requests; repaired masks remain separate from counting input.
+  The combined simulator selection passed 121 tests; seven physical-camera tests
+  were skipped. A full saved-video simulator rerun could not launch the app and
+  is not a completed quality or performance check. Manual live/replay/export,
+  occlusion, memory and thermal acceptance remains required before shipping.
+- **19 October fresh recording audit:** the local branch build **1.0.0 (26)** on
+  iPhone 17 Pro Max produced an 18.625-second, 720 × 1280 recording and export.
+  Both contain 1,113 frames with identical timestamp sequences. All 516 frames
+  in the 5.7–14.3-second juggling interval have a stored mask; mask availability
+  does not establish outline accuracy. White/blue original-ball edges remain at
+  fast contacts around 6.25, 7.95, 9.55 and 10.85 seconds. A held-ball hand boundary
+  is also imperfect around 4.80 seconds. Current Swift appearance functions were
+  inspected on 79 extracted frames, with replacement-only Pearl/Gold/Stealth
+  comparisons on five frames; these Mac diagnostics are not a new device export
+  or a pixel-parity claim. The saved iPhone export remains the visual baseline.
+  Evidence and the reproducible audit are under
+  `artifacts/ball-replacement-review/20261019-latest/review-summary.json`.
+  The causes to separate are RF-mask undercoverage, circular reconstruction of
+  blurred contacts, shallow occlusion boundaries, and per-frame geometry changes.
+  Glow Trail additionally draws a separate ring from the detector radius rather
+  than the refined material outline, which can exaggerate the apparent mismatch.
+  Prioritize a replacement-only baseline, exposure/visibility coverage separate
+  from texture geometry, then coordinated effects and temporal consistency. Do
+  not use a global size increase or alter counting to address appearance. This
+  audit changed no production code and installed no further build.
+- **19 October deeper in-app recording investigation:** [report and reproduction
+  commands](../../benchmarks/rf-ball-replacement/20261019-live-capture-audit/report.json),
+  [source/current/crop comparison](../../benchmarks/rf-ball-replacement/20261019-live-capture-audit/live-recording-evidence.jpg)
+  and [compositing control](../../benchmarks/rf-ball-replacement/20261019-live-capture-audit/compositing-evidence.jpg).
+  The primary failures are recordings made inside Juggle Dude. The imported
+  outdoor 4K/120 fps clip is a reference, not a substitute for capture acceptance.
+  Native AVFoundation geometry audits covered 6,827 frames across three videos;
+  selected frames were inspected visually, not exhaustively labelled.
+  Fresh inference on the latest saved in-app video reproduces the incomplete
+  lower-ball mask at 6.018 seconds. A diagnostic crop recovers it, but the current
+  45% maximum area-growth rule rejects the 62% recovery. Nearby fragments can
+  escape retry because their detection boxes shrink too. A separate held-ball
+  crop preserves a thumb pixel that is currently painted over, yet fails the
+  minimum-growth rule. Fifteen sparse ball/person/background witnesses pass in
+  the experimental crops versus twelve in the baseline; this is not broad
+  regression acceptance or a deployable unconditional-crop policy.
+  A synthetic exact-matte control through the production renderer also confirms
+  old-ball colour remains at partially transparent edges when replacement is
+  drawn over the original image. Mask recovery and edge compositing therefore
+  need separate fixes. Prioritize quality-aware crop selection/acceptance and
+  explicit visibility handling, then source-colour removal and stable shared
+  material/effect geometry. Capture currently prefers 720p60; measured exposure,
+  ISO and focus are not retained, so matched capture tests must precede changes
+  to recording defaults. This investigation changed no production logic, touch
+  rules or app build. The reproducible harness and evidence are local files;
+  no commit, push, new device installation or release qualification is implied.
+- **19 October recovery-design follow-up:** [experiment and next decisions](../../benchmarks/rf-ball-replacement/20261019-recovery-design/report.json).
+  An isolated prototype queries different crop contexts from the same source frame
+  and changes a pixel's ball membership only when two geometrically consistent masks
+  agree on the direction of that change. On 91 selected frames of the latest in-app
+  recording it retains 73 proposals, passes all 15 sparse labelled points (baseline:
+  12), and removes three large radius jumps in the 5.9–6.1-second failure sequence.
+  An earlier in-app recording supplies 22 inspected frames and 12 additional labelled
+  control points; those controls remain correct. This does not establish full-outline
+  accuracy or prove that two model calls cannot share the same mistake.
+  Adaptive stopping reduces the latest experiment from 273 to 203 model calls while
+  retaining the 15 passing points. This is a call-count result, not an iPhone speed or
+  thermal measurement; production scheduling and its global call budget are not yet
+  implemented. Blur fringes remain. Before integration, resolve retry prioritization,
+  shared model errors, and the way resampled masks preserve physical sampling/feather
+  information. The experiment and roadmap are saved locally; app behavior is unchanged.
+- **Completion checks:** fresh indoor/outdoor and fast/occluded recordings, preview
+  versus exported placement, multiple skins, unchanged touch events, and measured
+  preparation/export time, memory and thermal behavior on older/newer phones.
+
+The iOS integration is in `kicklab/Effects/` in this repository; model/segmentation
+experiments may be developed in `kicklab-lab`, with provenance and results brought
+back here before application integration. A local report or artifact existing on
+disk does not mean it has been committed or pushed.
 
 ## Schedule and scope
 
@@ -69,7 +325,7 @@ are separated because their priority and release scope differ.
 | 8 | 9 | Existing fire/rainbow effects and execution cost | Medium | Medium | Fix essential performance issues; broader enhancements and new effects are stretch work. |
 | 9 | 10 | Distance-shot camera experience | Medium | Medium | Improve placement guidance, framing and recording feedback. |
 | 10 | 5 | Real speed and distance travelled | Medium | High | Validate a defined measurement mode if detection work leaves time; ship only with supporting evidence. |
-| 11 | 7 | Around the World recognition | Later | High | Optional feasibility prototype; no production commitment this month. |
+| 11 | 7 | Around the World recognition | Later | High | Deferred beyond this beta; no recognition, badges or trick points in this release. |
 | 12 | 1 | TikTok sign-in | Low | Medium | Defer until there is clear demand. |
 
 An edge case that blocks recording, loses a session or prevents saving is a critical
@@ -391,18 +647,27 @@ Record device-specific results and remaining limitations before shipping.
 
 ## Week 2: Sign-in and a fair leaderboard beta
 
+**Sign-in source update, 18 October:** Google/email entry points and their existing
+UI checks are restored. The authentication services were already implemented; pending
+email recovery after Google cancellation or failed resend is corrected. Read-only
+checks confirm all three providers enabled and the email association valid at the
+website and Apple CDN. Syntax checks pass; no project build, Swift test run,
+provider-configuration change or upload was performed in this pass. Keep the rollout
+checks below open until candidate verification is complete;
+see the [account rollout status](../auth-setup.md).
+
 - [ ] Complete outstanding Google/email production setup and recheck provider status
   independently of the counter release.
 - [ ] Enable Google/email after production setup and end-to-end verification of new
   sign-in, cancellation, expired links, retries, sign-out and restored sessions.
 - [ ] Verify guest history survives sign-in and that account changes do not
   unexpectedly split or overwrite player progress.
-- [ ] Implement the ranked streak rules below, distinct from total session touches.
-- [ ] Add explicit submission, pending, approved and rejected states with useful
+- [x] Implement the ranked streak rules below, distinct from total session touches (source).
+- [x] Add explicit submission, pending, approved and rejected states with useful
   explanations and a review route.
-- [ ] Support deliberate submission of original recordings for private review.
+- [x] Support deliberate submission of original recordings for private review (source).
   Explain who can access the recording and how long it is retained.
-- [ ] Make approval a trusted backend operation; clients cannot approve their own scores.
+- [x] Make approval a trusted backend operation; clients cannot approve their own scores (local SQL verified).
 - [ ] Start with a small opt-in beta where every published score has been reviewed.
   Bound participation to the review capacity available.
 - [ ] Test that known hand/ground exploit recordings cannot appear as valid streaks,
@@ -412,28 +677,339 @@ Record device-specific results and remaining limitations before shipping.
 scores are supported by their recordings. If counting or review is not ready, ship
 authentication separately and keep the leaderboard beta private.
 
-### Initial leaderboard rules
+### Flagged-moment review — 22 October
+
+The owner returned focus to leaderboard fairness after deferring Google sign-in.
+This dated update supersedes the proposal-splitting and build status in the original
+18 October implementation notes below.
+
+- New in-app recordings retain compact production contact observations separately
+  from the bounded debug trace. No new inference, frame copies or clip exports are
+  added. The buffer is bounded at 4,096 observations; the saved review at 2,000
+  grouped moments. Reaching either limit is shown as incomplete evidence.
+- Only positive hand/hold detections and corroborated ground-contact detections
+  split the suggested streak. Low contacts without corroborating ground evidence,
+  uncertain hands/body/player visibility and missing ball tracking are review
+  flags. Cooldown, tiny-motion and weak-impulse candidates are omitted as routine
+  counter noise. A gap over two seconds is flagged, not treated as proof of a drop.
+  These are provisional proposals; all published beta scores still need human review.
+  The actual counter acceptance rules and personal training totals are unchanged.
+- Replay has a quiet leaderboard review card. The submission screen lists grouped
+  timestamps and plain-language reasons. Each moment plays the existing original
+  from one second before to 1.2 seconds after the incident (clamped to the video),
+  with a separate full-recording player. No per-moment media files are produced.
+- “Still doesn’t look right?” leads to deliberate full-original submission. The
+  consent text includes flagged timestamps/reasons. A corrected score can change
+  rank only after approval; the UI promises no higher rank. My submissions and the
+  leaderboard’s latest-submission card expose the review summary/status.
+- Local history retains flags through server refresh and app restart. Older
+  recordings without evidence say so and can still be reviewed from the original.
+  Stopping recording never queues an original or flags for review automatically.
+- [The additional migration](../../supabase/migrations/202610220001_leaderboard_touch_review.sql)
+  stores validated, bounded JSON on the existing owner-private attempt. It leaves
+  approval permissions unchanged, supports old clients, and prevents replacing
+  evidence after submission. Reviewers can inspect it with
+  `python3 scripts/review-leaderboard.py moments ATTEMPT_UUID`.
+
+Local validation: 52 focused Swift unit tests pass, covering evidence classification,
+trace-limit independence, grouping, proposals, persistence, uploads and account isolation.
+The disposable PostgreSQL suite passes, including private evidence,
+malformed/out-of-range payload rejection, immutable retry behavior and no automatic
+ranking. The simulator UI check passes for moment selection, reason text, clip playback
+and full-original navigation. The debug UI fixture uses **example flags**, not a
+new analysis verdict for its supplied video. Evidence lives in
+`artifacts/leaderboard-moments/20261022/`.
+
+**Deployment update — 22 October:** Following the owner's deployment request,
+the reviewed-leaderboard and touch-review migrations are now live on
+`shbdsjvpjdtqbiaevrxy`. The hosting-limit migration also caps intents and the private
+bucket at 50 MiB, matching the existing Free project's actual global Storage limit.
+The app validates the same limit and explains it before submission. No paid plan
+was enabled. Longer original recordings require a higher hosting limit or a
+separate storage integration; the owner raised AWS S3 as an option during deployment.
+
+`delete-account`, `reconcile-account-deletions` and `cleanup-leaderboard-videos`
+were deployed together. Cleanup has a dedicated matching Function/Vault secret;
+both retention and deletion-recovery schedules are active every ten minutes.
+Live checks confirm an empty reviewed board, a private bucket, row security,
+no anonymous submissions and no client approval permission. All three privileged
+function endpoints reject anonymous calls; a scoped cleanup run completed with
+zero failures (no videos were due). The full local SQL suite, including the exact
+50 MiB boundary and failed-intent rollback, and 21 function tests pass.
+
+**Live upload check — 22 October:** A 9.6 MB synthetic video uploaded through the
+same resumable endpoint and 6 MiB chunk sizes as the app. A fresh HEAD request
+confirmed the server offset before each chunk, and a signed download matched the
+original SHA-256. A second temporary account could neither read the attempt nor
+open the video. Finalization retained the flags and entered pending review; the
+public board excluded it, and client approval was denied. Withdrawal succeeded.
+Deleting the temporary owner through the deployed app endpoint removed its
+submission, video bytes and Auth account. Both temporary accounts and all fixture
+files were removed; no test score was approved or published.
+
+**Still to validate:** a fresh physical-device recording, app relaunch/network-loss
+upload recovery, reviewer approval/correction and scheduled withdrawal retention
+with actual user footage. The synthetic check does not prove counter accuracy or
+replace the user's phone walkthrough. Artifacts,
+source hashes and the prior leaderboard/function definitions are retained under
+`artifacts/leaderboard-moments/20261022/`. No App Store upload or review submission
+was made. AWS credits have not been checked and S3 has not been configured.
+
+**Hosting decision — 22 October:** The owner chose to remain on Supabase Free
+while demand is unknown. Keep the 50 MiB per-original limit and existing storage
+quota for the beta; evaluate a plan upgrade or a separate video store later using
+actual storage and download usage. No paid plan, AWS storage or new provider is
+authorized by this decision. Scores and review evidence stay separate from video
+storage so a future storage change need not replace the ranking model.
+
+### Reviewed leaderboard implementation — 18 October
+
+Implemented in source on `codex/post-launch-signin-leaderboard-ball-edges`:
+the Stadium lights Home card, trophy shortcut, pennant board and player details,
+rules, deliberate submission from replay/history, My submissions, visibility,
+appeals and reports. The board calls the reviewed-streak endpoint. The migration
+also routes the legacy endpoint to reviewed scores so old clients cannot expose
+unreviewed training totals after deployment. Ordinary session counting is unchanged.
+
+**At the 18 October checkpoint, not deployed or built:** no Xcode build, simulator/device run, install or upload
+was performed for this implementation, as requested. The remote backend must be
+deployed before this source can load the reviewed board or accept an upload.
+
+The local proposal splits accepted touch timestamps at rejected candidates or a
+gap over two seconds, then suggests the longest segment. This is a conservative,
+editable starting point for review, not automatic proof of continuity. A reviewer
+must watch the original, correct missed/extra contacts and approve one supported
+segment. Session totals and device `bestCombo` never become reviewed scores.
+Backspin and height icons are present; values remain **Unavailable** until a
+validated measurement pipeline supplies them. Duration and average rhythm use
+the approved segment. Around the World has no classification, badge or bonus.
+
+Implementation is split across [leaderboard views/services](../../kicklab/Leaderboard/),
+the [review migration](../../supabase/migrations/202610180001_reviewed_leaderboard.sql),
+[private-video cleanup](../../supabase/functions/cleanup-leaderboard-videos/index.ts)
+and the [operator review tool](../../scripts/review-leaderboard.py).
+Uploads hash the original on disk and use resumable 6 MiB chunks with account-scoped
+checkpoints; publication happens only after the original has arrived and a trusted
+reviewer has approved it. The implementation follows the
+[Storage resumable-upload protocol](https://supabase.com/docs/guides/storage/uploads/resumable-uploads)
+and explicitly requests a [single PostgREST object](https://postgrest.org/en/latest/references/api/resource_representation.html)
+for the begin/finalize receipts.
+
+Local validation: the disposable PostgreSQL suite passes (including old API
+compatibility, owner isolation, unapproved-score exclusion, immutable evidence,
+duplicate approval, UTC periods/ties, reports, appeals, withdrawal, expiration and
+deletion). The targeted deletion/retention Edge Function suite and offline reviewer
+tool tests pass. Swift syntax parsing passes. Added Swift proposal/API/upload tests
+and adjusted the pennant navigation UI test; these await an app test build.
+
+Before beta rollout:
+
+1. Apply the reviewed-leaderboard migration after the existing account migrations.
+   Confirm the private bucket and project-wide Storage limit support the 2 GiB
+   beta cap; smaller plan limits must be reflected in the app before release.
+2. Deploy `delete-account`, `reconcile-account-deletions` and
+   `cleanup-leaderboard-videos` together. Configure a dedicated
+   `LEADERBOARD_CLEANUP_SECRET` and matching Vault secret, then run
+   [the cleanup schedule](../../supabase/ops/schedule-leaderboard-cleanup.sql).
+   Keep [deletion recovery](../../supabase/ops/schedule-deletion-recovery.sql) enabled.
+   Monitor failures/backlogs; withdrawal promises deletion within 24 hours.
+3. Allocate review capacity before opening the board. Each account has at most
+   three submission intents per rolling 24 hours and three uploads/pending reviews.
+   This limits spam, but is not a global capacity or upload-bandwidth limit.
+4. Build and run the Swift tests when authorized, then validate a real upload,
+   paused/interrupted upload, app relaunch/resume, sign-out/account switch, approval,
+   correction, rejection, report, appeal, visibility change, withdrawal and account
+   deletion against a staging project. Check Photos copies remain untouched.
+5. Check Home, pennants and forms on a small device, large text and Reduce Motion.
+   Use known hand/ground clips and a clean missed-touch clip for human-review checks.
+
+Operator workflow (server credentials in the operator's environment only):
+
+```sh
+python3 scripts/review-leaderboard.py queue
+python3 scripts/review-leaderboard.py queue --appeals
+python3 scripts/review-leaderboard.py download ATTEMPT_UUID --output /private/reviews/attempt.mov
+python3 scripts/review-leaderboard.py review ATTEMPT_UUID approve --file /private/reviews/attempt.mov \
+  --reviewer REVIEWER_NAME --count 52 --start-ms 1000 --end-ms 49000 \
+  --reason '52 continuous contacts; corrected two missed detections.' --confirm-watched
+python3 scripts/review-leaderboard.py reports
+python3 scripts/review-leaderboard.py resolve-report REPORT_UUID --reason 'Original reviewed; decision explained.'
+```
+
+Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` using the operator's secret
+manager; never put the service key in the app, a command argument or this repository.
+Approval requires `ffprobe`, a matching downloaded SHA-256/byte count, a plausible
+video duration and a manual-watch attestation. To reject, use `reject` with the
+original, reviewer and reason; include `--reason-time-ms` where relevant. A report
+resolution alone does not change a score; use a separate review decision.
+Delete operator-downloaded copies after review. Server retention cannot remove
+files downloaded to an operator's computer.
+
+Pending/rejected originals expire 30 days after submission, the latest decision
+or appeal; unfinished uploads expire after seven days. Approved evidence remains
+until withdrawal/account deletion. Cleanup claims lock out late approval before
+deleting bytes through Storage, and record completion only after deletion succeeds.
+SHA-256 detects identical approved originals; it does not detect re-encodes or prove
+capture provenance. `source=recording` is client-reported metadata, so manual review
+is still required; cryptographic capture attestation and automated fraud detection
+are outside this beta.
+
+### Home, entry points and leaderboard design
+
+The owner selected **01 — Stadium lights** from the
+[background comparison sheet](../../design/leaderboard-pennants-20261018/leaderboard-background-sheet-v1.png).
+The [selected home and rules mockup](../../design/leaderboard-pennants-20261018/home-and-rules-stadium-v4.png)
+applies a dark stadium photograph, soft floodlights, white text and lime accents to
+the Home leaderboard card. The heavy sewn-fabric and sage/lime pitch-line backgrounds
+were rejected. Rules use grouped native surfaces and shorter copy.
+The leaderboard itself retains the selected fabric-pennant design. The
+[leaderboard and player mockup](../../design/leaderboard-pennants-20261018/leaderboard-and-player-icons-v2.png)
+shows the list's spin/height icons. All scores and measurements in these images
+are illustrative; review and measurement capabilities must be implemented and validated.
+
+| Location | Entry and destination |
+| --- | --- |
+| Home | Add the selected Stadium lights leaderboard card with a small pennant accent immediately below the two existing training modes. Use white text over a dark stadium photograph, soft floodlights and lime accents. Add a trophy shortcut beside Profile. Both open the weekly board. Keep training the primary action. |
+| Home card | Show your reviewed weekly score/rank and the score needed for the next place. Link to the board and Rules. Keep the existing training personal best separately labelled. |
+| Leaderboard header | This week / All time, visible Rules link, period dates and reset time translated into the viewer's time zone. |
+| Leaderboard footer | Your place, nearby players, Submit an attempt and My submissions. |
+| Replay / session history | Offer Submit to leaderboard for retained original in-app recordings; show the proposed best streak and its start/end, not the full session total. |
+| Submission | Show score, original video, rules summary and private-review explanation before deliberate submission. Sign-in is needed to submit; viewing the board need not require it. |
+| Profile | My submissions, public profile/visibility controls and removal of a published entry. |
+| Attempt details | Reviewed streak, duration, review status and Report / Request re-review. Video playback for other people requires separate publication permission. |
+
+Home card states must be real: no submission → “Your first place starts here”;
+pending → “In review” with status link; reviewed → rank and score; unavailable →
+retry/saved-state label. Never show a sample rank, turn a training PB into a reviewed
+score, or clear a previous approved score while a better attempt waits for review.
+Use real leaderboard order for the next-place target, including its tie rule.
+
+Pennants may respond gently to touch; a normal tap must always open the same detail
+view. Pull-to-refresh remains a scroll gesture, not a required fabric interaction.
+Respect Reduce Motion and provide labelled, accessible controls.
+
+**Pennant polish — 21 October:** The board read as too plain. A podium of blocks was
+tried and rejected; the pennants stay, polished. They are lime, silver and bronze felt
+with a woven trim and stitching, hang from wooden rods with brass ends, and carry the
+Juggle Dude ball as a charm at the tip. On the screen's first reveal they drop open
+from their rods one after another and swing, the charms trailing a beat behind; the
+winner's floodlight flickers on, one confetti burst plays and scores count up. Tab
+changes and refreshes never replay the entrance; a changed pennant flaps in place.
+Missing places hang as dashed outlines. Each row shows its streak as a track against
+the leader's, with the ball rolling out when the row appears; your row flags the next
+player to pass. While your row is off screen, a You pill scrolls back to it. Under
+Reduce Motion everything appears in place without movement or count-up.
+
+**Local design preview — 21 October, made launch-only 22 October:** Every build,
+Debug included, shows live rankings. For design review, launch with
+`--leaderboard-preview mixed` (or `first`, `podium`, `nearby`, `unranked`, `single`,
+`empty`) to see a fictional board for that launch only; nothing is saved, and a
+choice saved by older builds is cleared at launch. The in-app Preview menu was
+removed. Weekly and all-time boards have different scores; player details exercise
+country, duration, rhythm, backspin and height, including missing values. These
+fictional records exist only in memory, carry preview labels, cannot be reported or
+submitted, and are excluded from Release.
+
+**Offline submissions — 22 October:** Submitting no longer needs a connection or a
+synced session. A confirmed submission is saved on the phone (per account, beside its
+replays) and sends itself once its session has synced and the phone is online; it is
+retried when the connection returns, when the app opens and after a growing pause.
+An interrupted upload resumes from its checkpoint. A refusal (daily limit, changed
+original, missing original) removes it and shows the reason. Pausing an upload takes
+it out of the queue until Resume upload. Session results already worked this way.
+
+**Moment clips instead of the whole recording — 22 October:** Until full originals move
+to separate storage, a submission uploads one short video: each flagged moment's
+window (one second before to 1.2 seconds after), cut without re-encoding and joined in
+recording order, with overlapping windows merged. With no flags, the streak's first and
+last seconds are sent. Clips over the 50 MB storage limit are trimmed to the moments that
+matter most (inside the proposed streak, then streak splits) and the submitted moment
+list is marked incomplete. The clip file is kept beside the session until it is sent, so
+a resumed upload matches the attempt's hash. `scripts/review-leaderboard.py moments <id>`
+maps each clip back to recording time; give the reviewed streak in recording time.
+To test from zero, `scripts/wipe-juggling-records.py` removes one account's sessions,
+submissions and uploaded clips (dry run first, `--confirm` to delete).
+
+### Automatic streak leaderboard — 22 October
+
+This replaces reviewed-only ranking. Every session recorded in the app while signed in
+ranks by its best continuous streak as the device counted it, as soon as it syncs;
+nothing is submitted. A hand, hold or ground call ends a streak and touches after it
+start a new one. Touches the counter was unsure of are left out without ending the
+streak. The session total never ranks: 30 touches with 3 unsure, a hand stop, then 20
+more scores 27.
+
+- **Server:** `202610230001_streak_leaderboard.sql` adds the streak to
+  `juggling_sessions`, `submit_juggling_session_with_streak` (immutable, like the
+  session) and a new `reviewed_juggling_leaderboard` that ranks each player's best
+  session by an approved correction's count, else the device streak. A rejected or
+  withdrawn correction leaves the device streak. The week follows the session's
+  completion time. Results from older builds have no streak and do not rank. Deploy it
+  before installing this build: until then, results wait in the outbox (404, retried).
+- **Visibility:** the leaderboard asks once (Join / Not now). Profile can change it later.
+- **Touch checks:** a streak starts at the first counted touch (a hand release before it
+  never counts) and ends at a hand, hold or ground call; those calls are final and are
+  never offered for a check. The leaderboard shows the last session's best streak and
+  the unsure touches inside it (Looks right / Check touches). The player picks the ones
+  they think were valid; the app shows the streak they would make and uploads clips of
+  only those moments. While a check is open, the player's row keeps the device streak
+  and says how many touches are in review. Approving with `scripts/review-leaderboard.py review <id> approve`
+  confirms the count asked for by default; pass a lower `--count` to confirm only some.
+- **Not yet built:** full-recording review (planned on AWS) and reporting an automatic
+  score; the report button exists only for scores that went through a check. Automatic
+  streaks are device-reported, not verified.
+
+**First beta scope — 24 October:** the beta ranks the automatic count only.
+`LeaderboardRules.touchChecks` is off: no touch checks, clip uploads, video review or
+full-recording upload, and the review service isn't connected, so nothing is fetched
+or sent (including a check queued by an earlier build). The rules page, leaderboard,
+Profile, history and post-session strip show no review or upload wording. Turning the
+switch on restores every entry point; the server functions and bucket stay deployed
+but unused. To take a score off the board, `scripts/remove-leaderboard-score.py`
+lists the sessions that rank and marks one `rejected` (dry run first, `--confirm` to
+apply, `restore` to undo; every change goes to a private log in `config/local`).
+
+`supabase/tests/streak_leaderboard.sql` covers ranking, immutability, corrections,
+periods, moderation and visibility (`scripts/test-account-backend.sh`).
+
+### Leaderboard rules — beta-1
+
+The approved implementation request uses this beta policy in source. Valid contacts
+are verified by human review, including clean leg, knee and thigh contacts.
+Ordinary training counts are not retroactively changed.
 
 | Topic | Rule |
 | --- | --- |
-| Score | Longest uninterrupted valid streak, not accumulated session touches. |
-| Valid contacts | Feet, head and chest. Thighs/knees are excluded unless the ranked rules are deliberately expanded. |
-| Hands, arms and ground | End the current streak. Subsequent juggling starts a new streak; do not merely omit the invalid contact and keep adding. |
+| Score | Longest uninterrupted valid streak, not accumulated session touches. Counted automatically by the device; an approved touch check replaces it. |
+| Valid contacts | Feet (including inside and outside), lower legs, knees/thighs, chest and head. One distinct contact earns one point; no extra points for height, speed, spin or difficulty. |
+| Hands, arms, ground and outside help | End the current streak. A wall, another player or another supporting object also ends it. Subsequent juggling starts a new streak; do not merely omit the invalid contact and keep adding. |
 | Initial hand release | A normal setup release earns no points; the streak begins at the first valid contact. |
-| Uncertain contact or tracking gap | Keep the attempt pending review. Never silently bridge uncertainty into a verified streak. |
+| Stalls | A catch or deliberate held/balanced stall ends this continuous-juggling streak and earns no points. Trick/stall scoring is outside this beta. |
+| Uncertain contact or tracking gap | A missed model detection is not itself a foul. An unsure touch is left out of the count without ending the streak; a gap does not end it either. The player can ask for a check of left-out touches and stops; a reviewer confirms only what the clips clearly show. Never label an unseen hand as a confirmed foul. |
 | Source | Original, unedited in-app recordings initially. Gallery imports remain available for personal analysis. |
+| Framing | One active player and one active ball; keep the player, contact areas, ball and nearby ground visible. A passerby is not automatically a foul. Ambiguous player/ball identity requires review. |
+| Equipment | Start the single beta board with one size-5 football, declared at submission and checked where possible in review. Resolve the policy for smaller/youth balls before opening their scores to this board; this restriction is not a training restriction. |
 | Older devices | In-app recordings analysed afterward use the same scoring and review rules. Live processing speed does not determine eligibility. |
-| Board | One best approved score per account, a weekly board, your rank, nearby players and a personal best. |
-| Week / ties | Retain the existing Monday 00:00 UTC boundary and earlier-result tie break, and explain them in the rules. |
+| Board | One best streak per account per period, weekly and all-time views, your rank and nearby players. Do not sum sessions. |
+| Week / ties | Monday 00:00 UTC resets. The session's completion time assigns its week and breaks equal-score ties; a check finished later keeps the session's week. |
 | Suspicious results | Review implausible touch rates, unusually high scores and duplicate recordings. A legitimate 1,000-touch run can still qualify. |
-| Disputes | Provide reporting and re-review, with a clear reason when an attempt does not qualify. |
-| Participation | Opt-in; ordinary training remains available without entering the leaderboard. |
-| Excluded initially | Prizes, paid score advantages, trick multipliers, multiple divisions and numerous separate boards. |
+| Disputes | Provide reporting and re-review, with a timestamp and specific reason when a streak is shortened or does not qualify. Preserve the submitted estimate and reviewed result separately for an audit trail. |
+| Participation | Opt-in, asked once on the leaderboard; ordinary training remains available without entering it. |
+| Privacy | Original recordings are private for score review by default. Public video sharing and model-training consent are separate choices. Publish retention/deletion behavior before enabling uploads; account deletion must remove public entries and related retained data according to that policy. |
+| Excluded initially | Prizes, paid score advantages, Around the World recognition/badges/bonuses, trick multipliers, multiple divisions and numerous separate boards. Merely attempting a trick adds no points; visible valid contacts still follow the ordinary rule. |
 
-The current backend calls scores device-reported. Submission limits catch some
-obvious abuse, but plausible numbers do not prove legitimate contacts. Automatic
-verification beyond the reviewed beta requires separate validation; reviewing only
-top scores would leave lower positions less protected.
+**More useful than trick scores for this beta:** reviewed streak and duration first;
+personal improvement and distance to the next place second. Rhythm (touches/minute),
+left/right balance, contact mix, estimated backspin and relative ball height can
+describe the attempt once validated. They must not affect rank. Use “Unavailable”
+for insufficient evidence; do not invent exact RPM or body-part percentages. Inside
+and outside foot technique must not depend on a reliable subtype classifier to count.
+
+Before public beta, complete the deployment and device checks above and ensure the
+team can review every published score. Submission limits catch some obvious abuse,
+but plausible numbers do not prove legitimate contacts. Automatic verification beyond
+the reviewed beta requires separate validation; reviewing only top scores would
+leave lower positions less protected.
 
 ## Week 3: Detection continuity, replay quality, effects and UI
 
@@ -477,7 +1053,7 @@ Additional effects are optional only after these checks pass.
 **Release gate:** camera guidance works on the target devices. Any released speed or
 distance result has an explicit definition, supported conditions and measured accuracy.
 
-## Around the World: optional investigation
+## Around the World: deferred beyond this beta
 
 The trick is **Around the World (ATW)**: the foot circles the airborne ball before
 the player continues juggling. See the [Online Soccer Academy demonstration](https://www.onlinesocceracademy.com/soccer-training-videos/tricks-skills/how-to-do-around-the-world-john-farnworth).
@@ -486,10 +1062,10 @@ A constrained replay prototype is medium–hard. Reliable live recognition acros
 camera angles and older devices is hard: it must follow the foot around the ball,
 handle occlusion and confirm a successful continuation.
 
-If the committed work finishes early, spend at most 1–2 days on a feasibility
-experiment using one camera angle, one variation and analysis after recording.
-This is an investigation budget, not a production-delivery estimate. Keep any trick
-recognition separate from ranked scoring until independently validated.
+The owner's 18 October direction removes this from the current game scope. Do not
+add an ATW entry, recognition claim, badge, difficulty tier or scoring bonus to this
+beta. Keep any later feasibility work separate from ranked scoring until independently
+validated. There is no active ATW implementation allocation in this release.
 
 ## Delivery rules and follow-up
 
@@ -497,7 +1073,7 @@ recognition separate from ranked scoring until independently validated.
 - Review actual failure rates, device results and user feedback after each update.
   Existing opt-in analytics can track session, import, sign-in and export outcomes;
   those events do not establish counting accuracy and do not represent every user.
-- If ahead of schedule, pull forward one lightweight effect or the ATW experiment.
+- If ahead of schedule, improve beta review, submission recovery and accessibility.
 - If behind schedule, cut new effects, cosmetic transitions and measurement expansion
   first. Preserve detection/counting accuracy, older-device verification and leaderboard fairness.
 - Keep TikTok sign-in, broad automatic anti-cheat, unrestricted airborne measurements

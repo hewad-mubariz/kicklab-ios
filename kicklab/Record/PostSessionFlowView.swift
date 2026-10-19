@@ -18,7 +18,12 @@ struct PostSessionFlowView: View {
     var onFinished: () -> Void
     var onRecordAnother: () -> Void
     var recordsPersonalBest = true
+    var historySessionID: UUID? = nil
     var ownerID: UUID? = nil
+    /// The editor's back button. Finishes by default.
+    var onClose: (() -> Void)? = nil
+    /// Shown once over the replay, e.g. when recording ended early.
+    var notice: String? = nil
 
     @State private var path = NavigationPath()
     @StateObject private var ballPreparation = SessionEffectsPreparation()
@@ -33,10 +38,11 @@ struct PostSessionFlowView: View {
         NavigationStack(path: $path) {
             ReplayEffectsView(
                 summary: activeSummary, edit: $edit, stadiumPreview: sceneModel, overlays: $overlays,
-                onBack: { ballPreparation.cancel(); onFinished() },
+                onBack: { ballPreparation.cancel(); (onClose ?? onFinished)() },
                 onRecordAnother: { ballPreparation.cancel(); onRecordAnother() },
                 onDone: { ballPreparation.cancel(); onFinished() },
-                preparation: ballPreparation
+                preparation: ballPreparation, historySessionID: historySessionID,
+                closeLabel: onClose == nil ? "Close editor" : "Back to camera", notice: notice
             )
             .toolbar(.hidden, for: .navigationBar)
             .navigationBarBackButtonHidden(true)
@@ -49,7 +55,7 @@ struct PostSessionFlowView: View {
                         onBack: { path.removeLast() },
                         onRecordAnother: { ballPreparation.cancel(); onRecordAnother() },
                         onDone: { ballPreparation.cancel(); onFinished() },
-                        preparation: ballPreparation
+                        preparation: ballPreparation, historySessionID: historySessionID
                     )
                     .navigationBarBackButtonHidden(true)
                 case .stats:

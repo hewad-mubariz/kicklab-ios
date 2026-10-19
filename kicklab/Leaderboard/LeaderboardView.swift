@@ -6,6 +6,7 @@ struct LeaderboardView: View {
     /// The signed-in name, used for your placeholder initials.
     var yourName: String? = nil
     let onClose: () -> Void
+    var onRecord: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
     @AppStorage("kicklab.juggling.personalBest") private var personalBest = 0
     @AppStorage("kicklab.profile.displayName") private var displayName = ""
@@ -15,6 +16,10 @@ struct LeaderboardView: View {
     @StateObject private var boards = LeaderboardBoardStore()
     @State private var hasShownPodium = false
     @State private var appeared = false
+    @State private var showsRules = false
+    @State private var showsSubmissions = false
+    @State private var selectedEntry: LeaderboardEntry?
+    @State private var recordAfterSubmissions = false
     @State private var scrollPosition = ScrollPosition(edge: .top)
 
     private var usesSamples: Bool {
@@ -63,14 +68,22 @@ struct LeaderboardView: View {
                         .accessibilityIdentifier("leaderboard-loading")
                 } else if entries.isEmpty {
                     ContentUnavailableView("Be the first on the board", systemImage: "figure.soccer",
-                        description: Text("Record a juggling session and turn on leaderboard sharing in Profile."))
+                        description: Text("Submit an original recording. Your best continuous streak appears after review."))
                         .accessibilityIdentifier("leaderboard-empty")
                 } else {
                     pennants.padding(.top, 50)
                     rows.padding(.top, 26)
                     yourPlace
                 }
-                Text("Community rankings use scores reported by players’ devices. Scores are not independently verified.")
+                Button { showsSubmissions = true } label: {
+                    Label("Submit an attempt", systemImage: "video.badge.plus")
+                        .font(.headline).frame(maxWidth: .infinity, minHeight: 52)
+                }
+                .buttonStyle(.borderedProminent).tint(TrainingHomeStyle.accent(scheme))
+                .padding(.top, 24).accessibilityIdentifier("leaderboard-submit")
+                Button("My submissions") { showsSubmissions = true }
+                    .frame(maxWidth: .infinity, minHeight: 44).accessibilityIdentifier("leaderboard-my-submissions")
+                Text("Ranked by your best reviewed continuous streak. Spin and height do not add points.")
                     .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
                     .padding(.top, 20)
                 if boardState.board != nil, boardState.error != nil {
@@ -100,6 +113,15 @@ struct LeaderboardView: View {
         }
         .task(id: requestID) { await loadBoard() }
         .refreshable { await loadBoard(refresh: true) }
+        .sheet(isPresented: $showsRules) { LeaderboardRulesView() }
+        .sheet(item: $selectedEntry) { entry in LeaderboardPlayerDetailView(entry: entry, review: player.leaderboardReview) }
+        .sheet(isPresented: $showsSubmissions, onDismiss: {
+            Task { await loadBoard(refresh: true) }
+            if recordAfterSubmissions { recordAfterSubmissions = false; onRecord?() }
+        }) {
+            LeaderboardSubmissionsView(review: player.leaderboardReview, history: player.history,
+                onRecord: onRecord.map { _ in { recordAfterSubmissions = true; showsSubmissions = false } })
+        }
         .task {
             guard !appeared else { return }
             appeared = true
@@ -129,6 +151,8 @@ struct LeaderboardView: View {
             .accessibilityLabel("Close leaderboard")
             .accessibilityIdentifier("leaderboard-close")
             Spacer()
+            Button("Rules") { showsRules = true }.font(.subheadline.weight(.semibold))
+                .frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("leaderboard-rules-link")
             if usesSamples {
                 Text("10-player preview")
                     .font(.caption.weight(.semibold))
@@ -157,11 +181,15 @@ struct LeaderboardView: View {
             Text("Leaderboard")
                 .font(.system(size: 42, weight: .heavy)).tracking(-0.8)
                 .accessibilityAddTraits(.isHeader)
-            Text(selection.period == .week ? "BEST SESSION  ·  TOUCHES  ·  MONDAY UTC" : "BEST SESSION EVER  ·  TOUCHES")
+            Text(selection.period == .week ? "REVIEWED STREAKS  ·  THIS WEEK" : "REVIEWED STREAKS  ·  ALL TIME")
                 .font(.caption2.weight(.bold)).tracking(1.3)
                 .foregroundStyle(TrainingHomeStyle.muted(scheme))
                 .contentTransition(.interpolate)
                 .animation(SessionMotion.fade, value: selection.period)
+            if selection.period == .week {
+                Text("Resets \(LeaderboardRules.nextReset().formatted(date: .abbreviated, time: .shortened)) · your time")
+                    .font(.caption).foregroundStyle(TrainingHomeStyle.muted(scheme))
+            }
         }
     }
 
@@ -184,13 +212,14 @@ struct LeaderboardView: View {
 
     private func pennant(_ entry: LeaderboardEntry, width: CGFloat, height: CGFloat, delay: Double, side: Double) -> some View {
         LeaderboardPennant(entry: entry, width: width, height: height,
-                           animateEntrance: !hasShownPodium, delay: delay, side: side)
+                           animateEntrance: !hasShownPodium, delay: delay, side: side,
+                           onSelect: { selectedEntry = entry })
     }
 
     private var rows: some View {
         LazyVStack(spacing: 10) {
             ForEach(Array(entries.dropFirst(3).enumerated()), id: \.element.rank) { index, entry in
-                LeaderboardRow(entry: entry)
+                Button { selectedEntry = entry } label: { LeaderboardRow(entry: entry) }.buttonStyle(.plain)
                     .sessionEntrance(appeared, order: min(index, 6) + 3, offset: -16)
             }
         }
@@ -205,16 +234,20 @@ struct LeaderboardView: View {
                     Text("YOUR PLACE")
                         .font(.caption.weight(.semibold)).tracking(1.4)
                         .foregroundStyle(LeaderboardStyle.olive(scheme))
-                    LeaderboardRow(entry: you, chase: chase(for: you))
-                        .accessibilityIdentifier("leaderboard-you")
+                    ForEach(aroundYou.filter { neighbor in !entries.contains(where: { $0.rank == neighbor.rank }) }) { neighbor in
+                        Button { selectedEntry = neighbor } label: {
+                            LeaderboardRow(entry: neighbor, chase: neighbor.isYou ? chase(for: you) : nil)
+                        }.buttonStyle(.plain)
+                            .accessibilityIdentifier(neighbor.isYou ? "leaderboard-you" : "leaderboard-neighbor-\(neighbor.rank)")
+                    }
                 }
                 .padding(.top, 24)
             }
         } else {
-                LeaderboardUnranked(message: usesSamples ? "Record a juggling session to get on the board."
-                    : player.userID == nil ? "Sign in through Profile to save your results."
-                    : player.profile?.leaderboardVisible != true ? "Turn on leaderboard sharing in Profile."
-                    : "Record a juggling session to get on the board.")
+                LeaderboardUnranked(message: usesSamples ? "Sample board · scores for design review only."
+                    : player.userID == nil ? "Sign in before recording a ranked attempt."
+                    : player.profile?.leaderboardVisible != true ? "Submit a recording to join, or restore visibility in Profile."
+                    : "Submit a recording. Your score appears after review.")
                     .padding(.top, 20)
         }
     }
@@ -298,9 +331,17 @@ struct LeaderboardRow: View {
                                  ring: lit ? Color(red: 0.18, green: 0.25, blue: 0.07) : LeaderboardStyle.line(scheme),
                                  ringWidth: lit ? 2.5 : 1.5)
             VStack(alignment: .leading, spacing: 2) {
-                Text(lit ? "You" : entry.name)
-                    .font(.body.weight(.semibold))
-                    .lineLimit(1)
+                HStack(spacing: 5) {
+                    Text(lit ? "You" : entry.name).font(.body.weight(.semibold)).lineLimit(1)
+                    Image(systemName: "checkmark.seal.fill").font(.caption).accessibilityLabel("Reviewed")
+                }
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 10) {
+                        Label { Text("—") } icon: { LeaderboardSpinIcon() }
+                        Label("—", systemImage: "arrow.up.and.down")
+                    }
+                    Text("Style unavailable")
+                }.font(.caption).opacity(0.7).accessibilityLabel("Backspin and height unavailable")
                 if let chase {
                     Text(chase).font(.caption.weight(.semibold)).opacity(0.7)
                         .contentTransition(.interpolate)
@@ -314,7 +355,7 @@ struct LeaderboardRow: View {
         }
         .foregroundStyle(lit ? Color(red: 0.09, green: 0.12, blue: 0.06) : TrainingHomeStyle.ink(scheme))
         .padding(.leading, 12).padding(.trailing, 18)
-        .frame(height: 62)
+        .padding(.vertical, 14).frame(minHeight: 88)
         .background {
             RoundedRectangle(cornerRadius: 16)
                 .fill(lit

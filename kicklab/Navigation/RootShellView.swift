@@ -11,8 +11,8 @@ struct RootShellView: View {
     @State private var sheet: HomeSheet?
     @State private var showImport = false
     @State private var importedVideo: PhotosPickerItem?
-    // First release: leaderboard navigation is parked, with its implementation retained.
-    // @State private var showsLeaderboard = false
+    @State private var showsLeaderboard = false
+    @State private var recordsAfterLeaderboard = false
     @State private var showsProfile = false
     @State private var showsHistory = false
     @Namespace private var zoom
@@ -37,9 +37,10 @@ struct RootShellView: View {
                     onImport: { showImport = true },
                     onProfile: { showsProfile = true },
                     onSetupGuide: { sheet = .setup },
-                    // onLeaderboard: { showsLeaderboard = true },
+                    onLeaderboard: { showsLeaderboard = true },
+                    onLeaderboardRules: { sheet = .leaderboardRules },
                     onHistory: { showsHistory = true },
-                    // leaderboardZoom: zoom,
+                    leaderboardZoom: zoom,
                     profileZoom: zoom
                 )
             } else {
@@ -76,11 +77,18 @@ struct RootShellView: View {
                 BallDistanceView()
             }
         }
-        // .fullScreenCover(isPresented: $showsLeaderboard) {
-        //     LeaderboardView(yourName: account.user?.name) { showsLeaderboard = false }
-        //         .leaderboardZoom(in: zoom)
-        //         .preferredColorScheme(preferredScheme)
-        // }
+        .fullScreenCover(isPresented: $showsLeaderboard, onDismiss: {
+            if recordsAfterLeaderboard {
+                recordsAfterLeaderboard = false
+                capture = HomeCapture(mode: .juggling)
+            }
+        }) {
+            LeaderboardView(yourName: account.user?.name, onClose: { showsLeaderboard = false }, onRecord: {
+                recordsAfterLeaderboard = true; showsLeaderboard = false
+            })
+                .leaderboardZoom(in: zoom)
+                .preferredColorScheme(preferredScheme)
+        }
         .fullScreenCover(isPresented: $showsProfile) {
             TrainingProfileView(personalBest: accountBest, appearance: $appearance)
             .navigationTransition(.zoom(sourceID: "profile", in: zoom))
@@ -89,6 +97,7 @@ struct RootShellView: View {
         .sheet(item: $sheet) { destination in
             switch destination {
             case .setup: TrainingCameraGuide()
+            case .leaderboardRules: LeaderboardRulesView()
             }
         }
         .sheet(isPresented: $showsHistory) {
@@ -114,5 +123,6 @@ private struct HomeCapture: Identifiable {
 
 private enum HomeSheet: String, Identifiable {
     case setup
+    case leaderboardRules
     var id: String { rawValue }
 }

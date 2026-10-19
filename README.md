@@ -14,7 +14,15 @@ configuration templates are in `config/`. Never put server credentials in the ap
 Juggle Dude **1.0.1 (22)** (`com.juggledude`) combines the buffered RF live pipeline,
 current juggling rules, selective fire/neon preparation, replacement-ball preparation,
 and the current Power Shot camera timeline, moves, slow motion and exports. This is a
-local testing checkpoint. TestFlight upload remains pending an explicit instruction.
+local testing checkpoint. On 18 October, the user authorized a TestFlight upload;
+**1.0.1 (23)** was archived and uploaded successfully at 17:29 CEST. App Store Connect
+currently lists it as Processing. This build also includes the source-frame timing
+fix below and the latest Slow Motion/Frozen Arc changes. All 45 selected Simulator
+checks passed (recording/export reliability, timing, camera timelines and two rendered
+camera moves). The archive contains only the pinned shared RF detector and the required
+production configuration/privacy resources. Source hashes were unchanged throughout
+the build. The archive, source manifest/diff, test result and upload log are preserved
+in `artifacts/releases/20261018-build23/`. No public App Store review was submitted.
 
 `kicklab/Detection/RFDeviceProfile.swift` is the single local resolution policy:
 the listed iPhone 14-and-newer hardware identifiers use `rf384`; older, SE and unknown
@@ -68,7 +76,7 @@ This fixes export cadence, not the original recording startup stall or incomplet
 replacement-ball coverage. The startup issue still needs repeated cold-start capture
 validation before a launch decision. Indoor ball-edge/blur refinement is a candidate
 for post-launch quality work. Keeping previously skipped frames can increase processing
-time for affected clips. No TestFlight upload was made.
+time for affected clips. The fix is included in TestFlight build 1.0.1 (23).
 
 The juggling pipeline separates camera coordination from analysis:
 

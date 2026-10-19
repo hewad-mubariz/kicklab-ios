@@ -118,7 +118,41 @@ nonisolated enum WallCornerTracker {
             selected.append(c)
             if selected.count == 12 { break }
         }
-        return selected
+        // The search samples every other pixel. Returning that lattice point
+        // makes a stationary soft dot jump 3–4 pixels as the seed/parity changes,
+        // which is enough to trip the movement gate. Locate the centre of the
+        // measured bright disk before comparing geometry; keep the same marker
+        // contrast/isolation requirements and movement tolerance.
+        return selected.map { candidate in
+            Candidate(point: centre(in: image, near: candidate.point, radius: radius), score: candidate.score)
+        }
+    }
+
+    private static func centre(in image: Image, near point: CGPoint, radius: Double) -> CGPoint {
+        var centre = point
+        for _ in 0..<2 {
+            let ring = (0..<16).map { i -> Double in
+                let angle = Double(i) * .pi / 8
+                let x = min(image.width - 1, max(0, Int((centre.x + cos(angle) * radius * 1.8).rounded())))
+                let y = min(image.height - 1, max(0, Int((centre.y + sin(angle) * radius * 1.8).rounded())))
+                return Double(image.luma[y * image.width + x])
+            }.sorted()
+            let background = (ring[7] + ring[8]) / 2
+            let extent = radius * 1.4
+            let x0 = max(0, Int(floor(centre.x - extent))), x1 = min(image.width - 1, Int(ceil(centre.x + extent)))
+            let y0 = max(0, Int(floor(centre.y - extent))), y1 = min(image.height - 1, Int(ceil(centre.y + extent)))
+            var weight = 0.0, sumX = 0.0, sumY = 0.0
+            for y in y0...y1 { for x in x0...x1 {
+                guard hypot(Double(x) - centre.x, Double(y) - centre.y) <= extent else { continue }
+                let value = max(0, Double(image.luma[y * image.width + x]) - background)
+                weight += value; sumX += Double(x) * value; sumY += Double(y) * value
+            } }
+            guard weight > 0 else { return point }
+            let measured = CGPoint(x: sumX / weight, y: sumY / weight)
+            guard distance(measured, point) <= radius else { return point }
+            centre = measured
+        }
+        return centre
     }
 
     private static func distance(_ a: CGPoint, _ b: CGPoint) -> Double { hypot(a.x - b.x, a.y - b.y) }
@@ -126,7 +160,9 @@ nonisolated enum WallCornerTracker {
 
 /// Owns the scoring permission and geometry together. Geometry is frozen while
 /// ready. A short occlusion retains evidence, but cannot release a score until
-/// three checks confirm the same geometry. Drift or expiry invalidates that evidence.
+/// three checks confirm the same geometry. Checks that start before expiry get
+/// a bounded completion window. An isolated one-check corner jump pauses scoring
+/// as an unreliable measurement; persistent drift, renewed loss or expiry discards evidence.
 nonisolated struct WallBoardAlignment {
     enum Status: String, Sendable { case checking, ready, obscured, shifted, referenceRequired }
     struct Update: Equatable, Sendable {
@@ -136,16 +172,23 @@ nonisolated struct WallBoardAlignment {
         var evidenceEpoch: Int = 0
     }
     static let interval = 0.15
+    static let recoveryInterval = 0.05
+    static let unchangedConfirmationSpan = 0.10
+    static let unchangedTolerancePixels = 1.5
     static let maximumAge = 0.30
     static let tolerancePixels = 3.0
     static let evidenceRetention = 0.8
+    static let revalidationAllowance = 2 * interval + maximumAge
     private(set) var update: Update
     private let referenceCorners: [CGPoint]?
     private var pending: [[CGPoint]] = []
+    private var pendingTimes: [Double] = []
     private var pendingSince: Double?
     private var lastCheck = -Double.infinity
     private var lastVisible = -Double.infinity
     private var obscuredSince: Double?
+    private var unconfirmedCornerJump: [CGPoint]?
+    private var unconfirmedCornerJumpSince: Double?
 
     init(corners: [CGPoint], referenceCorners: [CGPoint]? = nil) {
         update = Update(status: .checking, corners: corners, revision: 0)
@@ -154,35 +197,76 @@ nonisolated struct WallBoardAlignment {
 
     // Never let unconfirmed candidates walk the search along a grid line.
     var searchCorners: [CGPoint] { update.corners }
-    func shouldCheck(at time: Double) -> Bool { time - lastCheck >= Self.interval }
+    func shouldCheck(at time: Double) -> Bool {
+        let interval = obscuredSince != nil && canRetainEvidence(at: time)
+            ? Self.recoveryInterval : Self.interval
+        return time - lastCheck >= interval
+    }
     func canScore(at time: Double) -> Bool { update.status == .ready && time - lastVisible <= Self.maximumAge }
     func canRetainEvidence(at time: Double) -> Bool {
-        canScore(at: time) || (update.status == .obscured && obscuredSince.map {
-            time - $0 <= Self.evidenceRetention
-        } == true)
+        if canScore(at: time) { return true }
+        guard update.status == .obscured, let since = obscuredSince,
+              time - lastCheck <= Self.maximumAge else { return false }
+        if time - since <= Self.evidenceRetention { return true }
+        // A visible, unchanged board has returned before the loss deadline.
+        // Let its existing three-check sequence finish; never restart this
+        // allowance after another missing marker or a delayed first sighting.
+        guard !pending.isEmpty, let pendingSince,
+              pendingSince - since <= Self.evidenceRetention else { return false }
+        return time - pendingSince <= Self.revalidationAllowance
     }
 
     private mutating func discardEvidence() {
         obscuredSince = nil
+        unconfirmedCornerJump = nil
+        unconfirmedCornerJumpSince = nil
         update.evidenceEpoch += 1
     }
 
     mutating func observe(_ points: [CGPoint]?, at time: Double, size: CGSize) {
         let consecutive = time - lastCheck <= Self.maximumAge
+        if obscuredSince != nil, !canRetainEvidence(at: time) { discardEvidence() }
         lastCheck = time
         guard update.status != .referenceRequired else { return }
-        if let since = obscuredSince, time - since > Self.evidenceRetention { discardEvidence() }
+        var points = points
+        if let measured = points, WallBoard.validCalibration(measured),
+           consecutive, update.status == .ready || obscuredSince != nil,
+           Self.isIsolatedCornerJump(measured, from: update.corners, size: size) {
+            if let previous = unconfirmedCornerJump,
+               Self.displacement(previous, measured, size: size) <= Self.tolerancePixels {
+                // A second consistent displaced measurement is real enough to
+                // invalidate the old trajectory, even if only one corner moved.
+                // Faster recovery checks must not shorten this persistence test.
+                if time - (unconfirmedCornerJumpSince ?? time) >= Self.interval - 0.001 {
+                    unconfirmedCornerJump = nil
+                    unconfirmedCornerJumpSince = nil
+                } else {
+                    points = nil
+                }
+            } else {
+                unconfirmedCornerJump = measured
+                unconfirmedCornerJumpSince = time
+                // Do not replace the suspect corner or score from three points.
+                // Use the existing bounded missing-marker path until all four
+                // corners return, or the displacement is confirmed.
+                points = nil
+            }
+        } else {
+            unconfirmedCornerJump = nil
+            unconfirmedCornerJumpSince = nil
+        }
         guard let points, WallBoard.validCalibration(points), size.width > 0, size.height > 0 else {
             if update.status == .ready {
                 if consecutive { obscuredSince = time } else { discardEvidence() }
             }
-            pending = []; pendingSince = nil
+            pending = []; pendingTimes = []; pendingSince = nil
+            if let since = obscuredSince, time - since > Self.evidenceRetention { discardEvidence() }
             changeStatus(.obscured)
             return
         }
         lastVisible = time
         if update.status == .ready, consecutive, Self.displacement(points, update.corners, size: size) <= Self.tolerancePixels {
-            pending = []; pendingSince = nil
+            pending = []; pendingTimes = []; pendingSince = nil
             return
         }
         let moved = Self.displacement(points, update.corners, size: size) > Self.tolerancePixels
@@ -191,17 +275,26 @@ nonisolated struct WallBoardAlignment {
             changeStatus(.shifted)
         }
         if !consecutive || (pending.last.map({ Self.displacement($0, points, size: size) > Self.tolerancePixels }) ?? true) {
-            pending = []; pendingSince = time
+            pending = []; pendingTimes = []; pendingSince = time
         }
         pending.append(points)
-        if pending.count > 3 { pending.removeFirst() }
-        guard pending.count == 3, time - (pendingSince ?? time) >= 2 * Self.interval - 0.01 else { return }
+        pendingTimes.append(time)
+        if pending.count > 3 { pending.removeFirst(); pendingTimes.removeFirst() }
+        // A retained, unchanged map already passed setup. Revalidate it with
+        // three fresh all-corner observations, at a tighter spatial tolerance.
+        // New or moved geometry still needs the original slower acquisition.
+        let unchanged = obscuredSince != nil && pending.allSatisfy {
+            Self.displacement($0, update.corners, size: size) <= Self.unchangedTolerancePixels
+        }
+        let span = unchanged ? Self.unchangedConfirmationSpan - 0.001 : 2 * Self.interval - 0.01
+        let since = unchanged ? pendingTimes.first : pendingSince
+        guard pending.count == 3, time - (since ?? time) >= span else { return }
         let stable = (0..<4).map { i in
             CGPoint(x: pending.map { $0[i].x }.sorted()[1], y: pending.map { $0[i].y }.sorted()[1])
         }
         guard pending.allSatisfy({ Self.displacement($0, stable, size: size) <= Self.tolerancePixels }) else { return }
         if let referenceCorners, Self.referenceChanged(from: referenceCorners, to: stable, size: size) {
-            pending = []; pendingSince = nil
+            pending = []; pendingTimes = []; pendingSince = nil
             discardEvidence()
             changeStatus(.referenceRequired)
             return
@@ -215,7 +308,14 @@ nonisolated struct WallBoardAlignment {
         obscuredSince = nil
         update.revision += 1
         update.status = .ready
-        pending = []; pendingSince = nil
+        pending = []; pendingTimes = []; pendingSince = nil
+    }
+
+    private static func isIsolatedCornerJump(_ points: [CGPoint], from locked: [CGPoint], size: CGSize) -> Bool {
+        guard points.count == 4, locked.count == 4, size.width > 0, size.height > 0 else { return false }
+        return zip(points, locked).filter {
+            hypot(($0.x - $1.x) * size.width, ($0.y - $1.y) * size.height) > tolerancePixels
+        }.count == 1
     }
 
     private mutating func changeStatus(_ status: Status) {

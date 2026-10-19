@@ -10,6 +10,7 @@ nonisolated struct HistorySession: Codable, Equatable, Identifiable, Sendable {
     let completedAt: Date
     var syncState: SyncState
     var scoreStatus: String = "device_reported"
+    var rankedProposal: RankedStreakProposal? = nil
 
     init(result: SavedJugglingResult, syncState: SyncState = .pending) {
         id = result.id; ownerID = result.ownerID; touches = result.touches

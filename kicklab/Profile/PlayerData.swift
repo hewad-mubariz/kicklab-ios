@@ -44,9 +44,12 @@ struct RankedPlayer: Decodable, Sendable {
     let avatarPath: String?
     let touches: Int
     let isYou: Bool
+    var attemptID: UUID? = nil
+    var streakDurationMS: Int? = nil
     enum CodingKeys: String, CodingKey {
         case rank, touches, userID = "user_id", displayName = "display_name", countryCode = "country_code"
         case avatarPath = "avatar_path", isYou = "is_you"
+        case attemptID = "attempt_id", streakDurationMS = "streak_duration_ms"
     }
 }
 
@@ -148,7 +151,7 @@ final class SupabasePlayerService: PlayerDataService {
 
     func leaderboard(period: String, country: String?, userID: UUID?) async throws -> JugglingLeaderboard {
         let fields: [String: Any] = ["p_period": period, "p_country": country.map { $0 as Any } ?? NSNull(), "p_limit": 50]
-        let data = try await request("rest/v1/rpc/juggling_leaderboard", method: "POST",
+        let data = try await request("rest/v1/rpc/reviewed_juggling_leaderboard", method: "POST",
             body: JSONSerialization.data(withJSONObject: fields), userID: userID)
         return try JSONDecoder().decode(JugglingLeaderboard.self, from: data)
     }

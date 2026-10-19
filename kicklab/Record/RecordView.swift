@@ -32,17 +32,16 @@ struct RecordView: View {
     @State private var elapsed: TimeInterval = 0
     @State private var timerRunning = false
     @State private var comboPeak = 0
-    @State private var liveTrail: [BallStyleSample] = []
     @State private var sessionNumber = JugglingSessionIdentity.next()
     @State private var motionPoints: [CaptureMotionPoint] = []
-    private let liveStyle = BallStyle.glowTrail
-    private let liveIntensity = 0.85
 
     @State private var showProcessing = false
     @State private var processingProgress: Double = 0
     @State private var processingStep = 0
     @State private var pendingSummary: SessionSummary?
     @State private var sessionSummary: SessionSummary?
+    /// Shown once over the replay, e.g. when recording ended early.
+    @State private var sessionNotice: String?
     @State private var isFinishingSession = false
     @State private var hudShown = false
 
@@ -67,7 +66,9 @@ struct RecordView: View {
                     GeometryReader { video in
                         ZStack {
                             CameraPreview(session: camera.captureSession)
-                            if camera.isRecording && subscriptions.isPro { ballOverlay(in: video.size) }
+                            if camera.isRecording && subscriptions.isPro {
+                                LiveEffectSurface(frames: camera.liveEffectFrames)
+                            }
                             #if DEBUG
                             if camera.isRecording && showTouchOutlines {
                                 ActivePlayerDebugOverlay(players: camera.activePlayers, selection: camera.activePlayer,
@@ -148,19 +149,6 @@ struct RecordView: View {
         .onChange(of: camera.lastTouchToken) { _, token in
             comboPeak = max(comboPeak, camera.touchCount)
         }
-        .onChange(of: camera.ballBox) { _, box in
-            guard let box,
-                  var sample = BallStyleSample(
-                    box: box,
-                    confidence: camera.ballScore,
-                    velocityY: camera.ballVelocityY
-                  ) else {
-                return
-            }
-            sample.time = Date.timeIntervalSinceReferenceDate
-            liveTrail.append(sample)
-            if liveTrail.count > 18 { liveTrail.removeFirst(liveTrail.count - 18) }
-        }
         .onChange(of: camera.recordingElapsed) { _, time in
             guard camera.isRecording else { return }
             elapsed = time
@@ -169,7 +157,6 @@ struct RecordView: View {
         }
         .onChange(of: camera.isRecording) { _, recording in
             timerRunning = recording
-            liveTrail = []
             if recording {
                 ProductAnalytics.shared.track(.trainingStarted(.juggling))
                 sessionOwner = account.user?.id
@@ -202,6 +189,9 @@ struct RecordView: View {
                 track: camera.recordedTrack, sessionNumber: sessionNumber
             )
             summary.debugContacts = camera.recordedDiagnostics
+            summary.leaderboardTouchReview = LeaderboardTouchReview.make(evidence: camera.recordedReviewEvidence,
+                touchTimes: summary.touchesMarked.map(\.time), duration: summary.duration)
+            sessionNotice = camera.earlyStop?.notice
             pendingSummary = summary
             finishProcessing(with: summary)
             saveAccountResult(summary, source: .recording)
@@ -247,21 +237,13 @@ struct RecordView: View {
                     camera.clearRecording()
                     dismiss()
                 },
-                onRecordAnother: {
-                    sessionSummary = nil
-                    camera.clearRecording()
-                    elapsed = 0
-                    comboPeak = 0
-                    motionPoints = []
-                    sessionNumber = JugglingSessionIdentity.next()
-                    camera.start()
-                    // The HUD builds back in as the editor slides away.
-                    Task {
-                        try? await Task.sleep(for: .milliseconds(220))
-                        hudShown = true
-                    }
-                },
-                ownerID: sessionOwner
+                onRecordAnother: recordAnother,
+                historySessionID: resultID,
+                ownerID: sessionOwner,
+                // Back from a take returns to the camera for the next set; the
+                // camera's own back button leads Home.
+                onClose: recordAnother,
+                notice: sessionNotice
             )
             .onAppear {
                 // Cover is up — drop overlay underneath without a black flash.
@@ -294,6 +276,10 @@ struct RecordView: View {
             let summary = SessionSummary.make(touches: 0, duration: duration, bestCombo: 0,
                 personalBest: JugglingRecords.personalBest, videoURL: url,
                 touchesMarked: [], track: [maskedCapture], sessionNumber: sessionNumber)
+            // Shows the note a take cut short by heat or tracking would carry.
+            sessionNotice = SessionDesignReview.argument("--capture-early-stop").map {
+                ($0 == "heat" ? CameraSession.EarlyStop.heat : .tracking).notice
+            }
             pendingSummary = summary
             finishProcessing(with: summary)
             // Exercise real persistence only with the isolated, network-free UI
@@ -305,6 +291,22 @@ struct RecordView: View {
         }
     }
     #endif
+
+    private func recordAnother() {
+        sessionSummary = nil
+        sessionNotice = nil
+        camera.clearRecording()
+        elapsed = 0
+        comboPeak = 0
+        motionPoints = []
+        sessionNumber = JugglingSessionIdentity.next()
+        camera.start()
+        // The HUD builds back in as the editor slides away.
+        Task {
+            try? await Task.sleep(for: .milliseconds(220))
+            hudShown = true
+        }
+    }
 
     // MARK: - Processing
 
@@ -328,6 +330,7 @@ struct RecordView: View {
             track: importedVideo.recordedTrack, sessionNumber: JugglingSessionIdentity.begin())
         if !importedVideo.visualRecoveries.isEmpty { summary.visualTrack = importedVideo.renderTrack }
         summary.debugContacts = importedVideo.counterTrace?.diagnostics ?? []
+        sessionNotice = nil
         finishProcessing(with: summary, framesUseCompositionClock: true)
         saveAccountResult(summary, source: .gallery)
     }
@@ -480,28 +483,6 @@ struct RecordView: View {
         withTransaction(transaction) { sessionSummary = summary }
     }
 
-    // MARK: - Ball tracking
-
-    @ViewBuilder
-    private func ballOverlay(in size: CGSize) -> some View {
-        let sample: BallStyleSample? = camera.ballBox.flatMap {
-            BallStyleSample(box: $0, confidence: camera.ballScore,
-                            velocityY: camera.ballVelocityY)
-        }
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: false)) { timeline in
-            BallStyleOverlay(
-                style: liveStyle,
-                presentation: .live,
-                intensity: liveIntensity,
-                sample: sample,
-                trail: liveTrail,
-                time: timeline.date.timeIntervalSinceReferenceDate
-            )
-            .frame(width: size.width, height: size.height)
-        }
-        .allowsHitTesting(false)
-    }
-
     // MARK: - Capture HUD
 
     private var topBar: some View {
@@ -527,13 +508,23 @@ struct RecordView: View {
             }.zIndex(1)
             CaptureTouchCounter(count: controlState == .ready ? 0 : camera.touchCount, warn: camera.tooShaky)
                 .allowsHitTesting(false)
-            if camera.tooShaky {
-                Text("Hold the camera steadier").font(.caption.weight(.semibold)).foregroundStyle(Theme.warn)
+            if let captureWarning {
+                Text(captureWarning).font(.caption.weight(.semibold)).foregroundStyle(Theme.warn)
+                    .multilineTextAlignment(.center)
                     .transition(.sessionDrop)
             }
         }
         .foregroundStyle(.white).padding(.horizontal, 24).padding(.top, 8)
-        .animation(SessionMotion.snap, value: camera.tooShaky)
+        .animation(SessionMotion.snap, value: captureWarning)
+    }
+
+    /// One capture warning at a time, in the same caption style; a shaking phone matters most.
+    private var captureWarning: String? {
+        if camera.tooShaky { return "Hold the camera steadier" }
+        guard camera.tooDark else { return nil }
+        return camera.cameraPosition == .front
+            ? "Too dark for sharp ball effects · use the back camera"
+            : "Too dark for sharp ball effects · add more light"
     }
 
     private var cameraStatus: some View {

@@ -124,7 +124,7 @@ extension BallVisualRefiner {
         // Imports have already been analysed on the replay clock. Retain that
         // inference and add only the same appearance repair used by recordings.
         if framesUseCompositionClock {
-            return try await BallMaskGapRefiner.refine(source: source, frames: frames, onProgress: onProgress)
+            return try await repairMasks(source: source, frames: frames, onProgress: onProgress)
         }
         let asset = AVURLAsset(url: source)
         if frames.contains(where: \.usesBallMasks) {
@@ -132,7 +132,7 @@ extension BallVisualRefiner {
             // dense masks from the saved pixels on the shared source-frame clock;
             // never reuse an old silhouette across a missing observation.
             let fresh = try await VideoAnalyzer.replayTrack(source: source) { onProgress?($0 * 0.9) }
-            return try await BallMaskGapRefiner.refine(source: source, frames: fresh) { onProgress?(0.9 + $0 * 0.1) }
+            return try await repairMasks(source: source, frames: fresh) { onProgress?(0.9 + $0 * 0.1) }
         }
         guard let track = try await asset.loadTracks(withMediaType: .video).first else { return frames }
         let duration = try await asset.load(.duration)
@@ -180,5 +180,11 @@ extension BallVisualRefiner {
         reader.cancelReading()
         onProgress?(1)
         return result
+    }
+
+    private static func repairMasks(source: URL, frames: [RecordedFrame],
+                                    onProgress: (@Sendable (Double) -> Void)?) async throws -> [RecordedFrame] {
+        let flow = try await BallMaskGapRefiner.refine(source: source, frames: frames) { onProgress?($0 * 0.5) }
+        return try await RFMaskCropRefiner.refine(source: source, frames: flow) { onProgress?(0.5 + $0 * 0.5) }
     }
 }

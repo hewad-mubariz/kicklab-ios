@@ -1,3 +1,5 @@
+import { removeAccountLeaderboardVideos } from "../_shared/leaderboard-storage.ts";
+
 type Configuration = { url: string; serviceKey: string; recoverySecret: string };
 
 // Scheduled server-only recovery. A marker is written by delete-account only
@@ -26,6 +28,7 @@ export function createHandler(config: Configuration, fetcher: typeof fetch = fet
               method: "DELETE", body: JSON.stringify({ prefixes: [`${id}/avatar.jpg`] }),
             });
             if (!removed.ok) throw new Error("storage_unavailable");
+            await removeAccountLeaderboardVideos(admin, id);
             const deleted = await admin(`/auth/v1/admin/users/${id}`, {
               method: "DELETE", body: JSON.stringify({ should_soft_delete: false }),
             });

@@ -64,6 +64,66 @@ final class AccountStoreTests: XCTestCase {
         XCTAssertFalse(account.isBusy)
     }
 
+    func testGoogleCancellationInvalidatesPendingEmailWithoutBypassingCooldown() async {
+        let service = TestAccountService()
+        let store = AccountStore(service: service)
+        let sent = await store.sendEmailLink(to: "player@example.com")
+        XCTAssertTrue(sent)
+        let deadline = store.resendAfter
+        service.failure = ASWebAuthenticationSessionError(.canceledLogin)
+
+        await store.signIn(.google)
+
+        XCTAssertNil(store.pendingEmail)
+        XCTAssertNil(store.user)
+        XCTAssertNil(store.errorMessage)
+        XCTAssertFalse(store.isBusy)
+        XCTAssertEqual(store.resendAfter, deadline)
+        let repeated = await store.sendEmailLink(to: "player@example.com")
+        XCTAssertFalse(repeated)
+        XCTAssertEqual(service.sentEmails.count, 1)
+    }
+
+    func testAppleCancellationKeepsPendingEmailLink() async {
+        let service = TestAccountService()
+        let store = AccountStore(service: service)
+        let sent = await store.sendEmailLink(to: "player@example.com")
+        XCTAssertTrue(sent)
+        service.failure = ASAuthorizationError(.canceled)
+
+        await store.signIn(.apple)
+
+        XCTAssertEqual(store.pendingEmail, "player@example.com")
+        XCTAssertNil(store.user)
+        XCTAssertNil(store.errorMessage)
+        XCTAssertFalse(store.isBusy)
+    }
+
+    func testFailedResendClearsOldPendingLinkAndSuccessfulRetryReplacesIt() async {
+        var time = Date(timeIntervalSince1970: 1_800_000_000)
+        let service = TestAccountService()
+        let account = AccountStore(service: service, now: { time })
+        let sent = await account.sendEmailLink(to: "player@example.com")
+        XCTAssertTrue(sent)
+        time = time.addingTimeInterval(61)
+        service.failure = URLError(.notConnectedToInternet)
+
+        let failed = await account.sendEmailLink(to: "other@example.com")
+
+        XCTAssertFalse(failed)
+        XCTAssertNil(account.pendingEmail)
+        XCTAssertNil(account.user)
+        XCTAssertTrue(account.errorMessage?.contains("offline") == true)
+        XCTAssertFalse(account.isBusy)
+        service.failure = nil
+        let retried = await account.sendEmailLink(to: "other@example.com")
+        XCTAssertTrue(retried)
+        XCTAssertEqual(account.pendingEmail, "other@example.com")
+        XCTAssertEqual(account.resendAfter, time.addingTimeInterval(60))
+        XCTAssertEqual(service.sentEmails, ["player@example.com", "other@example.com"])
+        XCTAssertNil(account.errorMessage)
+    }
+
     func testCallbackIgnoresOtherURLsAndConsumesSuccessOnce() async {
         let service = TestAccountService()
         let account = AccountStore(service: service)

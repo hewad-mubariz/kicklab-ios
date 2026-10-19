@@ -757,6 +757,7 @@ nonisolated struct RFTrackedFrame {
     }
 }
 nonisolated final class RFLiveConsumer {
+    let preview = LiveEffectFrames()
     let queue = DispatchQueue(label: "rf.fullapp.contact", qos: .userInitiated)
     let lock = NSLock()
     var process: ((RFTrackedFrame) throws -> LiveAnalysisUpdate?)?
@@ -769,6 +770,7 @@ nonisolated final class RFLiveConsumer {
     }
     func reset() {
         queue.sync {}
+        preview.reset()
         lock.lock(); defer { lock.unlock() }
         outstanding = 0; peak = 0; processed = 0; latest = nil; failure = nil
     }
@@ -781,6 +783,8 @@ nonisolated final class RFLiveConsumer {
         }
         outstanding += 1; peak = max(peak, outstanding); let depth = outstanding
         lock.unlock()
+        preview.publish(pixels: output.frame.pixels, time: output.frame.time - output.frame.recordingStart,
+                        due: output.frame.due, ball: output.found.ball)
         queue.async {
             do {
                 let update = try autoreleasepool { try self.process?(output) }
@@ -809,6 +813,7 @@ nonisolated final class LiveJugglingAnalysis {
     typealias Result = RFAppCounterCore.Result
     private let core: RFAppCounterCore
     private var consumer = RFLiveConsumer()
+    var preview: LiveEffectFrames { consumer.preview }
     private var worker: RFWorker?
     private var engine: BufferedTracking?
     private var accepted = 0
@@ -857,6 +862,7 @@ nonisolated final class LiveJugglingAnalysis {
         engine = nil
         _ = worker?.drain()
         try? consumer.drain()
+        consumer.preview.reset()
         consumer.queue.sync { core.release() }
         worker = nil; pool = nil; context.clearCaches()
     }

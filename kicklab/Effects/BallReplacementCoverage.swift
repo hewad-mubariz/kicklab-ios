@@ -19,7 +19,8 @@ nonisolated struct BallReplacementCoverage {
     private let smearSteps: Int
     /// Per-direction weight (64 rays from the body centre) where the owned mask
     /// extends beyond mask sampling bias, with support on the opposite side.
-    /// An isolated mask protrusion is not evidence of exposure blur.
+    /// An isolated mask protrusion is not evidence of exposure blur. A lobe
+    /// clipped by the source frame can use its own observed support.
     private let lobes: [Double]
 
     /// The owned mask's 0.5 contour sits about 1.5 mask pixels outside the
@@ -61,8 +62,10 @@ nonisolated struct BallReplacementCoverage {
                                              feather: f.feather, padding: 0, textureBlur: f.textureBlur)
             } else {
                 // A fit outside the band has locked onto a sharp core or a hand.
-                // Keep the mask circle's centre and the nearest trusted size.
-                let r = min(max(mean, low), high)
+                // A round mask can disprove a fit on a smaller printed panel.
+                // Elongated masks can instead contain real exposure blur, so
+                // keep their bounded sharp-body fit and separate blur lobes.
+                let r = mean < low && circle.isRound ? circle.radius : min(max(mean, low), high)
                 b = BallReplacementFootprint(sourceSize: size, center: circle.center, radius: r,
                     radii: Array(repeating: r, count: 64), feather: f.feather, padding: 0, textureBlur: f.textureBlur)
             }
@@ -83,25 +86,30 @@ nonisolated struct BallReplacementCoverage {
         }
         // The camera integrates the ball over the exposure: average the body along
         // the smear. Occluders (hands, feet) stay at their own photographed edges.
-        var v = 0.0
+        var v = 0.0, sweptBody = 0.0
         for i in 0..<smearSteps {
             let t = smearSteps == 1 ? 0 : (Double(i)+0.5)/Double(smearSteps)-0.5
-            v += Self.bodyCoverage(body, x: x-smear.dx*t, y: y-smear.dy*t)
+            let sample = Self.bodyCoverage(body, x: x-smear.dx*t, y: y-smear.dy*t)
+            v += sample; sweptBody = max(sweptBody, sample)
         }
         v /= Double(smearSteps)
         if v > 0, let cut { v *= cut.visibility(x: x, y: y) }
         // The owned mask is trained on photographed balls, so it reaches into motion
         // smear the body model misses. Pulled in by its measured outward bias, it may
         // extend coverage; it never removes body coverage or re-adds an occluder.
-        // Blur only lengthens the ball along its motion, so the mask may add
-        // coverage only near that axis, and only when the frame is smeared.
+        // The swept body above already accounts for measured motion. Motion
+        // alone is not permission to restore the raw mask's dilated, faceted
+        // edge: even a tiny smear used to flatten an otherwise round ball.
+        // The observed mask can keep the swept body opaque during that exposure.
+        // Coverage outside that outline requires observed extension beyond
+        // sampling bias, with opposing support (or a source-frame crop).
         guard smearSteps > 1 || !lobes.isEmpty else { return v }
         let dx = x-body.center.x, dy = y-body.center.y, d = hypot(dx, dy)
         guard d > 1e-6 else { return v }
         var along = 0.0
         if smearSteps > 1 {
             let axis = abs((dx*smear.dx+dy*smear.dy)/(d*hypot(smear.dx, smear.dy)))
-            along = min(1, max(0, (axis-0.5)/0.35))
+            along = min(1, max(0, (axis-0.5)/0.35)) * sweptBody
         }
         if !lobes.isEmpty {
             let phase = (atan2(dy, dx)+2 * .pi).truncatingRemainder(dividingBy: 2 * .pi)/(2 * .pi)*64
@@ -123,8 +131,9 @@ nonisolated struct BallReplacementCoverage {
     /// Percentage-only thresholds mistake ordinary mask dilation for blur on a
     /// small ball. Require extension beyond the larger of that percentage and
     /// one measured dilation width. Without track motion, a photographed smear
-    /// must also have support across the body; a lone background protrusion cannot
-    /// extend the silhouette. The measured-motion path remains independent.
+    /// must also have support across the body unless it reaches a source-frame
+    /// crop; an isolated interior protrusion cannot extend the silhouette. The
+    /// body still integrates measured motion independently of these extensions.
     private static func lobes(mask: BallMask, body: BallReplacementFootprint, maskBounds: CGRect, size: CGSize) -> [Double] {
         let pixel = max(maskBounds.width/Double(mask.width), maskBounds.height/Double(mask.height))
         let threshold = max(0.10*body.radius, maskOutwardBias*pixel)
@@ -143,12 +152,21 @@ nonisolated struct BallReplacementCoverage {
         let eroded = (0..<64).map { min(raw[($0+63)%64], raw[$0], raw[($0+1)%64]) }
         let opened = (0..<64).map { max(eroded[($0+63)%64], eroded[$0], eroded[($0+1)%64]) }
         // Permit a small angular deviation for quantized masks and mild curvature.
-        // Opposing support rejects one-sided limbs/background, while preserving a
-        // photographed elongated ball even if the motion track has no estimate.
+        // Opposing support rejects one-sided limbs/background. At a source-frame
+        // edge the ball is incomplete, so symmetry is not a valid requirement:
+        // retain an observed lobe pointing into that crop. This only admits owned
+        // mask alpha in that direction; it never fills pixels outside the mask.
         let paired = (0..<64).map { i in
             var opposite = 0.0
             for offset in -2...2 { opposite = max(opposite, opened[(i+96+offset)%64]) }
-            return min(opened[i], opposite)
+            let angle = Double(i)*2 * .pi/64
+            let reach = body.edge(at: angle)*1.6
+            let x = body.center.x+cos(angle)*reach, y = body.center.y+sin(angle)*reach
+            let cropped = (x < 0 && maskBounds.minX <= pixel)
+                || (x > size.width && maskBounds.maxX >= size.width-pixel)
+                || (y < 0 && maskBounds.minY <= pixel)
+                || (y > size.height && maskBounds.maxY >= size.height-pixel)
+            return cropped ? opened[i] : min(opened[i], opposite)
         }
         return paired.contains { $0 > 0 } ? paired : []
     }
@@ -156,16 +174,24 @@ nonisolated struct BallReplacementCoverage {
     /// Robust circle through the mask's outermost 0.5 crossings. Points on the
     /// patch border (detector-box cropping) are excluded; inward residuals, which
     /// are usually occluders, are down-weighted.
-    private static func maskCircle(mask: BallMask, bounds: CGRect, size: CGSize) -> (center: CGPoint, radius: Double)? {
+    private static func maskCircle(mask: BallMask, bounds: CGRect, size: CGSize) -> (center: CGPoint, radius: Double, isRound: Bool)? {
         let scale = max(0.25, min(size.width, size.height)/720)
         let pixelX = bounds.width/Double(mask.width), pixelY = bounds.height/Double(mask.height)
-        var sum = 0.0, sx = 0.0, sy = 0.0
+        var sum = 0.0, sx = 0.0, sy = 0.0, sxx = 0.0, syy = 0.0, sxy = 0.0
         for y in 0..<mask.height { for x in 0..<mask.width {
             let a = Double(mask.alpha[y*mask.width+x])/255
-            sum += a; sx += a*(Double(x)+0.5); sy += a*(Double(y)+0.5)
+            let px = (Double(x)+0.5)*pixelX, py = (Double(y)+0.5)*pixelY
+            sum += a; sx += a*px; sy += a*py
+            sxx += a*px*px; syy += a*py*py; sxy += a*px*py
         } }
         guard sum > 4 else { return nil }
-        let cx = bounds.minX+sx/sum*pixelX, cy = bounds.minY+sy/sum*pixelY
+        let mx = sx/sum, my = sy/sum
+        let xx = max(0, sxx/sum-mx*mx), yy = max(0, syy/sum-my*my), xy = sxy/sum-mx*my
+        let delta = hypot(xx-yy, 2*xy), minor = xx+yy-delta
+        // Rotation-invariant physical axis ratio. A stretched exposure or an
+        // occluded fragment cannot establish the radius of a complete sphere.
+        let isRound = minor > 0 && (xx+yy+delta)/minor <= 1.15*1.15
+        let cx = bounds.minX+mx, cy = bounds.minY+my
         let base = max(bounds.width, bounds.height)/2, margin = 2.5*max(pixelX, pixelY)
         func alpha(_ x: Double, _ y: Double) -> Double {
             guard x > bounds.minX, x < bounds.maxX, y > bounds.minY, y < bounds.maxY else { return 0 }
@@ -207,7 +233,7 @@ nonisolated struct BallReplacementCoverage {
         }
         let corrected = radius-maskOutwardBias*max(pixelX, pixelY)
         guard corrected > 2*scale, radius < base*1.6 else { return nil }
-        return (CGPoint(x: center.0, y: center.1), corrected)
+        return (CGPoint(x: center.0, y: center.1), corrected, isRound)
     }
 
     /// Occluder cut-outs inside the body: mask deficits connected to a seed that

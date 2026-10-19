@@ -111,7 +111,7 @@ final class WallAlignmentTests: XCTestCase {
     func testModelRejectsHitsDuringDriftPreservesRoundAndInvalidatesScaledReference() {
         let m = WallTargetsModel(defaults: UserDefaults(suiteName: "WallAlignmentTests.\(UUID())")!)
         let start = Date(timeIntervalSince1970: 100)
-        m.setCorners(corners); m.finishReference(Array(repeating: 0.04, count: 6)); m.startPlay(at: start)
+        m.setCorners(corners); m.validateMappingForTest(); m.finishReference(Array(repeating: 0.04, count: 6)); m.startPlay(at: start)
         m.record(box: 1, u: 0.5, v: 0.5, at: start)
         m.applyAlignment(.init(status: .shifted, corners: corners, revision: 1), at: start.addingTimeInterval(1))
         m.record(box: 3, u: 2.5, v: 0.5)
@@ -184,6 +184,51 @@ final class WallAlignmentTests: XCTestCase {
         let p = shifted[0], cx = Int(p.x * Double(w)), cy = Int(p.y * Double(h))
         for y in (cy - 15)...(cy + 15) { for x in (cx - 15)...(cx + 15) { pixels[y * w + x] = 155 } }
         XCTAssertNil(WallCornerTracker.corners(in: .init(width: w, height: h, luma: pixels), near: corners))
+    }
+
+    func testRecordedStationaryCornersAllowCountdownAndTimerToAdvance() throws {
+        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/wall-countdown-corners.json")
+        let fixture = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
+        let width = fixture["width"] as! Int, height = fixture["height"] as! Int
+        let seed = (fixture["seed"] as! [[Double]]).map { CGPoint(x: $0[0], y: $0[1]) }
+        var alignment = WallBoardAlignment(corners: seed, referenceCorners: seed)
+        let model = WallTargetsModel(defaults: UserDefaults(suiteName: "WallCountdown.\(UUID())")!)
+        model.setCorners(seed); model.validateMappingForTest()
+        XCTAssertTrue(model.finishReference(Array(repeating: 0.04, count: 6)))
+        var readySince: Double?
+        var lastTime = 0.0
+        for (index, frame) in (fixture["frames"] as! [[String: Any]]).enumerated() {
+            let t = frame["t"] as! Double
+            var pixels = [UInt8](repeating: 128, count: width * height)
+            for patch in frame["patches"] as! [[String: Any]] {
+                let x = patch["x"] as! Int, y = patch["y"] as! Int
+                let w = patch["width"] as! Int, h = patch["height"] as! Int
+                let data = [UInt8](Data(base64Encoded: patch["luma"] as! String)!)
+                for row in 0..<h {
+                    pixels.replaceSubrange((y + row) * width + x..<(y + row) * width + x + w,
+                                           with: data[row * w..<(row + 1) * w])
+                }
+            }
+            let measured = WallCornerTracker.corners(in: .init(width: width, height: height, luma: pixels),
+                                                     near: alignment.searchCorners)
+            alignment.observe(measured, at: t, size: size)
+            model.applyAlignment(alignment.update, at: Date(timeIntervalSince1970: t))
+            if index >= 2 {
+                XCTAssertTrue(alignment.canScore(at: t), "Stationary visible board at \(t) must not reset countdown")
+            }
+            if alignment.canScore(at: t) {
+                if readySince == nil { readySince = t }
+                if !model.isPlaying, t - readySince! >= 3 {
+                    XCTAssertTrue(model.startPlay(at: Date(timeIntervalSince1970: t)))
+                }
+            } else { readySince = nil }
+            lastTime = t
+        }
+        XCTAssertTrue(model.isPlaying)
+        XCTAssertEqual(model.timerStatus, "LIVE")
+        XCTAssertGreaterThan(model.elapsed(at: Date(timeIntervalSince1970: lastTime)), 0.5)
+        XCTAssertTrue(model.hits.isEmpty)
     }
 }
 #endif

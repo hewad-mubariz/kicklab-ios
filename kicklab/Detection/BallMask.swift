@@ -26,6 +26,16 @@ nonisolated struct BallMask: Sendable {
     /// Retained masks use exact runs, while the current render frame can expand
     /// temporarily. Never cache decoded masks for the whole recording.
     var storageByteCount: Int { rawAlpha.count + runEnds.count * 2 + runValues.count }
+    /// Sum coverage without expanding an entire retained mask during planning.
+    var alphaSum: Int {
+        guard !runEnds.isEmpty else { return rawAlpha.reduce(0) { $0 + Int($1) } }
+        var sum = 0, start = 0
+        for i in runEnds.indices {
+            let end = Int(runEnds[i])
+            sum += (end - start) * Int(runValues[i]); start = end
+        }
+        return sum
+    }
     var alpha: [UInt8] {
         guard !runEnds.isEmpty else { return rawAlpha }
         var result = [UInt8](repeating: 0, count: width * height)

@@ -24,11 +24,13 @@ Deno.test("only confirmed pending deletions are processed; storage precedes Auth
       assert.ok(url.includes("deletion_requested_at=not.is.null"));
       return Response.json([{ id: first }]);
     }
+    if (url.includes("/leaderboard_attempts?")) return Response.json([]);
     return Response.json({});
   });
   assert.deepEqual(await (await handler(request())).json(), { completed: 1, failed: 0 });
   assert.ok(calls[1].includes("/storage/"));
-  assert.ok(calls[2].endsWith(`/users/${first}`));
+  assert.ok(calls[2].includes("/leaderboard_attempts?"));
+  assert.ok(calls[3].endsWith(`/users/${first}`));
 });
 
 Deno.test("one failing deletion does not block the next; recovery is retryable", async () => {
@@ -37,6 +39,7 @@ Deno.test("one failing deletion does not block the next; recovery is retryable",
   const handler = createHandler(config, async (input, init) => {
     const url = String(input);
     if (url.includes("/profiles?")) return Response.json([{ id: first }, { id: second }]);
+    if (url.includes("/leaderboard_attempts?")) return Response.json([]);
     if (url.includes("/storage/") && String(init?.body).includes(first) && failing) {
       return Response.json({}, { status: 503 });
     }

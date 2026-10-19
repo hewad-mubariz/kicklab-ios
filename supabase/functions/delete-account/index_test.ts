@@ -10,7 +10,7 @@ const appleConfig = { ...config, appleTeamID: "TEAM", appleKeyID: "KEY",
   appleClientID: "com.juggledude", applePrivateKey: await exportPKCS8(appleKey.privateKey) };
 const appleIdentity = { provider: "apple", identity_data: { sub: "apple-owner" } };
 
-function fixture(options: { apple?: boolean; fail?: string; absent?: boolean } = {}) {
+function fixture(options: { apple?: boolean; fail?: string; absent?: boolean; video?: boolean } = {}) {
   const calls: { url: string; init?: RequestInit }[] = [];
   const fetcher: typeof fetch = async (input, init) => {
     const url = String(input); calls.push({ url, init });
@@ -23,6 +23,9 @@ function fixture(options: { apple?: boolean; fail?: string; absent?: boolean } =
     if (options.fail && url.includes(options.fail)) return Response.json({ error: "private-provider-details" }, { status: 503 });
     if (url.endsWith("/auth/revoke")) return new Response(null, { status: 200 });
     if (options.absent && url.endsWith(`/auth/v1/admin/users/${id}`)) return new Response(null, { status: 404 });
+    if (url.includes("/leaderboard_attempts?") && init?.method !== "PATCH") {
+      return Response.json(options.video ? [{ id: other, object_path: `${id}/${other}.mov` }] : []);
+    }
     return Response.json({});
   };
   const request = (body: unknown = {}, method = "POST") => new Request("https://project.supabase.co/functions/v1/delete-account", {
@@ -53,14 +56,31 @@ Deno.test("email deletion locks writes, removes avatar bytes, then hard-deletes 
   assert.match(f.calls[1].url, /profiles\?id=eq\./);
   assert.equal(JSON.parse(String(f.calls[1].init?.body)).leaderboard_visible, false);
   assert.deepEqual(JSON.parse(String(f.calls[2].init?.body)), { prefixes: [`${id}/avatar.jpg`] });
-  assert.equal(f.calls[3].url, `${config.url}/auth/v1/admin/users/${id}`);
-  assert.deepEqual(JSON.parse(String(f.calls[3].init?.body)), { should_soft_delete: false });
+  assert.match(f.calls[3].url, /leaderboard_attempts\?select=id,object_path/);
+  assert.equal(f.calls[4].url, `${config.url}/auth/v1/admin/users/${id}`);
+  assert.deepEqual(JSON.parse(String(f.calls[4].init?.body)), { should_soft_delete: false });
 });
 Deno.test("avatar failure does not delete Auth or report success", async () => {
   const f = fixture({ fail: "/storage/" });
   const r = await createHandler(config, f.fetcher)(f.request());
   assert.equal(r.status, 503); assert.equal(f.calls.length, 3);
   assert.deepEqual(await r.json(), { error: "avatar_cleanup_failed" });
+});
+Deno.test("private review video bytes are removed before the account cascade", async () => {
+  const f = fixture({ video: true });
+  const r = await createHandler(config, f.fetcher)(f.request());
+  assert.equal(r.status, 200);
+  const video = f.calls.findIndex(call => call.url.endsWith("/object/leaderboard-originals"));
+  const auth = f.calls.findIndex(call => call.url.includes("/admin/users/"));
+  assert.ok(video > 0 && auth > video);
+  assert.deepEqual(JSON.parse(String(f.calls[video].init?.body)), { prefixes: [`${id}/${other}.mov`] });
+});
+Deno.test("private review video failure leaves Auth and deletion marker for retry", async () => {
+  const f = fixture({ video: true, fail: "/object/leaderboard-originals" });
+  const r = await createHandler(config, f.fetcher)(f.request());
+  assert.equal(r.status, 503);
+  assert.deepEqual(await r.json(), { error: "video_cleanup_failed" });
+  assert.ok(!f.calls.some(call => call.url.includes("/admin/users/")));
 });
 Deno.test("Auth deletion failure reports retry without leaking upstream errors", async () => {
   const f = fixture({ fail: "/admin/users/" });
@@ -89,7 +109,7 @@ Deno.test("Apple revocation completes before any data is deleted", async () => {
   const f = fixture({ apple: true });
   const r = await createHandler(appleConfig, f.fetcher, async () => "apple-owner")(
     f.request({ apple_authorization_code: "fresh-code" }));
-  assert.equal(r.status, 200); assert.equal(f.calls.length, 6);
+  assert.equal(r.status, 200); assert.equal(f.calls.length, 7);
   assert.equal(f.calls[2].url, "https://appleid.apple.com/auth/revoke");
   const revoked = new URLSearchParams(String(f.calls[2].init?.body));
   assert.equal(revoked.get("token"), "apple-refresh");

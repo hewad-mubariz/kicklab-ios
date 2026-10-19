@@ -1046,6 +1046,34 @@ nonisolated extension BallDetector {
 // Appearance-only access to current-pixel crops. Temporal detector state stays
 // with the full-frame baseline; this method never seeds its confirmation/retry.
 nonisolated extension BallDetector {
+    /// Higher-resolution appearance evidence from this exposure only. This does
+    /// not run detectFrame or update association, motion or counter state.
+    func inferRFMaskCrop(_ pixels: CVPixelBuffer, roi: CGRect) throws -> FrameDetections {
+        try Task.checkCancellation()
+        guard isRFDETR else { return FrameDetections(ball: nil, person: nil) }
+        let image = orientedImage(pixels, portrait: false, orientation: nil)
+        let bounds = CGRect(origin: .zero, size: image.extent.size)
+        guard !roi.isEmpty, !roi.isNull, bounds.contains(roi) else {
+            return FrameDetections(ball: nil, person: nil)
+        }
+        let rect = CGRect(x: roi.minX, y: image.extent.height - roi.maxY, width: roi.width, height: roi.height)
+        let patch = image.cropped(to: rect).transformed(by: CGAffineTransform(translationX: -rect.minX, y: -rect.minY))
+        let output = try predict(makeInput(from: patch))
+        // The bridge's auxiliary switch also controls mask decoding. Decode it
+        // here, then discard crop-local people rather than forwarding them.
+        let decoded = try rfSeg.decode(output, sourceSize: roi.size, threshold: activeBallThreshold)
+        guard let b = decoded.ball, let m = decoded.ballMask else { return FrameDetections(ball: nil, person: nil) }
+        let size = image.extent.size
+        let ball = Detection(score: b.score, x: (roi.minX + b.x * roi.width) / size.width,
+            y: (roi.minY + b.y * roi.height) / size.height,
+            width: b.width * roi.width / size.width, height: b.height * roi.height / size.height)
+        let mask = BallMask(rect: CGRect(x: (roi.minX + m.rect.minX * roi.width) / size.width,
+            y: (roi.minY + m.rect.minY * roi.height) / size.height,
+            width: m.rect.width * roi.width / size.width, height: m.rect.height * roi.height / size.height),
+            width: m.width, height: m.height, alpha: m.alpha)
+        return FrameDetections(ball: ball, person: nil, ballMask: mask, usesBallMasks: true)
+    }
+
     func inferVisualCrop(_ pixels: CVPixelBuffer, roi: CGRect) throws -> FrameDetections {
         try Task.checkCancellation()
         guard supportsDistantVisualRecovery else { return FrameDetections(ball:nil,person:nil) }

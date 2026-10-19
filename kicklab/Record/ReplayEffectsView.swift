@@ -14,8 +14,11 @@ struct ReplayEffectsView: View {
     @ObservedObject var preparation = SessionEffectsPreparation()
     var showsTouchTools = true
     var distanceTimeline: BallDistanceTimeline? = nil
+    var historySessionID: UUID? = nil
 
     @EnvironmentObject private var subscriptions: SubscriptionStore
+    @EnvironmentObject private var accountPlayer: PlayerStore
+    @State private var showsLeaderboardSubmission = false
     @State private var pendingProTool: ReplayTool?
     @State private var showsProPaywall = false
 
@@ -217,6 +220,17 @@ struct ReplayEffectsView: View {
         .sheet(item: $shareItem) { item in
             ReplayShareSheet(url: item.url).presentationDetents([.medium, .large])
         }
+        .sheet(isPresented: $showsLeaderboardSubmission) {
+            if let historySessionID {
+                NavigationStack {
+                    LeaderboardSubmissionView(sessionID: historySessionID,
+                        review: accountPlayer.leaderboardReview, history: accountPlayer.history)
+                        .toolbar { ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { showsLeaderboardSubmission = false }
+                        } }
+                }.id(accountPlayer.userID)
+            }
+        }
         .onAppear {
             if originalEdit == nil { originalEdit = edit; originalOverlays = overlays }
             motionTimeline = MotionStyleTimeline(points: summary.track.map {
@@ -263,6 +277,11 @@ struct ReplayEffectsView: View {
             }
             Spacer(minLength: 0)
             // Saves what you see in one tap; the button itself shows the progress.
+            if showsTouchTools && historySessionID != nil {
+                roundButton("trophy", label: "Submit a leaderboard streak") {
+                    pause(); showsLeaderboardSubmission = true
+                }.accessibilityIdentifier("replay-leaderboard-submit")
+            }
             ReplayDownloadButton(phase: downloader.phase, progress: downloader.progress, action: download,
                                  needsForeground: downloader.needsForeground)
                 .accessibilityIdentifier("replay-export")

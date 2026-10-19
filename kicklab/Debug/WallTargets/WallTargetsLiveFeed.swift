@@ -91,6 +91,12 @@ nonisolated final class WallTargetsLiveFeed: @unchecked Sendable {
 
     // MARK: Camera side (called on the camera queue)
 
+    /// Retain the latest JPEG and shot history for review, but release decoded
+    /// camera images while idle or while optional preview work is heat-limited.
+    func clearFrameCache() {
+        lock.withLock { frames.removeAll(keepingCapacity: false) }
+    }
+
     /// Keeps a downscaled copy of the last second for shot strips, and a JPEG
     /// of the newest frame for the browser at about eight per second.
     func addFrame(_ pixels: CVPixelBuffer, at t: Double) {

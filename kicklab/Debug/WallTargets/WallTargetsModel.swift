@@ -34,6 +34,21 @@ enum WallCornerDots {
     case normal, large, hidden
 }
 
+nonisolated enum WallRecordingState: Equatable, Sendable {
+    case idle, recording, saving, saved
+    case failed(String)
+
+    var message: String {
+        switch self {
+        case .idle: return "No recording"
+        case .recording: return "Recording"
+        case .saving: return "Saving video and shot data…"
+        case .saved: return "Video and shot data saved"
+        case .failed: return "Recording needs attention · open settings"
+        }
+    }
+}
+
 /// Board state shared by the phone screen and the projector window. Live ball
 /// positions stay on the camera object so the projector does not redraw per frame.
 @MainActor
@@ -41,20 +56,35 @@ final class WallTargetsModel: ObservableObject {
     static let shared = WallTargetsModel()
 
     enum Calibration: Equatable { case required, searching, ready, failed }
+    enum GameScreen: Equatable { case intro, board, results }
+    @Published private(set) var gameScreen: GameScreen = .board
+    @Published private(set) var bestClearTime: TimeInterval?
+    @Published private(set) var previousBest: TimeInterval?
+    @Published private(set) var isNewBest = false
     @Published private(set) var calibration: Calibration = .required
     @Published private(set) var isPlaying = false
+    @Published private(set) var sessionEnded = false
+    @Published var recordingState: WallRecordingState = .idle
     @Published private(set) var wallReference: WallBallReference?
     @Published private(set) var referenceBox: Int?
     @Published private(set) var referenceProgress = 0.0
     @Published private(set) var referenceFailed = false
     @Published var isFocusing = false
     @Published private(set) var focusFailed = false
+    @Published private(set) var checkingMapping = false
+    @Published var mappingDotsVisible = false
+    @Published private(set) var mappingReport: WallMappingCheck.Report?
+    var mappingFailed: Bool { mappingReport.map { !$0.passed } ?? false }
     @Published var countdown: Int?
+    @Published private(set) var showingGo = false
+    @Published private(set) var contactPreview: WallImpactDetector.Impact?
+    private var goToken = UUID()
     @Published var notice: String?
     @Published private(set) var alignmentStatus = WallBoardAlignment.Status.checking
     @Published private(set) var borderlineNotice: String?
     private var borderlineToken = UUID()
     private var alignmentPausedAt: Date?
+    private var endedElapsed: TimeInterval?
 
     var alignmentNotice: String? {
         if isFocusing { return "Focusing on the wall · stand aside" }
@@ -69,6 +99,7 @@ final class WallTargetsModel: ObservableObject {
 
     var timerStatus: String {
         if clearedAt != nil { return "CLEARED" }
+        if sessionEnded { return "STOPPED" }
         if !isPlaying { return "SETUP" }
         if alignmentStatus != .ready { return "PAUSED" }
         return roundStart == nil ? "READY" : "LIVE"
@@ -80,10 +111,6 @@ final class WallTargetsModel: ObservableObject {
         let u, v: Double
         let at: Date
     }
-
-    /// "Clear the board": every box hit at least once. The phone sits on a
-    /// tripod, so the next hit a few seconds after a clear starts a new round.
-    static let newRoundDelay: TimeInterval = 3
 
     struct Clear: Equatable {
         let at: Date
@@ -106,10 +133,13 @@ final class WallTargetsModel: ObservableObject {
 
     private static let cornersKey = "wallTargets.corners"
     private static let styleKey = "wallTargets.style.v3"
+    private static let bestTimeKey = "wallTargets.clearTheWall.bestActiveSeconds.v1"
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        let best = defaults.double(forKey: Self.bestTimeKey)
+        bestClearTime = best.isFinite && best > 0 ? best : nil
         style = defaults.string(forKey: Self.styleKey).flatMap(WallBoardStyle.init) ?? .metal
         let saved = (defaults.array(forKey: Self.cornersKey) as? [Double]) ?? []
         corners = saved.count == 8
@@ -124,38 +154,111 @@ final class WallTargetsModel: ObservableObject {
 
     var boxesHit: Set<Int> { Set(hits.compactMap(\.box)) }
     var lastHit: Hit? { hits.last }
+    /// A new recording cannot replace a recording that is still being finalized.
+    var canStartGame: Bool {
+        switch recordingState {
+        // Failed sessions stay in their own recorder folder for investigation.
+        // An explicit retry starts a separate folder after finalization returns.
+        case .idle, .saved, .failed: return true
+        case .recording, .saving: return false
+        }
+    }
+
+    func showGameIntro() {
+        pause()
+        gameScreen = .intro
+    }
+
+    func showBoardForSettings() {
+        pause()
+        gameScreen = .board
+    }
+
+    /// Reacquire geometry and ball samples for every explicit attempt. Returning
+    /// from results must never authorize scoring with stale setup evidence.
+    @discardableResult
+    func beginGameSetup(usingCurrentCorners: Bool = false) -> Bool {
+        guard canStartGame else { return false }
+        // Do not show the previous round's saved status if this setup is stopped
+        // before the camera has started its new recording.
+        recordingState = .idle
+        referenceFailed = false
+        focusFailed = false
+        notice = nil
+        // Manual corners selected in the settings screen are an allowed starting
+        // geometry. Mapping and ball reference must still be measured afresh.
+        if usingCurrentCorners && calibration == .ready { _ = setCorners(corners) }
+        else { invalidateCalibration() }
+        newRound()
+        return true
+    }
     var clearTime: TimeInterval? {
         guard let roundStart, let clearedAt else { return nil }
         return clearedAt.timeIntervalSince(roundStart)
     }
 
     func elapsed(at date: Date) -> TimeInterval {
-        clearTime ?? roundStart.map { max(0, (alignmentPausedAt ?? date).timeIntervalSince($0)) } ?? 0
+        clearTime ?? endedElapsed ?? roundStart.map { max(0, (alignmentPausedAt ?? date).timeIntervalSince($0)) } ?? 0
     }
 
-    func record(box: Int?, u: Double, v: Double, at date: Date = Date()) {
-        guard isPlaying, calibration == .ready, alignmentStatus == .ready, u.isFinite, v.isFinite,
-              let box, (1...6).contains(box), WallBoard.box(u: u, v: v) == box else { return }
-        if let clearedAt, date.timeIntervalSince(clearedAt) >= Self.newRoundDelay { newRound() }
-        guard clearedAt == nil else { return }   // brief pause after a clear
+    /// Deliver confirmed feedback synchronously with an accepted score. The cue
+    /// must not wait for either the phone or external SwiftUI view to redraw.
+    @discardableResult
+    func accept(_ impact: WallImpactDetector.Impact, at date: Date = Date(),
+                onScored: (_ cleared: Bool) -> Void) -> Bool {
+        if impact.borderline { recordBorderline(); return false }
+        guard record(box: impact.box, u: impact.u, v: impact.v, at: date) else { return false }
+        onScored(clearedAt != nil)
+        return true
+    }
+
+    @discardableResult
+    func record(box: Int?, u: Double, v: Double, at date: Date = Date()) -> Bool {
+        guard gameScreen == .board, isPlaying, calibration == .ready, alignmentStatus == .ready, u.isFinite, v.isFinite,
+              let box, (1...6).contains(box), WallBoard.box(u: u, v: v) == box else { return false }
+        guard clearedAt == nil, !sessionEnded else { return false }
         if roundStart == nil { roundStart = date }
         hits.append(Hit(box: box, u: u, v: v, at: date))
         if boxesHit.count == 6, let roundStart {
             clearedAt = date
-            clears.append(Clear(at: date, seconds: date.timeIntervalSince(roundStart)))
+            let seconds = date.timeIntervalSince(roundStart)
+            clears.append(Clear(at: date, seconds: seconds))
+            if seconds.isFinite, seconds > 0, bestClearTime.map({ seconds < $0 }) ?? true {
+                isNewBest = true
+                bestClearTime = seconds
+                defaults.set(seconds, forKey: Self.bestTimeKey)
+            }
+            finishSession(at: date)
         }
+        return true
     }
 
     func newRound() {
+        pause()
+        gameScreen = .board
+        previousBest = bestClearTime
+        isNewBest = false
         hits = []
+        contactPreview = nil
         roundStart = nil
         clearedAt = nil
+        sessionEnded = false
+        endedElapsed = nil
+    }
+
+    /// Keep the impact map and final time until the next explicit session.
+    func finishSession(at date: Date = Date()) {
+        if !sessionEnded { endedElapsed = elapsed(at: date) }
+        pause()
+        sessionEnded = true
+        gameScreen = .results
     }
 
     /// Alignment updates preserve the round and wall-size samples. A material
     /// scale/perspective change instead invalidates those samples explicitly.
     func applyAlignment(_ update: WallBoardAlignment.Update, at date: Date = Date()) {
         alignmentStatus = update.status
+        if update.status != .ready && update.status != .obscured { contactPreview = nil }
         if update.status == .ready, WallBoard.validCalibration(update.corners) {
             corners = update.corners
             defaults.set(corners.flatMap { [Double($0.x), Double($0.y)] }, forKey: Self.cornersKey)
@@ -185,10 +288,36 @@ final class WallTargetsModel: ObservableObject {
         }
     }
 
+    /// A tentative contact never changes the score, hit map, sound or round end.
+    func showContactPreview(_ impact: WallImpactDetector.Impact?) {
+        let allowed = isPlaying && !sessionEnded && calibration == .ready
+            && (alignmentStatus == .ready || alignmentStatus == .obscured)
+        let next = allowed ? impact : nil
+        guard next != contactPreview else { return }
+        contactPreview = next
+        if let next {
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(1.6))
+                if self?.contactPreview == next { self?.contactPreview = nil }
+            }
+        }
+    }
+
+    func showGoCue() {
+        guard isPlaying, !sessionEnded else { return }
+        let token = UUID(); goToken = token
+        showingGo = true
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(700))
+            if self?.goToken == token { self?.showingGo = false }
+        }
+    }
+
     @discardableResult
     func setCorners(_ points: [CGPoint]) -> Bool {
         pause()
         wallReference = nil
+        mappingReport = nil
         guard WallBoard.validCalibration(points) else { calibration = .failed; return false }
         corners = points
         calibration = .ready
@@ -200,6 +329,8 @@ final class WallTargetsModel: ObservableObject {
     func beginCalibration() {
         pause()
         wallReference = nil
+        referenceFailed = false
+        mappingReport = nil
         calibration = .searching
         focusFailed = false
         notice = nil
@@ -209,6 +340,7 @@ final class WallTargetsModel: ObservableObject {
     func invalidateCalibration() {
         pause()
         wallReference = nil
+        mappingReport = nil
         calibration = .required
         alignmentStatus = .checking
     }
@@ -226,9 +358,28 @@ final class WallTargetsModel: ObservableObject {
         notice = "Camera could not settle focus · stand aside and tap to retry"
     }
 
+    func beginMappingCheck() {
+        pause()
+        mappingReport = nil
+        checkingMapping = true
+        notice = "Checking the whole board · stand aside"
+    }
+
+    @discardableResult
+    func finishMappingCheck(_ report: WallMappingCheck.Report) -> Bool {
+        checkingMapping = false
+        mappingDotsVisible = false
+        mappingReport = report
+        notice = report.passed ? "Board checked · ready for ball setup"
+            : "Board check needs a retry · keep the phone still and the wall clear"
+        return report.passed
+    }
+
     @discardableResult
     func startPlay(at date: Date = Date()) -> Bool {
-        guard calibration == .ready, alignmentStatus == .ready, wallReference != nil, referenceBox == nil else { return false }
+        guard gameScreen == .board, !sessionEnded, clearedAt == nil, calibration == .ready, alignmentStatus == .ready,
+              mappingReport?.passed == true, !checkingMapping,
+              wallReference != nil, referenceBox == nil else { return false }
         countdown = nil
         notice = nil
         isPlaying = true
@@ -238,6 +389,11 @@ final class WallTargetsModel: ObservableObject {
 
     func pause() {
         isPlaying = false
+        contactPreview = nil
+        showingGo = false
+        goToken = UUID()
+        checkingMapping = false
+        mappingDotsVisible = false
         countdown = nil
         referenceBox = nil
         referenceProgress = 0

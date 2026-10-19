@@ -161,6 +161,8 @@ final class LeaderboardUITests: XCTestCase {
         XCTAssertFalse(app.buttons["leaderboard-scope"].exists, "One shared leaderboard has no location selector")
 
         first.tap()
+        XCTAssertTrue(app.buttons["leaderboard-player-close"].waitForExistence(timeout: 3))
+        app.buttons["leaderboard-player-close"].tap()
         app.buttons["leaderboard-close"].tap()
         XCTAssertTrue(open.waitForExistence(timeout: 5))
     }
