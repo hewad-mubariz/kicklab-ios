@@ -23,7 +23,9 @@ All 117 selected iOS regression checks passed, including both deletion UI tests
 and the new legacy-count checks, with no failures or skipped tests. The 15
 deletion/recovery function tests and isolated PostgreSQL suite also passed. Results
 are saved under `artifacts/releases/20261019-replacement/`. The deletion confirmation
-now explains that Sign in with Apple users will confirm with Apple before deletion.
+now explicitly explains that Apple's next sheet says “Sign In” to confirm identity
+before deleting the Juggle Dude account. Apple's native sheet and verification flow
+are unchanged.
 The earlier local 1.0.0 (26) archive predates that message change. The updated
 candidate must pass the user's local device check before a new archive and App Store
 Connect upload. App Review submission remains on hold.
