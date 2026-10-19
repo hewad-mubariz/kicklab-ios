@@ -22,8 +22,11 @@ asserts their counts cascade away, and verifies another account's result survive
 All 117 selected iOS regression checks passed, including both deletion UI tests
 and the new legacy-count checks, with no failures or skipped tests. The 15
 deletion/recovery function tests and isolated PostgreSQL suite also passed. Results
-are saved under `artifacts/releases/20261019-replacement/`. The local 1.0.0 (26)
-Release archive succeeded; upload and submission are held at the user’s request.
+are saved under `artifacts/releases/20261019-replacement/`. The deletion confirmation
+now explains that Sign in with Apple users will confirm with Apple before deletion.
+The earlier local 1.0.0 (26) archive predates that message change. The updated
+candidate must pass the user's local device check before a new archive and App Store
+Connect upload. App Review submission remains on hold.
 A fresh physical-device Apple authorization/revocation flow remains a separate check.
 
 ## Historical status — 2026-10-11

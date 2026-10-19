@@ -3,7 +3,7 @@
   "build": "26",
   "branch": "main",
   "base_commit": "d07b333279d08d7841943a39b10ec1b85431a3ff",
-  "scope": "Existing main release plus account-deletion guest-score repair and version preparation.",
+  "scope": "Existing main release plus account-deletion guest-score repair, Apple confirmation explanation and version preparation.",
   "excluded_feature_work": {
     "branch": "codex/post-launch-signin-leaderboard-ball-edges",
     "preserved_commit": "b4b125a",
@@ -13,7 +13,8 @@
   "account_deletion_fix": [
     "Signed-in replay scores no longer write into the guest personal-best cache.",
     "Confirmed account deletion rebuilds the guest best from retained guest history.",
-    "Account history/outbox deletion continues to preserve other accounts and Photos exports."
+    "Account history/outbox deletion continues to preserve other accounts and Photos exports.",
+    "Deletion confirmation explains the additional Apple authorization step for Sign in with Apple users."
   ],
   "verification": {
     "simulator_regression": {
@@ -34,7 +35,9 @@
         "ShotCameraMoveReviewTests",
         "AccountDeletionUITests"
       ],
-      "result_bundle": "artifacts/releases/20261019-replacement/main-regression.xcresult"
+      "result_bundle": "artifacts/releases/20261019-replacement/main-regression.xcresult",
+      "source_commit": "30e4603",
+      "scope_note": "Completed before the deletion-message-only update; subsequent focused UI verification is recorded with local build artifacts."
     },
     "deletion_and_recovery_function_tests": {
       "passed": 15,
@@ -44,13 +47,11 @@
     "production_deletion_audit": "read-only: 1 Auth account, 1 profile, 36 sessions; no orphan profiles/sessions or pending deletions",
     "real_apple_deletion_and_revocation": "not performed"
   },
-  "archive_status": "succeeded",
-  "archive_path": "artifacts/releases/20261019-replacement/JuggleDude-1.0.0-26.xcarchive",
-  "archive_verification": "artifacts/releases/20261019-replacement/archive-verification.json",
+  "archive_status": "new_archive_waiting_for_user_local_test",
   "upload_status": "not_uploaded",
   "app_store_review_submitted": false,
-  "release_status": "held_by_user",
-  "submission_instruction": "Prepare locally and wait. Do not upload to TestFlight, submit to App Review, or release until explicitly instructed.",
+  "release_status": "awaiting_user_local_test",
+  "submission_instruction": "Push main and install the updated local build for user testing. After the user confirms the test, create a fresh archive and upload to App Store Connect. Do not submit to App Review or release without separate explicit instruction.",
   "previous_submission": {
     "app_store_version": "1.0",
     "build": "13",
@@ -63,7 +64,7 @@
     "Confirm purchase, recording/replay/export behavior on the candidate.",
     "Prepare the requested physical-device review walkthrough and updated notes for RF-DETR.",
     "Confirm the App Store version field matches the candidate before selecting its build.",
-    "Wait for explicit user instruction before upload or submission."
+    "Wait for the user local-test result before archiving/uploading, and separate explicit authorization before App Review submission."
   ],
   "known_limitations": [
     "Legacy guest scores without retained guest history cannot be distinguished from contaminated account scores and are not preserved through account-deletion cleanup.",
@@ -71,5 +72,10 @@
     "Recording startup timing and blurred-ball replacement limitations from build 23 remain; newer feature-branch fixes are excluded at user request.",
     "Live recordings remain silent."
   ],
-  "local_preparation_completed_at": "2026-10-19T14:39:11+02:00"
+  "local_preparation_completed_at": "2026-10-19T14:39:11+02:00",
+  "previous_local_archive": {
+    "archive_path": "artifacts/releases/20261019-replacement/JuggleDude-1.0.0-26.xcarchive",
+    "archive_verification": "artifacts/releases/20261019-replacement/archive-verification.json",
+    "status": "succeeded; superseded by deletion-message update"
+  }
 }
