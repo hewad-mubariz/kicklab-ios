@@ -127,7 +127,7 @@ struct TrainingProfileView: View {
                     }
                 }
             } message: {
-                Text("This permanently removes your account, profile photo, saved results and this account’s local replays. You’ll be signed out.\n\nIf you use Sign in with Apple, Apple will show “Sign In” to confirm your identity. After you confirm, we’ll delete your Juggle Dude account.\n\nClips exported to Photos and guest sessions stay on this phone. Apple subscriptions must be cancelled separately.")
+                Text("This permanently removes your account, profile photo, saved results and this account’s local replays. You’ll be signed out.\n\nConfirm your identity with Apple to delete your Juggle Dude account.\n\nClips exported to Photos and guest sessions stay on this phone. Apple subscriptions must be cancelled separately.")
             }
         }
         .presentationDetents([.large])

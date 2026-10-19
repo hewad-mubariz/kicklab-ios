@@ -14,7 +14,7 @@
     "Signed-in replay scores no longer write into the guest personal-best cache.",
     "Confirmed account deletion rebuilds the guest best from retained guest history.",
     "Account history/outbox deletion continues to preserve other accounts and Photos exports.",
-    "Deletion confirmation explicitly explains that Apple shows “Sign In” to confirm identity before deleting the Juggle Dude account; native Apple verification is unchanged."
+    "Deletion confirmation uses the approved wording: “Confirm your identity with Apple to delete your Juggle Dude account.” Native Apple verification is unchanged."
   ],
   "verification": {
     "simulator_regression": {
