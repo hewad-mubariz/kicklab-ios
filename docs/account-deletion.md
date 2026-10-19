@@ -25,9 +25,12 @@ deletion/recovery function tests and isolated PostgreSQL suite also passed. Resu
 are saved under `artifacts/releases/20261019-replacement/`. The deletion confirmation
 now says “Confirm your identity with Apple to delete your Juggle Dude account.”
 Apple's native sheet and verification flow are unchanged.
-The earlier local 1.0.0 (26) archive predates that message change. The updated
-candidate must pass the user's local device check before a new archive and App Store
-Connect upload. App Review submission remains on hold.
+After installing the updated local candidate, the user explicitly authorized upload.
+A fresh Release archive from main commit `713c757` passed package checks and uploaded
+as 1.0.0 (26) on 2026-10-19. Archive and upload evidence is saved under
+`artifacts/releases/20261019-upload26/`. Apple processing completed and build 26
+is available to the two existing members of the internal Early testers group.
+App Review submission remains on hold.
 A fresh physical-device Apple authorization/revocation flow remains a separate check.
 
 ## Historical status — 2026-10-11
