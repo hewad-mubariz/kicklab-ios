@@ -14,6 +14,8 @@ nonisolated struct PacedFrame {
     var recordingStart: Double = 0
     var captureDrops: Int = 0
     var size: CGSize { image.extent.size }
+    /// Every consumer of this exposure must use the same quantized clock.
+    var timestampMs: Int { Int(time * 1000) }
 }
 nonisolated private func candidates(_ prediction: MLFeatureProvider, size: CGSize) throws -> [AsyncBallCandidate] {
     guard let scores = prediction.featureValue(for: "linear_122")?.multiArrayValue,
@@ -188,6 +190,7 @@ nonisolated final class BufferedTracking {
     private var consumedIndex = -1
     private var seedTime: Double?
     private var previous: (FollowHit, Double)?
+    private var motionRecovery = RFMotionRecovery()
     private var statuses: [Int: String] = [:]
     var rows: [[String: Any]] = []
     var events: [[String: Any]] = []
@@ -244,7 +247,13 @@ nonisolated final class BufferedTracking {
                     metrics.lastTotalMS = reply.predictionMS + reply.preparationMS
                     let hint = hit ?? previous.flatMap { first.time-$0.1 <= policy.maximumHintAge ? $0.0 : nil }
                     let eligible = initialBackground?.eligible(reply.candidates) ?? reply.candidates
-                    let (selection, reason) = policy.select(eligible, hint: hint)
+                    var (selection, reason) = policy.select(eligible, hint: hint)
+                    if selection == nil, hit == nil, reason == "identity_gate_rejected",
+                       RFMotionRecovery.enabled(),
+                       let recovered = motionRecovery.select(eligible, at: first.time) {
+                        selection = recovered
+                        reason = "motion_reacquired"
+                    }
                     association = eligible.isEmpty && !reply.candidates.isEmpty ? "stationary_initial_candidates_rejected" : reason
                     if let selection {
                         hit = selection.hit; kind = "rf_detection"
@@ -259,7 +268,10 @@ nonisolated final class BufferedTracking {
                         statuses[first.index] = "used_direct_at_original_frame"
                     } else { statuses[first.index] = "no_detection_preserved_track" }
                 }
-                if let hit { previous = (hit, first.time) }
+                if let hit {
+                    previous = (hit, first.time)
+                    motionRecovery.observe(hit, at: first.time)
+                }
                 let currentPeople = people.flatMap { first.time-$0.1 <= 0.4 ? $0.0 : nil } ?? []
                 metrics.lastFollowKind = kind == "rf_detection" ? "detector" : "pixel_track"
                 metrics.lastFollowCalls = kind == "rf_detection" ? 1 : 0
@@ -501,7 +513,7 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
         event["selected_query"] = selected.query
         event["box_xywh_normalized"] = [ball.x-ball.width/2, ball.y-ball.height/2, ball.width, ball.height]
         let applied = observations.insertRecheckedContact(frame.pixels, frameIndex: index,
-            timestampMs: Int((frame.time*1000).rounded()), ball: ball)
+            timestampMs: frame.timestampMs, ball: ball)
         event["applied"] = applied
         event["reason"] = applied ? "measured_contact_evidence_inserted" : "observation_store_rejected"
     }
@@ -514,6 +526,7 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
     func allowsBodyContact(at frameIndex: Int, policy: CountingPolicy.BodyContact) -> Bool {
         prepare(frameIndex, trigger: "body"); return verifier.allowsBodyContact(at: frameIndex, policy: policy)
     }
+
     func footEvidence(at frameIndex: Int) -> FootContactEvidence? {
         prepare(frameIndex, trigger: "foot"); return verifier.footEvidence(at: frameIndex)
     }
@@ -625,6 +638,7 @@ nonisolated struct RFTrackedFrame {
     }
 }
 nonisolated final class RFLiveConsumer {
+    let preview = LiveEffectFrames()
     let queue = DispatchQueue(label: "rf.fullapp.contact", qos: .userInitiated)
     let lock = NSLock()
     var process: ((RFTrackedFrame) throws -> LiveAnalysisUpdate?)?
@@ -637,6 +651,7 @@ nonisolated final class RFLiveConsumer {
     }
     func reset() {
         queue.sync {}
+        preview.reset()
         lock.lock(); defer { lock.unlock() }
         outstanding = 0; peak = 0; processed = 0; latest = nil; failure = nil
     }
@@ -649,6 +664,8 @@ nonisolated final class RFLiveConsumer {
         }
         outstanding += 1; peak = max(peak, outstanding); let depth = outstanding
         lock.unlock()
+        preview.publish(pixels: output.frame.pixels, time: output.frame.time - output.frame.recordingStart,
+                        due: output.frame.due, ball: output.found.ball)
         queue.async {
             do {
                 let update = try autoreleasepool { try self.process?(output) }
@@ -677,6 +694,7 @@ nonisolated final class LiveJugglingAnalysis {
     typealias Result = RFAppCounterCore.Result
     private let core: RFAppCounterCore
     private var consumer = RFLiveConsumer()
+    var preview: LiveEffectFrames { consumer.preview }
     private var worker: RFWorker?
     private var engine: BufferedTracking?
     private var accepted = 0
@@ -725,6 +743,7 @@ nonisolated final class LiveJugglingAnalysis {
         engine = nil
         _ = worker?.drain()
         try? consumer.drain()
+        consumer.preview.reset()
         consumer.queue.sync { core.release() }
         worker = nil; pool = nil; context.clearCaches()
     }

@@ -18,6 +18,7 @@ struct PostSessionFlowView: View {
     var onFinished: () -> Void
     var onRecordAnother: () -> Void
     var recordsPersonalBest = true
+    var historySessionID: UUID? = nil
 
     @State private var path = NavigationPath()
     @StateObject private var ballPreparation = SessionEffectsPreparation()
@@ -35,7 +36,7 @@ struct PostSessionFlowView: View {
                 onBack: { ballPreparation.cancel(); onFinished() },
                 onRecordAnother: { ballPreparation.cancel(); onRecordAnother() },
                 onDone: { ballPreparation.cancel(); onFinished() },
-                preparation: ballPreparation
+                preparation: ballPreparation, historySessionID: historySessionID
             )
             .toolbar(.hidden, for: .navigationBar)
             .navigationBarBackButtonHidden(true)
@@ -48,7 +49,7 @@ struct PostSessionFlowView: View {
                         onBack: { path.removeLast() },
                         onRecordAnother: { ballPreparation.cancel(); onRecordAnother() },
                         onDone: { ballPreparation.cancel(); onFinished() },
-                        preparation: ballPreparation
+                        preparation: ballPreparation, historySessionID: historySessionID
                     )
                     .navigationBarBackButtonHidden(true)
                 case .stats:

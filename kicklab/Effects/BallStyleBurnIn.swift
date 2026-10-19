@@ -148,7 +148,8 @@ final class BallStyleBurnIn: ObservableObject {
         let temp = FileManager.default.temporaryDirectory
         // AVFoundation drops the QuickTime playback-intent key in MP4 files.
         // High-frame-rate replays need MOV to retain that intent in Photos.
-        let frameRate = try await videoTrack.load(.nominalFrameRate)
+        // A recording gap must not disguise 120/240 fps footage as low-rate MP4.
+        let frameRate = Float(1 / composition.frameDuration.seconds)
         let fileType = VideoExportFormat.fileType(fps: frameRate)
         let fileExtension = VideoExportFormat.fileExtension(fps: frameRate)
         let silentURL = temp.appendingPathComponent("juggledude-render-\(UUID().uuidString).\(fileExtension)")

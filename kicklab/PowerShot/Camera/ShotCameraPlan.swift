@@ -374,7 +374,7 @@ nonisolated final class ShotCameraPlan: @unchecked Sendable {
             let reach = asin(min(1, 0.7 / max(0.7, arcScene.kickerDepth)))
             let limit = min(reach, min(20, max(0, s.angle)) * .pi / 180)
             arcSwing[clip.id] = arcScene.coveredSwing(upTo: limit, width: 1000, height: 1000 / aspect)
-        case .impact, .tilt, .recoil, .ripple, .ramp, .freeze:
+        case .impact, .tilt, .recoil, .ripple, .ramp, .slowmo, .freeze:
             break // shaped analytically per frame
         }
     }
@@ -586,6 +586,9 @@ nonisolated final class ShotCameraPlan: @unchecked Sendable {
                 captions = [ShotCaption(text: String(format: "%.2f s", pathEnd - clip.start), position: CGPoint(x: Double(end.x) + 0.03 * W, y: Double(end.y) - 0.05 * H),
                                         size: 0.042 * W, alpha: pathAlpha * weight, color: lime)]
             }
+        case .slowmo:
+            // Time only: the picture is the recording's own.
+            u[0].z = 0
         case .arc:
             // Only while frozen, and only on the moment its layers were cut at; the rest plays as recorded.
             guard location.segment.kind == .hold, location.segment.clip == clip.id, clip.start == arcMoment else {
@@ -603,8 +606,11 @@ nonisolated final class ShotCameraPlan: @unchecked Sendable {
             u[19] = SIMD4(Float(view.eye.x), Float(view.eye.y), Float(view.eye.z), Float(view.focal))
             u[20] = SIMD4(Float(view.cos), Float(view.sin), Float(0.5 * W), Float(scene.horizon * W))
             u[21] = SIMD4(Float(scene.focal * W), Float(scene.cameraHeight), Float(scene.kickerDepth), Float(scene.backdropDepth))
+            // What other frames fill in behind the kicker is softened; the frozen background stays sharp.
+            let soften = 8 * W / 720 * min(1.5, max(0.5, s.strength))
             u[22] = SIMD4(Float(Self.smoothstep(0.002, 0.03, abs(swing))), Float(max(3, 0.008 * W)),
                           Float(view.centerX - 0.5 * W), Float(view.centerY - scene.horizon * W))
+            u[23] = SIMD4(Float(soften), Float(soften * 2.5), 0, 0)
         case .replay:
             let segment = location.segment
             if segment.kind == .rewind {

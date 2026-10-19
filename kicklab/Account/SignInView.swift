@@ -381,7 +381,12 @@ struct SignInView: View {
     private func send() {
         emailFocused = false
         Task {
-            guard await account.sendEmailLink(to: email) else { return }
+            guard await account.sendEmailLink(to: email) else {
+                // A failed resend can invalidate the earlier link. Keep its error
+                // visible on the form instead of claiming that a usable link was sent.
+                if account.pendingEmail == nil { go(.email) }
+                return
+            }
             go(.sent)
             hops += 1
         }
@@ -458,9 +463,6 @@ private struct SignInProviderButtons: View {
                     if busy == .apple { waiting("Waiting for Apple…").transition(.opacity) }
                 }
                 .opacity(dimmed(.apple) ? 0.35 : 1)
-            // First release: Apple + guest. Keep these controls for the later
-            // Google production/branding and email-delivery rollout.
-            /*
             Button { onSelect(.google) } label: {
                 HStack(spacing: 12) {
                     if busy == .google {
@@ -499,7 +501,6 @@ private struct SignInProviderButtons: View {
             .buttonStyle(SessionPressStyle(scale: 0.97))
             .opacity(dimmed(.email) ? 0.35 : 1)
             .accessibilityIdentifier("signin-email")
-            */
         }
         .animation(SessionMotion.fade, value: busy)
     }

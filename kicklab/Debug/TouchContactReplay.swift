@@ -12,14 +12,14 @@ import UIKit
 nonisolated enum TouchContactReplay {
     private struct Configuration: Decodable {
         enum Comparison: String, Decodable {
-            case body, ground, groundContinuity, footMotion, poseContinuity, handling, poseConfidence, contactTiming, legMotion, legRouting, temporalEvidence, completedRise, pixelFoot, observedImpact, independentLeg, ballAssociation, legRebound, trajectoryTiming, selectedPose, raisedFoot
+            case body, ground, groundContinuity, footMotion, poseContinuity, handling, poseConfidence, contactTiming, legMotion, legRouting, temporalEvidence, completedRise, pixelFoot, observedImpact, independentLeg, ballAssociation, legRebound, trajectoryTiming, selectedPose, raisedFoot, footEvidence
 
             func policy(after: Bool) -> CountingPolicy {
                 let ground: GroundContactPolicy
                 switch self {
                 case .ground: ground = after ? .plantedFeet : .supportedBoundary
                 case .groundContinuity: ground = after ? .corroboratedFeet : .plantedFeet
-                case .footMotion, .poseContinuity, .handling, .poseConfidence, .contactTiming, .legMotion, .legRouting, .temporalEvidence, .completedRise, .pixelFoot, .observedImpact, .independentLeg, .ballAssociation, .legRebound, .trajectoryTiming, .selectedPose, .raisedFoot: ground = .corroboratedFeet
+                case .footMotion, .poseContinuity, .handling, .poseConfidence, .contactTiming, .legMotion, .legRouting, .temporalEvidence, .completedRise, .pixelFoot, .observedImpact, .independentLeg, .ballAssociation, .legRebound, .trajectoryTiming, .selectedPose, .raisedFoot, .footEvidence: ground = .corroboratedFeet
                 case .body: ground = .plantedFeet
                 }
                 let body: CountingPolicy.BodyContact
@@ -40,10 +40,11 @@ nonisolated enum TouchContactReplay {
                 case .legRebound: body = after ? .legReboundV13 : .independentLegV12
                 case .trajectoryTiming, .selectedPose: body = .legReboundV13
                 case .raisedFoot: body = after ? .raisedFootV14 : .legReboundV13
+                case .footEvidence: body = after ? .footEvidenceV15 : .raisedFootV14
                 case .handling: body = .poseContinuityV4
                 case .poseContinuity: body = after ? .poseContinuityV4 : .movingFootV3
                 }
-                return .init(handling: (self == .handling && after) || self == .poseConfidence || self == .contactTiming || self == .legMotion || self == .legRouting || self == .temporalEvidence || self == .completedRise || self == .pixelFoot || self == .observedImpact || self == .independentLeg || self == .ballAssociation || self == .legRebound || self == .trajectoryTiming || self == .selectedPose || self == .raisedFoot ? .sustainedGripV1 : .disabled, verifiesContacts: true, body: body, ground: ground)
+                return .init(handling: (self == .handling && after) || self == .poseConfidence || self == .contactTiming || self == .legMotion || self == .legRouting || self == .temporalEvidence || self == .completedRise || self == .pixelFoot || self == .observedImpact || self == .independentLeg || self == .ballAssociation || self == .legRebound || self == .trajectoryTiming || self == .selectedPose || self == .raisedFoot || self == .footEvidence ? .sustainedGripV1 : .disabled, verifiesContacts: true, body: body, ground: ground)
             }
         }
         struct Clip: Decodable {
@@ -99,7 +100,7 @@ nonisolated enum TouchContactReplay {
                         try Data("RUNNING \(label)".utf8).write(to: status, options: .atomic)
                         // The rebound comparison keeps current RF association identical in both passes.
                         let result = try await replay(video: video, archive: archive, policy: policy, counterConfig: counterConfig,
-                                                      status: status, label: label, selectedPoseRecovery: config.comparison == .selectedPose && after, poseAuditFrames: Set(config.poseAuditFrames ?? []),
+                                                      status: status, label: label, requiresGroundHeightEvidence: config.comparison == .footEvidence && after, selectedPoseRecovery: config.comparison == .selectedPose && after, poseAuditFrames: Set(config.poseAuditFrames ?? []),
                                                       associateBall: ((config.comparison == .ballAssociation && after) || config.comparison == .legRebound || config.comparison == .trajectoryTiming) && RFSmallModel.allCases.contains { archive.pipelineSignature.contains($0.rawValue) })
                         let encoder = PropertyListEncoder(); encoder.outputFormat = .binary
                         try encoder.encode(result.trace).write(to: folder.appendingPathComponent(
@@ -125,7 +126,7 @@ nonisolated enum TouchContactReplay {
     private struct Result { let trace: CounterTrace; let evidence, groundEvidence, poseAudit, pixelTracks, recoveryMetrics: Data }
 
     private static func replay(video: URL, archive: CounterTraceArchive, policy: CountingPolicy, counterConfig: CounterConfig,
-                               status: URL, label: String, selectedPoseRecovery: Bool, poseAuditFrames: Set<Int>, associateBall: Bool) async throws -> Result {
+                               status: URL, label: String, requiresGroundHeightEvidence: Bool, selectedPoseRecovery: Bool, poseAuditFrames: Set<Int>, associateBall: Bool) async throws -> Result {
         let asset = AVURLAsset(url: video)
         let track = try await asset.loadTracks(withMediaType: .video)[0]
         let reader = try AVAssetReader(asset: asset)
@@ -147,6 +148,7 @@ nonisolated enum TouchContactReplay {
         let observations = ContactObservationStore()
         let verifier = JugglingContactVerifier(observations: observations); verifier.warmUp()
         verifier.usesSelectedPoseRecovery = selectedPoseRecovery
+        verifier.requiresGroundHeightEvidence = requiresGroundHeightEvidence
         var poseAudit: [[String: Any]] = []
         var evidence: [[String: Any]] = []
         var pixelTracks: [[String: Any]] = []

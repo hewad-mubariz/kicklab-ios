@@ -379,7 +379,11 @@ nonisolated final class ShotArcLayers: @unchecked Sendable {
         // a blurred kicking foot), so the cut-out stays whole where Vision is faint.
         let nearBody = seenByVision ? dilate(vision.map { $0 > 0.3 }, width: width, height: height, radius: max(8, width / 10)) : region
         var matte = vision
-        for i in 0..<matte.count where fromFrames[i] && nearBody[i] && (region[i] || box == nil) {
+        // Nothing below his feet stands up with him: his shadow belongs to the grass, where it stays and
+        // moves with the ground (only the ball at his foot, added below, comes along).
+        let feetRow = box.map { Int((($0.bottom + 0.004) * Double(height)).rounded()) } ?? height
+        for i in 0..<matte.count where i / width >= feetRow { matte[i] = 0 }
+        for i in 0..<matte.count where fromFrames[i] && nearBody[i] && (region[i] || box == nil) && i / width < feetRow {
             let j = i * 4
             let b = abs(Int(frozen.pixels[j]) - Int(plate[j])), g = abs(Int(frozen.pixels[j + 1]) - Int(plate[j + 1]))
             let r = abs(Int(frozen.pixels[j + 2]) - Int(plate[j + 2]))
@@ -388,7 +392,7 @@ nonisolated final class ShotArcLayers: @unchecked Sendable {
         }
         // Without Vision, a spot in his box that no other frame ever showed clear is him: he stood there
         // in every frame.
-        if !seenByVision { for i in 0..<matte.count where unseen[i] && region[i] { matte[i] = 1 } }
+        if !seenByVision { for i in 0..<matte.count where unseen[i] && region[i] && i / width < feetRow { matte[i] = 1 } }
         // A person is one solid shape: close small gaps, like a shirt as dark as the trees behind it.
         let solid = matte.map { $0 > 0.5 }
         let gap = max(4, width / 45)

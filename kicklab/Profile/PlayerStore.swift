@@ -66,6 +66,7 @@ nonisolated struct JugglingResultQueue: Sendable {
 @MainActor
 final class PlayerStore: ObservableObject {
     let history: SessionHistoryStore
+    let leaderboardReview: LeaderboardReviewStore
     @Published private(set) var userID: UUID?
     @Published private(set) var profile: PlayerProfile?
     @Published private(set) var avatarData: Data?
@@ -87,11 +88,13 @@ final class PlayerStore: ObservableObject {
     private let monitor = NWPathMonitor()
 
     init(service: (any PlayerDataService)?, queue: JugglingResultQueue = .init(),
+         reviewService: (any LeaderboardReviewService)? = nil,
          syncRetryDelay: Duration = .seconds(3),
          archiveVideo: @escaping @Sendable (URL, HistorySession, SessionHistoryLibrary) async throws -> Void = {
              try await $2.retainVideo($0, for: $1)
          }) {
         self.service = service; self.queue = queue
+        leaderboardReview = LeaderboardReviewStore(service: reviewService, root: queue.root)
         self.archiveVideo = archiveVideo; self.syncRetryDelay = syncRetryDelay
         history = SessionHistoryStore(service: service, queue: queue,
             library: SessionHistoryLibrary(root: queue.root.appendingPathComponent("History", isDirectory: true)))
@@ -107,10 +110,12 @@ final class PlayerStore: ObservableObject {
         if SessionHistoryReview.requested { return SessionHistoryReview.store() }
         #endif
         guard let config = try? AccountConfiguration.load() else { return PlayerStore(service: nil) }
-        return PlayerStore(service: SupabasePlayerService(config: config) { [weak account] id in
+        let token: (UUID) async throws -> String = { [weak account] id in
             guard let account else { throw PlayerDataError.signIn }
             return try await account.accessToken(for: id)
-        })
+        }
+        return PlayerStore(service: SupabasePlayerService(config: config, token: token),
+            reviewService: SupabaseLeaderboardReviewService(config: config, token: token))
     }
 
     func useAccount(_ identity: AccountIdentity?) async {
@@ -122,6 +127,7 @@ final class PlayerStore: ObservableObject {
         userID = identity?.id; profile = nil; avatarData = nil; pendingCount = 0; personalBest = 0
         errorMessage = nil; isSaving = false
         history.useAccount(identity?.id)
+        leaderboardReview.useAccount(identity?.id)
         await refresh()
     }
 
@@ -146,6 +152,7 @@ final class PlayerStore: ObservableObject {
             userID = nil; profile = nil; avatarData = nil; personalBest = 0; pendingCount = 0
             isSaving = false; errorMessage = nil
             history.useAccount(nil)
+            leaderboardReview.useAccount(nil)
         }
         await activeSync?.value
         for task in saves { await task.value }
@@ -244,7 +251,7 @@ final class PlayerStore: ObservableObject {
               summary.duration > 0, summary.duration <= 86400 else {
             errorMessage = PlayerDataError.invalidResult.localizedDescription; return nil
         }
-        let item: HistorySession
+        var item: HistorySession
         do {
             let result: SavedJugglingResult?
             if let owner {
@@ -259,6 +266,8 @@ final class PlayerStore: ObservableObject {
                     completedAt: completedAt, syncState: .deviceOnly)
                 result = nil
             }
+            item.rankedProposal = RankedStreakProposal.suggest(touchTimes: summary.touchesMarked.map(\.time),
+                boundaries: summary.debugContacts.filter { $0.rejection != nil }.map(\.time), duration: summary.duration)
             let request = SessionSaveRequest(item: item, result: result, videoURL: summary.videoURL)
             if let task = saveTasks[request.key] { return task }
             history.showImmediately(item, videoURL: summary.videoURL)
@@ -386,7 +395,8 @@ final class PlayerStore: ObservableObject {
         try Task.checkCancellation()
         func entry(_ row: RankedPlayer) -> LeaderboardEntry {
             LeaderboardEntry(rank: row.rank, name: row.displayName, touches: row.touches,
-                isYou: row.isYou, photo: urls[row.userID])
+                isYou: row.isYou, photo: urls[row.userID], attemptID: row.attemptID,
+                streakDurationMS: row.streakDurationMS, countryCode: row.countryCode)
         }
         return (board.entries.map(entry), board.aroundMe.map(entry))
     }

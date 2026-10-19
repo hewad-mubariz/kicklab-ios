@@ -10,9 +10,11 @@ import SwiftUI
 struct WallTargetsView: View {
     @ObservedObject private var model = WallTargetsModel.shared
     @StateObject private var camera = WallTargetsCamera(onImpact: { impact in
-        if impact.borderline { WallTargetsModel.shared.recordBorderline() }
-        else { WallTargetsModel.shared.record(box: impact.box, u: impact.u, v: impact.v) }
-    }, onAlignment: { WallTargetsModel.shared.applyAlignment($0) })
+        WallTargetsModel.shared.accept(impact) { cleared in
+            WallTargetsFeedback.shared.play(cleared: cleared)
+        }
+    }, onAlignment: { WallTargetsModel.shared.applyAlignment($0) },
+       onContactPreview: { WallTargetsModel.shared.showContactPreview($0) })
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @State private var calibrating = false
@@ -24,6 +26,8 @@ struct WallTargetsView: View {
     @State private var autoPlayed = false
     @State private var liveFeed = WallTargetsLiveFeed()
     @AppStorage("wallTargets.macPreview") private var macPreview = false
+    @AppStorage("wallTargets.hitSoundsEnabled") private var hitSoundsEnabled = true
+    private let hitFeedback = WallTargetsFeedback.shared
 
     private static let cornerNames = ["top-left", "top-right", "bottom-right", "bottom-left"]
     private static let minPanelWidth: CGFloat = 150
@@ -40,11 +44,12 @@ struct WallTargetsView: View {
         }
         .background(.black)
         .preferredColorScheme(.dark)
+        .onChange(of: camera.recordingState, initial: true) { _, state in model.recordingState = state }
         .sheet(isPresented: $showResults) { WallTargetsResultsView() }
         // Boxes only on screen (and so on a mirrored projector); the camera keeps
         // detecting underneath, since this view and its camera stay alive.
         .fullScreenCover(isPresented: $showPlay) {
-            WallTargetsPlayView(model: model, camera: camera)
+            WallTargetsPlayView(model: model, camera: camera, feedback: hitFeedback)
         }
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
@@ -75,9 +80,19 @@ struct WallTargetsView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { camera.start() } else {
+                hitFeedback.invalidatePreparation()
                 model.invalidateCalibration()
                 camera.stop()
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AVAudioSession.interruptionNotification)) { _ in
+            hitFeedback.invalidatePreparation()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AVAudioSession.routeChangeNotification)) { _ in
+            hitFeedback.invalidatePreparation()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AVAudioSession.mediaServicesWereResetNotification)) { _ in
+            hitFeedback.invalidatePreparation()
         }
         .onReceive(NotificationCenter.default.publisher(for: AVCaptureSession.wasInterruptedNotification,
                                                          object: camera.session)) { _ in
@@ -197,6 +212,7 @@ struct WallTargetsView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Wall targets").font(.headline)
+                WallTargetsRuntimeHUD(sample: camera.runtime)
                 Label(model.projectorConnected ? "Projector on" : "No projector: use Screen Mirroring",
                       systemImage: model.projectorConnected ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                     .font(.caption2.weight(.semibold))
@@ -211,8 +227,8 @@ struct WallTargetsView: View {
                     showPlay = true
                 } label: {
                     VStack(alignment: .leading, spacing: 1) {
-                        Label("Set up & play", systemImage: "play.fill").font(.headline)
-                        Text("Align board · sample ball · play").font(.caption2)
+                        Label("Clear the Wall", systemImage: "play.fill").font(.headline)
+                        Text("Six targets · beat your best time").font(.caption2)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -227,6 +243,12 @@ struct WallTargetsView: View {
                 }
                 .pickerStyle(.menu)
                 .labelsHidden()
+                Toggle("Hit sounds", isOn: $hitSoundsEnabled)
+                    .font(.caption)
+                Button("Test hit sound") { hitFeedback.play(cleared: false) }
+                    .buttonStyle(.bordered)
+                    .font(.caption)
+                    .disabled(!hitSoundsEnabled)
                 Toggle("Mac preview", isOn: $macPreview)
                     .font(.caption)
                     .onChange(of: macPreview) { _, on in applyMacPreview(on) }
@@ -260,12 +282,24 @@ struct WallTargetsView: View {
                 .tint(calibrating ? .green : .blue)
                 .disabled(calibrating && (editedCorners.count < 4 || !WallBoard.validCalibration(draft)))
                 HStack(spacing: 6) {
-                    Button("New round") { model.newRound() }
+                    Button("New round") { showPlay = true }
                     Button("Close") { dismiss() }
                 }
                 .buttonStyle(.bordered)
                 .font(.caption)
                 VStack(alignment: .leading, spacing: 2) {
+                    if let report = model.mappingReport {
+                        Text(report.passed ? "Board mapping checked" : "Board mapping needs a retry")
+                            .font(.caption2.weight(.semibold))
+                        if let pixels = report.maximumErrorPixels, let cells = report.maximumErrorCells {
+                            Text(String(format: "Largest sampled error: %.1f camera px · %.1f%% of a target", pixels, cells * 100))
+                                .font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
+                        }
+                    }
+                    Text(model.recordingState.message).font(.caption2.weight(.semibold))
+                    if case let .failed(message) = model.recordingState {
+                        Text(message).font(.caption2).foregroundStyle(.red)
+                    }
                     Text(camera.status).font(.caption2.weight(.semibold))
                     Text(camera.handState == .held ? "Ball near hands · no score" :
                          camera.handState == .clear ? "Ball clear of hands" : "Checking hands")
@@ -328,7 +362,7 @@ private struct WallTargetsWarpedBoard: View {
         let board = [CGPoint(x: r.minX, y: r.minY), CGPoint(x: r.maxX, y: r.minY),
                      CGPoint(x: r.maxX, y: r.maxY), CGPoint(x: r.minX, y: r.maxY)]
         if corners.count == 4, let h = WallBoard.homography(from: board, to: corners) {
-            WallTargetsBoard(model: model, background: .clear)
+            WallTargetsBoard(model: model, background: .clear, showsGameScreens: false)
                 .frame(width: Self.size.width, height: Self.size.height)
                 .projectionEffect(ProjectionTransform(Self.transform(h)))
         }

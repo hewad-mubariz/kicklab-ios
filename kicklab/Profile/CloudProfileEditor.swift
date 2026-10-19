@@ -82,8 +82,7 @@ struct CloudProfileEditor: View {
                             .font(.footnote).foregroundStyle(.red)
                     }
                     countryCard
-                    // First release: restore this with the public leaderboard.
-                    // leaderboardCard
+                    leaderboardCard
                     if let error {
                         Label(error, systemImage: "exclamationmark.circle")
                             .font(.footnote).foregroundStyle(.red)
@@ -152,16 +151,16 @@ struct CloudProfileEditor: View {
     private var leaderboardCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Toggle(isOn: $visible) {
-                Label("Join the leaderboard", systemImage: "trophy")
+                Label("Show reviewed scores", systemImage: "trophy")
                     .font(.body.weight(.semibold))
             }
             .tint(TrainingHomeStyle.accent(scheme))
             .accessibilityIdentifier("profile-leaderboard-visible")
-            Text("Show your name, country, photo and best recorded score to other players. You can turn this off anytime.")
+            Text("Show your name, country, photo and best reviewed streak to other players. Turning this off hides your scores without deleting your submissions.")
                 .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             Divider().overlay(TrainingHomeStyle.line(scheme))
-            Label("Imported videos stay private.", systemImage: "lock")
+            Label("Original videos stay private to you and the review team.", systemImage: "lock")
                 .font(.caption).foregroundStyle(TrainingHomeStyle.muted(scheme))
         }
         .padding(20)

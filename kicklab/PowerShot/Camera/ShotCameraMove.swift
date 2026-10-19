@@ -10,7 +10,7 @@ nonisolated enum ShotCameraMove: String, CaseIterable, Identifiable, Codable, Se
     // Hit: something happens on the strike.
     case impact, tilt, recoil, ripple, warp
     // Time: slow, hold or replay part of the shot.
-    case ramp, freeze, arc, replay
+    case ramp, slowmo, freeze, arc, replay
     // Look: what you see changes, not where the camera points.
     case lens, spotlight, focus, strobe, lock
 
@@ -25,7 +25,7 @@ nonisolated enum ShotCameraMove: String, CaseIterable, Identifiable, Codable, Se
         switch self {
         case .follow, .chase, .broadcast, .handoff, .split, .duo: .follow
         case .impact, .tilt, .recoil, .ripple, .warp: .hit
-        case .ramp, .freeze, .arc, .replay: .time
+        case .ramp, .slowmo, .freeze, .arc, .replay: .time
         case .lens, .spotlight, .focus, .strobe, .lock: .look
         }
     }
@@ -44,6 +44,7 @@ nonisolated enum ShotCameraMove: String, CaseIterable, Identifiable, Codable, Se
         case .ripple: "Impact Ripple"
         case .warp: "Launch Warp"
         case .ramp: "Speed Ramp"
+        case .slowmo: "Slow Motion"
         case .freeze: "Freeze + Path"
         case .arc: "Frozen Arc"
         case .replay: "Instant Replay"
@@ -69,6 +70,7 @@ nonisolated enum ShotCameraMove: String, CaseIterable, Identifiable, Codable, Se
         case .ripple: "dot.radiowaves.left.and.right"
         case .warp: "sparkles"
         case .ramp: "slowmo"
+        case .slowmo: "tortoise"
         case .freeze: "pause.rectangle"
         case .arc: "rotate.3d"
         case .replay: "arrow.counterclockwise.circle"
@@ -94,6 +96,7 @@ nonisolated enum ShotCameraMove: String, CaseIterable, Identifiable, Codable, Se
         case .ripple: "A refracting shockwave leaves the contact point."
         case .warp: "A short radial speed burst toward the ball at launch."
         case .ramp: "Slows part of the shot, easing in and out."
+        case .slowmo: "Slows any moment you pick. Drag its edges to make it longer or shorter."
         case .freeze: "Holds a frame while the flight path draws itself on."
         case .arc: "Freezes on contact and swings the camera around the kicker, the goal sliding behind him."
         case .replay: "Rewinds the shot, then replays it in slow motion."
@@ -116,7 +119,7 @@ nonisolated enum ShotCameraMove: String, CaseIterable, Identifiable, Codable, Se
     }
 
     /// Changes playback timing, so the saved video differs in length.
-    var retimes: Bool { self == .ramp || self == .freeze || self == .arc || self == .replay }
+    var retimes: Bool { self == .ramp || self == .slowmo || self == .freeze || self == .arc || self == .replay }
     var needsBall: Bool { ![.tilt, .recoil].contains(self) }
     var needsPerson: Bool { self == .handoff || self == .duo }
     /// Hits are moments: they sit around the strike and are short.
@@ -133,6 +136,8 @@ nonisolated enum ShotCameraMove: String, CaseIterable, Identifiable, Codable, Se
         case .tilt, .recoil: r = (strike - 0.06)...(strike + 0.5)
         case .warp: r = (strike - 0.03)...(strike + 0.6)
         case .ramp: r = (strike - 0.14)...(strike + 0.34)
+        // Where you are, not where the kick is: half a second around the playhead.
+        case .slowmo: r = (playhead - 0.25)...(playhead + 0.25)
         case .freeze: r = strike...settle
         case .arc: r = strike...(strike + 0.3)
         case .replay: r = (strike - 0.2)...end
@@ -190,7 +195,7 @@ nonisolated struct ShotMoveSettings: Equatable, Codable, Sendable {
         case .impact: s.zoom = 2.1
         case .tilt: s.angle = 2.5; s.zoom = 1.1
         case .recoil: s.angle = 3
-        case .ramp: s.rate = 0.25
+        case .ramp, .slowmo: s.rate = 0.25
         case .replay: s.rate = 0.33
         case .arc: s.angle = 12; s.hold = 2.4
         case .lens: s.zoom = 5
@@ -214,8 +219,9 @@ nonisolated struct ShotMoveSettings: Equatable, Codable, Sendable {
     }
 
     static func controls(for move: ShotCameraMove) -> [Control] {
-        // Tilt Punch already settles back to level, and Frozen Arc swings back to the real view.
-        let ending: [Control] = move == .tilt || move == .arc ? [] : [.ending]
+        // Tilt Punch already settles back to level, Frozen Arc swings back to the real view, and Slow
+        // Motion only changes time.
+        let ending: [Control] = move == .tilt || move == .arc || move == .slowmo ? [] : [.ending]
         return moveControls(move) + ending
     }
 
@@ -233,8 +239,9 @@ nonisolated struct ShotMoveSettings: Equatable, Codable, Sendable {
         case .ripple: [.strength("Ripple")]
         case .warp: [.strength("Speed burst")]
         case .ramp: [.rate([0.1, 0.25, 0.33, 0.5]), .smoothMotion, .smooth("Ease in and out")]
+        case .slowmo: [.rate([0.1, 0.25, 0.33, 0.5]), .smoothMotion, .smooth("Ease in and out")]
         case .freeze: [.hold(0.4...3), .smooth("Keep the path while it flies")]
-        case .arc: [.angle(4...20), .hold(1...4), .alternate("Swing", "Right first", "Left first")]
+        case .arc: [.angle(4...20), .hold(1...4), .alternate("Swing", "Right first", "Left first"), .strength("Soften fill-in")]
         case .replay: [.rate([0.1, 0.25, 0.33, 0.5]), .smoothMotion, .zoom(1.2...3, "Replay zoom")]
         case .lens: [.zoom(2...7, "Magnification"), .alternate("Lens side", "Left", "Right")]
         case .spotlight: [.strength("Darkness")]

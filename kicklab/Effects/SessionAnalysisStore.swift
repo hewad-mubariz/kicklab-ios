@@ -68,13 +68,13 @@ actor SessionAnalysisStore {
         let os = ProcessInfo.processInfo.operatingSystemVersionString
         let options = pipelineOptions(arguments:ProcessInfo.processInfo.arguments,defaults:.standard)
         // Increment when detector, composition geometry, counter or repair rules change.
-        return "analysis-v13-rfshared-buffered-live-v1|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)" + CountingPolicy.current.bodySignature + CountingPolicy.current.handlingSignature + TimedTrajectory.signature + GroundContactEvidence.signature + ActiveJugglerTracker.signature + PlayerGroundEstimate.signature
+        return "analysis-v15-contact-evidence-v2|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)" + CountingPolicy.current.bodySignature + CountingPolicy.current.handlingSignature + TimedTrajectory.signature + GroundContactEvidence.signature + ActiveJugglerTracker.signature + PlayerGroundEstimate.signature
     }
 
     /// Experimental visual execution must not read or overwrite serial artifacts.
     /// Live counting provenance deliberately keeps the regular signature.
     nonisolated static func visualPipelineSignature() -> String {
-        let base = pipelineSignature() + DistantBallVisualRecovery.signature()
+        let base = pipelineSignature() + DistantBallVisualRecovery.signature() + RFMaskCropRefiner.signature
         guard BallDetector.visualBatchSize(visualOnly:true) == 2 else { return base }
         return base + (ProcessInfo.processInfo.arguments.contains("--visual-async2")
             ? "|visual-async2-v1" : "|visual-batch2-v1")
@@ -96,6 +96,7 @@ actor SessionAnalysisStore {
             #endif
             return [resource, identity, "ball=0.40", "person=0.50",
                     "association=rf-v1",
+                    "motionRecovery=\(RFMotionRecovery.enabled(arguments: arguments))\(RFMotionRecovery.signature)",
                     "hands=\(CountingPolicy.configured(arguments: arguments).verifiesContacts)"].joined(separator: "|")
         }
         let guarded=resource == "KickLabYOLO26MotionSegmentation" &&

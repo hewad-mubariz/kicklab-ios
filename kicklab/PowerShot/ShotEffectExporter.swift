@@ -55,8 +55,9 @@ nonisolated enum ShotEffectExporter {
             track: video, duration: duration, shortEdge: 1080,
             frameDuration: clock.isOriginal ? nil : CMTime(seconds: 1 / Double(frameRate), preferredTimescale: 60_000))
         let size = composition.renderSize
-        let fileType = VideoExportFormat.fileType(fps: frameRate)
-        let output = URL.temporaryDirectory.appendingPathComponent("power-shot-\(UUID().uuidString).\(VideoExportFormat.fileExtension(fps: frameRate))")
+        let outputFrameRate = Float(1 / composition.frameDuration.seconds)
+        let fileType = VideoExportFormat.fileType(fps: outputFrameRate)
+        let output = URL.temporaryDirectory.appendingPathComponent("power-shot-\(UUID().uuidString).\(VideoExportFormat.fileExtension(fps: outputFrameRate))")
 
         let reader = try AVAssetReader(asset: asset)
         let frames = AVAssetReaderVideoCompositionOutput(videoTracks: [video], videoSettings: [

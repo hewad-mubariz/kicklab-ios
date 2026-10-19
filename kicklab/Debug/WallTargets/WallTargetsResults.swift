@@ -64,7 +64,7 @@ struct WallTargetsResultsView: View {
         NavigationStack {
             List {
                 if sessions.isEmpty {
-                    Text("No recordings yet. Tap Record on the wall screen, play, then Stop.")
+                    Text("Start Wall targets to record. Clear all six targets or long-press the game screen to stop and save.")
                         .foregroundStyle(.secondary)
                 }
                 ForEach(sessions) { session in

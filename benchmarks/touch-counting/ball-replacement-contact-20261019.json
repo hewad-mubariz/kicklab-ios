@@ -1,0 +1,214 @@
+{
+  "date": "2026-10-19",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "status": "Fix installed as unchanged 1.0.1 (25). Shared renderer regressions pass; complete physical-device Pearl export decoded and visually reviewed at 22 matched frames.",
+  "source": {
+    "base_version": "1.0.1",
+    "build": 25,
+    "source_sha256": "58219ae241615df1d0ba73d5b86f721354a9391df4b0a55773d499b715e87f66",
+    "visual_sha256": "9a57514a20d60aba7fce75280c6eb01bab40d3b05d180014222adf4c474dc86e",
+    "new_fixture": "kicklabTests/Fixtures/contact-replacement-20261019.json",
+    "fixture_provenance": "Six actual 720x1280 decoded source frames and the original saved appearance masks; fits measured from the current-frame pixels before this fix. Five observed round contact masks and one printed-panel undersizing case.",
+    "build_number_policy": "Keep the current development version and build number until the user decides to upload TestFlight."
+  },
+  "causes": [
+    {
+      "problem": "Flat or faceted edges during small movements",
+      "cause": "Any smear over 0.75 source pixels allowed full owned-mask alpha along the motion axis, outside the smooth swept body. Model sampling/crop edges became the replacement outline.",
+      "fix": "Bound motion-driven mask restoration to the swept body envelope. Independently supported blur lobes can still extend coverage. The mask can keep the swept body opaque without restoring unsupported outer edges."
+    },
+    {
+      "problem": "Undersized replacement on a printed-panel fit",
+      "cause": "A failed edge fit below the mask-derived radius band was clamped toward the lower bound, shrinking a round ball.",
+      "fix": "When the mask has a physical covariance axis ratio at most 1.15, use its independent circle for an undersized rejected fit. Elongated/occluded masks retain the previous bounded fit and blur treatment."
+    }
+  ],
+  "scope": {
+    "production_files": [
+      "kicklab/Effects/BallReplacementCoverage.swift"
+    ],
+    "replay_and_export": "Same shared coverage function, no cached output reuse.",
+    "model_weights_or_thresholds_changed": false,
+    "touch_counter_changed_by_this_fix": false,
+    "mask_or_track_mutation": false,
+    "extra_model_inferences": 0,
+    "new_mask_storage": 0,
+    "additional_work": "Three second-moment sums added to the existing mask loop; maximum coverage accumulated in the existing smear loop. No extra passes or image/model buffers.",
+    "live_recording_note": "Current live camera presentation uses the matched source image and glow trail. Opaque skin replacement is the replay/export path; no new live skin picker added."
+  },
+  "verification": {
+    "existing_ios_tests": {
+      "passed": 33,
+      "failed": 0,
+      "result_bundle": "artifacts/ball-replacement-contact-20261019/replacement-final.xcresult",
+      "note": "The other two tests in this run are the new contour regressions. The printed-panel case passed; the contour case initially used strict less-than 1 pixel and found exactly 1 pixel at one swept edge. The final test explicitly allows at most one pixel, including 0.1px scan quantization."
+    },
+    "new_contact_tests": {
+      "passed": 2,
+      "failed": 0,
+      "result_bundle": "artifacts/ball-replacement-contact-20261019/contact-contour-final.xcresult"
+    },
+    "checks": [
+      "Deep hand/finger cutouts and interior holes preserved.",
+      "Strong exposure blur and frame-edge lobes remain covered.",
+      "Distant photographed ball/background witnesses preserved.",
+      "Actual fast-ball preview/export material consistency passed.",
+      "Repeated playback/seek/skin changes release material buffers.",
+      "Latest five contact contours checked at 0.5x,1x,1.5x,3x output sizes."
+    ],
+    "contour_metrics": [
+      {
+        "after_max_adjacent_ray_jump_px": 0.5,
+        "after_radius": 41.24995052694356,
+        "before_max_adjacent_ray_jump_px": 7.099999999999994,
+        "before_radius": 41.24995052694356,
+        "time": 7.666667
+      },
+      {
+        "after_max_adjacent_ray_jump_px": 0.4000000000000057,
+        "after_radius": 35.40052036132811,
+        "before_max_adjacent_ray_jump_px": 0.7999999999999972,
+        "before_radius": 35.40052036132811,
+        "time": 8.2
+      },
+      {
+        "after_max_adjacent_ray_jump_px": 0.3000000000000007,
+        "after_radius": 29.5447722379916,
+        "before_max_adjacent_ray_jump_px": 3.1999999999999993,
+        "before_radius": 27.802085903712083,
+        "time": 10.851667
+      },
+      {
+        "after_max_adjacent_ray_jump_px": 0.20000000000000284,
+        "after_radius": 43.23242870712274,
+        "before_max_adjacent_ray_jump_px": 11,
+        "before_radius": 43.23242870712274,
+        "time": 20.305
+      },
+      {
+        "after_max_adjacent_ray_jump_px": 0.3999999999999986,
+        "after_radius": 46.63048533349897,
+        "before_max_adjacent_ray_jump_px": 2.299999999999997,
+        "before_radius": 46.63048533349897,
+        "time": 22.306667
+      },
+      {
+        "after_max_adjacent_ray_jump_px": 1,
+        "after_radius": 46.91497284240719,
+        "before_max_adjacent_ray_jump_px": 3.8999999999999986,
+        "before_radius": 46.91497284240719,
+        "time": 22.34
+      }
+    ],
+    "signed_build": "passed",
+    "codesign_verification": "passed",
+    "diff_check": "passed",
+    "real_pixel_renders": {
+      "frames": 22,
+      "materials": [
+        "pearl",
+        "gold",
+        "stealth"
+      ],
+      "renderer": "Production Swift renderer compiled on macOS using original saved masks and decoded original pixels. Constant presentation orientation for controlled outline inspection; followed by a complete physical-device export with actual source spin.",
+      "folder": "artifacts/ball-replacement-contact-20261019/rendered-final",
+      "comparisons": [
+        "artifacts/ball-replacement-contact-20261019/comparison-03.png",
+        "artifacts/ball-replacement-contact-20261019/comparison-09.png",
+        "artifacts/ball-replacement-contact-20261019/comparison-16.png",
+        "artifacts/ball-replacement-contact-20261019/comparison-20.png"
+      ],
+      "comparison_columns": [
+        "Original source",
+        "Previous phone export",
+        "Corrected local render"
+      ]
+    },
+    "device_export": {
+      "status": "complete; copied and visually reviewed",
+      "remote_folder": "Documents/ReplacementContactExport20261019",
+      "source": "Documents/ReplacementContact20261019/source.mov",
+      "mask_track": "Documents/ReplacementContact20261019/visual.plist",
+      "mode": "Pearl, no surrounding effect, 1080 short-edge request clamped to original 720x1280; no upscaling",
+      "local_file": "artifacts/ball-replacement-contact-20261019/device-export/none.mp4",
+      "sha256": "f0cc8242576eb99dc4ebf913887efcc564e600b5399ab695f0b7646223079a78",
+      "last_status": "COMPLETE",
+      "unlock_question_pending": false,
+      "duration_s": 27.641667,
+      "dimensions": [
+        720,
+        1280
+      ],
+      "frames": 1655,
+      "full_decode_passed": true,
+      "audio": {
+        "source_has_audio": false,
+        "export_has_audio": false,
+        "result": "Both files are video-only; no source audio lost."
+      },
+      "metrics": {
+        "after_export_app_mib": 121.15816497802734,
+        "baseline_app_mib": 24.939163208007812,
+        "device": "iPhone",
+        "elapsed_s": 17.348845958709717,
+        "mask_frames": 1191,
+        "model": "",
+        "peak_sampled_app_mib": 186.04878997802734,
+        "scope": "Whole app; native decode/render/encode plus visible editor, 50ms samples; optimized Debug",
+        "surface_motion_accepted": 734,
+        "surface_motion_frames": 1655,
+        "surface_motion_prepare_s": 7.008374791665119,
+        "thermal": 0,
+        "uses_source_rotation": true
+      },
+      "timing_scope": "Actual phone export after restart, including source-spin preparation and native decode/render/encode; one 27.6-second clip, not an endurance test.",
+      "matched_frames": 22,
+      "maximum_timestamp_error_s": 0.0,
+      "visual_result": "Former jagged/flat motion-axis edges visibly smoother at the reviewed foot contacts, notably 7.667s and 20.305s. Round-mask fallback also avoids the rejected printed-panel fit shrinking the body. Some original-ball colour/blur fringe remains around difficult edges, including 10.852s; this is not a claim of perfect occlusion or full blur replacement.",
+      "contact_sheet": "artifacts/ball-replacement-contact-20261019/device-contact-sheet.png",
+      "comparison_columns": [
+        "Original",
+        "Previous phone export",
+        "Corrected phone export"
+      ],
+      "comparisons": [
+        "artifacts/ball-replacement-contact-20261019/device-comparison-03.png",
+        "artifacts/ball-replacement-contact-20261019/device-comparison-09.png",
+        "artifacts/ball-replacement-contact-20261019/device-comparison-16.png",
+        "artifacts/ball-replacement-contact-20261019/device-comparison-20.png"
+      ],
+      "normal_app_relaunched": true
+    },
+    "simulator_full_export": {
+      "status": "Stopped the bounded diagnostic after over four minutes in existing source-spin analysis; no complete export result claimed.",
+      "last_status": "Rendering None",
+      "evidence": "artifacts/ball-replacement-contact-20261019/simulator-export-sample.txt",
+      "note": "Simulator binary is unoptimized; sample showed active BallSurfaceMotion.estimate, before replacement rendering. This is not a phone timing measurement."
+    }
+  },
+  "build": {
+    "version": "1.0.1",
+    "number": 25,
+    "installed": true,
+    "version_evidence": "artifacts/ball-replacement-contact-20261019/installed-version.json",
+    "testflight_uploaded": false
+  },
+  "counter_followup": {
+    "count": 22,
+    "original_recorded_count": 18,
+    "actual_device_replay": "artifacts/ball-replacement-contact-20261019/paced-device/status.json",
+    "complete": true,
+    "late_source_skips": 0,
+    "thermal": 0,
+    "note": "Fresh paced source replay through real LiveJugglingAnalysis on iPhone17ProMax, not frozen detections. Accepted all four reviewed missed contacts; opening hand release and floor events remain rejected."
+  },
+  "source_sha256": {
+    "kicklab/Effects/BallReplacementCoverage.swift": "2a31dac1e8afb241bb46f230b613c3070cde6e0b7be0c8207986a1e71acd492b",
+    "kicklabTests/ContactReplacementTests.swift": "0d3af4ccee44eec5b153d4867e0f8bf6c947ae4f26abbc130b09ac78df5c00ef",
+    "kicklabTests/Fixtures/contact-replacement-20261019.json": "05f5193ce0a9735f0f323f72cfa41855d0a623d743dc72f912af4328bf2f220d"
+  },
+  "remaining": [
+    "User visual acceptance in normal replay/export on the unchanged installed build.",
+    "Some source-colour fringe remains at strongly blurred/occluded edges; no perfect mask coverage claimed."
+  ]
+}

@@ -167,6 +167,23 @@ nonisolated struct WallImpactDetector: Sendable {
 
     /// Hits whose evidence is complete at `now`. Pass `.infinity` to flush.
     mutating func impacts(now: Double) -> [Impact] {
+        impacts(now: now, settling: turnEvidenceMaturity, requireTurnBeforeSettle: true)
+    }
+
+    /// A visual acknowledgement only. The full turn neighbourhood must already
+    /// have arrived, and all depth, release and rebound gates still apply. Probe
+    /// a value copy so tentative evidence cannot consume or alter a scored hit.
+    func previewContacts(now: Double) -> [Impact] {
+        var probe = self
+        return probe.impacts(now: now, settling: turnEvidenceMaturity)
+    }
+
+    private var turnEvidenceMaturity: Double {
+        let slack = 0.5 / max(processingFPS, 1)
+        return min(Self.settle, max(0.10 + slack, Self.kinkSearch + Self.turnWindow + 2 * slack))
+    }
+
+    private mutating func impacts(now: Double, settling: Double, requireTurnBeforeSettle: Bool = false) -> [Impact] {
         guard reference != nil else { return [] }
         let minBefore = processingFPS >= 50 ? 4 : 3, minSide = processingFPS >= 50 ? 3 : 2
         // Half a frame: makes each seconds window include exactly the frame counts
@@ -177,7 +194,7 @@ nonisolated struct WallImpactDetector: Sendable {
             guard track.count >= 5 else { continue }
             for i in 2..<(track.count - 2) {
                 let m = track[i]
-                guard m.t > judgedThrough, m.t <= now - Self.settle else { continue }
+                guard m.t > judgedThrough, m.t <= now - settling else { continue }
                 let previouslyJudged = judgedThrough
                 judgedThrough = m.t
                 // A five-frame minimum can be a size wobble while the ball is
@@ -220,7 +237,18 @@ nonisolated struct WallImpactDetector: Sendable {
                     && shrinkingSteps >= 2 && growingSteps >= 2
                     && Self.slope(after) > 0
                 let turned = best.turn >= Self.turnDegrees || (regrow >= 0.08 && best.turn >= 20)
+                let location = board.boardPoint(CGPoint(x: m.x, y: m.y))
+                let fu = location.x - floor(location.x), fv = location.y - floor(location.y)
+                let clearlyInside = WallBoard.box(u: location.x, v: location.y) != nil
+                    && min(fu, 1 - fu, fv, 1 - fv) >= 0.15
                 reason = "rebound"
+                if requireTurnBeforeSettle, now < m.t + Self.settle, !turned || !clearlyInside {
+                    // The complete 2D turn window can confirm early. A depth-only
+                    // recovery or a contact near a boundary keeps the full window.
+                    judgedThrough = previouslyJudged
+                    reason = "rebound_pending"
+                    return found
+                }
                 guard turned || depthRebound else {
                     if now < m.t + Self.regrowWindow + slack {
                         // Do not let a later point replace this contact while
@@ -240,7 +268,14 @@ nonisolated struct WallImpactDetector: Sendable {
                 let freeBefore = track.filter { p.t - $0.t >= 0 && p.t - $0.t <= Self.approachWindow + slack && $0.hand == .clear }
                 let freeAfter = track.filter { $0.t >= p.t && $0.t - p.t <= Self.regrowWindow + slack && $0.hand == .clear }
                 reason = "hands"
-                guard p.hand == .clear, freeBefore.count >= 1, freeAfter.count >= 2 else { continue }
+                guard p.hand == .clear, freeBefore.count >= 1, freeAfter.count >= 2 else {
+                    if requireTurnBeforeSettle, p.hand == .clear, now < m.t + Self.settle {
+                        judgedThrough = previouslyJudged
+                        reason = "hands_pending"
+                        return found
+                    }
+                    continue
+                }
                 reason = "cooldown"
                 guard p.t - lastImpact >= Self.minSeparation - slack else { continue }
                 let point = CGPoint(x: p.x, y: p.y)

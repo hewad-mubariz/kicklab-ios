@@ -11,8 +11,10 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
     let contactMs: Int
     let samples: [Sample]
     var checksBallBelowFeet: Bool? = nil
+    /// Absent in historical evidence: preserve its original replay verdict.
+    var requiresLowBallCenter: Bool? = nil
 
-    static let signature = "|cadence-ground-v1"
+    static let signature = "|cadence-ground-v2"
 
     func confirmsGroundContact(corroboratingWeakAnkles: Bool, cadenceAware: Bool = false) -> Bool {
         confirmsPlantedFeet(corroboratingWeakAnkles: corroboratingWeakAnkles)
@@ -146,6 +148,15 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
                 >= max(s.ankles[.left]!.y,s.ankles[.right]!.y)-0.25*scale
         }
         guard clearApproach.count >= 2, nearFeet.count >= 2 else { return false }
+        // Quiet ankles are not proof of a floor bounce: a short toe flick can
+        // be smoothed out by pose jitter filtering. Require the observed ball
+        // center to reach the ankle line (within half a radius) as well. A ball
+        // reversing clearly above that line has no positive floor evidence.
+        if requiresLowBallCenter == true {
+            guard nearFeet.contains(where: {
+                $0.ballY >= max($0.ankles[.left]!.y,$0.ankles[.right]!.y)-0.25*scale
+            }) else { return false }
+        }
         return stableFeet(raw: valid, smoothed: valid, aspect: aspect, scale: scale)
     }
 

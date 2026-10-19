@@ -1,0 +1,251 @@
+{
+  "date": "2026-10-19",
+  "scope": "Review of latest normal main-app recording, saved at 10:52 local; no production changes or new build.",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "build": "1.0.1 (25)",
+  "source": {
+    "file": "artifacts/latest-recording-20261019-1052/source.mov",
+    "sha256": "225ddde7e339c7665df213ea5e9ec0f1118a83a47a21043a1bf21724ce5ac1e7",
+    "duration_s": 18.006667,
+    "frames": 1076,
+    "dimensions": [
+      720,
+      1280
+    ],
+    "provenance": "artifacts/latest-recording-20261019-1052/provenance.json"
+  },
+  "original_live": {
+    "count": 13,
+    "trace_complete": true,
+    "analyzed_frames": 539,
+    "cadence_hz": 29.93335746143359,
+    "decisions": [
+      {
+        "time": 3.78414,
+        "frame": 112,
+        "result": "disallowedBodyContact",
+        "handConfirmed": true,
+        "bodyFailure": "handsNearBall"
+      },
+      {
+        "time": 4.58514,
+        "frame": 136,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 5.21814,
+        "frame": 155,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 5.75214,
+        "frame": 171,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 6.45214,
+        "frame": 192,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 6.88514,
+        "frame": 205,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 7.68614,
+        "frame": 229,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 8.21914,
+        "frame": 245,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 8.72014,
+        "frame": 260,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 9.25314,
+        "frame": 276,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 10.22014,
+        "frame": 305,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 10.98714,
+        "frame": 328,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 11.55414,
+        "frame": 345,
+        "result": "trackLost",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 12.48814,
+        "frame": 373,
+        "result": "trackLost",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 13.35514,
+        "frame": 399,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 13.82214,
+        "frame": 413,
+        "result": "counted",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 14.35514,
+        "frame": 429,
+        "result": "groundBounce",
+        "handConfirmed": false,
+        "bodyFailure": null
+      },
+      {
+        "time": 14.82214,
+        "frame": 443,
+        "result": "trackLost",
+        "handConfirmed": false,
+        "bodyFailure": null
+      }
+    ],
+    "thermal_states": [
+      "nominal"
+    ],
+    "peak_sampled_app_mib": 364.2208480834961,
+    "baseline_app_mib": 193.64263153076172,
+    "capture_drops": 4,
+    "drops_note": "All four drops already present in the first performance sample; no increase around the missed touches.",
+    "evidence": "artifacts/latest-recording-20261019-1052/counter.json"
+  },
+  "visual_findings": [
+    {
+      "time_s": 11.56,
+      "classification": "clear missed foot touch",
+      "evidence": "artifacts/latest-recording-20261019-1052/missed-1155.jpg",
+      "original_cause": "Last available ball input at 11.554s, missing from 11.587s through 12.354s. Pending arc discarded as trackLost; no hand/body/ground veto at the true contact.",
+      "replay_cause": "Blur causes texture-correlation tracker failure and no RF candidates above 0.40 at 11.622s and 11.722s; a returning RF candidate at 11.822s is rejected by identity gate. Ball subsequently leaves the top of the camera frame; that does not invalidate the visible preceding foot contact."
+    },
+    {
+      "time_s": 12.72,
+      "classification": "clear missed foot touch",
+      "evidence": "artifacts/latest-recording-20261019-1052/missed-1270.jpg",
+      "original_cause": "Ball reacquired on descent at 12.388s/12.488s, then no counter ball samples from 12.521s to 12.788s. It returns only after the foot rebound, at 12.821s.",
+      "replay_cause": "Tracker fails during fast descent. RF finds a candidate at 12.722s but identity_gate_rejected drops it. A later synthetic-looking recovery candidate is rejected with insufficientContactViews at 12.821s; handConfirmed is false."
+    },
+    {
+      "time_s": 3.784,
+      "classification": "correctly rejected hand toss",
+      "reason": "handsNearBall; handConfirmed=true"
+    },
+    {
+      "time_s": 14.355,
+      "classification": "correctly rejected ground bounce",
+      "reason": "groundBounce"
+    }
+  ],
+  "device_replay": {
+    "status": {
+      "admitted_frames": 539,
+      "count": 12,
+      "elapsed_seconds": 18.29932562499016,
+      "expected_end_seconds": 18.006666666666668,
+      "last_source_seconds": 17.99,
+      "late_source_skips": 0,
+      "mask_frames": 100,
+      "memory_mib": 85.29888153076172,
+      "mode": "paced",
+      "processed_frames": 539,
+      "source_frames": 1076,
+      "state": "completed",
+      "thermal": 0,
+      "trace_replay_exact": true,
+      "track_frames": 268,
+      "updated": "2026-10-19T08:57:36Z"
+    },
+    "report": "artifacts/latest-recording-20261019-1052/replay/report.json",
+    "count": 12,
+    "original_count": 13,
+    "additional_replay_only_miss_s": 9.32,
+    "additional_miss_reason": "Tracker texture correlation failures and RF empty frames after the contact; original live counted this touch at 9.253s. RF exposure scheduling and recompressed replay pixels differ from original camera input; do not replace the original live count with replay count.",
+    "late_rf_replies": 0,
+    "overflow_drops": 0,
+    "rf_submissions": 180,
+    "rf_average_hz": 9.99629748248246,
+    "normal_app_restored": true
+  },
+  "integration_cause": {
+    "file": "kicklab/Detection/RFBufferedLivePipeline.swift",
+    "policy": "RFAsyncPolicy.select uses distance <= 3 old-ball diameters and size ratio 0.5...2.0 with last-position hint held for up to 250ms; no velocity extrapolation in this gate.",
+    "evidence_times_s": [
+      11.821667,
+      12.721667
+    ],
+    "confidence": "Confirmed in paced replay. Original live trace proves observation gaps, but it did not retain raw RF candidate/association telemetry. Exact original sub-causes cannot be assigned solely from replay."
+  },
+  "ball_replacement": {
+    "source_export_preserved": true,
+    "export": "artifacts/latest-recording-20261019-1052/export.mp4",
+    "duration_s": 18.006667,
+    "frames": 1076,
+    "decode_passed": true,
+    "comparison": "artifacts/latest-recording-20261019-1052/effects-sheet.jpg",
+    "finding": "Round replacement contour is generally more consistent in the inspected contact frames. It still returns to visible original-ball pixels around the blurred high kick at 11.59-11.72s because accepted masks disappear. Some blur/fringe and foot-edge mismatch remain; no perfect replacement claimed.",
+    "offline_model_observation_gap_s": [
+      11.571,
+      11.738
+    ],
+    "offline_analysis_elapsed_s": 27.239368249996915,
+    "mask_repair_elapsed_s": 7.011342291676556,
+    "note": "Export count stays at the original 13; visual reanalysis improves masks without recalculating the live touch count. The recording already has a blue trail and debug circle; this was not an isolated no-effect export."
+  },
+  "recommended_next": "Add a bounded, motion-aware reacquisition path for a returning RF detection after tracker failure, with size/trajectory and competing-candidate checks; consider a short targeted RF retry burst through fast contacts. Validate this clip plus clean-hand, ground-bounce and false-ball benchmarks before changing shipping policy. Do not weaken hand/ground validators or extrapolate unobserved touches.",
+  "comparison_video": "artifacts/latest-recording-20261019-1052/missed-touches-comparison.mp4",
+  "comparison_video_columns": [
+    "Original",
+    "Saved export"
+  ],
+  "comparison_video_time_range_s": [
+    11.3,
+    13.0
+  ],
+  "comparison_playback_speed": 0.5
+}

@@ -31,6 +31,11 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
     @MainActor private var referenceRequest: UUID?
     @MainActor @Published private(set) var recordingSince: Date?
     @MainActor @Published private(set) var lastRecording: URL?
+    @MainActor @Published private(set) var recordingState: WallRecordingState = .idle
+    @MainActor @Published private(set) var runtime = WallRuntimeSample()
+    @MainActor private var runtimeTask: Task<Void, Never>?
+    @MainActor private var captureIsResting = false
+    @MainActor private var lastInferencePublished = -Double.infinity
     @MainActor private var request: CaptureRequest?
 
     let session = AVCaptureSession()
@@ -48,7 +53,8 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
     private var frames = LiveAnalysisBuffer<CapturedFrame>(framesPerSecond: 60)
     private var receivedTime: Double?
     private var receivedFPS = 60.0
-    private let onImpact: @MainActor (WallImpactDetector.Impact) -> Void
+    private let onImpact: @MainActor (WallImpactDetector.Impact) -> Bool
+    private let onContactPreview: @MainActor (WallImpactDetector.Impact?) -> Void
     private let onAlignment: @MainActor (WallBoardAlignment.Update) -> Void
     // Accessed only on queue.
     private var activeRequest: CaptureRequest?
@@ -71,7 +77,11 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
     private var fps = 60.0
     private var selectedFPS = 30
     private var recorder: WallTargetsRecorder?
+    private var recordingFinishTask: Task<Void, Never>?
     private var cornerSearch: [WallCornerFinder.Frame]?
+    private var mappingFrames: [WallMappingCheck.Frame]?
+    private var mappingCorners: [CGPoint] = []
+    private var mappingSize = CGSize.zero
     private var liveFeed: WallTargetsLiveFeed?
     private var configured = false
     private var scoringEnabled = false
@@ -79,11 +89,16 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
     private var focusToken: UUID?
     private var latestFrameTime: Double?
     private var focusDiagnostics: [String: Any] = [:]
+    private var wantsCaptureRest = false
+    private var inferenceCadence = WallInferenceCadence()
+    private var workMeter = WallWorkMeter(at: ProcessInfo.processInfo.systemUptime)
 
-    init(onImpact: @escaping @MainActor (WallImpactDetector.Impact) -> Void,
-         onAlignment: @escaping @MainActor (WallBoardAlignment.Update) -> Void) {
+    init(onImpact: @escaping @MainActor (WallImpactDetector.Impact) -> Bool,
+         onAlignment: @escaping @MainActor (WallBoardAlignment.Update) -> Void,
+         onContactPreview: @escaping @MainActor (WallImpactDetector.Impact?) -> Void = { _ in }) {
         self.onImpact = onImpact
         self.onAlignment = onAlignment
+        self.onContactPreview = onContactPreview
     }
 
     /// Board corners, normalised to the camera frame (TL, TR, BR, BL).
@@ -100,6 +115,9 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
     func setScoringEnabled(_ enabled: Bool) {
         queue.async { [self] in
             scoringEnabled = enabled && WallBoard.validCalibration(corners) && wallReference != nil
+            lastFrameTime = nil
+            inferenceCadence.reset()
+            if scoringEnabled { fps = Double(selectedFPS) }
             if !enabled { alignment = nil }
             hands.reset()
             rebuildBoard()
@@ -142,6 +160,9 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
                 alignment = nil
                 if box == 1 { referenceGeometry = corners }
                 referenceAttempt = token; referenceFinished = false
+                inferenceCadence.reset()
+                lastFrameTime = nil
+                fps = WallRuntimePolicy.referenceFPS
                 if let board = makeBoard() {
                     referenceCollector = WallReferenceCollector(board: board, target: box, imageWidth: bufferSize.width)
                 }
@@ -163,6 +184,7 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
 
     @MainActor
     func start() {
+        startRuntimeMonitoring()
         guard request == nil else { return }
         let next = CaptureRequest()
         request = next
@@ -193,13 +215,15 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
                         device.unlockForConfiguration()
                     }
                     frameLock.withLock {
-                        frameRequest = next
+                        frameRequest = wantsCaptureRest ? nil : next
                         receivedTime = nil
                         receivedFPS = Double(selectedFPS)
                     }
                     publish(status: "Loading detector…", request: next)
-                    session.startRunning()
-                    guard session.isRunning else { throw CameraError.unavailable }
+                    if !wantsCaptureRest {
+                        session.startRunning()
+                        guard session.isRunning else { throw CameraError.unavailable }
+                    }
                     if detector == nil {
                         let loaded = try BallDetector(resourceName: BallDetector.productionResourceName,
                             useROI: false, useMarginalRetry: false, useDirectConfirmation: false)
@@ -223,6 +247,81 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
                         self.isReady = false
                     }
                 }
+            }
+        }
+    }
+
+    /// Keep the loaded model available, but stop capture entirely between rounds.
+    /// Readiness means setup can begin; resuming is queued before its focus work.
+    @MainActor
+    func setCaptureResting(_ resting: Bool) {
+        queue.async { [self] in
+            wantsCaptureRest = resting
+            frameLock.withLock {
+                frameRequest = resting ? nil : activeRequest
+                frames.cancelPending()
+                receivedTime = nil
+            }
+            if resting {
+                session.stopRunning()
+                liveFeed?.clearFrameCache()
+            }
+            else if let activeRequest, !activeRequest.isCancelled, configured {
+                session.startRunning()
+                if !session.isRunning {
+                    Task { @MainActor [weak self] in
+                        guard let self, self.request === activeRequest, !activeRequest.isCancelled else { return }
+                        self.stop(message: "Camera unavailable · reopen Wall targets")
+                    }
+                }
+            }
+            lastFrameTime = nil
+            Task { @MainActor [weak self] in
+                self?.captureIsResting = resting
+                if resting {
+                    self?.ball = nil
+                    self?.trail = []
+                    self?.processingFPS = 0
+                    self?.deliveredFPS = 0
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func startRuntimeMonitoring() {
+        guard runtimeTask == nil else { return }
+        runtimeTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                let now = CMClockGetTime(CMClockGetHostTimeClock()).seconds
+                let memory = DetectorPerformance.memoryMB()
+                let peak = max(self.runtime.peakMemoryMiB ?? 0, memory)
+                let capture = self.frameLock.withLock {
+                    now - (self.receivedTime ?? -.infinity) < 1.5 ? self.receivedFPS : 0
+                }
+                let analysing = now - self.lastInferencePublished < 1.5 && !self.captureIsResting
+                let sample = WallRuntimeSample(uptime: now, memoryMiB: memory > 0 ? memory : nil,
+                    peakMemoryMiB: peak > 0 ? peak : nil,
+                    thermalState: ProcessInfo.processInfo.thermalState.rawValue,
+                    analysisFPS: analysing ? self.processingFPS : 0, captureFPS: capture,
+                    inferenceMS: analysing ? self.detectorMS : 0, cameraResting: self.captureIsResting)
+                let wasHot = self.runtime.thermalState >= 2
+                self.runtime = sample
+                self.queue.async { [self] in
+                    var loggedSample = sample
+                    loggedSample.work = self.workMeter.take(at: ProcessInfo.processInfo.systemUptime)
+                    self.recorder?.noteResources(loggedSample)
+                    if sample.thermalState >= 2 && !wasHot { self.liveFeed?.clearFrameCache() }
+                    // A small current snapshot remains readable from the Mac
+                    // even while the camera is resting between recordings.
+                    let folder = WallTargetsRecorder.root
+                    try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                    if let data = try? JSONEncoder().encode(loggedSample) {
+                        try? data.write(to: folder.appendingPathComponent("runtime-latest.json"), options: .atomic)
+                    }
+                }
+                do { try await Task.sleep(for: .seconds(1)) } catch { return }
             }
         }
     }
@@ -331,14 +430,51 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
         }
     }
 
+    /// Keep independent observations of points inside the map. No inference or
+    /// scoring runs during this short check, but its video is retained for review.
+    func beginMappingCheck() async {
+        await withCheckedContinuation { continuation in
+            queue.async { [self] in
+                scoringEnabled = false; shots.reset(); alignment = nil
+                mappingCorners = corners; mappingSize = bufferSize; mappingFrames = []
+                recorder?.setPhase("mapping_check")
+                if let device, (try? device.lockForConfiguration()) != nil {
+                    if device.isExposureModeSupported(.locked) { device.exposureMode = .locked }
+                    device.unlockForConfiguration()
+                }
+                continuation.resume()
+            }
+        }
+    }
+
+    func finishMappingCheck(on: [ClosedRange<Double>], off: [ClosedRange<Double>]) async -> WallMappingCheck.Report {
+        await withCheckedContinuation { continuation in
+            queue.async { [self] in
+                let report = WallMappingCheck.check(mappingFrames ?? [], on: on, off: off,
+                                                    corners: mappingCorners, size: mappingSize)
+                mappingFrames = nil
+                recorder?.noteMapping(report)
+                if let device, (try? device.lockForConfiguration()) != nil {
+                    if device.isExposureModeSupported(.continuousAutoExposure) { device.exposureMode = .continuousAutoExposure }
+                    device.unlockForConfiguration()
+                }
+                continuation.resume(returning: report)
+            }
+        }
+    }
+
     /// Starts saving video, detections and hits for review; `extra` lands in session.json.
     @MainActor
     func startRecording(extra: [String: Any]) {
-        guard recordingSince == nil else { return }
+        guard recordingSince == nil, recordingState != .saving else { return }
         recordingSince = Date()
+        recordingState = .recording
         queue.async { [self] in
             guard recorder == nil, bufferSize.width > 0 else {
-                Task { @MainActor in self.recordingSince = nil }
+                Task { @MainActor in
+                    self.recordingSince = nil
+                    self.recordingState = .failed("Camera has no video frames yet")
+                }
                 return
             }
             var metadata = extra
@@ -348,13 +484,26 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
             metadata["scoreThreshold"] = Self.scoreThreshold
             metadata["cornersNormalised"] = corners.map { [Double($0.x), Double($0.y)] }
             metadata["created"] = ISO8601DateFormatter().string(from: Date())
-            metadata["impactRules"] = "v8-delayed-rebound-confirmation"
+            metadata["impactRules"] = "v9-mature-interior-turn-confirmation"
+            metadata["feedbackRules"] = "direct-confirmed-feedback-v2; provisional-contact-ring-v1"
+            metadata["feedbackTimingVersion"] = "host-clock-delivery-v1"
+            metadata["feedbackReportedTimeBasis"] = "evidence-frame-presentation-time; not dispatch time"
+            metadata["resourcePolicy"] = "reference-15fps-v1; idle-camera-rest-v1; active-contact-cadence-unchanged; critical-save-and-stop"
+            metadata["referenceAnalysisFPS"] = WallRuntimePolicy.referenceFPS
+            metadata["workTimingVersion"] = "queue-stage-elapsed-v1"
+            metadata["inferenceRanColumn"] = "1=analysed; 0=intentionally skipped; -1=unspecified"
             metadata["reboundConfirmationSeconds"] = WallImpactDetector.regrowWindow
             metadata["focusAcquisition"] = focusDiagnostics
             metadata["alignmentEvidenceRetentionSeconds"] = WallBoardAlignment.evidenceRetention
+            metadata["alignmentRevalidationAllowanceSeconds"] = WallBoardAlignment.revalidationAllowance
+            metadata["alignmentRecoveryRules"] = "tight-three-check-recovery-v4"
+            metadata["alignmentRecoveryCheckSeconds"] = WallBoardAlignment.recoveryInterval
+            metadata["alignmentUnchangedConfirmationSeconds"] = WallBoardAlignment.unchangedConfirmationSpan
+            metadata["alignmentUnchangedTolerancePixels"] = WallBoardAlignment.unchangedTolerancePixels
             metadata["timerRule"] = "countdown-completion; excludes alignment pauses"
             metadata["alignmentCheckSeconds"] = WallBoardAlignment.interval
             metadata["alignmentTolerancePixels"] = WallBoardAlignment.tolerancePixels
+            metadata["cornerTracking"] = "contrast-checked-subpixel-centroid-v2"
             metadata["borderlineRule"] = "centre uncertainty = 3 + max(3, 0.15 * diameter) pixels"
             metadata["ballTracking"] = "measured-crop-with-full-frame-fallback"
             metadata["trackedBallScoreThreshold"] = 0.08
@@ -367,10 +516,12 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
             metadata["maximumExposureSeconds"] = device?.activeMaxExposureDuration.seconds
             do {
                 recorder = try WallTargetsRecorder(size: bufferSize, metadata: metadata)
+                recordingFinishTask = nil
                 lastLoggedAlignment = nil
             } catch {
                 Task { @MainActor in
                     self.recordingSince = nil
+                    self.recordingState = .failed(error.localizedDescription)
                     self.status = "Recording failed: \(error.localizedDescription)"
                 }
             }
@@ -379,24 +530,42 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
 
     /// `extra` (for example round clear times) is merged into session.json.
     @MainActor
-    func stopRecording(extra: [String: Any] = [:]) {
+    func stopRecording(extra: [String: Any] = [:]) async {
+        if recordingSince != nil { recordingState = .saving }
         recordingSince = nil
-        queue.async { [self] in finishRecording(extra: extra) }
+        let pending: Task<Void, Never>? = await withCheckedContinuation { continuation in
+            queue.async { [self] in continuation.resume(returning: finishRecording(extra: extra)) }
+        }
+        await pending?.value
     }
 
     /// Called on queue.
-    private func finishRecording(extra: [String: Any] = [:]) {
-        guard let finishing = recorder else { return }
+    @discardableResult
+    private func finishRecording(extra: [String: Any] = [:]) -> Task<Void, Never>? {
+        guard let finishing = recorder else { return recordingFinishTask }
         recorder = nil
+        finishing.setPhase("finished")
         let extra = WallTargetsSendable(extra)
-        Task {
-            let folder = await finishing.finish(extra: extra.value)
-            await MainActor.run { self.lastRecording = folder }
+        let task = Task {
+            await MainActor.run { self.recordingState = .saving }
+            let result = await finishing.finish(extra: extra.value)
+            await MainActor.run {
+                if result.succeeded {
+                    self.lastRecording = result.folder
+                    self.recordingState = .saved
+                } else {
+                    self.recordingState = .failed(result.error ?? "Recording failed")
+                }
+            }
         }
+        recordingFinishTask = task
+        return task
     }
 
     @MainActor
     func stop(message: String = "Camera paused") {
+        runtimeTask?.cancel()
+        runtimeTask = nil
         request?.cancel()
         request = nil
         referenceRequest = nil
@@ -405,6 +574,7 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
         frameLock.withLock { frameRequest = nil; frames.cancelPending() }
         ball = nil
         trail = []
+        if recordingSince != nil { recordingState = .saving }
         recordingSince = nil
         queue.async { [self] in
             finishRecording()
@@ -419,6 +589,7 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
             referenceAttempt = UUID()
             hands.reset()
             cornerSearch = nil
+            mappingFrames = nil
             alignment = nil; referenceGeometry = nil
             lastFrameTime = nil
             rebuildBoard()
@@ -503,14 +674,16 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
 
     private func schedule(_ frame: CapturedFrame) {
         queue.async { [self] in
-            process(frame)
+            autoreleasepool { process(frame) }
             if let next = frameLock.withLock({ frames.finish() }) { schedule(next) }
         }
     }
 
     private func process(_ frame: CapturedFrame) {
         let current = frame.request
-        guard activeRequest === current, !current.isCancelled else { return }
+        guard activeRequest === current, !current.isCancelled, !wantsCaptureRest else { return }
+        let frameStarted = ProcessInfo.processInfo.systemUptime
+        defer { workMeter.note(.frame, milliseconds: (ProcessInfo.processInfo.systemUptime - frameStarted) * 1000) }
         let pixels = frame.pixels, t = frame.time.seconds
         latestFrameTime = t
         let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
@@ -520,6 +693,26 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
             Task { @MainActor in self.frameSize = size }
         }
         // Capture timestamps are on the host clock, the same clock as CACurrentMediaTime.
+        if mappingFrames != nil {
+            if size != mappingSize { mappingSize = .zero }
+            if mappingFrames!.count < 180, t - (mappingFrames!.last?.t ?? -.infinity) >= 1.0 / 30 {
+                CVPixelBufferLockBaseAddress(pixels, .readOnly)
+                if let base = CVPixelBufferGetBaseAddress(pixels) {
+                    mappingFrames!.append(.init(t: t, luma: WallMappingCheck.thumbnail(
+                        base.assumingMemoryBound(to: UInt8.self), width: Int(size.width), height: Int(size.height),
+                        rowBytes: CVPixelBufferGetBytesPerRow(pixels))))
+                }
+                CVPixelBufferUnlockBaseAddress(pixels, .readOnly)
+            }
+            if let recorder {
+                measure(.recording) {
+                    recorder.append(pixels, at: frame.time, ball: nil, person: nil, hand: .unknown,
+                        lensPosition: device.map { Double($0.lensPosition) },
+                        adjustingFocus: device?.isAdjustingFocus ?? false, inferenceRan: false)
+                }
+            }
+            return
+        }
         if cornerSearch != nil, cornerSearch!.count < 600 {
             CVPixelBufferLockBaseAddress(pixels, .readOnly)
             if let base = CVPixelBufferGetBaseAddress(pixels) {
@@ -555,6 +748,24 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
                 publishAlignment(update, request: current)
             }
         }
+        if !inferenceCadence.admit(at: t, scoring: scoringEnabled,
+                collectingReference: referenceCollector != nil, referenceFinished: referenceFinished) {
+            if referenceCollector != nil && !referenceFinished { workMeter.skippedReferenceFrame() }
+            // Keep real frames, but never invent a detection or feed a skipped
+            // analysis frame to the reference hold as a missing observation.
+            if let recorder {
+                measure(.recording) {
+                    recorder.append(pixels, at: frame.time, ball: nil, person: nil, hand: .unknown,
+                        alignment: alignment?.update, lensPosition: device.map { Double($0.lensPosition) },
+                        adjustingFocus: device?.isAdjustingFocus ?? false, inferenceRan: false)
+                    if let update = alignment?.update, update != lastLoggedAlignment {
+                        recorder.noteAlignment(update, at: t)
+                        lastLoggedAlignment = update
+                    }
+                }
+            }
+            return
+        }
         if let last = lastFrameTime, t > last { fps = 0.9 * fps + 0.1 / (t - last) }
         lastFrameTime = t
 
@@ -564,21 +775,27 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
         var detectionSource = 0 // 0 absent, 1 full frame, 2 board crop
         do {
             if let crop = WallBallTracker.crop(corners: corners, size: size) {
-                let candidates = try autoreleasepool { try detector.wallTargetCandidates(in: pixels, crop: crop) }
+                let candidates = try measure(.boardModel) {
+                    try autoreleasepool { try detector.wallTargetCandidates(in: pixels, crop: crop) }
+                }
                 detection = ballTracker.select(candidates, at: t, size: size)
                 if detection != nil { detectionSource = 2 }
                 // Search the rest of the room when the ball leaves the crop.
                 // Bound extra model work; the detailed board view still runs on every frame.
                 if detection == nil, t - lastFullSearch >= 0.12 {
                     lastFullSearch = t
-                    let result = try autoreleasepool { try detector.wallTargetDetections(in: pixels, threshold: Self.scoreThreshold) }
+                    let result = try measure(.fullFrameModel) {
+                        try autoreleasepool { try detector.wallTargetDetections(in: pixels, threshold: Self.scoreThreshold) }
+                    }
                     person = result.person
                     lastPerson = person.map { (t, $0) }
                     detection = ballTracker.select(result.ball.map { [$0] } ?? [], at: t, size: size)
                     if detection != nil { detectionSource = 1 }
                 }
             } else {
-                let result = try autoreleasepool { try detector.wallTargetDetections(in: pixels, threshold: Self.scoreThreshold) }
+                let result = try measure(.fullFrameModel) {
+                    try autoreleasepool { try detector.wallTargetDetections(in: pixels, threshold: Self.scoreThreshold) }
+                }
                 detection = result.ball; person = result.person
                 if detection != nil { detectionSource = 1 }
             }
@@ -589,7 +806,10 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
         }
         var hand = WallHandState.unknown
         if let d = detection, scoringEnabled {
-            hands.observe(pixels, at: t)
+            let poseStarted = ProcessInfo.processInfo.systemUptime
+            if hands.observe(pixels, at: t) {
+                workMeter.note(.bodyPose, milliseconds: (ProcessInfo.processInfo.systemUptime - poseStarted) * 1000)
+            }
             if person == nil, let lastPerson, t - lastPerson.t <= 0.15 { person = lastPerson.box }
             func body(_ person: Detection?) -> CGRect? {
                 person.map { CGRect(x: $0.x - $0.width / 2, y: $0.y - $0.height / 2, width: $0.width, height: $0.height) }
@@ -600,7 +820,9 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
                 // The person may be partly outside the board view. Recover
                 // full-frame body context without replacing the detailed ball.
                 lastFullSearch = t
-                if let result = try? autoreleasepool(invoking: { try detector.wallTargetDetections(in: pixels, threshold: Self.scoreThreshold) }) {
+                if let result = try? measure(.fullFrameModel, {
+                    try autoreleasepool { try detector.wallTargetDetections(in: pixels, threshold: Self.scoreThreshold) }
+                }) {
                     person = result.person; lastPerson = person.map { (t, $0) }
                     hand = hands.state(ball: CGPoint(x: d.x, y: d.y), diameter: (d.width * size.width + d.height * size.height) / 2 / size.height,
                                        aspect: size.width / size.height, person: body(person), at: t)
@@ -613,10 +835,33 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
             WallImpactDetector.Observation(t: t, x: d.x * size.width, y: d.y * size.height,
                 d: (d.width * size.width + d.height * size.height) / 2, hand: hand)
         }
+        let previousPreview = shots.contactPreview
         let found = shots.process(observation, at: t, update: alignment?.update,
             retainEvidence: scoringEnabled && alignment?.canRetainEvidence(at: t) == true,
             canScore: scoringEnabled && alignment?.canScore(at: t) == true,
             reference: wallReference, size: size, fps: fps)
+        let contactPreview = shots.contactPreview
+        // Deliver scores before writer appends, metadata serialization, optional
+        // JPEG/shot-strip generation and camera-overlay telemetry. None of that
+        // diagnostic work should hold up a confirmed hit or its sound request.
+        let decisionReady = CMClockGetTime(CMClockGetHostTimeClock()).seconds
+        if contactPreview != previousPreview || !found.isEmpty {
+            let deliveryRecorder = recorder
+            Task { @MainActor [weak self] in
+                guard let self, self.request === current, !current.isCancelled else { return }
+                let received = CMClockGetTime(CMClockGetHostTimeClock()).seconds
+                self.onContactPreview(contactPreview)
+                for impact in found {
+                    let accepted = self.onImpact(impact)
+                    let completed = CMClockGetTime(CMClockGetHostTimeClock()).seconds
+                    self.queue.async { [self] in
+                        guard let deliveryRecorder, self.recorder === deliveryRecorder else { return }
+                        deliveryRecorder.noteFeedbackDelivery(impact, evidenceFrame: t, decisionReady: decisionReady,
+                            mainActorReceived: received, callbackCompleted: completed, accepted: accepted)
+                    }
+                }
+            }
+        }
         if let d = detection, let observation {
             mark = BallMark(x: d.x, y: d.y, width: observation.d / size.width, atWall: shots.isAtWall(observation))
         }
@@ -634,19 +879,29 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
             }
         }
         let decisions = shots.takeDecisions()
+        let recordingStarted = ProcessInfo.processInfo.systemUptime
+        let wasRecording = recorder != nil
         recorder?.append(pixels, at: frame.time, ball: detection, person: person, hand: hand, source: detectionSource,
                          alignment: alignment?.update,
                          retainEvidence: scoringEnabled && alignment?.canRetainEvidence(at: t) == true,
                          canScore: scoringEnabled && alignment?.canScore(at: t) == true,
                          lensPosition: device.map { Double($0.lensPosition) },
-                         adjustingFocus: device?.isAdjustingFocus ?? false)
+                         adjustingFocus: device?.isAdjustingFocus ?? false, inferenceRan: true)
         if let update = alignment?.update, update != lastLoggedAlignment {
             recorder?.noteAlignment(update, at: t)
             lastLoggedAlignment = update
         }
         recorder?.noteDecisions(decisions)
+        if let contactPreview, contactPreview != previousPreview {
+            recorder?.noteFeedback(contactPreview, at: t, kind: "preview")
+        }
+        for impact in found { recorder?.noteFeedback(impact, at: t, kind: "confirmed") }
         for impact in found { recorder?.note(impact) }
-        if let feed = liveFeed {
+        if wasRecording {
+            workMeter.note(.recording, milliseconds: (ProcessInfo.processInfo.systemUptime - recordingStarted) * 1000)
+        }
+        if let feed = liveFeed, ProcessInfo.processInfo.thermalState.rawValue < 2 {
+            let previewStarted = ProcessInfo.processInfo.systemUptime
             feed.addFrame(pixels, at: t)
             feed.setState([
                 "corners": corners.map { [Double($0.x), Double($0.y)] },
@@ -654,6 +909,7 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
                 "ball": mark.map { ["x": $0.x, "y": $0.y, "w": $0.width, "atWall": $0.atWall] as Any } ?? NSNull(),
                 "fps": fps, "detectMS": ms, "recording": recorder != nil, "status": "Watching for hits"])
             for impact in found { feed.addShot(impact, frameSize: size) }
+            workMeter.note(.macPreview, milliseconds: (ProcessInfo.processInfo.systemUptime - previewStarted) * 1000)
         }
         let rate = fps
         let publishedMark = mark, publishedHand = hand
@@ -667,11 +923,17 @@ nonisolated final class WallTargetsCamera: NSObject, ObservableObject,
                 self.trail.removeFirst()
             }
             self.processingFPS = rate
+            self.lastInferencePublished = CMClockGetTime(CMClockGetHostTimeClock()).seconds
             self.deliveredFPS = frame.receivedFPS
             self.detectorMS = ms
             self.handState = publishedHand
-            for impact in found { self.onImpact(impact) }
         }
+    }
+
+    private func measure<T>(_ stage: WallWorkMeter.Stage, _ operation: () throws -> T) rethrows -> T {
+        let start = ProcessInfo.processInfo.systemUptime
+        defer { workMeter.note(stage, milliseconds: (ProcessInfo.processInfo.systemUptime - start) * 1000) }
+        return try operation()
     }
 
     private func publish(status message: String, request current: CaptureRequest) {

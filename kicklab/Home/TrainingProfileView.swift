@@ -12,6 +12,7 @@ struct TrainingProfileView: View {
     @State private var confirmsDeletion = false
     /// Sign-in opens on top of Profile, zooming out of its entry, and returns here.
     @State private var showsSignIn = false
+    @State private var showsSubmissions = false
     @Namespace private var signInZoom
     @Environment(\.openURL) private var openURL
 
@@ -56,6 +57,17 @@ struct TrainingProfileView: View {
                     }
                     if !SubscriptionStore.isFreeDebugBuild { ProProfileCard() }
                     record
+                    Button { showsSubmissions = true } label: {
+                        HStack(spacing: 14) {
+                            Image(systemName: "trophy").font(.system(size: 22)).frame(width: 28)
+                            Text("Leaderboard submissions").font(.body.weight(.medium))
+                            Spacer(minLength: 8)
+                            Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
+                        }
+                        .padding(20)
+                        .background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 22))
+                    }
+                    .buttonStyle(.plain).accessibilityIdentifier("profile-leaderboard-submissions")
                     NavigationLink {
                         SessionHistoryContent(store: player.history)
                     } label: {
@@ -116,6 +128,9 @@ struct TrainingProfileView: View {
                 if account.user != nil, let profile = player.profile {
                     CloudProfileEditor(profile: profile)
                 } else { TrainingProfileNameEditor(name: $displayName) }
+            }
+            .sheet(isPresented: $showsSubmissions) {
+                LeaderboardSubmissionsView(review: player.leaderboardReview, history: player.history)
             }
             .alert("Delete your account?", isPresented: $confirmsDeletion) {
                 Button("Cancel", role: .cancel) { }

@@ -1,0 +1,1185 @@
+{
+  "date": "2026-10-19",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "status": "Implemented, installed and compared on iPhone; targeted improvement, not complete recovery of all fast-contact failures.",
+  "version": "1.0.1 (25)",
+  "testflight_uploaded": false,
+  "provenance": {
+    "version": "1.0.1",
+    "build": "25",
+    "executable_sha256": "33df9a5196c0fb43c9e46062ef4dd147ab8e616b81fa5a99df612505de1e883a",
+    "source_sha256": {
+      "kicklab/Detection/RFMotionRecovery.swift": "ea41a46970209aa23f6e427d2c8ceb874310334cb28eea6188083282f1bf596b",
+      "kicklab/Detection/RFBufferedLivePipeline.swift": "245a6251c0ffa30fc6734ee4f53c3de043283d7ef0a9d32249fbe5f80e802fbf",
+      "kicklab/Effects/SessionAnalysisStore.swift": "5ab6f3cf5c4b9df57917c1b56b062c480684e8944f38bcf8d167eaab1f7e9355",
+      "kicklabTests/RFMotionRecoveryTests.swift": "beb9ecfbce9ac268509613cba24c7192e29beb9f4a561581c77c1ec4cd6c6194"
+    },
+    "inputs": {
+      "previous": "58219ae241615df1d0ba73d5b86f721354a9391df4b0a55773d499b715e87f66",
+      "ground": "6b2ea0998747038e7a432edba32df645442b6fb9d27d462d66af2182badc6767",
+      "latest": "225ddde7e339c7665df213ea5e9ec0f1118a83a47a21043a1bf21724ce5ac1e7",
+      "held": "3aa786708d1819d92887ce90bd8598c96fad34997f39637a7600c60fe021a434",
+      "spare": "43ac558aa18663a19a9ee5313bc0b7299536375563e29c9e28af0585398ff9b1"
+    }
+  },
+  "change": {
+    "files": [
+      "kicklab/Detection/RFMotionRecovery.swift",
+      "kicklab/Detection/RFBufferedLivePipeline.swift",
+      "kicklab/Effects/SessionAnalysisStore.swift"
+    ],
+    "scope": "Only the live buffered RF association fallback and its cache identity. Existing touch, hand, body and ground validators are unchanged.",
+    "trigger": "No current pixel-track hit, normal RF identity association rejected every candidate, and two recent accepted observations support motion.",
+    "limits": {
+      "sample_interval_s": [
+        0.02,
+        0.15
+      ],
+      "last_observation_age_s": [
+        0.03,
+        0.25
+      ],
+      "history_size_ratio": [
+        0.8,
+        1.25
+      ],
+      "speed_ball_diameters_per_s": [
+        4,
+        60
+      ],
+      "minimum_model_confidence": 0.7,
+      "candidate_size_ratio": [
+        0.7,
+        1.5
+      ],
+      "minimum_forward_diameters": 0.5,
+      "maximum_sideways_diameters": 1,
+      "maximum_total_displacement_diameters": 10,
+      "maximum_prediction_error_diameters": 3,
+      "eligible_candidate_count_required": 1
+    },
+    "evidence": "Only an actual RF box at its original exposure is inserted; projection selects the detection and is never emitted as a ball observation.",
+    "resources": "Two small observation values retained; no model calls, image allocations, per-frame buffers, or extra worker queues added.",
+    "cache": "Versioned motion-recovery signature plus effective debug on/off setting prevents cache mixing.",
+    "debug_ab_flag": "--disable-rf-motion-recovery"
+  },
+  "unit_tests": {
+    "passed": 10,
+    "failed": 0,
+    "result_bundle": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/fast-ball-recovery-20261019/recovery-final-tests.xcresult",
+    "scope": [
+      "RFMotionRecoveryTests",
+      "GroundHeightEvidenceTests",
+      "SideOnFootContactTests",
+      "ContactRecheckPolicyTests"
+    ],
+    "development_note": "The first run found the high-kick fixture outside an initial 2.5-diameter prediction tolerance. The final fallback uses the existing association radius of three diameters around the projected position, additionally bounded by a one-diameter lateral corridor, strong confidence, recent motion and unique eligible detection. The final run passed all ten tests."
+  },
+  "build_checks": {
+    "device_build": "passed",
+    "codesign_deep_strict": "passed",
+    "diff_check": "passed",
+    "build_number_unchanged": true
+  },
+  "device_runs": [
+    {
+      "name": "ground-after-1",
+      "status": {
+        "admitted_frames": 179,
+        "count": 0,
+        "elapsed_seconds": 6.208750458332361,
+        "expected_end_seconds": 5.943333333333333,
+        "last_source_seconds": 5.93625,
+        "late_source_skips": 0,
+        "mask_frames": 47,
+        "memory_mib": 111.42388153076172,
+        "mode": "paced",
+        "processed_frames": 179,
+        "source_frames": 713,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 143,
+        "updated": "2026-10-19T09:13:29Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [],
+      "decisions": [],
+      "memory_peak_mib": 289.1426773071289,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 60,
+      "late_replies": 0,
+      "overflow_drops": 0
+    },
+    {
+      "name": "ground-before-1",
+      "status": {
+        "admitted_frames": 179,
+        "count": 0,
+        "elapsed_seconds": 6.209641583336634,
+        "expected_end_seconds": 5.943333333333333,
+        "last_source_seconds": 5.93625,
+        "late_source_skips": 0,
+        "mask_frames": 44,
+        "memory_mib": 109.53323364257812,
+        "mode": "paced",
+        "processed_frames": 179,
+        "source_frames": 713,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 138,
+        "updated": "2026-10-19T09:12:39Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=false|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [],
+      "decisions": [],
+      "memory_peak_mib": 269.4238815307617,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 60,
+      "late_replies": 0,
+      "overflow_drops": 0
+    },
+    {
+      "name": "held-after-1",
+      "status": {
+        "admitted_frames": 136,
+        "count": 0,
+        "elapsed_seconds": 4.764158249992761,
+        "expected_end_seconds": 4.535,
+        "last_source_seconds": 4.503333333333333,
+        "late_source_skips": 0,
+        "mask_frames": 8,
+        "memory_mib": 106.8614273071289,
+        "mode": "paced",
+        "processed_frames": 136,
+        "source_frames": 136,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 68,
+        "updated": "2026-10-19T09:12:22Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [],
+      "decisions": [
+        {
+          "time": 3.801,
+          "reason": "trackLost",
+          "body": null
+        }
+      ],
+      "memory_peak_mib": 246.2208023071289,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 46,
+      "late_replies": 0,
+      "overflow_drops": 0
+    },
+    {
+      "name": "held-before-1",
+      "status": {
+        "admitted_frames": 136,
+        "count": 0,
+        "elapsed_seconds": 4.765053041672218,
+        "expected_end_seconds": 4.535,
+        "last_source_seconds": 4.503333333333333,
+        "late_source_skips": 0,
+        "mask_frames": 8,
+        "memory_mib": 102.79888153076172,
+        "mode": "paced",
+        "processed_frames": 136,
+        "source_frames": 136,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 68,
+        "updated": "2026-10-19T09:12:10Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=false|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [],
+      "decisions": [
+        {
+          "time": 3.801,
+          "reason": "trackLost",
+          "body": null
+        }
+      ],
+      "memory_peak_mib": 245.6426544189453,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 46,
+      "late_replies": 0,
+      "overflow_drops": 0
+    },
+    {
+      "name": "latest-after-1",
+      "status": {
+        "admitted_frames": 539,
+        "count": 13,
+        "elapsed_seconds": 18.30079024999577,
+        "expected_end_seconds": 18.006666666666668,
+        "last_source_seconds": 17.99,
+        "late_source_skips": 0,
+        "mask_frames": 102,
+        "memory_mib": 91.97075653076172,
+        "mode": "paced",
+        "processed_frames": 539,
+        "source_frames": 1076,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 274,
+        "updated": "2026-10-19T09:10:49Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [
+        12.688333333333333
+      ],
+      "decisions": [
+        {
+          "time": 3.785,
+          "reason": "disallowedBodyContact",
+          "body": "handsNearBall"
+        },
+        {
+          "time": 4.618,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 5.218,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 5.751,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 6.453,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 6.886,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 7.686,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.186,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.72,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 9.32,
+          "reason": "trackLost",
+          "body": null
+        },
+        {
+          "time": 10.22,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 10.988,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 11.555,
+          "reason": "trackLost",
+          "body": null
+        },
+        {
+          "time": 12.721,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 13.388,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 13.788,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 14.355,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 14.723,
+          "reason": "trackLost",
+          "body": null
+        }
+      ],
+      "memory_peak_mib": 242.2676544189453,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 179,
+      "late_replies": 0,
+      "overflow_drops": 0
+    },
+    {
+      "name": "latest-after-2",
+      "status": {
+        "admitted_frames": 539,
+        "count": 13,
+        "elapsed_seconds": 18.2974074583326,
+        "expected_end_seconds": 18.006666666666668,
+        "last_source_seconds": 17.99,
+        "late_source_skips": 0,
+        "mask_frames": 102,
+        "memory_mib": 88.8927230834961,
+        "mode": "paced",
+        "processed_frames": 539,
+        "source_frames": 1076,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 274,
+        "updated": "2026-10-19T09:15:12Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [
+        12.688333333333333
+      ],
+      "decisions": [
+        {
+          "time": 3.785,
+          "reason": "disallowedBodyContact",
+          "body": "handsNearBall"
+        },
+        {
+          "time": 4.618,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 5.218,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 5.751,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 6.453,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 6.886,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 7.686,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.186,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.72,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 9.32,
+          "reason": "trackLost",
+          "body": null
+        },
+        {
+          "time": 10.22,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 10.988,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 11.555,
+          "reason": "trackLost",
+          "body": null
+        },
+        {
+          "time": 12.721,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 13.388,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 13.788,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 14.355,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 14.723,
+          "reason": "trackLost",
+          "body": null
+        }
+      ],
+      "memory_peak_mib": 241.7677459716797,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 179,
+      "late_replies": 0,
+      "overflow_drops": 0
+    },
+    {
+      "name": "latest-before-1",
+      "status": {
+        "admitted_frames": 539,
+        "count": 12,
+        "elapsed_seconds": 18.299320708334562,
+        "expected_end_seconds": 18.006666666666668,
+        "last_source_seconds": 17.99,
+        "late_source_skips": 0,
+        "mask_frames": 101,
+        "memory_mib": 102.9239273071289,
+        "mode": "paced",
+        "processed_frames": 539,
+        "source_frames": 1076,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 271,
+        "updated": "2026-10-19T09:10:22Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=false|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [],
+      "decisions": [
+        {
+          "time": 3.785,
+          "reason": "disallowedBodyContact",
+          "body": "handsNearBall"
+        },
+        {
+          "time": 4.618,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 5.218,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 5.751,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 6.453,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 6.886,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 7.686,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.186,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.72,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 9.32,
+          "reason": "trackLost",
+          "body": null
+        },
+        {
+          "time": 10.22,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 10.988,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 11.555,
+          "reason": "trackLost",
+          "body": null
+        },
+        {
+          "time": 12.788,
+          "reason": "disallowedBodyContact",
+          "body": "insufficientContactViews"
+        },
+        {
+          "time": 13.388,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 13.788,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 14.355,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 14.723,
+          "reason": "trackLost",
+          "body": null
+        }
+      ],
+      "memory_peak_mib": 232.6114730834961,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 179,
+      "late_replies": 0,
+      "overflow_drops": 0
+    },
+    {
+      "name": "previous-after-1",
+      "status": {
+        "admitted_frames": 828,
+        "count": 22,
+        "elapsed_seconds": 27.9546173333365,
+        "expected_end_seconds": 27.641666666666666,
+        "last_source_seconds": 27.625,
+        "late_source_skips": 0,
+        "mask_frames": 197,
+        "memory_mib": 92.18952941894531,
+        "mode": "paced",
+        "processed_frames": 828,
+        "source_frames": 1655,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 507,
+        "updated": "2026-10-19T09:11:58Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [],
+      "decisions": [
+        {
+          "time": 6.3,
+          "reason": "disallowedBodyContact",
+          "body": "handsNearBall"
+        },
+        {
+          "time": 7.1,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 7.666,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.133,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.633,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 9.335,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 9.801,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 10.335,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 10.801,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 11.501,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 12.101,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 12.768,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 13.736,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 14.136,
+          "reason": "trackLost",
+          "body": null
+        },
+        {
+          "time": 17.205,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 17.871,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 18.505,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 19.205,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 19.671,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 20.305,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 20.938,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 21.806,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 22.306,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 23.006,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 23.64,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 24.573,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 25.106,
+          "reason": "trackLost",
+          "body": null
+        }
+      ],
+      "memory_peak_mib": 258.2520751953125,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 276,
+      "late_replies": 0,
+      "overflow_drops": 0
+    },
+    {
+      "name": "previous-before-1",
+      "status": {
+        "admitted_frames": 828,
+        "count": 22,
+        "elapsed_seconds": 27.952058458336978,
+        "expected_end_seconds": 27.641666666666666,
+        "last_source_seconds": 27.625,
+        "late_source_skips": 0,
+        "mask_frames": 197,
+        "memory_mib": 96.84577941894531,
+        "mode": "paced",
+        "processed_frames": 828,
+        "source_frames": 1655,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 498,
+        "updated": "2026-10-19T09:11:23Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=false|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [],
+      "decisions": [
+        {
+          "time": 6.3,
+          "reason": "disallowedBodyContact",
+          "body": "handsNearBall"
+        },
+        {
+          "time": 7.1,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 7.666,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.1,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.633,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 9.335,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 9.801,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 10.335,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 10.835,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 11.535,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 12.101,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 12.768,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 13.703,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 14.436,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 17.205,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 17.871,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 18.471,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 19.171,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 19.671,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 20.271,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 20.938,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 21.806,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 22.306,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 23.006,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 23.64,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 24.573,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 25.106,
+          "reason": "trackLost",
+          "body": null
+        }
+      ],
+      "memory_peak_mib": 254.2364730834961,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 275,
+      "late_replies": 0,
+      "overflow_drops": 0
+    },
+    {
+      "name": "spare-after-1",
+      "status": {
+        "admitted_frames": 909,
+        "count": 10,
+        "elapsed_seconds": 30.67648220832052,
+        "expected_end_seconds": 30.333333333333332,
+        "last_source_seconds": 30.316666666666666,
+        "late_source_skips": 0,
+        "mask_frames": 193,
+        "memory_mib": 96.29890441894531,
+        "mode": "paced",
+        "processed_frames": 909,
+        "source_frames": 1816,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 698,
+        "updated": "2026-10-19T09:14:46Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [],
+      "decisions": [
+        {
+          "time": 0.883,
+          "reason": "outsidePersonRegion",
+          "body": null
+        },
+        {
+          "time": 6.516,
+          "reason": "disallowedBodyContact",
+          "body": "handsNearBall"
+        },
+        {
+          "time": 7.216,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.25,
+          "reason": "unsupportedByDetection",
+          "body": null
+        },
+        {
+          "time": 12.416,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 12.983,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 13.583,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 14.116,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 16.75,
+          "reason": "outsidePersonRegion",
+          "body": null
+        },
+        {
+          "time": 19.016,
+          "reason": "trackLost",
+          "body": null
+        },
+        {
+          "time": 19.65,
+          "reason": "disallowedBodyContact",
+          "body": "handsNearBall"
+        },
+        {
+          "time": 22.283,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 22.916,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 23.55,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 24.05,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 24.516,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 25.55,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 26.15,
+          "reason": "trackLost",
+          "body": null
+        }
+      ],
+      "memory_peak_mib": 247.3614044189453,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 301,
+      "late_replies": 0,
+      "overflow_drops": 0
+    },
+    {
+      "name": "spare-before-1",
+      "status": {
+        "admitted_frames": 909,
+        "count": 10,
+        "elapsed_seconds": 30.672036041665706,
+        "expected_end_seconds": 30.333333333333332,
+        "last_source_seconds": 30.316666666666666,
+        "late_source_skips": 0,
+        "mask_frames": 194,
+        "memory_mib": 96.17390441894531,
+        "mode": "paced",
+        "processed_frames": 909,
+        "source_frames": 1816,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 699,
+        "updated": "2026-10-19T09:14:07Z"
+      },
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792400939.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=false|rf-motion-recovery-v1|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "recoveries": [],
+      "decisions": [
+        {
+          "time": 0.883,
+          "reason": "outsidePersonRegion",
+          "body": null
+        },
+        {
+          "time": 6.516,
+          "reason": "disallowedBodyContact",
+          "body": "handsNearBall"
+        },
+        {
+          "time": 7.216,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 8.25,
+          "reason": "unsupportedByDetection",
+          "body": null
+        },
+        {
+          "time": 12.416,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 12.983,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 13.616,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 14.116,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 16.783,
+          "reason": "outsidePersonRegion",
+          "body": null
+        },
+        {
+          "time": 18.95,
+          "reason": "trackLost",
+          "body": null
+        },
+        {
+          "time": 19.65,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 22.25,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 22.916,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 23.55,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 24.05,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 24.516,
+          "reason": "counted",
+          "body": null
+        },
+        {
+          "time": 25.55,
+          "reason": "groundBounce",
+          "body": null
+        },
+        {
+          "time": 26.15,
+          "reason": "trackLost",
+          "body": null
+        }
+      ],
+      "memory_peak_mib": 247.7989273071289,
+      "thermal_states": [
+        0
+      ],
+      "rf_submissions": 302,
+      "late_replies": 0,
+      "overflow_drops": 0
+    }
+  ],
+  "interpretation": {
+    "original_recording_count": 13,
+    "controlled_before_count": 12,
+    "controlled_after_count": 13,
+    "recovered_contact_s": 12.721,
+    "same_exposure_comparison": "At 12.688333s, the baseline rejected the RF detection as identity_gate_rejected. With recovery enabled, the same measured candidate reconnects as motion_reacquired, and the foot contact at 12.721s counts.",
+    "original_vs_replay": "Original live capture counted 13 but missed 11.56s and 12.72s. Decoded paced replay also misses 9.32s in the baseline. The change recovers 12.72s; do not claim original live 13 became 14, or claim the full visual total is recovered.",
+    "remaining": [
+      "High kick at about 11.56s still misses when blur removes observations before reliable upward motion is established.",
+      "The 9.32s contact is sensitive to detector exposure scheduling / decoded replay tracking; it misses in both controlled baseline and changed replay.",
+      "Offline replacement can still reveal original-ball pixels in the mask gap around 11.59\u201311.72s; this live association change does not modify the offline mask model."
+    ],
+    "release_scope": "Short replay regression checks only; no new endurance or lower-end-device qualification claimed."
+  },
+  "user_test": "Record a fresh 20\u201330-second normal live clip with inside-foot touches and several higher kicks, then save/export. Existing recording counts are retained and do not automatically change after installation."
+}

@@ -1,6 +1,6 @@
 import Foundation
 
-/// One ranked player. `touches` is their best single juggling session in the period.
+/// One ranked player. `touches` is their best approved continuous streak in the period.
 struct LeaderboardEntry: Identifiable, Equatable {
     let rank: Int
     let name: String
@@ -8,6 +8,9 @@ struct LeaderboardEntry: Identifiable, Equatable {
     var isYou = false
     /// The player's picture once scores come from accounts; without one a placeholder shows.
     var photo: URL? = nil
+    var attemptID: UUID? = nil
+    var streakDurationMS: Int? = nil
+    var countryCode: String? = nil
     var id: Int { rank }
 }
 

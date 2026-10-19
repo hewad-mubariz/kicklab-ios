@@ -31,6 +31,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     var lastError: String? { observations.lastError }
     private var isDiagnosing = false
     private var evidencePlayer: ActivePlayerSelection?
+    var requiresGroundHeightEvidence = true
     #if DEBUG
     var usesSelectedPoseRecovery = false
     private let selectedPoseRecovery = SelectedPlayerPoseRecovery()
@@ -177,7 +178,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                 alignedFootFrames[frameIndex] = aligned.index
                 return true
             }
-            if (policy == .legReboundV13 || policy == .raisedFootV14), policy.allowsObservedLegRecovery(after: failure) {
+            if (policy == .legReboundV13 || policy.usesRaisedFoot), policy.allowsObservedLegRecovery(after: failure) {
                 let indices = ContactFrameWindow.reboundIndices(
                     observations.frames.map { .init(index: $0.index, timestampMs: $0.timestampMs) },
                     around: .init(index: frame.index, timestampMs: frame.timestampMs))
@@ -188,9 +189,10 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                 // Recovery uses only already arrived exposures. Arm uncertainty
                 // is not kick evidence: require a measured leg/ball rebound.
                 let impact = ObservedLegContactRules.contactTime(rebound, at: frame.timestampMs,
-                    usesTemporalEvidence: true, usesCadenceWindow: true, allowsNearSupportFoot: policy == .raisedFootV14)
+                    usesTemporalEvidence: true, usesCadenceWindow: true, allowsNearSupportFoot: policy.usesRaisedFoot,
+                    usesImageSupport: policy == .footEvidenceV15)
                     ?? RaisedKneeReboundRules.contactTime(rebound, at: frame.timestampMs)
-                    ?? (policy == .raisedFootV14 ? RaisedFootReboundRules.contactTime(rebound, at: frame.timestampMs) : nil)
+                    ?? (policy.usesRaisedFoot ? RaisedFootReboundRules.contactTime(rebound, at: frame.timestampMs) : nil)
                 if let impact, let aligned = frames.first(where: { $0.timestampMs == impact }),
                    groundEvidence(at: aligned.index, timed: true)?.confirmsGroundContact(corroboratingWeakAnkles: true) != true,
                    handlingEvidence(at: aligned.index)?.state != .held, lastError == nil {
@@ -477,7 +479,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                 imageAspect: Double(CVPixelBufferGetWidth(frame.pixels))/Double(CVPixelBufferGetHeight(frame.pixels)),
                 ankles: pose.ankles, hips: pose.hips)
         }
-        return .init(contactMs: contact.timestampMs, samples: samples, checksBallBelowFeet: timed ? true : nil)
+        return .init(contactMs: contact.timestampMs, samples: samples, checksBallBelowFeet: timed ? true : nil,
+                     requiresLowBallCenter: requiresGroundHeightEvidence ? true : nil)
     }
 
     /// Only proposals that passed the existing gates request this extra window.

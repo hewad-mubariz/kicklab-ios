@@ -10,6 +10,13 @@ struct WallTargetsBoard: View {
     @ObservedObject var model: WallTargetsModel
     /// Black on the projector (no light); clear when overlaid on the phone's camera view.
     var background: Color = .black
+    var onStart: (() -> Void)? = nil
+    var onSettings: (() -> Void)? = nil
+    var onStop: (() -> Void)? = nil
+    var startEnabled = true
+    var startStatus: String? = nil
+    var showsGameScreens = true
+    var runtime: WallRuntimeSample? = nil
     @State private var flashing: UUID?
 
     static let hitColor = Color(red: 0, green: 1, blue: 0.35)
@@ -28,12 +35,42 @@ struct WallTargetsBoard: View {
     private static let glow = Color(red: 120 / 255, green: 200 / 255, blue: 1)
 
     var body: some View {
+        if showsGameScreens && model.gameScreen != .board {
+            WallTargetsGameScreen(model: model, onStart: onStart, onSettings: onSettings,
+                                  startEnabled: startEnabled, startStatus: startStatus)
+                .overlay(alignment: .bottomLeading) {
+                    if let runtime {
+                        WallTargetsRuntimeHUD(sample: runtime).padding(.leading, 24).padding(.bottom, 6)
+                    }
+                }
+        } else {
+            board
+                .overlay(alignment: .topTrailing) {
+                    if let onStop {
+                        Button(action: onStop) {
+                            Label("Stop & Save", systemImage: "stop.circle.fill")
+                                .font(.system(size: 14, weight: .semibold))
+                                .padding(.horizontal, 14)
+                                .frame(minHeight: 44)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundStyle(.white)
+                        .background(.black.opacity(0.9), in: Capsule())
+                        .overlay(Capsule().stroke(.white.opacity(0.5), lineWidth: 1))
+                        .padding(.top, 6).padding(.trailing, 16)
+                        .accessibilityIdentifier("wall.stopAndSave")
+                    }
+                }
+        }
+    }
+
+    private var board: some View {
         GeometryReader { geometry in
             let h = geometry.size.height
             let rect = Self.boardRect(in: geometry.size)
             ZStack(alignment: .topLeading) {
                 background
-                if model.calibration != .searching {
+                if model.calibration != .searching && !model.checkingMapping {
                     if model.style == .metal || model.referenceBox != nil {
                         ForEach(1...6, id: \.self) { box in arenaCell(box, in: rect) }
                     } else {
@@ -43,13 +80,27 @@ struct WallTargetsBoard: View {
                                     lineWidth: (model.style == .bright ? 0.024 : 0.01) * h)
                     }
                 }
+                if model.checkingMapping && model.mappingDotsVisible {
+                    ForEach(WallMappingCheck.points.indices, id: \.self) { index in
+                        let point = WallMappingCheck.points[index]
+                        Circle().fill(.white)
+                            .frame(width: 0.032 * h, height: 0.032 * h)
+                            .position(x: rect.minX + point.x / 3 * rect.width,
+                                      y: rect.minY + point.y / 2 * rect.height)
+                    }
+                }
+                impactMarkers(in: rect)
                 header(height: h).position(x: rect.midX, y: rect.minY / 2)
-                Text((model.referenceBox == nil && model.calibration == .ready ? model.alignmentNotice : nil)
-                     ?? model.borderlineNotice ?? model.notice
-                     ?? (model.isPlaying ? "Hit all six · long-press for settings" : "Long-press for settings"))
-                    .font(.system(size: 0.032 * h, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.85))
-                    .position(x: rect.midX, y: rect.maxY + (h - rect.maxY) / 2)
+                HStack(spacing: 12) {
+                    if let runtime { WallTargetsRuntimeHUD(sample: runtime) }
+                    Text(footer)
+                        .font(.system(size: (runtime == nil ? 0.032 : 0.026) * h, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
+                }
+                .frame(width: rect.width)
+                .position(x: rect.midX, y: rect.maxY + (h - rect.maxY) / 2 - (runtime == nil ? 0 : 6))
                 if model.cornerDots != .hidden {
                     let dot = (model.cornerDots == .large ? 0.10 : 0.032) * h
                     ForEach([CGPoint(x: rect.minX, y: rect.minY), CGPoint(x: rect.maxX, y: rect.minY),
@@ -77,27 +128,25 @@ struct WallTargetsBoard: View {
                         .background(.black.opacity(0.9), in: RoundedRectangle(cornerRadius: h * 0.035))
                         .position(x: rect.midX, y: rect.midY)
                 }
-                if model.calibration == .failed || model.referenceFailed {
+                if model.showingGo {
+                    Text("GO")
+                        .font(.system(size: h * 0.18, weight: .black, design: .rounded))
+                        .foregroundStyle(Self.metalCyan)
+                        .padding(.horizontal, h * 0.06).padding(.vertical, h * 0.015)
+                        .background(.black.opacity(0.9), in: Capsule())
+                        .position(x: rect.midX, y: rect.midY)
+                        .allowsHitTesting(false)
+                }
+                if model.calibration == .failed || model.referenceFailed || model.mappingFailed {
                     VStack(spacing: h * 0.025) {
-                        Text(model.focusFailed ? "FOCUS NEEDS A RETRY" : (model.referenceFailed ? "REPEAT BALL SETUP" : "ALIGN THE BOARD")).font(.system(size: h * 0.06, weight: .heavy))
-                        Text(model.focusFailed ? "Keep the phone still and stand clear of the wall" : (model.referenceFailed ? "Touch the wall with the same ball at each target" : "Keep all four white dots in the camera"))
+                        Text(model.mappingFailed ? "BOARD CHECK NEEDS A RETRY" : model.focusFailed ? "FOCUS NEEDS A RETRY" : (model.referenceFailed ? "REPEAT BALL SETUP" : "ALIGN THE BOARD")).font(.system(size: h * 0.06, weight: .heavy))
+                        Text(model.mappingFailed ? "Keep the phone still and the whole board visible" : model.focusFailed ? "Keep the phone still and stand clear of the wall" : (model.referenceFailed ? "Touch the wall with the same ball at each target" : "Keep all four white dots in the camera"))
                             .font(.system(size: h * 0.035, weight: .medium))
                         Text("Tap the phone to retry")
                             .font(.system(size: h * 0.04, weight: .bold))
                     }
                     .foregroundStyle(.white).padding(h * 0.04)
                     .background(.black.opacity(0.95), in: RoundedRectangle(cornerRadius: h * 0.03))
-                    .position(x: rect.midX, y: rect.midY)
-                }
-                if let time = model.clearTime {
-                    VStack(spacing: 0.02 * h) {
-                        Text("CLEARED").font(.system(size: 0.16 * h, weight: .heavy))
-                        Text(String(format: "%.1f s", time)).font(.system(size: 0.12 * h, weight: .bold).monospacedDigit())
-                        Text("Hit any box to play again").font(.system(size: 0.045 * h, weight: .semibold))
-                    }
-                    .foregroundStyle(.black)
-                    .padding(0.05 * h)
-                    .background(Self.hitColor, in: RoundedRectangle(cornerRadius: 0.04 * h))
                     .position(x: rect.midX, y: rect.midY)
                 }
             }
@@ -112,22 +161,99 @@ struct WallTargetsBoard: View {
         }
     }
 
+    private var footer: String {
+        if model.checkingMapping { return "Stand aside · keep the whole board clear" }
+        if model.mappingFailed { return model.notice ?? "Tap the phone to retry the board check" }
+        if model.sessionEnded {
+            return model.recordingState.message + " · long-press for settings"
+        }
+        if model.contactPreview != nil {
+            return model.alignmentStatus == .obscured
+                ? "Checking shot · keep the corner dots visible" : "Checking shot…"
+        }
+        return (model.referenceBox == nil && model.calibration == .ready ? model.alignmentNotice : nil)
+            ?? model.borderlineNotice ?? model.notice
+            ?? (model.isPlaying ? "\(6 - model.boxesHit.count) left · any order · Stop & Save on the phone" : "Stop & Save on the phone")
+    }
+
+    private func impactMarkers(in rect: CGRect) -> some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(Array(model.hits.enumerated()), id: \.element.id) { index, hit in
+                WallTargetsImpactMarker(number: index + 1, latest: hit.id == model.lastHit?.id,
+                                        diameter: rect.height * 0.078)
+                    .position(x: hit.u / 3 * rect.width, y: hit.v / 2 * rect.height)
+            }
+            if let contact = model.contactPreview {
+                // A hollow white ring acknowledges measured contact. Only a
+                // confirmed score gets the permanent numbered mark and chime.
+                ZStack {
+                    Circle().stroke(.black.opacity(0.85), lineWidth: rect.height * 0.014)
+                    Circle().stroke(.white, style: StrokeStyle(lineWidth: rect.height * 0.006,
+                                                              dash: [rect.height * 0.012, rect.height * 0.008]))
+                    Circle().fill(.white).frame(width: rect.height * 0.012)
+                }
+                .frame(width: rect.height * 0.10, height: rect.height * 0.10)
+                .position(x: contact.u / 3 * rect.width, y: contact.v / 2 * rect.height)
+            }
+        }
+        .frame(width: rect.width, height: rect.height)
+        .clipped()
+        .offset(x: rect.minX, y: rect.minY)
+        .allowsHitTesting(false)
+    }
+
     private func header(height h: CGFloat) -> some View {
         TimelineView(.periodic(from: .now, by: 0.1)) { timeline in
+            if model.isPlaying {
+                HStack(alignment: .center) {
+                    VStack(alignment: .leading, spacing: h * 0.012) {
+                        Text("CLEAR THE WALL")
+                            .font(.system(size: h * 0.04, weight: .black, design: .rounded))
+                            .lineLimit(1)
+                            .fixedSize()
+                        HStack(spacing: h * 0.01) {
+                            ForEach(1...6, id: \.self) { box in
+                                Capsule().fill(model.boxesHit.contains(box) ? Self.metalGold : .white.opacity(0.25))
+                                    .frame(width: h * 0.055, height: h * 0.009)
+                            }
+                            Text("\(model.boxesHit.count)/6")
+                                .font(.system(size: h * 0.025, weight: .bold, design: .rounded))
+                                .fixedSize()
+                        }
+                    }
+                    Spacer(minLength: h * 0.08)
+                    VStack(alignment: .trailing, spacing: h * 0.002) {
+                        Text(model.timerStatus)
+                            .font(.system(size: h * 0.019, weight: .bold))
+                            .foregroundStyle(model.alignmentStatus == .ready ? Self.metalCyan : Self.metalGold)
+                        Text(String(format: "%.1f s", model.elapsed(at: timeline.date)))
+                            .font(.system(size: h * 0.055, weight: .black, design: .rounded).monospacedDigit())
+                            .fixedSize()
+                    }
+                }
+                .foregroundStyle(.white)
+                .frame(width: h * 1.1, height: h * 0.10)
+            } else {
             VStack(spacing: h * 0.008) {
-                Text(model.referenceBox.map { "SETUP · HOLD ON \($0)" } ?? "CLEAR THE WALL")
+                Text(model.checkingMapping ? "CHECKING THE WHOLE BOARD" : model.referenceBox.map { "SETUP · TOUCH WALL AT \($0)" }
+                     ?? (model.clearedAt != nil ? "WALL CLEARED!" : "CLEAR THE WALL"))
                     .font(.system(size: h * 0.046, weight: .black, design: .rounded))
                 HStack(spacing: h * 0.06) {
-                    if let box = model.referenceBox {
+                    if model.checkingMapping {
+                        Text("Keep the phone still · scoring is off")
+                    } else if let box = model.referenceBox {
                         Text("\(box) / 6 · scoring is off")
                     } else {
                         Text("\(model.boxesHit.count) / 6")
                         let seconds = model.elapsed(at: timeline.date)
-                        Text("\(model.timerStatus) · " + String(format: "%02d:%02d", Int(seconds) / 60, Int(seconds) % 60))
+                        Text("\(model.timerStatus) · " + (model.clearedAt != nil
+                            ? String(format: "%.1f s", seconds)
+                            : String(format: "%02d:%02d", Int(seconds) / 60, Int(seconds) % 60)))
                     }
                 }
                 .font(.system(size: h * 0.035, weight: .semibold, design: .rounded).monospacedDigit())
-            }.foregroundStyle(.white)
+            }.foregroundStyle(model.clearedAt != nil ? Self.metalGold : .white)
+            }
         }
     }
 
@@ -295,6 +421,35 @@ struct WallTargetsBoard: View {
         }
         .frame(width: size, height: size)
         .position(point)
+    }
+}
+
+/// Numbered contact point. Only the arrival pulse animates; the ring remains
+/// fixed at the measured board coordinates for the rest of the session.
+private struct WallTargetsImpactMarker: View {
+    let number: Int
+    let latest: Bool
+    let diameter: CGFloat
+    @State private var expanded = false
+
+    var body: some View {
+        ZStack {
+            if latest {
+                Circle().stroke(.white, lineWidth: diameter * 0.08)
+                    .scaleEffect(expanded ? 2.4 : 1)
+                    .opacity(expanded ? 0 : 0.9)
+            }
+            Circle().fill(.black.opacity(0.9))
+            Circle().stroke(.white, lineWidth: diameter * 0.075)
+            Circle().stroke(Color(red: 1, green: 0.3, blue: 0.15), lineWidth: diameter * 0.075)
+                .padding(diameter * 0.12)
+            Text("\(number)")
+                .font(.system(size: diameter * 0.42, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
+        }
+        .frame(width: diameter, height: diameter)
+        .accessibilityLabel("Impact \(number)")
+        .task { withAnimation(.easeOut(duration: 0.65)) { expanded = true } }
     }
 }
 

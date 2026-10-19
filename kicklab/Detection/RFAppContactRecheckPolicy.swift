@@ -3,7 +3,10 @@ import Foundation
 // Diagnostic admission limits. Rechecks measure a real retained exposure and
 // never supply another recheck's identity hint or rewrite trajectory inputs.
 nonisolated struct ContactRecheckPolicy {
-    let maximumHintAge = 0.100
+    // Four 30 Hz exposures, including sub-millisecond capture jitter. A short
+    // impact occlusion must not discard the image that the contact verifier
+    // can still bracket. Both identity checks and the retained-age cap remain.
+    let maximumHintAge = 0.134
     let maximumRetainedAge = 0.500
     let maximumRetainedFrames = 8
     let maximumStartLatency = 0.750

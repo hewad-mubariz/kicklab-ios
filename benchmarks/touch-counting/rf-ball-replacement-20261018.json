@@ -1,0 +1,1619 @@
+{
+  "experiment": "rf-ball-replacement-20261018",
+  "app_build": "Juggle RF Small 2026101707",
+  "bundle": "com.juggledude.rfsmall.debug",
+  "source": "Same 29.6116667-second rear juggling recording, 29 preserved touch events.",
+  "source_sha256": "72a548454122ff11d23284a7e4ecaa56d8c7f9063fb90d6fa703da88193a7053",
+  "model": "Same RF-DETR FP16 checkpoint, standalone 288 and 384 graphs, unchanged 0.40 threshold. Explicit debug model override; installed application/model unchanged.",
+  "protocol": "Four fresh full-mask preparations; unchanged native renderer creates gold replacement exports. Prepared 288 tracks also exercised through real editor controls and Save to Photos on each phone.",
+  "results": {
+    "iphone11/288": {
+      "input_shape": "[1, 3, 288, 288]",
+      "preparation_seconds_approx": 141.0,
+      "gold_export_seconds": 40.99306362500647,
+      "preparation_plus_gold_seconds_approx": 181.99306362500647,
+      "thermal_at_start": 0,
+      "thermal_at_first_export": 0,
+      "thermal_at_end": 0,
+      "stored_outline_frames": 1211,
+      "gap_repair_frames": 29,
+      "active_interval_outline_frames": 1090,
+      "active_interval_export_frames": 1166,
+      "output_frames": 1770,
+      "output_duration": 29.611666666666668,
+      "output_size": [
+        720,
+        1280
+      ],
+      "gold_sha256": "6d2b17993d95965e00b3c8f1dde453854c18b753b19b495a6e727d9c590bfe03",
+      "track_sha256": "e126f644db89102ef0f334da502dd3d96f6b4e3e09ed0fb348418aaaaaf6a1f8",
+      "provenance": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-ball-replacement-20261018/iphone11/288/provenance.json"
+    },
+    "iphone11/384": {
+      "input_shape": "[1, 3, 384, 384]",
+      "preparation_seconds_approx": 496.0,
+      "gold_export_seconds": 49.61772174999351,
+      "preparation_plus_gold_seconds_approx": 545.6177217499935,
+      "thermal_at_start": 1,
+      "thermal_at_first_export": 2,
+      "thermal_at_end": 2,
+      "stored_outline_frames": 1458,
+      "gap_repair_frames": 21,
+      "active_interval_outline_frames": 1149,
+      "active_interval_export_frames": 1166,
+      "output_frames": 1770,
+      "output_duration": 29.611666666666668,
+      "output_size": [
+        720,
+        1280
+      ],
+      "gold_sha256": "ef4e290f475455970b477bd9ebd53d6c7d1adf5e3e1ac14d100ac69bb2c799b6",
+      "track_sha256": "cae882b83d1c8d1ef9981386f6874ab9200a4c2854e6aa13cc51b539f0f13d07",
+      "provenance": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-ball-replacement-20261018/iphone11/384/provenance.json"
+    },
+    "iphone17/288": {
+      "input_shape": "[1, 3, 288, 288]",
+      "preparation_seconds_approx": 27.0,
+      "gold_export_seconds": 21.13310137501685,
+      "preparation_plus_gold_seconds_approx": 48.13310137501685,
+      "thermal_at_start": 0,
+      "thermal_at_first_export": 0,
+      "thermal_at_end": 0,
+      "stored_outline_frames": 1212,
+      "gap_repair_frames": 28,
+      "active_interval_outline_frames": 1092,
+      "active_interval_export_frames": 1166,
+      "output_frames": 1770,
+      "output_duration": 29.611666666666668,
+      "output_size": [
+        720,
+        1280
+      ],
+      "gold_sha256": "9c92e4dadaea9fde7cf521b48d85b8b3e8bff4c1ae7171bec41ebd5ab7dba168",
+      "track_sha256": "485256740959eb5dfa9bb6b76298413194c8bafcae2423d48c5874143785d797",
+      "provenance": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-ball-replacement-20261018/iphone17/288/provenance.json"
+    },
+    "iphone17/384": {
+      "input_shape": "[1, 3, 384, 384]",
+      "preparation_seconds_approx": 41.53727141665877,
+      "gold_export_seconds": 23.479035458352882,
+      "preparation_plus_gold_seconds_approx": 65.01630687501165,
+      "thermal_at_start": 0,
+      "thermal_at_first_export": 0,
+      "thermal_at_end": 0,
+      "stored_outline_frames": 1465,
+      "gap_repair_frames": 24,
+      "active_interval_outline_frames": 1150,
+      "active_interval_export_frames": 1166,
+      "output_frames": 1770,
+      "output_duration": 29.611666666666668,
+      "output_size": [
+        720,
+        1280
+      ],
+      "gold_sha256": "9637209a51484893ccedb82c9fa25f2d0d45f78de8d3d6ca5e598f7344d91e90",
+      "track_sha256": "c1bdb8ffb4b386a76f61a042a91998e147c68ba6659d7be823e5f37bcd6ece48",
+      "provenance": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-ball-replacement-20261018/iphone17/384/provenance.json"
+    }
+  },
+  "same_export_timestamps_across_all_four_runs": true,
+  "frame_cadence_note": "Original has 1773 variable-timestamp frames; all replacement exports have the same 1770 composition timestamps. This is shared resampling, not a resolution-dependent writer-drop difference.",
+  "availability": {
+    "iphone11": {
+      "both": {
+        "frames": 1081,
+        "runs": [
+          {
+            "start": 21.4929,
+            "end": 24.2818,
+            "frames": 168
+          },
+          {
+            "start": 18.036,
+            "end": 19.2217,
+            "frames": 72
+          },
+          {
+            "start": 10.1035,
+            "end": 11.2224,
+            "frames": 67
+          },
+          {
+            "start": 20.2404,
+            "end": 21.3426,
+            "frames": 67
+          },
+          {
+            "start": 7.2478,
+            "end": 8.2999,
+            "frames": 64
+          },
+          {
+            "start": 15.4642,
+            "end": 16.4996,
+            "frames": 63
+          },
+          {
+            "start": 24.3152,
+            "end": 25.2337,
+            "frames": 56
+          },
+          {
+            "start": 14.6292,
+            "end": 15.3807,
+            "frames": 46
+          },
+          {
+            "start": 11.9238,
+            "end": 12.5751,
+            "frames": 40
+          },
+          {
+            "start": 9.3353,
+            "end": 9.9699,
+            "frames": 39
+          },
+          {
+            "start": 11.2558,
+            "end": 11.8403,
+            "frames": 36
+          },
+          {
+            "start": 8.3333,
+            "end": 8.9011,
+            "frames": 35
+          },
+          {
+            "start": 12.6753,
+            "end": 13.2097,
+            "frames": 33
+          },
+          {
+            "start": 19.6893,
+            "end": 20.207,
+            "frames": 32
+          },
+          {
+            "start": 13.6272,
+            "end": 14.0948,
+            "frames": 29
+          },
+          {
+            "start": 14.1282,
+            "end": 14.5624,
+            "frames": 27
+          },
+          {
+            "start": 19.2551,
+            "end": 19.6392,
+            "frames": 24
+          },
+          {
+            "start": 8.9345,
+            "end": 9.3019,
+            "frames": 23
+          },
+          {
+            "start": 13.2431,
+            "end": 13.5103,
+            "frames": 17
+          },
+          {
+            "start": 17.7521,
+            "end": 18.0026,
+            "frames": 16
+          },
+          {
+            "start": 25.2671,
+            "end": 25.4842,
+            "frames": 14
+          },
+          {
+            "start": 6.012,
+            "end": 6.1957,
+            "frames": 12
+          },
+          {
+            "start": 17.2511,
+            "end": 17.4348,
+            "frames": 12
+          },
+          {
+            "start": 16.7334,
+            "end": 16.9004,
+            "frames": 11
+          },
+          {
+            "start": 17.0841,
+            "end": 17.2177,
+            "frames": 9
+          },
+          {
+            "start": 6.5464,
+            "end": 6.6633,
+            "frames": 8
+          },
+          {
+            "start": 6.6967,
+            "end": 6.7969,
+            "frames": 7
+          },
+          {
+            "start": 6.9138,
+            "end": 7.014,
+            "frames": 7
+          },
+          {
+            "start": 17.4682,
+            "end": 17.5517,
+            "frames": 6
+          },
+          {
+            "start": 6.2625,
+            "end": 6.3126,
+            "frames": 4
+          },
+          {
+            "start": 6.4629,
+            "end": 6.513,
+            "frames": 4
+          },
+          {
+            "start": 6.8303,
+            "end": 6.8804,
+            "frames": 4
+          },
+          {
+            "start": 13.5437,
+            "end": 13.5938,
+            "frames": 4
+          },
+          {
+            "start": 16.6165,
+            "end": 16.6666,
+            "frames": 4
+          },
+          {
+            "start": 16.9338,
+            "end": 16.9672,
+            "frames": 3
+          },
+          {
+            "start": 7.181,
+            "end": 7.1977,
+            "frames": 2
+          },
+          {
+            "start": 10.02,
+            "end": 10.0367,
+            "frames": 2
+          },
+          {
+            "start": 17.6519,
+            "end": 17.6686,
+            "frames": 2
+          },
+          {
+            "start": 21.3927,
+            "end": 21.4094,
+            "frames": 2
+          },
+          {
+            "start": 7.0474,
+            "end": 7.0474,
+            "frames": 1
+          },
+          {
+            "start": 7.1476,
+            "end": 7.1476,
+            "frames": 1
+          },
+          {
+            "start": 11.8904,
+            "end": 11.8904,
+            "frames": 1
+          },
+          {
+            "start": 12.6085,
+            "end": 12.6085,
+            "frames": 1
+          },
+          {
+            "start": 12.6419,
+            "end": 12.6419,
+            "frames": 1
+          },
+          {
+            "start": 16.533,
+            "end": 16.533,
+            "frames": 1
+          },
+          {
+            "start": 16.5664,
+            "end": 16.5664,
+            "frames": 1
+          },
+          {
+            "start": 16.7,
+            "end": 16.7,
+            "frames": 1
+          },
+          {
+            "start": 17.6018,
+            "end": 17.6018,
+            "frames": 1
+          },
+          {
+            "start": 17.702,
+            "end": 17.702,
+            "frames": 1
+          }
+        ]
+      },
+      "only288": {
+        "frames": 9,
+        "runs": [
+          {
+            "start": 6.2124,
+            "end": 6.2458,
+            "frames": 3
+          },
+          {
+            "start": 12.6252,
+            "end": 12.6252,
+            "frames": 1
+          },
+          {
+            "start": 12.6586,
+            "end": 12.6586,
+            "frames": 1
+          },
+          {
+            "start": 13.6105,
+            "end": 13.6105,
+            "frames": 1
+          },
+          {
+            "start": 14.1115,
+            "end": 14.1115,
+            "frames": 1
+          },
+          {
+            "start": 16.5497,
+            "end": 16.5497,
+            "frames": 1
+          },
+          {
+            "start": 17.6853,
+            "end": 17.6853,
+            "frames": 1
+          }
+        ]
+      },
+      "only384": {
+        "frames": 68,
+        "runs": [
+          {
+            "start": 7.0641,
+            "end": 7.1309,
+            "frames": 5
+          },
+          {
+            "start": 15.3974,
+            "end": 15.4475,
+            "frames": 4
+          },
+          {
+            "start": 21.4261,
+            "end": 21.4762,
+            "frames": 4
+          },
+          {
+            "start": 10.0534,
+            "end": 10.0868,
+            "frames": 3
+          },
+          {
+            "start": 14.5791,
+            "end": 14.6125,
+            "frames": 3
+          },
+          {
+            "start": 6.4295,
+            "end": 6.4462,
+            "frames": 2
+          },
+          {
+            "start": 7.2144,
+            "end": 7.2311,
+            "frames": 2
+          },
+          {
+            "start": 9.9866,
+            "end": 10.0033,
+            "frames": 2
+          },
+          {
+            "start": 11.857,
+            "end": 11.8737,
+            "frames": 2
+          },
+          {
+            "start": 16.5831,
+            "end": 16.5998,
+            "frames": 2
+          },
+          {
+            "start": 16.9839,
+            "end": 17.0006,
+            "frames": 2
+          },
+          {
+            "start": 17.5684,
+            "end": 17.5851,
+            "frames": 2
+          },
+          {
+            "start": 17.6185,
+            "end": 17.6352,
+            "frames": 2
+          },
+          {
+            "start": 17.7187,
+            "end": 17.7354,
+            "frames": 2
+          },
+          {
+            "start": 19.6559,
+            "end": 19.6726,
+            "frames": 2
+          },
+          {
+            "start": 21.3593,
+            "end": 21.376,
+            "frames": 2
+          },
+          {
+            "start": 6.3293,
+            "end": 6.3293,
+            "frames": 1
+          },
+          {
+            "start": 6.5297,
+            "end": 6.5297,
+            "frames": 1
+          },
+          {
+            "start": 6.68,
+            "end": 6.68,
+            "frames": 1
+          },
+          {
+            "start": 6.8136,
+            "end": 6.8136,
+            "frames": 1
+          },
+          {
+            "start": 6.8971,
+            "end": 6.8971,
+            "frames": 1
+          },
+          {
+            "start": 7.0307,
+            "end": 7.0307,
+            "frames": 1
+          },
+          {
+            "start": 7.1643,
+            "end": 7.1643,
+            "frames": 1
+          },
+          {
+            "start": 8.3166,
+            "end": 8.3166,
+            "frames": 1
+          },
+          {
+            "start": 8.9178,
+            "end": 8.9178,
+            "frames": 1
+          },
+          {
+            "start": 9.3186,
+            "end": 9.3186,
+            "frames": 1
+          },
+          {
+            "start": 11.2391,
+            "end": 11.2391,
+            "frames": 1
+          },
+          {
+            "start": 11.9071,
+            "end": 11.9071,
+            "frames": 1
+          },
+          {
+            "start": 12.5918,
+            "end": 12.5918,
+            "frames": 1
+          },
+          {
+            "start": 13.2264,
+            "end": 13.2264,
+            "frames": 1
+          },
+          {
+            "start": 13.527,
+            "end": 13.527,
+            "frames": 1
+          },
+          {
+            "start": 16.5163,
+            "end": 16.5163,
+            "frames": 1
+          },
+          {
+            "start": 16.6833,
+            "end": 16.6833,
+            "frames": 1
+          },
+          {
+            "start": 16.7167,
+            "end": 16.7167,
+            "frames": 1
+          },
+          {
+            "start": 16.9171,
+            "end": 16.9171,
+            "frames": 1
+          },
+          {
+            "start": 17.0674,
+            "end": 17.0674,
+            "frames": 1
+          },
+          {
+            "start": 17.2344,
+            "end": 17.2344,
+            "frames": 1
+          },
+          {
+            "start": 17.4515,
+            "end": 17.4515,
+            "frames": 1
+          },
+          {
+            "start": 18.0193,
+            "end": 18.0193,
+            "frames": 1
+          },
+          {
+            "start": 19.2384,
+            "end": 19.2384,
+            "frames": 1
+          },
+          {
+            "start": 20.2237,
+            "end": 20.2237,
+            "frames": 1
+          },
+          {
+            "start": 24.2985,
+            "end": 24.2985,
+            "frames": 1
+          },
+          {
+            "start": 25.2504,
+            "end": 25.2504,
+            "frames": 1
+          }
+        ]
+      },
+      "neither": {
+        "frames": 8,
+        "runs": [
+          {
+            "start": 6.346,
+            "end": 6.4128,
+            "frames": 5
+          },
+          {
+            "start": 17.0173,
+            "end": 17.0507,
+            "frames": 3
+          }
+        ]
+      }
+    },
+    "iphone17": {
+      "both": {
+        "frames": 1084,
+        "runs": [
+          {
+            "start": 21.6766,
+            "end": 24.2818,
+            "frames": 157
+          },
+          {
+            "start": 19.6893,
+            "end": 21.3426,
+            "frames": 100
+          },
+          {
+            "start": 18.036,
+            "end": 19.2217,
+            "frames": 72
+          },
+          {
+            "start": 10.1035,
+            "end": 11.2224,
+            "frames": 67
+          },
+          {
+            "start": 7.2478,
+            "end": 8.2999,
+            "frames": 64
+          },
+          {
+            "start": 15.4642,
+            "end": 16.4996,
+            "frames": 63
+          },
+          {
+            "start": 24.3152,
+            "end": 25.2337,
+            "frames": 56
+          },
+          {
+            "start": 14.6292,
+            "end": 15.3807,
+            "frames": 46
+          },
+          {
+            "start": 11.9238,
+            "end": 12.5751,
+            "frames": 40
+          },
+          {
+            "start": 9.3353,
+            "end": 9.9699,
+            "frames": 39
+          },
+          {
+            "start": 8.3333,
+            "end": 8.9011,
+            "frames": 35
+          },
+          {
+            "start": 11.2558,
+            "end": 11.8069,
+            "frames": 34
+          },
+          {
+            "start": 12.6753,
+            "end": 13.2097,
+            "frames": 33
+          },
+          {
+            "start": 13.6272,
+            "end": 14.0948,
+            "frames": 29
+          },
+          {
+            "start": 14.1282,
+            "end": 14.5624,
+            "frames": 27
+          },
+          {
+            "start": 19.2551,
+            "end": 19.6559,
+            "frames": 25
+          },
+          {
+            "start": 8.9345,
+            "end": 9.3019,
+            "frames": 23
+          },
+          {
+            "start": 13.2431,
+            "end": 13.5103,
+            "frames": 17
+          },
+          {
+            "start": 17.7521,
+            "end": 18.0026,
+            "frames": 16
+          },
+          {
+            "start": 25.2671,
+            "end": 25.4842,
+            "frames": 14
+          },
+          {
+            "start": 6.012,
+            "end": 6.1957,
+            "frames": 12
+          },
+          {
+            "start": 6.8303,
+            "end": 7.014,
+            "frames": 12
+          },
+          {
+            "start": 17.2511,
+            "end": 17.4348,
+            "frames": 12
+          },
+          {
+            "start": 16.7334,
+            "end": 16.9004,
+            "frames": 11
+          },
+          {
+            "start": 21.4929,
+            "end": 21.6432,
+            "frames": 10
+          },
+          {
+            "start": 17.0841,
+            "end": 17.2177,
+            "frames": 9
+          },
+          {
+            "start": 6.5464,
+            "end": 6.6633,
+            "frames": 8
+          },
+          {
+            "start": 6.6967,
+            "end": 6.7969,
+            "frames": 7
+          },
+          {
+            "start": 17.4682,
+            "end": 17.5517,
+            "frames": 6
+          },
+          {
+            "start": 6.2625,
+            "end": 6.3126,
+            "frames": 4
+          },
+          {
+            "start": 6.4629,
+            "end": 6.513,
+            "frames": 4
+          },
+          {
+            "start": 13.5437,
+            "end": 13.5938,
+            "frames": 4
+          },
+          {
+            "start": 16.6165,
+            "end": 16.6666,
+            "frames": 4
+          },
+          {
+            "start": 16.533,
+            "end": 16.5664,
+            "frames": 3
+          },
+          {
+            "start": 16.9338,
+            "end": 16.9672,
+            "frames": 3
+          },
+          {
+            "start": 21.3927,
+            "end": 21.4261,
+            "frames": 3
+          },
+          {
+            "start": 7.181,
+            "end": 7.1977,
+            "frames": 2
+          },
+          {
+            "start": 10.02,
+            "end": 10.0367,
+            "frames": 2
+          },
+          {
+            "start": 17.6519,
+            "end": 17.6686,
+            "frames": 2
+          },
+          {
+            "start": 7.0474,
+            "end": 7.0474,
+            "frames": 1
+          },
+          {
+            "start": 7.1476,
+            "end": 7.1476,
+            "frames": 1
+          },
+          {
+            "start": 11.8403,
+            "end": 11.8403,
+            "frames": 1
+          },
+          {
+            "start": 11.8904,
+            "end": 11.8904,
+            "frames": 1
+          },
+          {
+            "start": 12.6085,
+            "end": 12.6085,
+            "frames": 1
+          },
+          {
+            "start": 12.6419,
+            "end": 12.6419,
+            "frames": 1
+          },
+          {
+            "start": 16.7,
+            "end": 16.7,
+            "frames": 1
+          },
+          {
+            "start": 17.6018,
+            "end": 17.6018,
+            "frames": 1
+          },
+          {
+            "start": 17.702,
+            "end": 17.702,
+            "frames": 1
+          }
+        ]
+      },
+      "only288": {
+        "frames": 8,
+        "runs": [
+          {
+            "start": 6.2124,
+            "end": 6.2458,
+            "frames": 3
+          },
+          {
+            "start": 12.6252,
+            "end": 12.6252,
+            "frames": 1
+          },
+          {
+            "start": 12.6586,
+            "end": 12.6586,
+            "frames": 1
+          },
+          {
+            "start": 13.6105,
+            "end": 13.6105,
+            "frames": 1
+          },
+          {
+            "start": 14.1115,
+            "end": 14.1115,
+            "frames": 1
+          },
+          {
+            "start": 17.6853,
+            "end": 17.6853,
+            "frames": 1
+          }
+        ]
+      },
+      "only384": {
+        "frames": 66,
+        "runs": [
+          {
+            "start": 7.0641,
+            "end": 7.1309,
+            "frames": 5
+          },
+          {
+            "start": 15.3974,
+            "end": 15.4475,
+            "frames": 4
+          },
+          {
+            "start": 10.0534,
+            "end": 10.0868,
+            "frames": 3
+          },
+          {
+            "start": 14.5791,
+            "end": 14.6125,
+            "frames": 3
+          },
+          {
+            "start": 21.4428,
+            "end": 21.4762,
+            "frames": 3
+          },
+          {
+            "start": 6.4295,
+            "end": 6.4462,
+            "frames": 2
+          },
+          {
+            "start": 7.2144,
+            "end": 7.2311,
+            "frames": 2
+          },
+          {
+            "start": 9.9866,
+            "end": 10.0033,
+            "frames": 2
+          },
+          {
+            "start": 11.857,
+            "end": 11.8737,
+            "frames": 2
+          },
+          {
+            "start": 16.5831,
+            "end": 16.5998,
+            "frames": 2
+          },
+          {
+            "start": 16.9839,
+            "end": 17.0006,
+            "frames": 2
+          },
+          {
+            "start": 17.5684,
+            "end": 17.5851,
+            "frames": 2
+          },
+          {
+            "start": 17.6185,
+            "end": 17.6352,
+            "frames": 2
+          },
+          {
+            "start": 17.7187,
+            "end": 17.7354,
+            "frames": 2
+          },
+          {
+            "start": 21.3593,
+            "end": 21.376,
+            "frames": 2
+          },
+          {
+            "start": 6.3293,
+            "end": 6.3293,
+            "frames": 1
+          },
+          {
+            "start": 6.5297,
+            "end": 6.5297,
+            "frames": 1
+          },
+          {
+            "start": 6.68,
+            "end": 6.68,
+            "frames": 1
+          },
+          {
+            "start": 6.8136,
+            "end": 6.8136,
+            "frames": 1
+          },
+          {
+            "start": 7.0307,
+            "end": 7.0307,
+            "frames": 1
+          },
+          {
+            "start": 7.1643,
+            "end": 7.1643,
+            "frames": 1
+          },
+          {
+            "start": 8.3166,
+            "end": 8.3166,
+            "frames": 1
+          },
+          {
+            "start": 8.9178,
+            "end": 8.9178,
+            "frames": 1
+          },
+          {
+            "start": 9.3186,
+            "end": 9.3186,
+            "frames": 1
+          },
+          {
+            "start": 11.2391,
+            "end": 11.2391,
+            "frames": 1
+          },
+          {
+            "start": 11.8236,
+            "end": 11.8236,
+            "frames": 1
+          },
+          {
+            "start": 11.9071,
+            "end": 11.9071,
+            "frames": 1
+          },
+          {
+            "start": 12.5918,
+            "end": 12.5918,
+            "frames": 1
+          },
+          {
+            "start": 13.2264,
+            "end": 13.2264,
+            "frames": 1
+          },
+          {
+            "start": 13.527,
+            "end": 13.527,
+            "frames": 1
+          },
+          {
+            "start": 16.5163,
+            "end": 16.5163,
+            "frames": 1
+          },
+          {
+            "start": 16.6833,
+            "end": 16.6833,
+            "frames": 1
+          },
+          {
+            "start": 16.7167,
+            "end": 16.7167,
+            "frames": 1
+          },
+          {
+            "start": 16.9171,
+            "end": 16.9171,
+            "frames": 1
+          },
+          {
+            "start": 17.0674,
+            "end": 17.0674,
+            "frames": 1
+          },
+          {
+            "start": 17.2344,
+            "end": 17.2344,
+            "frames": 1
+          },
+          {
+            "start": 17.4515,
+            "end": 17.4515,
+            "frames": 1
+          },
+          {
+            "start": 18.0193,
+            "end": 18.0193,
+            "frames": 1
+          },
+          {
+            "start": 19.2384,
+            "end": 19.2384,
+            "frames": 1
+          },
+          {
+            "start": 19.6726,
+            "end": 19.6726,
+            "frames": 1
+          },
+          {
+            "start": 21.6599,
+            "end": 21.6599,
+            "frames": 1
+          },
+          {
+            "start": 24.2985,
+            "end": 24.2985,
+            "frames": 1
+          },
+          {
+            "start": 25.2504,
+            "end": 25.2504,
+            "frames": 1
+          }
+        ]
+      },
+      "neither": {
+        "frames": 8,
+        "runs": [
+          {
+            "start": 6.346,
+            "end": 6.4128,
+            "frames": 5
+          },
+          {
+            "start": 17.0173,
+            "end": 17.0507,
+            "frames": 3
+          }
+        ]
+      }
+    }
+  },
+  "availability_scope": "Stored current-frame outline within 3 ms at export timestamps, 6.0\u201325.5 seconds. Presence is not labelled accuracy.",
+  "visual_review": {
+    "reviewer": "assistant visual inspection",
+    "comparisons_reviewed": 40,
+    "frames_per_phone": 20,
+    "method": "Sequential FFmpeg frame-index decoding. Source frame matched within nearby PTS candidates using unaltered person pixels outside ball regions. Initial OpenCV random-seek boards were regenerated because seeking could return an adjacent frame.",
+    "findings": [
+      {
+        "times": [
+          7.0975,
+          10.0701,
+          15.3974,
+          15.4141
+        ],
+        "finding": "Visible original ball reappears at 288 while 384 renders the replacement on both phones."
+      },
+      {
+        "times": [
+          6.2291,
+          12.6252,
+          12.6586,
+          13.6105
+        ],
+        "finding": "288 renders replacement where 384 does not; 384 is not uniformly better."
+      },
+      {
+        "times": [
+          6.3794,
+          17.034
+        ],
+        "finding": "Both resolutions leave the visible original ball unchanged."
+      },
+      {
+        "times": [
+          0.501
+        ],
+        "finding": "The stationary ball on the couch is replaced at 384 and left original at 288."
+      },
+      {
+        "times": [
+          4.008
+        ],
+        "finding": "288 replacement visibly underfills the ball; 384 is closer to its source outline."
+      },
+      {
+        "times": [
+          6.8303,
+          19.8062,
+          24.716,
+          26.5029
+        ],
+        "finding": "Motion-blurred/contact/close-ball frames retain outline, smear or size differences at both resolutions; not a fully stable replacement."
+      }
+    ],
+    "scope": "Selected development frames, not independent labels, precision/recall, full motion/spin validation, or a release acceptance set."
+  },
+  "ui": {
+    "iphone11": {
+      "gold_selected": true,
+      "other_effects_disabled": false,
+      "expected_none_selection_matched": false,
+      "actual_effect": "galaxy",
+      "selection_check": "unresolved: UI automation tapped None, but audit and screenshot show Galaxy. Do not count this as a clean gold-only UI pass.",
+      "unchanged_29_touches": true,
+      "same_prepared_export_track": true,
+      "same_source": true,
+      "audit": {
+        "count": 29,
+        "event": "exported",
+        "intensity": 0.85,
+        "output_path": "/private/var/mobile/Containers/Data/Application/1A1DF0D0-AE12-4518-93DA-861B18790A8D/tmp/juggledude-edited-29B6C825-F4AC-4710-BE55-20E4C3402F11.mp4",
+        "skin": "gold",
+        "source_sha256": "72a548454122ff11d23284a7e4ecaa56d8c7f9063fb90d6fa703da88193a7053",
+        "style": "galaxy",
+        "touches": [
+          [
+            0,
+            6.835763750015758,
+            0.4735883037249247,
+            0.46744653433561323
+          ],
+          [
+            1,
+            7.802763749990845,
+            0.5531928638650147,
+            0.5019947054374277
+          ],
+          [
+            2,
+            8.436763750010869,
+            0.6069140625,
+            0.4808837890625
+          ],
+          [
+            3,
+            9.03676375001669,
+            0.4784687024575693,
+            0.4357176721096039
+          ],
+          [
+            4,
+            9.569763750012498,
+            0.40227718353271485,
+            0.5021319965521495
+          ],
+          [
+            5,
+            10.203763750003418,
+            0.261561628624245,
+            0.4855818450450897
+          ],
+          [
+            6,
+            10.90376375001506,
+            0.36793698911313655,
+            0.492321714758873
+          ],
+          [
+            7,
+            11.503763749991776,
+            0.48869986004299587,
+            0.47468875646591185
+          ],
+          [
+            8,
+            12.23776375001762,
+            0.5323088266231396,
+            0.505327824751536
+          ],
+          [
+            9,
+            13.571763749991078,
+            0.627435000552994,
+            0.5082813300600099
+          ],
+          [
+            10,
+            14.205763750011101,
+            0.6252412663565742,
+            0.5085729897022248
+          ],
+          [
+            11,
+            14.805763750016922,
+            0.5936079915364584,
+            0.4983337910970052
+          ],
+          [
+            12,
+            15.205763750011101,
+            0.6048328682228371,
+            0.5263028919696807
+          ],
+          [
+            13,
+            15.805763750016922,
+            0.6954307149957728,
+            0.487686292330424
+          ],
+          [
+            14,
+            16.27276374999201,
+            0.6061112615797254,
+            0.5084882254401842
+          ],
+          [
+            15,
+            16.83976375000202,
+            0.6532508850097657,
+            0.5192548751831055
+          ],
+          [
+            16,
+            17.33976375000202,
+            0.681640625,
+            0.5142894506454467
+          ],
+          [
+            17,
+            17.83976375000202,
+            0.6455771693476925,
+            0.5149595975875855
+          ],
+          [
+            18,
+            18.57376374999876,
+            0.5640517908732097,
+            0.47253183937072757
+          ],
+          [
+            19,
+            19.173763750004582,
+            0.6260946750640869,
+            0.49227667748928067
+          ],
+          [
+            20,
+            19.8077637499955,
+            0.6276265886094835,
+            0.5328516260782877
+          ],
+          [
+            21,
+            20.407763750001322,
+            0.5326611328125,
+            0.5133154296875
+          ],
+          [
+            22,
+            21.041763749992242,
+            0.3880440627204047,
+            0.4718459264437358
+          ],
+          [
+            23,
+            22.341763750009704,
+            0.5007266144929109,
+            0.5014176642100017
+          ],
+          [
+            24,
+            22.908763750019716,
+            0.6274996212136356,
+            0.5083911875883738
+          ],
+          [
+            25,
+            23.542763750010636,
+            0.6257360657649254,
+            0.5425023320895522
+          ],
+          [
+            26,
+            24.175763750012266,
+            0.6749740600585937,
+            0.516464376449585
+          ],
+          [
+            27,
+            24.709763749997364,
+            0.6097137451171876,
+            0.5459468960762024
+          ],
+          [
+            28,
+            25.342763749998994,
+            0.707706069946289,
+            0.543512159983317
+          ]
+        ],
+        "track_frames": 1211,
+        "track_sha256": "e126f644db89102ef0f334da502dd3d96f6b4e3e09ed0fb348418aaaaaf6a1f8"
+      }
+    },
+    "iphone17": {
+      "gold_selected": true,
+      "other_effects_disabled": true,
+      "unchanged_29_touches": true,
+      "same_prepared_export_track": true,
+      "same_source": true,
+      "audit": {
+        "count": 29,
+        "event": "exported",
+        "intensity": 0.85,
+        "output_path": "/private/var/mobile/Containers/Data/Application/2AF7A269-7D58-42BC-AE8E-26B069F8AAB7/tmp/juggledude-edited-5E9E85E5-5EF3-4E9E-A0CE-24802EB7152D.mp4",
+        "skin": "gold",
+        "source_sha256": "72a548454122ff11d23284a7e4ecaa56d8c7f9063fb90d6fa703da88193a7053",
+        "style": "none",
+        "touches": [
+          [
+            0,
+            6.835763750015758,
+            0.4735883037249247,
+            0.46744653433561323
+          ],
+          [
+            1,
+            7.802763749990845,
+            0.5531928638650147,
+            0.5019947054374277
+          ],
+          [
+            2,
+            8.436763750010869,
+            0.6069140625,
+            0.4808837890625
+          ],
+          [
+            3,
+            9.03676375001669,
+            0.4784687024575693,
+            0.4357176721096039
+          ],
+          [
+            4,
+            9.569763750012498,
+            0.40227718353271485,
+            0.5021319965521495
+          ],
+          [
+            5,
+            10.203763750003418,
+            0.261561628624245,
+            0.4855818450450897
+          ],
+          [
+            6,
+            10.90376375001506,
+            0.36793698911313655,
+            0.492321714758873
+          ],
+          [
+            7,
+            11.503763749991776,
+            0.48869986004299587,
+            0.47468875646591185
+          ],
+          [
+            8,
+            12.23776375001762,
+            0.5323088266231396,
+            0.505327824751536
+          ],
+          [
+            9,
+            13.571763749991078,
+            0.627435000552994,
+            0.5082813300600099
+          ],
+          [
+            10,
+            14.205763750011101,
+            0.6252412663565742,
+            0.5085729897022248
+          ],
+          [
+            11,
+            14.805763750016922,
+            0.5936079915364584,
+            0.4983337910970052
+          ],
+          [
+            12,
+            15.205763750011101,
+            0.6048328682228371,
+            0.5263028919696807
+          ],
+          [
+            13,
+            15.805763750016922,
+            0.6954307149957728,
+            0.487686292330424
+          ],
+          [
+            14,
+            16.27276374999201,
+            0.6061112615797254,
+            0.5084882254401842
+          ],
+          [
+            15,
+            16.83976375000202,
+            0.6532508850097657,
+            0.5192548751831055
+          ],
+          [
+            16,
+            17.33976375000202,
+            0.681640625,
+            0.5142894506454467
+          ],
+          [
+            17,
+            17.83976375000202,
+            0.6455771693476925,
+            0.5149595975875855
+          ],
+          [
+            18,
+            18.57376374999876,
+            0.5640517908732097,
+            0.47253183937072757
+          ],
+          [
+            19,
+            19.173763750004582,
+            0.6260946750640869,
+            0.49227667748928067
+          ],
+          [
+            20,
+            19.8077637499955,
+            0.6276265886094835,
+            0.5328516260782877
+          ],
+          [
+            21,
+            20.407763750001322,
+            0.5326611328125,
+            0.5133154296875
+          ],
+          [
+            22,
+            21.041763749992242,
+            0.3880440627204047,
+            0.4718459264437358
+          ],
+          [
+            23,
+            22.341763750009704,
+            0.5007266144929109,
+            0.5014176642100017
+          ],
+          [
+            24,
+            22.908763750019716,
+            0.6274996212136356,
+            0.5083911875883738
+          ],
+          [
+            25,
+            23.542763750010636,
+            0.6257360657649254,
+            0.5425023320895522
+          ],
+          [
+            26,
+            24.175763750012266,
+            0.6749740600585937,
+            0.516464376449585
+          ],
+          [
+            27,
+            24.709763749997364,
+            0.6097137451171876,
+            0.5459468960762024
+          ],
+          [
+            28,
+            25.342763749998994,
+            0.707706069946289,
+            0.543512159983317
+          ]
+        ],
+        "track_frames": 1212,
+        "track_sha256": "485256740959eb5dfa9bb6b76298413194c8bafcae2423d48c5874143785d797"
+      }
+    }
+  },
+  "cache_restoration": {
+    "reason": "Existing debug input-size override shares a cache signature. Restored fresh 288 inference before ordinary app use; 384 evidence retained locally.",
+    "restored": [
+      {
+        "key": "da580eaff64ff4f44a93aeb35a374d96d5cee0e3ed4d3967f92298847cfc6cea.inference.plist",
+        "restored_model": "RF-DETR Small FP16 \u00b7 288 \u00b7 dev.8 \u00b7 0.40 \u00b7 288 px study",
+        "sha256": "43b1613652001fc6842d0e19db99f421ba937dd41697f96d96e55bff7b43f3d0",
+        "readback_exact": true
+      }
+    ]
+  },
+  "limitations": [
+    "One existing indoor clip, one gold skin; not all replacement materials, distant shots or a blind final test.",
+    "Preparation times reconstructed from device status transitions with one-second timestamps; approximately \u00b11 second. Gold render timer includes surface-motion preparation.",
+    "Test order differs: iPhone 11 288 then 384; iPhone 17 384 then 288. iPhone 11 384 started fair and ended serious. Not a controlled cool-device speed ratio.",
+    "iPhone 11 384 received an activation of its existing PID during rendering. Profiling attempts failed to attach or disconnected; no useful CPU profile obtained. The all-process profiling attempt overlaps its rendering, so its export timing is not a clean benchmark.",
+    "Initial iPhone 11 UI runs overlapped and were interrupted; excluded. Sequential retries and audited normal exports are the accepted UI evidence.",
+    "The accepted iPhone 11 UI export contains gold plus Galaxy even though automation tapped effect-picker-none. Source/track/touches are verified, but disabling the extra effect remains an unresolved UI/automation selection mismatch. iPhone 17 normal export is gold-only. Separate native comparison renders are gold-only on both phones.",
+    "Existing debug size override shares the old cache signature and display name. Resolution is established by staged model metadata and launch arguments. iPhone 11 fresh 288 cache restored byte-for-byte after the 384 test; iPhone 17 finished on 288.",
+    "No runtime changes, model replacement, device routing, threshold changes or training were applied."
+  ],
+  "recommendation": "384 is the stronger saved-replacement quality candidate on iPhone 17. Do not make full 384 preparation the automatic iPhone 11 default at this cost. Next experiment: 288 plus selective 384 re-analysis of missing/weak outlines, then verify edge/blur handling and normal UI timing. Not implemented or validated yet.",
+  "artifacts": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-ball-replacement-20261018"
+}

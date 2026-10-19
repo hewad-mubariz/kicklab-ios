@@ -9,6 +9,10 @@ verify_jwt = false
 # Handler requires a dedicated recovery secret; ordinary user JWTs are rejected.
 verify_jwt = false
 
+[functions.cleanup-leaderboard-videos]
+# Server-only scheduled retention; requires LEADERBOARD_CLEANUP_SECRET.
+verify_jwt = false
+
 [functions.subscription-account]
 # The handler resolves the caller through Supabase Auth, including ES256 sessions.
 verify_jwt = false

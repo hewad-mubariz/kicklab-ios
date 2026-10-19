@@ -152,7 +152,10 @@ final class SessionHistoryStore: ObservableObject {
             guard page.items.allSatisfy({ $0.ownerID == owner }) else { throw PlayerDataError.requestFailed }
             try await ProtectedAccountData.waitUntilAvailable()
             guard current == generation, !Task.isCancelled else { return }
-            for item in page.items { try library.save(item) }
+            for var item in page.items {
+                item.rankedProposal = try library.session(id: item.id, owner: owner)?.rankedProposal
+                try library.save(item)
+            }
             cursor = page.next; hasMore = page.next != nil
             reloadLocal()
         } catch {

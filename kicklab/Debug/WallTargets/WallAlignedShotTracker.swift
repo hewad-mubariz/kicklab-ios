@@ -9,9 +9,12 @@ nonisolated struct WallAlignedShotTracker {
     private var epoch: Int?
     private var pending: [WallImpactDetector.Impact] = []
     private var decisions: [WallImpactDetector.Decision] = []
+    private(set) var contactPreview: WallImpactDetector.Impact?
+    private var lastPreview = -Double.infinity
 
     mutating func reset() {
         detector = nil; epoch = nil; pending = []; decisions = []
+        contactPreview = nil; lastPreview = -Double.infinity
     }
 
     func isAtWall(_ observation: WallImpactDetector.Observation) -> Bool {
@@ -32,7 +35,25 @@ nonisolated struct WallAlignedShotTracker {
         }
         detector?.processingFPS = fps
         if let observation { detector?.add(observation) }
+        let previews = detector?.previewContacts(now: time) ?? []
         pending += detector?.impacts(now: time) ?? []
+        if let preview = (previews + pending).last(where: {
+            WallBoard.box(u: $0.u, v: $0.v) != nil
+                && $0.t - lastPreview >= WallImpactDetector.minSeparation - 0.5 / max(fps, 1)
+                && time - $0.t <= 1.6
+        }) {
+            contactPreview = preview
+            lastPreview = preview.t
+        }
+        if let preview = contactPreview {
+            let stillSupported = (previews + pending).contains {
+                abs($0.t - preview.t) < WallImpactDetector.minSeparation
+            }
+            if time - preview.t > 1.6
+                || (time - preview.t >= WallImpactDetector.settle && !stillSupported) {
+                contactPreview = nil
+            }
+        }
         decisions += (detector?.takeDecisions() ?? []).map { decision in
             var result = decision
             if !canScore, ["accepted", "borderline"].contains(result.reason) { result.reason = "alignment_pending" }
@@ -41,6 +62,10 @@ nonisolated struct WallAlignedShotTracker {
         guard canScore else { return [] }
         let result = pending
         pending = []
+        if let preview = contactPreview,
+           result.contains(where: { abs($0.t - preview.t) < WallImpactDetector.minSeparation }) {
+            contactPreview = nil
+        }
         return result
     }
 

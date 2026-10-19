@@ -2,6 +2,15 @@ import AVFoundation
 import MetalKit
 import SwiftUI
 
+/// The buffered tracking image and its trail are presented together. The normal
+/// camera remains underneath during warmup, stalls and unsupported GPU setups.
+struct LiveEffectSurface: UIViewRepresentable {
+    let frames: LiveEffectFrames
+    func makeUIView(context: Context) -> EffectVideoView { EffectVideoView() }
+    func updateUIView(_ view: EffectVideoView, context: Context) { view.configure(live: frames) }
+    static func dismantleUIView(_ view: EffectVideoView, coordinator: ()) { view.stop() }
+}
+
 /// Video and effects share a decoded frame's timestamp and one GPU presentation.
 /// The player's periodic observer is only responsible for the transport UI.
 struct MetalVideoSurface: UIViewRepresentable {
@@ -68,6 +77,8 @@ final class EffectVideoView: MTKView {
     private var stillImage: CGImage?
     private var stillTexture: MTLTexture?
     private var frameTime = 0.0
+    private var liveSource: LiveEffectFrames?
+    private var liveFrame: LiveEffectFrames.Frame?
     private var edit = SessionEditState()
     /// Set for a Power Shot replay; juggling replays build their frame from `edit`.
     private var shot: (style: ShotTrailStyle, intensity: Double)?
@@ -125,13 +136,24 @@ final class EffectVideoView: MTKView {
             if displayLink == nil {
                 let target = DisplayTarget(); target.view = self
                 let link = CADisplayLink(target: target, selector: #selector(DisplayTarget.tick(_:)))
-                link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 60, preferred: 60)
+                let maximum: Float = liveSource == nil ? 60 : 30
+                link.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: maximum, preferred: maximum)
                 link.add(to: .main, forMode: .common)
                 displayTarget = target; displayLink = link
             }
         } else {
             displayLink?.invalidate(); displayLink = nil; displayTarget = nil
         }
+    }
+
+    func configure(live frames: LiveEffectFrames) {
+        guard liveSource !== frames else { return }
+        stop()
+        liveSource = frames
+        frames.setEnabled(true)
+        isHidden = true
+        // Configure may run after didMoveToWindow.
+        if window != nil { didMoveToWindow() }
     }
 
     func configure(player: AVPlayer, edit: SessionEditState, track: BallEffectTrack) {
@@ -188,6 +210,7 @@ final class EffectVideoView: MTKView {
     }
 
     func stop() {
+        liveSource?.setEnabled(false); liveSource = nil; liveFrame = nil
         displayLink?.invalidate(); displayLink = nil; displayTarget = nil
         if let item, let output { item.remove(output) }
         output = nil; item = nil; pixels = nil; player = nil
@@ -198,8 +221,23 @@ final class EffectVideoView: MTKView {
         if let textureCache { CVMetalTextureCacheFlush(textureCache, 0) }
     }
 
+    @discardableResult
+    func consumeLiveFrame(now: Double = ProcessInfo.processInfo.systemUptime) -> Bool {
+        guard let frame = liveSource?.frame(now: now) else {
+            isHidden = true; pixels = nil; liveFrame = nil
+            return false
+        }
+        if liveFrame?.sequence != frame.sequence {
+            liveFrame = frame; pixels = frame.pixels; frameTime = frame.time
+            dirty = true
+        }
+        isHidden = false
+        return true
+    }
+
     private func tick(_ link: CADisplayLink) {
         guard window != nil, engine != nil else { return }
+        if liveSource != nil, !consumeLiveFrame() { return }
         if let output, let player {
             let requested = player.rate == 0 ? player.currentTime() : output.itemTime(forHostTime: link.targetTimestamp)
             if output.hasNewPixelBuffer(forItemTime: requested) {
@@ -258,7 +296,12 @@ final class EffectVideoView: MTKView {
             guard let drawable = currentDrawable, let command = engine.resources.queue.makeCommandBuffer() else { return }
             let size = CGSize(width: drawable.texture.width, height: drawable.texture.height)
             let sourceSize = CGSize(width: source.width, height: source.height)
-            let frame = shot.map { EffectFrame.shot(size: size, sourceSize: sourceSize, style: $0.style,
+            let frame = liveFrame.map { live in
+                live.sample.map { EffectFrame.tracked(size: size, sourceSize: sourceSize,
+                    style: .glowTrail, intensity: 0.38, sample: $0, trail: live.trail, time: live.time) }
+                ?? EffectFrame(size: size, center: .zero, radius: 1, time: live.time,
+                               intensity: 0, visibility: 0, style: BallStyle.glowTrail.shaderID)
+            } ?? shot.map { EffectFrame.shot(size: size, sourceSize: sourceSize, style: $0.style,
                                                      intensity: $0.intensity, track: track, time: frameTime) }
                 ?? EffectFrame.video(size: size, sourceSize: sourceSize, edit: edit, track: track, time: frameTime)
             #if DEBUG
@@ -283,6 +326,7 @@ final class EffectVideoView: MTKView {
                 if let error = completed.error { Task { @MainActor [weak self] in self?.report(error) } }
             }
             command.commit(); submitted = true
+            if liveSource != nil { isHidden = false }
             previousSize = drawableSize; dirty = false
             #if DEBUG
             benchmark?.record(frameTime: frameTime, materialMS: materialMS,
@@ -324,6 +368,10 @@ final class EffectVideoView: MTKView {
     }
 
     private func report(_ error: Error) {
+        if liveSource != nil {
+            isHidden = true; liveSource?.setEnabled(false)
+            pixels = nil; liveFrame = nil
+        }
         guard !reportedError else { return }
         reportedError = true
         let message = error.localizedDescription

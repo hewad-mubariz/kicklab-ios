@@ -83,7 +83,18 @@ nonisolated enum EffectVideoGeometry {
         composition.colorPrimaries = AVVideoColorPrimaries_ITU_R_709_2
         composition.colorTransferFunction = AVVideoTransferFunction_ITU_R_709_2
         composition.colorYCbCrMatrix = AVVideoYCbCrMatrix_ITU_R_709_2
-        composition.frameDuration = frameDuration ?? CMTime(seconds: 1 / Double(fps > 0 ? fps : 30), preferredTimescale: 60_000)
+        if let frameDuration {
+            // Deliberate retiming (for example a prepared scene) keeps its own clock.
+            composition.frameDuration = frameDuration
+        } else {
+            // A capture gap lowers nominalFrameRate even when the remaining footage
+            // is 60 fps. Derive output timestamps from the source, not that average.
+            // The duration is only a fallback for empty edits and gap-repair sizing.
+            let minimum = try await track.load(.minFrameDuration)
+            composition.frameDuration = minimum.isNumeric && minimum.seconds > 0 ? minimum
+                : CMTime(seconds: 1 / Double(fps.isFinite && fps > 0 ? fps : 30), preferredTimescale: 60_000)
+            composition.sourceTrackIDForFrameTiming = track.trackID
+        }
         composition.instructions = [AVVideoCompositionInstruction(configuration: instruction)]
         return AVVideoComposition(configuration: composition)
     }

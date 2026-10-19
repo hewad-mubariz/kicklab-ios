@@ -32,11 +32,8 @@ struct RecordView: View {
     @State private var elapsed: TimeInterval = 0
     @State private var timerRunning = false
     @State private var comboPeak = 0
-    @State private var liveTrail: [BallStyleSample] = []
     @State private var sessionNumber = JugglingSessionIdentity.next()
     @State private var motionPoints: [CaptureMotionPoint] = []
-    private let liveStyle = BallStyle.glowTrail
-    private let liveIntensity = 0.85
 
     @State private var showProcessing = false
     @State private var processingProgress: Double = 0
@@ -67,7 +64,9 @@ struct RecordView: View {
                     GeometryReader { video in
                         ZStack {
                             CameraPreview(session: camera.captureSession)
-                            if camera.isRecording && subscriptions.isPro { ballOverlay(in: video.size) }
+                            if camera.isRecording && subscriptions.isPro {
+                                LiveEffectSurface(frames: camera.liveEffectFrames)
+                            }
                             #if DEBUG
                             if camera.isRecording && showTouchOutlines {
                                 ActivePlayerDebugOverlay(players: camera.activePlayers, selection: camera.activePlayer,
@@ -148,19 +147,6 @@ struct RecordView: View {
         .onChange(of: camera.lastTouchToken) { _, token in
             comboPeak = max(comboPeak, camera.touchCount)
         }
-        .onChange(of: camera.ballBox) { _, box in
-            guard let box,
-                  var sample = BallStyleSample(
-                    box: box,
-                    confidence: camera.ballScore,
-                    velocityY: camera.ballVelocityY
-                  ) else {
-                return
-            }
-            sample.time = Date.timeIntervalSinceReferenceDate
-            liveTrail.append(sample)
-            if liveTrail.count > 18 { liveTrail.removeFirst(liveTrail.count - 18) }
-        }
         .onChange(of: camera.recordingElapsed) { _, time in
             guard camera.isRecording else { return }
             elapsed = time
@@ -169,7 +155,6 @@ struct RecordView: View {
         }
         .onChange(of: camera.isRecording) { _, recording in
             timerRunning = recording
-            liveTrail = []
             if recording {
                 ProductAnalytics.shared.track(.trainingStarted(.juggling))
                 sessionOwner = account.user?.id
@@ -260,7 +245,8 @@ struct RecordView: View {
                         try? await Task.sleep(for: .milliseconds(220))
                         hudShown = true
                     }
-                }
+                },
+                historySessionID: resultID
             )
             .onAppear {
                 // Cover is up — drop overlay underneath without a black flash.
@@ -477,28 +463,6 @@ struct RecordView: View {
         var transaction = Transaction()
         transaction.disablesAnimations = true
         withTransaction(transaction) { sessionSummary = summary }
-    }
-
-    // MARK: - Ball tracking
-
-    @ViewBuilder
-    private func ballOverlay(in size: CGSize) -> some View {
-        let sample: BallStyleSample? = camera.ballBox.flatMap {
-            BallStyleSample(box: $0, confidence: camera.ballScore,
-                            velocityY: camera.ballVelocityY)
-        }
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: false)) { timeline in
-            BallStyleOverlay(
-                style: liveStyle,
-                presentation: .live,
-                intensity: liveIntensity,
-                sample: sample,
-                trail: liveTrail,
-                time: timeline.date.timeIntervalSinceReferenceDate
-            )
-            .frame(width: size.width, height: size.height)
-        }
-        .allowsHitTesting(false)
     }
 
     // MARK: - Capture HUD

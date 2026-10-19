@@ -14,7 +14,15 @@ configuration templates are in `config/`. Never put server credentials in the ap
 Juggle Dude **1.0.1 (22)** (`com.juggledude`) combines the buffered RF live pipeline,
 current juggling rules, selective fire/neon preparation, replacement-ball preparation,
 and the current Power Shot camera timeline, moves, slow motion and exports. This is a
-local testing checkpoint. TestFlight upload remains pending an explicit instruction.
+local testing checkpoint. On 18 October, the user authorized a TestFlight upload;
+**1.0.1 (23)** was archived and uploaded successfully at 17:29 CEST. App Store Connect
+currently lists it as Processing. This build also includes the source-frame timing
+fix below and the latest Slow Motion/Frozen Arc changes. All 45 selected Simulator
+checks passed (recording/export reliability, timing, camera timelines and two rendered
+camera moves). The archive contains only the pinned shared RF detector and the required
+production configuration/privacy resources. Source hashes were unchanged throughout
+the build. The archive, source manifest/diff, test result and upload log are preserved
+in `artifacts/releases/20261018-build23/`. No public App Store review was submitted.
 
 `kicklab/Detection/RFDeviceProfile.swift` is the single local resolution policy:
 the listed iPhone 14-and-newer hardware identifiers use `rf384`; older, SE and unknown
@@ -48,6 +56,27 @@ release qualification or proof of equal counting accuracy at 288 and 384.
 The iPhone 14 cutoff is a configurable product default, not a claim that every listed
 phone has passed physical-device qualification. Previous distant/fast-ball misses at
 288 and the earlier isolated iPhone 17 GPU stall remain part of release validation.
+
+**Source-frame timing follow-up, 18 October:** an indoor live recording contained a
+7.703-second opening gap followed by approximately 60 fps footage. Its nominal average
+was only 46 fps, which the old composition used to reduce 1,519 source frames to 1,166.
+The shared decoder now uses the source track's timestamps unless a caller explicitly
+requests retiming. Both exporters retain the appropriate high-frame-rate MOV format,
+and analysis cache version 14 invalidates artifacts prepared on the old clock.
+
+The [timing validation report](benchmarks/touch-counting/source-frame-timing-20261018.json)
+records exact source/composition timestamp agreement for all 1,519 earlier indoor,
+2,193 fresh indoor and 1,877 outdoor 120 fps frames. Fifteen checks passed on iPhone 11,
+including RF replay, masks and customized exports; fourteen passed on Simulator,
+including Power Shot retiming and audio. The additional RF replay check could not
+complete on Simulator because pose-model weights were missing, but passed on the phone.
+Evidence is in `artifacts/ball-replacement-review-20261018/`.
+
+This fixes export cadence, not the original recording startup stall or incomplete
+replacement-ball coverage. The startup issue still needs repeated cold-start capture
+validation before a launch decision. Indoor ball-edge/blur refinement is a candidate
+for post-launch quality work. Keeping previously skipped frames can increase processing
+time for affected clips. The fix is included in TestFlight build 1.0.1 (23).
 
 The juggling pipeline separates camera coordination from analysis:
 

@@ -113,6 +113,7 @@ final class CameraSession: NSObject, ObservableObject {
     #endif
     @MainActor @Published private(set) var performance = DetectorPerformanceSnapshot()
     private let liveAnalysis = LiveJugglingAnalysis()
+    var liveEffectFrames: LiveEffectFrames { liveAnalysis.preview }
     private let recorder = Recorder()
     /// Enabled in normal capture; disabling it is a diagnostic comparison.
     var motionCompensationEnabled = true

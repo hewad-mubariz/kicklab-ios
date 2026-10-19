@@ -89,6 +89,7 @@ struct LeaderboardPennant: View {
     let delay: Double
     /// Which way it swings first.
     let side: Double
+    var onSelect: (() -> Void)? = nil
     // Capture the initial pose separately from the consumed entrance trigger.
     // Otherwise starting the animation can briefly reveal the full cloth.
     @State private var startsFolded: Bool
@@ -98,9 +99,10 @@ struct LeaderboardPennant: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(entry: LeaderboardEntry, width: CGFloat, height: CGFloat,
-         animateEntrance: Bool, delay: Double, side: Double) {
+         animateEntrance: Bool, delay: Double, side: Double, onSelect: (() -> Void)? = nil) {
         self.entry = entry; self.width = width; self.height = height
         self.delay = delay; self.side = side
+        self.onSelect = onSelect
         _startsFolded = State(initialValue: animateEntrance)
         _opensOnAppear = State(initialValue: animateEntrance)
     }
@@ -144,11 +146,13 @@ struct LeaderboardPennant: View {
             reveal += 1
         }
         .contentShape(.rect)
-        .onTapGesture { pushes += 1 }
+        .onTapGesture { pushes += 1; onSelect?() }
         .sensoryFeedback(.impact(weight: .light), trigger: pushes)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Rank \(entry.rank), \(entry.isYou ? "you" : entry.name), \(entry.touches) touches")
         .accessibilityIdentifier("leaderboard-pennant-\(entry.rank)")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { onSelect?() }
     }
 }
 

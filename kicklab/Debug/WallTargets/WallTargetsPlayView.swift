@@ -10,46 +10,76 @@ struct WallTargetsPlayView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var recordingSince: Date?
     @State private var attempt = 0
-    @State private var feedback = WallTargetsFeedback()
+    let feedback: WallTargetsFeedback
+    @State private var ending = false
+    @State private var requestedStart = false
+    @State private var saveFinished = true
+    @State private var finishTask: Task<Void, Never>?
 
     var body: some View {
-        WallTargetsBoard(model: model)
+        WallTargetsBoard(model: model, onStart: startGame,
+                         onSettings: { endSession(reason: "settings", returnToSettings: true) },
+                         onStop: requestedStart && !ending ? { endSession(reason: "stop_button") } : nil,
+                         startEnabled: camera.isReady && saveFinished && camera.runtime.canStartRound,
+                         startStatus: camera.runtime.startNotice ?? (camera.isReady ? nil : camera.status),
+                         runtime: camera.runtime)
             .contentShape(Rectangle())
             .onTapGesture {
-                if model.calibration == .failed || model.referenceFailed
+                guard requestedStart, !ending, model.gameScreen == .board else { return }
+                if model.calibration == .failed || model.referenceFailed || model.mappingFailed
                     || (model.referenceBox == nil && model.calibration == .ready && model.alignmentStatus != .ready) {
                     model.invalidateCalibration()
                     attempt += 1
                 }
             }
-            .onLongPressGesture(minimumDuration: 0.8) { dismiss() }
+            .onLongPressGesture(minimumDuration: 0.8, maximumDistance: 40) {
+                endSession(reason: "long_press", returnToSettings: model.gameScreen != .board)
+            }
             .statusBarHidden()
             .persistentSystemOverlays(.hidden)
-            .onChange(of: model.lastHit?.id) { _, id in
-                if id != nil, model.isPlaying { feedback.play(cleared: model.clearedAt != nil) }
+            .onAppear {
+                model.showGameIntro()
+                camera.setScoringEnabled(false)
+                camera.setCaptureResting(true)
+            }
+            .onChange(of: camera.runtime.shouldEndRound) { _, critical in
+                if critical { endSession(reason: "thermal_critical") }
+            }
+            .onChange(of: model.clearedAt) { _, date in
+                if date != nil { endSession(reason: "round_complete") }
+            }
+            .onChange(of: camera.recordingState, initial: true) { _, state in
+                model.recordingState = state
             }
             .sensoryFeedback(.success, trigger: model.lastHit?.id)
             .onChange(of: camera.status) { _, status in
-                if !camera.isReady { model.notice = status }
+                if !camera.isReady, requestedStart, !ending { model.notice = status }
             }
             .onDisappear {
-                model.cornerDots = .normal
-                model.pause()
-                camera.endReference()
-                camera.setScoringEnabled(false)
-                finishRecording()
+                endSession(reason: "view_closed")
             }
-            .task(id: "\(camera.isReady)-\(attempt)") {
+            .task(id: "\(camera.isReady)-\(attempt)-\(ending)-\(requestedStart)") {
+                guard requestedStart, !ending else { return }
                 guard camera.isReady else {
                     camera.endReference()
-                    finishRecording()
                     model.invalidateCalibration()
                     model.notice = camera.status
                     camera.setScoringEnabled(false)
+                    endSession(reason: "camera_interrupted")
                     return
                 }
                 await prepareGame()
             }
+    }
+
+    private func startGame() {
+        guard camera.isReady, saveFinished, camera.runtime.canStartRound, !requestedStart || ending,
+              model.beginGameSetup(usingCurrentCorners: !requestedStart) else { return }
+        camera.setCaptureResting(false)
+        finishTask = nil
+        ending = false
+        requestedStart = true
+        attempt += 1
     }
 
     private func prepareGame() async {
@@ -93,6 +123,7 @@ struct WallTargetsPlayView: View {
         if recordingSince == nil {
             recordingSince = Date()
             camera.startRecording(extra: ["style": model.style.rawValue, "mode": "reference-and-play",
+                                         "game": "clear-the-wall-v1", "timeBasis": "active-play-excluding-alignment-pauses",
                                          "boardPadding": Double(WallTargetsBoard.padding),
                                          "app": "Ball Detection Debug / Wall targets"])
         }
@@ -100,6 +131,20 @@ struct WallTargetsPlayView: View {
         // Verify the actual visible board before collecting any wall-size samples.
         await camera.verifyAlignment()
         guard await waitForAlignment() else { return }
+        guard await checkMapping() else { return }
+        // Restore the normal board and re-observe its corner dots after the check.
+        await camera.verifyAlignment()
+        guard await waitForAlignment() else { return }
+        if let report = model.mappingReport,
+           zip(report.cornersNormalised, model.corners).contains(where: { old, new in
+               hypot((old[0] - new.x) * report.frameWidth,
+                     (old[1] - new.y) * report.frameHeight) > WallBoardAlignment.tolerancePixels
+           }) {
+            model.invalidateCalibration()
+            model.calibrationFailed()
+            model.notice = "Board moved during the check · tap to retry"
+            return
+        }
         model.beginReference()
         var diameters: [Double] = []
         for box in 1...6 {
@@ -110,7 +155,6 @@ struct WallTargetsPlayView: View {
                     model.showReference(box: box, progress: sample.progress)
                     if let diameter = sample.diameter {
                         diameters.append(diameter)
-                        feedback.play(cleared: false)
                         break
                     }
                 }
@@ -126,6 +170,7 @@ struct WallTargetsPlayView: View {
         await camera.verifyAlignment()
         // Losing alignment during countdown restarts it; the first shot must
         // never be taken against geometry that became stale during setup.
+        feedback.prepare()
         while !Task.isCancelled, camera.isReady {
             model.countdown = nil
             guard await waitForAlignment() else { return }
@@ -141,7 +186,28 @@ struct WallTargetsPlayView: View {
         guard !Task.isCancelled, camera.isReady, model.isPlaying else { return }
         camera.setScoringEnabled(true)
         camera.markPlaying()
+        model.showGoCue()
 
+    }
+
+    private func checkMapping() async -> Bool {
+        model.beginMappingCheck()
+        await camera.beginMappingCheck()
+        var on: [ClosedRange<Double>] = [], off: [ClosedRange<Double>] = []
+        for phase in 0..<4 {
+            model.mappingDotsVisible = !phase.isMultiple(of: 2)
+            let start = CACurrentMediaTime()
+            guard await pause(.milliseconds(1200)) else {
+                model.mappingDotsVisible = false
+                _ = await camera.finishMappingCheck(on: [], off: [])
+                return false
+            }
+            let span = (start + 0.6)...max(start + 0.6, CACurrentMediaTime())
+            if phase.isMultiple(of: 2) { off.append(span) } else { on.append(span) }
+        }
+        let report = await camera.finishMappingCheck(on: on, off: off)
+        guard !Task.isCancelled else { return false }
+        return model.finishMappingCheck(report)
     }
 
     private func focusOnWall(near corners: [CGPoint]? = nil) async -> Bool {
@@ -162,15 +228,54 @@ struct WallTargetsPlayView: View {
         return false
     }
 
-    private func finishRecording() {
-        guard let since = recordingSince else { return }
-        recordingSince = nil
-        camera.stopRecording(extra: [
-            "clears": model.clears.filter { $0.at >= since }.map(\.seconds),
-            "calibrationValid": model.calibration == .ready,
-            "wallBallDiametersNormalised": model.wallReference?.diameters ?? [],
-            "cornersNormalised": model.corners.map { [Double($0.x), Double($0.y)] },
-            "processingFPS": camera.processingFPS, "deliveredFPS": camera.deliveredFPS])
+    private func endSession(reason: String, returnToSettings: Bool = false) {
+        guard requestedStart else {
+            if returnToSettings {
+                camera.setCaptureResting(false)
+                model.showBoardForSettings(); dismiss()
+            }
+            return
+        }
+        if !ending {
+            ending = true
+            saveFinished = false
+            let since = recordingSince ?? .distantPast
+            recordingSince = nil
+            model.cornerDots = .normal
+            model.finishSession()
+            camera.endReference()
+            camera.setScoringEnabled(false)
+            let summary: [String: Any] = [
+                "stopReason": reason,
+                "game": "clear-the-wall-v1",
+                "activePlaySeconds": model.elapsed(at: Date()),
+                "uniqueTargets": model.boxesHit.count,
+                "personalBestSeconds": model.bestClearTime as Any? ?? NSNull(),
+                "newPersonalBest": model.isNewBest,
+                "clears": model.clears.filter { $0.at >= since }.map(\.seconds),
+                "scoredHits": model.hits.enumerated().map { index, hit in
+                    ["number": index + 1, "box": hit.box as Any? ?? NSNull(),
+                     "u": hit.u, "v": hit.v, "reportedAt": hit.at.timeIntervalSince1970] as [String: Any]
+                },
+                "calibrationValid": model.calibration == .ready,
+                "wallBallDiametersNormalised": model.wallReference?.diameters ?? [],
+                "cornersNormalised": model.corners.map { [Double($0.x), Double($0.y)] },
+                "processingFPS": camera.processingFPS, "deliveredFPS": camera.deliveredFPS]
+            finishTask = Task {
+                await camera.stopRecording(extra: summary)
+                camera.setCaptureResting(true)
+                saveFinished = true
+            }
+        }
+        if returnToSettings {
+            let pending = finishTask
+            Task {
+                await pending?.value
+                camera.setCaptureResting(false)
+                model.showBoardForSettings()
+                dismiss()
+            }
+        }
     }
 
     private func pause(_ duration: Duration) async -> Bool {

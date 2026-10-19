@@ -1,4 +1,5 @@
 import { createRemoteJWKSet, importPKCS8, jwtVerify, SignJWT } from "npm:jose@6.2.12";
+import { removeAccountLeaderboardVideos } from "../_shared/leaderboard-storage.ts";
 
 type Identity = { provider: string; identity_data?: { sub?: string } };
 type User = { id: string; identities?: Identity[] };
@@ -137,6 +138,8 @@ export function createHandler(config: Configuration, fetcher: Fetch = fetch,
         method: "DELETE", body: JSON.stringify({ prefixes: [`${user.id}/avatar.jpg`] }),
       });
       if (!removed.ok) throw new Failure(503, "avatar_cleanup_failed");
+      try { await removeAccountLeaderboardVideos(admin, user.id); }
+      catch { throw new Failure(503, "video_cleanup_failed"); }
       const removedUser = await admin(`/auth/v1/admin/users/${user.id}`, {
         method: "DELETE", body: JSON.stringify({ should_soft_delete: false }),
       });
