@@ -1,0 +1,61 @@
+{
+  "version": "1.0.1",
+  "build": "27",
+  "branch": "codex/homepage-polish-1.0.1",
+  "base_commit": "3d9c93f",
+  "source_commit": "d0ecb168f1cf3e1e740c66e4664a5c7eb3c04cea",
+  "scope": "Homepage polish only, based on main build 26.",
+  "changes": [
+    "Single Your training heading replaces the app name and duplicated section title.",
+    "Pure white home background in Light appearance; existing Dark appearance retained.",
+    "Removed the availability count/dot and the trophy background tile.",
+    "Session history uses a native right chevron.",
+    "Existing setup-guide navigation test now uses the stable home-guide-done identifier instead of the outdated Done label."
+  ],
+  "excluded_feature_work": "codex/post-launch-signin-leaderboard-ball-edges; no leaderboard, sign-in rollout, counting, recording or ball-replacement changes imported.",
+  "verification": {
+    "ui_checks_passed": 4,
+    "ui_checks": [
+      "Accessibility layout and empty personal best",
+      "Juggling/import navigation and return home",
+      "Light/Dark appearance persistence and camera setup guide",
+      "Session history from Home and Profile"
+    ],
+    "initial_test_failure": "The setup-guide assertion expected Done; current main uses Continue. Corrected the test locator and reran successfully.",
+    "result_bundles": [
+      "artifacts/releases/20261023-home-polish/home-navigation.xcresult",
+      "artifacts/releases/20261023-home-polish/home-appearance-rerun.xcresult"
+    ],
+    "release_simulator_build": "passed",
+    "release_visual_review": [
+      "iPhone 17e Light/Dark (390pt width)",
+      "iPhone 17 Pro Max Light (440pt width)"
+    ],
+    "signed_release_archive": "passed",
+    "archive_verification": "artifacts/releases/20261023-home-polish/archive-verification.json",
+    "unchanged_pipeline_note": "UI-focused validation only; no new camera/model benchmark or physical-device installation in this task."
+  },
+  "archive_path": "artifacts/releases/20261023-home-polish/JuggleDude-1.0.1-27.xcarchive",
+  "upload_status": "succeeded",
+  "testflight_status": "processing_complete_internal_group_assignment_unverified",
+  "app_store_review_submitted": false,
+  "phone_installation_performed": false,
+  "user_handoff": "Upload to TestFlight, then wait for user review before downloading or installing on the iPhone. App Store submission is not authorized.",
+  "upload": {
+    "completed_at": "2026-10-23T15:28:12.499Z",
+    "result": "EXPORT SUCCEEDED",
+    "log": "artifacts/releases/20261023-home-polish/upload.log"
+  },
+  "testflight": {
+    "build_id": "650ac946-17b3-4508-8c18-8f3b1cdede3c",
+    "url": "https://appstoreconnect.apple.com/teams/9b7830cc-2a57-43c6-813e-db0800261e24/apps/6820780610/testflight/ios/650ac946-17b3-4508-8c18-8f3b1cdede3c",
+    "displayed_status": "Ready to Submit",
+    "processing": "complete",
+    "what_to_test": "saved",
+    "internal_group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "group_assignment": "Add clicked; portal signed out before confirmation. User asked to sign back in.",
+    "new_testers_invited": false,
+    "last_checked_at": "2026-10-23T15:35:36.992028+00:00"
+  }
+}
