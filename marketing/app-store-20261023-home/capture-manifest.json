@@ -1,0 +1,49 @@
+{
+  "version": "1.0.1",
+  "build": "27",
+  "source_commit": "d0ecb168f1cf3e1e740c66e4664a5c7eb3c04cea",
+  "screenshot": {
+    "file": "screenshots/01-home-current-dark-1320x2868.png",
+    "size": [
+      1320,
+      2868
+    ],
+    "appearance": "Dark",
+    "sha256": "b8328e677276040311b97a135d00282f524b78f586d6fdd14f4d1c498e2dd2f5",
+    "source": "sources/home-release-dark-1.0.1-27.png",
+    "source_kind": "Actual Release build screenshot on iPhone 17 Pro Max simulator; no fabricated UI",
+    "composition": "Existing App Store template with oversized bottom-cropped phone frame"
+  },
+  "preview": {
+    "source": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/launch-demo-20261018/ui-v11/appstore/Juggle-Dude-App-Preview.mp4",
+    "source_sha256": "6edc19b1daa6dde19482b01c19bbb7c7cc41026cf22c69a8be1bfb39b489eaa1",
+    "output": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/releases/20261023-home-polish/store-media/Juggle-Dude-App-Preview-1.0.1.mp4",
+    "output_sha256": "f56b5029bef9cc12ef3df3a032c01ab966cb441de9a39c07963ed532f27f9208",
+    "home_source": "/Users/hewadmubariz/Desktop/projects/kicklab/marketing/app-store-20261023-home/sources/home-release-1.0.1-27.png",
+    "home_sha256": "5f7bb2018b7c77d82b751d5bc6373abc8aaff0c4f5823d803549dafa2677c882",
+    "replaced_interval_seconds": [
+      25.5,
+      27.6
+    ],
+    "audio": "Original AAC stream copied without re-encoding",
+    "other_content": "Same first 25.5 seconds, re-encoded for concatenation. Original file preserved."
+  },
+  "preview_validation": "artifacts/releases/20261023-home-polish/store-media/validation.json",
+  "gallery_order": [
+    "01-home-current-dark-1320x2868.png",
+    "02-replay-session-only-1320x2868.png",
+    "03-camera-current-1320x2868.png"
+  ],
+  "preserved_screenshots": [
+    "02-replay-session-only-1320x2868.png",
+    "03-camera-current-1320x2868.png"
+  ],
+  "locale": "en-US",
+  "draft_url": "https://appstoreconnect.apple.com/apps/6820780610/distribution/ios/version/inflight",
+  "app_review_submission": true,
+  "physical_device_installation": false,
+  "old_assets": "Removed only from new draft gallery; retained in Asset Library and released version.",
+  "upload_status": "Saved in 1.0.1 draft; preview poster generated and media viewer opens.",
+  "submission_id": "50c0a416-df04-4998-a085-77734510ce58",
+  "submission_status": "Waiting for Review"
+}

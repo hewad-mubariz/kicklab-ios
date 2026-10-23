@@ -1,0 +1,25 @@
+Juggle Dude 1.0.1 (27) - App Review Notes
+
+CHANGES IN THIS UPDATE
+This update refreshes the homepage: a single "Your training" heading, a white background in Light Mode, a simpler personal-best section and a standard Session history chevron. Dark Mode remains supported. Recording, touch counting, ball detection, effects, replay/export, subscriptions and sign-in behavior are unchanged from approved build 26. The App Store screenshots and preview have also been updated.
+
+ACCESS AND TESTING
+Choose "Try it first" to use the app as a guest. No Juggle Dude account is required for recording, importing, analysis, replay/export, local history, purchasing Pro or restoring purchases.
+
+Sample juggling clip:
+https://drive.google.com/file/d/1E5P2OyqE0h4ok44QDoOuYmd7jQw-Uud-/view?usp=sharing
+Save the clip to Photos, then choose Home > Import a juggling video. Keep the app open during analysis. In replay, the Download arrow saves the exported video to Photos. This lets you test without performing the exercise yourself.
+
+Home > Juggling opens live recording. Home > Ball Distance opens shot recording and the Power Shot replay editor. Shot mode does not provide verified shot-speed or travel-distance measurements. Automatic touch estimates depend on visibility, lighting and framing.
+
+FREE AND PRO ACCESS
+Free juggling includes recording/import, analysis, local history, the basic live counter/timer and the Normal counter/timer in replay and export. Pro unlocks decorative counters, ball replacement, additional juggling effects and graphs.
+Free Power Shot includes recording, the original video, basic export and Glow Trail. Other shot effects, camera tools and graphs require Pro.
+Profile > Juggle Dude Pro or a locked replay option opens the paywall. Monthly and Yearly auto-renewing plans have identical benefits and no free trial. StoreKit supplies localized prices. Restore Purchases and subscription management are available in the app. Pro entitlement is separate from app sign-in.
+
+ACCOUNTS AND ON-DEVICE ANALYSIS
+Optional Sign in with Apple syncs profiles and supported results. Videos remain local, and guest history stays separate. Profile > Delete account uses Apple verification, deletes the account and its associated server results and account-local history/replays, then signs out. Guest history and Photos exports remain. Apple subscriptions are managed separately and are not cancelled by deleting the app account.
+RF-DETR Seg Small runs through Apple Core ML for ball/person detection and masks; Apple Vision supplies pose. Video/frame analysis stays on-device. Model licence and attribution notices are bundled with the app.
+
+Terms: https://juggledude.com/terms/
+Privacy: https://juggledude.com/privacy/

@@ -1,0 +1,7 @@
+A refreshed home for your training.
+
+• Cleaner layout with a single Your training heading.
+• A brighter white background in Light Mode, with Dark Mode still supported.
+• A simpler personal-best section and clearer navigation to Session history.
+
+Your recording, touch counting, replay tools and Pro features work just as before.

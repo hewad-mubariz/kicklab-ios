@@ -1,0 +1,103 @@
+{
+  "version": "1.0.1",
+  "build": "27",
+  "branch": "codex/homepage-polish-1.0.1",
+  "base_commit": "3d9c93f",
+  "source_commit": "d0ecb168f1cf3e1e740c66e4664a5c7eb3c04cea",
+  "scope": "Homepage polish only, based on main build 26.",
+  "changes": [
+    "Single Your training heading replaces the app name and duplicated section title.",
+    "Pure white home background in Light appearance; existing Dark appearance retained.",
+    "Removed the availability count/dot and the trophy background tile.",
+    "Session history uses a native right chevron.",
+    "Existing setup-guide navigation test now uses the stable home-guide-done identifier instead of the outdated Done label."
+  ],
+  "excluded_feature_work": "codex/post-launch-signin-leaderboard-ball-edges; no leaderboard, sign-in rollout, counting, recording or ball-replacement changes imported.",
+  "verification": {
+    "ui_checks_passed": 4,
+    "ui_checks": [
+      "Accessibility layout and empty personal best",
+      "Juggling/import navigation and return home",
+      "Light/Dark appearance persistence and camera setup guide",
+      "Session history from Home and Profile"
+    ],
+    "initial_test_failure": "The setup-guide assertion expected Done; current main uses Continue. Corrected the test locator and reran successfully.",
+    "result_bundles": [
+      "artifacts/releases/20261023-home-polish/home-navigation.xcresult",
+      "artifacts/releases/20261023-home-polish/home-appearance-rerun.xcresult"
+    ],
+    "release_simulator_build": "passed",
+    "release_visual_review": [
+      "iPhone 17e Light/Dark (390pt width)",
+      "iPhone 17 Pro Max Light (440pt width)",
+      "iPhone 17 Pro Max Dark (440pt width), actual Release capture for App Store screenshot"
+    ],
+    "signed_release_archive": "passed",
+    "archive_verification": "artifacts/releases/20261023-home-polish/archive-verification.json",
+    "unchanged_pipeline_note": "UI-focused validation only; no new camera/model benchmark or physical-device installation in this task."
+  },
+  "archive_path": "artifacts/releases/20261023-home-polish/JuggleDude-1.0.1-27.xcarchive",
+  "upload_status": "succeeded",
+  "testflight_status": "processing_complete_internal_group_confirmed",
+  "app_store_review_submitted": true,
+  "phone_installation_performed": false,
+  "user_handoff": "User authorized App Review submission with manual release on 2026-10-23. Submitted 1.0.1 (27); no physical-device installation performed. Public release remains manual.",
+  "upload": {
+    "completed_at": "2026-10-23T15:28:12.499Z",
+    "result": "EXPORT SUCCEEDED",
+    "log": "artifacts/releases/20261023-home-polish/upload.log"
+  },
+  "testflight": {
+    "build_id": "650ac946-17b3-4508-8c18-8f3b1cdede3c",
+    "url": "https://appstoreconnect.apple.com/teams/9b7830cc-2a57-43c6-813e-db0800261e24/apps/6820780610/testflight/ios/650ac946-17b3-4508-8c18-8f3b1cdede3c",
+    "displayed_status": "Ready to Submit",
+    "processing": "complete",
+    "what_to_test": "saved",
+    "internal_group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "group_assignment": "Confirmed in App Store Connect: Early testers, Internal, 2 testers.",
+    "new_testers_invited": false,
+    "last_checked_at": "2026-10-23T15:51:25.953389+00:00",
+    "proof": "artifacts/releases/20261023-home-polish/testflight-build27-ready.jpg"
+  },
+  "app_store_draft": {
+    "version": "1.0.1",
+    "status": "Waiting for Review",
+    "url": "https://appstoreconnect.apple.com/apps/6820780610/distribution/ios/version/inflight",
+    "media_manifest": "marketing/app-store-20261023-home/capture-manifest.json",
+    "screenshot": "Updated Dark Mode home in first position; existing replay and camera retained.",
+    "preview": "Juggle-Dude-App-Preview-1.0.1.mp4 saved; poster generated and media viewer opens.",
+    "proof": "artifacts/releases/20261023-home-polish/store-media/app-store-draft-gallery.jpg",
+    "review_notes": {
+      "file": "benchmarks/releases/1.0.1-27-review-notes.txt",
+      "saved": true,
+      "persisted_verification": "Exact match after reloading the App Store Connect draft; 2726 characters.",
+      "proof": "artifacts/releases/20261023-home-polish/review-notes-saved.jpg"
+    },
+    "submitted": true,
+    "remaining_before_future_submission": [],
+    "release_mode": "Manually release this version",
+    "whats_new_file": "benchmarks/releases/1.0.1-27-whats-new.txt",
+    "submission": {
+      "id": "50c0a416-df04-4998-a085-77734510ce58",
+      "url": "https://appstoreconnect.apple.com/apps/6820780610/distribution/reviewsubmissions/details/50c0a416-df04-4998-a085-77734510ce58",
+      "submitted_at_displayed": "Oct 23, 2026 at 6:10 PM CEST",
+      "status": "Waiting for Review",
+      "items": [
+        "iOS App 1.0.1 (27)"
+      ],
+      "proof": "artifacts/releases/20261023-home-polish/app-review-submitted.jpg",
+      "manual_release_proof": "artifacts/releases/20261023-home-polish/manual-release-before-submit.jpg",
+      "preflight": [
+        "Correct build 27 selected; iPhone-only signed archive verified previously.",
+        "Manual release checked; existing rating retained.",
+        "Only en-US localization; homepage-only What's New saved.",
+        "Updated review notes exactly match the approved local text.",
+        "Updated preview loaded with readyState 4 and no media error; three expected screenshots present.",
+        "Support, Terms and Privacy pages loaded successfully in browser.",
+        "Sample Google Drive clip reports anyone with the link can access without sign-in.",
+        "App Store Connect accepted one app-version item without validation errors."
+      ]
+    }
+  }
+}
