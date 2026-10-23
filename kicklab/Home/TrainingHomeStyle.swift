@@ -11,6 +11,10 @@ enum TrainingHomeStyle {
         rgb(scheme == .dark ? 0x0C0F10 : 0xF3F4ED)
     }
 
+    static func homeBackground(_ scheme: ColorScheme) -> Color {
+        scheme == .dark ? background(scheme) : .white
+    }
+
     static func panel(_ scheme: ColorScheme) -> Color {
         rgb(scheme == .dark ? 0x151A1C : 0xFFFFFF)
     }

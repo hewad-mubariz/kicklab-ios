@@ -44,7 +44,7 @@ final class HomeNavigationTests: XCTestCase {
         app.buttons["profile-close"].tap()
         app.buttons["home-setup-guide"].tap()
         XCTAssertTrue(app.staticTexts["Prop up your phone"].waitForExistence(timeout: 3))
-        app.buttons["Done"].tap()
+        app.buttons["home-guide-done"].tap()
         XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout: 3))
     }
 

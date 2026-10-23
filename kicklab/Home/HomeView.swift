@@ -18,8 +18,7 @@ struct HomeView: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                header.padding(.bottom, 26)
-                trainingHeading.padding(.bottom, 18)
+                header.padding(.bottom, 28)
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12),
                                          count: typeSize.isAccessibilitySize ? 1 : 2), spacing: 12) {
                     TrainingHomeCard(image: "home-juggling", category: "01 / CONTROL",
@@ -44,7 +43,9 @@ struct HomeView: View {
                                     .foregroundStyle(TrainingHomeStyle.muted(scheme))
                             }
                             Spacer(minLength: 0)
-                            Image(systemName: "arrow.up.right").font(.subheadline)
+                            Image(systemName: "chevron.right")
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(TrainingHomeStyle.muted(scheme))
                         }
                         .padding(16).frame(maxWidth: .infinity, minHeight: 62)
                         .background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 18))
@@ -73,54 +74,24 @@ struct HomeView: View {
             .padding(.bottom, 14)
             .frame(maxWidth: .infinity)
         }
-        .background(TrainingHomeStyle.background(scheme).ignoresSafeArea())
+        .background(TrainingHomeStyle.homeBackground(scheme).ignoresSafeArea())
         .foregroundStyle(TrainingHomeStyle.ink(scheme))
         .accessibilityIdentifier("home-screen")
     }
 
     private var header: some View {
-        HStack {
-            Text("Juggle Dude")
-                .font(TrainingHomeStyle.display(30, relativeTo: .title2))
-                .tracking(1.5)
-                .accessibilityLabel("Juggle Dude")
-            Spacer()
+        HStack(alignment: .top, spacing: 16) {
+            Text("Your training")
+                .font(TrainingHomeStyle.display(44, relativeTo: .largeTitle))
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            Spacer(minLength: 0)
             // Deferred from the first release; keep the leaderboard entry for later.
             // if let onLeaderboard {
             //     HomeLeaderboardButton(action: onLeaderboard, zoom: leaderboardZoom)
             // }
             HomeProfileButton(action: onProfile, zoom: profileZoom)
         }
-    }
-
-    private var trainingHeading: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .firstTextBaseline) {
-                trainingTitle
-                Spacer(minLength: 12)
-                availability
-            }
-            VStack(alignment: .leading, spacing: 8) {
-                trainingTitle
-                availability
-            }
-        }
-    }
-
-    private var trainingTitle: some View {
-        Text("YOUR TRAINING")
-            .font(TrainingHomeStyle.display(34, relativeTo: .title))
-            .accessibilityAddTraits(.isHeader)
-    }
-
-    private var availability: some View {
-        HStack(spacing: 5) {
-            Circle().fill(TrainingHomeStyle.accent(scheme)).frame(width: 5, height: 5)
-            Text("02 AVAILABLE").font(.caption2.weight(.semibold)).tracking(0.6)
-        }
-        .foregroundStyle(TrainingHomeStyle.muted(scheme))
-        .fixedSize()
-        .accessibilityLabel("2 training modes available")
     }
 
     private var personalBestRow: some View {
@@ -132,7 +103,6 @@ struct HomeView: View {
                 .font(.system(size: 19, weight: .medium))
                 .foregroundStyle(TrainingHomeStyle.accent(scheme))
                 .frame(width: 42, height: 42)
-                .background(TrainingHomeStyle.accent(scheme).opacity(0.09), in: RoundedRectangle(cornerRadius: 12))
             VStack(alignment: .leading, spacing: 5) {
                 Text("JUGGLING PERSONAL BEST").font(.caption2.weight(.semibold)).tracking(0.5)
                 Text(personalBest > 0 ? "A little better, every session." : "Your first record starts here.")
