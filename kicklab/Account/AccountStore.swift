@@ -180,7 +180,7 @@ final class AccountStore: ObservableObject {
             resendAfter = now().addingTimeInterval(60)
             errorMessage = "Too many attempts. Wait a minute, then try again."
         } else if let auth = error as? AuthError, auth.errorCode == .emailAddressNotAuthorized {
-            errorMessage = "Email sign-in isn’t available for this address yet. Please use Google or Apple for now."
+            errorMessage = "Email sign-in isn’t available for this address yet. Please use Sign in with Apple for now."
         } else if let auth = error as? AuthError, auth.errorCode == .providerDisabled {
             errorMessage = "This sign-in option is temporarily unavailable. Please choose another option."
         } else {

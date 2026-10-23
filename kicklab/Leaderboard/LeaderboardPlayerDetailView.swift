@@ -14,7 +14,8 @@ struct LeaderboardPlayerDetailView: View {
                         LeaderboardMedallion(entry: entry, size: 88, ring: TrainingHomeStyle.accent(scheme))
                         VStack(alignment: .leading, spacing: 4) {
                             Text(entry.touches.formatted()).font(TrainingHomeStyle.display(80, relativeTo: .largeTitle)).monospacedDigit()
-                            Label("Reviewed streak", systemImage: "checkmark.seal.fill").font(.headline)
+                            Label(entry.isPreview ? "Sample streak" : entry.attemptID != nil ? "Checked streak" : "Best streak",
+                                  systemImage: entry.attemptID != nil ? "checkmark.seal.fill" : "soccerball").font(.headline)
                             Text("Rank #\(entry.rank)").foregroundStyle(.secondary)
                         }
                     }
@@ -27,25 +28,33 @@ struct LeaderboardPlayerDetailView: View {
                     }
                     VStack(alignment: .leading, spacing: 16) {
                         HStack { Text("Juggling style").font(.title2.bold()); Spacer(); Text("Estimated").font(.caption).foregroundStyle(.secondary) }
-                        Label { Text("Backspin · Unavailable") } icon: { LeaderboardSpinIcon() }
-                        Label("Typical height · Unavailable", systemImage: "arrow.up.and.down")
-                        Text("Style measurements appear when supported by reliable evidence. They do not affect rank.").font(.footnote).foregroundStyle(.secondary)
+                        Label { Text("Backspin · \(entry.backspinLabel)") } icon: { LeaderboardSpinIcon() }
+                        Label("Typical height · \(entry.heightLabel)", systemImage: "arrow.up.and.down")
+                        Text(entry.isPreview ? "Fictional style measurements for this preview. They do not affect rank."
+                             : "Style measurements appear when supported by reliable evidence. They do not affect rank.")
+                            .font(.footnote).foregroundStyle(.secondary)
                     }
                     .padding(20).frame(maxWidth: .infinity, alignment: .leading)
                     .background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 20))
-                    Label("The original recording is private to its owner and the review team.", systemImage: "lock")
-                        .font(.subheadline).foregroundStyle(.secondary)
-                    if entry.isYou {
-                        Text("Open My submissions to watch your original, see the review or request a correction.").font(.subheadline)
-                    } else if entry.attemptID != nil {
-                        Button("Report this score", systemImage: "flag") { showsReport = true }
-                            .disabled(review.owner == nil)
-                        if review.owner == nil { Text("Sign in through Profile to report a score.").font(.caption).foregroundStyle(.secondary) }
+                    if entry.isPreview {
+                        Label("Temporary player · no account or recording is attached to this sample.", systemImage: "eye")
+                            .font(.subheadline).foregroundStyle(.secondary)
+                    } else {
+                        Label(entry.attemptID != nil ? "A reviewer confirmed touches the counter had left out. The clips are private to the player and the review team."
+                              : "Counted automatically from a recorded session.", systemImage: entry.attemptID != nil ? "lock" : "bolt")
+                            .font(.subheadline).foregroundStyle(.secondary)
+                        if entry.isYou {
+                            Text("Open Touch checks to see touches left out of your sessions, or the result of a check.").font(.subheadline)
+                        } else if entry.attemptID != nil {
+                            Button("Report this score", systemImage: "flag") { showsReport = true }
+                                .disabled(review.owner == nil)
+                            if review.owner == nil { Text("Sign in through Profile to report a score.").font(.caption).foregroundStyle(.secondary) }
+                        }
                     }
                 }.padding(24).frame(maxWidth: 560).frame(maxWidth: .infinity)
             }
             .background(TrainingHomeStyle.background(scheme))
-            .navigationTitle(entry.isYou ? "Your reviewed attempt" : entry.name).navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(entry.isYou ? (entry.isPreview ? "Your sample attempt" : "Your best streak") : entry.name).navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) {
                 Button("Done") { dismiss() }.accessibilityIdentifier("leaderboard-player-close")
             } }

@@ -231,8 +231,8 @@ private struct SessionHistoryDetail: View {
                     }
                     if item.ownerID != nil && item.source == .recording {
                         NavigationLink {
-                            LeaderboardSubmissionView(sessionID: item.id, review: player.leaderboardReview, history: store)
-                        } label: { Label("Leaderboard submission", systemImage: "trophy") }
+                            LeaderboardCorrectionView(sessionID: item.id, review: player.leaderboardReview, history: store)
+                        } label: { Label("Leaderboard streak", systemImage: "trophy") }
                         .accessibilityIdentifier("history-leaderboard-submit")
                     } else {
                         Label("Gallery and guest sessions stay in your personal history.", systemImage: "lock")

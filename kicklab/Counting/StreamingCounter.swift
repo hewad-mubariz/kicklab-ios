@@ -49,6 +49,7 @@ nonisolated final class StreamingCounter {
     /// state. The annotated replay shows these, the way the Python renderer does.
     private(set) var lastPoint: TrajectoryPoint?
     private(set) var latestDiagnostic: TouchDebugEvent?
+    private(set) var reviewEvidence = TouchReviewEvidence()
 
     #if DEBUG
     /// Observation only; runs even after the bounded replay trace is full.
@@ -87,6 +88,7 @@ nonisolated final class StreamingCounter {
             if ball != nil { ball!.y -= self.cameraOffsets[decision.frameIndex] ?? 0 }
             guard let diagnostic = diagnoseContact(decision, ball) else { return }
             self.latestDiagnostic = diagnostic
+            self.reviewEvidence.append(diagnostic, groundConfirmed: decision.plantedFeetConfirmed == true)
             #if DEBUG
             self.debugDiagnosticObserver?(diagnostic)
             #endif

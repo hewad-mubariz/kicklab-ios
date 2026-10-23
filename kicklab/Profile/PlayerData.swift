@@ -22,6 +22,9 @@ nonisolated struct SavedJugglingResult: Codable, Equatable, Sendable {
     let completedAt: Date
     let appVersion: String
     let counterVersion: String
+    /// The session's best continuous streak, which is what ranks. Results saved by
+    /// older builds have none and never rank.
+    private(set) var streak: RankedStreakProposal? = nil
 
     init(id: UUID = UUID(), ownerID: UUID, touches: Int, duration: TimeInterval,
          source: Source, completedAt: Date = Date(), appVersion: String = "1.0", counterVersion: String = "juggling-v1") throws {
@@ -33,6 +36,14 @@ nonisolated struct SavedJugglingResult: Codable, Equatable, Sendable {
         self.source = source
         self.completedAt = Date(timeIntervalSince1970: floor(completedAt.timeIntervalSince1970))
         self.appVersion = appVersion; self.counterVersion = counterVersion
+    }
+
+    /// Keeps a streak only if the server will accept it. An invalid one would get the
+    /// whole result refused, so it is dropped and the result syncs without ranking.
+    mutating func rank(_ proposal: RankedStreakProposal?) {
+        guard var proposal else { streak = nil; return }
+        proposal.count = min(proposal.count, touches)
+        streak = proposal.isValid(durationMS: durationMS) ? proposal : nil
     }
 }
 
@@ -136,10 +147,16 @@ final class SupabasePlayerService: PlayerDataService {
 
     func submit(_ result: SavedJugglingResult) async throws {
         let date = ISO8601DateFormatter().string(from: result.completedAt)
-        let fields: [String: Any] = ["p_id": result.id.uuidString, "p_touch_count": result.touches,
+        var fields: [String: Any] = ["p_id": result.id.uuidString, "p_touch_count": result.touches,
             "p_duration_ms": result.durationMS, "p_source": result.source.rawValue,
             "p_completed_at": date, "p_app_version": result.appVersion, "p_counter_version": result.counterVersion]
-        _ = try await request("rest/v1/rpc/submit_juggling_session", method: "POST",
+        if let streak = result.streak {
+            fields["p_streak_touches"] = streak.count
+            fields["p_streak_start_ms"] = streak.startMS
+            fields["p_streak_end_ms"] = streak.endMS
+        }
+        _ = try await request(result.streak == nil ? "rest/v1/rpc/submit_juggling_session"
+                                                   : "rest/v1/rpc/submit_juggling_session_with_streak", method: "POST",
             body: JSONSerialization.data(withJSONObject: fields), userID: result.ownerID)
     }
 

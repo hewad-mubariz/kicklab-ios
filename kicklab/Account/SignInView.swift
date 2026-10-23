@@ -23,6 +23,8 @@ struct SignInView: View {
     @State private var hops = 0
     @State private var signedIn = false
     @FocusState private var emailFocused: Bool
+    /// Whether this launch has already brought up the email keyboard once.
+    private static var keyboardLoaded = false
 
     private var accent: Color { TrainingHomeStyle.accent(scheme) }
     private var muted: Color { TrainingHomeStyle.muted(scheme) }
@@ -36,10 +38,11 @@ struct SignInView: View {
                         .padding(.top, 8).padding(.horizontal, 28)
                         .sessionEntrance(arrived, offset: -10)
                     SignInBallHero(arrived: arrived, busy: tapped != nil && account.isBusy,
-                                   kicked: signedIn, hops: hops)
+                                   kicked: signedIn, hops: hops, resting: step != .choose)
                         .frame(height: heroHeight(geometry.size.height))
                     if step == .choose || signedIn {
-                        intro.padding(.horizontal, 28).transition(.blurReplace)
+                        intro.padding(.horizontal, 28)
+                            .transition(.opacity.animation(.easeOut(duration: 0.12)))
                     }
                     Spacer(minLength: 16)
                     tray.padding(.horizontal, 10).padding(.bottom, 6)
@@ -145,16 +148,17 @@ struct SignInView: View {
             .transition(swap)
     }
 
-    /// Same swap as the Customize tray: the old step blurs out fast and the next one settles
-    /// in sharp just behind it, leaning a few points in the direction of travel.
+    /// The old step fades out fast and the next one settles in just behind it, leaning a few
+    /// points in the direction of travel. No blur: blurring the tray's content while the glass
+    /// resamples it every frame left the whole screen soft and stalling for most of a second.
     private var swap: AnyTransition {
         if reduceMotion { return .opacity }
         let lean: CGFloat = forward ? 14 : -14
         return .asymmetric(
             insertion: .modifier(active: SignInTraySwap(hidden: true, lean: lean), identity: SignInTraySwap(hidden: false, lean: lean))
-                .animation(.smooth(duration: 0.3).delay(0.05)),
+                .animation(.smooth(duration: 0.24).delay(0.04)),
             removal: .modifier(active: SignInTraySwap(hidden: true, lean: -lean * 0.6), identity: SignInTraySwap(hidden: false, lean: 0))
-                .animation(.easeOut(duration: 0.14)))
+                .animation(.easeOut(duration: 0.1)))
     }
 
     private var choices: some View {
@@ -356,10 +360,15 @@ struct SignInView: View {
         forward = next.rawValue > step.rawValue
         if next != .email { emailFocused = false }
         withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { step = next }
-        // The tray starts growing first; the keyboard then lifts it the rest of the way.
+        // iOS stalls on the first keyboard of a launch while it loads it. That first time the
+        // tray answers the tap at once and the keyboard follows once it has settled; after
+        // that, the keyboard rises with the growing tray in one motion.
         if next == .email {
-            Task {
-                try? await Task.sleep(for: .milliseconds(120))
+            let wait: Duration = Self.keyboardLoaded ? .zero : .milliseconds(300)
+            Self.keyboardLoaded = true
+            Task { @MainActor in
+                if wait > .zero { try? await Task.sleep(for: wait) }
+                guard step == .email else { return }
                 emailFocused = true
             }
         }
@@ -421,9 +430,8 @@ private struct SignInTraySwap: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .scaleEffect(hidden ? 0.97 : 1, anchor: .top)
+            .scaleEffect(hidden ? 0.98 : 1, anchor: .top)
             .offset(x: hidden ? lean : 0)
-            .blur(radius: hidden ? 10 : 0)
             .opacity(hidden ? 0 : 1)
     }
 }
@@ -463,30 +471,7 @@ private struct SignInProviderButtons: View {
                     if busy == .apple { waiting("Waiting for Apple…").transition(.opacity) }
                 }
                 .opacity(dimmed(.apple) ? 0.35 : 1)
-            Button { onSelect(.google) } label: {
-                HStack(spacing: 12) {
-                    if busy == .google {
-                        ProgressView().tint(Color(red: 0.12, green: 0.12, blue: 0.12))
-                        Text("Waiting for Google…")
-                    } else {
-                        Image("signin-google-mark").renderingMode(.original)
-                            .resizable().scaledToFit().frame(width: 21, height: 21)
-                        Text("Continue with Google")
-                    }
-                }
-                .font(.system(size: fontSize, weight: .medium))
-                .multilineTextAlignment(.center)
-                .foregroundStyle(Color(red: 0.12, green: 0.12, blue: 0.12))
-                .padding(.horizontal, 16)
-                .frame(maxWidth: .infinity, minHeight: height)
-                .background(.white, in: .capsule)
-                .overlay { Capsule().strokeBorder(Color(red: 0.45, green: 0.47, blue: 0.46), lineWidth: 1) }
-                .contentShape(Capsule())
-            }
-            .buttonStyle(SessionPressStyle(scale: 0.97))
-            .opacity(dimmed(.google) ? 0.35 : 1)
-            .accessibilityIdentifier("signin-google")
-
+            // Google stays off the account screens until the auth domain is branded.
             Button { onSelect(.email) } label: {
                 Label("Continue with email", systemImage: "envelope")
                     .font(.subheadline.weight(.medium))
@@ -557,6 +542,9 @@ private struct SignInBallHero: View {
     let busy: Bool
     let kicked: Bool
     let hops: Int
+    /// While the tray holds the email steps the ball stops bobbing, leaving the frames to
+    /// the keyboard and typing.
+    var resting = false
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var spinStart: Date?
@@ -601,7 +589,7 @@ private struct SignInBallHero: View {
     private func ball(diameter: CGFloat, travel: CGFloat) -> some View {
         KeyframeAnimator(initialValue: BallBounce(), trigger: reduceMotion ? false : arrived) { drop in
             KeyframeAnimator(initialValue: BallBounce(), trigger: reduceMotion ? 0 : hops) { hop in
-                TimelineView(.animation(minimumInterval: 1.0 / 60, paused: reduceMotion || !arrived || kicked)) { context in
+                TimelineView(.animation(minimumInterval: 1.0 / 60, paused: reduceMotion || !arrived || kicked || resting)) { context in
                     SignInBall(diameter: diameter,
                                lift: idleLift(context.date, diameter: diameter) - drop.y - hop.y,
                                squash: drop.squash + hop.squash,

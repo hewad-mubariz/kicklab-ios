@@ -343,7 +343,6 @@ final class EffectVideoView: MTKView {
         }
         let context = lease.context
         let sample = track.replacementGuide(at: frameTime)
-        let mask = track.mask(at: frameTime)
         let fitted = sample.flatMap { sample -> BallReplacementFootprint? in
             if let pixels { return BallReplacementFootprint.fit(pixels: pixels, sample: sample, measureTexture: true) }
             if let stillImage { return BallReplacementFootprint.fit(image: stillImage, sample: sample, measureTexture: true) }
@@ -351,15 +350,21 @@ final class EffectVideoView: MTKView {
         }
         // Motion smear comes from the shared track, so replay and export agree.
         let smear = track.smear(at: frameTime, size: sourceSize)
-        let matte = mask.map { BallReplacementCoverage(mask: $0, fitted: fitted, size: sourceSize, smear: smear) }
+        let matte = track.replacementMatte(at: frameTime, fitted: fitted, size: sourceSize, smear: smear,
+            photographicSmear: track.surfaceMotion?.photographicExposure != nil)
         let footprint = track.usesBallMasks ? matte?.footprint : fitted
         let coverage: ((Double, Double) -> Double)? = matte.map { m in
             { x, y in m.coverage(x: x, y: y) }
         }
+        let background = matte.flatMap { m -> BallReplacementBackground? in
+            if let pixels { return BallReplacementBackground(pixels: pixels, matte: m) }
+            if let stillImage { return BallReplacementBackground(image: stillImage, matte: m) }
+            return nil
+        }
         let replacement = BallMaterialRenderer.replacement(footprint: footprint, skin: edit.ballSkin,
             time: frameTime, coverage: coverage, coverageBounds: matte?.bounds,
             orientation: track.surfaceMotion?.renderOrientation(at: frameTime), smear: smear,
-            light: track.surfaceMotion?.light(at: frameTime))
+            light: track.surfaceMotion?.light(at: frameTime), background: background)
         // No supported silhouette: retain the source instead of inventing a ball.
         BallMaterialRenderer.draw(in: context, size: size, sourceSize: sourceSize, skin: edit.ballSkin,
             sample: replacement == nil ? nil : sample, time: frameTime, replacement: replacement)

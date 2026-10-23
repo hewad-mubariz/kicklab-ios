@@ -63,6 +63,36 @@ import XCTest
         XCTAssertEqual(ReviewURLProtocol.requests.map(\.httpMethod), ["HEAD", "PATCH"])
         XCTAssertTrue(FileManager.default.fileExists(atPath: checkpoint.path), "Keep recovery information until finalization succeeds")
     }
+
+    func testExplicitSubmissionIncludesPrivateMomentsButOldRecordingsStillWork() async throws {
+        let data = try attemptData()
+        ReviewURLProtocol.handler = { request in
+            XCTAssertEqual(request.url?.lastPathComponent, "begin_leaderboard_attempt_with_review")
+            var body = request.httpBody ?? Data()
+            if body.isEmpty, let stream = request.httpBodyStream {
+                stream.open(); defer { stream.close() }
+                var buffer = [UInt8](repeating: 0, count: 4096)
+                while stream.hasBytesAvailable {
+                    let size = stream.read(&buffer, maxLength: buffer.count)
+                    if size <= 0 { break }; body.append(contentsOf: buffer.prefix(size))
+                }
+            }
+            let fields = try? JSONSerialization.jsonObject(with: body) as? [String: Any]
+            let report = fields?["p_touch_review"] as? [String: Any]
+            XCTAssertEqual(report?["version"] as? Int, 1)
+            XCTAssertEqual((report?["moments"] as? [[String: Any]])?.first?["kind"] as? String, "handsUncertain")
+            return (200, [:], data)
+        }
+        let api = SupabaseLeaderboardReviewService(config: config, session: session) { _ in "user-test-token" }
+        var item = HistorySession(id: sessionID, ownerID: owner, touches: 3, durationMS: 4000,
+            source: .recording, completedAt: Date(), syncState: .synced)
+        var evidence = TouchReviewEvidence()
+        evidence.append(.init(frameIndex: 30, time: 1, rejection: .disallowedBodyContact,
+            handConfirmed: false, bodyFailure: .handsUncertain, ball: nil))
+        item.touchReview = LeaderboardTouchReview.make(evidence: evidence, touchTimes: [0.5,1.5,2.5], duration: 4)
+        _ = try await api.begin(item: item, proposal: .init(count: 3, startMS: 0, endMS: 3000),
+            bytes: 12, sha256: String(repeating: "a", count: 64))
+    }
 }
 
 private final class ReviewURLProtocol: URLProtocol, @unchecked Sendable {

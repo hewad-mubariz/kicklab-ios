@@ -11,20 +11,35 @@ struct LeaderboardView: View {
     @AppStorage("kicklab.juggling.personalBest") private var personalBest = 0
     @AppStorage("kicklab.profile.displayName") private var displayName = ""
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var player: PlayerStore
     @State private var selection = LeaderboardSelection()
     @StateObject private var boards = LeaderboardBoardStore()
     @State private var hasShownPodium = false
     @State private var appeared = false
+    /// True while the pennants make their entrance; rows on screen wait for them.
+    @State private var revealing = true
+    @State private var youInView = false
+    /// Ranks of the rows on screen, so the trip to your row can be paced by distance.
+    @State private var visibleRanks: Set<Int> = []
+    /// Counts arrivals at your row; each one pulses it.
+    @State private var arrivals = 0
     @State private var showsRules = false
     @State private var showsSubmissions = false
     @State private var selectedEntry: LeaderboardEntry?
     @State private var recordAfterSubmissions = false
+    /// The session whose left-out touches are open for a check.
+    @State private var checking: CheckedSession?
     @State private var scrollPosition = ScrollPosition(edge: .top)
+    #if DEBUG
+    @AppStorage(LeaderboardPreviewScenario.defaultsKey) private var previewScenario = LeaderboardPreviewScenario.live
+    #endif
+
+    private static let youAnchor = "leaderboard-you-anchor"
 
     private var usesSamples: Bool {
         #if DEBUG
-        ProcessInfo.processInfo.arguments.contains("--leaderboard-samples")
+        previewScenario != .live || ProcessInfo.processInfo.arguments.contains("--leaderboard-samples")
         #else
         false
         #endif
@@ -32,10 +47,19 @@ struct LeaderboardView: View {
     private var viewerID: String {
         "\(player.userID?.uuidString ?? "guest")|\(player.profile?.leaderboardVisible ?? false)"
     }
-    private var requestID: String { "\(selection.period.rawValue)|\(viewerID)" }
+    private var requestID: String {
+        var value = "\(selection.period.rawValue)|\(viewerID)"
+        #if DEBUG
+        value += "|\(previewScenario.rawValue)"
+        #endif
+        return value
+    }
 
     private var boardState: LeaderboardBoardStore.State {
         #if DEBUG
+        if previewScenario != .live {
+            return .init(board: previewScenario.board(period: selection.period))
+        }
         if usesSamples {
             let name = player.profile?.displayName ?? yourName ?? displayName.trimmingCharacters(in: .whitespacesAndNewlines)
             let best = player.userID == nil ? personalBest : player.personalBest
@@ -48,61 +72,88 @@ struct LeaderboardView: View {
     private var entries: [LeaderboardEntry] { boardState.board?.entries ?? [] }
     private var aroundYou: [LeaderboardEntry] { boardState.board?.around ?? [] }
     private var you: LeaderboardEntry? { (entries + aroundYou).first(where: \.isYou) }
+    /// The leader's streak; every track measures against it.
+    private var best: Int { entries.first?.touches ?? 0 }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                title
-                    .sessionEntrance(appeared, offset: -10)
-                LeaderboardPeriodSwitch(period: $selection.period)
-                    .padding(.top, 18)
-                    .sessionEntrance(appeared, order: 1, offset: -10)
-                if boardState.board == nil, let loadError = boardState.error {
-                    ContentUnavailableView {
-                        Label("Rankings unavailable", systemImage: "wifi.exclamationmark")
-                    } description: { Text(loadError) } actions: {
-                        Button("Try again") { Task { await loadBoard(refresh: true) } }.buttonStyle(.glass)
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    title
+                        .sessionEntrance(appeared, offset: -10)
+                    LeaderboardPeriodSwitch(period: $selection.period)
+                        .padding(.top, 18)
+                        .sessionEntrance(appeared, order: 1, offset: -10)
+                    if !usesSamples {
+                        LeaderboardJoinCard()
+                            .padding(.top, 18)
+                        LeaderboardLastSessionCard(review: player.leaderboardReview, history: player.history) {
+                            checking = CheckedSession(id: $0)
+                        }
+                        .padding(.top, 14)
                     }
-                } else if boardState.board == nil {
-                    ProgressView("Loading rankings…").frame(maxWidth: .infinity).padding(.top, 80)
-                        .accessibilityIdentifier("leaderboard-loading")
-                } else if entries.isEmpty {
-                    ContentUnavailableView("Be the first on the board", systemImage: "figure.soccer",
-                        description: Text("Submit an original recording. Your best continuous streak appears after review."))
-                        .accessibilityIdentifier("leaderboard-empty")
-                } else {
-                    pennants.padding(.top, 50)
-                    rows.padding(.top, 26)
-                    yourPlace
-                }
-                Button { showsSubmissions = true } label: {
-                    Label("Submit an attempt", systemImage: "video.badge.plus")
-                        .font(.headline).frame(maxWidth: .infinity, minHeight: 52)
-                }
-                .buttonStyle(.borderedProminent).tint(TrainingHomeStyle.accent(scheme))
-                .padding(.top, 24).accessibilityIdentifier("leaderboard-submit")
-                Button("My submissions") { showsSubmissions = true }
-                    .frame(maxWidth: .infinity, minHeight: 44).accessibilityIdentifier("leaderboard-my-submissions")
-                Text("Ranked by your best reviewed continuous streak. Spin and height do not add points.")
-                    .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
-                    .padding(.top, 20)
-                if boardState.board != nil, boardState.error != nil {
-                    Text("Couldn’t refresh. Showing saved rankings—pull down to try again.")
+                    if boardState.board == nil, let loadError = boardState.error {
+                        ContentUnavailableView {
+                            Label("Rankings unavailable", systemImage: "wifi.exclamationmark")
+                        } description: { Text(loadError) } actions: {
+                            Button("Try again") { Task { await loadBoard(refresh: true) } }.buttonStyle(.glass)
+                        }
+                    } else if boardState.board == nil {
+                        LeaderboardLoadingBall()
+                            .frame(maxWidth: .infinity).padding(.top, 70)
+                            .accessibilityIdentifier("leaderboard-loading")
+                    } else if entries.isEmpty {
+                        emptyBoard.padding(.top, 26)
+                    } else {
+                        pennants(Array(entries.prefix(3))).padding(.top, 26)
+                        rows.padding(.top, 24)
+                        yourPlace
+                    }
+                    if usesSamples {
+                        Label("Temporary preview · all players, scores and style measurements are fictional.", systemImage: "eye")
+                            .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme)).padding(.top, 24)
+                            .accessibilityIdentifier("leaderboard-preview-label")
+                    } else {
+                        if let onRecord {
+                            Button(action: onRecord) {
+                                Label("Record a session", systemImage: "video.fill")
+                                    .font(.headline).frame(maxWidth: .infinity, minHeight: 52)
+                                    // Dark ink on the lime of dark mode, as on Home; white on light mode's olive.
+                                    .foregroundStyle(scheme == .dark ? TrainingHomeStyle.buttonInk : .white)
+                            }
+                            .buttonStyle(.borderedProminent).tint(TrainingHomeStyle.accent(scheme))
+                            .padding(.top, 24).accessibilityIdentifier("leaderboard-record")
+                        }
+                        Button("Touch checks") { showsSubmissions = true }
+                            .frame(maxWidth: .infinity, minHeight: 44).padding(.top, onRecord == nil ? 20 : 0)
+                            .accessibilityIdentifier("leaderboard-my-submissions")
+                    }
+                    Text("Ranked by each player’s best continuous streak, counted automatically. A hand, a catch or a ground touch ends a streak. Touches the counter wasn’t sure of are left out without ending it, and you can send them for a check. Spin and height don’t add points.")
                         .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
-                        .padding(.top, 16)
-                        .accessibilityIdentifier("leaderboard-refresh-error")
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 20)
+                    if boardState.board != nil, boardState.error != nil {
+                        Text("Couldn’t refresh. Showing saved rankings—pull down to try again.")
+                            .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
+                            .padding(.top, 16)
+                            .accessibilityIdentifier("leaderboard-refresh-error")
+                    }
                 }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+                .frame(maxWidth: 520)
+                .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 16)
-            .frame(maxWidth: 520)
-            .frame(maxWidth: .infinity)
+            .defaultScrollAnchor(.top)
+            .scrollBounceBehavior(.always, axes: .vertical)
+            .scrollPosition($scrollPosition)
+            .scrollIndicators(.hidden)
+            .safeAreaInset(edge: .top, spacing: 0) { topBar }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                VStack { youPill(proxy) }
+                    .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: showsYouPill)
+            }
         }
-        .defaultScrollAnchor(.top)
-        .scrollBounceBehavior(.always, axes: .vertical)
-        .scrollPosition($scrollPosition)
-        .scrollIndicators(.hidden)
-        .safeAreaInset(edge: .top, spacing: 0) { topBar }
         .background { LeaderboardPaper() }
         .foregroundStyle(TrainingHomeStyle.ink(scheme))
         // A downward pull belongs to refresh, including short one-player boards.
@@ -111,10 +162,22 @@ struct LeaderboardView: View {
         .onChange(of: selection) { _, _ in
             scrollPosition.scrollTo(edge: .top)
         }
+        #if DEBUG
+        .onChange(of: previewScenario) { _, _ in
+            selectedEntry = nil
+            scrollPosition.scrollTo(edge: .top)
+        }
+        #endif
         .task(id: requestID) { await loadBoard() }
         .refreshable { await loadBoard(refresh: true) }
         .sheet(isPresented: $showsRules) { LeaderboardRulesView() }
         .sheet(item: $selectedEntry) { entry in LeaderboardPlayerDetailView(entry: entry, review: player.leaderboardReview) }
+        .sheet(item: $checking, onDismiss: { Task { await loadBoard(refresh: true) } }) { session in
+            NavigationStack {
+                LeaderboardCorrectionView(sessionID: session.id, review: player.leaderboardReview, history: player.history)
+                    .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { checking = nil } } }
+            }
+        }
         .sheet(isPresented: $showsSubmissions, onDismiss: {
             Task { await loadBoard(refresh: true) }
             if recordAfterSubmissions { recordAfterSubmissions = false; onRecord?() }
@@ -125,6 +188,8 @@ struct LeaderboardView: View {
         .task {
             guard !appeared else { return }
             appeared = true
+            try? await Task.sleep(for: .seconds(1.4))
+            revealing = false
         }
         // Contain, so the screen's identifier does not replace the ones inside it.
         .accessibilityElement(children: .contain)
@@ -153,14 +218,6 @@ struct LeaderboardView: View {
             Spacer()
             Button("Rules") { showsRules = true }.font(.subheadline.weight(.semibold))
                 .frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("leaderboard-rules-link")
-            if usesSamples {
-                Text("10-player preview")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(LeaderboardStyle.olive(scheme))
-                    .padding(.horizontal, 12).padding(.vertical, 8)
-                    .background(LeaderboardStyle.card(scheme), in: .capsule)
-                    .accessibilityIdentifier("leaderboard-preview-label")
-            }
         }
         .padding(.horizontal, 16)
         .padding(.top, 4).padding(.bottom, 6)
@@ -175,54 +232,120 @@ struct LeaderboardView: View {
 
     private var title: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("JUGGLING")
-                .font(.caption.weight(.heavy)).tracking(1.8)
+            Text("JUGGLING  ·  BEST STREAKS")
+                .font(.caption.weight(.heavy)).tracking(1.6)
                 .foregroundStyle(LeaderboardStyle.olive(scheme))
-            Text("Leaderboard")
-                .font(.system(size: 42, weight: .heavy)).tracking(-0.8)
-                .accessibilityAddTraits(.isHeader)
-            Text(selection.period == .week ? "REVIEWED STREAKS  ·  THIS WEEK" : "REVIEWED STREAKS  ·  ALL TIME")
-                .font(.caption2.weight(.bold)).tracking(1.3)
-                .foregroundStyle(TrainingHomeStyle.muted(scheme))
-                .contentTransition(.interpolate)
-                .animation(SessionMotion.fade, value: selection.period)
-            if selection.period == .week {
-                Text("Resets \(LeaderboardRules.nextReset().formatted(date: .abbreviated, time: .shortened)) · your time")
-                    .font(.caption).foregroundStyle(TrainingHomeStyle.muted(scheme))
+            HStack(alignment: .lastTextBaseline, spacing: 5) {
+                Text("Leaderboard")
+                    .font(.system(size: 42, weight: .heavy)).tracking(-0.8)
+                    .accessibilityAddTraits(.isHeader)
+                // The full stop is a ball, kicked up whenever the period changes.
+                LeaderboardBall(size: 20)
+                    .keyframeAnimator(initialValue: TitleKick(), trigger: reduceMotion ? .week : selection.period) { ball, kick in
+                        ball.rotationEffect(.degrees(kick.spin)).offset(y: kick.lift)
+                    } keyframes: { start in
+                        KeyframeTrack(\.lift) {
+                            LinearKeyframe(-22, duration: 0.2, timingCurve: .easeOut)
+                            LinearKeyframe(0, duration: 0.2, timingCurve: .easeIn)
+                            LinearKeyframe(-6, duration: 0.1, timingCurve: .easeOut)
+                            LinearKeyframe(0, duration: 0.1, timingCurve: .easeIn)
+                        }
+                        KeyframeTrack(\.spin) {
+                            LinearKeyframe(start.spin + 360, duration: 0.6, timingCurve: .easeOut)
+                        }
+                    }
+                    .padding(.bottom, 9)
             }
+            if usesSamples {
+                Text("SAMPLE DATA · DESIGN PREVIEW")
+                    .font(.caption2.weight(.bold)).foregroundStyle(LeaderboardStyle.olive(scheme))
+            }
+            resetChip.padding(.top, 6)
         }
+    }
+
+    /// This week counts down to the reset; all time has no end.
+    @ViewBuilder private var resetChip: some View {
+        if selection.period == .week {
+            TimelineView(.everyMinute) { context in
+                let reset = LeaderboardRules.nextReset(after: context.date)
+                let left = Duration.seconds(max(60, reset.timeIntervalSince(context.date)))
+                chip("Resets in \(left.formatted(.units(allowed: [.days, .hours, .minutes], width: .narrow, maximumUnitCount: 2)))",
+                     systemImage: "timer")
+                    .accessibilityLabel("Resets \(reset.formatted(date: .abbreviated, time: .shortened)), your time")
+            }
+            .transition(.opacity)
+        } else {
+            chip("Best streaks ever", systemImage: "infinity")
+                .transition(.opacity)
+        }
+    }
+
+    private func chip(_ text: String, systemImage: String) -> some View {
+        Label(text, systemImage: systemImage)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(TrainingHomeStyle.muted(scheme))
+            .padding(.horizontal, 11).frame(height: 28)
+            .background(LeaderboardStyle.card(scheme), in: .capsule)
+            .overlay { Capsule().strokeBorder(LeaderboardStyle.line(scheme)) }
     }
 
     // MARK: - Board
 
-    private var pennants: some View {
-        let top = Array(entries.prefix(3))
-        return GeometryReader { geometry in
-            let width = min(124, (geometry.size.width - 2 * 12 - 3 * 14) / 3)
-            HStack(alignment: .top, spacing: 12) {
-                if top.count > 1 { pennant(top[1], width: width, height: 226, delay: 0.04, side: -1) }
-                if let first = top.first { pennant(first, width: width, height: 258, delay: 0.26, side: 1) }
-                if top.count > 2 { pennant(top[2], width: width, height: 226, delay: 0.13, side: 1) }
+    private func pennants(_ top: [LeaderboardEntry]) -> some View {
+        LeaderboardPennants(entries: top, animateEntrance: !hasShownPodium) { selectedEntry = $0 }
+            .onAppear { hasShownPodium = true }
+    }
+
+    private var emptyBoard: some View {
+        VStack(spacing: 20) {
+            pennants([])
+            VStack(spacing: 6) {
+                Text("Be the first on the board").font(.title3.bold())
+                Text("Record a session while signed in. Your best continuous streak shows up here by itself.")
+                    .font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))
+                    .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
         }
-        .frame(height: 262)
-        .onAppear { hasShownPodium = true }
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("leaderboard-empty")
     }
 
-    private func pennant(_ entry: LeaderboardEntry, width: CGFloat, height: CGFloat, delay: Double, side: Double) -> some View {
-        LeaderboardPennant(entry: entry, width: width, height: height,
-                           animateEntrance: !hasShownPodium, delay: delay, side: side,
-                           onSelect: { selectedEntry = entry })
-    }
-
+    /// A plain stack: there are few rows, and every one must exist for the trip to yours.
     private var rows: some View {
-        LazyVStack(spacing: 10) {
+        VStack(spacing: 10) {
             ForEach(Array(entries.dropFirst(3).enumerated()), id: \.element.rank) { index, entry in
-                Button { selectedEntry = entry } label: { LeaderboardRow(entry: entry) }.buttonStyle(.plain)
+                row(entry, delay: revealing ? 0.45 + Double(min(index, 5)) * 0.07 : 0.05)
                     .sessionEntrance(appeared, order: min(index, 6) + 3, offset: -16)
             }
         }
+    }
+
+    private func row(_ entry: LeaderboardEntry, delay: Double = 0.05) -> some View {
+        let ahead = entry.isYou ? self.ahead(of: entry) : nil
+        return Button { selectedEntry = entry } label: {
+            LeaderboardRow(entry: entry, best: best,
+                           chase: ahead.map { "\($0.touches - entry.touches + 1) to pass \($0.name)" },
+                           target: ahead?.touches, delay: delay, arrivals: entry.isYou ? arrivals : 0)
+        }
+        .buttonStyle(SessionPressStyle(scale: 0.97))
+        .id(anchor(for: entry))
+        .onScrollVisibilityChange(threshold: 0.5) { visible in
+            if visible { visibleRanks.insert(entry.rank) } else { visibleRanks.remove(entry.rank) }
+            if entry.isYou { youInView = visible }
+        }
+    }
+
+    private func anchor(for entry: LeaderboardEntry) -> String {
+        entry.isYou ? Self.youAnchor : "leaderboard-rank-\(entry.rank)"
+    }
+
+    /// The rows below the pennants, in the order they are listed.
+    private var listed: [LeaderboardEntry] {
+        let rows = Array(entries.dropFirst(3))
+        guard !entries.contains(where: \.isYou) else { return rows }
+        return rows + aroundYou.filter { neighbor in !entries.contains(where: { $0.rank == neighbor.rank }) }
     }
 
     /// Keep ranks together from the top. Only append a separate personal result
@@ -234,27 +357,95 @@ struct LeaderboardView: View {
                     Text("YOUR PLACE")
                         .font(.caption.weight(.semibold)).tracking(1.4)
                         .foregroundStyle(LeaderboardStyle.olive(scheme))
-                    ForEach(aroundYou.filter { neighbor in !entries.contains(where: { $0.rank == neighbor.rank }) }) { neighbor in
-                        Button { selectedEntry = neighbor } label: {
-                            LeaderboardRow(entry: neighbor, chase: neighbor.isYou ? chase(for: you) : nil)
-                        }.buttonStyle(.plain)
-                            .accessibilityIdentifier(neighbor.isYou ? "leaderboard-you" : "leaderboard-neighbor-\(neighbor.rank)")
+                    VStack(spacing: 10) {
+                        ForEach(aroundYou.filter { neighbor in !entries.contains(where: { $0.rank == neighbor.rank }) }) { neighbor in
+                            row(neighbor)
+                                .accessibilityIdentifier(neighbor.isYou ? "leaderboard-you" : "leaderboard-neighbor-\(neighbor.rank)")
+                        }
                     }
                 }
                 .padding(.top, 24)
             }
         } else {
                 LeaderboardUnranked(message: usesSamples ? "Sample board · scores for design review only."
-                    : player.userID == nil ? "Sign in before recording a ranked attempt."
-                    : player.profile?.leaderboardVisible != true ? "Submit a recording to join, or restore visibility in Profile."
-                    : "Submit a recording. Your score appears after review.")
+                    : player.userID == nil ? "Sign in, then record a session to get on the board."
+                    : player.profile?.leaderboardVisible != true ? "You’re hidden from the board. Turn on leaderboard visibility in Profile."
+                    : "Record a session. Your best streak shows up here once it syncs.")
                     .padding(.top, 20)
         }
     }
 
-    private func chase(for you: LeaderboardEntry) -> String? {
-        guard you.rank > 1, let ahead = (entries + aroundYou).first(where: { $0.rank == you.rank - 1 }) else { return nil }
-        return "\(ahead.touches - you.touches + 1) to pass \(ahead.name)"
+    private func ahead(of you: LeaderboardEntry) -> LeaderboardEntry? {
+        guard you.rank > 1 else { return nil }
+        return (entries + aroundYou).first(where: { $0.rank == you.rank - 1 })
+    }
+
+    // MARK: - You
+
+    /// Your place, kept in reach while your row is off screen. Not shown when you hang among the top three.
+    private var showsYouPill: Bool {
+        guard let you, !revealing, !youInView else { return false }
+        return !entries.prefix(3).contains(where: \.isYou) && you.rank > 3
+    }
+
+    /// How many rows lie between your row and those on screen, and which way.
+    /// With no rows on screen the pennants are, just above the first row.
+    private var youDistance: (rows: Int, below: Bool)? {
+        guard let index = listed.firstIndex(where: \.isYou) else { return nil }
+        let shown = listed.indices.filter { visibleRanks.contains(listed[$0].rank) }
+        guard let top = shown.min(), let bottom = shown.max() else { return (index + 1, true) }
+        return index > bottom ? (index - bottom, true) : (max(0, top - index), false)
+    }
+
+    /// Short trips glide, taking longer the further they go. Long ones cut to a few
+    /// rows short of yours and glide the rest, so they stay quick but you still see
+    /// where you land. Your row pulses on arrival.
+    private func scrollToYou(_ proxy: ScrollViewProxy) {
+        guard let distance = youDistance, let index = listed.firstIndex(where: \.isYou) else { return }
+        guard !reduceMotion else {
+            proxy.scrollTo(Self.youAnchor, anchor: .center)
+            arrivals += 1
+            return
+        }
+        let glide = min(distance.rows, 3)
+        if distance.rows > 4 {
+            let lead = listed[distance.below ? max(index - glide, 0) : min(index + glide, listed.count - 1)]
+            proxy.scrollTo(anchor(for: lead), anchor: .center)
+        }
+        // Let the cut land before the glide starts from it.
+        DispatchQueue.main.async {
+            withAnimation(.smooth(duration: 0.3 + 0.1 * Double(glide))) {
+                proxy.scrollTo(Self.youAnchor, anchor: .center)
+            } completion: {
+                arrivals += 1
+            }
+        }
+    }
+
+    @ViewBuilder private func youPill(_ proxy: ScrollViewProxy) -> some View {
+        if showsYouPill, let you {
+            Button { scrollToYou(proxy) } label: {
+                HStack(spacing: 10) {
+                    LeaderboardMedallion(entry: you, size: 32, ring: LeaderboardStyle.lime, ringWidth: 2)
+                    Text("You").font(.subheadline.weight(.semibold))
+                    Text("#\(you.rank)").font(LeaderboardStyle.number(22)).padding(.top, 3)
+                        .foregroundStyle(TrainingHomeStyle.accent(scheme))
+                    Text(you.touches.formatted()).font(LeaderboardStyle.number(22)).padding(.top, 3)
+                    Image(systemName: youDistance?.below ?? true ? "arrow.down" : "arrow.up")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(TrainingHomeStyle.muted(scheme))
+                        .contentTransition(.symbolEffect(.replace))
+                }
+                .padding(.leading, 6).padding(.trailing, 16).frame(height: 46)
+                .contentShape(.capsule)
+            }
+            .buttonStyle(.plain)
+            .glassEffect(.regular.interactive(), in: .capsule)
+            .padding(.bottom, 6)
+            .transition(.sessionRise)
+            .accessibilityLabel("Jump to your place, rank \(you.rank), \(you.touches) touches")
+            .accessibilityIdentifier("leaderboard-you-pill")
+        }
     }
 
     private func loadBoard(refresh: Bool = false) async {
@@ -271,6 +462,17 @@ struct LeaderboardView: View {
             return LeaderboardBoard(entries: board.entries, around: board.around)
         }
     }
+}
+
+private struct RowArrival {
+    var scale: CGFloat = 1
+    var ring: Double = 0
+    var spread: CGFloat = 0
+}
+
+private struct TitleKick {
+    var lift: CGFloat = 0
+    var spin: Double = 0
 }
 
 /// The two periods in one track, the lit pill sliding between them.
@@ -317,78 +519,204 @@ struct LeaderboardPeriodSwitch: View {
 
 struct LeaderboardRow: View {
     let entry: LeaderboardEntry
+    /// The leader's streak; the track measures this one against it.
+    var best: Int
     var chase: String? = nil
+    /// The streak of the next player up, flagged on your track.
+    var target: Int? = nil
+    /// Rows on screen at the reveal wait for the pennants before rolling.
+    var delay: Double = 0.05
+    /// Each change pulses the row: you've just arrived at it.
+    var arrivals = 0
+    @State private var rolled = false
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var lit: Bool { entry.isYou }
+    private var shown: Int { rolled ? entry.touches : 0 }
+
+    private func share(_ touches: Int) -> Double {
+        best > 0 ? min(1, Double(touches) / Double(best)) : 0
+    }
 
     var body: some View {
-        HStack(spacing: 14) {
-            LeaderboardRankTab(rank: entry.rank, highlighted: lit)
-                .padding(.top, -6)
-                .frame(maxHeight: .infinity, alignment: .top)
-            LeaderboardMedallion(entry: entry, size: 42,
+        HStack(alignment: .top, spacing: 12) {
+            Text("\(entry.rank)")
+                .font(LeaderboardStyle.number(entry.rank > 99 ? 19 : 24))
+                .lineLimit(1).minimumScaleFactor(0.6)
+                .padding(.top, 13)
+                .frame(width: 32)
+                .opacity(lit ? 1 : 0.55)
+            LeaderboardMedallion(entry: entry, size: 44,
                                  ring: lit ? Color(red: 0.18, green: 0.25, blue: 0.07) : LeaderboardStyle.line(scheme),
                                  ringWidth: lit ? 2.5 : 1.5)
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 5) {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(lit ? "You" : entry.name).font(.body.weight(.semibold)).lineLimit(1)
-                    Image(systemName: "checkmark.seal.fill").font(.caption).accessibilityLabel("Reviewed")
+                    Image(systemName: "checkmark.seal.fill").font(.caption)
+                        .accessibilityLabel(entry.isPreview ? "Sample reviewed score" : "Reviewed")
+                    Spacer(minLength: 8)
+                    Text(shown.formatted())
+                        .font(LeaderboardStyle.number(28))
+                        .contentTransition(.numericText(value: Double(shown)))
                 }
+                LeaderboardStreakTrack(share: rolled ? share(entry.touches) : 0,
+                                       target: target.map(share), lit: lit)
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 10) {
-                        Label { Text("—") } icon: { LeaderboardSpinIcon() }
-                        Label("—", systemImage: "arrow.up.and.down")
+                        Label { Text(entry.backspinRPM.map { "\($0) rpm" } ?? "—") } icon: { LeaderboardSpinIcon() }
+                        Label(entry.typicalHeight?.rawValue ?? "—", systemImage: "arrow.up.and.down")
                     }
-                    Text("Style unavailable")
-                }.font(.caption).opacity(0.7).accessibilityLabel("Backspin and height unavailable")
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Spin: \(entry.backspinLabel)")
+                        Text("Height: \(entry.heightLabel)")
+                    }
+                }.font(.caption).opacity(0.7)
                 if let chase {
-                    Text(chase).font(.caption.weight(.semibold)).opacity(0.7)
+                    Label(chase, systemImage: "flag.fill")
+                        .font(.caption.weight(.semibold)).opacity(0.75)
                         .contentTransition(.interpolate)
                 }
             }
-            Spacer(minLength: 8)
-            Text(entry.touches.formatted())
-                .font(LeaderboardStyle.number(30))
-                .padding(.top, 4)
-                .contentTransition(.numericText(value: Double(entry.touches)))
         }
-        .foregroundStyle(lit ? Color(red: 0.09, green: 0.12, blue: 0.06) : TrainingHomeStyle.ink(scheme))
-        .padding(.leading, 12).padding(.trailing, 18)
-        .padding(.vertical, 14).frame(minHeight: 88)
+        .foregroundStyle(lit ? LeaderboardStyle.ink : TrainingHomeStyle.ink(scheme))
+        .padding(.leading, 10).padding(.trailing, 16)
+        .padding(.vertical, 14)
         .background {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 20)
                 .fill(lit
                       ? AnyShapeStyle(LinearGradient(colors: [LeaderboardStyle.lime, LeaderboardStyle.limeDeep],
                                                      startPoint: .leading, endPoint: .trailing))
                       : AnyShapeStyle(LeaderboardStyle.card(scheme)))
                 .shadow(color: .black.opacity(0.05), radius: 3, y: 1)
         }
-        .overlay { RoundedRectangle(cornerRadius: 16).strokeBorder(lit ? .white.opacity(0.35) : LeaderboardStyle.line(scheme)) }
-        .clipShape(.rect(cornerRadius: 16))
+        .overlay { RoundedRectangle(cornerRadius: 20).strokeBorder(lit ? .white.opacity(0.35) : LeaderboardStyle.line(scheme)) }
+        .clipShape(.rect(cornerRadius: 20))
+        .keyframeAnimator(initialValue: RowArrival(), trigger: reduceMotion ? 0 : arrivals) { row, arrival in
+            row.scaleEffect(arrival.scale)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 20 + arrival.spread)
+                        .stroke(TrainingHomeStyle.accent(scheme), lineWidth: 3)
+                        .padding(-arrival.spread)
+                        .opacity(arrival.ring)
+                }
+        } keyframes: { _ in
+            KeyframeTrack(\.scale) {
+                SpringKeyframe(1.04, duration: 0.16, spring: .snappy)
+                SpringKeyframe(1, duration: 0.5, spring: .bouncy)
+            }
+            // A ring ripples out from the row and fades.
+            KeyframeTrack(\.ring) {
+                LinearKeyframe(1, duration: 0.06)
+                LinearKeyframe(0, duration: 0.7, timingCurve: .easeOut)
+            }
+            KeyframeTrack(\.spread) {
+                LinearKeyframe(0, duration: 0.01)
+                LinearKeyframe(14, duration: 0.75, timingCurve: .easeOut)
+            }
+        }
+        .sensoryFeedback(.impact(weight: .medium, intensity: 0.8), trigger: arrivals)
+        // Roll when the row first comes on screen, not when it is built.
+        .onScrollVisibilityChange(threshold: 0.3) { visible in
+            guard visible, !rolled else { return }
+            if reduceMotion { rolled = true; return }
+            withAnimation(.spring(response: 0.95, dampingFraction: 0.7).delay(delay)) { rolled = true }
+        }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Rank \(entry.rank), \(lit ? "you" : entry.name), \(entry.touches) touches\(chase.map { ". \($0)" } ?? "")")
+        .accessibilityLabel("Rank \(entry.rank), \(lit ? "you" : entry.name), \(entry.touches) touches. Backspin \(entry.backspinLabel), height \(entry.heightLabel)\(chase.map { ". \($0)" } ?? "")")
         .accessibilityIdentifier("leaderboard-row-\(entry.rank)")
     }
 }
 
-/// No record yet: a nudge in place of your row.
-private struct LeaderboardUnranked: View {
-    var message = "Record a juggling session to get on the board."
+/// A streak as distance: a ball rolls out to the player's share of the leader's
+/// streak, turning as it goes. A flag can mark the next player to pass.
+struct LeaderboardStreakTrack: View {
+    let share: Double
+    var target: Double? = nil
+    var lit = false
+    @Environment(\.colorScheme) private var scheme
+
+    private let ball: CGFloat = 16
+
+    var body: some View {
+        GeometryReader { geometry in
+            let travel = max(0, geometry.size.width - ball)
+            let x = travel * share
+            ZStack(alignment: .bottomLeading) {
+                Capsule().fill(lit ? Color.black.opacity(0.12) : LeaderboardStyle.line(scheme))
+                    .frame(height: 5).padding(.bottom, 5.5)
+                Capsule().fill(fill)
+                    .frame(width: x + ball / 2, height: 5).padding(.bottom, 5.5)
+                if let target {
+                    Image(systemName: "flag.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .padding(.bottom, 8)
+                        .offset(x: travel * target + ball / 2 - 1.5)
+                }
+                // Offset and turn share one curve, so the ball rolls without sliding.
+                LeaderboardBall(size: ball)
+                    .rotationEffect(.radians(Double(x / (ball / 2))))
+                    .offset(x: x)
+            }
+        }
+        .frame(height: target == nil ? ball : ball + 9)
+        .accessibilityHidden(true)
+    }
+
+    private var fill: AnyShapeStyle {
+        if lit { return AnyShapeStyle(LeaderboardStyle.ink.opacity(0.75)) }
+        let accent = TrainingHomeStyle.accent(scheme)
+        return AnyShapeStyle(LinearGradient(colors: [accent.opacity(0.45), accent], startPoint: .leading, endPoint: .trailing))
+    }
+}
+
+/// A ball bouncing in place while rankings load.
+private struct LeaderboardLoadingBall: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
+        VStack(spacing: 14) {
+            TimelineView(.animation(paused: reduceMotion)) { context in
+                let period = 0.64
+                let phase = context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: period) / period
+                // A parabola: on the ground at both ends of each bounce, flattening as it lands.
+                let height = reduceMotion ? 0 : 4 * phase * (1 - phase)
+                let squash = 1 - max(0, 0.1 - height) * 1.6
+                ZStack(alignment: .bottom) {
+                    Ellipse().fill(.black.opacity(0.2 - height * 0.12))
+                        .frame(width: 30 - height * 12, height: 6)
+                    LeaderboardBall(size: 30)
+                        .rotationEffect(.degrees(phase * 200))
+                        .scaleEffect(x: 2 - squash, y: squash, anchor: .bottom)
+                        .offset(y: -3 - height * 58)
+                }
+                .frame(height: 96, alignment: .bottom)
+            }
+            Text("Loading rankings…").font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// No record yet: a nudge in place of your row.
+private struct CheckedSession: Identifiable { let id: UUID }
+
+private struct LeaderboardUnranked: View {
+    var message = "Record a juggling session to get on the board."
+
+    var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "figure.soccer").font(.title3)
+            LeaderboardBall(size: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text("You’re not ranked yet").font(.body.weight(.semibold))
                 Text(message).font(.caption).opacity(0.7)
             }
             Spacer(minLength: 0)
         }
-        .foregroundStyle(Color(red: 0.09, green: 0.12, blue: 0.06))
-        .padding(.horizontal, 18).frame(height: 68)
-        .background(LeaderboardStyle.lime, in: .rect(cornerRadius: 16))
+        .foregroundStyle(LeaderboardStyle.ink)
+        .padding(.horizontal, 18).frame(minHeight: 68)
+        .background(LeaderboardStyle.lime, in: .rect(cornerRadius: 20))
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("leaderboard-you")
     }

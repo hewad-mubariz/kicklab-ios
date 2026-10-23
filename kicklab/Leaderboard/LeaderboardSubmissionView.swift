@@ -20,14 +20,32 @@ struct LeaderboardSubmissionsView: View {
                 } else {
                     Section {
                         NavigationLink { LeaderboardRecordingPicker(review: review, history: history) } label: {
-                            Label("Submit an attempt", systemImage: "video.badge.plus")
+                            Label("Check a session’s touches", systemImage: "checklist")
                         }.accessibilityIdentifier("leaderboard-choose-recording")
-                        if let onRecord { Button("Record a new attempt", action: onRecord) }
-                    } footer: { Text("Original recordings only. Your training total is never submitted automatically.") }
+                        if let onRecord { Button("Record a session", action: onRecord) }
+                    } footer: { Text("Your best streak ranks by itself after each recorded session. Send touches the counter left out only if you think they were valid.") }
                     Section {
                         if review.isLoading && review.attempts.isEmpty { ProgressView("Loading submissions…") }
-                        if !review.isLoading && review.attempts.isEmpty { Text("No submissions yet.").foregroundStyle(.secondary) }
-                        ForEach(review.attempts) { attempt in
+                        if !review.isLoading && review.attempts.isEmpty && review.queued.isEmpty {
+                            Text("No touch checks yet.").foregroundStyle(.secondary)
+                        }
+                        ForEach(review.queued, id: \.sessionID) { entry in
+                            NavigationLink {
+                                LeaderboardCorrectionView(sessionID: entry.sessionID, review: review, history: history)
+                            } label: {
+                                VStack(alignment: .leading, spacing: 5) {
+                                    HStack {
+                                        Text(review.uploadingSession == entry.sessionID ? "Sending…" : "Waiting to send").font(.headline)
+                                        Spacer()
+                                        Text("\(entry.proposal.count)").bold().monospacedDigit()
+                                    }
+                                    Text(review.waitingForConnection ? "Sends by itself when you’re back online" : "Sends by itself, no need to stay here")
+                                        .font(.caption).foregroundStyle(.secondary)
+                                }
+                            }
+                            .accessibilityIdentifier("leaderboard-queued-\(entry.sessionID)")
+                        }
+                        ForEach(review.attempts.filter { !review.isQueued($0.sessionID) }) { attempt in
                             NavigationLink {
                                 LeaderboardAttemptStatusView(attemptID: attempt.id, review: review, history: history)
                             } label: {
@@ -38,18 +56,21 @@ struct LeaderboardSubmissionsView: View {
                                         Text("\(attempt.reviewedCount ?? attempt.proposedCount)").bold().monospacedDigit()
                                     }
                                     Text(attempt.createdAt.formatted(date: .abbreviated, time: .shortened)).font(.caption).foregroundStyle(.secondary)
+                                    if let report = attempt.touchReview {
+                                        Text(report.summary).font(.caption).foregroundStyle(.secondary)
+                                    }
                                     if attempt.hasPendingAppeal { Text("Re-review requested").font(.caption) }
                                 }
                             }
                         }
-                    } header: { Text("My submissions") } footer: { Text("Showing your latest 100 submissions.") }
+                    } header: { Text("Touch checks") } footer: { Text("Showing your latest 100 checks.") }
                 }
                 if let error = review.errorMessage {
                     Section { Text(error).foregroundStyle(.red); Button("Try again") { Task { await review.refresh() } } }
                 }
                 Section { Button("Leaderboard rules") { showsRules = true } }
             }
-            .navigationTitle("My submissions").navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Touch checks").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             .refreshable { await review.refresh(); await history.refresh() }
             .sheet(isPresented: $showsRules) { LeaderboardRulesView() }
@@ -75,111 +96,24 @@ private struct LeaderboardRecordingPicker: View {
             Section {
                 ForEach(eligible) { item in
                     NavigationLink {
-                        LeaderboardSubmissionView(sessionID: item.id, review: review, history: history)
+                        LeaderboardCorrectionView(sessionID: item.id, review: review, history: history)
                     } label: {
                         VStack(alignment: .leading, spacing: 5) {
                             Text(item.completedAt.formatted(date: .abbreviated, time: .shortened)).font(.headline)
-                            Text("\(item.durationLabel) · \(item.touches) total touches").font(.subheadline).foregroundStyle(.secondary)
-                            if history.replayURL(for: item) == nil { Text("Original not on this phone").font(.caption) }
+                            Text(detail(item)).font(.subheadline).foregroundStyle(.secondary)
+                            if history.replayURL(for: item) == nil { Text("Recording not on this phone").font(.caption) }
                         }
                     }
                 }
                 if eligible.isEmpty { Text("Record a juggling session while signed in, then return here.") }
                 if history.hasMore { Button("Load more recordings") { Task { await history.loadMore() } } }
-            } footer: { Text("Select one continuous streak from a recording. Reviewers verify the original video before any score is published.") }
-        }.navigationTitle("Choose a recording").navigationBarTitleDisplayMode(.inline)
+            } footer: { Text("Each session ranks by its best streak. Open one to see the touches the counter left out.") }
+        }.navigationTitle("Choose a session").navigationBarTitleDisplayMode(.inline)
     }
-}
-
-struct LeaderboardSubmissionView: View {
-    let sessionID: UUID
-    @ObservedObject var review: LeaderboardReviewStore
-    @ObservedObject var history: SessionHistoryStore
-    @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var player: PlayerStore
-    @State private var count = ""
-    @State private var start = "0"
-    @State private var end = ""
-    @State private var confirmed = false
-    @State private var showsRules = false
-    @State private var configured = false
-    private var item: HistorySession? { history.items.first { $0.id == sessionID && $0.ownerID == review.owner } }
-    private var attempt: LeaderboardAttempt? { review.attempt(for: sessionID) }
-    private var busy: Bool { review.uploadingSession != nil }
-    private var proposal: RankedStreakProposal? {
-        guard let count = Int(count), let first = Double(start.replacingOccurrences(of: ",", with: ".")),
-              let last = Double(end.replacingOccurrences(of: ",", with: ".")), first.isFinite, last.isFinite,
-              first >= 0, last <= 86400, last > first else { return nil }
-        return .init(count: count, startMS: Int((first*1000).rounded()), endMS: Int((last*1000).rounded()))
-    }
-    var body: some View {
-        Form {
-            if let attempt, attempt.status != .uploading {
-                Section {
-                    Label(attempt.status.label, systemImage: attempt.status == .approved ? "checkmark.seal" : "clock")
-                    Text("This recording already has a submission. Follow it in My submissions.")
-                    NavigationLink("View submission") {
-                        LeaderboardAttemptStatusView(attemptID: attempt.id, review: review, history: history)
-                    }
-                }
-            } else if let item, item.source == .recording, item.ownerID != nil, let video = history.replayURL(for: item) {
-                Section {
-                    LeaderboardOriginalPlayer(url: video).frame(height: 240)
-                    Text("Original recording · \(item.durationLabel)").font(.caption).foregroundStyle(.secondary)
-                }
-                Section {
-                    LabeledContent("Touches") { TextField("Count", text: $count).keyboardType(.numberPad).multilineTextAlignment(.trailing) }
-                    LabeledContent("Start · seconds") { TextField("0", text: $start).keyboardType(.decimalPad).multilineTextAlignment(.trailing) }
-                    LabeledContent("End · seconds") { TextField("End", text: $end).keyboardType(.decimalPad).multilineTextAlignment(.trailing) }
-                } header: { Text("Proposed continuous streak") } footer: { Text("Check the original and choose one uninterrupted run. This is a proposal, not a reviewed score. A missed detection can be corrected during review.") }
-                .disabled(busy || attempt != nil)
-                Section("Before you submit") {
-                    Button("Read leaderboard rules") { showsRules = true }
-                    Toggle("I used a size-5 football and agree to the rules and private video review.", isOn: $confirmed)
-                    Text("If approved, publish my profile name, photo and reviewed score on the leaderboard.").font(.footnote)
-                    Text(LeaderboardRules.privacy).font(.footnote).foregroundStyle(.secondary)
-                }.disabled(busy)
-                Section {
-                    if item.syncState != .synced {
-                        Text("Your session is still syncing to your account. Please wait before submitting.")
-                    }
-                    if review.uploadingSession == sessionID {
-                        ProgressView(value: review.progress) { Text(review.phase) }
-                        Text("Keep the app open during upload. You can pause and resume from My submissions.").font(.caption)
-                        Button("Pause upload") { review.pauseUpload() }
-                    } else {
-                        Button(attempt == nil ? "Submit original for review" : "Resume upload") {
-                            guard let proposal = attempt?.proposal ?? proposal else { return }
-                            review.submit(item: item, proposal: proposal, video: video)
-                        }
-                        .disabled(!confirmed || busy || item.syncState != .synced || proposal?.isValid(durationMS: item.durationMS) != true)
-                        .accessibilityIdentifier("leaderboard-submit-original")
-                    }
-                    if let error = review.errorMessage { Text(error).foregroundStyle(.red) }
-                }
-            } else {
-                Text(LeaderboardFailure.originalRequired.localizedDescription)
-            }
-        }
-        .navigationTitle("Submit an attempt").navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showsRules) { LeaderboardRulesView() }
-        .task { await review.refresh(); await history.refresh(); configureDraft() }
-        .onChange(of: item, initial: true) { _, _ in configureDraft() }
-        .onChange(of: attempt?.id) { _, _ in
-            if attempt?.status == .uploading { configured = false; configureDraft() }
-        }
-        .onChange(of: attempt?.status) { _, status in
-            if status == .pending { Task { await player.refresh() } }
-        }
-        .onChange(of: review.owner) { _, _ in dismiss() }
-        .accessibilityIdentifier("leaderboard-submission-editor")
-    }
-    private func configureDraft() {
-        guard !configured, let item else { return }; configured = true
-        let draft = attempt?.proposal ?? item.rankedProposal
-        count = draft.map { String($0.count) } ?? ""
-        start = draft.map { String(format: "%.3f", Double($0.startMS)/1000) } ?? "0"
-        end = String(format: "%.3f", Double(draft?.endMS ?? item.durationMS)/1000)
+    private func detail(_ item: HistorySession) -> String {
+        let streak = item.rankedProposal.map { "Best streak \($0.count)" } ?? "\(item.touches) touches"
+        let askable = LeaderboardCorrection(item: item)?.askable.count ?? 0
+        return askable == 0 ? "\(item.durationLabel) · \(streak)" : "\(item.durationLabel) · \(streak) · \(askable) to check"
     }
 }
 
@@ -191,12 +125,16 @@ struct LeaderboardAttemptStatusView: View {
     @State private var showsAppeal = false
     @State private var original: URL?
     private var attempt: LeaderboardAttempt? { review.attempts.first { $0.id == attemptID } }
+    private var localOriginal: URL? {
+        guard let attempt, let item = history.items.first(where: { $0.id == attempt.sessionID && $0.ownerID == review.owner }) else { return nil }
+        return history.replayURL(for: item)
+    }
     var body: some View {
         List {
             if let attempt {
                 Section {
                     Label(attempt.status.label, systemImage: attempt.status == .approved ? "checkmark.seal.fill" : "clock")
-                    LabeledContent("Proposed", value: "\(attempt.proposedCount) touches")
+                    LabeledContent("Asked for", value: "\(attempt.proposedCount) touches")
                     if let count = attempt.reviewedCount { LabeledContent("Reviewed streak", value: "\(count) touches") }
                     if let first = attempt.reviewedStartMS, let last = attempt.reviewedEndMS {
                         LabeledContent("Reviewed segment") {
@@ -208,12 +146,13 @@ struct LeaderboardAttemptStatusView: View {
                     if attempt.hasPendingAppeal { Text("Re-review requested. Your previous decision stays visible until reviewed again.").font(.footnote) }
                     else if attempt.appealAt != nil { Text("Your re-review is complete.").font(.footnote) }
                 }
+                LeaderboardTouchReviewSection(report: attempt.touchReview, videoURL: localOriginal ?? original)
                 if let original { Section { LeaderboardOriginalPlayer(url: original).frame(height: 260) } }
                 Section {
                     if attempt.status == .uploading {
-                        NavigationLink("Resume upload") { LeaderboardSubmissionView(sessionID: attempt.sessionID, review: review, history: history) }
+                        NavigationLink("Resume sending") { LeaderboardCorrectionView(sessionID: attempt.sessionID, review: review, history: history) }
                     } else if attempt.hasPrivateVideo {
-                        Button("Watch private original") {
+                        Button("Watch submitted clips") {
                             Task {
                                 do { original = try await review.videoURL(for: attempt) }
                                 catch { review.errorMessage = error.localizedDescription }
@@ -223,17 +162,17 @@ struct LeaderboardAttemptStatusView: View {
                     if [.approved,.rejected].contains(attempt.status), attempt.appealAt == nil, attempt.hasPrivateVideo {
                         Button("Request a score review") { showsAppeal = true }
                     }
-                    if attempt.status != .withdrawn { Button("Withdraw attempt", role: .destructive) { confirmsWithdrawal = true } }
+                    if attempt.status != .withdrawn { Button("Withdraw check", role: .destructive) { confirmsWithdrawal = true } }
                 }
                 if let error = review.errorMessage { Text(error).foregroundStyle(.red) }
             }
         }
-        .navigationTitle("Submission details").navigationBarTitleDisplayMode(.inline)
-        .confirmationDialog("Withdraw this attempt?", isPresented: $confirmsWithdrawal, titleVisibility: .visible) {
+        .navigationTitle("Touch check").navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog("Withdraw this check?", isPresented: $confirmsWithdrawal, titleVisibility: .visible) {
             Button("Withdraw and remove video", role: .destructive) {
                 if let attempt { original = nil; Task { await review.withdraw(attempt) } }
             }
-        } message: { Text("The score disappears immediately. The private original is queued for deletion within 24 hours. Your local recording stays on your phone.") }
+        } message: { Text("Any correction it made is removed immediately and your device-counted streak counts again. The clips are queued for deletion within 24 hours. Your recording stays on your phone.") }
         .sheet(isPresented: $showsAppeal) {
             if let attempt {
                 LeaderboardFeedbackView(title: "Request a score review", review: review) { text in await review.appeal(attempt, reason: text) }

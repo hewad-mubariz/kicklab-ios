@@ -4,7 +4,7 @@ import XCTest
 
 final class ContactReplacementTests: XCTestCase {
     private struct Witness: Decodable {
-        struct Mask: Decodable { let rect: [Double]; let width, height: Int; let alpha: Data }
+        struct Mask: Decodable { let rect: [Double]; let width, height: Int; let alpha: Data; let decoderPixelSize: [Double]? }
         struct Fit: Decodable { let center: [Double]; let radius: Double; let radii: [Double]; let feather: Double }
         let time: Double
         let size: [Double]
@@ -12,6 +12,7 @@ final class ContactReplacementTests: XCTestCase {
         let fit: Fit
         let smear: [Double]
         let role: String
+        let points: [[Double]]?
     }
 
     private func witnesses() throws -> [Witness] {
@@ -58,10 +59,26 @@ final class ContactReplacementTests: XCTestCase {
         XCTAssertGreaterThan(matte.footprint.radius, fit.radii.reduce(0,+) / Double(fit.radii.count) + 1)
     }
 
+    func testRepairedRealBallInteriorsAndFingerCutoutsSurviveImageFit() throws {
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "replacement-consensus-20261019", withExtension: "json"))
+        let rows = try JSONDecoder().decode([Witness].self, from: Data(contentsOf: url))
+        for row in rows { for scale in [0.5, 1.0, 2.0] {
+            let (mask, fit, smear) = inputs(row, scale: scale)
+            let matte = BallReplacementCoverage(mask: mask, fitted: fit, size: fit.sourceSize, smear: smear)
+            for point in row.points ?? [] {
+                // Labels name source pixel indices; renderers sample their centres.
+                let alpha = matte.coverage(x: (point[0] + 0.5) * scale, y: (point[1] + 0.5) * scale)
+                if point[2] == 1 { XCTAssertGreaterThan(alpha, 0.9, "Ball at \(row.time), \(point), scale \(scale)") }
+                else { XCTAssertLessThan(alpha, 0.1, "Person at \(row.time), \(point), scale \(scale)") }
+            }
+        } }
+    }
+
     private func inputs(_ row: Witness, scale: Double) -> (BallMask, BallReplacementFootprint, CGVector) {
         let r = row.mask.rect
         let mask = BallMask(rect: CGRect(x: r[0], y: r[1], width: r[2], height: r[3]),
-            width: row.mask.width, height: row.mask.height, alpha: Array(row.mask.alpha))
+            width: row.mask.width, height: row.mask.height, alpha: Array(row.mask.alpha),
+            decoderPixelSize: row.mask.decoderPixelSize.map { CGSize(width: $0[0], height: $0[1]) })
         let fit = BallReplacementFootprint(sourceSize: CGSize(width: row.size[0]*scale, height: row.size[1]*scale),
             center: CGPoint(x: row.fit.center[0]*scale, y: row.fit.center[1]*scale), radius: row.fit.radius*scale,
             radii: row.fit.radii.map { $0*scale }, feather: row.fit.feather*scale, padding: 0)

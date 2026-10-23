@@ -46,6 +46,9 @@ final class CameraSession: NSObject, ObservableObject {
     @MainActor @Published private(set) var cameraShift: Double = 0
     /// The camera is moving too much to count reliably.
     @MainActor @Published private(set) var tooShaky = false
+    /// Even the longest capped shutter left the picture dark, so the camera's own
+    /// (blurring) limit applies. Not enough light for a sharp ball; see CaptureExposureCap.
+    @MainActor @Published private(set) var tooDark = false
     /// Where the most recent touch landed, and a token that changes with it, so
     /// the view can fire one pulse per touch without re-firing on every frame.
     @MainActor @Published private(set) var lastTouchAt: CGPoint?
@@ -56,6 +59,7 @@ final class CameraSession: NSObject, ObservableObject {
     @MainActor @Published private(set) var activePlayer: ActivePlayerSelection?
     #endif
     @MainActor private(set) var recordedDiagnostics: [TouchDebugEvent] = []
+    @MainActor private(set) var recordedReviewEvidence = TouchReviewEvidence()
     /// Detections thrown out as impossible - wrong size, or teleporting.
     @MainActor @Published private(set) var implausible = 0
     @MainActor @Published private(set) var isRecording = false
@@ -70,6 +74,18 @@ final class CameraSession: NSObject, ObservableObject {
     /// A reopen during writer finalization should prepare once cleanup completes.
     @MainActor private var wantsPreparedPreview = false
     @MainActor @Published private(set) var recordingError: String?
+    /// Why counting ended before Stop. The video up to then is kept as a session.
+    nonisolated enum EarlyStop: Equatable {
+        case heat, tracking
+
+        var notice: String {
+            switch self {
+            case .heat: "Your phone got too hot, so recording stopped early. Your touches up to then are saved."
+            case .tracking: "Ball tracking stopped before the end, so the count may be short. Your session is saved."
+            }
+        }
+    }
+    @MainActor @Published private(set) var earlyStop: EarlyStop?
     @MainActor @Published private(set) var processedFrames = 0
     @MainActor @Published private(set) var recordingElapsed: Double = 0
     @MainActor @Published private(set) var recentTouchTimes: [Double] = []
@@ -98,6 +114,11 @@ final class CameraSession: NSObject, ObservableObject {
     private var capturePosition: AVCaptureDevice.Position = .back
     #if DEBUG
     private var lastDebugCapturePublish = 0.0 // captureQueue, wall clock
+    private var captureDiagnosticsDevice: AVCaptureDevice? // captureQueue
+    private var exposureDevice: AVCaptureDevice? // captureQueue
+    private var exposureCap = CaptureExposureCap() // captureQueue
+    private var reportedTooDark = false // captureQueue
+    private var captureOpticsLog: CaptureOpticsLog? // captureQueue
     #endif
     #if DEBUG && TOUCH_COUNTING_DEBUG
     @MainActor @Published private(set) var debugFrameProfile = DebugFrameProfile.normal
@@ -255,6 +276,7 @@ final class CameraSession: NSObject, ObservableObject {
         activePlayers = []; activePlayer = nil
         #endif
         recordedDiagnostics = []
+        recordedReviewEvidence = TouchReviewEvidence()
         detections = 0
         queue.async { [weak self] in
             self?.liveAnalysis.resetCounter()
@@ -274,6 +296,7 @@ final class CameraSession: NSObject, ObservableObject {
         isPreparingRecording = true
         isTrackingReady = false
         recordingError = nil
+        earlyStop = nil
         detectorError = nil
         recordedTouches = []
         recordedTrack = []
@@ -284,6 +307,7 @@ final class CameraSession: NSObject, ObservableObject {
         activePlayers = []; activePlayer = nil
         #endif
         recordedDiagnostics = []
+        recordedReviewEvidence = TouchReviewEvidence()
         detections = 0
         processedFrames = 0
         recordingElapsed = 0
@@ -321,6 +345,9 @@ final class CameraSession: NSObject, ObservableObject {
                 fresh.height = self.captureStats.height
                 fresh.position = self.captureStats.position
                 self.captureStats = fresh
+                #if DEBUG
+                self.lastDebugCapturePublish = 0
+                #endif
             }
             if self.pipeline == .videoOnly {
                 self.sessionQueue.async {
@@ -364,6 +391,10 @@ final class CameraSession: NSObject, ObservableObject {
             self.captureStats.analysisThrottled = self.liveBuffer.throttled
             self.captureStats.analysisReplaced = self.liveBuffer.replaced
             let capture = self.captureStats
+            #if DEBUG
+            self.captureOpticsLog?.finish(capture)
+            self.captureOpticsLog = nil
+            #endif
             #if DEBUG && TOUCH_COUNTING_DEBUG
             let debugTest = self.debugFrameRun.snapshot
             #endif
@@ -401,6 +432,7 @@ final class CameraSession: NSObject, ObservableObject {
         }
         var finalCapture = capture
         finalCapture.analysedFrames = analysis.frameCount
+        let keepsCutShort = url != nil && wasActive && pipeline == .juggling
         #if DEBUG && TOUCH_COUNTING_DEBUG
         var debugTest = finishedDebugFrameTest
         debugTest.captureDrops = capture.captureDrops
@@ -418,6 +450,7 @@ final class CameraSession: NSObject, ObservableObject {
             self.isTrackingReady = false
             self.isFinishingRecording = false
             self.recordedDiagnostics = analysis.diagnostics
+            self.recordedReviewEvidence = analysis.reviewEvidence
             self.performance.model = "Not loaded"
             self.performance.captureDrops = finalCapture.captureDrops
             self.capturePerformance = finalCapture
@@ -425,7 +458,10 @@ final class CameraSession: NSObject, ObservableObject {
             self.debugFrameTest = debugTest
             #endif
             if analysis.qualityFailed, self.recordingError == nil {
-                self.recordingError = VideoSafetyPolicy.Failure.analysis.localizedDescription
+                // With a usable video, counting that failed is a session cut short,
+                // kept with its count. Without one it is a failure.
+                if keepsCutShort { self.earlyStop = self.earlyStop ?? .tracking }
+                else { self.recordingError = VideoSafetyPolicy.Failure.analysis.localizedDescription }
             }
             self.recordedTouches = analysis.touches
             self.recordedTrack = analysis.track
@@ -507,6 +543,15 @@ final class CameraSession: NSObject, ObservableObject {
             captureQueue.async {
                 self.captureStats = configured
                 self.capturePosition = position
+                self.exposureDevice = device
+                self.exposureCap = CaptureExposureCap()
+                if self.reportedTooDark {
+                    self.reportedTooDark = false
+                    Task { @MainActor in self.tooDark = false }
+                }
+                #if DEBUG
+                self.captureDiagnosticsDevice = device
+                #endif
             }
             Task { @MainActor in self.capturePerformance = configured }
         } catch {
@@ -570,6 +615,15 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput,
                        didOutput sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {
+        // Preview frames too, so exposure has settled before recording starts.
+        if let exposureDevice {
+            exposureCap.observe(exposureDevice, at: CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)))
+            let dark = exposureCap.seconds == nil
+            if dark != reportedTooDark {
+                reportedTooDark = dark
+                Task { @MainActor in self.tooDark = dark }
+            }
+        }
         guard let request = captureRecording, !request.isCancelled,
               let pixels = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let time = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
@@ -585,6 +639,9 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
                 try recorder.start(width: w, height: h, cameraPosition: capturePosition,
                                    pixelsAreUpright: pipeline == .videoOnly)
                 captureStartSeconds = sourceTime
+                #if DEBUG
+                if let url = recorder.url { captureOpticsLog = CaptureOpticsLog(source: url) }
+                #endif
             } catch {
                 request.cancel()
                 Task { @MainActor in
@@ -619,12 +676,24 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
         let now = ProcessInfo.processInfo.systemUptime
         if now - lastDebugCapturePublish >= 1 {
             lastDebugCapturePublish = now
+            if let device = captureDiagnosticsDevice {
+                let exposure = device.exposureDuration.seconds
+                let iso = Double(device.iso), offset = Double(device.exposureTargetOffset)
+                if exposure.isFinite, exposure > 0, iso.isFinite, iso > 0, offset.isFinite {
+                    captureStats.optics = .init(recordingSeconds: captureStats.duration,
+                        exposureSeconds: exposure, iso: iso, exposureTargetOffset: offset,
+                        exposureCapSeconds: exposureCap.seconds)
+                } else {
+                    captureStats.optics = nil
+                }
+            }
             var snapshot = captureStats
             snapshot.writtenFrames = recorder.writtenFrames
             snapshot.writerDrops = recorder.droppedFrames
             snapshot.analysisOffered = liveBuffer.offered
             snapshot.analysisThrottled = liveBuffer.throttled
             snapshot.analysisReplaced = liveBuffer.replaced
+            captureOpticsLog?.append(snapshot)
             Task { @MainActor in
                 guard self.recordingRequest === request, !request.isCancelled else { return }
                 self.capturePerformance = snapshot
@@ -690,9 +759,12 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
             snapshot = update
         } catch {
             request.cancel()
+            // Counting can't go on, but the video so far is sound: stop, and keep
+            // the take with the touches counted up to here.
+            let reason: EarlyStop = (error as NSError).domain == "RFThermal" ? .heat : .tracking
             Task { @MainActor in
                 guard self.recordingRequest === request else { return }
-                self.recordingError = error.localizedDescription
+                self.earlyStop = reason
                 self.stopRecording()
             }
             return

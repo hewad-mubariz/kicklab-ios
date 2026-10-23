@@ -15,6 +15,9 @@ struct ReplayEffectsView: View {
     var showsTouchTools = true
     var distanceTimeline: BallDistanceTimeline? = nil
     var historySessionID: UUID? = nil
+    var closeLabel = "Close editor"
+    /// Shown once over the replay, e.g. when recording ended early.
+    var notice: String? = nil
 
     @EnvironmentObject private var subscriptions: SubscriptionStore
     @EnvironmentObject private var accountPlayer: PlayerStore
@@ -72,9 +75,11 @@ struct ReplayEffectsView: View {
     @State private var restarting = false
     @State private var showSharePanel = false
     @State private var toast: DownloadToast?
+    @State private var noticeShown = false
     @State private var shareItem: ReplayShareItem?
 
-    private enum DownloadToast: Equatable { case saved, failed(String) }
+    /// A saved or failed download, or a one-time note about the take.
+    private enum DownloadToast: Equatable { case saved, failed(String), notice(String) }
 
     private var content: some View {
         ZStack {
@@ -110,6 +115,11 @@ struct ReplayEffectsView: View {
                                 .padding(.horizontal, 16).padding(.bottom, 10)
                                 .transition(.sessionRise)
                         } else {
+                            if showsTouchTools, let historySessionID {
+                                LeaderboardReplayReviewCard(sessionID: historySessionID, history: accountPlayer.history) {
+                                    pause(); showsLeaderboardSubmission = true
+                                }.padding(.horizontal, 24).padding(.bottom, 8)
+                            }
                             if let distanceTimeline {
                                 let reading = distanceTimeline.state(at: currentTime)
                                 BallDistanceReadout(value: reading.valueLabel, detail: reading.status.label,
@@ -223,7 +233,7 @@ struct ReplayEffectsView: View {
         .sheet(isPresented: $showsLeaderboardSubmission) {
             if let historySessionID {
                 NavigationStack {
-                    LeaderboardSubmissionView(sessionID: historySessionID,
+                    LeaderboardCorrectionView(sessionID: historySessionID,
                         review: accountPlayer.leaderboardReview, history: accountPlayer.history)
                         .toolbar { ToolbarItem(placement: .confirmationAction) {
                             Button("Done") { showsLeaderboardSubmission = false }
@@ -238,6 +248,11 @@ struct ReplayEffectsView: View {
             }, touchTimes: summary.touchesMarked.map(\.time))
             setUpPlayer()
             shown = true
+            if let notice, !noticeShown {
+                noticeShown = true
+                show(.notice(notice))
+                AccessibilityNotification.Announcement(notice).post()
+            }
         }
         .onDisappear {
             #if DEBUG
@@ -255,7 +270,7 @@ struct ReplayEffectsView: View {
 
     private var topBar: some View {
         HStack(spacing: 10) {
-            roundButton("chevron.left", label: "Close editor", action: onBack)
+            roundButton("chevron.left", label: closeLabel, action: onBack)
                 .accessibilityIdentifier("replay-close")
             Spacer(minLength: 0)
             VStack(spacing: 4) {
@@ -327,7 +342,12 @@ struct ReplayEffectsView: View {
     private func show(_ next: DownloadToast) {
         toast = next
         Task {
-            try? await Task.sleep(for: .seconds(next == .saved ? 2.8 : 4.5))
+            let seconds: Double = switch next {
+            case .saved: 2.8
+            case .failed: 4.5
+            case .notice: 7
+            }
+            try? await Task.sleep(for: .seconds(seconds))
             if toast == next { toast = nil }
         }
     }
@@ -341,6 +361,9 @@ struct ReplayEffectsView: View {
                                      detail: "1080p · \(ExportPreviewTime.label(at: duration))")
                 case .failed(let message):
                     ReplaySavedToast(thumbnail: nil, detail: "", failure: message)
+                case .notice(let message):
+                    ReplayNoticeToast(message: message)
+                        .onTapGesture { self.toast = nil }
                 }
             }
             .transition(.sessionDrop)
@@ -733,5 +756,22 @@ struct ReplayEffectsView: View {
     private func formatTime(_ t: Double) -> String {
         let s = max(0, Int(t.rounded()))
         return String(format: "%d:%02d", s / 60, s % 60)
+    }
+}
+
+/// A one-time note about the take, over the replay. Tap to dismiss.
+private struct ReplayNoticeToast: View {
+    let message: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "info.circle.fill").font(.system(size: 18)).foregroundStyle(SessionStyle.mint)
+            Text(message).font(.system(size: 13, weight: .medium)).fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 14).padding(.vertical, 10)
+        .frame(maxWidth: 320, alignment: .leading)
+        .glassEffect(.regular, in: .rect(cornerRadius: 18))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("replay-notice")
     }
 }

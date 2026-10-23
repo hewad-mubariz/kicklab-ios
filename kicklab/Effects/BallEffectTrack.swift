@@ -17,6 +17,8 @@ nonisolated struct BallEffectTrack: Sendable {
     var surfaceMotion: BallSurfaceTimeline? = nil
     let usesBallMasks: Bool
     static let maximumGap = 0.12
+    /// Longest gap between observations a current-frame mask repair may bridge.
+    static let maximumRepairedGap = 0.32
 
     /// The kicker's box wherever the detector saw a person, for cameras that frame him.
     private(set) var people: [(time: Double, box: PersonBox)] = []
@@ -76,15 +78,58 @@ nonisolated struct BallEffectTrack: Sendable {
         return lo > 0 ? touchTimes[lo - 1] : nil
     }
 
+    private func maskIndex(_ time: Double) -> Int {
+        var lo=0,hi=maskTimes.count
+        while lo<hi {let mid=(lo+hi)/2;if maskTimes[mid]<time {lo=mid+1} else {hi=mid}}
+        return lo
+    }
+
     /// Allow only timestamp rounding, never reuse a silhouette through a gap.
     func mask(at time: Double) -> BallMask? {
         guard usesBallMasks, time.isFinite else { return nil }
-        var lo=0,hi=maskTimes.count
-        while lo<hi {let mid=(lo+hi)/2;if maskTimes[mid]<time {lo=mid+1} else {hi=mid}}
+        let lo = maskIndex(time)
         let candidates = [lo-1, lo].filter { maskTimes.indices.contains($0) }
         guard let nearest = candidates.min(by: { abs(maskTimes[$0]-time) < abs(maskTimes[$1]-time) }),
               abs(maskTimes[nearest]-time) < 0.003 else { return nil }
         return masks[nearest]?.expanded()
+    }
+
+    /// The replacement matte for one rendered frame, shared by replay and export.
+    /// A detection missed between two masks at most 70 ms apart reuses the nearer
+    /// silhouette at the interpolated position, but only when current pixels support
+    /// a ball edge (`fitted`): a ball hidden behind a leg stays hidden. Otherwise the
+    /// source ball flashed through for that frame.
+    func replacementMatte(at time: Double, fitted: BallReplacementFootprint?, size: CGSize, smear: CGVector,
+                          photographicSmear: Bool) -> BallReplacementCoverage? {
+        guard let mask = mask(at: time) ?? (fitted == nil ? nil : bridgedMask(at: time)) else { return nil }
+        return BallReplacementCoverage(mask: mask, fitted: fitted, size: size, smear: smear,
+            photographicSmear: photographicSmear, radiusReference: radiusReference(at: time, size: size))
+    }
+
+    private func bridgedMask(at time: Double) -> BallMask? {
+        guard usesBallMasks, time.isFinite else { return nil }
+        let lo = maskIndex(time)
+        guard lo > 0, lo < maskTimes.count, let a = masks[lo-1], let b = masks[lo] else { return nil }
+        let ta = maskTimes[lo-1], tb = maskTimes[lo], ra = a.rect, rb = b.rect
+        guard tb-ta <= 0.07, time-ta >= 0.003, tb-time >= 0.003,
+              min(ra.width, ra.height, rb.width, rb.height) > 0,
+              max(ra.width/rb.width, rb.width/ra.width, ra.height/rb.height, rb.height/ra.height) < 1.5,
+              hypot((rb.midX-ra.midX)/max(ra.width, rb.width), (rb.midY-ra.midY)/max(ra.height, rb.height)) < 1.2
+        else { return nil }
+        let f = (time-ta)/(tb-ta)
+        return (f < 0.5 ? a : b).centered(at: CGPoint(x: ra.midX+(rb.midX-ra.midX)*f, y: ra.midY+(rb.midY-ra.midY)*f)).expanded()
+    }
+
+    /// Median mask-circle radius, in source pixels, of up to two masked frames on
+    /// each side within 50 ms, excluding `time` itself. Nil with fewer than two.
+    func radiusReference(at time: Double, size: CGSize) -> Double? {
+        guard usesBallMasks, time.isFinite else { return nil }
+        let lo = maskIndex(time)
+        let radii = ((lo-2)...(lo+2)).filter { maskTimes.indices.contains($0) && (0.003...0.05).contains(abs(maskTimes[$0]-time)) }
+            .compactMap { masks[$0].flatMap { BallReplacementCoverage.maskRadius($0, size: size) } }.sorted()
+        guard radii.count >= 2 else { return nil }
+        let middle = radii.count/2
+        return radii.count.isMultiple(of: 2) ? (radii[middle-1]+radii[middle])/2 : radii[middle]
     }
 
     /// The person box at a moment, interpolated across short misses (≤ 0.25 s).
@@ -151,9 +196,23 @@ nonisolated struct BallEffectTrack: Sendable {
         guard index > 0, index < samples.count else { return nil }
         let a=replacementObservation(at:index-1), b=replacementObservation(at:index)
         let gap=b.time-a.time
-        guard gap > 0, gap <= 0.20, let sa=a.boxSize, let sb=b.boxSize,
+        guard gap > 0, let sa=a.boxSize, let sb=b.boxSize,
               sa.width > 0, sa.height > 0, sb.width > 0, sb.height > 0,
               hypot(b.center.x-a.center.x,b.center.y-a.center.y) < 0.3 else { return nil }
+        // Longer gaps are drawn only where a repair found the ball in this frame's
+        // pixels (a white ball against a white shirt); its mask sets the centre.
+        if gap > 0.20 {
+            guard gap <= Self.maximumRepairedGap,
+                  max(sa.width/sb.width,sb.width/sa.width,sa.height/sb.height,sb.height/sa.height) < 1.5,
+                  let center=mask(at:time)?.centroid else { return nil }
+            let fraction=(time-a.time)/gap
+            var guide=a
+            guide.center=center
+            guide.boxSize=CGSize(width:sa.width+(sb.width-sa.width)*fraction,height:sa.height+(sb.height-sa.height)*fraction)
+            guide.time=time
+            guide.confidence=min(a.confidence,b.confidence)
+            return guide
+        }
         if gap > Self.maximumGap {
             guard max(sa.width/sb.width,sb.width/sa.width) < 1.4,
                   max(sa.height/sb.height,sb.height/sa.height) < 1.4,
@@ -198,7 +257,7 @@ nonisolated struct BallEffectTrack: Sendable {
     /// so speed alone never adds blur. Deterministic for replay and export.
     func smear(at time: Double, size: CGSize) -> CGVector {
         guard time.isFinite, size.width > 0, size.height > 0, samples.count >= 3 else { return .zero }
-        let exposure = exposure(size: size)
+        let exposure = surfaceMotion?.photographicExposure ?? exposure(size: size)
         guard exposure > 0, let v = velocity(at: time, size: size) else { return .zero }
         var s = CGVector(dx: v.dx*exposure, dy: v.dy*exposure)
         let i = min(samples.count-1, max(0, insertionIndex(time)))
@@ -209,7 +268,7 @@ nonisolated struct BallEffectTrack: Sendable {
     }
 
     /// Source pixels per second from the nearest observations on each side, within one segment.
-    private func velocity(at time: Double, size: CGSize) -> CGVector? {
+    func velocity(at time: Double, size: CGSize) -> CGVector? {
         var index = insertionIndex(time)
         if index < samples.count, abs(samples[index].time-time) < 0.001 {
             let a = index > 0 ? index-1 : index, b = index+1 < samples.count ? index+1 : index

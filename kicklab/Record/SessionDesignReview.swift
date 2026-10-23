@@ -122,6 +122,8 @@ struct SessionDesignReview: View {
                 else { LeaderboardView(onClose: { closedLeaderboard = true }) }
             case "leaderboard-concept": LeaderboardConceptView(concept: Self.argument("--concept") ?? "A",
                                                                state: Self.argument("--lb-state") ?? "main")
+            case "leaderboard-moments": LeaderboardMomentReviewPreview(url: Self.summary.videoURL)
+            case "leaderboard-correction": LeaderboardCorrectionPreview(url: Self.summary.videoURL)
             case "signin-concept": SignInConceptView(concept: Self.argument("--concept") ?? "A",
                                                      state: Self.argument("--signin-state") ?? "welcome")
             default: PostSessionFlowView(summary: Self.summary, onFinished: {}, onRecordAnother: {}, recordsPersonalBest: false)

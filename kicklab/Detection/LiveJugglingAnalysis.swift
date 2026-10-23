@@ -46,6 +46,7 @@ nonisolated final class RFAppCounterCore {
         let track: [RecordedFrame]
         let count: Int
         let diagnostics: [TouchDebugEvent]
+        let reviewEvidence: TouchReviewEvidence
         let trace: CounterTrace?
         let evidence: CaptureAnalysisEvidence?
         let analyzed: [RecordedFrameIdentity]
@@ -206,6 +207,7 @@ nonisolated final class RFAppCounterCore {
             ? signature.map { CaptureAnalysisEvidence(version: 1, pipelineSignature: $0,
                                                      evaluations: analysisEvaluations) } : nil
         let result = Result(touches: touches, track: track, count: count, diagnostics: diagnostics,
+            reviewEvidence: wasActive ? counter.reviewEvidence.relative(to: recordingStartSeconds) : TouchReviewEvidence(),
             trace: trace, evidence: evidence, analyzed: analyzedIdentities,
             timeOrigin: recordingStartSeconds, frameCount: wasActive ? frameIndex : 0,
             qualityFailed: qualityFailed)

@@ -42,6 +42,7 @@ struct SessionSummary: Sendable {
     /// A position sidecar cannot be reused as precise replacement-mask evidence.
     var visualTrackIsPositionsOnly = false
     var debugContacts: [TouchDebugEvent] = []
+    var leaderboardTouchReview: LeaderboardTouchReview? = nil
     var renderTrack: [RecordedFrame] { visualTrack ?? track }
 
     var isNewBest: Bool { touches > 0 && touches >= personalBest }

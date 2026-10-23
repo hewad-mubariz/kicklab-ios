@@ -131,6 +131,9 @@ extension BallVisualRefiner {
             // Live counting observes only a subset of saved frames. Reconstruct
             // dense masks from the saved pixels on the shared source-frame clock;
             // never reuse an old silhouette across a missing observation.
+            #if DEBUG
+            PreparationMemoryProbe.stage("dense_detection")
+            #endif
             let fresh = try await VideoAnalyzer.replayTrack(source: source) { onProgress?($0 * 0.9) }
             return try await repairMasks(source: source, frames: fresh) { onProgress?(0.9 + $0 * 0.1) }
         }
@@ -184,7 +187,13 @@ extension BallVisualRefiner {
 
     private static func repairMasks(source: URL, frames: [RecordedFrame],
                                     onProgress: (@Sendable (Double) -> Void)?) async throws -> [RecordedFrame] {
+        #if DEBUG
+        PreparationMemoryProbe.stage("gap_repair")
+        #endif
         let flow = try await BallMaskGapRefiner.refine(source: source, frames: frames) { onProgress?($0 * 0.5) }
+        #if DEBUG
+        PreparationMemoryProbe.stage("crop_repair")
+        #endif
         return try await RFMaskCropRefiner.refine(source: source, frames: flow) { onProgress?(0.5 + $0 * 0.5) }
     }
 }

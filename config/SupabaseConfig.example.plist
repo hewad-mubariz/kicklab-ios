@@ -7,6 +7,12 @@
          Google and email use this callback; Apple uses its native ID-token flow. -->
     <key>SUPABASE_URL</key>
     <string>https://YOUR_PROJECT_REF.supabase.co</string>
+    <!-- Optional: only enable after the custom domain is active in Supabase and
+         Google accepts its /auth/v1/callback URI. Keep SUPABASE_URL unchanged
+         so existing sign-ins retain their Keychain storage identity.
+    <key>SUPABASE_AUTH_URL</key>
+    <string>https://auth.juggledude.com</string>
+    -->
     <key>SUPABASE_PUBLISHABLE_KEY</key>
     <string>sb_publishable_REPLACE_ME</string>
     <key>AUTH_REDIRECT_URL</key>

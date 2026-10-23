@@ -1,7 +1,20 @@
 import Combine
 import Foundation
 
+/// A submission the player confirmed, kept on this phone until it is sent.
+nonisolated struct QueuedLeaderboardSubmission: Codable, Equatable, Sendable {
+    let sessionID: UUID
+    let proposal: RankedStreakProposal
+    let queuedAt: Date
+    /// The moments the player asked to have counted. Nil sends every flagged moment.
+    var request: LeaderboardTouchReview? = nil
+}
+
 @MainActor final class LeaderboardReviewStore: ObservableObject {
+    /// A queued session as history knows it: nil while it isn't loaded yet, and
+    /// no video once the original has left this phone.
+    typealias QueuedSource = (item: HistorySession, video: URL?)
+
     @Published private(set) var owner: UUID?
     @Published private(set) var attempts: [LeaderboardAttempt] = []
     @Published private(set) var isLoading = false
@@ -10,15 +23,29 @@ import Foundation
     @Published private(set) var phase = ""
     @Published var errorMessage: String?
     @Published private(set) var revision = 0
+    /// Submissions waiting for their session to sync or for a connection. They
+    /// survive relaunches and send themselves; nobody has to come back and retry.
+    @Published private(set) var queued: [QueuedLeaderboardSubmission] = []
+    /// True after a send failed for want of a connection; the queue retries quietly.
+    @Published private(set) var waitingForConnection = false
+    /// Finds a queued session in history. Set by the player store.
+    var resolveQueued: (UUID) -> QueuedSource? = { _ in nil }
     private let service: (any LeaderboardReviewService)?
     private let root: URL
+    private let retryDelay: Duration
+    private var retryFailures = 0
     private var generation = UUID()
     private var uploadTask: Task<Void, Never>?
-    init(service: (any LeaderboardReviewService)?, root: URL) { self.service = service; self.root = root }
+    private var retryTask: Task<Void, Never>?
+    init(service: (any LeaderboardReviewService)?, root: URL, retryDelay: Duration = .seconds(15)) {
+        self.service = service; self.root = root; self.retryDelay = retryDelay
+    }
     func useAccount(_ owner: UUID?) {
         generation = UUID(); uploadTask?.cancel(); uploadTask = nil
+        retryTask?.cancel(); retryTask = nil; retryFailures = 0
         self.owner = owner; attempts = []; uploadingSession = nil; progress = 0; phase = ""
-        isLoading = false; errorMessage = nil; revision += 1
+        isLoading = false; errorMessage = nil; waitingForConnection = false
+        queued = Self.loadQueue(owner, root: root); revision += 1
     }
     func refresh() async {
         guard let owner, let service else { return }
@@ -34,21 +61,67 @@ import Foundation
         } catch { if generation == current, !Task.isCancelled { errorMessage = error.localizedDescription } }
     }
     func attempt(for session: UUID) -> LeaderboardAttempt? { attempts.first { $0.sessionID == session } }
-    func submit(item: HistorySession, proposal: RankedStreakProposal, video: URL) {
-        guard uploadTask == nil else { return }
+    func isQueued(_ session: UUID) -> Bool { queued.contains { $0.sessionID == session } }
+
+    /// Keeps a confirmed submission on this phone and sends it as soon as it can:
+    /// once its session has synced to the account and there is a connection.
+    func enqueue(item: HistorySession, proposal: RankedStreakProposal, request: LeaderboardTouchReview? = nil) {
         guard let owner, item.ownerID == owner else { errorMessage = LeaderboardFailure.signIn.localizedDescription; return }
-        guard item.source == .recording, item.syncState == .synced else { errorMessage = "Wait for this recording to sync to your account, then try again."; return }
+        guard item.source == .recording else { errorMessage = LeaderboardFailure.originalRequired.localizedDescription; return }
         guard proposal.isValid(durationMS: item.durationMS) else { errorMessage = LeaderboardFailure.invalidSegment.localizedDescription; return }
-        guard let service else { errorMessage = LeaderboardFailure.unavailable.localizedDescription; return }
+        errorMessage = nil
+        queued.removeAll { $0.sessionID == item.id }
+        queued.append(.init(sessionID: item.id, proposal: proposal, queuedAt: Date(), request: request))
+        saveQueue(); revision += 1
+        sendQueued()
+    }
+
+    func cancelQueued(_ session: UUID) {
+        if uploadingSession == session { uploadTask?.cancel() }
+        queued.removeAll { $0.sessionID == session }
+        saveQueue(); revision += 1
+    }
+
+    /// Sends the oldest queued submission that is ready. A lost connection keeps it
+    /// queued and retries with a growing pause; a refusal (a limit, a changed
+    /// original) drops it and says why. Safe to call whenever conditions change.
+    func sendQueued() {
+        guard uploadTask == nil, let owner, let service else { return }
+        var ready: (entry: QueuedLeaderboardSubmission, item: HistorySession, video: URL)?
+        for entry in queued {
+            guard let source = resolveQueued(entry.sessionID) else { continue }
+            guard let video = source.video else {
+                drop(entry, LeaderboardFailure.originalRequired); continue
+            }
+            if source.item.syncState == .synced { ready = (entry, source.item, video); break }
+        }
+        guard let ready else { return }
+        retryTask?.cancel(); retryTask = nil
         let current = generation
-        uploadingSession = item.id; progress = 0; phase = "Checking original…"; errorMessage = nil
+        let entry = ready.entry, item = ready.item, video = ready.video
+        uploadingSession = item.id; progress = 0; phase = "Checking submission…"; errorMessage = nil
         uploadTask = Task { [weak self] in
             guard let self else { return }
             defer {
                 if generation == current { uploadingSession = nil; uploadTask = nil; phase = "" }
             }
             do {
-                let task = Task.detached(priority: .utility) { try LeaderboardVideoFingerprint.read(video) }
+                // Current attempts first: it fails fast offline, before hashing the
+                // video, and finds an unfinished upload to resume after a relaunch.
+                let latest = try await service.attempts(owner: owner)
+                guard generation == current, !Task.isCancelled else { return }
+                if latest.allSatisfy({ $0.userID == owner }) { attempts = latest; revision += 1 }
+                // For now only short clips of the flagged moments are sent, never the whole recording.
+                phase = "Preparing clips…"
+                let prepared = try await LeaderboardMomentClips.prepare(source: video, review: entry.request ?? item.touchReview,
+                    proposal: entry.proposal, durationMS: item.durationMS, folder: clipFolder(owner),
+                    session: item.id, limit: LeaderboardRules.maximumVideoBytes)
+                try Task.checkCancellation()
+                guard generation == current else { return }
+                var submitted = item
+                submitted.touchReview = prepared.review
+                let clips = prepared.file
+                let task = Task.detached(priority: .utility) { try LeaderboardVideoFingerprint.read(clips) }
                 let fingerprint = try await withTaskCancellationHandler { try await task.value } onCancel: { task.cancel() }
                 try Task.checkCancellation()
                 guard generation == current else { return }
@@ -58,7 +131,7 @@ import Foundation
                     guard existing.videoSHA256 == fingerprint.sha256, existing.videoBytes == fingerprint.bytes else { throw LeaderboardFailure.changedVideo }
                     attempt = existing
                 } else {
-                    attempt = try await service.begin(item: item, proposal: proposal, bytes: fingerprint.bytes, sha256: fingerprint.sha256)
+                    attempt = try await service.begin(item: submitted, proposal: entry.proposal, bytes: fingerprint.bytes, sha256: fingerprint.sha256)
                 }
                 try Task.checkCancellation()
                 guard generation == current else { return }
@@ -72,8 +145,8 @@ import Foundation
                     else {
                         try Task.checkCancellation()
                         guard generation == current else { return }
-                        phase = "Uploading original…"
-                        try await service.upload(file: video, attempt: attempt, checkpoint: checkpoint, accountRoot: root) { [weak self] value in
+                        phase = "Uploading clips…"
+                        try await service.upload(file: clips, attempt: attempt, checkpoint: checkpoint, accountRoot: root) { [weak self] value in
                             guard self?.generation == current else { return }; self?.progress = value
                         }
                         try Task.checkCancellation()
@@ -84,18 +157,94 @@ import Foundation
                 guard generation == current, !Task.isCancelled else { return }
                 attempts.removeAll { $0.id == attempt.id }; attempts.insert(attempt, at: 0)
                 try? FileManager.default.removeItem(at: checkpoint)
-                progress = 1; revision += 1
+                LeaderboardMomentClips.remove(folder: clipFolder(owner), session: item.id)
+                progress = 1; waitingForConnection = false; retryFailures = 0
+                queued.removeAll { $0.sessionID == entry.sessionID }
+                saveQueue(); revision += 1
+                // Hand straight on to the next queued submission, if any.
+                Task { @MainActor [weak self] in self?.sendQueued() }
             } catch {
                 guard generation == current, !Task.isCancelled else { return }
-                errorMessage = (error as? LeaderboardFailure)?.localizedDescription ?? LeaderboardFailure.upload.localizedDescription
+                if Self.isTransient(error) {
+                    waitingForConnection = true
+                    scheduleRetry()
+                } else if case LeaderboardFailure.signIn = error {
+                    // Stays queued; signing in again resumes it.
+                    errorMessage = LeaderboardFailure.signIn.localizedDescription
+                } else {
+                    drop(entry, error)
+                }
             }
         }
     }
-    func pauseUpload() { uploadTask?.cancel() }
+
+    func pauseUpload() {
+        // A paused upload leaves the queue; Resume upload queues it again.
+        if let session = uploadingSession { queued.removeAll { $0.sessionID == session }; saveQueue() }
+        uploadTask?.cancel()
+    }
+
+    private func drop(_ entry: QueuedLeaderboardSubmission, _ error: Error) {
+        if let owner { LeaderboardMomentClips.remove(folder: clipFolder(owner), session: entry.sessionID) }
+        queued.removeAll { $0.sessionID == entry.sessionID }
+        saveQueue(); revision += 1
+        errorMessage = (error as? LeaderboardFailure)?.localizedDescription ?? LeaderboardFailure.upload.localizedDescription
+    }
+
+    /// Clip files sit beside the account's replays, so deleting the account removes them.
+    private func clipFolder(_ owner: UUID) -> URL {
+        root.appendingPathComponent("History").appendingPathComponent(owner.uuidString)
+    }
+
+    private func scheduleRetry() {
+        retryFailures = min(retryFailures + 1, 5)
+        let delay = min(retryDelay * (1 << (retryFailures - 1)), .seconds(300))
+        let current = generation
+        retryTask?.cancel()
+        retryTask = Task { [weak self] in
+            do { try await Task.sleep(for: delay) } catch { return }
+            guard let self, self.generation == current else { return }
+            self.retryTask = nil
+            self.sendQueued()
+        }
+    }
+
+    /// No connection, a dropped one, or a server that is briefly unavailable.
+    nonisolated static func isTransient(_ error: Error) -> Bool {
+        if error is URLError || (error as NSError).domain == NSURLErrorDomain { return true }
+        if let failure = error as? LeaderboardFailure { return failure == .upload || failure == .unavailable }
+        return false
+    }
+
+    private static func queueFile(_ owner: UUID, root: URL) -> URL {
+        root.appendingPathComponent("History").appendingPathComponent(owner.uuidString)
+            .appendingPathComponent("leaderboard-queue.json")
+    }
+
+    private static func loadQueue(_ owner: UUID?, root: URL) -> [QueuedLeaderboardSubmission] {
+        guard let owner, let data = try? Data(contentsOf: queueFile(owner, root: root)) else { return [] }
+        return (try? JSONDecoder().decode([QueuedLeaderboardSubmission].self, from: data)) ?? []
+    }
+
+    private func saveQueue() {
+        guard let owner else { return }
+        let file = Self.queueFile(owner, root: root), items = queued
+        do {
+            try AccountDataGuard.write(owner: owner, root: root) {
+                if items.isEmpty { try? FileManager.default.removeItem(at: file); return }
+                try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try JSONEncoder().encode(items).write(to: file, options: [.atomic, .completeFileProtection])
+            }
+        } catch is CancellationError {
+        } catch {
+            errorMessage = "This submission couldn’t be saved on your phone. Keep the app open until it sends."
+        }
+    }
     func withdraw(_ attempt: LeaderboardAttempt) async {
         guard let owner, attempt.userID == owner, let service else { return }
         let current = generation
         if uploadingSession == attempt.sessionID { uploadTask?.cancel(); await uploadTask?.value }
+        if isQueued(attempt.sessionID) { queued.removeAll { $0.sessionID == attempt.sessionID }; saveQueue() }
         do {
             try await service.withdraw(id: attempt.id, owner: owner)
             guard generation == current else { return }

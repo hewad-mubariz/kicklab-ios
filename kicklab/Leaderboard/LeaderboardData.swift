@@ -11,7 +11,18 @@ struct LeaderboardEntry: Identifiable, Equatable {
     var attemptID: UUID? = nil
     var streakDurationMS: Int? = nil
     var countryCode: String? = nil
+    /// Optional presentation data. Live results keep these nil until verified
+    /// style measurements are supplied; previews can exercise the finished UI.
+    var backspinRPM: Int? = nil
+    var typicalHeight: LeaderboardJugglingHeight? = nil
+    var isPreview = false
+    var backspinLabel: String { backspinRPM.map { "\($0) rpm" } ?? "Unavailable" }
+    var heightLabel: String { typicalHeight?.rawValue ?? "Unavailable" }
     var id: Int { rank }
+}
+
+enum LeaderboardJugglingHeight: String, CaseIterable {
+    case low = "Low", normal = "Normal", high = "High", mixed = "Mixed"
 }
 
 enum LeaderboardPeriod: String, CaseIterable, Identifiable {
@@ -34,7 +45,7 @@ enum LeaderboardSample {
         players.sort { $0.touches > $1.touches }
         var entries: [LeaderboardEntry] = []
         for (index, player) in players.enumerated() {
-            entries.append(LeaderboardEntry(rank: index + 1, name: player.name, touches: player.touches, isYou: player.isYou))
+            entries.append(LeaderboardEntry(rank: index + 1, name: player.name, touches: player.touches, isYou: player.isYou, isPreview: true))
         }
         return entries
     }

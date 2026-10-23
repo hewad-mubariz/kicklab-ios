@@ -31,6 +31,68 @@ struct BallEffectsTests {
         #expect(track.sample(at: -0.2) == nil)
     }
 
+    /// A soft-edged disc mask of `radius` source pixels centred on (x, y) pixels.
+    private func masked(_ time: Double, x: Double, y: Double, radius: Double, size: CGSize) -> RecordedFrame {
+        let side = 3 * 30.0, n = 48
+        let rect = CGRect(x: (x - side / 2) / size.width, y: (y - side / 2) / size.height,
+                          width: side / size.width, height: side / size.height)
+        let alpha = (0..<n * n).map { i -> UInt8 in
+            let px = (Double(i % n) + 0.5) * side / Double(n) - side / 2, py = (Double(i / n) + 0.5) * side / Double(n) - side / 2
+            return UInt8(max(0, min(1, radius + 0.5 - hypot(px, py))) * 255)
+        }
+        return RecordedFrame(time: time, x: x / size.width, y: y / size.height, width: 2 * radius / size.width,
+                             height: 2 * radius / size.height, score: 0.9, smoothedX: 0, smoothedY: 0, vy: 0, motion: .unknown,
+                             detected: true, person: nil,
+                             ballMask: BallMask(rect: rect, width: n, height: n, alpha: alpha), usesBallMasks: true)
+    }
+
+    @Test func briefDetectionMissKeepsTheReplacementOnlyWithCurrentPixelSupport() throws {
+        let size = CGSize(width: 720, height: 1280)
+        let track = BallEffectTrack(frames: [masked(0, x: 300, y: 600, radius: 30, size: size),
+                                             masked(1.0 / 60, x: 310, y: 600, radius: 30, size: size),
+                                             masked(3.0 / 60, x: 330, y: 600, radius: 30, size: size),
+                                             masked(0.2, x: 400, y: 600, radius: 30, size: size)])
+        let fitted = BallReplacementFootprint(sourceSize: size, center: CGPoint(x: 320, y: 600), radius: 30,
+                                              radii: Array(repeating: 30, count: 64), feather: 1.2, padding: 0, textureBlur: 0)
+        #expect(track.mask(at: 2.0 / 60) == nil)
+        // Without a ball edge in the current pixels the source is left untouched.
+        #expect(track.replacementMatte(at: 2.0 / 60, fitted: nil, size: size, smear: .zero, photographicSmear: false) == nil)
+        let bridged = try #require(track.replacementMatte(at: 2.0 / 60, fitted: fitted, size: size, smear: .zero, photographicSmear: false))
+        #expect(abs(bridged.footprint.center.x - 320) < 2 && abs(bridged.footprint.center.y - 600) < 2)
+        #expect(bridged.coverage(x: 320, y: 600) > 0.99)
+        // Never across a real gap.
+        #expect(track.replacementMatte(at: 0.1, fitted: fitted, size: size, smear: .zero, photographicSmear: false) == nil)
+    }
+
+    @Test func longGapIsDrawnOnlyWhereARepairFoundTheBall() throws {
+        let size = CGSize(width: 720, height: 1280)
+        var repaired = masked(0.12, x: 350, y: 560, radius: 30, size: size)
+        repaired.isVisualMaskRepair = true
+        let track = BallEffectTrack(frames: [masked(0, x: 300, y: 600, radius: 30, size: size),
+                                             masked(1.0 / 60, x: 305, y: 595, radius: 30, size: size), repaired,
+                                             masked(0.25, x: 400, y: 600, radius: 30, size: size)])
+        // 233 ms between observations is beyond plain interpolation.
+        #expect(track.replacementGuide(at: 0.1) == nil)
+        let guide = try #require(track.replacementGuide(at: 0.12))
+        #expect(abs(guide.center.x * size.width - 350) < 1 && abs(guide.center.y * size.height - 560) < 1)
+        #expect(abs(guide.pixelRadius(in: size) - 30) < 1)
+    }
+
+    @Test func oneUnderSegmentedMaskDoesNotShrinkTheReplacement() throws {
+        let size = CGSize(width: 720, height: 1280)
+        let radii = [30.0, 30, 21, 30, 30]
+        let track = BallEffectTrack(frames: radii.indices.map { masked(Double($0) / 60, x: 300 + Double($0) * 4, y: 600,
+                                                                        radius: radii[$0], size: size) })
+        let reference = try #require(track.radiusReference(at: 2.0 / 60, size: size))
+        let held = try #require(track.replacementMatte(at: 2.0 / 60, fitted: nil, size: size, smear: .zero, photographicSmear: false))
+        let neighbour = try #require(track.replacementMatte(at: 1.0 / 60, fitted: nil, size: size, smear: .zero, photographicSmear: false))
+        #expect(held.footprint.radius >= 0.93 * neighbour.footprint.radius)
+        #expect(abs(reference - (BallReplacementCoverage.maskRadius(try #require(track.mask(at: 0)), size: size) ?? 0)) < 1)
+        // A direct caller without neighbours keeps the frame's own mask.
+        let alone = BallReplacementCoverage(mask: try #require(track.mask(at: 2.0 / 60)), fitted: nil, size: size)
+        #expect(alone.footprint.radius < 0.8 * neighbour.footprint.radius)
+    }
+
     @Test func materialAloneCountsAsAnEdit() {
         #expect(SessionEditState(style: .none, intensity: 0, ballSkin: .gold).isEdited)
         #expect(!SessionEditState(style: .none, intensity: 0, ballSkin: .original).isEdited)

@@ -26,10 +26,15 @@ import Foundation
     }
     func begin(item: HistorySession, proposal: RankedStreakProposal, bytes: Int64, sha256: String) async throws -> LeaderboardAttempt {
         guard let owner = item.ownerID else { throw LeaderboardFailure.signIn }
-        let data = try await rpc("begin_leaderboard_attempt", owner: owner, fields: [
+        var fields: [String: Any] = [
             "p_session_id": item.id.uuidString, "p_count": proposal.count, "p_start_ms": proposal.startMS,
             "p_end_ms": proposal.endMS, "p_video_bytes": bytes, "p_sha256": sha256,
-            "p_rules_version": LeaderboardRules.version, "p_size5_confirmed": true], single: true)
+            "p_rules_version": LeaderboardRules.version, "p_size5_confirmed": true]
+        if let report = item.touchReview {
+            fields["p_touch_review"] = try JSONSerialization.jsonObject(with: JSONEncoder().encode(report))
+        }
+        let data = try await rpc(item.touchReview == nil ? "begin_leaderboard_attempt" : "begin_leaderboard_attempt_with_review",
+            owner: owner, fields: fields, single: true)
         let attempt = try Self.decoder().decode(LeaderboardAttempt.self, from: data)
         guard attempt.userID == owner, attempt.sessionID == item.id else { throw LeaderboardFailure.unavailable }
         return attempt

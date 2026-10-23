@@ -9,17 +9,22 @@ nonisolated struct BallMask: Sendable {
     let rect: CGRect
     let width: Int
     let height: Int
+    /// Decoder sampling in normalized source coordinates. Resampling a repaired
+    /// mask must not change the dilation width inferred by the renderer.
+    let decoderPixelSize: CGSize?
     private let rawAlpha: [UInt8]
     private let runEnds: [UInt16]
     private let runValues: [UInt8]
 
-    init(rect: CGRect, width: Int, height: Int, alpha: [UInt8]) {
+    init(rect: CGRect, width: Int, height: Int, alpha: [UInt8], decoderPixelSize: CGSize? = nil) {
         self.rect = rect; self.width = width; self.height = height
+        self.decoderPixelSize = decoderPixelSize
         rawAlpha = alpha; runEnds = []; runValues = []
     }
 
-    private init(rect: CGRect, width: Int, height: Int, ends: [UInt16], values: [UInt8]) {
+    private init(rect: CGRect, width: Int, height: Int, ends: [UInt16], values: [UInt8], decoderPixelSize: CGSize?) {
         self.rect = rect; self.width = width; self.height = height
+        self.decoderPixelSize = decoderPixelSize
         rawAlpha = []; runEnds = ends; runValues = values
     }
 
@@ -60,11 +65,38 @@ nonisolated struct BallMask: Sendable {
             // Incompressible masks retain their original representation.
             if ends.count * 3 >= rawAlpha.count { return self }
         }
-        return Self(rect: rect, width: width, height: height, ends: ends, values: values)
+        return Self(rect: rect, width: width, height: height, ends: ends, values: values, decoderPixelSize: decoderPixelSize)
     }
 
     func expanded() -> Self {
-        runEnds.isEmpty ? self : Self(rect: rect, width: width, height: height, alpha: alpha)
+        runEnds.isEmpty ? self : Self(rect: rect, width: width, height: height, alpha: alpha, decoderPixelSize: decoderPixelSize)
+    }
+
+    /// Alpha-weighted centre in normalized source coordinates.
+    var centroid: CGPoint? {
+        let values = alpha
+        var sum = 0.0, sx = 0.0, sy = 0.0
+        for y in 0..<height { for x in 0..<width {
+            let a = Double(values[y * width + x]); sum += a; sx += a * (Double(x) + 0.5); sy += a * (Double(y) + 0.5)
+        } }
+        guard sum > 0 else { return nil }
+        return CGPoint(x: rect.minX + sx / sum / Double(width) * rect.width, y: rect.minY + sy / sum / Double(height) * rect.height)
+    }
+
+    /// The same silhouette and sampling at another normalized centre.
+    func centered(at point: CGPoint) -> Self {
+        let moved = CGRect(x: point.x - rect.width / 2, y: point.y - rect.height / 2, width: rect.width, height: rect.height)
+        return runEnds.isEmpty
+            ? Self(rect: moved, width: width, height: height, alpha: rawAlpha, decoderPixelSize: decoderPixelSize)
+            : Self(rect: moved, width: width, height: height, ends: runEnds, values: runValues, decoderPixelSize: decoderPixelSize)
+    }
+
+    var samplingSize: CGSize {
+        decoderPixelSize ?? CGSize(width: rect.width / Double(width), height: rect.height / Double(height))
+    }
+
+    func samplingPixels(in size: CGSize) -> Double {
+        max(samplingSize.width * size.width, samplingSize.height * size.height)
     }
 
     private func value(at index: Int) -> UInt8 {

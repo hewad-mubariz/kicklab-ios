@@ -122,8 +122,9 @@ nonisolated enum PipelineParityReview {
                 let sample=track.replacementGuide(at:time),mask=track.mask(at:time)
                 let fitted=sample.flatMap {BallReplacementFootprint.fit(pixels:pixels,sample:$0,measureTexture:true)}
                 let smear=track.smear(at:time,size:size)
-                let matte=mask.map {BallReplacementCoverage(mask:$0,fitted:fitted,size:size,smear:smear)}
-                let pose=track.surfaceMotion!.orientation(at:time)
+                let matte=track.replacementMatte(at:time,fitted:fitted,size:size,smear:smear,
+                    photographicSmear:track.surfaceMotion?.photographicExposure != nil)
+                let pose=track.surfaceMotion!.renderOrientation(at:time) ?? track.surfaceMotion!.orientation(at:time)
                 var row:[String:Any]=["index":index,"time":time,"pts_value":pts.value,"pts_scale":pts.timescale,
                     "size":[size.width,size.height],"q":[pose.vector.x,pose.vector.y,pose.vector.z,pose.vector.w],
                     "spin_status":track.surfaceMotion!.status(at:time).rawValue,"patch_index":-1,"selected":selected(time)]

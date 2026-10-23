@@ -37,11 +37,11 @@ final class SupabaseAccountService: AccountAuthService {
         self.configuration = configuration
         FreshInstallSession.clearIfNeeded(keychainService: "juggledude.auth")
         client = AuthClient(configuration: .init(
-            url: configuration.projectURL.appendingPathComponent("auth/v1"),
+            url: configuration.authURL,
             headers: ["apikey": configuration.publishableKey],
             flowType: .pkce,
             redirectToURL: configuration.redirectURL,
-            storageKey: "juggledude.\(configuration.projectURL.host ?? "auth").session",
+            storageKey: configuration.sessionStorageKey,
             localStorage: KeychainLocalStorage(service: "juggledude.auth"),
             autoRefreshToken: true,
             emitLocalSessionAsInitialSession: true

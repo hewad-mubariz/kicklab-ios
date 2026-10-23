@@ -60,7 +60,7 @@ struct TrainingProfileView: View {
                     Button { showsSubmissions = true } label: {
                         HStack(spacing: 14) {
                             Image(systemName: "trophy").font(.system(size: 22)).frame(width: 28)
-                            Text("Leaderboard submissions").font(.body.weight(.medium))
+                            Text("Touch checks").font(.body.weight(.medium))
                             Spacer(minLength: 8)
                             Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
                         }
