@@ -71,6 +71,14 @@ nonisolated struct LeaderboardTouchReview: Codable, Equatable, Sendable {
 
 nonisolated extension ContactReviewReason {
     var breaksStreak: Bool { [.handContact, .heldBall, .groundContact].contains(self) }
+    /// Why a streak ended, inside a sentence.
+    var stopReason: String {
+        switch self {
+        case .heldBall: "the ball was held"
+        case .groundContact: "the ball touched the ground"
+        default: "a hand or arm touched the ball"
+        }
+    }
     var title: String {
         switch self {
         case .handContact: "Hand or arm contact detected"

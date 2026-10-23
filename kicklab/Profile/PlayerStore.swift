@@ -419,7 +419,7 @@ final class PlayerStore: ObservableObject {
         try Task.checkCancellation()
         func entry(_ row: RankedPlayer) -> LeaderboardEntry {
             LeaderboardEntry(rank: row.rank, name: row.displayName, touches: row.touches,
-                isYou: row.isYou, photo: urls[row.userID], attemptID: row.attemptID,
+                isYou: row.isYou, photo: urls[row.userID], attemptID: row.attemptID, sessionID: row.sessionID,
                 streakDurationMS: row.streakDurationMS, countryCode: row.countryCode)
         }
         return (board.entries.map(entry), board.aroundMe.map(entry))

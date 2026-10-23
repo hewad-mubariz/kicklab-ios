@@ -74,6 +74,8 @@ begin
   ), ranked as (
     select row_number() over(order by b.touches desc,b.completed_at,b.user_id) as rank,
       b.user_id,b.attempt_id,b.touches,b.streak_duration_ms,b.completed_at as achieved_at,
+      -- Only your own row names its session, so the app can show a check still open on it.
+      case when b.user_id=auth.uid() then b.session_id end as session_id,
       p.display_name,p.country_code,p.avatar_path,coalesce(b.user_id=auth.uid(),false) as is_you
     from best b join public.profiles p on p.id=b.user_id
   ), mine as (select rank from ranked where is_you)

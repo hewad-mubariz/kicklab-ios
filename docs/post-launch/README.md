@@ -947,10 +947,13 @@ more scores 27.
   completion time. Results from older builds have no streak and do not rank. Deploy it
   before installing this build: until then, results wait in the outbox (404, retried).
 - **Visibility:** the leaderboard asks once (Join / Not now). Profile can change it later.
-- **Touch checks:** the leaderboard shows the last session's best streak and any
-  left-out touches or stops (Looks right / Check touches). The player picks the ones
+- **Touch checks:** a streak starts at the first counted touch (a hand release before it
+  never counts) and ends at a hand, hold or ground call; those calls are final and are
+  never offered for a check. The leaderboard shows the last session's best streak and
+  the unsure touches inside it (Looks right / Check touches). The player picks the ones
   they think were valid; the app shows the streak they would make and uploads clips of
-  only those moments. Approving with `scripts/review-leaderboard.py review <id> approve`
+  only those moments. While a check is open, the player's row keeps the device streak
+  and says how many touches are in review. Approving with `scripts/review-leaderboard.py review <id> approve`
   confirms the count asked for by default; pass a lower `--count` to confirm only some.
 - **Not yet built:** full-recording review (planned on AWS) and reporting an automatic
   score; the report button exists only for scores that went through a check. Automatic

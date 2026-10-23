@@ -105,17 +105,15 @@ struct LeaderboardCorrectionForm: View {
         let total = "\(item.touches.formatted()) \(item.touches == 1 ? "touch" : "touches") in all, and your longest run without a stop was \(counted). That run is what ranks."
         guard item.source == .recording else { return "Imported videos stay in your history and never rank." }
         guard let correction else { return total + " This session was saved before touch checks, so there’s nothing to choose." }
-        let leftOut = correction.leftOut.count, stops = correction.stops.count
-        if leftOut + stops == 0 { return total + " Every touch the counter saw is in it." }
-        var parts: [String] = []
-        if leftOut > 0 { parts.append("left out \(leftOut) \(leftOut == 1 ? "touch" : "touches") it wasn’t sure of") }
-        if stops > 0 { parts.append("ended a run \(stops) \(stops == 1 ? "time" : "times")") }
-        return total + " The counter " + parts.joined(separator: " and ") + "."
+        let ended = correction.endedBy.map { " It began at your first counted touch and ended at \($0.timestamp): \($0.kind.stopReason)." } ?? ""
+        let leftOut = correction.leftOut.count
+        guard leftOut > 0 else { return total + ended + " Every touch inside it was counted." }
+        return total + ended + " Inside it, the counter left out \(leftOut) \(leftOut == 1 ? "touch" : "touches") it wasn’t sure of."
     }
 
     // MARK: - Recording
 
-    private var showsPlayer: Bool { !(correction?.askable.isEmpty ?? true) || attempt?.touchReview?.moments.isEmpty == false }
+    private var showsPlayer: Bool { !(correction?.leftOut.isEmpty ?? true) || attempt?.touchReview?.moments.isEmpty == false }
 
     private func playerPanel(_ url: URL) -> some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -169,7 +167,7 @@ struct LeaderboardCorrectionForm: View {
                 Button("Resume sending") { review.enqueue(item: item, proposal: attempt.proposal, request: attempt.touchReview) }
                     .disabled(video == nil)
             }
-        } else if item.source == .recording, let correction, !correction.askable.isEmpty {
+        } else if item.source == .recording, let correction, !correction.leftOut.isEmpty {
             if video == nil {
                 panel {
                     Label("Recording not on this phone", systemImage: "video.slash").font(.headline)
@@ -218,15 +216,8 @@ struct LeaderboardCorrectionForm: View {
     // MARK: - Choosing
 
     @ViewBuilder private func choose(_ correction: LeaderboardCorrection) -> some View {
-        if !correction.leftOut.isEmpty {
-            panel("LEFT OUT", footer: "The counter wasn’t sure of these, so it didn’t count them. They didn’t end your run.") {
-                moments(correction.leftOut, selectable: true)
-            }
-        }
-        if !correction.stops.isEmpty {
-            panel("ENDED A RUN", footer: "Choose one only if it was a real touch, not a hand, a catch or a bounce.") {
-                moments(correction.stops, selectable: true)
-            }
+        panel("LEFT OUT OF YOUR STREAK", footer: "The counter wasn’t sure of these touches, so it didn’t count them, and they didn’t end your streak. Clear hand touches, catches and bounces aren’t listed: they always end a streak.") {
+            moments(correction.leftOut, selectable: true)
         }
         panel {
             Toggle(isOn: $agreed) {
@@ -405,13 +396,10 @@ struct LeaderboardLastSessionCard: View {
             }
         }
         guard lookedRight != item.id.uuidString, let correction = LeaderboardCorrection(item: item),
-              !correction.askable.isEmpty else { return nil }
-        let leftOut = correction.leftOut.count, stops = correction.stops.count
-        var detail: [String] = []
-        if leftOut > 0 { detail.append("\(leftOut) \(leftOut == 1 ? "touch" : "touches") left out") }
-        if stops > 0 { detail.append("\(stops) \(stops == 1 ? "stop" : "stops") detected") }
+              !correction.leftOut.isEmpty else { return nil }
+        let leftOut = correction.leftOut.count
         return Line(title: "Last session · best streak \(streak)",
-                    detail: detail.joined(separator: " · ") + ". If any were valid touches, send them for a check.",
+                    detail: "\(leftOut) \(leftOut == 1 ? "touch" : "touches") the counter wasn’t sure of inside your streak. If they were valid, send them for a check.",
                     action: "Check touches", asks: true)
     }
 }

@@ -15,7 +15,7 @@ struct LeaderboardRulesView: View {
                             .foregroundStyle(.secondary)
                     }.padding(.vertical, 12)
                     group("THE STREAK") {
-                        rule("What counts", "Feet, legs, knees/thighs, chest and head. Inside and outside feet both count. One distinct contact earns one point.", "soccerball")
+                        rule("What counts", "Feet, legs, knees/thighs, chest and head. Inside and outside feet both count. One distinct contact earns one point. Your streak starts at your first touch after you drop the ball from your hands.", "soccerball")
                         Divider()
                         rule("What ends a streak", "The ground, a hand or arm, a catch or a held stall. Touches after a stop start a new streak, and only your longest one ranks, never your session total.", "nosign", warning: true)
                         Divider()
@@ -26,7 +26,7 @@ struct LeaderboardRulesView: View {
                         Divider()
                         rule("Touches the counter isn’t sure of", "When hands are hidden, the body is unclear or the ball is lost for a moment, the counter leaves that touch out. It doesn’t count, and it doesn’t end your streak either.", "questionmark.circle")
                         Divider()
-                        rule("Ask for a check", "After a session, open your streak to see the touches that were left out and the stops the counter saw. If some were valid, send them. A reviewer watches short clips of just those moments and, if they confirm them, your streak goes up.", "checkmark.seal")
+                        rule("Ask for a check", "After a session, open your streak to see the touches inside it that the counter wasn’t sure of. If some were valid, send them. A reviewer watches short clips of just those moments and, if they confirm them, your streak goes up. Clear hand touches, catches and bounces aren’t offered: they always end a streak.", "checkmark.seal")
                         Divider()
                         rule("Still disagree?", "Open the check in Touch checks and ask for one re-review.", "arrow.uturn.backward.circle")
                     }

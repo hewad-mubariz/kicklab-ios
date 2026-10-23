@@ -1,6 +1,7 @@
 import Foundation
 
-/// One ranked player. `touches` is their best approved continuous streak in the period.
+/// One ranked player. `touches` is their best continuous streak in the period: the
+/// device's count, or a reviewer's when a touch check was confirmed.
 struct LeaderboardEntry: Identifiable, Equatable {
     let rank: Int
     let name: String
@@ -8,7 +9,10 @@ struct LeaderboardEntry: Identifiable, Equatable {
     var isYou = false
     /// The player's picture once scores come from accounts; without one a placeholder shows.
     var photo: URL? = nil
+    /// Set when a confirmed touch check scores this entry.
     var attemptID: UUID? = nil
+    /// The session that ranks, on your own entry only.
+    var sessionID: UUID? = nil
     var streakDurationMS: Int? = nil
     var countryCode: String? = nil
     /// Optional presentation data. Live results keep these nil until verified

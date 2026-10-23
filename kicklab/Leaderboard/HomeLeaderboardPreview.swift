@@ -100,6 +100,9 @@ private struct HomeReviewedLeaderboardCard: View {
     }
     private var chase: String {
         if state.error != nil, state.board != nil { return "Saved ranking · open to refresh" }
+        if let you, let check = review.openCheck(for: you)?.label(beside: you.touches, ranked: you.sessionID) {
+            return check
+        }
         guard let you else { return pending || waiting ? "View your touch check" : "Best streaks · weekly & all-time" }
         if you.rank == 1 { return "You lead this week" }
         guard let ahead = entries.first(where: { $0.rank == you.rank-1 }) else { return "View nearby players" }
