@@ -39,9 +39,9 @@
   "archive_path": "artifacts/releases/20261023-home-polish/JuggleDude-1.0.1-27.xcarchive",
   "upload_status": "succeeded",
   "testflight_status": "processing_complete_internal_group_confirmed",
-  "app_store_review_submitted": false,
+  "app_store_review_submitted": true,
   "phone_installation_performed": false,
-  "user_handoff": "Upload to TestFlight, then wait for user review before downloading or installing on the iPhone. App Store submission is not authorized.",
+  "user_handoff": "User authorized App Review submission with manual release on 2026-10-23. Submitted 1.0.1 (27); no physical-device installation performed. Public release remains manual.",
   "upload": {
     "completed_at": "2026-10-23T15:28:12.499Z",
     "result": "EXPORT SUCCEEDED",
@@ -62,7 +62,7 @@
   },
   "app_store_draft": {
     "version": "1.0.1",
-    "status": "Prepare for Submission",
+    "status": "Waiting for Review",
     "url": "https://appstoreconnect.apple.com/apps/6820780610/distribution/ios/version/inflight",
     "media_manifest": "marketing/app-store-20261023-home/capture-manifest.json",
     "screenshot": "Updated Dark Mode home in first position; existing replay and camera retained.",
@@ -74,11 +74,30 @@
       "persisted_verification": "Exact match after reloading the App Store Connect draft; 2726 characters.",
       "proof": "artifacts/releases/20261023-home-polish/review-notes-saved.jpg"
     },
-    "submitted": false,
-    "remaining_before_future_submission": [
-      "User review of TestFlight build 27",
-      "Finish and review What's New and remaining release metadata, then select build 27",
-      "Explicit user authorization to submit for App Review"
-    ]
+    "submitted": true,
+    "remaining_before_future_submission": [],
+    "release_mode": "Manually release this version",
+    "whats_new_file": "benchmarks/releases/1.0.1-27-whats-new.txt",
+    "submission": {
+      "id": "50c0a416-df04-4998-a085-77734510ce58",
+      "url": "https://appstoreconnect.apple.com/apps/6820780610/distribution/reviewsubmissions/details/50c0a416-df04-4998-a085-77734510ce58",
+      "submitted_at_displayed": "Oct 23, 2026 at 6:10 PM CEST",
+      "status": "Waiting for Review",
+      "items": [
+        "iOS App 1.0.1 (27)"
+      ],
+      "proof": "artifacts/releases/20261023-home-polish/app-review-submitted.jpg",
+      "manual_release_proof": "artifacts/releases/20261023-home-polish/manual-release-before-submit.jpg",
+      "preflight": [
+        "Correct build 27 selected; iPhone-only signed archive verified previously.",
+        "Manual release checked; existing rating retained.",
+        "Only en-US localization; homepage-only What's New saved.",
+        "Updated review notes exactly match the approved local text.",
+        "Updated preview loaded with readyState 4 and no media error; three expected screenshots present.",
+        "Support, Terms and Privacy pages loaded successfully in browser.",
+        "Sample Google Drive clip reports anyone with the link can access without sign-in.",
+        "App Store Connect accepted one app-version item without validation errors."
+      ]
+    }
   }
 }

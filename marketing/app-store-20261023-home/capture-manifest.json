@@ -40,8 +40,10 @@
   ],
   "locale": "en-US",
   "draft_url": "https://appstoreconnect.apple.com/apps/6820780610/distribution/ios/version/inflight",
-  "app_review_submission": false,
+  "app_review_submission": true,
   "physical_device_installation": false,
   "old_assets": "Removed only from new draft gallery; retained in Asset Library and released version.",
-  "upload_status": "Saved in 1.0.1 draft; preview poster generated and media viewer opens."
+  "upload_status": "Saved in 1.0.1 draft; preview poster generated and media viewer opens.",
+  "submission_id": "50c0a416-df04-4998-a085-77734510ce58",
+  "submission_status": "Waiting for Review"
 }
