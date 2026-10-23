@@ -860,7 +860,6 @@ struct ShotEffectsReplayView: View {
                     let exportFolder: String? = nil
                     #endif
                     if exportFolder == nil {
-                        await VideoSaveCompletion.shared.prepare()
                         try await ShotEffectExporter.authorizePhotos()
                     }
                     let url = try await runSave(exportFolder: exportFolder) {

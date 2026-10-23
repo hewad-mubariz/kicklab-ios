@@ -11,6 +11,9 @@ nonisolated struct HistorySession: Codable, Equatable, Identifiable, Sendable {
     var syncState: SyncState
     var scoreStatus: String = "device_reported"
     var rankedProposal: RankedStreakProposal? = nil
+    var touchReview: LeaderboardTouchReview? = nil
+    /// When each counted touch happened, kept on this phone so a correction can be worked out.
+    var touchTimesMS: [Int]? = nil
 
     init(result: SavedJugglingResult, syncState: SyncState = .pending) {
         id = result.id; ownerID = result.ownerID; touches = result.touches

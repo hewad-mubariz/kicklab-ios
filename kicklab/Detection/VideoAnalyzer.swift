@@ -242,7 +242,13 @@ final class VideoAnalyzer: ObservableObject {
 
         let started = ProcessInfo.processInfo.systemUptime
         let beforeModel = DetectorPerformance.memoryMB()
+        #if DEBUG
+        if visualOnly { PreparationMemoryProbe.stage("dense_model_loading") }
+        #endif
         let detector = try BallDetector()
+        #if DEBUG
+        if visualOnly { PreparationMemoryProbe.stage("dense_inference") }
+        #endif
         let visualRecovery = recoveryRequested && detector.supportsDistantVisualRecovery ? DistantBallVisualRecovery() : nil
         var recoveredFrames: [RecordedFrame] = []
         var batchEnabled = batchRequested && detector.supportsFrameBatching

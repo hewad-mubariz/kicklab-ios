@@ -258,6 +258,7 @@ nonisolated struct StoredFrame: Codable, Sendable {
     let maskRect: [Double]?
     let maskWidth: Int?
     let maskHeight: Int?
+    let maskDecoderPixelSize: [Double]?
     private let rawAlpha: Data?
     private let packedAlpha: Data?
     let usesMasks: Bool
@@ -266,7 +267,7 @@ nonisolated struct StoredFrame: Codable, Sendable {
     let identity: RecordedFrameIdentity?
 
     private enum CodingKeys: String, CodingKey {
-        case values, detected, person, motion, maskRect, maskWidth, maskHeight
+        case values, detected, person, motion, maskRect, maskWidth, maskHeight, maskDecoderPixelSize
         case rawAlpha = "alpha"
         case packedAlpha, usesMasks, repair, visualRecovery, identity
     }
@@ -323,6 +324,7 @@ nonisolated struct StoredFrame: Codable, Sendable {
         motion = f.motion == .falling ? -1 : f.motion == .rising ? 1 : 0
         maskRect = f.ballMask.map { [$0.rect.minX,$0.rect.minY,$0.rect.width,$0.rect.height] }
         maskWidth = f.ballMask?.width; maskHeight = f.ballMask?.height
+        maskDecoderPixelSize = f.ballMask?.decoderPixelSize.map { [$0.width, $0.height] }
         let alpha = f.ballMask?.alpha
         packedAlpha = alpha.flatMap { Self.pack($0) }
         rawAlpha = packedAlpha == nil ? alpha.map { Data($0) } : nil
@@ -340,7 +342,10 @@ nonisolated struct StoredFrame: Codable, Sendable {
             guard rect.count == 4, rect.allSatisfy(\.isFinite), rect[2] > 0, rect[3] > 0,
                   let w = maskWidth, let h = maskHeight, (1...128).contains(w), (1...128).contains(h),
                   alpha?.count == w*h else { return false }
-        } else if rawAlpha != nil || packedAlpha != nil || maskWidth != nil || maskHeight != nil { return false }
+            if let step = maskDecoderPixelSize {
+                guard step.count == 2, step.allSatisfy({ $0.isFinite && $0 > 0 && $0 <= 1 }) else { return false }
+            }
+        } else if rawAlpha != nil || packedAlpha != nil || maskWidth != nil || maskHeight != nil || maskDecoderPixelSize != nil { return false }
         return true
     }
 
@@ -351,7 +356,9 @@ nonisolated struct StoredFrame: Codable, Sendable {
             person:person.map { PersonBox(x:$0[0],y:$0[1],width:$0[2],height:$0[3]) },
             usesBallMasks:usesMasks,isVisualMaskRepair:repair)
         if let r = maskRect, let w = maskWidth, let h = maskHeight, let alpha {
-            f.ballMask = BallMask(rect:CGRect(x:r[0],y:r[1],width:r[2],height:r[3]),width:w,height:h,alpha:Array(alpha)).compacted()
+            let step = maskDecoderPixelSize.map { CGSize(width: $0[0], height: $0[1]) }
+            f.ballMask = BallMask(rect:CGRect(x:r[0],y:r[1],width:r[2],height:r[3]),width:w,height:h,
+                alpha:Array(alpha), decoderPixelSize: step).compacted()
         }
         f.identity = identity
         f.isVisualRecovery = visualRecovery == true

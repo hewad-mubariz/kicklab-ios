@@ -78,7 +78,8 @@ nonisolated enum BallMaterialRenderer {
                             coverage: ((Double, Double) -> Double)? = nil,
                             coverageBounds: CGRect? = nil,
                             orientation: simd_quatf? = nil, smear: CGVector = .zero,
-                            light: SIMD3<Float>? = nil) -> Replacement? {
+                            light: SIMD3<Float>? = nil,
+                            background: BallReplacementBackground? = nil) -> Replacement? {
         guard skin != .original, let f, BallSkinSphereRenderer.hasArtwork(for: skin) else { return nil }
         let smearLength = hypot(smear.dx, smear.dy)
         let smearSteps = smearLength > 0.75 ? min(12, max(2, Int(ceil(smearLength/1.5)))) : 1
@@ -178,10 +179,19 @@ nonisolated enum BallMaterialRenderer {
                 samplesUsed += 1
             }
             let offset = (y*dimension+x)*4
+            let backdrop = alpha >= 0.5 / 255 && alpha < 0.995
+                ? background?.estimate(x: f.center.x + dx, y: f.center.y + dy) : nil
+            // A soft source-over overlay retains old-ball colour A*(1-A).
+            // Replace that contribution only where local background evidence is
+            // strong. Fade at negligible alpha; leave uncertain regions intact.
+            let backgroundWeight = (backdrop?.confidence ?? 0) * min(1, alpha / 0.1) * (1 - alpha)
+            let outputAlpha = alpha + backgroundWeight
             for channel in 0..<3 {
-                output[offset+channel] = UInt8(max(0,min(alpha*255,(colour[channel]/max(samplesUsed,1)*channelGain[channel]*alpha).rounded())))
+                let foreground = colour[channel] / max(samplesUsed, 1) * channelGain[channel] * alpha
+                let behind = (backdrop?.colour[channel] ?? 0) * backgroundWeight
+                output[offset+channel] = UInt8(max(0,min(outputAlpha*255,(foreground + behind).rounded())))
             }
-            output[offset+3] = UInt8((alpha*255).rounded())
+            output[offset+3] = UInt8((outputAlpha*255).rounded())
         } }
         guard let provider = CGDataProvider(data:Data(output) as CFData),
               let image = CGImage(width:dimension,height:dimension,bitsPerComponent:8,bitsPerPixel:32,

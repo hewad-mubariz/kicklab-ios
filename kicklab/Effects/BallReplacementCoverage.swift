@@ -17,6 +17,7 @@ nonisolated struct BallReplacementCoverage {
     private let cut: CutGrid?
     private let smear: CGVector
     private let smearSteps: Int
+    private let photographicSmear: Bool
     /// Per-direction weight (64 rays from the body centre) where the owned mask
     /// extends beyond mask sampling bias, with support on the opposite side.
     /// An isolated mask protrusion is not evidence of exposure blur. A lobe
@@ -29,26 +30,35 @@ nonisolated struct BallReplacementCoverage {
     /// The image-edge fit is trusted within this band around the mask circle.
     static let fitBand = 0.06
 
-    init(mask storedMask: BallMask, fitted: BallReplacementFootprint?, size: CGSize, smear: CGVector = .zero) {
+    /// `radiusReference` is the median mask-circle radius of neighbouring frames
+    /// (`BallEffectTrack.radiusReference`). A ball's size changes slowly, so one
+    /// under- or over-segmented mask is held within `fitBand` of it instead of
+    /// pulsing the replacement.
+    init(mask storedMask: BallMask, fitted: BallReplacementFootprint?, size: CGSize, smear: CGVector = .zero,
+         photographicSmear: Bool = false, radiusReference: Double? = nil) {
         // A renderer owns only its current frame. Expand once here as well as
         // at track lookup, so direct callers never decode inside pixel loops.
         let mask = storedMask.expanded()
         self.mask = mask
+        self.photographicSmear = photographicSmear
         let scale = max(0.25, min(size.width, size.height)/720)
         let length = hypot(smear.dx, smear.dy)
         self.smear = length > 0.75*scale ? smear : .zero
         smearSteps = length > 0.75*scale ? min(12, max(2, Int(ceil(length/(1.5*scale))))) : 1
         let maskBounds = CGRect(x: mask.rect.minX*size.width, y: mask.rect.minY*size.height,
                                 width: mask.rect.width*size.width, height: mask.rect.height*size.height)
-        guard let circle = Self.maskCircle(mask: mask, bounds: maskBounds, size: size) else {
+        guard var circle = Self.maskCircle(mask: mask, bounds: maskBounds, size: size) else {
             body = nil; cut = nil; reconstructsBody = false; bounds = maskBounds; lobes = []
             footprint = fitted.map { Self.materialFootprint(mask: mask, fitted: $0, base: mask.footprint(in: size), bounds: maskBounds) }
                 ?? mask.footprint(in: size)
             return
         }
+        if let reference = radiusReference, reference.isFinite, reference > 0 {
+            circle.radius = min(max(circle.radius, reference*(1-Self.fitBand)), reference*(1+Self.fitBand))
+        }
         var b = BallReplacementFootprint(sourceSize: size, center: circle.center, radius: circle.radius,
             radii: Array(repeating: circle.radius, count: 64), feather: 1.2*scale, padding: 0, textureBlur: fitted?.textureBlur ?? 0)
-        let maskPixel = max(maskBounds.width/Double(mask.width), maskBounds.height/Double(mask.height))
+        let maskPixel = mask.samplingPixels(in: size)
         // At distant sizes a mask pixel can exceed the percentage-only tolerance.
         // Account for the decoder's two-sided outward bias when trusting a current
         // image-edge fit; keep the established relative limits for larger balls.
@@ -58,8 +68,14 @@ nonisolated struct BallReplacementCoverage {
             let radiusTolerance = max(circle.radius*Self.fitBand, Self.maskOutwardBias*maskPixel)
             let low = max(2*scale, circle.radius-radiusTolerance), high = circle.radius+radiusTolerance
             if mean >= low && mean <= high {
-                b = BallReplacementFootprint(sourceSize: f.sourceSize, center: f.center, radius: mean, radii: f.radii,
-                                             feather: f.feather, padding: 0, textureBlur: f.textureBlur)
+                // A similar radius alone cannot validate a displaced image fit:
+                // a printed panel can pull its centre down and leave the upper
+                // ball exposed. Keep the robust mask body if the proposed fit
+                // abandons supported interior pixels, excluding the uncertain rim.
+                if Self.retainsInterior(mask: mask, body: b, fitted: f, size: size) {
+                    b = BallReplacementFootprint(sourceSize: f.sourceSize, center: f.center, radius: mean, radii: f.radii,
+                                                 feather: f.feather, padding: 0, textureBlur: f.textureBlur)
+                }
             } else {
                 // A fit outside the band has locked onto a sharp core or a hand.
                 // A round mask can disprove a fit on a smaller printed panel.
@@ -94,6 +110,10 @@ nonisolated struct BallReplacementCoverage {
         }
         v /= Double(smearSteps)
         if v > 0, let cut { v *= cut.visibility(x: x, y: y) }
+        // A semantic mask marks ball ownership, not optical opacity. Once the
+        // source photograph supports the blur, do not make its soft edge opaque
+        // merely because the segmentation classifier includes those pixels.
+        if photographicSmear && smearSteps > 1 { return v }
         // The owned mask is trained on photographed balls, so it reaches into motion
         // smear the body model misses. Pulled in by its measured outward bias, it may
         // extend coverage; it never removes body coverage or re-adds an occluder.
@@ -122,10 +142,38 @@ nonisolated struct BallReplacementCoverage {
         return max(v, inner*inner*(3-2*inner)*along*along*(3-2*along))
     }
 
+    /// Background extrapolation is only admissible at the outer ball boundary.
+    /// A hand/foot visibility cut is a foreground edge, not missing background.
+    func allowsBackgroundEstimate(x: Double, y: Double) -> Bool {
+        guard let body else { return false }
+        let dx = x - body.center.x, dy = y - body.center.y
+        guard hypot(dx, dy) > body.edge(at: atan2(dy, dx)) * 0.85 else { return false }
+        return (cut?.visibility(x: x, y: y) ?? 1) > 0.995
+    }
+
     private static func bodyCoverage(_ body: BallReplacementFootprint, x: Double, y: Double) -> Double {
         let dx = x-body.center.x, dy = y-body.center.y
         let value = min(1, max(0, (body.edge(at: atan2(dy, dx))-hypot(dx, dy))/body.feather+0.5))
         return value*value*(3-2*value)
+    }
+
+    private static func retainsInterior(mask: BallMask, body: BallReplacementFootprint,
+                                        fitted: BallReplacementFootprint, size: CGSize) -> Bool {
+        let uncertainty = max(body.radius * fitBand, maskOutwardBias * mask.samplingPixels(in: size))
+        let core = max(0, body.radius - uncertainty)
+        var supported = 0.0, lost = 0.0
+        for y in 0..<24 { for x in 0..<24 {
+            let dx = ((Double(x) + 0.5) / 24 * 2 - 1) * core
+            let dy = ((Double(y) + 0.5) / 24 * 2 - 1) * core
+            guard hypot(dx, dy) <= core else { continue }
+            let px = body.center.x + dx, py = body.center.y + dy
+            let owned = mask.coverage(x: px / size.width, y: py / size.height)
+            guard owned > 0.9 else { continue }
+            supported += owned
+            let fx = px - fitted.center.x, fy = py - fitted.center.y
+            if hypot(fx, fy) > fitted.edge(at: atan2(fy, fx)) + uncertainty { lost += owned }
+        } }
+        return supported > 0 && lost / supported <= 0.03
     }
 
     /// Percentage-only thresholds mistake ordinary mask dilation for blur on a
@@ -135,7 +183,7 @@ nonisolated struct BallReplacementCoverage {
     /// crop; an isolated interior protrusion cannot extend the silhouette. The
     /// body still integrates measured motion independently of these extensions.
     private static func lobes(mask: BallMask, body: BallReplacementFootprint, maskBounds: CGRect, size: CGSize) -> [Double] {
-        let pixel = max(maskBounds.width/Double(mask.width), maskBounds.height/Double(mask.height))
+        let pixel = mask.samplingPixels(in: size)
         let threshold = max(0.10*body.radius, maskOutwardBias*pixel)
         let transition = max(0.08*body.radius, pixel)
         var raw = [Double](repeating: 0, count: 64)
@@ -174,6 +222,14 @@ nonisolated struct BallReplacementCoverage {
     /// Robust circle through the mask's outermost 0.5 crossings. Points on the
     /// patch border (detector-box cropping) are excluded; inward residuals, which
     /// are usually occluders, are down-weighted.
+    /// Source-pixel radius of the robust circle through an owned mask.
+    static func maskRadius(_ storedMask: BallMask, size: CGSize) -> Double? {
+        let mask = storedMask.expanded()
+        let bounds = CGRect(x: mask.rect.minX*size.width, y: mask.rect.minY*size.height,
+                            width: mask.rect.width*size.width, height: mask.rect.height*size.height)
+        return maskCircle(mask: mask, bounds: bounds, size: size)?.radius
+    }
+
     private static func maskCircle(mask: BallMask, bounds: CGRect, size: CGSize) -> (center: CGPoint, radius: Double, isRound: Bool)? {
         let scale = max(0.25, min(size.width, size.height)/720)
         let pixelX = bounds.width/Double(mask.width), pixelY = bounds.height/Double(mask.height)
@@ -231,7 +287,7 @@ nonisolated struct BallReplacementCoverage {
                 w[i] = (1-u*u)*(1-u*u)*(e[i] < -2*mad ? 0.2 : 1)
             }
         }
-        let corrected = radius-maskOutwardBias*max(pixelX, pixelY)
+        let corrected = radius-maskOutwardBias*mask.samplingPixels(in: size)
         guard corrected > 2*scale, radius < base*1.6 else { return nil }
         return (CGPoint(x: center.0, y: center.1), corrected, isRound)
     }

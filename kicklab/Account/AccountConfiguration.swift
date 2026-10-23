@@ -2,8 +2,13 @@ import Foundation
 
 struct AccountConfiguration {
     let projectURL: URL
+    let authURL: URL
     let publishableKey: String
     let redirectURL: URL
+
+    // Keep the original project identity when changing the public sign-in domain.
+    // Existing sessions and PKCE verifiers must remain in the same Keychain entries.
+    var sessionStorageKey: String { "juggledude.\(projectURL.host ?? "auth").session" }
 
     init(values: [String: String]) throws {
         guard let rawURL = values["SUPABASE_URL"], let url = URL(string: rawURL),
@@ -16,6 +21,18 @@ struct AccountConfiguration {
             throw AccountFailure.configuration
         }
         projectURL = url
+        if let rawAuthURL = values["SUPABASE_AUTH_URL"] {
+            guard let origin = URL(string: rawAuthURL),
+                  origin.scheme == "https", let host = origin.host, !host.isEmpty,
+                  !host.contains("YOUR_PROJECT"), origin.user == nil, origin.password == nil,
+                  origin.port == nil, origin.query == nil, origin.fragment == nil,
+                  origin.path.isEmpty || origin.path == "/" else {
+                throw AccountFailure.configuration
+            }
+            authURL = origin.appendingPathComponent("auth/v1")
+        } else {
+            authURL = url.appendingPathComponent("auth/v1")
+        }
         publishableKey = key
         redirectURL = redirect
     }

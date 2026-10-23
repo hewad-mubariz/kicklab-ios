@@ -1,5 +1,53 @@
 # Juggle Dude account setup
 
+## Google option paused — 2026-10-22
+
+At the owner's request, the shared welcome/Profile screen now offers **Apple, email
+and guest** only. The Google button is removed, and email errors no longer suggest
+Google as an alternative. Existing auth/session handling and provider configuration
+remain intact so current development sessions can still restore. Google can return
+after the branded-domain setup below and an on-device authorization check.
+
+Verification: all 18 account-store tests and all three sign-in UI tests passed on
+the iPhone 17 Pro simulator, covering Google absence on welcome/Profile, Apple/email
+availability, email validation/back navigation, guest persistence, appearance changes,
+large text and legal-link navigation. Evidence:
+`artifacts/google-signin-deferred/20261022/SignIn.xcresult`. No phone installation or
+App Store upload was performed for this change.
+
+## Branded sign-in domain deferred — 2026-10-22
+
+The owner deferred the custom domain until upgrading Supabase. The project remains
+on Free. The dashboard currently lists Pro from $25/month and custom domains as an
+additional $10/month per domain; taxes, compute and usage may add to that amount.
+No paid plan, domain, DNS or provider setting was changed.
+
+The retained Google integration starts at the existing Supabase project host, which iOS displays
+in its browser authentication consent sheet. Google's verified app name/logo does
+not replace that initial host. This is a branding limitation, not a failed sign-in.
+
+The app now supports an optional `SUPABASE_AUTH_URL` HTTPS origin for a future
+`https://auth.juggledude.com` deployment. It is **absent from the active configuration**,
+so runtime routing is unchanged. The example plist only includes a commented example.
+Auth and email verification use that optional origin; data APIs and Keychain session/
+PKCE storage keep the original `SUPABASE_URL` identity. The 25 focused configuration,
+account-store and email-link simulator tests passed. This does not verify a deployed
+custom domain or external Google sign-in.
+
+When the owner chooses to resume:
+
+1. Confirm the then-current paid-plan/add-on cost and configure the branded domain
+   through Supabase, including its DNS verification and certificate.
+2. Add `https://auth.juggledude.com/auth/v1/callback` to the existing Google Web OAuth
+   client **before activating** the custom domain. Retain the original callback;
+   Supabase changes its advertised callback upon activation.
+3. Activate and verify the domain, then set `SUPABASE_AUTH_URL` in the app's private
+   configuration. Keep `SUPABASE_URL`, publishable key and app callback unchanged.
+4. Check Google completion/cancellation, email links, Apple sign-in, session refresh
+   and restoration, sign-out and deletion on a device before rollout.
+
+Reference: [Supabase custom-domain setup](https://supabase.com/docs/guides/platform/custom-domains).
+
 ## Current rollout status — 2026-10-18
 
 The owner authorized the Google/email rollout on

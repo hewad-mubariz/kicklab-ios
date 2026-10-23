@@ -3,6 +3,53 @@ import XCTest
 @testable import kicklab
 
 final class Capture60FPSTests: XCTestCase {
+    func testOpticsDiagnosticsRoundTripAndOlderCaptureReportsStillDecode() throws {
+        var capture = CaptureCadenceSnapshot()
+        capture.optics = .init(recordingSeconds: 4.2, exposureSeconds: 1.0/120,
+            iso: 320, exposureTargetOffset: -0.25)
+        let encoded = try JSONEncoder().encode(capture)
+        let restored = try JSONDecoder().decode(CaptureCadenceSnapshot.self, from: encoded)
+        XCTAssertEqual(restored.optics?.exposureSeconds, 1.0/120)
+        XCTAssertEqual(restored.optics?.iso, 320)
+        var legacy = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        legacy.removeValue(forKey: "optics")
+        let old = try JSONDecoder().decode(CaptureCadenceSnapshot.self,
+            from: JSONSerialization.data(withJSONObject: legacy))
+        XCTAssertNil(old.optics)
+        XCTAssertEqual(old.selectedFPS, capture.selectedFPS)
+    }
+
+    func testShutterCapRelaxesOnlyWithoutGainAndTightensWithHeadroom() {
+        var cap = CaptureExposureCap()
+        XCTAssertEqual(cap.seconds, 1.0/500)
+        // One dark reading is a passing shadow; two in a row relax one step.
+        XCTAssertFalse(cap.update(iso: 2000, maxISO: 2000, exposure: 1.0/500, offset: -1))
+        XCTAssertTrue(cap.update(iso: 2000, maxISO: 2000, exposure: 1.0/500, offset: -1))
+        XCTAssertEqual(cap.seconds, 1.0/250)
+        // Correctly exposed at high gain holds; it must not pump back and forth.
+        for _ in 0..<6 { XCTAssertFalse(cap.update(iso: 1500, maxISO: 2000, exposure: 1.0/250, offset: 0)) }
+        XCTAssertFalse(cap.update(iso: 200, maxISO: 2000, exposure: 1.0/250, offset: 0))
+        XCTAssertTrue(cap.update(iso: 200, maxISO: 2000, exposure: 1.0/250, offset: 0))
+        XCTAssertEqual(cap.seconds, 1.0/500)
+        // Past the last step the camera's own limit applies.
+        for _ in 0..<8 { _ = cap.update(iso: 2000, maxISO: 2000, exposure: 1.0/120, offset: -1) }
+        XCTAssertNil(cap.seconds)
+        XCTAssertFalse(cap.update(iso: .nan, maxISO: 2000, exposure: 1.0/120, offset: 0))
+    }
+
+    func testShutterCapRelaxesWhenAutoExposureStopsBelowTheFormatMaximum() {
+        var cap = CaptureExposureCap()
+        // Auto exposure settles at ISO 1000 of 6000 but stays a stop dark.
+        XCTAssertFalse(cap.update(iso: 1000, maxISO: 6000, exposure: 1.0/500, offset: -1))
+        XCTAssertTrue(cap.update(iso: 1000, maxISO: 6000, exposure: 1.0/500, offset: -1))
+        XCTAssertEqual(cap.seconds, 1.0/250)
+        // Halving the shutter would need ISO 800, too close to the gain it ran out at.
+        for _ in 0..<4 { XCTAssertFalse(cap.update(iso: 400, maxISO: 6000, exposure: 1.0/250, offset: 0)) }
+        XCTAssertFalse(cap.update(iso: 200, maxISO: 6000, exposure: 1.0/250, offset: 0))
+        XCTAssertTrue(cap.update(iso: 200, maxISO: 6000, exposure: 1.0/250, offset: 0))
+        XCTAssertEqual(cap.seconds, 1.0/500)
+    }
+
     func testSelectsSupported60FPSAndFallsBackWithoutChoosing4K() {
         typealias C = CaptureFrameRate.Candidate
         let options = [C(width: 3840, height: 2160, ranges: [1...120], standardPixelFormat: true),

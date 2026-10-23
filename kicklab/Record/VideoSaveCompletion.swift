@@ -17,15 +17,12 @@ final class VideoSaveCompletion: NSObject, UNUserNotificationCenterDelegate {
             intentIdentifiers: [])])
     }
 
-    func prepare() async {
-        let center = UNUserNotificationCenter.current()
-        if await center.notificationSettings().authorizationStatus == .notDetermined {
-            _ = try? await center.requestAuthorization(options: [.alert, .sound])
-        }
-    }
-
+    /// Posts only when notifications are already allowed. Saving never asks for
+    /// permission; the system's own progress shows background saves anyway.
     func saved() async {
         guard UIApplication.shared.applicationState != .active else { return }
+        let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        guard [.authorized, .provisional, .ephemeral].contains(status) else { return }
         let content = UNMutableNotificationContent()
         content.title = "Video saved to Photos"
         content.body = "Tap to open your video library."

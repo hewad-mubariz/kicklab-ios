@@ -71,7 +71,6 @@ final class ReplayDownloader: ObservableObject {
             let elapsed = analyticsStart.duration(to: .now)
             ProductAnalytics.shared.track(.exportFinished(activity, outcome, elapsed: Double(elapsed.components.seconds)))
         }
-        await VideoSaveCompletion.shared.prepare()
         do {
             try await VideoBackgroundWork.shared.run(title: "Saving your replay",
                 requiresGPU: (edit.style != .none && edit.intensity > 0) || edit.environment != .original || edit.scene != nil

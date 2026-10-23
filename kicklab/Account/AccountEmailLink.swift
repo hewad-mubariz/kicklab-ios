@@ -33,7 +33,7 @@ struct AccountEmailLink: Sendable {
     }
 
     func verificationURL(configuration: AccountConfiguration) -> URL {
-        var components = URLComponents(url: configuration.projectURL.appendingPathComponent("auth/v1/verify"), resolvingAgainstBaseURL: false)!
+        var components = URLComponents(url: configuration.authURL.appendingPathComponent("verify"), resolvingAgainstBaseURL: false)!
         components.queryItems = [
             URLQueryItem(name: "token", value: tokenHash),
             URLQueryItem(name: "type", value: type),

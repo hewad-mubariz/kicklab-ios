@@ -230,7 +230,6 @@ final class BallStyleBurnIn: ObservableObject {
                     #endif
                     if skin != .original {
                         let sample = effects.replacementGuide(at: time)
-                        let mask = effects.mask(at: time)
                         // Measure on the decoder's pixels, as replay and source spin do.
                         // Core Image's output color conversion can change edge scores
                         // enough to select a different outline on a blurred ball.
@@ -239,15 +238,17 @@ final class BallStyleBurnIn: ObservableObject {
                         let appearanceSize = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
                         let fitted = sample.flatMap { BallReplacementFootprint.fit(pixels: pixels, sample: $0, measureTexture: true) }
                         let smear = effects.smear(at: time, size: appearanceSize)
-                        let matte = mask.map { BallReplacementCoverage(mask: $0, fitted: fitted, size: appearanceSize, smear: smear) }
+                        let matte = effects.replacementMatte(at: time, fitted: fitted, size: appearanceSize, smear: smear,
+                            photographicSmear: effects.surfaceMotion?.photographicExposure != nil)
                         let footprint = effects.usesBallMasks ? matte?.footprint : fitted
                         let coverage: ((Double, Double) -> Double)? = matte.map { m in
                             { x, y in m.coverage(x: x, y: y) }
                         }
+                        let background = matte.flatMap { BallReplacementBackground(pixels: pixels, matte: $0) }
                         let replacement = BallMaterialRenderer.replacement(footprint: footprint, skin: skin,
                             time: time, coverage: coverage, coverageBounds: matte?.bounds,
                             orientation: effects.surfaceMotion?.renderOrientation(at: time), smear: smear,
-                            light: effects.surfaceMotion?.light(at: time))
+                            light: effects.surfaceMotion?.light(at: time), background: background)
                         CVPixelBufferLockBaseAddress(target, [])
                         do {
                             defer { CVPixelBufferUnlockBaseAddress(target, []) }

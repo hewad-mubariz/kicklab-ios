@@ -33,6 +33,15 @@ struct kicklabApp: App {
         _player = StateObject(wrappedValue: PlayerStore.live(account: account))
         #endif
         #if DEBUG
+        // Rankings are always live. A sample board appears only for the launch a design
+        // review asks for one, and a choice saved by older builds is dropped.
+        UserDefaults.standard.removeObject(forKey: LeaderboardPreviewScenario.defaultsKey)
+        if let raw = SessionDesignReview.argument("--leaderboard-preview"),
+           let scenario = LeaderboardPreviewScenario(rawValue: raw) {
+            var arguments = UserDefaults.standard.volatileDomain(forName: UserDefaults.argumentDomain)
+            arguments[LeaderboardPreviewScenario.defaultsKey] = scenario.rawValue
+            UserDefaults.standard.setVolatileDomain(arguments, forName: UserDefaults.argumentDomain)
+        }
         #if TOUCH_COUNTING_DEBUG
         UserDefaults.standard.set(true, forKey: "kicklab.welcome.completed")
         #endif

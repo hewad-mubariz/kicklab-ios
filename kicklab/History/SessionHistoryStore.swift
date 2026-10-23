@@ -153,7 +153,10 @@ final class SessionHistoryStore: ObservableObject {
             try await ProtectedAccountData.waitUntilAvailable()
             guard current == generation, !Task.isCancelled else { return }
             for var item in page.items {
-                item.rankedProposal = try library.session(id: item.id, owner: owner)?.rankedProposal
+                let local = try library.session(id: item.id, owner: owner)
+                item.rankedProposal = local?.rankedProposal
+                item.touchReview = local?.touchReview
+                item.touchTimesMS = local?.touchTimesMS
                 try library.save(item)
             }
             cursor = page.next; hasMore = page.next != nil

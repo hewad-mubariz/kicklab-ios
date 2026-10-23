@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Private beta review tool. Credentials are read from the operator's environment only."""
+"""Private beta review tool. Credentials are read from the operator's environment only.
+
+Rankings are automatic: each recorded session ranks by the streak the device counted.
+An attempt is a player's request to count touches the device left out. It uploads short
+clips of only the touches they chose, joined in recording order, never the whole
+recording. `moments` maps each clip back to the recording and shows the device's streak.
+Approving without --count confirms everything asked for; pass a lower --count to confirm
+only some of the touches."""
 import argparse
 import hashlib
 import json
@@ -79,6 +86,36 @@ def verify_bytes(path, attempt):
     return digest
 
 
+def clip_windows(attempt):
+    """The recording windows the app cut, rebuilt with the app's rule: each flagged
+    moment's clip window (or, with none, the streak's first and last seconds),
+    clamped to the recording, sorted, with overlapping or touching windows merged."""
+    duration = attempt["duration_ms"]
+    raw = [(m["clipStartMS"], m["clipEndMS"]) for m in (attempt.get("touch_review") or {}).get("moments", [])]
+    if not raw:
+        start, end = attempt["proposed_start_ms"], attempt["proposed_end_ms"]
+        raw = [(start - 1000, start + 1200), (end - 1200, end + 1000)]
+    clamped = sorted((min(max(0, a), duration), min(max(0, b), duration)) for a, b in raw)
+    merged = []
+    for start, end in (w for w in clamped if w[1] > w[0]):
+        if merged and start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    return merged
+
+
+def clip_map(attempt):
+    moments = (attempt.get("touch_review") or {}).get("moments", [])
+    rows, cursor = [], 0
+    for start, end in clip_windows(attempt):
+        rows.append({"clip_from_ms": cursor, "clip_to_ms": cursor + end - start,
+                     "recording_from_ms": start, "recording_to_ms": end,
+                     "moments": [m["kind"] for m in moments if start <= m["timeMS"] <= end]})
+        cursor += end - start
+    return rows
+
+
 def inspect_video(path, attempt, end_ms):
     try:
         result = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
@@ -88,6 +125,12 @@ def inspect_video(path, attempt, end_ms):
         duration = float(media["format"]["duration"]) * 1000
         if not any(stream.get("codec_type") == "video" for stream in media["streams"]):
             raise ValueError("no video")
+        windows = clip_windows(attempt)
+        clips = sum(end - start for start, end in windows)
+        if abs(duration - clips) <= 250 * len(windows) + 250:
+            # Clips of flagged moments: the reviewed segment is on the recording's
+            # timeline, which the server checks against the session's duration.
+            return
         if not duration > 0 or end_ms > duration + 250:
             raise ReviewError("The reviewed segment extends past the actual video.")
         if abs(duration - attempt["duration_ms"]) > max(2000, duration * .01):
@@ -113,6 +156,18 @@ def run(args, client):
         fields = ("id", "user_id", "submitted_at", "status", "proposed_count", "proposed_start_ms",
                   "proposed_end_ms", "duration_ms", "reviewed_count", "review_reason", "appeal_text")
         print(json.dumps([{key: row[key] for key in fields} for row in rows], indent=2))
+    elif args.command == "moments":
+        attempt = client.attempt(args.id)
+        session = client.json("/rest/v1/juggling_sessions?select=touch_count,streak_touches,streak_start_ms,streak_end_ms"
+            f"&user_id=eq.{attempt['user_id']}&id=eq.{attempt['session_id']}")
+        asked = len((attempt.get("touch_review") or {}).get("moments") or [])
+        print(json.dumps({"attempt_id": attempt["id"], "device_session": session[0] if session else None,
+            "asked_for": {"count": attempt["proposed_count"], "start_ms": attempt["proposed_start_ms"],
+                          "end_ms": attempt["proposed_end_ms"], "touches_asked_about": asked},
+            "device_observations": attempt.get("touch_review"), "uploaded_clips": clip_map(attempt),
+            "notice": "Each asked moment is a touch the device turned down. Confirm the ones you can see were valid: "
+                      "approve with the device streak plus those touches, or reject if none were. "
+                      "Each uploaded clip maps to the recording time shown."}, indent=2))
     elif args.command == "download":
         attempt = client.attempt(args.id)
         if attempt["video_delete_requested_at"] or attempt["video_deleted_at"] or attempt["status"] in ("uploading", "withdrawn"):
@@ -146,8 +201,12 @@ def run(args, client):
         digest = verify_bytes(path, attempt)
         approved = args.decision == "approve"
         if approved:
-            if args.count is None or args.start_ms is None or args.end_ms is None:
-                raise ReviewError("Approval requires --count, --start-ms and --end-ms for one uninterrupted streak.")
+            # By default an approval confirms the streak the player asked for.
+            args.count = attempt["proposed_count"] if args.count is None else args.count
+            args.start_ms = attempt["proposed_start_ms"] if args.start_ms is None else args.start_ms
+            args.end_ms = attempt["proposed_end_ms"] if args.end_ms is None else args.end_ms
+            if args.count > attempt["proposed_count"]:
+                raise ReviewError("A check can confirm at most what the player asked for.")
             if args.count < 1 or args.start_ms < 0 or args.end_ms <= args.start_ms:
                 raise ReviewError("Invalid reviewed streak.")
             inspect_video(path, attempt, args.end_ms)
@@ -173,10 +232,12 @@ def main():
     commands = parser.add_subparsers(dest="command", required=True)
     queue = commands.add_parser("queue", help="List pending attempts, or unresolved appeals")
     queue.add_argument("--appeals", action="store_true")
+    moments = commands.add_parser("moments", help="Show private device timestamps and reasons for an attempt")
+    moments.add_argument("id", type=uuid)
     download = commands.add_parser("download", help="Download and hash-check a private original")
     download.add_argument("id", type=uuid)
     download.add_argument("--output", required=True)
-    review = commands.add_parser("review", help="Record a manual decision after watching the original")
+    review = commands.add_parser("review", help="Record a decision after watching the clips")
     review.add_argument("id", type=uuid)
     review.add_argument("decision", choices=["approve", "reject"])
     review.add_argument("--file", required=True)

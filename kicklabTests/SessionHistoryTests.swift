@@ -237,6 +237,30 @@ final class SessionHistoryTests: XCTestCase {
         XCTAssertTrue(service.attempts.isEmpty)
     }
 
+    func testRecordingPersistsReviewEvidenceWithoutAutomaticallySubmitting() async throws {
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let source = root.appendingPathComponent("recording.mov")
+        try Data([1,2,3]).write(to: source)
+        let player = PlayerStore(service: nil, queue: queue)
+        await player.useAccount(.init(id: owner, email: nil, name: nil))
+        let times: [Double] = [1,2,3,4,5,6]
+        var summary = SessionSummary.make(touches: 6, duration: 7, bestCombo: 6, personalBest: 6,
+            videoURL: source, touchesMarked: times.enumerated().map { .init(index: $0.offset + 1, time: $0.element, x: 0.5, y: 0.8) }, track: [])
+        summary.debugContacts = [.init(frameIndex: 45, time: 1.5, rejection: .cooldown, handConfirmed: false, bodyFailure: nil, ball: nil)]
+        var evidence = TouchReviewEvidence()
+        evidence.append(.init(frameIndex: 105, time: 3.5, rejection: .handContact, handConfirmed: true, bodyFailure: nil, ball: nil))
+        summary.leaderboardTouchReview = LeaderboardTouchReview.make(evidence: evidence, touchTimes: times, duration: 7)
+        let id = UUID()
+        await player.recordSession(id: id, owner: owner, summary: summary, source: .recording, completedAt: Date())?.value
+        let item = try XCTUnwrap(library.session(id: id, owner: owner))
+        XCTAssertEqual(item.touchReview, summary.leaderboardTouchReview)
+        XCTAssertEqual(item.rankedProposal?.count, 3)
+        XCTAssertEqual(item.touchTimesMS, [1_000, 2_000, 3_000, 4_000, 5_000, 6_000])
+        XCTAssertEqual(try queue.pending(for: owner).first?.streak, item.rankedProposal, "The streak syncs with the result")
+        XCTAssertEqual(item.touches, 6, "Training total remains unchanged")
+        XCTAssertTrue(player.leaderboardReview.queued.isEmpty, "Stop never opts the user into review")
+    }
+
     func testPreviewAndHistoryStayAvailableWhileCopyAndUploadAreStalled() async throws {
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         let source = root.appendingPathComponent("ready.mov")
@@ -309,14 +333,17 @@ final class SessionHistoryTests: XCTestCase {
     }
 
     func testServerModerationStatusReplacesCachedStatus() async throws {
-        let original = HistorySession(result: try result(), syncState: .synced)
+        var original = HistorySession(result: try result(), syncState: .synced)
+        original.touchReview = LeaderboardTouchReview.make(evidence: .init(), touchTimes: [1,2,9], duration: 30.25)
         try library.save(original)
         var rejected = original; rejected.scoreStatus = "rejected"
+        rejected.touchReview = nil // Ordinary server history carries no private review evidence.
         let service = FakePlayerDataService()
         service.historyPages = [.init(items: [rejected], next: nil)]
         let history = store(service); history.useAccount(owner)
         await history.refresh()
         XCTAssertEqual(history.items.first?.scoreStatus, "rejected")
+        XCTAssertEqual(history.items.first?.touchReview, original.touchReview)
     }
 
     func testCloudDecodePreservesCursorPrecisionAndSupportsWholeSecondDates() throws {

@@ -17,9 +17,17 @@ nonisolated struct BallSurfaceTimeline: Sendable {
     let entries: [Entry]
     let elapsed: Double
     let acceptedCount: Int
+    /// Robust source-edge estimate; nil leaves the existing box-based estimate.
+    let photographicExposure: Double?
     private let trusted: [Bool]
-    init(entries: [Entry], elapsed: Double) {
+    /// `entries` orientations with short rejected runs bridged; see `bridged`.
+    private let rendered: [simd_quatf]
+    /// Longest rejected run, between measured increments, that is bridged.
+    static let maximumBridge = 0.3
+    init(entries: [Entry], elapsed: Double, photographicExposure: Double? = nil) {
         self.entries=entries;self.elapsed=elapsed
+        self.photographicExposure = photographicExposure
+        rendered = Self.bridged(entries)
         acceptedCount=entries.reduce(0) {$0+($1.accepted ? 1:0)}
         var confidence = [Bool](repeating: false, count: entries.count)
         var low = 0, high = 0, visible = 0, accepted = 0
@@ -112,23 +120,77 @@ nonisolated struct BallSurfaceTimeline: Sendable {
     }
 
     func renderOrientation(at time: Double) -> simd_quatf? {
-        // Rejected increments already hold the last observed pose. Never replace
-        // uncertainty with decorative timer rotation, or report it as zero spin.
-        orientation(at: time)
+        // Short rejected runs carry the spin measured on both sides; longer or
+        // one-sided gaps hold the last observed pose. Never replace uncertainty
+        // with decorative timer rotation, or report it as zero spin.
+        pose(at: time) { rendered[$0] }
     }
 
+    /// Measured poses only: rejected increments hold.
     func orientation(at time: Double) -> simd_quatf {
+        pose(at: time) { entries[$0].orientation }
+    }
+
+    private func pose(at time: Double, _ value: (Int) -> simd_quatf) -> simd_quatf {
         guard time.isFinite,let first=entries.first,time>=first.time else {return Self.initial}
         var low=0,high=entries.count
         while low<high {
             let middle=(low+high)/2
             if entries[middle].time<time {low=middle+1} else {high=middle}
         }
-        guard low>0 else {return first.orientation}
-        guard low<entries.count else {return entries.last!.orientation}
+        guard low>0 else {return value(0)}
+        guard low<entries.count else {return value(entries.count-1)}
         let a=entries[low-1],b=entries[low],gap=b.time-a.time
-        guard gap>0,gap<0.1 else {return a.orientation}
-        return simd_slerp(a.orientation,b.orientation,Float(max(0,min(1,(time-a.time)/gap))))
+        guard gap>0,gap<0.1 else {return value(low-1)}
+        return simd_slerp(value(low-1),value(low),Float(max(0,min(1,(time-a.time)/gap))))
+    }
+
+    /// Spin is nearly constant between touches, but blur right after a kick rejects
+    /// several increments in a row. Holding there froze the replacement and lost that
+    /// rotation for the rest of the clip. A run of at most `maximumBridge` between
+    /// measured increments advances at the measured rates on either side, blended
+    /// across the run. Later poses keep their measured increments: right-multiplying
+    /// by a constant leaves every `pose(i) * pose(i-1).inverse` unchanged.
+    private static func bridged(_ entries: [Entry]) -> [simd_quatf] {
+        // Radians per second, as a rotation vector, for each measured increment.
+        let rates: [SIMD3<Float>?] = entries.indices.map { i in
+            guard i > 0, entries[i].accepted else { return nil }
+            let dt = Float(entries[i].time-entries[i-1].time)
+            guard dt > 0 else { return nil }
+            let d = entries[i].orientation*entries[i-1].orientation.inverse
+            let angle = d.angle > .pi ? d.angle-2 * .pi : d.angle
+            return abs(angle) > 1e-7 ? d.axis*angle/dt : .zero
+        }
+        func mean(_ values: [SIMD3<Float>]) -> SIMD3<Float> { values.reduce(.zero, +)/Float(values.count) }
+        var result = entries.map(\.orientation)
+        var correction: simd_quatf?
+        var i = 1
+        while i < entries.count {
+            guard rates[i] == nil else {
+                if let c = correction { result[i] = simd_normalize(entries[i].orientation*c) }
+                i += 1; continue
+            }
+            var end = i
+            while end < entries.count && rates[end] == nil { end += 1 }
+            let anchor = i-1
+            if rates[anchor] != nil, end < entries.count, entries[end].time-entries[anchor].time <= maximumBridge {
+                let before = mean((max(1, anchor-2)...anchor).compactMap { rates[$0] })
+                let after = mean((end...min(entries.count-1, end+2)).compactMap { rates[$0] })
+                let span = entries[end].time-entries[anchor].time
+                for k in i..<end {
+                    let w = before+(after-before)*Float((entries[k].time-entries[anchor].time)/span)
+                    let step = w*Float(entries[k].time-entries[k-1].time), angle = simd_length(step)
+                    let q = angle > 1e-7 ? simd_quatf(angle: angle, axis: step/angle) : simd_quatf(ix: 0, iy: 0, iz: 0, r: 1)
+                    result[k] = simd_normalize(q*result[k-1])
+                }
+                // The rejected run held the anchor's measured pose.
+                correction = entries[end-1].orientation.inverse*result[end-1]
+            } else if let c = correction {
+                for k in i..<end { result[k] = simd_normalize(entries[k].orientation*c) }
+            }
+            i = end
+        }
+        return result
     }
 
     static func prepare(source: URL, track: BallEffectTrack) async throws -> Self {
@@ -154,11 +216,14 @@ nonisolated struct BallSurfaceTimeline: Sendable {
         let output=AVAssetReaderVideoCompositionOutput(videoTracks:[video],videoSettings:[kCVPixelBufferPixelFormatTypeKey as String:kCVPixelFormatType_32BGRA])
         // Analyze the source cadence. Do not throw away the 120 fps frames that
         // disambiguate fast backspin; output video can still be 30/60 fps.
-        output.videoComposition=try await EffectVideoGeometry.composition(track:video,duration:asset.load(.duration),shortEdge:720)
+        let duration = try await asset.load(.duration)
+        let composition = try await EffectVideoGeometry.composition(track:video,duration:duration,shortEdge:720)
+        output.videoComposition=composition
         output.alwaysCopiesSampleData=false;reader.add(output)
         guard reader.startReading() else {throw reader.error!}
         defer {if reader.status == .reading {reader.cancelReading()}}
         var entries=[Entry](),pose=initial,previous:BallSurfaceMotion.Gray?,previousTime:Double?
+        var exposure = BallExposureCalibration(duration: duration.seconds, frameDuration: composition.frameDuration.seconds)
         while true {
             try await VideoWorkExecution.checkpoint(requiresGPU: false)
             guard let buffer = output.copyNextSampleBuffer() else { break }
@@ -174,6 +239,14 @@ nonisolated struct BallSurfaceTimeline: Sendable {
                     entries.append(Entry(time:time,orientation:pose,accepted:false,visible:false));return
                 }
                 var accepted=false
+                if exposure.shouldMeasure(at: time) {
+                    let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
+                    if let velocity = track.velocity(at: time, size: size),
+                       let blur = BallReplacementMotionBlur.measured(pixels: pixels, body: fitted,
+                            suggested: track.smear(at: time, size: size)) {
+                        exposure.observe(time: time, smear: blur, velocity: velocity)
+                    }
+                }
                 if let previous,let previousTime,time>previousTime,time-previousTime<0.06 {
                     let result=BallSurfaceMotion.estimate(previous:previous,current:current)
                     if result.accepted {
@@ -188,7 +261,7 @@ nonisolated struct BallSurfaceTimeline: Sendable {
             }
         }
         guard reader.status == .completed else {throw reader.error ?? NSError(domain:"KickLab.SurfaceMotion",code:2)}
-        return Self(entries:entries,elapsed:ProcessInfo.processInfo.systemUptime-start)
+        return Self(entries:entries,elapsed:ProcessInfo.processInfo.systemUptime-start,photographicExposure:exposure.estimate)
     }
 }
 
@@ -205,7 +278,7 @@ private actor BallSurfaceMotionCache {
         let samples = track.samples.map { [$0.time, Double($0.center.x), Double($0.center.y),
             Double($0.boxSize?.width ?? 0), Double($0.boxSize?.height ?? 0), $0.confidence] }
         let signature = try JSONEncoder().encode(samples)
-        let requested = SessionAnalysisStore.digest(Data("spin-v3|\(SessionAnalysisStore.pipelineSignature())|\(content)|".utf8) + signature)
+        let requested = SessionAnalysisStore.digest(Data("spin-v4-photo-exposure|\(SessionAnalysisStore.pipelineSignature())|\(content)|".utf8) + signature)
         let folder = URL.cachesDirectory.appendingPathComponent("SessionSpin-v3", isDirectory: true)
         let file = folder.appendingPathComponent(requested + ".json")
         if let value=completed.first(where:{$0.0==requested})?.1 {return value}
@@ -257,20 +330,24 @@ nonisolated private struct StoredSurfaceTimeline: Codable {
     }
     let rows: [Row]
     let elapsed: Double
+    var photographicExposure: Double?
     init(_ value: BallSurfaceTimeline) {
         rows = value.entries.map { Row(time:$0.time,q:[$0.orientation.vector.x,$0.orientation.vector.y,
             $0.orientation.vector.z,$0.orientation.vector.w],accepted:$0.accepted,visible:$0.visible,
             white:$0.white.map { [$0.x,$0.y,$0.z] }) }
         elapsed = value.elapsed
+        photographicExposure = value.photographicExposure
     }
     var isValid: Bool {
-        elapsed.isFinite && rows.allSatisfy { $0.time.isFinite && $0.q.count == 4 && $0.q.allSatisfy(\.isFinite) }
+        elapsed.isFinite && (photographicExposure.map { $0.isFinite && $0 > 0 } ?? true)
+            && rows.allSatisfy { $0.time.isFinite && $0.q.count == 4 && $0.q.allSatisfy(\.isFinite) }
             && zip(rows,rows.dropFirst()).allSatisfy { $0.time < $1.time }
     }
     var timeline: BallSurfaceTimeline {
         BallSurfaceTimeline(entries:rows.map { .init(time:$0.time,
             orientation:simd_quatf(vector:SIMD4($0.q[0],$0.q[1],$0.q[2],$0.q[3])),
             accepted:$0.accepted,visible:$0.visible,
-            white:$0.white.flatMap { $0.count == 3 && $0.allSatisfy(\.isFinite) ? SIMD3($0[0],$0[1],$0[2]) : nil }) },elapsed:elapsed)
+            white:$0.white.flatMap { $0.count == 3 && $0.allSatisfy(\.isFinite) ? SIMD3($0[0],$0[1],$0[2]) : nil }) },
+            elapsed:elapsed,photographicExposure:photographicExposure)
     }
 }

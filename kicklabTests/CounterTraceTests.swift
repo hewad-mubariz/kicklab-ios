@@ -66,6 +66,20 @@ struct CounterTraceTests {
         #expect(throws: CounterTrace.ReplayError.self) { try trace.replay() }
     }
 
+    @Test func reviewEvidenceOutlivesTheDebugTraceWithoutChangingCounterDecisions() throws {
+        let c = StreamingCounter(rejectsHandContact: { _ in true }, recordTrace: true, traceLimit: 1,
+            diagnoseContact: { decision, ball in
+                .init(frameIndex: decision.frameIndex, time: Double(decision.timestampMs) / 1000,
+                    rejection: decision.rejection, handConfirmed: decision.handRejected == true,
+                    bodyFailure: nil, ball: ball)
+            })
+        feed(c); c.flush()
+        #expect(c.count == 0)
+        #expect(c.traceSnapshot()?.complete == false)
+        #expect(c.traceSnapshot()?.diagnostics?.isEmpty != false)
+        #expect(c.reviewEvidence.observations.contains { $0.kind == .handContact })
+    }
+
     @Test func bodyFilterRejectsTorsoAndReplaysBothVerdicts() throws {
         var calls = 0
         let c = StreamingCounter(recordTrace: true, allowsBodyContact: { _ in

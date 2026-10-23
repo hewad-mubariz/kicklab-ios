@@ -798,8 +798,9 @@ nonisolated final class LiveJugglingAnalysis {
             guard thermal() < 3 else {
                 throw NSError(domain: "RFThermal", code: 1, userInfo: [NSLocalizedDescriptionKey: "Recording stopped so the phone can cool. Your video has been saved."])
             }
-            guard frame.sourceTime.isFinite, frame.sourceDueUptime.isFinite,
-                  lastSource.map({ frame.sourceTime > $0 }) ?? true else { throw NSError(domain: "RFFrameOrder", code: 1) }
+            guard frame.sourceTime.isFinite, frame.sourceDueUptime.isFinite else { throw NSError(domain: "RFFrameOrder", code: 1) }
+            // A repeated or out-of-order frame is dropped like a throttled one; it must never end the take.
+            if let lastSource, frame.sourceTime <= lastSource { return nil }
             let pixels = try ownedPortrait(frame.pixels)
             let paced = PacedFrame(index: accepted, time: frame.sourceTime, due: frame.sourceDueUptime,
                 image: CIImage(cvPixelBuffer: pixels), pixels: pixels, identity: frame.identity,

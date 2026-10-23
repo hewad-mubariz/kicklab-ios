@@ -31,6 +31,8 @@ import Foundation
         else { (_, response) = try await session.data(for: request) }
         guard let http = response as? HTTPURLResponse else { throw LeaderboardFailure.upload }
         if [401,403].contains(http.statusCode) { throw LeaderboardFailure.signIn }
+        // Storage refuses bytes over the project's upload limit. That is final, not a lost connection.
+        if http.statusCode == 413 { throw LeaderboardFailure.tooLarge }
         return http
     }
     func run(file: URL, attempt: LeaderboardAttempt, checkpoint: URL, accountRoot: URL, progress: @escaping @MainActor (Double) -> Void) async throws {

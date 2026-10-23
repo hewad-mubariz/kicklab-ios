@@ -13,8 +13,8 @@ final class RankedStreakProposalTests: XCTestCase {
     func testLongGapDuplicatesAndInvalidTimesCannotInflateSuggestion() throws {
         let result = try XCTUnwrap(RankedStreakProposal.suggest(touchTimes: [.nan,-1,1,1,2,8,8.5,9,99],
             boundaries: [.infinity], duration: 10))
-        XCTAssertEqual(result.count, 3)
-        XCTAssertEqual(result.startMS, 7850)
+        XCTAssertEqual(result.count, 5, "A long gap needs review, not an automatic claim that the ball dropped")
+        XCTAssertEqual(result.startMS, 850)
         XCTAssertEqual(result.endMS, 9150)
         XCTAssertNil(RankedStreakProposal.suggest(touchTimes: [1], boundaries: [], duration: .infinity))
         XCTAssertNil(RankedStreakProposal.suggest(touchTimes: [], boundaries: [], duration: 10))

@@ -102,9 +102,20 @@ final class PlayerStore: ObservableObject {
         history = SessionHistoryStore(service: service, queue: queue,
             library: SessionHistoryLibrary(root: queue.root.appendingPathComponent("History", isDirectory: true)))
         monitor.pathUpdateHandler = { [weak self] path in
-            if path.status == .satisfied { Task { @MainActor [weak self] in self?.syncPending() } }
+            guard path.status == .satisfied else { return }
+            Task { @MainActor [weak self] in
+                self?.syncPending()
+                self?.leaderboardReview.sendQueued()
+            }
         }
         monitor.start(queue: DispatchQueue(label: "juggledude.result-sync"))
+        leaderboardReview.resolveQueued = { [weak self] id in self?.queuedSubmissionSource(id) }
+    }
+
+    /// A queued leaderboard submission's session, once history has loaded it.
+    private func queuedSubmissionSource(_ id: UUID) -> LeaderboardReviewStore.QueuedSource? {
+        guard let item = history.items.first(where: { $0.id == id && $0.ownerID == userID }) else { return nil }
+        return (item, history.replayURL(for: item))
     }
     deinit { syncTask?.cancel(); retryTask?.cancel(); monitor.cancel() }
 
@@ -175,6 +186,7 @@ final class PlayerStore: ObservableObject {
     func refresh() async {
         await resumeSaves()
         syncPending()
+        leaderboardReview.sendQueued()
         guard let id = userID, let service else { return }
         let current = generation
         do {
@@ -257,12 +269,16 @@ final class PlayerStore: ObservableObject {
             errorMessage = PlayerDataError.invalidResult.localizedDescription; return nil
         }
         var item: HistorySession
+        let review = summary.leaderboardTouchReview
+        let streak = RankedStreakProposal.suggest(touchTimes: summary.touchesMarked.map(\.time),
+            boundaries: review?.streakBoundaries ?? [], duration: summary.duration)
         do {
             let result: SavedJugglingResult?
             if let owner {
                 let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
-                let saved = try SavedJugglingResult(id: id, ownerID: owner, touches: summary.touches,
+                var saved = try SavedJugglingResult(id: id, ownerID: owner, touches: summary.touches,
                     duration: summary.duration, source: source, completedAt: completedAt, appVersion: version)
+                saved.rank(streak)
                 result = saved
                 item = HistorySession(result: saved)
             } else {
@@ -271,8 +287,9 @@ final class PlayerStore: ObservableObject {
                     completedAt: completedAt, syncState: .deviceOnly)
                 result = nil
             }
-            item.rankedProposal = RankedStreakProposal.suggest(touchTimes: summary.touchesMarked.map(\.time),
-                boundaries: summary.debugContacts.filter { $0.rejection != nil }.map(\.time), duration: summary.duration)
+            item.touchReview = review
+            item.rankedProposal = result?.streak ?? streak
+            item.touchTimesMS = summary.touchesMarked.map { Int(($0.time * 1000).rounded()) }
             let request = SessionSaveRequest(item: item, result: result, videoURL: summary.videoURL)
             if let task = saveTasks[request.key] { return task }
             history.showImmediately(item, videoURL: summary.videoURL)
@@ -362,6 +379,8 @@ final class PlayerStore: ObservableObject {
                     try await Task.detached(priority: .utility) { try queue.remove(result) }.value
                     guard self.generation == current else { return }
                     self.syncFailures = 0
+                    // A submission waiting for this session to reach the account can go now.
+                    self.leaderboardReview.sendQueued()
                 } catch {
                     guard !Task.isCancelled, self.generation == current else { return }
                     if case PlayerDataError.signIn = error {

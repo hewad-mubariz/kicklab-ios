@@ -12,7 +12,8 @@ final class SignInUITests: XCTestCase {
             app.launch()
             let guest = app.buttons["signin-guest"]
             XCTAssertTrue(guest.waitForExistence(timeout: 15))
-            for identifier in ["signin-apple", "signin-google", "signin-email", "signin-guest"] {
+            XCTAssertFalse(app.buttons["signin-google"].exists)
+            for identifier in ["signin-apple", "signin-email", "signin-guest"] {
                 reveal(app.buttons[identifier], in: app)
             }
             attach(app, "Welcome - \(appearance)")
@@ -31,15 +32,15 @@ final class SignInUITests: XCTestCase {
             reveal(guest, in: app)
             guest.tap()
             XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout: 5))
-            XCTAssertFalse(app.buttons["home-leaderboard"].exists)
             XCTAssertTrue(app.buttons["module-power-shot"].label.contains("BALL DISTANCE"))
-            attach(app, "Home without leaderboard - \(appearance)")
+            attach(app, "Home - \(appearance)")
             app.buttons["home-profile"].tap()
             XCTAssertTrue(app.buttons["profile-sign-in"].waitForExistence(timeout: 5))
             app.buttons["profile-sign-in"].tap()
             // Sign-in opens on top of Profile and returns to it.
             XCTAssertTrue(app.buttons["signin-not-now"].waitForExistence(timeout: 5))
-            for identifier in ["signin-apple", "signin-google", "signin-email"] {
+            XCTAssertFalse(app.buttons["signin-google"].exists)
+            for identifier in ["signin-apple", "signin-email"] {
                 reveal(app.buttons[identifier], in: app)
             }
             XCTAssertFalse(app.buttons["profile-sign-in"].isHittable)
@@ -71,7 +72,7 @@ final class SignInUITests: XCTestCase {
         app.launchArguments = ["--reset-welcome"]
         app.launch()
         XCTAssertTrue(app.buttons["signin-guest"].waitForExistence(timeout: 15))
-        reveal(app.buttons["signin-google"], in: app)
+        XCTAssertFalse(app.buttons["signin-google"].exists)
         reveal(app.buttons["signin-email"], in: app)
         app.buttons["signin-email"].tap()
         XCTAssertTrue(app.textFields["email-address"].waitForExistence(timeout: 3))
@@ -92,7 +93,8 @@ final class SignInUITests: XCTestCase {
             app.navigationBars["Settings"].buttons.element(boundBy: 0).tap()
             app.buttons["profile-sign-in"].tap()
             XCTAssertTrue(app.buttons["signin-apple"].waitForExistence(timeout: 3))
-            for identifier in ["signin-apple", "signin-google", "signin-email", "signin-not-now"] {
+            XCTAssertFalse(app.buttons["signin-google"].exists)
+            for identifier in ["signin-apple", "signin-email", "signin-not-now"] {
                 reveal(app.buttons[identifier], in: app)
             }
             attach(app, "Sign in appearance switched - \(appearance)")
@@ -114,7 +116,8 @@ final class SignInUITests: XCTestCase {
                                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
         XCTAssertTrue(app.buttons["signin-guest"].waitForExistence(timeout: 15))
-        for identifier in ["signin-apple", "signin-google", "signin-email", "signin-guest", "signin-privacy"] {
+        XCTAssertFalse(app.buttons["signin-google"].exists)
+        for identifier in ["signin-apple", "signin-email", "signin-guest", "signin-privacy"] {
             reveal(app.buttons[identifier], in: app)
         }
         attach(app, "Welcome - accessibility text")

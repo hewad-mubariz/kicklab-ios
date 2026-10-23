@@ -57,6 +57,29 @@ final class SessionAnalysisTests: XCTestCase {
             SessionAnalysisStore.pipelineOptions(arguments:["--yolo26-motion-model-only"],defaults:defaults))
     }
 
+    func testRepairedMaskSamplingSurvivesCacheAndInvalidValuesAreRejected() throws {
+        var f = frame()
+        let m = try XCTUnwrap(f.ballMask)
+        let step = CGSize(width: 0.002, height: 0.003)
+        f.ballMask = BallMask(rect: m.rect, width: m.width, height: m.height, alpha: m.alpha, decoderPixelSize: step).compacted()
+        let encoder = PropertyListEncoder()
+        let data = try encoder.encode(StoredFrame(f))
+        let loaded = try PropertyListDecoder().decode(StoredFrame.self, from: data)
+        XCTAssertTrue(loaded.isValid)
+        XCTAssertEqual(loaded.frame.ballMask?.expanded().decoderPixelSize, step)
+        var wire = try XCTUnwrap(PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])
+        for invalid in [[-1.0, 0.003], [0.002], [0.0, 0.003], [1.1, 0.003]] {
+            wire["maskDecoderPixelSize"] = invalid
+            let bad = try PropertyListSerialization.data(fromPropertyList: wire, format: .binary, options: 0)
+            XCTAssertFalse(try PropertyListDecoder().decode(StoredFrame.self, from: bad).isValid)
+        }
+        wire.removeValue(forKey: "maskDecoderPixelSize")
+        let legacy = try PropertyListSerialization.data(fromPropertyList: wire, format: .binary, options: 0)
+        let old = try PropertyListDecoder().decode(StoredFrame.self, from: legacy)
+        XCTAssertTrue(old.isValid)
+        XCTAssertNil(old.frame.ballMask?.decoderPixelSize)
+    }
+
     func testLongSessionAboveOldMaskLimitSurvivesRelaunchWithoutReanalysis() async throws {
         let folder=try temporary(), store=SessionAnalysisStore(folder:folder)
         var f=frame()
@@ -268,6 +291,28 @@ final class SessionAnalysisTests: XCTestCase {
         XCTAssertEqual(a.status(at:0.3),.measured);XCTAssertEqual(b.status(at:0.3),.measured)
         XCTAssertEqual(a.renderOrientation(at:0.3)?.vector,b.renderOrientation(at:0.3)?.vector)
         XCTAssertEqual(b.status(at:3),.notVisible)
+    }
+
+    func testShortRejectedRunAfterAKickKeepsTurningWithoutLosingRotation() {
+        let base = BallSurfaceTimeline.initial, step: Float = 0.05
+        func timeline(rejecting rejected: Range<Int>, count: Int) -> BallSurfaceTimeline {
+            var angle: Float = 0
+            return BallSurfaceTimeline(entries:(0..<count).map { i in
+                let accepted = i > 0 && !rejected.contains(i)
+                if accepted { angle += step }
+                return .init(time:Double(i)/60,orientation:simd_quatf(angle:angle,axis:SIMD3(1,0,0))*base,accepted:accepted)
+            },elapsed:0)
+        }
+        func spin(_ q: simd_quatf?) -> Float { ((q ?? base)*base.inverse).angle }
+        let short = timeline(rejecting:10..<17, count:40)
+        XCTAssertEqual(spin(short.renderOrientation(at:13.0/60)),13*step,accuracy:1e-3)
+        XCTAssertEqual(spin(short.renderOrientation(at:39.0/60)),39*step,accuracy:1e-3)
+        // Measured poses and diagnostics are unchanged.
+        XCTAssertEqual(spin(short.orientation(at:39.0/60)),32*step,accuracy:1e-3)
+        XCTAssertEqual(short.status(at:13.0/60),.uncertain)
+        // A long gap is not evidence of steady spin; it still holds.
+        let long = timeline(rejecting:10..<40, count:60)
+        XCTAssertEqual(long.renderOrientation(at:30.0/60)?.vector,long.orientation(at:30.0/60).vector)
     }
 
     func testUnknownSpinIsHeldAndDistinctFromObservedLittleMotion() {

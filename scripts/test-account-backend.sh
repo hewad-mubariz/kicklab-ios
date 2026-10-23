@@ -20,4 +20,10 @@ psql -X -h "$test_dir" -p 55549 -d postgres -v ON_ERROR_STOP=1 \
   -f "$project_dir/supabase/tests/submission_limits.sql" \
   -f "$project_dir/supabase/tests/subscription_accounts.sql" \
   -f "$project_dir/supabase/migrations/202610180001_reviewed_leaderboard.sql" \
-  -f "$project_dir/supabase/tests/reviewed_leaderboard.sql"
+  -f "$project_dir/supabase/tests/reviewed_leaderboard.sql" \
+  -f "$project_dir/supabase/migrations/202610220001_leaderboard_touch_review.sql" \
+  -f "$project_dir/supabase/tests/leaderboard_touch_review.sql" \
+  -f "$project_dir/supabase/migrations/202610220002_leaderboard_storage_limit.sql" \
+  -f "$project_dir/supabase/tests/leaderboard_storage_limit.sql" \
+  -f "$project_dir/supabase/migrations/202610230001_streak_leaderboard.sql" \
+  -f "$project_dir/supabase/tests/streak_leaderboard.sql"

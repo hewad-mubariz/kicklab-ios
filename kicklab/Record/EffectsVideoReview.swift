@@ -179,6 +179,8 @@ struct EffectsVideoReview: View {
     /// Benchmarks the actual captured-session path, preserving its live count.
     /// No synthetic inference clock, export, or visible playback in the timings.
     private func capturePreparationReview(path: String) async {
+        PreparationMemoryProbe.stage("baseline")
+        defer { PreparationMemoryProbe.finish() }
         let folder = URL.documentsDirectory.appendingPathComponent(
             URL(fileURLWithPath: SessionDesignReview.argument("--effects-folder") ?? "preparation-review").lastPathComponent)
         do {
@@ -219,10 +221,12 @@ struct EffectsVideoReview: View {
             let preparation = SessionEffectsPreparation()
             let ready = try await preparation.prepare(original)
             let masksReady = ProcessInfo.processInfo.systemUptime
+            PreparationMemoryProbe.stage("source_spin")
             let motion = ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache")
                 ? try await BallSurfaceTimeline.analyzeForReview(source:url,track:BallEffectTrack(frames:ready.renderTrack))
                 : try await BallSurfaceTimeline.prepare(source:url,track:BallEffectTrack(frames:ready.renderTrack))
             let finished = ProcessInfo.processInfo.systemUptime
+            PreparationMemoryProbe.stage("prepared")
             let poses = motion.entries.map { [$0.time,Double($0.orientation.vector.x),Double($0.orientation.vector.y),
                 Double($0.orientation.vector.z),Double($0.orientation.vector.w),$0.accepted ? 1.0 : 0.0,$0.visible ? 1.0 : 0.0] }
             let metrics: [String:Any] = ["visual_preparation_s":masksReady-start,"spin_s":finished-masksReady,
@@ -238,6 +242,10 @@ struct EffectsVideoReview: View {
             try SessionAnalysisStore.frameData(ready.renderTrack).write(to:folder.appendingPathComponent("visual.plist"))
             try JSONSerialization.data(withJSONObject:poses).write(to:folder.appendingPathComponent("poses.json"))
             summary = ready
+            if ProcessInfo.processInfo.arguments.contains("--effects-memory-probe") {
+                PreparationMemoryProbe.stage("replay")
+                try await Task.sleep(for: .seconds(5))
+            }
             if ProcessInfo.processInfo.arguments.contains("--effects-export") { await exportReview(frames:ready.renderTrack) }
             else { try Data("COMPLETE".utf8).write(to:folder.appendingPathComponent("status.txt")) }
         } catch {
@@ -308,6 +316,7 @@ struct EffectsVideoReview: View {
                     metrics["surface_motion_accepted"] = motion.acceptedCount
                     metrics["uses_source_rotation"] = motion.usesSourceRotation
                     metrics["surface_motion_prepare_s"] = motion.elapsed
+                    metrics["photographic_exposure_ms"] = motion.photographicExposure.map { $0 * 1000 } as Any? ?? NSNull()
                     let poses = motion.entries.map { entry in
                         ["time": entry.time, "accepted": entry.accepted,
                          "quaternion_xyzw": [entry.orientation.vector.x, entry.orientation.vector.y,

@@ -106,10 +106,13 @@ final class Recorder {
         try? FileManager.default.removeItem(at: file)
 
         let writer = try AVAssetWriter(outputURL: file, fileType: .mov)
+        // The encoder default (~6 Mbps at 720p60) turns sensor noise from a fast
+        // shutter into blocky ball edges; ~12 Mbps keeps them for replacement.
         let settings: [String: Any] = [
             AVVideoCodecKey: AVVideoCodecType.h264,
             AVVideoWidthKey: width,
             AVVideoHeightKey: height,
+            AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: max(8_000_000, width * height * 13)],
         ]
         let input = AVAssetWriterInput(mediaType: .video, outputSettings: settings)
         // Plain video uses RotationCoordinator's already-upright buffers in either orientation.

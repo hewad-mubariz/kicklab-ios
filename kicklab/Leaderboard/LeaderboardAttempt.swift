@@ -2,8 +2,10 @@ import Foundation
 
 nonisolated enum LeaderboardRules {
     static let version = "beta-1"
-    static let maximumVideoBytes: Int64 = 2_147_483_648
-    static let privacy = "Your original video is private to you and the review team. It is not used for model training or shown to other players. Pending and rejected videos expire 30 days after submission or the latest review or appeal; approved videos are kept until you withdraw the attempt or delete your account. Withdrawal hides the score immediately and queues video deletion within 24 hours."
+    // Matches the deployed project's 50 MiB Storage limit. Raise the app,
+    // bucket and database limits together when the hosting plan changes.
+    static let maximumVideoBytes: Int64 = 52_428_800
+    static let privacy = "Clips are sent only when you ask for a check, and only short ones around the touches you choose, never the whole recording. They are private to you and the review team, are not used for model training and are never shown to other players. Pending and rejected clips expire 30 days after the check or its latest review; confirmed clips are kept until you withdraw the check or delete your account. Withdrawing removes its correction immediately and queues clip deletion within 24 hours."
     static func nextReset(after date: Date = Date()) -> Date {
         var calendar = Calendar(identifier: .iso8601)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
@@ -21,15 +23,22 @@ nonisolated struct RankedStreakProposal: Codable, Equatable, Sendable {
         (1...1_000_000).contains(count) && startMS >= 0 && endMS > startMS && endMS <= durationMS
     }
 
-    /// Conservative suggestion only. A reviewer can join segments when the original
-    /// video proves continuity or restore contacts missed by the device.
+    /// Split at explicit interruption evidence only. Uncertain visibility and long
+    /// gaps need review, not an assumed drop. A reviewer must verify continuity and
+    /// can split/join segments or restore contacts missed by the device.
     static func suggest(touchTimes: [Double], boundaries: [Double], duration: Double) -> Self? {
         guard duration.isFinite, duration > 0, duration <= 86_400 else { return nil }
         let times = Array(Set(touchTimes.filter { $0.isFinite && $0 >= 0 && $0 <= duration })).sorted()
         let cuts = boundaries.filter { $0.isFinite && $0 >= 0 && $0 <= duration }.sorted()
         var best: [Double] = [], run: [Double] = []
+        var cutIndex = 0
         for time in times {
-            if let previous = run.last, time-previous > 2 || cuts.contains(where: { $0 > previous && $0 <= time }) {
+            var crossesBoundary = false
+            while cutIndex < cuts.count, cuts[cutIndex] <= time {
+                if let previous = run.last, cuts[cutIndex] > previous { crossesBoundary = true }
+                cutIndex += 1
+            }
+            if crossesBoundary {
                 if run.count > best.count { best = run }
                 run = []
             }
@@ -78,6 +87,7 @@ nonisolated struct LeaderboardAttempt: Codable, Identifiable, Equatable, Sendabl
     let appealAt: Date?
     let videoDeletedAt: Date?
     let videoDeleteRequestedAt: Date?
+    var touchReview: LeaderboardTouchReview? = nil
     var hasPendingAppeal: Bool { appealAt.map { $0 > (reviewedAt ?? .distantPast) } ?? false }
     var hasPrivateVideo: Bool { ![.uploading, .withdrawn].contains(status) && videoDeletedAt == nil && videoDeleteRequestedAt == nil }
     var proposal: RankedStreakProposal { .init(count: proposedCount, startMS: proposedStartMS, endMS: proposedEndMS) }
@@ -89,23 +99,25 @@ nonisolated struct LeaderboardAttempt: Codable, Identifiable, Equatable, Sendabl
         case reviewedStartMS = "reviewed_start_ms", reviewedEndMS = "reviewed_end_ms", reviewReason = "review_reason"
         case reasonTimeMS = "reason_time_ms", appealAt = "appeal_at", videoDeletedAt = "video_deleted_at"
         case reviewedAt = "reviewed_at", videoDeleteRequestedAt = "video_delete_requested_at"
+        case touchReview = "touch_review"
     }
 }
 
 nonisolated enum LeaderboardFailure: LocalizedError {
-    case unavailable, signIn, originalRequired, invalidSegment, tooLarge, changedVideo, upload, limit, expired, conflict
+    case unavailable, signIn, originalRequired, invalidSegment, tooLarge, changedVideo, upload, limit, expired, conflict, clips
     var errorDescription: String? {
         switch self {
         case .unavailable: "The reviewed leaderboard is unavailable. Please try again later."
-        case .signIn: "Sign in to submit an attempt recorded on your account."
+        case .signIn: "Sign in to send touches from a session recorded on your account."
         case .originalRequired: "Choose an original in-app recording saved on this phone. Imports and guest recordings stay in your personal history."
         case .invalidSegment: "Enter the continuous streak’s touch count and a valid start/end time within the recording."
-        case .tooLarge: "This original is larger than the beta’s 2 GB upload limit. Record a shorter attempt."
+        case .tooLarge: "These clips are larger than the current 50 MB upload limit. Choose fewer touches. Your recording remains saved on this phone."
         case .changedVideo: "The original recording has changed. This upload cannot continue."
         case .upload: "Upload paused. Keep the original on this phone and try again to resume."
-        case .limit: "The beta allows three submissions per day and three awaiting review. Please try again later."
-        case .expired: "This upload expired. Withdraw it and record a new attempt."
-        case .conflict: "This attempt already has a submission. Open My submissions to see its status."
+        case .limit: "The beta allows three checks per day and three waiting for review. Please try again later."
+        case .expired: "This upload expired. Withdraw the check and send it again."
+        case .clips: "The clips for this check couldn’t be made from your recording. Your recording remains saved on this phone."
+        case .conflict: "This session already has a touch check. Open Touch checks to see its status."
         }
     }
 }
