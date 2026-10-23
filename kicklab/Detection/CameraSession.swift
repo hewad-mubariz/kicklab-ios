@@ -112,12 +112,12 @@ final class CameraSession: NSObject, ObservableObject {
     private var captureStats = CaptureCadenceSnapshot()
     private var captureStartSeconds: Double?
     private var capturePosition: AVCaptureDevice.Position = .back
-    #if DEBUG
-    private var lastDebugCapturePublish = 0.0 // captureQueue, wall clock
-    private var captureDiagnosticsDevice: AVCaptureDevice? // captureQueue
     private var exposureDevice: AVCaptureDevice? // captureQueue
     private var exposureCap = CaptureExposureCap() // captureQueue
     private var reportedTooDark = false // captureQueue
+    #if DEBUG
+    private var lastDebugCapturePublish = 0.0 // captureQueue, wall clock
+    private var captureDiagnosticsDevice: AVCaptureDevice? // captureQueue
     private var captureOpticsLog: CaptureOpticsLog? // captureQueue
     #endif
     #if DEBUG && TOUCH_COUNTING_DEBUG

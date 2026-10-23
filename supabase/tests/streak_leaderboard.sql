@@ -40,6 +40,8 @@ select public.submit_juggling_session_with_streak('10000000-0000-0000-0000-00000
 do $$ begin
   assert (public.reviewed_juggling_leaderboard()->>'total_players')::int=1, 'one row per player';
   assert (public.reviewed_juggling_leaderboard()->'entries'->0->>'touches')::int=35, 'best streak of the week';
+  assert (public.reviewed_juggling_leaderboard()->'entries'->0->>'session_id')='10000000-0000-0000-0000-000000000055',
+    'your row names the session that ranks';
 end $$;
 -- A correction claims three left-out touches on the first session.
 select public.begin_leaderboard_attempt('10000000-0000-0000-0000-000000000051',30,1000,21000,256,repeat('d',64),'beta-1',true);
@@ -63,6 +65,13 @@ do $$ begin
   assert (public.reviewed_juggling_leaderboard()->'entries'->0->>'attempt_id')
     =(select id::text from public.leaderboard_attempts), 'corrected entry links its review';
 end $$;
+set local role anon;
+select set_config('request.jwt.claim.sub','',true);
+do $$ begin
+  assert (public.reviewed_juggling_leaderboard()->'entries'->0->>'session_id') is null, 'other players never see session ids';
+end $$;
+reset role;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000051',true);
 update public.leaderboard_attempts set status='rejected', reviewed_count=null, reviewed_start_ms=null, reviewed_end_ms=null;
 do $$ begin
   assert (public.reviewed_juggling_leaderboard()->'entries'->0->>'touches')::int=35, 'a refused claim keeps the device streak';

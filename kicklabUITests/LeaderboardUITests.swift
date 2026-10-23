@@ -20,6 +20,31 @@ final class LeaderboardUITests: XCTestCase {
         add(attachment)
     }
 
+    /// 30 touches with 3 sent for a check: 27 ranks, and your row says 3 are in review.
+    @MainActor
+    func testTouchesInReviewShowBesideTheScoreThatRanks() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-preview", "inReview", "-kicklab.appearance", "light"]
+        app.launch()
+        XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 10))
+        app.buttons["home-leaderboard"].tap()
+        let pill = app.buttons["leaderboard-you-pill"]
+        XCTAssertTrue(pill.waitForExistence(timeout: 8))
+        XCTAssertTrue(pill.label.contains("3 more in review"), pill.label)
+        pill.tap()
+        let row = app.buttons["leaderboard-row-11"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        let settled = expectation(description: "Row settles")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { settled.fulfill() }
+        wait(for: [settled], timeout: 3)
+        XCTAssertTrue(row.label.contains("27 touches"), row.label)
+        XCTAssertTrue(row.label.contains("3 in review · 30 if confirmed"), row.label)
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "Touches in review beside your score"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     @MainActor
     func testDelayedSinglePlayerPennantIsVisible() throws {
         let app = XCUIApplication()

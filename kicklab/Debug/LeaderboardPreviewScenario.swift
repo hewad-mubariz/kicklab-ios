@@ -4,7 +4,7 @@ import Foundation
 /// Fictional, in-memory boards. Never write these to accounts, history or the
 /// review service. The setting and its controls are absent from Release builds.
 enum LeaderboardPreviewScenario: String, CaseIterable, Identifiable {
-    case live, mixed, first, podium, nearby, unranked, single, empty
+    case live, mixed, first, podium, nearby, unranked, single, empty, inReview
 
     /// Set only for one launch, by `--leaderboard-preview <scenario>`.
     static let defaultsKey = "kicklab.leaderboard.previewScenario"
@@ -19,6 +19,7 @@ enum LeaderboardPreviewScenario: String, CaseIterable, Identifiable {
         case .unranked: "You are not ranked"
         case .single: "Only one player"
         case .empty: "Empty board"
+        case .inReview: "Touches in review"
         }
     }
 
@@ -43,11 +44,14 @@ enum LeaderboardPreviewScenario: String, CaseIterable, Identifiable {
         case .first: 1
         case .podium: 3
         case .mixed: 4
+        case .inReview: 11
         default: nil
         }
         let entries = names.indices.map { index in
             entry(rank: index + 1, name: index + 1 == yourRank ? "Alex" : names[index],
-                  touches: scores[index], you: index + 1 == yourRank, country: countries[index],
+                  // 30 touches with 3 sent for a check: 27 ranks until they're confirmed.
+                  touches: self == .inReview && index == 10 && period == .week ? 27 : scores[index],
+                  you: index + 1 == yourRank, country: countries[index],
                   duration: index == 10 ? nil : Int(Double(scores[index]) / (index.isMultiple(of: 2) ? 1.8 : 2.2)),
                   spin: spins[index], height: heights[index])
         }

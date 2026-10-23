@@ -105,7 +105,7 @@ struct LeaderboardReplayReviewCard: View {
     var body: some View {
         if let item = history.items.first(where: { $0.id == sessionID && $0.ownerID == history.ownerID }),
            item.ownerID != nil, item.source == .recording {
-            let askable = LeaderboardCorrection(item: item)?.askable.count ?? 0
+            let askable = LeaderboardCorrection(item: item)?.leftOut.count ?? 0
             Button(action: open) {
                 HStack(spacing: 10) {
                     Image(systemName: "trophy")

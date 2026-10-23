@@ -30,6 +30,8 @@ struct LeaderboardView: View {
     @State private var recordAfterSubmissions = false
     /// The session whose left-out touches are open for a check.
     @State private var checking: CheckedSession?
+    /// Your checks not decided yet, kept in step with the review store.
+    @State private var openChecks: [LeaderboardOpenCheck] = []
     @State private var scrollPosition = ScrollPosition(edge: .top)
     #if DEBUG
     @AppStorage(LeaderboardPreviewScenario.defaultsKey) private var previewScenario = LeaderboardPreviewScenario.live
@@ -169,7 +171,9 @@ struct LeaderboardView: View {
         }
         #endif
         .task(id: requestID) { await loadBoard() }
-        .refreshable { await loadBoard(refresh: true) }
+        .task(id: viewerID) { if !usesSamples { await player.leaderboardReview.refresh() } }
+        .onReceive(player.leaderboardReview.$revision) { _ in openChecks = player.leaderboardReview.openChecks }
+        .refreshable { await loadBoard(refresh: true); await player.leaderboardReview.refresh() }
         .sheet(isPresented: $showsRules) { LeaderboardRulesView() }
         .sheet(item: $selectedEntry) { entry in LeaderboardPlayerDetailView(entry: entry, review: player.leaderboardReview) }
         .sheet(item: $checking, onDismiss: { Task { await loadBoard(refresh: true) } }) { session in
@@ -324,10 +328,14 @@ struct LeaderboardView: View {
 
     private func row(_ entry: LeaderboardEntry, delay: Double = 0.05) -> some View {
         let ahead = entry.isYou ? self.ahead(of: entry) : nil
+        let check = openCheck(for: entry)
         return Button { selectedEntry = entry } label: {
             LeaderboardRow(entry: entry, best: best,
                            chase: ahead.map { "\($0.touches - entry.touches + 1) to pass \($0.name)" },
-                           target: ahead?.touches, delay: delay, arrivals: entry.isYou ? arrivals : 0)
+                           target: ahead?.touches,
+                           review: check?.label(beside: entry.touches, ranked: entry.sessionID),
+                           pending: check.flatMap { $0.count > entry.touches ? $0.count : nil },
+                           delay: delay, arrivals: entry.isYou ? arrivals : 0)
         }
         .buttonStyle(SessionPressStyle(scale: 0.97))
         .id(anchor(for: entry))
@@ -335,6 +343,17 @@ struct LeaderboardView: View {
             if visible { visibleRanks.insert(entry.rank) } else { visibleRanks.remove(entry.rank) }
             if entry.isYou { youInView = visible }
         }
+    }
+
+    /// A check still open beside your score. Your score stays the device's streak until it's decided.
+    private func openCheck(for entry: LeaderboardEntry) -> LeaderboardOpenCheck? {
+        guard entry.isYou else { return nil }
+        #if DEBUG
+        if previewScenario == .inReview {
+            return LeaderboardOpenCheck(sessionID: UUID(), touches: 3, count: entry.touches + 3, sending: false)
+        }
+        #endif
+        return usesSamples ? nil : openChecks.beside(entry)
     }
 
     private func anchor(for entry: LeaderboardEntry) -> String {
@@ -422,6 +441,12 @@ struct LeaderboardView: View {
         }
     }
 
+    /// How many more your score would be if your open check is confirmed.
+    private func pillReview(_ you: LeaderboardEntry) -> Int? {
+        guard let check = openCheck(for: you), check.count > you.touches else { return nil }
+        return check.count - you.touches
+    }
+
     @ViewBuilder private func youPill(_ proxy: ScrollViewProxy) -> some View {
         if showsYouPill, let you {
             Button { scrollToYou(proxy) } label: {
@@ -431,6 +456,11 @@ struct LeaderboardView: View {
                     Text("#\(you.rank)").font(LeaderboardStyle.number(22)).padding(.top, 3)
                         .foregroundStyle(TrainingHomeStyle.accent(scheme))
                     Text(you.touches.formatted()).font(LeaderboardStyle.number(22)).padding(.top, 3)
+                    if let more = pillReview(you) {
+                        Label("+\(more)", systemImage: "hourglass")
+                            .font(.caption.weight(.bold)).monospacedDigit()
+                            .foregroundStyle(TrainingHomeStyle.muted(scheme))
+                    }
                     Image(systemName: youDistance?.below ?? true ? "arrow.down" : "arrow.up")
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(TrainingHomeStyle.muted(scheme))
@@ -443,7 +473,7 @@ struct LeaderboardView: View {
             .glassEffect(.regular.interactive(), in: .capsule)
             .padding(.bottom, 6)
             .transition(.sessionRise)
-            .accessibilityLabel("Jump to your place, rank \(you.rank), \(you.touches) touches")
+            .accessibilityLabel("Jump to your place, rank \(you.rank), \(you.touches) touches\(pillReview(you).map { ", \($0) more in review" } ?? "")")
             .accessibilityIdentifier("leaderboard-you-pill")
         }
     }
@@ -524,6 +554,10 @@ struct LeaderboardRow: View {
     var chase: String? = nil
     /// The streak of the next player up, flagged on your track.
     var target: Int? = nil
+    /// A touch check still open on your score, in words.
+    var review: String? = nil
+    /// Your streak if that check is confirmed, shown faintly ahead of the ball.
+    var pending: Int? = nil
     /// Rows on screen at the reveal wait for the pennants before rolling.
     var delay: Double = 0.05
     /// Each change pulses the row: you've just arrived at it.
@@ -553,15 +587,25 @@ struct LeaderboardRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(lit ? "You" : entry.name).font(.body.weight(.semibold)).lineLimit(1)
-                    Image(systemName: "checkmark.seal.fill").font(.caption)
-                        .accessibilityLabel(entry.isPreview ? "Sample reviewed score" : "Reviewed")
+                    if entry.attemptID != nil {
+                        // Only a score a reviewer confirmed carries the seal.
+                        Image(systemName: "checkmark.seal.fill").font(.caption)
+                    }
                     Spacer(minLength: 8)
                     Text(shown.formatted())
                         .font(LeaderboardStyle.number(28))
                         .contentTransition(.numericText(value: Double(shown)))
                 }
+                if let review {
+                    Label(review, systemImage: "hourglass")
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 9).padding(.vertical, 4)
+                        .background(.black.opacity(lit ? 0.1 : 0.06), in: .capsule)
+                        .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .leading)))
+                }
                 LeaderboardStreakTrack(share: rolled ? share(entry.touches) : 0,
-                                       target: target.map(share), lit: lit)
+                                       target: target.map(share),
+                                       pending: rolled ? pending.map(share) : nil, lit: lit)
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 10) {
                         Label { Text(entry.backspinRPM.map { "\($0) rpm" } ?? "—") } icon: { LeaderboardSpinIcon() }
@@ -623,7 +667,7 @@ struct LeaderboardRow: View {
             withAnimation(.spring(response: 0.95, dampingFraction: 0.7).delay(delay)) { rolled = true }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Rank \(entry.rank), \(lit ? "you" : entry.name), \(entry.touches) touches. Backspin \(entry.backspinLabel), height \(entry.heightLabel)\(chase.map { ". \($0)" } ?? "")")
+        .accessibilityLabel("Rank \(entry.rank), \(lit ? "you" : entry.name), \(entry.touches) touches\(entry.attemptID != nil ? ", confirmed by a reviewer" : ""). \(review.map { "\($0). " } ?? "")Backspin \(entry.backspinLabel), height \(entry.heightLabel)\(chase.map { ". \($0)" } ?? "")")
         .accessibilityIdentifier("leaderboard-row-\(entry.rank)")
     }
 }
@@ -633,6 +677,8 @@ struct LeaderboardRow: View {
 struct LeaderboardStreakTrack: View {
     let share: Double
     var target: Double? = nil
+    /// Where the ball would be if an open touch check is confirmed.
+    var pending: Double? = nil
     var lit = false
     @Environment(\.colorScheme) private var scheme
 
@@ -645,6 +691,12 @@ struct LeaderboardStreakTrack: View {
             ZStack(alignment: .bottomLeading) {
                 Capsule().fill(lit ? Color.black.opacity(0.12) : LeaderboardStyle.line(scheme))
                     .frame(height: 5).padding(.bottom, 5.5)
+                if let pending {
+                    // Dashed, because it isn't counted until a reviewer confirms it.
+                    Capsule().stroke(style: StrokeStyle(lineWidth: 1.5, dash: [3, 2.5]))
+                        .foregroundStyle(lit ? LeaderboardStyle.ink.opacity(0.55) : TrainingHomeStyle.accent(scheme))
+                        .frame(width: travel * pending + ball / 2, height: 5).padding(.bottom, 5.5)
+                }
                 Capsule().fill(fill)
                     .frame(width: x + ball / 2, height: 5).padding(.bottom, 5.5)
                 if let target {

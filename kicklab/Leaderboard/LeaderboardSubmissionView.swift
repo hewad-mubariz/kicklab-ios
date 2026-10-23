@@ -112,7 +112,7 @@ private struct LeaderboardRecordingPicker: View {
     }
     private func detail(_ item: HistorySession) -> String {
         let streak = item.rankedProposal.map { "Best streak \($0.count)" } ?? "\(item.touches) touches"
-        let askable = LeaderboardCorrection(item: item)?.askable.count ?? 0
+        let askable = LeaderboardCorrection(item: item)?.leftOut.count ?? 0
         return askable == 0 ? "\(item.durationLabel) · \(streak)" : "\(item.durationLabel) · \(streak) · \(askable) to check"
     }
 }
