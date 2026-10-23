@@ -66,13 +66,12 @@
     "url": "https://appstoreconnect.apple.com/apps/6820780610/distribution/ios/version/inflight",
     "media_manifest": "marketing/app-store-20261023-home/capture-manifest.json",
     "screenshot": "Updated Dark Mode home in first position; existing replay and camera retained.",
-    "preview": "Juggle-Dude-App-Preview-1.0.1.mp4 uploaded; Apple poster processing at last check.",
+    "preview": "Juggle-Dude-App-Preview-1.0.1.mp4 saved; poster generated and media viewer opens.",
     "proof": "artifacts/releases/20261023-home-polish/store-media/app-store-draft-gallery.jpg",
     "submitted": false,
     "remaining_before_future_submission": [
       "User review of TestFlight build 27",
-      "Finish and review version-specific release/review notes, then select build 27",
-      "Verify Apple preview processing completed"
+      "Finish and review version-specific release/review notes, then select build 27"
     ]
   }
 }
