@@ -2,6 +2,9 @@ import Foundation
 
 nonisolated enum LeaderboardRules {
     static let version = "beta-1"
+    /// Touch checks (sending unsure touches for review) are postponed past the first beta,
+    /// which ranks the automatic count only. Turning this on brings back every entry point.
+    static let touchChecks = false
     // Matches the deployed project's 50 MiB Storage limit. Raise the app,
     // bucket and database limits together when the hosting plan changes.
     static let maximumVideoBytes: Int64 = 52_428_800

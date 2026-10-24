@@ -105,23 +105,34 @@ struct LeaderboardReplayReviewCard: View {
     var body: some View {
         if let item = history.items.first(where: { $0.id == sessionID && $0.ownerID == history.ownerID }),
            item.ownerID != nil, item.source == .recording {
-            let askable = LeaderboardCorrection(item: item)?.leftOut.count ?? 0
-            Button(action: open) {
-                HStack(spacing: 10) {
-                    Image(systemName: "trophy")
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(item.rankedProposal.map { "Best streak \($0.count)" } ?? "Leaderboard streak")
-                            .font(.subheadline.weight(.semibold))
-                        Text(askable == 0 ? "Counts on the leaderboard by itself"
-                             : "\(askable) \(askable == 1 ? "touch" : "touches") to check · counts by itself")
-                            .font(.caption).foregroundStyle(.white.opacity(0.75))
-                    }
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right").font(.caption.weight(.semibold))
-                }
-                .padding(12).background(.black.opacity(0.6), in: .rect(cornerRadius: 16))
-            }.buttonStyle(.plain).foregroundStyle(.white)
-                .accessibilityIdentifier("replay-leaderboard-review-card")
+            // With touch checks off there is nothing to open, so the strip only reports the streak.
+            if LeaderboardRules.touchChecks {
+                Button(action: open) { strip(item, opens: true) }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("replay-leaderboard-review-card")
+            } else {
+                strip(item, opens: false)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("replay-leaderboard-review-card")
+            }
         }
+    }
+
+    private func strip(_ item: HistorySession, opens: Bool) -> some View {
+        let askable = opens ? LeaderboardCorrection(item: item)?.leftOut.count ?? 0 : 0
+        return HStack(spacing: 10) {
+            Image(systemName: "trophy")
+            VStack(alignment: .leading, spacing: 3) {
+                Text(item.rankedProposal.map { "Best streak \($0.count)" } ?? "Leaderboard streak")
+                    .font(.subheadline.weight(.semibold))
+                Text(askable == 0 ? "Counts on the leaderboard by itself"
+                     : "\(askable) \(askable == 1 ? "touch" : "touches") to check · counts by itself")
+                    .font(.caption).foregroundStyle(.white.opacity(0.75))
+            }
+            Spacer(minLength: 0)
+            if opens { Image(systemName: "chevron.right").font(.caption.weight(.semibold)) }
+        }
+        .padding(12).background(.black.opacity(0.6), in: .rect(cornerRadius: 16))
+        .foregroundStyle(.white)
     }
 }

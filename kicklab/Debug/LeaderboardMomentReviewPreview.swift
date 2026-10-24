@@ -1,4 +1,5 @@
 #if DEBUG
+import AVFoundation
 import SwiftUI
 
 /// Isolated UI fixture; these flags are examples, not analysis of the supplied video.
@@ -42,6 +43,39 @@ struct LeaderboardCorrectionPreview: View {
     }
     var body: some View {
         NavigationStack { LeaderboardCorrectionForm(item: item, video: url, review: review) }
+    }
+}
+
+/// The streak strip on the replay after Stop, over the recording's first frame.
+struct LeaderboardReplayCardPreview: View {
+    let url: URL
+    @StateObject private var history = SessionHistoryStore(service: nil,
+        queue: .init(root: .temporaryDirectory.appendingPathComponent("replay-card-preview-results")),
+        library: .init(root: .temporaryDirectory.appendingPathComponent("replay-card-preview-history")))
+    @State private var frame: UIImage?
+    @State private var item: HistorySession = {
+        var item = HistorySession(id: UUID(), ownerID: UUID(), touches: 44, durationMS: 30_000, source: .recording,
+                                  completedAt: Date(), syncState: .saving)
+        item.rankedProposal = RankedStreakProposal(count: 27, startMS: 850, endMS: 18_550)
+        return item
+    }()
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            Color.black
+            if let frame { Image(uiImage: frame).resizable().scaledToFill() }
+            LeaderboardReplayReviewCard(sessionID: item.id, history: history) {}
+                .padding(.horizontal, 24).padding(.bottom, 120)
+        }
+        .ignoresSafeArea()
+        .task {
+            history.useAccount(item.ownerID)
+            history.showImmediately(item, videoURL: url)
+            let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+            generator.appliesPreferredTrackTransform = true
+            if let image = try? await generator.image(at: CMTime(value: 2, timescale: 1)).image {
+                frame = UIImage(cgImage: image)
+            }
+        }
     }
 }
 #endif

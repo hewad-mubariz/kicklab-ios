@@ -22,16 +22,20 @@ struct LeaderboardPlayerDetailView: View {
                     if let code = entry.countryCode, let country = ProfileCountry.named(code) {
                         LabeledContent("Country", value: "\(country.flag) \(country.name)")
                     }
-                    if let duration = entry.streakDurationMS {
-                        LabeledContent("Streak duration", value: String(format: "%d:%02d", duration/60000, duration/1000 % 60))
-                        LabeledContent("Average rhythm", value: duration > 0 ? String(format: "%.0f touches/min", Double(entry.touches)*60000/Double(duration)) : "Unavailable")
-                    }
                     VStack(alignment: .leading, spacing: 16) {
-                        HStack { Text("Juggling style").font(.title2.bold()); Spacer(); Text("Estimated").font(.caption).foregroundStyle(.secondary) }
-                        Label { Text("Backspin · \(entry.backspinLabel)") } icon: { LeaderboardSpinIcon() }
-                        Label("Typical height · \(entry.heightLabel)", systemImage: "arrow.up.and.down")
-                        Text(entry.isPreview ? "Fictional style measurements for this preview. They do not affect rank."
-                             : "Style measurements appear when supported by reliable evidence. They do not affect rank.")
+                        Text("Streak stats").font(.title2.bold())
+                        LabeledContent {
+                            Text(entry.streakDurationLabel).monospacedDigit()
+                        } label: {
+                            Label("Duration", systemImage: "timer")
+                        }
+                        LabeledContent {
+                            Text(entry.averageRhythmLabel).monospacedDigit()
+                        } label: {
+                            Label("Average rhythm", systemImage: "metronome")
+                        }
+                        Text(entry.isPreview ? "Sample duration and rhythm for this preview. They do not affect rank."
+                             : "Rhythm is the counted touches per minute over this streak. Only the touch count determines rank.")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                     .padding(20).frame(maxWidth: .infinity, alignment: .leading)
@@ -44,7 +48,9 @@ struct LeaderboardPlayerDetailView: View {
                               : "Counted automatically from a recorded session.", systemImage: entry.attemptID != nil ? "lock" : "bolt")
                             .font(.subheadline).foregroundStyle(.secondary)
                         if entry.isYou {
-                            Text("Open Touch checks to see touches left out of your sessions, or the result of a check.").font(.subheadline)
+                            if LeaderboardRules.touchChecks {
+                                Text("Open Touch checks to see touches left out of your sessions, or the result of a check.").font(.subheadline)
+                            }
                         } else if entry.attemptID != nil {
                             Button("Report this score", systemImage: "flag") { showsReport = true }
                                 .disabled(review.owner == nil)
@@ -64,14 +70,5 @@ struct LeaderboardPlayerDetailView: View {
                 }
             }
         }
-    }
-}
-
-struct LeaderboardSpinIcon: View {
-    var body: some View {
-        ZStack {
-            Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90").font(.system(size: 21))
-            Image(systemName: "soccerball").font(.system(size: 10))
-        }.frame(width: 24, height: 24).accessibilityHidden(true)
     }
 }

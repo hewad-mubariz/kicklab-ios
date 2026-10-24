@@ -959,6 +959,16 @@ more scores 27.
   score; the report button exists only for scores that went through a check. Automatic
   streaks are device-reported, not verified.
 
+**First beta scope — 24 October:** the beta ranks the automatic count only.
+`LeaderboardRules.touchChecks` is off: no touch checks, clip uploads, video review or
+full-recording upload, and the review service isn't connected, so nothing is fetched
+or sent (including a check queued by an earlier build). The rules page, leaderboard,
+Profile, history and post-session strip show no review or upload wording. Turning the
+switch on restores every entry point; the server functions and bucket stay deployed
+but unused. To take a score off the board, `scripts/remove-leaderboard-score.py`
+lists the sessions that rank and marks one `rejected` (dry run first, `--confirm` to
+apply, `restore` to undo; every change goes to a private log in `config/local`).
+
 `supabase/tests/streak_leaderboard.sql` covers ranking, immutability, corrections,
 periods, moderation and visibility (`scripts/test-account-backend.sh`).
 

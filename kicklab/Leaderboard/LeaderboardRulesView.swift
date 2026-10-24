@@ -11,7 +11,8 @@ struct LeaderboardRulesView: View {
                         Text("PLAY FAIR. KEEP IT GOING.").font(.caption.weight(.bold)).tracking(1.3)
                             .foregroundStyle(TrainingHomeStyle.accent(scheme))
                         Text("Your best streak counts.").font(.largeTitle.bold())
-                        Text("Counted for you after every recorded session. Checked by a person only when you ask.")
+                        Text(LeaderboardRules.touchChecks ? "Counted for you after every recorded session. Checked by a person only when you ask."
+                             : "Counted for you after every recorded session.")
                             .foregroundStyle(.secondary)
                     }.padding(.vertical, 12)
                     group("THE STREAK") {
@@ -25,15 +26,12 @@ struct LeaderboardRulesView: View {
                         rule("Automatic", "Each session recorded in the app while signed in ranks by its longest streak as soon as it syncs. There is nothing to submit.", "bolt")
                         Divider()
                         rule("Touches the counter isn’t sure of", "When hands are hidden, the body is unclear or the ball is lost for a moment, the counter leaves that touch out. It doesn’t count, and it doesn’t end your streak either.", "questionmark.circle")
-                        Divider()
-                        rule("Ask for a check", "After a session, open your streak to see the touches inside it that the counter wasn’t sure of. If some were valid, send them. A reviewer watches short clips of just those moments and, if they confirm them, your streak goes up. Clear hand touches, catches and bounces aren’t offered: they always end a streak.", "checkmark.seal")
-                        Divider()
-                        rule("Still disagree?", "Open the check in Touch checks and ask for one re-review.", "arrow.uturn.backward.circle")
+                        if LeaderboardRules.touchChecks { checkRules }
                     }
-                    Label("Spin and height describe your run. They do not add points.", systemImage: "arrow.trianglehead.2.clockwise.rotate.90")
+                    Label("Duration and rhythm describe your streak. They do not add points.", systemImage: "metronome")
                         .font(.subheadline).foregroundStyle(.secondary)
                     group("WEEKLY & ALL-TIME") {
-                        rule("One best streak per player", "The weekly board resets Monday at 00:00 UTC. A session counts in the week you recorded it, even if a check finishes later. Ties go to the earlier session.", "calendar")
+                        rule("One best streak per player", "The weekly board resets Monday at 00:00 UTC. A session counts in the week you recorded it\(LeaderboardRules.touchChecks ? ", even if a check finishes later" : ""). Ties go to the earlier session.", "calendar")
                         Text("Next reset: \(LeaderboardRules.nextReset().formatted(date: .abbreviated, time: .shortened)) · your time")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
@@ -41,13 +39,20 @@ struct LeaderboardRulesView: View {
                         rule("Keep it visible", "Use one size-5 football. Keep yourself, the ball and the ground near you in frame. An initial hand release earns no points.", "video")
                         Divider()
                         rule("You choose to appear", "You’re asked once before you join. Other players see your profile name, photo and best streak, and you can hide them any time in Profile. Gallery imports and guest sessions never rank.", "person.crop.circle.badge.checkmark")
-                        Divider()
-                        Text(LeaderboardRules.privacy).font(.subheadline).foregroundStyle(.secondary)
-                        Text("The beta allows three checks per day and three waiting for review.")
-                            .font(.footnote).foregroundStyle(.secondary)
+                        if LeaderboardRules.touchChecks {
+                            Divider()
+                            Text(LeaderboardRules.privacy).font(.subheadline).foregroundStyle(.secondary)
+                            Text("The beta allows three checks per day and three waiting for review.")
+                                .font(.footnote).foregroundStyle(.secondary)
+                        } else {
+                            Divider()
+                            Text("Your recordings stay on your phone. Only each session’s touch count, best streak, length and date reach your account.")
+                                .font(.subheadline).foregroundStyle(.secondary)
+                        }
                     }
                     group("FAIR PLAY") {
-                        Text("A reviewer can correct or remove any score. Duplicate recordings and edited clips cannot qualify.")
+                        Text(LeaderboardRules.touchChecks ? "A reviewer can correct or remove any score. Duplicate recordings and edited clips cannot qualify."
+                             : "Scores that break these rules or look impossible can be removed from the board.")
                             .font(.subheadline)
                         Text("No prizes, paid score advantages or trick bonuses in this beta. Training remains available without joining.")
                             .font(.footnote).foregroundStyle(.secondary)
@@ -62,6 +67,14 @@ struct LeaderboardRulesView: View {
         .tint(TrainingHomeStyle.accent(scheme))
         .accessibilityIdentifier("leaderboard-rules")
     }
+    /// Sending unsure touches for review, once touch checks are on.
+    @ViewBuilder private var checkRules: some View {
+        Divider()
+        rule("Ask for a check", "After a session, open your streak to see the touches inside it that the counter wasn’t sure of. If some were valid, send them. A reviewer watches short clips of just those moments and, if they confirm them, your streak goes up. Clear hand touches, catches and bounces aren’t offered: they always end a streak.", "checkmark.seal")
+        Divider()
+        rule("Still disagree?", "Open the check in Touch checks and ask for one re-review.", "arrow.uturn.backward.circle")
+    }
+
     private func group<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(.caption.weight(.semibold)).tracking(1).foregroundStyle(.secondary)

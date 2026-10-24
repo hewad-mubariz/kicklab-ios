@@ -96,7 +96,9 @@ final class PlayerStore: ObservableObject {
              try await $2.retainVideo($0, for: $1)
          }) {
         self.service = service; self.queue = queue
-        leaderboardReview = LeaderboardReviewStore(service: reviewService, root: queue.root)
+        // Touch checks are postponed: without a service nothing is fetched or sent,
+        // including a check an earlier build queued.
+        leaderboardReview = LeaderboardReviewStore(service: LeaderboardRules.touchChecks ? reviewService : nil, root: queue.root)
         self.guestDefaults = guestDefaults
         self.archiveVideo = archiveVideo; self.syncRetryDelay = syncRetryDelay
         history = SessionHistoryStore(service: service, queue: queue,

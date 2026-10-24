@@ -57,17 +57,19 @@ struct TrainingProfileView: View {
                     }
                     if !SubscriptionStore.isFreeDebugBuild { ProProfileCard() }
                     record
-                    Button { showsSubmissions = true } label: {
-                        HStack(spacing: 14) {
-                            Image(systemName: "trophy").font(.system(size: 22)).frame(width: 28)
-                            Text("Touch checks").font(.body.weight(.medium))
-                            Spacer(minLength: 8)
-                            Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
+                    if LeaderboardRules.touchChecks {
+                        Button { showsSubmissions = true } label: {
+                            HStack(spacing: 14) {
+                                Image(systemName: "trophy").font(.system(size: 22)).frame(width: 28)
+                                Text("Touch checks").font(.body.weight(.medium))
+                                Spacer(minLength: 8)
+                                Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
+                            }
+                            .padding(20)
+                            .background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 22))
                         }
-                        .padding(20)
-                        .background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 22))
+                        .buttonStyle(.plain).accessibilityIdentifier("profile-leaderboard-submissions")
                     }
-                    .buttonStyle(.plain).accessibilityIdentifier("profile-leaderboard-submissions")
                     NavigationLink {
                         SessionHistoryContent(store: player.history)
                     } label: {

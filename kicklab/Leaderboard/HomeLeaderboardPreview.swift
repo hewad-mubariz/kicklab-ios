@@ -36,9 +36,11 @@ private struct HomeReviewedLeaderboardCard: View {
     }
     private var entries: [LeaderboardEntry] { (state.board?.entries ?? []) + (state.board?.around ?? []) }
     private var you: LeaderboardEntry? { entries.first(where: \.isYou) }
-    private var pending: Bool { !usesPreview && review.attempts.contains { $0.status == .pending || $0.status == .uploading } }
+    private var pending: Bool {
+        LeaderboardRules.touchChecks && !usesPreview && review.attempts.contains { $0.status == .pending || $0.status == .uploading }
+    }
     /// A touch check kept on this phone until it can send.
-    private var waiting: Bool { !usesPreview && !review.queued.isEmpty }
+    private var waiting: Bool { LeaderboardRules.touchChecks && !usesPreview && !review.queued.isEmpty }
     var body: some View {
         VStack(spacing: 0) {
             Button(action: onOpen) {
