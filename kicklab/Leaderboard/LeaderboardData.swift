@@ -15,13 +15,27 @@ struct LeaderboardEntry: Identifiable, Equatable {
     var sessionID: UUID? = nil
     var streakDurationMS: Int? = nil
     var countryCode: String? = nil
-    /// Optional presentation data. Live results keep these nil until verified
-    /// style measurements are supplied; previews can exercise the finished UI.
+    /// Reserved for later style measurements. Beta cards use the saved streak
+    /// duration and rhythm; real results keep these optional fields nil.
     var backspinRPM: Int? = nil
     var typicalHeight: LeaderboardJugglingHeight? = nil
     var isPreview = false
     var backspinLabel: String { backspinRPM.map { "\($0) rpm" } ?? "Unavailable" }
     var heightLabel: String { typicalHeight?.rawValue ?? "Unavailable" }
+    var streakDurationLabel: String {
+        guard let duration = streakDurationMS, duration > 0 else { return "Unavailable" }
+        if duration < 1000 { return "<1s" }
+        return String(format: "%d:%02d", duration / 60000, duration / 1000 % 60)
+    }
+    /// Counted touches per minute over the saved streak, without another video pass.
+    /// One contact alone cannot describe a juggling rhythm.
+    var averageRhythmPerMinute: Int? {
+        guard touches > 1, let duration = streakDurationMS, duration > 0 else { return nil }
+        return Int((Double(touches) * 60000 / Double(duration)).rounded())
+    }
+    var averageRhythmLabel: String {
+        averageRhythmPerMinute.map { "\($0.formatted()) touches/min" } ?? "Unavailable"
+    }
     var id: Int { rank }
 }
 
@@ -49,7 +63,8 @@ enum LeaderboardSample {
         players.sort { $0.touches > $1.touches }
         var entries: [LeaderboardEntry] = []
         for (index, player) in players.enumerated() {
-            entries.append(LeaderboardEntry(rank: index + 1, name: player.name, touches: player.touches, isYou: player.isYou, isPreview: true))
+            entries.append(LeaderboardEntry(rank: index + 1, name: player.name, touches: player.touches,
+                                            isYou: player.isYou, streakDurationMS: player.touches * 500, isPreview: true))
         }
         return entries
     }

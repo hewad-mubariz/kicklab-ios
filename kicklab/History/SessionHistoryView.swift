@@ -229,11 +229,16 @@ private struct SessionHistoryDetail: View {
                         Text("Your account updates automatically when you’re connected.")
                             .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
                     }
-                    if item.ownerID != nil && item.source == .recording {
+                    if item.ownerID != nil && item.source == .recording && LeaderboardRules.touchChecks {
                         NavigationLink {
                             LeaderboardCorrectionView(sessionID: item.id, review: player.leaderboardReview, history: store)
                         } label: { Label("Leaderboard streak", systemImage: "trophy") }
                         .accessibilityIdentifier("history-leaderboard-submit")
+                    } else if item.ownerID != nil && item.source == .recording {
+                        Label(item.rankedProposal.map { "Best streak \($0.count) · counts on the leaderboard" }
+                              ?? "Counts on the leaderboard by its best streak", systemImage: "trophy")
+                            .font(.subheadline.weight(.semibold))
+                            .accessibilityIdentifier("history-leaderboard-streak")
                     } else {
                         Label("Gallery and guest sessions stay in your personal history.", systemImage: "lock")
                             .font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))

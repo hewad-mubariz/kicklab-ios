@@ -89,10 +89,12 @@ struct LeaderboardView: View {
                     if !usesSamples {
                         LeaderboardJoinCard()
                             .padding(.top, 18)
-                        LeaderboardLastSessionCard(review: player.leaderboardReview, history: player.history) {
-                            checking = CheckedSession(id: $0)
+                        if LeaderboardRules.touchChecks {
+                            LeaderboardLastSessionCard(review: player.leaderboardReview, history: player.history) {
+                                checking = CheckedSession(id: $0)
+                            }
+                            .padding(.top, 14)
                         }
-                        .padding(.top, 14)
                     }
                     if boardState.board == nil, let loadError = boardState.error {
                         ContentUnavailableView {
@@ -112,7 +114,7 @@ struct LeaderboardView: View {
                         yourPlace
                     }
                     if usesSamples {
-                        Label("Temporary preview · all players, scores and style measurements are fictional.", systemImage: "eye")
+                        Label("Temporary preview · all players, scores and streak statistics are fictional.", systemImage: "eye")
                             .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme)).padding(.top, 24)
                             .accessibilityIdentifier("leaderboard-preview-label")
                     } else {
@@ -126,11 +128,13 @@ struct LeaderboardView: View {
                             .buttonStyle(.borderedProminent).tint(TrainingHomeStyle.accent(scheme))
                             .padding(.top, 24).accessibilityIdentifier("leaderboard-record")
                         }
-                        Button("Touch checks") { showsSubmissions = true }
-                            .frame(maxWidth: .infinity, minHeight: 44).padding(.top, onRecord == nil ? 20 : 0)
-                            .accessibilityIdentifier("leaderboard-my-submissions")
+                        if LeaderboardRules.touchChecks {
+                            Button("Touch checks") { showsSubmissions = true }
+                                .frame(maxWidth: .infinity, minHeight: 44).padding(.top, onRecord == nil ? 20 : 0)
+                                .accessibilityIdentifier("leaderboard-my-submissions")
+                        }
                     }
-                    Text("Ranked by each player’s best continuous streak, counted automatically. A hand, a catch or a ground touch ends a streak. Touches the counter wasn’t sure of are left out without ending it, and you can send them for a check. Spin and height don’t add points.")
+                    Text("Ranked by each player’s best continuous streak, counted automatically. A hand, a catch or a ground touch ends a streak. Touches the counter wasn’t sure of are left out without ending it\(LeaderboardRules.touchChecks ? ", and you can send them for a check" : ""). Duration and rhythm don’t add points.")
                         .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 20)
@@ -171,7 +175,7 @@ struct LeaderboardView: View {
         }
         #endif
         .task(id: requestID) { await loadBoard() }
-        .task(id: viewerID) { if !usesSamples { await player.leaderboardReview.refresh() } }
+        .task(id: viewerID) { if LeaderboardRules.touchChecks, !usesSamples { await player.leaderboardReview.refresh() } }
         .onReceive(player.leaderboardReview.$revision) { _ in openChecks = player.leaderboardReview.openChecks }
         .refreshable { await loadBoard(refresh: true); await player.leaderboardReview.refresh() }
         .sheet(isPresented: $showsRules) { LeaderboardRulesView() }
@@ -353,7 +357,7 @@ struct LeaderboardView: View {
             return LeaderboardOpenCheck(sessionID: UUID(), touches: 3, count: entry.touches + 3, sending: false)
         }
         #endif
-        return usesSamples ? nil : openChecks.beside(entry)
+        return usesSamples || !LeaderboardRules.touchChecks ? nil : openChecks.beside(entry)
     }
 
     private func anchor(for entry: LeaderboardEntry) -> String {
@@ -608,12 +612,12 @@ struct LeaderboardRow: View {
                                        pending: rolled ? pending.map(share) : nil, lit: lit)
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 10) {
-                        Label { Text(entry.backspinRPM.map { "\($0) rpm" } ?? "—") } icon: { LeaderboardSpinIcon() }
-                        Label(entry.typicalHeight?.rawValue ?? "—", systemImage: "arrow.up.and.down")
+                        Label(entry.streakDurationLabel, systemImage: "timer")
+                        Label(entry.averageRhythmLabel, systemImage: "metronome")
                     }
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Spin: \(entry.backspinLabel)")
-                        Text("Height: \(entry.heightLabel)")
+                        Label(entry.streakDurationLabel, systemImage: "timer")
+                        Label(entry.averageRhythmLabel, systemImage: "metronome")
                     }
                 }.font(.caption).opacity(0.7)
                 if let chase {
@@ -667,7 +671,7 @@ struct LeaderboardRow: View {
             withAnimation(.spring(response: 0.95, dampingFraction: 0.7).delay(delay)) { rolled = true }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Rank \(entry.rank), \(lit ? "you" : entry.name), \(entry.touches) touches\(entry.attemptID != nil ? ", confirmed by a reviewer" : ""). \(review.map { "\($0). " } ?? "")Backspin \(entry.backspinLabel), height \(entry.heightLabel)\(chase.map { ". \($0)" } ?? "")")
+        .accessibilityLabel("Rank \(entry.rank), \(lit ? "you" : entry.name), \(entry.touches) touches\(entry.attemptID != nil ? ", confirmed by a reviewer" : ""). \(review.map { "\($0). " } ?? "")Streak duration \(entry.streakDurationLabel), average rhythm \(entry.averageRhythmLabel)\(chase.map { ". \($0)" } ?? "")")
         .accessibilityIdentifier("leaderboard-row-\(entry.rank)")
     }
 }
