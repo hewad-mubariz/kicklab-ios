@@ -15,6 +15,8 @@ nonisolated struct BallHandlingEvidence: Codable, Equatable, Sendable {
     /// A recovered candidate keeps its trajectory time while the grip test
     /// stays centered on the actual observed leg contact. Nil in old traces.
     var observedImpactMs: Int? = nil
+    /// Versioned so archived evidence retains its original interpretation.
+    var bridgesGripJitter: Bool? = nil
 
     var state: State {
         let contactMs = observedImpactMs ?? self.contactMs
@@ -25,7 +27,8 @@ nonisolated struct BallHandlingEvidence: Codable, Equatable, Sendable {
               zip(views,views.dropFirst()).allSatisfy({ $0.timestampMs < $1.timestampMs }) else { return .uncertain }
         // Unknown wrists or a tracking hole cannot be bridged into a grip.
         var lo = contact, hi = contact
-        guard Self.grip(views[contact]) else {
+        let toleratesJitter = bridgesGripJitter == true
+        guard Self.grip(views[contact], tolerance: toleratesJitter ? 1.25 : 1.15) else {
             let clear = views.filter { view in
                 BodySide.allCases.allSatisfy { side in
                     guard let wrist = view.wrists[side], wrist.confidence >= 0.5 else { return false }
@@ -37,7 +40,7 @@ nonisolated struct BallHandlingEvidence: Codable, Equatable, Sendable {
         }
         let reference = views[contact]
         func coupled(_ view: Sample) -> Bool {
-            guard Self.grip(view) else { return false }
+            guard Self.grip(view, tolerance: toleratesJitter ? 1.25 : 1.15) else { return false }
             return BodySide.allCases.allSatisfy { side in
                 let origin = Self.offset(reference.wrists[side]!,reference)
                 let offset = Self.offset(view.wrists[side]!,view)
@@ -49,6 +52,21 @@ nonisolated struct BallHandlingEvidence: Codable, Equatable, Sendable {
         while hi+1 < views.count, views[hi+1].timestampMs-views[hi].timestampMs <= 100,
               coupled(views[hi+1]) { hi += 1 }
         let run = Array(views[lo...hi])
+        if toleratesJitter {
+            // A brief threshold crossing is allowed only inside a sustained,
+            // coupled grip observed strictly on BOTH sides. This cannot bridge
+            // a missing wrist, a release, or a catch after a genuine kick.
+            let strict = run.filter { Self.grip($0) }
+            guard strict.count >= 4,
+                  strict.contains(where: { (contactMs-150...contactMs-1).contains($0.timestampMs) }),
+                  strict.contains(where: { (contactMs+1...contactMs+150).contains($0.timestampMs) }) else { return .uncertain }
+            var weakStart: Int?, weakCount = 0
+            for view in run {
+                if Self.grip(view) { weakStart = nil; weakCount = 0; continue }
+                weakStart = weakStart ?? view.timestampMs; weakCount += 1
+                guard weakCount <= 2, view.timestampMs-weakStart! <= 67 else { return .uncertain }
+            }
+        }
         guard run.count >= 4, contactMs-run[0].timestampMs >= 50,
               run.last!.timestampMs-contactMs >= 50,
               run.last!.timestampMs-run[0].timestampMs >= 150,
@@ -70,10 +88,10 @@ nonisolated struct BallHandlingEvidence: Codable, Equatable, Sendable {
         let delta = offset(wrist,s)
         return hypot(delta.x,delta.y)
     }
-    private static func grip(_ s: Sample) -> Bool {
+    private static func grip(_ s: Sample, tolerance: Double = 1.15) -> Bool {
         guard let left = s.wrists[.left], let right = s.wrists[.right],
               left.confidence >= 0.5, right.confidence >= 0.5,
-              distance(left,s) <= 1.15, distance(right,s) <= 1.15 else { return false }
+              distance(left,s) <= tolerance, distance(right,s) <= tolerance else { return false }
         let l = offset(left,s), r = offset(right,s)
         // The wrists bracket the ball, allowing hands/fingers beyond the wrist
         // endpoints. Merely having two arms on the same side is insufficient.

@@ -2,6 +2,7 @@ import Foundation
 
 /// The counter depends on contact evidence, without knowing how Vision obtains it.
 nonisolated protocol ContactEvidenceProviding: AnyObject {
+    func configure(policy: CountingPolicy)
     func rejectsHandContact(at frameIndex: Int) -> Bool
     func allowsBodyContact(at frameIndex: Int, policy: CountingPolicy.BodyContact) -> Bool
     func footEvidence(at frameIndex: Int) -> FootContactEvidence?
@@ -9,6 +10,10 @@ nonisolated protocol ContactEvidenceProviding: AnyObject {
     func handlingEvidence(at frameIndex: Int) -> BallHandlingEvidence?
     func retainContactFrames(around index: Int?)
     func diagnostic(for decision: CounterDecision, ball: BallObservation?) -> TouchDebugEvent
+}
+
+nonisolated extension ContactEvidenceProviding {
+    func configure(policy: CountingPolicy) {}
 }
 
 nonisolated enum ContactCounterFactory {
@@ -22,6 +27,7 @@ nonisolated enum ContactCounterFactory {
         let counts = mode == .counting
         let verifies = counts && policy.verifiesContacts
         let checksBody = counts && policy.body != .unrestricted
+        verifier?.configure(policy: policy)
         return StreamingCounter(config: config,
             rejectsHandContact: { [weak verifier] in
                 verifies ? (verifier?.rejectsHandContact(at: $0) ?? false) : false

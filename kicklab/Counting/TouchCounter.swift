@@ -129,7 +129,7 @@ nonisolated struct Touch: Codable, Equatable, Sendable {
 nonisolated enum RejectionReason: String, Codable, Sendable {
     case amplitudeTooSmall, insufficientImpulse, groundBounce, cooldown
     case unsupportedByDetection, noPersonRegion, outsidePersonRegion, trackLost
-    case handContact, disallowedBodyContact, heldBall
+    case handContact, disallowedBodyContact, heldBall, unresolvedLowContact
 }
 
 /// One accepted or rejected trajectory proposal. Missing fields indicate a
@@ -425,14 +425,16 @@ nonisolated final class TouchStateMachine {
                     corroboratingWeakAnkles: groundPolicy == .corroboratedFeet,
                     cadenceAware: sparseGround)
             } ?? false
-            if plantedFeetConfirmed == true {
+            if plantedFeetConfirmed == true || groundEvidence?.needsPositiveFootContact == true {
                 // A resolved kick can still rescue the contact. Reuse a prior
                 // check when the body-box ground gate already requested it.
                 if footConfirmed == nil, let provider = footContactEvidence {
                     footEvidence = provider(apex.frameIndex)
                     footConfirmed = footEvidence.map(confirmsFoot) ?? false
                 }
-                if footConfirmed != true { return reject(.groundBounce) }
+                if footConfirmed != true {
+                    return reject(plantedFeetConfirmed == true ? .groundBounce : .unresolvedLowContact)
+                }
             }
         }
 

@@ -1,5 +1,6 @@
 #if DEBUG
 import AVFoundation
+import CoreImage
 import Foundation
 import UIKit
 
@@ -12,15 +13,19 @@ import UIKit
 nonisolated enum TouchContactReplay {
     private struct Configuration: Decodable {
         enum Comparison: String, Decodable {
-            case body, ground, groundContinuity, footMotion, poseContinuity, handling, poseConfidence, contactTiming, legMotion, legRouting, temporalEvidence, completedRise, pixelFoot, observedImpact, independentLeg, ballAssociation, legRebound, trajectoryTiming, selectedPose, raisedFoot, footEvidence
+            case body, ground, groundContinuity, footMotion, poseContinuity, handling, poseConfidence, contactTiming, legMotion, legRouting, temporalEvidence, completedRise, pixelFoot, observedImpact, independentLeg, ballAssociation, legRebound, trajectoryTiming, selectedPose, raisedFoot, footEvidence, bodyGateAblation, contactEvidence, impactWindow
 
             func policy(after: Bool) -> CountingPolicy {
+                if self == .impactWindow { return CountingPolicy.configured(arguments: [after ? "--impact-window-v17" : "--contact-evidence-v16"]) }
+                if self == .bodyGateAblation { return CountingPolicy.configured(arguments: []) }
+                if self == .contactEvidence { return CountingPolicy.configured(arguments: after ? ["--contact-evidence-v16"] : []) }
                 let ground: GroundContactPolicy
                 switch self {
                 case .ground: ground = after ? .plantedFeet : .supportedBoundary
                 case .groundContinuity: ground = after ? .corroboratedFeet : .plantedFeet
                 case .footMotion, .poseContinuity, .handling, .poseConfidence, .contactTiming, .legMotion, .legRouting, .temporalEvidence, .completedRise, .pixelFoot, .observedImpact, .independentLeg, .ballAssociation, .legRebound, .trajectoryTiming, .selectedPose, .raisedFoot, .footEvidence: ground = .corroboratedFeet
                 case .body: ground = .plantedFeet
+                case .bodyGateAblation, .contactEvidence, .impactWindow: preconditionFailure("Handled above")
                 }
                 let body: CountingPolicy.BodyContact
                 switch self {
@@ -43,6 +48,7 @@ nonisolated enum TouchContactReplay {
                 case .footEvidence: body = after ? .footEvidenceV15 : .raisedFootV14
                 case .handling: body = .poseContinuityV4
                 case .poseContinuity: body = after ? .poseContinuityV4 : .movingFootV3
+                case .bodyGateAblation, .contactEvidence, .impactWindow: preconditionFailure("Handled above")
                 }
                 return .init(handling: (self == .handling && after) || self == .poseConfidence || self == .contactTiming || self == .legMotion || self == .legRouting || self == .temporalEvidence || self == .completedRise || self == .pixelFoot || self == .observedImpact || self == .independentLeg || self == .ballAssociation || self == .legRebound || self == .trajectoryTiming || self == .selectedPose || self == .raisedFoot || self == .footEvidence ? .sustainedGripV1 : .disabled, verifiesContacts: true, body: body, ground: ground)
             }
@@ -51,6 +57,12 @@ nonisolated enum TouchContactReplay {
             let id, video, trace: String
             /// Reuse an already staged, digest-checked original in Documents.
             let documentsVideo: Bool?
+            /// Read-only reuse of an earlier staged corpus; outputs remain in
+            /// this run's folder so historical comparisons are preserved.
+            let sourceFolder: String?
+            /// Older imported traces used a nominal-FPS composition clock.
+            /// Explicit provenance flag; never loosen the frame/time match below.
+            let legacyCompositionClock: Bool?
         }
         let clips: [Clip]
         let comparison: Comparison?
@@ -69,20 +81,31 @@ nonisolated enum TouchContactReplay {
             try await Task.detached(priority: .userInitiated) {
                 let config = try JSONDecoder().decode(Configuration.self,
                     from: Data(contentsOf: folder.appendingPathComponent("config.json")))
+                // One stateless detector for the whole comparison. Repeated
+                // model construction across long clip batches needlessly
+                // retains GPU/compiler resources between asynchronous passes.
+                let recheckWorker = (config.comparison == .contactEvidence || config.comparison == .impactWindow)
+                    ? try autoreleasepool { try RFWorker(resources: Bundle.main.resourceURL!) } : nil
                 for clip in config.clips {
                     guard [clip.id, clip.video, clip.trace].allSatisfy({
                         !$0.isEmpty && $0 == URL(fileURLWithPath: $0).lastPathComponent && $0 != "." && $0 != ".."
                     }) else { throw failure("Invalid clip name") }
+                    if let source = clip.sourceFolder {
+                        guard !source.isEmpty, source == URL(fileURLWithPath: source).lastPathComponent,
+                              source != ".", source != ".." else { throw failure("Invalid source folder") }
+                    }
+                    let sourceFolder = clip.sourceFolder.map { URL.documentsDirectory.appendingPathComponent($0) } ?? folder
                     let archive = try PropertyListDecoder().decode(CounterTraceArchive.self,
-                        from: Data(contentsOf: folder.appendingPathComponent(clip.trace)))
+                        from: Data(contentsOf: sourceFolder.appendingPathComponent(clip.trace)))
                     _ = try archive.trace.replay()
-                    let video = (clip.documentsVideo == true ? URL.documentsDirectory : folder).appendingPathComponent(clip.video)
+                    let video = (clip.documentsVideo == true ? URL.documentsDirectory : sourceFolder).appendingPathComponent(clip.video)
                     guard try SessionAnalysisStore.sourceDigest(video) == archive.sourceDigest else {
                         throw failure("Video and trace do not match")
                     }
                     for after in (config.afterOnly == true ? [true] : [false, true]) {
                         let policy = (config.comparison ?? .body).policy(after: after)
                         var counterConfig = archive.trace.config
+                        if config.comparison == .bodyGateAblation || (config.comparison == .contactEvidence || config.comparison == .impactWindow) { counterConfig = CounterConfig() }
                         if config.comparison == .completedRise {
                             counterConfig.completesRiseWhileSlowing = after
                         }
@@ -100,12 +123,19 @@ nonisolated enum TouchContactReplay {
                         try Data("RUNNING \(label)".utf8).write(to: status, options: .atomic)
                         // The rebound comparison keeps current RF association identical in both passes.
                         let result = try await replay(video: video, archive: archive, policy: policy, counterConfig: counterConfig,
-                                                      status: status, label: label, requiresGroundHeightEvidence: config.comparison == .footEvidence && after, selectedPoseRecovery: config.comparison == .selectedPose && after, poseAuditFrames: Set(config.poseAuditFrames ?? []),
+                                                      status: status, label: label, requiresGroundHeightEvidence: (config.comparison == .footEvidence && after) || config.comparison == .bodyGateAblation || (config.comparison == .contactEvidence || config.comparison == .impactWindow),
+                                                      contactRechecks: (config.comparison == .contactEvidence || config.comparison == .impactWindow),
+                                                      recheckWorker: recheckWorker,
+                                                      bodyGateAblation: config.comparison == .bodyGateAblation ? after : nil,
+                                                      legacyCompositionClock: clip.legacyCompositionClock == true,
+                                                      selectedPoseRecovery: config.comparison == .selectedPose && after, poseAuditFrames: Set(config.poseAuditFrames ?? []),
                                                       associateBall: ((config.comparison == .ballAssociation && after) || config.comparison == .legRebound || config.comparison == .trajectoryTiming) && RFSmallModel.allCases.contains { archive.pipelineSignature.contains($0.rawValue) })
                         let encoder = PropertyListEncoder(); encoder.outputFormat = .binary
                         try encoder.encode(result.trace).write(to: folder.appendingPathComponent(
                             clip.id + (after ? "-after.plist" : "-before.plist")), options: .atomic)
                         try result.recoveryMetrics.write(to: folder.appendingPathComponent(clip.id + (after ? "-after-recovery.json" : "-before-recovery.json")),options: .atomic)
+                        try result.rechecks.write(to: folder.appendingPathComponent(clip.id + (after ? "-after-rechecks.json" : "-before-rechecks.json")), options: .atomic)
+                        try result.bodyGateAssessments.write(to: folder.appendingPathComponent(clip.id + (after ? "-after-body-gate.json" : "-before-body-gate.json")), options: .atomic)
                         try result.evidence.write(to: folder.appendingPathComponent(
                             clip.id + (after ? "-after-evidence.json" : "-before-evidence.json")), options: .atomic)
                         try result.pixelTracks.write(to: folder.appendingPathComponent(clip.id + (after ? "-after-pixel-tracks.json" : "-before-pixel-tracks.json")),options: .atomic)
@@ -123,10 +153,10 @@ nonisolated enum TouchContactReplay {
 
     private static func failure(_ message: String) -> NSError { NSError(domain: message, code: 1) }
 
-    private struct Result { let trace: CounterTrace; let evidence, groundEvidence, poseAudit, pixelTracks, recoveryMetrics: Data }
+    private struct Result { let trace: CounterTrace; let evidence, groundEvidence, poseAudit, pixelTracks, recoveryMetrics, bodyGateAssessments, rechecks: Data }
 
     private static func replay(video: URL, archive: CounterTraceArchive, policy: CountingPolicy, counterConfig: CounterConfig,
-                               status: URL, label: String, requiresGroundHeightEvidence: Bool, selectedPoseRecovery: Bool, poseAuditFrames: Set<Int>, associateBall: Bool) async throws -> Result {
+                               status: URL, label: String, requiresGroundHeightEvidence: Bool, contactRechecks: Bool, recheckWorker: RFWorker?, bodyGateAblation: Bool?, legacyCompositionClock: Bool, selectedPoseRecovery: Bool, poseAuditFrames: Set<Int>, associateBall: Bool) async throws -> Result {
         let asset = AVURLAsset(url: video)
         let track = try await asset.loadTracks(withMediaType: .video)[0]
         let reader = try AVAssetReader(asset: asset)
@@ -136,8 +166,11 @@ nonisolated enum TouchContactReplay {
             // which need not have the original track's frame numbering.
             let composed = AVAssetReaderVideoCompositionOutput(videoTracks: [track],
                 videoSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+            let fps = try await track.load(.nominalFrameRate)
+            let historicalDuration = legacyCompositionClock
+                ? CMTime(seconds: 1 / Double(fps > 0 ? fps : 30), preferredTimescale: 60_000) : nil
             composed.videoComposition = try await EffectVideoGeometry.composition(
-                track: track, duration: asset.load(.duration), shortEdge: 720)
+                track: track, duration: asset.load(.duration), shortEdge: 720, frameDuration: historicalDuration)
             output = composed
         } else {
             output = AVAssetReaderTrackOutput(track: track,
@@ -173,7 +206,13 @@ nonisolated enum TouchContactReplay {
                         "landmarks": Dictionary(uniqueKeysWithValues: sample.landmarks.map { ($0.key.rawValue,[$0.value.x,$0.value.y,$0.value.confidence]) })]
                 }])
         }
-        let counter = ContactCounterFactory.make(verifier: verifier, policy: policy, config: counterConfig)
+        let ablation = bodyGateAblation.map { BodyGateReplayEvidence(verifier, bypassBodyRejection: $0) }
+        let recheck = recheckWorker.map { ContactRecheckEvidence(observations: observations, verifier: verifier,
+            worker: $0, enabled: true, backlogGuard: false) }
+        recheck?.enforcesWallRateLimit = false
+        let provider: any ContactEvidenceProviding = recheck.map { $0 as any ContactEvidenceProviding }
+            ?? ablation.map { $0 as any ContactEvidenceProviding } ?? verifier
+        let counter = ContactCounterFactory.make(verifier: provider, policy: policy, config: counterConfig)
         var association = BallPlausibility(policy: .rfDetrAssociationV1)
         guard reader.startReading() else { throw reader.error ?? failure("Reader failed") }
         defer { if reader.status == .reading { reader.cancelReading() } }
@@ -186,8 +225,11 @@ nonisolated enum TouchContactReplay {
                       let input = archive.trace.operations[operation].input,
                       input.sourceFrameIndex == sourceIndex else { return }
                 let time = CMSampleBufferGetPresentationTimeStamp(sample).seconds
-                guard abs(time-(Double(input.timestampMs)/1000-archive.timeOriginSeconds)) < 0.002,
-                      let pixels = CMSampleBufferGetImageBuffer(sample) else { throw failure("Frame mismatch") }
+                let expectedTime = Double(input.timestampMs)/1000-archive.timeOriginSeconds
+                guard abs(time-expectedTime) < 0.002,
+                      let pixels = CMSampleBufferGetImageBuffer(sample) else {
+                    throw failure("Frame mismatch in \(label): source \(sourceIndex), actual \(time), expected \(expectedTime)")
+                }
                 var ball = input.ball.map { Detection(score: $0.confidence, x: $0.x, y: $0.y, width: $0.width, height: $0.height) }
                 if associateBall, let detected = ball {
                     ball = association.accept(detected, frame: input.frameIndex, timestampMs: input.timestampMs)
@@ -195,6 +237,15 @@ nonisolated enum TouchContactReplay {
                 if !input.reliable { verifier.discardFrames() }
                 else { verifier.store(pixels, frameIndex: input.frameIndex, timestampMs: input.timestampMs,
                                       ball: ball, orientLandscapeAsPortrait: false, player: input.player) }
+                if let recheck {
+                    // Retained missing views must own their pixels. Holding the
+                    // decoder's finite output pool can stall copyNextSampleBuffer
+                    // before the independent release frame becomes available.
+                    let retained = ball == nil ? try ownedPixels(pixels) : pixels
+                    recheck.arrive(.init(index: sourceIndex, time: (Double(input.timestampMs)+0.1)/1000,
+                        due: ProcessInfo.processInfo.systemUptime, image: CIImage(cvPixelBuffer: retained), pixels: retained),
+                        index: input.frameIndex, ball: ball, reliable: input.reliable)
+                }
                 if poseAuditFrames.contains(input.frameIndex),
                    let frame = observations.frames.first(where: { $0.index == input.frameIndex }) {
                     poseAudit.append(try ContactPoseAudit.inspect(frame, source: pixels))
@@ -212,6 +263,7 @@ nonisolated enum TouchContactReplay {
         guard reader.status == .completed, operation == archive.trace.operations.count-1 else {
             throw reader.error ?? failure("Incomplete replay")
         }
+        recheck?.beginFlush(operation: operation)
         counter.flush()
         guard verifier.lastError == nil, let result = counter.traceSnapshot(),
               verifier.peakBufferedFrames <= ContactFrameWindow.maximumBufferedFrames else { throw failure(verifier.lastError ?? "Invalid contact buffer") }
@@ -223,7 +275,26 @@ nonisolated enum TouchContactReplay {
                       groundEvidence: try JSONEncoder().encode(groundEvidence),
                       poseAudit: try JSONSerialization.data(withJSONObject: poseAudit,options: [.sortedKeys]),
                       pixelTracks: try JSONSerialization.data(withJSONObject: pixelTracks,options: [.sortedKeys]),
-                      recoveryMetrics: try JSONSerialization.data(withJSONObject: verifier.poseRecoveryMetrics,options: [.sortedKeys]))
+                      recoveryMetrics: try JSONSerialization.data(withJSONObject: verifier.poseRecoveryMetrics,options: [.sortedKeys]),
+                      bodyGateAssessments: try JSONEncoder().encode(ablation?.assessments ?? []),
+                      rechecks: try JSONSerialization.data(withJSONObject: recheck?.events ?? [], options: [.sortedKeys]))
+    }
+
+    private static func ownedPixels(_ source: CVPixelBuffer) throws -> CVPixelBuffer {
+        guard CVPixelBufferGetPixelFormatType(source) == kCVPixelFormatType_32BGRA else { throw failure("Unexpected replay pixel format") }
+        let width = CVPixelBufferGetWidth(source), height = CVPixelBufferGetHeight(source)
+        var copy: CVPixelBuffer?
+        guard CVPixelBufferCreate(nil, width, height, kCVPixelFormatType_32BGRA,
+            [kCVPixelBufferIOSurfacePropertiesKey: [:]] as CFDictionary, &copy) == kCVReturnSuccess,
+              let copy else { throw failure("Replay pixel allocation failed") }
+        CVPixelBufferLockBaseAddress(source, .readOnly); CVPixelBufferLockBaseAddress(copy, [])
+        defer { CVPixelBufferUnlockBaseAddress(source, .readOnly); CVPixelBufferUnlockBaseAddress(copy, []) }
+        guard let from = CVPixelBufferGetBaseAddress(source), let to = CVPixelBufferGetBaseAddress(copy) else { throw failure("Replay pixels unavailable") }
+        for row in 0..<height {
+            memcpy(to.advanced(by: row*CVPixelBufferGetBytesPerRow(copy)),
+                   from.advanced(by: row*CVPixelBufferGetBytesPerRow(source)), width*4)
+        }
+        return copy
     }
 }
 #endif

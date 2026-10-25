@@ -59,9 +59,30 @@ struct BallHandlingTests {
         for row in rows {
             #expect((row.evidence.state == .held) == ["pickup","held"].contains(row.label),
                     "Reviewed \(row.label) at frame \(row.frame)")
+            var updated = row.evidence
+            updated.bridgesGripJitter = true
+            #expect((updated.state == .held) == ["pickup","held"].contains(row.label),
+                    "Temporal grip: reviewed \(row.label) at frame \(row.frame)")
         }
         // The ground label is a known remaining false count, not a grip.
         // This fixture tests handling specificity, not complete count accuracy.
+    }
+
+    @Test func savedHandHoldSurvivesBriefWristJitterButNotMissingEvidence() throws {
+        let url = try #require(Bundle(for: Resources.self).url(forResource: "grip-jitter-20261024", withExtension: "json"))
+        var evidence = try JSONDecoder().decode(BallHandlingEvidence.self, from: Data(contentsOf: url))
+        #expect(evidence.state == .uncertain)
+        evidence.bridgesGripJitter = true
+        #expect(evidence.state == .held)
+        #expect(try JSONDecoder().decode(BallHandlingEvidence.self, from: JSONEncoder().encode(evidence)) == evidence)
+        let beforeOnly = evidence.samples.filter { $0.timestampMs <= evidence.contactMs }
+        #expect(BallHandlingEvidence(contactMs: evidence.contactMs, samples: beforeOnly, bridgesGripJitter: true).state != .held)
+        let missing = evidence.samples.map { s in
+            BallHandlingEvidence.Sample(timestampMs: s.timestampMs, ball: s.ball, width: s.width, height: s.height,
+                confidence: s.confidence, imageAspect: s.imageAspect,
+                wrists: s.timestampMs == evidence.contactMs ? [:] : s.wrists)
+        }
+        #expect(BallHandlingEvidence(contactMs: evidence.contactMs, samples: missing, bridgesGripJitter: true).state != .held)
     }
     @Test func GripStartsWhenHandsActuallyCoupleAndCannotBridgeDuplicateTimes() {
         let approach = sample(-200,y: 0.56,handsY: 0.5)

@@ -13,6 +13,48 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
     var checksBallBelowFeet: Bool? = nil
     /// Absent in historical evidence: preserve its original replay verdict.
     var requiresLowBallCenter: Bool? = nil
+    /// Perspective and blur during the approach may change box size. Only the
+    /// observed impact/release window may establish the tighter size bound.
+    var usesLocalImpactSize: Bool? = nil
+    /// Old archives omit this. A reversal with a gap in the original impact
+    /// observations needs positive foot evidence if it is at ankle height.
+    var requiresPositiveLowContact: Bool? = nil
+
+    /// Only sparse impact tracks take the extra foot-proof route. Continuous
+    /// low taps keep their existing rules. Rechecked images must be excluded:
+    /// they can establish floor evidence but do not erase the original gap.
+    static func hasImpactTrackingGap(contactMs: Int, originalTimestampsMs: [Int],
+                                     missingBallTimestampsMs: [Int]) -> Bool {
+        // Sparse capture cadence is not a tracking failure. Require at least
+        // two actual analyzed exposures without a ball near the impact.
+        guard Set(missingBallTimestampsMs.filter { abs($0-contactMs) <= 67 }).count >= 2 else { return false }
+        let times = [contactMs-100] + Set(originalTimestampsMs.filter {
+            (-100...100).contains($0-contactMs)
+        }).sorted() + [contactMs+100]
+        // More than two 30 Hz intervals, allowing timestamp rounding. Restrict
+        // the gap to the impact neighborhood, not an unrelated approach gap.
+        return zip(times, times.dropFirst()).contains {
+            $1-$0 > 70 && $0 < contactMs+67 && $1 > contactMs-67
+        }
+    }
+
+    var needsPositiveFootContact: Bool {
+        guard requiresPositiveLowContact == true else { return false }
+        return samples.contains { s in
+            guard abs(s.timestampMs-contactMs) <= 67,
+                  [s.ballX,s.ballY,s.width,s.height,s.confidence].allSatisfy(\.isFinite),
+                  (0...1).contains(s.ballX), (0...1).contains(s.ballY),
+                  s.width > 0, s.width <= 1, s.height > 0, s.height <= 1, s.confidence >= 0.5,
+                  let left = s.ankles[.left], let right = s.ankles[.right],
+                  [left,right].allSatisfy({
+                      [$0.x,$0.y,$0.confidence].allSatisfy(\.isFinite)
+                        && (0...1).contains($0.x) && (0...1).contains($0.y) && $0.confidence >= 0.5
+                  }) else { return false }
+            // Match the existing low-center floor criterion. A toe flick
+            // reversing clearly above the ankles keeps its previous route.
+            return s.ballY >= max(left.y,right.y)-0.25*s.height
+        }
+    }
 
     static let signature = "|cadence-ground-v2"
 
@@ -51,8 +93,17 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
               strong.first!.timestampMs <= contactMs-200,
               strong.last!.timestampMs >= contactMs+25,
               zip(strong,strong.dropFirst()).allSatisfy({ $1.timestampMs-$0.timestampMs <= 110 }),
-              strong.map(\.height).max()! <= 1.35*strong.map(\.height).min()!,
-              strong.map(\.width).max()! <= 1.35*strong.map(\.width).min()! else { return false }
+              strong.map(\.height).max()! <= (usesLocalImpactSize == true ? 1.6 : 1.35)*strong.map(\.height).min()!,
+              strong.map(\.width).max()! <= (usesLocalImpactSize == true ? 1.6 : 1.35)*strong.map(\.width).min()! else { return false }
+        if usesLocalImpactSize == true,
+           strong.map(\.height).max()! > 1.35*strong.map(\.height).min()!
+            || strong.map(\.width).max()! > 1.35*strong.map(\.width).min()! {
+            let impact = strong.filter { (-100...100).contains($0.timestampMs-contactMs) }
+            guard impact.count >= 4, impact.first!.timestampMs <= contactMs-50,
+                  impact.last!.timestampMs >= contactMs+50,
+                  impact.map(\.height).max()! <= 1.25*impact.map(\.height).min()!,
+                  impact.map(\.width).max()! <= 1.25*impact.map(\.width).min()! else { return false }
+        }
         let below = strong.filter { s in
             let left = s.ankles[.left]!, right = s.ankles[.right]!
             return abs(s.timestampMs-contactMs) <= 67 && s.ballY >= max(left.y,right.y)

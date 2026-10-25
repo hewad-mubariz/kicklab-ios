@@ -12,6 +12,7 @@ nonisolated final class ContactObservationStore {
         let pixels: CVPixelBuffer
         let ball: Detection
         var player: ActivePlayerSelection? = nil
+        var isContactRecheck = false
     }
     private let context = CIContext(options: [.useSoftwareRenderer: VideoWorkExecution.cpuOnly])
     private var pixelPool: CVPixelBufferPool?
@@ -22,6 +23,10 @@ nonisolated final class ContactObservationStore {
     var immediateFrames: [Frame] { frames.filter { legacyFrameIndices.contains($0.index) } }
     private var pendingFrame: Int?
     private var timestamps: [Int: Int] = [:]
+    private var originalMissingBallFrames: Set<Int> = []
+    var originalMissingBallTimestampsMs: [Int] {
+        originalMissingBallFrames.compactMap { timestamps[$0] }
+    }
     func timestamp(at index: Int) -> Int? { timestamps[index] }
     typealias Pose = BodyPose
     private var poseCache: [Int: Pose] = [:]
@@ -57,6 +62,7 @@ nonisolated final class ContactObservationStore {
         selections.removeAll(keepingCapacity: true)
         pendingFrame = nil
         timestamps.removeAll(keepingCapacity: true)
+        originalMissingBallFrames.removeAll(keepingCapacity: true)
     }
 
     /// A slow reversal can be confirmed after the rolling image cache expires.
@@ -102,6 +108,8 @@ nonisolated final class ContactObservationStore {
         selections[frameIndex] = player
         selections = selections.filter { $0.key >= frameIndex-64 || $0.key == pendingFrame }
         timestamps = timestamps.filter { $0.key >= frameIndex-64 || $0.key == pendingFrame }
+        if ball == nil { originalMissingBallFrames.insert(frameIndex) }
+        originalMissingBallFrames = Set(originalMissingBallFrames.filter { timestamps[$0] != nil })
         legacyFrameIndices = Set(frames.filter { frame in
             guard legacyFrameIndices.contains(frame.index) else { return false }
             let pinned = pendingFrame.map { ($0-9 ... $0+3).contains(frame.index) } ?? false
@@ -242,7 +250,8 @@ extension ContactObservationStore {
         image = image.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
         guard let buffer = frameBuffer(width: Int(image.extent.width), height: Int(image.extent.height)) else { return false }
         context.render(image, to: buffer)
-        frames.append(Frame(index: frameIndex, timestampMs: timestampMs, pixels: buffer, ball: ball, player: selection(at: frameIndex)))
+        frames.append(Frame(index: frameIndex, timestampMs: timestampMs, pixels: buffer, ball: ball,
+                            player: selection(at: frameIndex), isContactRecheck: true))
         frames.sort { $0.index < $1.index }
         legacyFrameIndices.insert(frameIndex)
         peakBufferedFrames = max(peakBufferedFrames, frames.count)

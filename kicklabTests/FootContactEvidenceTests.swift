@@ -105,12 +105,20 @@ struct FootContactEvidenceTests {
         #expect(!gradualMotion(ankleX: [0.482,0.5,0.59]).confirms)
     }
 
-    private func machine(hand: Bool = false, evidence: FootContactEvidence?) -> TouchStateMachine {
+    private func machine(hand: Bool = false, evidence: FootContactEvidence?, unresolvedLow: Bool = false) -> TouchStateMachine {
         let c = TouchStateMachine(config: CounterConfig())
         c.footContactEvidence = { _ in evidence }
         c.rejectsHandContact = { _ in hand }
+        if unresolvedLow {
+            c.groundContactEvidence = { frame in
+                .init(contactMs: frame*33, samples: [.init(timestampMs: frame*33,
+                    ballX: 0.5,ballY: 0.6,width: 0.18,height: 0.1,confidence: 0.9,imageAspect: 0.5625,
+                    ankles: [.left: .init(x: 0.4,y: 0.6),.right: .init(x: 0.6,y: 0.6)],hips: [:])],
+                    requiresPositiveLowContact: true)
+            }
+        }
         for i in 0...8 {
-            c.personBoxes[i] = .init(x: 0.5,y: 0.31,width: 0.8,height: 0.62)
+            c.personBoxes[i] = .init(x: 0.5,y: unresolvedLow ? 0.45 : 0.31,width: 0.8,height: unresolvedLow ? 0.9 : 0.62)
             c.detectedFrames.insert(i); c.ballHeights[i] = 0.04
         }
         for (i,y) in [0.4,0.45,0.55,0.6,0.58,0.55].enumerated() {
@@ -125,6 +133,16 @@ struct FootContactEvidenceTests {
         #expect(machine(evidence: nil).rejected.last?.reason == .groundBounce)
         #expect(machine(evidence: samples(time: 199)).count == 0)
         #expect(machine(hand: true,evidence: samples()).rejected.last?.reason == .handContact)
+    }
+
+    @Test func unresolvedLowContactRequiresPositiveFootProofAndRetainsHandVeto() {
+        #expect(machine(evidence: nil, unresolvedLow: true).rejected.last?.reason == .unresolvedLowContact)
+        #expect(machine(evidence: samples(), unresolvedLow: true).count == 1)
+        #expect(machine(hand: true, evidence: samples(), unresolvedLow: true).rejected.last?.reason == .handContact)
+        var review = TouchReviewEvidence()
+        review.append(.init(frameIndex: 3,time: 0.099,rejection: .unresolvedLowContact,
+            handConfirmed: false,bodyFailure: nil,ball: nil))
+        #expect(review.observations.map(\.kind) == [.lowContactUncertain])
     }
 
     @Test func fullFootEvidenceReplaysWithoutPoseAndMissingEvidenceFails() throws {
