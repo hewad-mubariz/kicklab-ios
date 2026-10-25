@@ -1,0 +1,190 @@
+{
+  "source_sha256": "4a54b84afee6389e5229716e3d987ff6c4295ed297651e765d56ec1dd8cc64ae",
+  "source_name": "eighteen.mov",
+  "review_status": "reviewed_with_uncertainty",
+  "coverage_s": [
+    0,
+    18.571667
+  ],
+  "method": "Full 6 fps visual sweep; source-labelled before inspecting counter outcomes. Dense review of mismatches where needed.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [
+    {
+      "id": "e001",
+      "time_s": 3.13,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e002",
+      "time_s": 3.75,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e003",
+      "time_s": 5.08,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e004",
+      "time_s": 5.72,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e005",
+      "time_s": 6.32,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e006",
+      "time_s": 7.12,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "u001",
+      "time_s": 7.65,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible_in_dense_review"
+    },
+    {
+      "id": "e007",
+      "time_s": 8.6,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e008",
+      "time_s": 9.19,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e009",
+      "time_s": 9.85,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e010",
+      "time_s": 10.35,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "u002",
+      "time_s": 10.98,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible_in_dense_review"
+    },
+    {
+      "id": "e011",
+      "time_s": 11.86,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "u003",
+      "time_s": 12.59,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible_in_dense_review"
+    },
+    {
+      "id": "e012",
+      "time_s": 13.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e013",
+      "time_s": 13.88,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e014",
+      "time_s": 14.59,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e015",
+      "time_s": 15.23,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "u004",
+      "time_s": 15.84,
+      "label": "uncertain",
+      "contact": "possible_contact",
+      "time_uncertainty_s": 0.1,
+      "visibility": "partial_or_ambiguous"
+    }
+  ],
+  "segments": [
+    {
+      "start_s": 0,
+      "end_s": 3.0,
+      "label": "invalid",
+      "reason": "Holding and release"
+    },
+    {
+      "start_s": 4.2,
+      "end_s": 4.9,
+      "label": "invalid",
+      "reason": "Catch, holding and release"
+    },
+    {
+      "start_s": 15.7,
+      "end_s": 18.5717,
+      "label": "uncertain",
+      "reason": "Ball leaves left edge, later rolls behind player while stopping camera"
+    }
+  ],
+  "notes": [
+    "High side-foot contacts near the left image edge require closer review before definitive classification.",
+    "Dense review confirms foot contacts at 7.65, 10.98 and 12.59 s previously uncertain in the coarse sweep. Final 15.84 s remains out of frame. 9.85 s is one contact, not two.",
+    "All remaining mismatches received dense five-frame source review around each event (2026-10-14)."
+  ]
+}

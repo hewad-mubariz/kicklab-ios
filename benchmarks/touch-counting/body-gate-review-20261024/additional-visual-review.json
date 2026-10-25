@@ -1,0 +1,108 @@
+{
+  "review_status": "assistant_visual_review; human confirmation pending",
+  "events": [
+    {
+      "clip": "latest",
+      "frame": 205,
+      "time_s": 6.88514016699628,
+      "label": "valid",
+      "reason": "Visible raised-foot contact followed by upward ball motion; hands clear.",
+      "evidence": "artifacts/body-gate-review-20261024/latest-review/01.jpg"
+    },
+    {
+      "clip": "normal_juggling_4",
+      "frame": 4107,
+      "time_s": 34.241,
+      "label": "invalid",
+      "reason": "Ball stays beside/on the turf while the player walks it toward the camera; no airborne juggle. Confirms existing negative-segment label.",
+      "evidence": "artifacts/body-gate-review-20261024/normal4-review/01.jpg"
+    },
+    {
+      "clip": "juggling_second_ball_in_video",
+      "frame": 2284,
+      "time_s": 19.041,
+      "label": "invalid",
+      "reason": "Foreground player visibly holds the ball while a second person holds/moves another ball. No legal juggle at these proposals. Confirms existing invalid-segment labels.",
+      "evidence": "artifacts/body-gate-review-20261024/second-ball-false-review/01.jpg"
+    },
+    {
+      "clip": "juggling_second_ball_in_video",
+      "frame": 2389,
+      "time_s": 19.916,
+      "label": "invalid",
+      "reason": "Foreground player visibly holds the ball while a second person holds/moves another ball. No legal juggle at these proposals. Confirms existing invalid-segment labels.",
+      "evidence": "artifacts/body-gate-review-20261024/second-ball-false-review/01.jpg"
+    },
+    {
+      "clip": "juggling_second_ball_in_video",
+      "frame": 2464,
+      "time_s": 20.541,
+      "label": "invalid",
+      "reason": "Foreground player visibly holds the ball while a second person holds/moves another ball. No legal juggle at these proposals. Confirms existing invalid-segment labels.",
+      "evidence": "artifacts/body-gate-review-20261024/second-ball-false-review/01.jpg"
+    },
+    {
+      "clip": "juggling_second_ball_in_video",
+      "frame": 2486,
+      "time_s": 20.725,
+      "label": "invalid",
+      "reason": "Foreground player visibly holds the ball while a second person holds/moves another ball. No legal juggle at these proposals. Confirms existing invalid-segment labels.",
+      "evidence": "artifacts/body-gate-review-20261024/second-ball-false-review/02.jpg"
+    },
+    {
+      "clip": "juggling_second_ball_in_video",
+      "frame": 2043,
+      "time_s": 17.033,
+      "label": "uncertain",
+      "reason": "Ball is near the top of its arc; no clear additional legal contact in the sampled views. Remains outside the frozen corpus true/false totals.",
+      "evidence": "artifacts/body-gate-review-20261024/second-ball-unreviewed-review/01.jpg"
+    },
+    {
+      "clip": "juggling_second_ball_in_video",
+      "frame": 2181,
+      "time_s": 18.183,
+      "label": "uncertain",
+      "reason": "Nearby 18.01 s labelled contact is already matched to a different accepted prediction at 17.841 s; this extra event must not receive duplicate true-positive credit. Remains outside the frozen corpus true/false totals.",
+      "evidence": "artifacts/body-gate-review-20261024/second-ball-unreviewed-review/01.jpg"
+    }
+  ],
+  "negative_controls": [
+    {
+      "clip": "ball_in_hand",
+      "before": 0,
+      "after": 0,
+      "body_gate_evaluated": false,
+      "note": "Only a trackLost rejection; does not exercise the bypass."
+    },
+    {
+      "clip": "dribbling_with_ball_1",
+      "before": 0,
+      "after": 0,
+      "body_gate_evaluated": false,
+      "note": "Trajectory/ground rejection happens before the body gate."
+    },
+    {
+      "clip": "dribbling_with_ball_2",
+      "before": 0,
+      "after": 0,
+      "body_gate_evaluated": false,
+      "note": "All three candidates rejected by ground checks before the body gate."
+    },
+    {
+      "clip": "latest",
+      "time_s": 3.784,
+      "before": "disallowedBodyContact",
+      "after": "handContact",
+      "handConfirmed": true,
+      "note": "This hand toss actually reaches the body gate and remains rejected by the independent hand check."
+    },
+    {
+      "clip": "walkthrough",
+      "time_s": 144.36022062500706,
+      "before": "disallowedBodyContact",
+      "after": "accepted",
+      "handConfirmed": false,
+      "note": "Newly reviewed visible catch becomes a false acceptance; existing hand and handling checks do not catch it."
+    }
+  ]
+}

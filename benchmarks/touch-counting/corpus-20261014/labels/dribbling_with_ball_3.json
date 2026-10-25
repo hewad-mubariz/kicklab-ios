@@ -1,0 +1,36 @@
+{
+  "source_sha256": "93ba1a0dedbe99b6dcdd98ba4c73195a64ea883b317e03af19e1ec62061a41e2",
+  "source_name": "dribbling_with_ball_3.mov",
+  "review_status": "reviewed_with_uncertainty",
+  "coverage_s": [
+    0,
+    4.576667
+  ],
+  "method": "Full 6 fps visual sweep; source-labelled before inspecting counter outcomes. Dense review of mismatches where needed.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [],
+  "segments": [
+    {
+      "start_s": 0,
+      "end_s": 3.7,
+      "label": "invalid",
+      "reason": "Ground dribbling"
+    },
+    {
+      "start_s": 3.7,
+      "end_s": 4.1,
+      "label": "uncertain",
+      "reason": "Brief ankle-height airborne pop during a turn; foot/ground origin is not clear enough to call a false count"
+    },
+    {
+      "start_s": 4.1,
+      "end_s": 4.57667,
+      "label": "invalid",
+      "reason": "Ball returns to ground dribbling"
+    }
+  ],
+  "notes": [
+    "Physical ground-dribble foot contacts are not labelled valid juggling contacts.",
+    "24 fps review of 3.55\u20134.25 s shows a brief airborne ball during the turn. The 3.950 s acceptance is uncertain, not a confirmed ground-bounce false positive."
+  ]
+}

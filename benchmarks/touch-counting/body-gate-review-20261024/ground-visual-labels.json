@@ -1,0 +1,187 @@
+{
+  "source_sha256": "4de39918ddbf91623edf202cb9592d968d500f0cf1327bb6e7427c974663f8c3",
+  "scope": "20 evenly spaced original ground-rejection proposals; independent of new replay outcomes. Seven views over 0.5 seconds per event; selected ambiguous events received 30 fps lower-frame inspection. Not a whole-clip accuracy estimate.",
+  "reviewer": "assistant visual review, human confirmation pending",
+  "events": [
+    {
+      "frame": 702,
+      "time_s": 26.238220625004033,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "accepted",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 865,
+      "time_s": 33.040220625000075,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Likely floor bounce or retrieval, but the precise contact is too low in the image for a definitive label from these views.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 998,
+      "time_s": 38.741220625001006,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 1244,
+      "time_s": 49.40922062500613,
+      "reason": "original ground rejection",
+      "label": "invalid",
+      "review_note": "Floor/hand-retrieval activity; no legal foot contact at this proposal.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 1299,
+      "time_s": 52.21022062501288,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Likely floor bounce or retrieval, but the precise contact is too low in the image for a definitive label from these views.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 1471,
+      "time_s": 60.07822062500054,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 1504,
+      "time_s": 62.712220625020564,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 1669,
+      "time_s": 70.14722062501824,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 2277,
+      "time_s": 98.6852206250187,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Likely floor bounce or retrieval, but the precise contact is too low in the image for a definitive label from these views.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 2481,
+      "time_s": 105.95322062500054,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 2603,
+      "time_s": 110.92122062502312,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 2864,
+      "time_s": 123.49022062501172,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 3492,
+      "time_s": 149.89522062501055,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 3535,
+      "time_s": 151.628220625018,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 3611,
+      "time_s": 155.09622062501148,
+      "reason": "original ground rejection",
+      "label": "valid",
+      "review_note": "Visible foot approach/contact and upward release above the carpet.",
+      "before_current_decision": "outsidePersonRegion",
+      "after_current_decision": "outsidePersonRegion"
+    },
+    {
+      "frame": 3720,
+      "time_s": 159.99722062502406,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 3783,
+      "time_s": 162.79722062501241,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 4094,
+      "time_s": 175.89922062502592,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Contact is at or partly beyond the lower image boundary; these sampled views do not establish foot versus floor reliably.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    },
+    {
+      "frame": 4576,
+      "time_s": 197.67022062500473,
+      "reason": "original ground rejection",
+      "label": "valid",
+      "review_note": "Visible foot approach/contact and upward release above the carpet.",
+      "before_current_decision": "accepted",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 5338,
+      "time_s": 246.51222062500892,
+      "reason": "original ground rejection",
+      "label": "uncertain",
+      "review_note": "Likely floor bounce or retrieval, but the precise contact is too low in the image for a definitive label from these views.",
+      "before_current_decision": "groundBounce",
+      "after_current_decision": "groundBounce"
+    }
+  ]
+}

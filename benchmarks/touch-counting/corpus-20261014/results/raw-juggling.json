@@ -1,0 +1,91 @@
+{
+  "source": "raw-juggling.mov",
+  "source_sha256": "05a85434a892926291ace9d88e11a414883664fb7e080f2d80f71ff290fc2c0e",
+  "label_review_status": "reviewed",
+  "time_tolerance_s": 0.2,
+  "total_count": 8,
+  "labelled_valid": 10,
+  "labelled_uncertain": 0,
+  "accepted_valid": 8,
+  "missed_valid": [
+    {
+      "label_id": "e007",
+      "time_s": 7.39,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 140,
+        "time": 7.406,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "insufficientContactViews"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e009",
+      "time_s": 8.55,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 169,
+        "time": 8.537,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsUncertain"
+      },
+      "stage": "rejected_candidate"
+    }
+  ],
+  "false_accepted": [],
+  "uncertain_accepted": [],
+  "unmatched_needing_review": [],
+  "matched": [
+    {
+      "label_id": "e001",
+      "label_time_s": 3.84,
+      "counter_time_s": 3.82,
+      "frame": 48
+    },
+    {
+      "label_id": "e002",
+      "label_time_s": 4.43,
+      "counter_time_s": 4.444,
+      "frame": 64
+    },
+    {
+      "label_id": "e003",
+      "label_time_s": 4.98,
+      "counter_time_s": 4.95,
+      "frame": 77
+    },
+    {
+      "label_id": "e004",
+      "label_time_s": 5.6,
+      "counter_time_s": 5.613,
+      "frame": 94
+    },
+    {
+      "label_id": "e005",
+      "label_time_s": 6.15,
+      "counter_time_s": 6.081,
+      "frame": 106
+    },
+    {
+      "label_id": "e006",
+      "label_time_s": 6.62,
+      "counter_time_s": 6.627,
+      "frame": 120
+    },
+    {
+      "label_id": "e008",
+      "label_time_s": 8.1,
+      "counter_time_s": 8.03,
+      "frame": 156
+    },
+    {
+      "label_id": "e010",
+      "label_time_s": 8.96,
+      "counter_time_s": 8.927,
+      "frame": 179
+    }
+  ]
+}

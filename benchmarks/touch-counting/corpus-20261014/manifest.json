@@ -1,0 +1,799 @@
+{
+  "scope": "Exploratory development corpus; original recordings, no intake clips. Fresh iPhone file analysis under current production counter policy. Full-contact labels reviewed separately; not a held-out benchmark.",
+  "policy": {
+    "body": "timedFootMotionV6",
+    "ground": "corroboratedFeet",
+    "handling": "sustainedGripV1"
+  },
+  "excluded": [
+    "intake-img8754.mov",
+    "intake-ten-minute.mov",
+    "intake-two-minute.mov"
+  ],
+  "runtime": {
+    "bundle": "com.juggledude.touchcounting.debug",
+    "model": "KickLabYOLO26MotionSegmentation",
+    "cache_bypassed": true,
+    "os": "Version 27.0.1 (Build 24A446)",
+    "device": "iPhone 17 Pro Max (iPhone18,2)",
+    "decoded_frames": 46987,
+    "full_runs": 20,
+    "frame_sampling_simulation": false,
+    "processing_overlay": false,
+    "analysis_frame_limit": null,
+    "frame_accounting_note": "46,987 production composition image buffers processed versus 47,290 container metadata frames/packets. Edit-list discard entries explain most differences. Production composition may resample: raw-juggling outputs 293 buffers, with about 39 ms spacing after its initial held frame, versus 342 source packets mostly 33 ms apart. This is an end-to-end test of the actual app decoder, not a native packet-by-packet decoder or live-camera throughput test.",
+    "timebase": "Production AVAssetReaderVideoCompositionOutput presentation timestamps on the media timeline. The composition uses track nominal FPS and can resample source frames."
+  },
+  "clips": [
+    {
+      "order": 1,
+      "id": "normal_juggling_1",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/normal_juggling_1.mov",
+      "sha256": "c7533bacac2ed702ce278daf7eb42f1e74ecbdedf09f18bf4e024008cf7c7d8a",
+      "bytes": 232619513,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "88920/749",
+        "duration": "18.338333",
+        "nb_frames": "2223",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed_with_uncertainty",
+      "decoded_frames": 2200,
+      "run_count": 24,
+      "trace_complete": true,
+      "trace_sha256": "39fbba332cd7da6fac9441c48b058b8f0cfda93514a033cd91c2748b886c49b8",
+      "report_sha256": "fcd325eedaddaba132bd6591128513c122d8ce0f9696d316cc25004de311592e",
+      "packet_audit": {
+        "id": "normal_juggling_1",
+        "packets": 2223,
+        "discard_packets": 24,
+        "non_discard_packets": 2199,
+        "first_pts": "0.000000",
+        "last_pts": "18.325000"
+      },
+      "predictions_sha256": "1373795bd39990ca5d34e7a355c9e5f0f9f6d165d6991603e8d751cb793644d7"
+    },
+    {
+      "order": 2,
+      "id": "normal_juggling_2",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/normal_juggling_2.mov",
+      "sha256": "b2993f54388d812405b74e2783c87850b6adfdbda1d2cd0f5cc0bafdbaa5a8e2",
+      "bytes": 208967674,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "961920/8117",
+        "duration": "16.486667",
+        "nb_frames": "2004",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed",
+      "decoded_frames": 1978,
+      "run_count": 21,
+      "trace_complete": true,
+      "trace_sha256": "5a7393eb4d4ee4eafa2c406df82888c4d7cc781d5c4d09242b923d3ffa467407",
+      "report_sha256": "888bf20a98143669c57519fedd129b785507846775c0f10ee3c415bfb1856691",
+      "packet_audit": {
+        "id": "normal_juggling_2",
+        "packets": 2004,
+        "discard_packets": 26,
+        "non_discard_packets": 1978,
+        "first_pts": "0.000000",
+        "last_pts": "16.482500"
+      },
+      "predictions_sha256": "d83ddffbeb344a0d51d25ed7d3fd038d4891d022882de55df9f0b61de87c5043"
+    },
+    {
+      "order": 3,
+      "id": "normal_juggling_3",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/normal_juggling_3.mov",
+      "sha256": "04cc386923c49960d281dc87d504d9f088227d62ababf7179a879d71a29b1eff",
+      "bytes": 584647619,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "448160/3767",
+        "duration": "46.316667",
+        "nb_frames": "5602",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed_with_uncertainty",
+      "decoded_frames": 5554,
+      "run_count": 63,
+      "trace_complete": true,
+      "trace_sha256": "12eed37f1fcf4a28e5177f3979e9de450a0963fed77514743ebec7a93ae20a88",
+      "report_sha256": "b8bc3f222f3ff5e53efd8c0d8a2dd17d67b9a2f21021ad94e31d3cb01a4f3765",
+      "packet_audit": {
+        "id": "normal_juggling_3",
+        "packets": 5602,
+        "discard_packets": 47,
+        "non_discard_packets": 5555,
+        "first_pts": "0.000000",
+        "last_pts": "46.304583"
+      },
+      "predictions_sha256": "20c28bb21771a6a250a65d9dc3983d55cd79092236e913b8c4f80aacdec518a2"
+    },
+    {
+      "order": 4,
+      "id": "normal_juggling_4",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/normal_juggling_4.mov",
+      "sha256": "14df979f808de60f82b76a43458115690167caef6a5d8d28dc9f8e4bc0f60857",
+      "bytes": 454929743,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "3520000/29499",
+        "duration": "36.486667",
+        "nb_frames": "4400",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed_with_uncertainty",
+      "decoded_frames": 4377,
+      "run_count": 32,
+      "trace_complete": true,
+      "trace_sha256": "db3e032b9c2a9a15dcc9b1da312adc751a774dbe6dfde8b332c7eaf884b0a215",
+      "report_sha256": "ea0ddb86621dd323cde347926309a4b21e91f37364f646abd315a03e6db6dd01",
+      "packet_audit": {
+        "id": "normal_juggling_4",
+        "packets": 4400,
+        "discard_packets": 24,
+        "non_discard_packets": 4376,
+        "first_pts": "0.000000",
+        "last_pts": "36.475000"
+      },
+      "predictions_sha256": "7379876baf8e79f4bcdcbda9c5f58f6f66deb9cd34227b2c04eb4966e0979457"
+    },
+    {
+      "order": 5,
+      "id": "normal_juggling_5",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/normal_juggling_5.mov",
+      "sha256": "a1267bb4e0223ace84cc2559d44cc7800b248ae18ad5725f1a10081403155218",
+      "bytes": 285362094,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "206325/1726",
+        "duration": "22.843333",
+        "nb_frames": "2751",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed",
+      "decoded_frames": 2741,
+      "run_count": 37,
+      "trace_complete": true,
+      "trace_sha256": "5b987a38854429c5e2e7947a902d81f9b93a4866d74687f210311e8544aa1b12",
+      "report_sha256": "f30089c722a03da1e9dd0dc6260828ab4c0c5600bba6aab24953dc9be9f1362b",
+      "packet_audit": {
+        "id": "normal_juggling_5",
+        "packets": 2751,
+        "discard_packets": 11,
+        "non_discard_packets": 2740,
+        "first_pts": "0.000000",
+        "last_pts": "22.835417"
+      },
+      "predictions_sha256": "84da6319c6848da4de76f53850f61d524517a01e42a9ad589f4d531382ab737f"
+    },
+    {
+      "order": 6,
+      "id": "nomral_juggling_6",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/nomral_juggling_6.mov",
+      "sha256": "de6af4939c1b4350b5d72123e1ba6b9bd99fa87a0df518538a93765389d3f2cd",
+      "bytes": 425517989,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "9741600/81217",
+        "duration": "33.840000",
+        "nb_frames": "4059",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed",
+      "decoded_frames": 4058,
+      "run_count": 36,
+      "trace_complete": true,
+      "trace_sha256": "7e7b177f0f01226d6e2f21a3ae83efb977814b7b1239f4f80916ad3f97f2a684",
+      "report_sha256": "20ca3a942a41f9886206db5dfa677b4b5513ac0dc38d306754bfb91b06af1f22",
+      "packet_audit": {
+        "id": "nomral_juggling_6",
+        "packets": 4059,
+        "discard_packets": 0,
+        "non_discard_packets": 4059,
+        "first_pts": "0.000000",
+        "last_pts": "33.832083"
+      },
+      "predictions_sha256": "d28a8c586f62d50e7c3eb6092c912691b2687817997f0b9fbfbc0828ca850e3e"
+    },
+    {
+      "order": 7,
+      "id": "normal_juggling_7",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/normal_juggling_7.mov",
+      "sha256": "7bf2abca3914072eb091cbb2d1a148df7db6ccd445293bd1f1346b309fa4a10a",
+      "bytes": 346450512,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "2620000/22177",
+        "duration": "26.873333",
+        "nb_frames": "3275",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed",
+      "decoded_frames": 3223,
+      "run_count": 29,
+      "trace_complete": true,
+      "trace_sha256": "66ad6bd54c9fffd856feceb7e5574239ebfe31ad0214571957b66f8f9f40817f",
+      "report_sha256": "adbca72caa790e1d69426667bb9b6d00c66337bea951cfa393523620874097d4",
+      "packet_audit": {
+        "id": "normal_juggling_7",
+        "packets": 3275,
+        "discard_packets": 52,
+        "non_discard_packets": 3223,
+        "first_pts": "0.000000",
+        "last_pts": "26.862500"
+      },
+      "predictions_sha256": "c1ccf7a7fabbb5e92d7a21cc400232aaf7069a8400b9c9bb5584f39a5f1055c7"
+    },
+    {
+      "order": 8,
+      "id": "normal_juggling_8",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/normal_juggling_8.mov",
+      "sha256": "42f14f0e3f63b239e7daf47aa1e6e5ee0def25937165a439ec264c1ebfc4e736",
+      "bytes": 759014536,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "5852000/48789",
+        "duration": "60.985000",
+        "nb_frames": "7315",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed",
+      "decoded_frames": 7314,
+      "run_count": 37,
+      "trace_complete": true,
+      "trace_sha256": "b3e527f630ab55e811f75ab2dd001814f53ff4dc981963c29b586269b4deac4b",
+      "report_sha256": "2f8cfda2d9fd4060c91d8b49f1f2646928d87385bf5ffbe28299c8c7ac7d4e0e",
+      "packet_audit": {
+        "id": "normal_juggling_8",
+        "packets": 7315,
+        "discard_packets": 0,
+        "non_discard_packets": 7315,
+        "first_pts": "0.000000",
+        "last_pts": "60.977917"
+      },
+      "predictions_sha256": "68eedc43f9c4b054f862ead2cfac7918a5b235d8fc22299d8481edf09d97815a"
+    },
+    {
+      "order": 9,
+      "id": "34dd",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/34dd.mov",
+      "sha256": "48549a3133216db7ba2fd74a61f915412c154ecea1091087fbbff05613c573e7",
+      "bytes": 14311246,
+      "video": {
+        "width": 720,
+        "height": 1280,
+        "r_frame_rate": "60/1",
+        "avg_frame_rate": "328200/5471",
+        "duration": "18.236667",
+        "nb_frames": "1094"
+      },
+      "status": "reviewed_with_uncertainty",
+      "decoded_frames": 1094,
+      "run_count": 17,
+      "trace_complete": true,
+      "trace_sha256": "034885d427498ad73b53411371b51db0884b98ee810f6e8a2260dbd9429d0985",
+      "report_sha256": "cdf719ff54034061b80ce6ac8bcb09b3c0bc5a60567331a25ea15138d345edbd",
+      "packet_audit": {
+        "id": "34dd",
+        "packets": 1094,
+        "discard_packets": 0,
+        "non_discard_packets": 1094,
+        "first_pts": "0.000000",
+        "last_pts": "18.203333"
+      },
+      "predictions_sha256": "90710a2a768ea0e5fe28b4fc4019413e24041d2fd4861441e56e3f1897c1de6e"
+    },
+    {
+      "order": 10,
+      "id": "ball_in_hand",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/ball_in_hand.mov",
+      "sha256": "3aa786708d1819d92887ce90bd8598c96fad34997f39637a7600c60fe021a434",
+      "bytes": 5398824,
+      "video": {
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "30000/1001",
+        "avg_frame_rate": "40800/1361",
+        "duration": "4.535000",
+        "nb_frames": "136",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed",
+      "decoded_frames": 134,
+      "run_count": 0,
+      "trace_complete": true,
+      "trace_sha256": "6212cc04df7afc20cd6b00687311e02047533a13826dd2cc755c6996b5fdb5e0",
+      "report_sha256": "554c99a7983d64c04defa69845eca5cd02ac95765f945475381a73ab321cd140",
+      "packet_audit": {
+        "id": "ball_in_hand",
+        "packets": 136,
+        "discard_packets": 0,
+        "non_discard_packets": 136,
+        "first_pts": "0.000000",
+        "last_pts": "4.436667"
+      },
+      "predictions_sha256": "860c07b8373c28a74f61900b98f498b2c1a94c8fe653173e9eb8cafe9d1b33bf"
+    },
+    {
+      "order": 11,
+      "id": "dribbling_with_ball_1",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/dribbling_with_ball_1.mov",
+      "sha256": "dffb0c5af65f618bb1b97eee905f5ba10394ceb45865f6376a59aaa5498654aa",
+      "bytes": 75229799,
+      "video": {
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "441280/3679",
+        "duration": "22.993333",
+        "nb_frames": "2758",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed",
+      "decoded_frames": 2758,
+      "run_count": 0,
+      "trace_complete": true,
+      "trace_sha256": "cea2850961bdae2f02161b93208a5e96fa4e363af9364b3395c95b55d0d121cb",
+      "report_sha256": "d77fe07edf0b4b7cf8396953f712b8c682f411d31e3abddcc6288e078f54ab13",
+      "packet_audit": {
+        "id": "dribbling_with_ball_1",
+        "packets": 2758,
+        "discard_packets": 0,
+        "non_discard_packets": 2758,
+        "first_pts": "0.000000",
+        "last_pts": "22.985417"
+      },
+      "predictions_sha256": "a4eaef5f0801087eae63d5d55a836807edceac3ba3a2085ac9d5d33ecb66dc5f"
+    },
+    {
+      "order": 12,
+      "id": "dribbling_with_ball_2",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/dribbling_with_ball_2.mov",
+      "sha256": "6b2ea0998747038e7a432edba32df645442b6fb9d27d462d66af2182badc6767",
+      "bytes": 76628657,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "1711200/14267",
+        "duration": "5.943333",
+        "nb_frames": "713",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed",
+      "decoded_frames": 713,
+      "run_count": 0,
+      "trace_complete": true,
+      "trace_sha256": "7cfeb255db948e77ed4c2ef596b58305a01ecd75b59dfb0e5fe7135bcc4025d9",
+      "report_sha256": "4478be4601e4f953c4c4d65ebf1801ee66185d785268ea023d971891b0efcf50",
+      "packet_audit": {
+        "id": "dribbling_with_ball_2",
+        "packets": 713,
+        "discard_packets": 0,
+        "non_discard_packets": 713,
+        "first_pts": "0.000000",
+        "last_pts": "5.936250"
+      },
+      "predictions_sha256": "327bd0a2714477bf251d23fcd0c09a704d39bf76de716fc7f27afe12e1a4818f"
+    },
+    {
+      "order": 13,
+      "id": "dribbling_with_ball_3",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/dribbling_with_ball_3.mov",
+      "sha256": "93ba1a0dedbe99b6dcdd98ba4c73195a64ea883b317e03af19e1ec62061a41e2",
+      "bytes": 59109069,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "164700/1373",
+        "duration": "4.576667",
+        "nb_frames": "549",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed_with_uncertainty",
+      "decoded_frames": 549,
+      "run_count": 1,
+      "trace_complete": true,
+      "trace_sha256": "bb3b9b75d56503a7bdc54fa42b73b2c648e5820e43d4700e1174ba02f1ed5453",
+      "report_sha256": "d719337d2a718597abe75ba68c15a4a8015ac6e9debe5940f0ea2c6579276d9b",
+      "packet_audit": {
+        "id": "dribbling_with_ball_3",
+        "packets": 549,
+        "discard_packets": 0,
+        "non_discard_packets": 549,
+        "first_pts": "0.000000",
+        "last_pts": "4.568750"
+      },
+      "predictions_sha256": "15ba2ff208523b1813d07b8084d57bb6341839c8ae0b96613239dac29b315444"
+    },
+    {
+      "order": 14,
+      "id": "dribbling_with_the_ball_1",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/dribbling_with_the_ball_1.mov",
+      "sha256": "bcbd9c927606cdb507b41df55f7c3bd89918fd0b67bf77a2a94d7c95ca35ec01",
+      "bytes": 224534778,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "5040000/42019",
+        "duration": "17.506667",
+        "nb_frames": "2100",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed",
+      "decoded_frames": 2100,
+      "run_count": 0,
+      "trace_complete": true,
+      "trace_sha256": "82ef0ccf3749876108134c80235057b448fbf72e49cdf328976e345ef6582b5e",
+      "report_sha256": "c4b2f92cc5f7d00b9e6305cb3da2448c7b9e94965492fd437a72c9e71840e909",
+      "packet_audit": {
+        "id": "dribbling_with_the_ball_1",
+        "packets": 2100,
+        "discard_packets": 0,
+        "non_discard_packets": 2100,
+        "first_pts": "0.000000",
+        "last_pts": "17.499583"
+      },
+      "predictions_sha256": "775cecbf7a7d77203e0c3f27db8172eb779ef00a5b741fd8210d86c4d122bc6c"
+    },
+    {
+      "order": 15,
+      "id": "eighteen",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/eighteen.mov",
+      "sha256": "4a54b84afee6389e5229716e3d987ff6c4295ed297651e765d56ec1dd8cc64ae",
+      "bytes": 14604354,
+      "video": {
+        "width": 720,
+        "height": 1280,
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "333600/11143",
+        "duration": "18.571667",
+        "nb_frames": "556"
+      },
+      "status": "reviewed_with_uncertainty",
+      "decoded_frames": 556,
+      "run_count": 11,
+      "trace_complete": true,
+      "trace_sha256": "3014b55349cf7201a0259bc72ace49fcacf6928996f81d799d4f145df338fb0f",
+      "report_sha256": "e2358ea50bcd62cfbbcbb06d06401001d2909524131c6e924fea52daf9378d40",
+      "packet_audit": {
+        "id": "eighteen",
+        "packets": 556,
+        "discard_packets": 0,
+        "non_discard_packets": 556,
+        "first_pts": "0.000000",
+        "last_pts": "18.505000"
+      },
+      "predictions_sha256": "555c952518f150aef4621118f4fecc6120a2e0770ffba571cee9cf3c809fcecd"
+    },
+    {
+      "order": 16,
+      "id": "juggling",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/juggling.mp4",
+      "sha256": "f57fd1d8b12df457329a988b0051fffc4c738138612ee04bc87cc78997fdca60",
+      "bytes": 19805147,
+      "video": {
+        "width": 720,
+        "height": 1280,
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1",
+        "duration": "22.866667",
+        "nb_frames": "686"
+      },
+      "status": "reviewed",
+      "decoded_frames": 686,
+      "run_count": 35,
+      "trace_complete": true,
+      "trace_sha256": "9a5aa50c10d9d54b454840b476fb8155321ad65060639cd8dc92687eb822a296",
+      "report_sha256": "6a572f426347946135bdff5847c313654f0194c9e205167a0561abd52d5e4a10",
+      "packet_audit": {
+        "id": "juggling",
+        "packets": 686,
+        "discard_packets": 0,
+        "non_discard_packets": 686,
+        "first_pts": "0.000000",
+        "last_pts": "22.833333"
+      },
+      "predictions_sha256": "196bb594872c5506bd0c0d094987e747d8e0ffbe6325cb65766780b36c658d16"
+    },
+    {
+      "order": 17,
+      "id": "juggling_second_ball_in_video",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/juggling_second_ball_in_video.mov",
+      "sha256": "0e688e36a58294a54290eb3a99eee47b8a47e1eaea2a17d739fdbb77cb5ad032",
+      "bytes": 308700476,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "1713600/14351",
+        "duration": "23.691667",
+        "nb_frames": "2856",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed",
+      "decoded_frames": 2841,
+      "run_count": 19,
+      "trace_complete": true,
+      "trace_sha256": "479ca18a316a95c704a101ce44421d22c147e563be586aba6ed64351ab432e52",
+      "report_sha256": "03db9e563a6b3bf6f490ad28df69a793712894bc3092f8ef99e50ac00d1ac892",
+      "packet_audit": {
+        "id": "juggling_second_ball_in_video",
+        "packets": 2856,
+        "discard_packets": 15,
+        "non_discard_packets": 2841,
+        "first_pts": "0.000000",
+        "last_pts": "23.677917"
+      },
+      "predictions_sha256": "5b8727c9a9a8cfaab72e2c20af476277179fe081c7165bd52393048b50d4587c"
+    },
+    {
+      "order": 18,
+      "id": "juggling_second_ball_very_far",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/juggling_second_ball_very_far.mov",
+      "sha256": "3fabc2030b3d8509026297b43fbc7fa29718f3d7f23b9df3356f7631e87d89c3",
+      "bytes": 217778526,
+      "video": {
+        "width": 3840,
+        "height": 2160,
+        "r_frame_rate": "120/1",
+        "avg_frame_rate": "1661600/14189",
+        "duration": "16.883333",
+        "nb_frames": "2077",
+        "side_data_list": [
+          {},
+          {
+            "rotation": -90
+          },
+          {}
+        ]
+      },
+      "status": "reviewed_with_uncertainty",
+      "decoded_frames": 2025,
+      "run_count": 23,
+      "trace_complete": true,
+      "trace_sha256": "5844c3091d6fc12da7d80d50557c05f30d7d4b83b1b1e5116bbc77546d0f0428",
+      "report_sha256": "59c093fa01f21ab61cf99f46fcdb195b40b57106d05d2f6058add7356d818ccb",
+      "packet_audit": {
+        "id": "juggling_second_ball_very_far",
+        "packets": 2077,
+        "discard_packets": 52,
+        "non_discard_packets": 2025,
+        "first_pts": "0.000000",
+        "last_pts": "16.874167"
+      },
+      "predictions_sha256": "739398eb979777b2be6b8e0c46634900e4abfa7197b8997f2b7c5deb6c3a7ad0"
+    },
+    {
+      "order": 19,
+      "id": "low",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/low.mov",
+      "sha256": "6e250e0976e4c584adef498bbe43cb5d7705ef374f1c7437f0cfe0d53f331e81",
+      "bytes": 120961810,
+      "video": {
+        "width": 720,
+        "height": 1280,
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "107640/3587",
+        "duration": "59.750000",
+        "nb_frames": "1794"
+      },
+      "status": "reviewed",
+      "decoded_frames": 1793,
+      "run_count": 171,
+      "trace_complete": true,
+      "trace_sha256": "9ab63b3b5c5c166e4f07e9e32c5aef51d4ff635509855b15bab7ec5c0de0a06d",
+      "report_sha256": "e36c39a3e1c25b12e403c697b5bc088561c3e66eede1369b34099fec29b53a78",
+      "packet_audit": {
+        "id": "low",
+        "packets": 1794,
+        "discard_packets": 1,
+        "non_discard_packets": 1793,
+        "first_pts": "0.000000",
+        "last_pts": "59.733333"
+      },
+      "predictions_sha256": "093ad3065df9448a74db4ac4776aa706fddd9ddd6322ed3ea48eb16c6d9d6a56"
+    },
+    {
+      "order": 20,
+      "id": "raw-juggling",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/raw-juggling.mov",
+      "sha256": "05a85434a892926291ace9d88e11a414883664fb7e080f2d80f71ff290fc2c0e",
+      "bytes": 10357035,
+      "video": {
+        "width": 720,
+        "height": 1280,
+        "r_frame_rate": "30000/1001",
+        "avg_frame_rate": "102600/4001",
+        "duration": "13.336667",
+        "nb_frames": "342"
+      },
+      "status": "reviewed",
+      "decoded_frames": 293,
+      "run_count": 8,
+      "trace_complete": true,
+      "trace_sha256": "a316eeaf716d217948703134ecd7ed71ab185c42caf9678469c0eed98ba05fc4",
+      "report_sha256": "bd6bd92a56c8ddefdc8e37dc1aa5f8d7660829237c0a9a12695c944f580226a0",
+      "packet_audit": {
+        "id": "raw-juggling",
+        "packets": 342,
+        "discard_packets": 0,
+        "non_discard_packets": 342,
+        "first_pts": "0.000000",
+        "last_pts": "13.270000"
+      },
+      "predictions_sha256": "405ad4b3aea7c094e26ac3c3c2db85863b1450fed0531f58154e1d356c98aae8"
+    }
+  ],
+  "source_hashes": {
+    "kicklab/Counting/CountingPolicy.swift": "b80e60eed7f24cf5bdc9fa9f0b923616b5d23b548422d584757bedc4f0f897e5",
+    "kicklab/Counting/ContactPose.swift": "81d7c959e9f678ada0f74c2be156ca763833477f114b66f69440a320b9bbb980",
+    "kicklab/Counting/ContactCounterFactory.swift": "8e1ca84a3e0bdb81509d033237e838b6d92b566cb23d5da48a2d1379d0a25f2b",
+    "kicklab/Counting/FootContactRules.swift": "abc76cf2164239fece157c70416e7e4e329eb2653ea54228d4fbb9f62242ce39",
+    "kicklab/Counting/TouchCounter.swift": "596d06b8950e8af80b34ae266400def0c896e3b86e092963e2028353675a4239",
+    "kicklab/Counting/ClearHandsContactRules.swift": "79dd1b6be12b3cda85d31549db0e0849558dbf63a6cd3964cba4fe1a43e49577",
+    "kicklab/Counting/RaisedFootContactRules.swift": "87ddfb1c276160a192f32207310ad6caaa039172f17ef1d020d1da0c782c08f5",
+    "kicklab/Counting/MovingFootContactRules.swift": "f53dfa55ab7b418d052a1ee8e047dd2bfd5af5dc602bbddc1dd2ba9198f95a57",
+    "kicklab/Counting/RestrictedTouchPolicy.swift": "3d030f589d083d4be73adfc3e04dcd8069b7e687ba59081d270289efbe748bcc",
+    "kicklab/Counting/BallHandlingEvidence.swift": "7ba05531a33d68532bcdf7e14654c9fac016be50e25f1cba6490e76af4f7aec1",
+    "kicklab/Counting/GroundContactEvidence.swift": "52fd71d24a6169fd4596f1b78cf6e0600da834c658bc41cf0f4fad5ae77da3ed",
+    "kicklab/Counting/StreamingCounter.swift": "df1923ae47759d6f6f79c6eabdba2f9f237d571ae699854db54a30d086683023",
+    "kicklab/Counting/CounterTrace.swift": "ebe73706fcaa3e50c64fd631e1330b8dcd5d42f6325e1b0223638f2190d0185d",
+    "kicklab/Counting/TouchDebugEvent.swift": "9167fd897dab66e439291c92662d6be2f40ab12f631132d0bd7645ab85c5c550",
+    "kicklab/Counting/JugglingContactRules.swift": "7c3859535b08e27cbfed9a190a20bacf5e01db9420540401ba66616f9333f6c0",
+    "kicklab/Counting/ContactPoseContinuity.swift": "d9cee9e29988291defad53956ff72d55d9042eb12b16c6c5b5b716ee7703589d",
+    "kicklab/Counting/RaisedKneeContactRules.swift": "5923ddf683cc694ff9e0b0bcf5a65ed8e35bd3ff670e108b9cd6e662105584be",
+    "kicklab/Counting/ContactFrameWindow.swift": "ef03bbeca67db7de90b766a73b333c0d801d6fd4713ba5d17cf8d86947e9d1b1",
+    "kicklab/Detection/MarginalBallRetry.swift": "b9ac7b573633e2d2fd8ddff2150686865020cd354ee3e189628eeb31f4ff46e2",
+    "kicklab/Detection/VideoAnalysisPacer.swift": "502385ba51d75042081f69c085b8fc82841e3e19f3a6e4c22042a27d824521f4",
+    "kicklab/Detection/VideoSafetyPolicy.swift": "0c387c4e52e6b642d26448cb3037b12bb07d3815758aef785223bd119f1a0024",
+    "kicklab/Detection/ShotRollCalibration.swift": "e551c151347398119952118e6c97795650c37e5c0cbd8b5f6ade33b7e71d63c4",
+    "kicklab/Detection/ShotRollCalibrationReviewStore.swift": "6ad9b8fc56845f307439a0f2fe4ebf400e6f32eced9d5d7e6d1c6198faf7ab28",
+    "kicklab/Detection/ShotRollDistanceCard.swift": "a7b0479e18c18ee15a3a2470390d5656010959a3a9585cb704ba0578b9abefb8",
+    "kicklab/Detection/Recorder.swift": "ecea96a516a3885c742d02babc6914c4fbe164a20fea4d7c85efd3498ba70094",
+    "kicklab/Detection/CaptureRequest.swift": "e89b8d3a5392ffa61601d6f7f722fbff67c9aa2dc18b442b3970ea74b137960b",
+    "kicklab/Detection/ContactObservationStore.swift": "010925856131c85c19883e5b06b9e43b11f38c38305e8b2a41a85d52ec6cbbe1",
+    "kicklab/Detection/MotionCompensator.swift": "b65ba9a4bc1f0f621529473ff1c3e519e0df48e49af63596cc7d2acb3ab1369b",
+    "kicklab/Detection/LiveAnalysisBuffer.swift": "1d279c67fc9f4590e205a9f0ee88af98643deb946546927614bc6cb527777f1b",
+    "kicklab/Detection/ShotRollDistance.swift": "38f93c81d1cdeaf9031e46250c85f1e0486581ba66df245a880158171cb3cc71",
+    "kicklab/Detection/ShotRollDetector.swift": "835774ba2a6ad399545d754d51e106e348349daf8771011ea89799576f908518",
+    "kicklab/Detection/VisionComputePolicy.swift": "cdd52dc4f5425bf2f9d5ad86a1a1a1ee06daf6df01f8e4ec844b80d6fe4dbc44",
+    "kicklab/Detection/BallDetector.swift": "ac220d1ba995281dad308bcebe9f0f40a8921a17060bf8f50c1db91026c43476",
+    "kicklab/Detection/ShotRollCalibrationView.swift": "1c4d9e67729473251a1cd960249a87b0b6e1a5f09e0838a57e21dd9def075331",
+    "kicklab/Detection/CaptureFrameRate.swift": "1ccc5f696abe36a47f918af09a706911c86a5b3fe5f1cbdf98eef8fb18643cac",
+    "kicklab/Detection/VideoProcessingInfo.swift": "c7a982ff664ead9e493c9d28de9476a92551bfd8d6c6991ce80682b64c4efe0f",
+    "kicklab/Detection/VideoJobJournal.swift": "a142437c6ec347a1e9172f46377fadf57cbf7b21bb44618f7d6a8ef6c0088d6e",
+    "kicklab/Detection/BallMask.swift": "bed602580f77dcaca1e1e35dceef526f744fa9658bbb4232c2eae79a9e80363e",
+    "kicklab/Detection/VideoAnalysisScheduler.swift": "831f701817f1c58f6fb60a31dd190c4d1585c9ec8d0092c3af5d030440557990",
+    "kicklab/Detection/RecordedFrameIdentity.swift": "9d0a479d30786c3a8193ac55c09488e4e209e8302ba1e717f53233923cbc151c",
+    "kicklab/Detection/ShotGeometryCapture.swift": "ecddab2da95f4b580dd78ee6f87dc5b33eeaad2b9fe1b48cdd3268e1e6f4b9e0",
+    "kicklab/Detection/DistantBallRecoveryPolicy.swift": "f7abf6c9e0cccd87aeaaf383f26cb936e766dfa5d41afdb8947dfc2b55dd04e8",
+    "kicklab/Detection/BallPlausibility.swift": "06b5b8b78a5bb81e023b2d8a48e2ca81901800e295ed611f106669047f95567b",
+    "kicklab/Detection/NativeBallPixelTrack.swift": "b9a7cdb22dfc5083d67039140d6df9f2482a2228b119c866b3c75293ce670815",
+    "kicklab/Detection/DistantBallVisualRecovery.swift": "dafe07b2aa2cd5affccf5cd427fed7e02f8c07dc29553807d7e7313079b4e4b8",
+    "kicklab/Detection/BallDetectionConfirmation.swift": "fc01398bbe822da3d31492fe4d4614d14fea5b5e259455ba787ee87b110ebb11",
+    "kicklab/Detection/ShortGapBallRecoveryPolicy.swift": "d2cb1c65acf3430bd5873666385c2eae34d7334903a5679ff1b9ed2b6158f08a",
+    "kicklab/Detection/DetectorRecordingReview.swift": "e9b1741a76ea6a667375ca13cea9379f605df97ff9fa7ad7402ee8978d35a82c",
+    "kicklab/Detection/SelfTest.swift": "22718516e96cf0ff21d7f15e31c1101b4ab4ed37651bf8e0c6e806a0b5bb998f",
+    "kicklab/Detection/ShotGeometryReadiness.swift": "86b0d941212b116a3e0e47c1c25cf34244c05e079436e6a444eff81f7a41de34",
+    "kicklab/Detection/GuardedBallFollower.swift": "01035040e797adeb073ed2602c15aeed39e7cbda0cdeed8ebc5c3977d31660a3",
+    "kicklab/Detection/BallROIPolicy.swift": "b941cedac93d229f7c19470cb20a31d21713b7b78a443e9fb38ba6af0dc12d77",
+    "kicklab/Detection/VideoBackgroundWork.swift": "ba13206d832a8bddcf83da2dc3355a36dde5511fcc314b20c2bcd4723a471a6c",
+    "kicklab/Detection/VideoAnalyzer.swift": "f05615c067560245c969e4fb6eab4cc1c92dac804c8e2481a55be36da12b534e",
+    "kicklab/Detection/DetectorPerformance.swift": "13cc2eccee4eb5bd61b280f645bf2eed8067a466556e5ef01dd86f66b6efe983",
+    "kicklab/Detection/LiveJugglingAnalysis.swift": "a9f7a29929382261114bdee83c5a31da12b2adb23f52bcd57d86e62cb4134ae6",
+    "kicklab/Detection/ModelComputeSwitch.swift": "dfcf814288529b1c355485cca23afa927a3970f015c5a4776dafa231ecb32d84",
+    "kicklab/Detection/ShotRecordingsView.swift": "e1bac2f07ae57028fedb706c0af0c1b58dfa971153012fa2b00f78c450cc19ae",
+    "kicklab/Detection/JugglingContactVerifier.swift": "0e3eb24396d8dd8359e308291b3c4b2508f847f05921074c101618fa99d1a724",
+    "kicklab/Detection/ShotRecordingStore.swift": "03229e3e20d7c9bae54756c55cdbdf651c87db157929be1e10edfdc820012291",
+    "kicklab/Detection/CameraSession.swift": "ac9be40368c8b3141510a14f741f3e79e9e2fdb7c7e48b6b31aa5c5acdf0fc1c",
+    "kicklab/Effects/EffectVideoGeometry.swift": "b05b4069862a0ee730cda68cafb0e395fc5713a20cb5a9ea5859ffe656886e43"
+  },
+  "binary_sha256": "8e9a5dddbcd5ec4a5a0c18c650872a93c3e9ce7472f2974e55457624d5704a69"
+}

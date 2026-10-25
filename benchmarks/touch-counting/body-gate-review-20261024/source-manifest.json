@@ -1,0 +1,26 @@
+[
+  {
+    "path": "kicklab/Debug/BodyGateReplayEvidence.swift",
+    "sha256": "3efd62bcb1e5a46a443719fdaf035174b4cd35c2dd8ce248d8f2dcd42395a2ef"
+  },
+  {
+    "path": "kicklab/Debug/TouchContactReplay.swift",
+    "sha256": "f32f3579093ce96269a5e134475b44905a6aedc502532e8242564b8720c1cc34"
+  },
+  {
+    "path": "kicklabTests/CountingPipelineTests.swift",
+    "sha256": "413cefbb3564aa5c306d670cd7e91a4a44bfde2a7e4d8f139d1c7d10e4f66285"
+  },
+  {
+    "path": "scripts/compare-body-gate-replay.py",
+    "sha256": "c7380b077a700e432f3b51fab6ecd184ba159c2f320d88c0bc0193221d64c3a3"
+  },
+  {
+    "path": "kicklab/Counting/CountingPolicy.swift",
+    "sha256": "774bdf77a0a78e27e1f3cb75e4c69cbf3cc8cbacea1a7784c67e50c27af3f10f"
+  },
+  {
+    "path": "kicklab/Detection/JugglingContactVerifier.swift",
+    "sha256": "3dabefe64fae87359aa75d97bc574483b3516b0eceedbb9453522425bb366e74"
+  }
+]

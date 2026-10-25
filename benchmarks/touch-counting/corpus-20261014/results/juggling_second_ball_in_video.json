@@ -1,0 +1,247 @@
+{
+  "source": "juggling_second_ball_in_video.mov",
+  "source_sha256": "0e688e36a58294a54290eb3a99eee47b8a47e1eaea2a17d739fdbb77cb5ad032",
+  "label_review_status": "reviewed",
+  "time_tolerance_s": 0.2,
+  "total_count": 19,
+  "labelled_valid": 28,
+  "labelled_uncertain": 0,
+  "accepted_valid": 19,
+  "missed_valid": [
+    {
+      "label_id": "e020",
+      "time_s": 12.94,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 1549,
+        "time": 12.916,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "missingPose"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e021",
+      "time_s": 13.53,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 1620,
+        "time": 13.508,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "invalidGeometry"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e022",
+      "time_s": 14.22,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 1697,
+        "time": 14.15,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "missingPose"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e023",
+      "time_s": 14.66,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 1763,
+        "time": 14.7,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "missingPose"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e024",
+      "time_s": 15.43,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 1852,
+        "time": 15.441,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "missingPose"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e025",
+      "time_s": 16.06,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 1923,
+        "time": 16.033,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "invalidGeometry"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e026",
+      "time_s": 16.67,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 2003,
+        "time": 16.7,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "missingPose"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e027",
+      "time_s": 17.39,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 2091,
+        "time": 17.433,
+        "rejection": "outsidePersonRegion",
+        "handConfirmed": false
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e028",
+      "time_s": 18.01,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 2161,
+        "time": 18.016,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "missingPose"
+      },
+      "stage": "rejected_candidate"
+    }
+  ],
+  "false_accepted": [],
+  "uncertain_accepted": [],
+  "unmatched_needing_review": [],
+  "matched": [
+    {
+      "label_id": "e001",
+      "label_time_s": 1.25,
+      "counter_time_s": 1.25,
+      "frame": 150
+    },
+    {
+      "label_id": "e002",
+      "label_time_s": 2.05,
+      "counter_time_s": 2.025,
+      "frame": 243
+    },
+    {
+      "label_id": "e003",
+      "label_time_s": 2.58,
+      "counter_time_s": 2.533,
+      "frame": 304
+    },
+    {
+      "label_id": "e004",
+      "label_time_s": 3.12,
+      "counter_time_s": 3.125,
+      "frame": 375
+    },
+    {
+      "label_id": "e005",
+      "label_time_s": 3.65,
+      "counter_time_s": 3.666,
+      "frame": 440
+    },
+    {
+      "label_id": "e006",
+      "label_time_s": 4.22,
+      "counter_time_s": 4.225,
+      "frame": 506
+    },
+    {
+      "label_id": "e007",
+      "label_time_s": 4.75,
+      "counter_time_s": 4.775,
+      "frame": 572
+    },
+    {
+      "label_id": "e008",
+      "label_time_s": 5.52,
+      "counter_time_s": 5.508,
+      "frame": 660
+    },
+    {
+      "label_id": "e009",
+      "label_time_s": 6.24,
+      "counter_time_s": 6.225,
+      "frame": 746
+    },
+    {
+      "label_id": "e010",
+      "label_time_s": 6.7,
+      "counter_time_s": 6.691,
+      "frame": 802
+    },
+    {
+      "label_id": "e011",
+      "label_time_s": 7.44,
+      "counter_time_s": 7.416,
+      "frame": 889
+    },
+    {
+      "label_id": "e012",
+      "label_time_s": 8.05,
+      "counter_time_s": 8.05,
+      "frame": 965
+    },
+    {
+      "label_id": "e013",
+      "label_time_s": 8.71,
+      "counter_time_s": 8.741,
+      "frame": 1048
+    },
+    {
+      "label_id": "e014",
+      "label_time_s": 9.25,
+      "counter_time_s": 9.258,
+      "frame": 1110
+    },
+    {
+      "label_id": "e015",
+      "label_time_s": 9.93,
+      "counter_time_s": 9.916,
+      "frame": 1189
+    },
+    {
+      "label_id": "e016",
+      "label_time_s": 10.5,
+      "counter_time_s": 10.491,
+      "frame": 1258
+    },
+    {
+      "label_id": "e017",
+      "label_time_s": 11.04,
+      "counter_time_s": 11.058,
+      "frame": 1326
+    },
+    {
+      "label_id": "e018",
+      "label_time_s": 11.9,
+      "counter_time_s": 11.891,
+      "frame": 1426
+    },
+    {
+      "label_id": "e019",
+      "label_time_s": 12.39,
+      "counter_time_s": 12.366,
+      "frame": 1483
+    }
+  ]
+}

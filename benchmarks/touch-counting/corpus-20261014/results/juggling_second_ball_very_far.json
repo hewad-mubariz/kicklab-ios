@@ -1,0 +1,182 @@
+{
+  "source": "juggling_second_ball_very_far.mov",
+  "source_sha256": "3fabc2030b3d8509026297b43fbc7fa29718f3d7f23b9df3356f7631e87d89c3",
+  "label_review_status": "reviewed_with_uncertainty",
+  "time_tolerance_s": 0.2,
+  "total_count": 23,
+  "labelled_valid": 22,
+  "labelled_uncertain": 2,
+  "accepted_valid": 20,
+  "missed_valid": [
+    {
+      "label_id": "e005",
+      "time_s": 2.8,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 334,
+        "time": 2.783,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsNearBall"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e015",
+      "time_s": 10.88,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 1302,
+        "time": 10.858,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsNearBall"
+      },
+      "stage": "rejected_candidate"
+    }
+  ],
+  "false_accepted": [
+    {
+      "counter_time_s": 4.083,
+      "frame": 490,
+      "reason": "Ball hits ground, then is retrieved, held and released"
+    }
+  ],
+  "uncertain_accepted": [
+    {
+      "label_id": "u001",
+      "label_time_s": 0.04,
+      "counter_time_s": 0.025,
+      "frame": 3
+    },
+    {
+      "label_id": "u002",
+      "label_time_s": 13.48,
+      "counter_time_s": 13.466,
+      "frame": 1615
+    }
+  ],
+  "unmatched_needing_review": [],
+  "matched": [
+    {
+      "label_id": "e001",
+      "label_time_s": 0.57,
+      "counter_time_s": 0.558,
+      "frame": 67
+    },
+    {
+      "label_id": "e002",
+      "label_time_s": 1.06,
+      "counter_time_s": 1.075,
+      "frame": 129
+    },
+    {
+      "label_id": "e003",
+      "label_time_s": 1.67,
+      "counter_time_s": 1.641,
+      "frame": 197
+    },
+    {
+      "label_id": "e004",
+      "label_time_s": 2.25,
+      "counter_time_s": 2.258,
+      "frame": 271
+    },
+    {
+      "label_id": "e006",
+      "label_time_s": 3.35,
+      "counter_time_s": 3.341,
+      "frame": 401
+    },
+    {
+      "label_id": "e007",
+      "label_time_s": 5.68,
+      "counter_time_s": 5.658,
+      "frame": 679
+    },
+    {
+      "label_id": "e008",
+      "label_time_s": 6.32,
+      "counter_time_s": 6.316,
+      "frame": 757
+    },
+    {
+      "label_id": "e009",
+      "label_time_s": 6.88,
+      "counter_time_s": 6.891,
+      "frame": 826
+    },
+    {
+      "label_id": "e010",
+      "label_time_s": 7.68,
+      "counter_time_s": 7.658,
+      "frame": 918
+    },
+    {
+      "label_id": "e011",
+      "label_time_s": 8.4,
+      "counter_time_s": 8.391,
+      "frame": 1006
+    },
+    {
+      "label_id": "e012",
+      "label_time_s": 8.98,
+      "counter_time_s": 9.0,
+      "frame": 1079
+    },
+    {
+      "label_id": "e013",
+      "label_time_s": 9.61,
+      "counter_time_s": 9.616,
+      "frame": 1153
+    },
+    {
+      "label_id": "e014",
+      "label_time_s": 10.29,
+      "counter_time_s": 10.275,
+      "frame": 1232
+    },
+    {
+      "label_id": "e016",
+      "label_time_s": 11.67,
+      "counter_time_s": 11.658,
+      "frame": 1398
+    },
+    {
+      "label_id": "e017",
+      "label_time_s": 12.19,
+      "counter_time_s": 12.191,
+      "frame": 1462
+    },
+    {
+      "label_id": "e018",
+      "label_time_s": 12.77,
+      "counter_time_s": 12.783,
+      "frame": 1533
+    },
+    {
+      "label_id": "e019",
+      "label_time_s": 14.03,
+      "counter_time_s": 14.016,
+      "frame": 1681
+    },
+    {
+      "label_id": "e020",
+      "label_time_s": 14.59,
+      "counter_time_s": 14.591,
+      "frame": 1750
+    },
+    {
+      "label_id": "e021",
+      "label_time_s": 15.15,
+      "counter_time_s": 15.133,
+      "frame": 1815
+    },
+    {
+      "label_id": "e022",
+      "label_time_s": 15.73,
+      "counter_time_s": 15.708,
+      "frame": 1884
+    }
+  ]
+}

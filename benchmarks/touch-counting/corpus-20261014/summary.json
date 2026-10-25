@@ -1,0 +1,978 @@
+{
+  "scope": "Assistant visual event review of development footage; uncertain contacts excluded from definitive error totals. Not a blind held-out accuracy benchmark.",
+  "clips": [
+    {
+      "source": "34dd.mov",
+      "total_count": 17,
+      "labelled_valid": 18,
+      "labelled_uncertain": 1,
+      "accepted_valid": 17,
+      "missed_valid": [
+        {
+          "label_id": "e018",
+          "time_s": 14.45,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 865,
+            "time": 14.433,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "ball_in_hand.mov",
+      "total_count": 0,
+      "labelled_valid": 0,
+      "labelled_uncertain": 0,
+      "accepted_valid": 0,
+      "missed_valid": [],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "dribbling_with_ball_1.mov",
+      "total_count": 0,
+      "labelled_valid": 0,
+      "labelled_uncertain": 0,
+      "accepted_valid": 0,
+      "missed_valid": [],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "dribbling_with_ball_2.mov",
+      "total_count": 0,
+      "labelled_valid": 0,
+      "labelled_uncertain": 0,
+      "accepted_valid": 0,
+      "missed_valid": [],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "dribbling_with_ball_3.mov",
+      "total_count": 1,
+      "labelled_valid": 0,
+      "labelled_uncertain": 0,
+      "accepted_valid": 0,
+      "missed_valid": [],
+      "false_accepted": [],
+      "uncertain_accepted": [
+        {
+          "counter_time_s": 3.95,
+          "frame": 473
+        }
+      ],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "dribbling_with_the_ball_1.mov",
+      "total_count": 0,
+      "labelled_valid": 0,
+      "labelled_uncertain": 0,
+      "accepted_valid": 0,
+      "missed_valid": [],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "eighteen.mov",
+      "total_count": 11,
+      "labelled_valid": 18,
+      "labelled_uncertain": 1,
+      "accepted_valid": 11,
+      "missed_valid": [
+        {
+          "label_id": "e002",
+          "time_s": 3.75,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 111,
+            "time": 3.74,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsUncertain"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e005",
+          "time_s": 6.32,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 188,
+            "time": 6.312,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsUncertain"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "u001",
+          "time_s": 7.65,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 228,
+            "time": 7.648,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "invalidGeometry"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "u002",
+          "time_s": 10.98,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 326,
+            "time": 10.921,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsUncertain"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e011",
+          "time_s": 11.86,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 354,
+            "time": 11.857,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsUncertain"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e013",
+          "time_s": 13.88,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 414,
+            "time": 13.861,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsUncertain"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e014",
+          "time_s": 14.59,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 436,
+            "time": 14.595,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "juggling.mp4",
+      "total_count": 35,
+      "labelled_valid": 38,
+      "labelled_uncertain": 0,
+      "accepted_valid": 35,
+      "missed_valid": [
+        {
+          "label_id": "e026",
+          "time_s": 15.72,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 470,
+            "time": 15.666,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsUncertain"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e035",
+          "time_s": 20.97,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 627,
+            "time": 20.9,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "u001",
+          "time_s": 22.78,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "juggling_second_ball_in_video.mov",
+      "total_count": 19,
+      "labelled_valid": 28,
+      "labelled_uncertain": 0,
+      "accepted_valid": 19,
+      "missed_valid": [
+        {
+          "label_id": "e020",
+          "time_s": 12.94,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1549,
+            "time": 12.916,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e021",
+          "time_s": 13.53,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1620,
+            "time": 13.508,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "invalidGeometry"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e022",
+          "time_s": 14.22,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1697,
+            "time": 14.15,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e023",
+          "time_s": 14.66,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1763,
+            "time": 14.7,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e024",
+          "time_s": 15.43,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1852,
+            "time": 15.441,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e025",
+          "time_s": 16.06,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1923,
+            "time": 16.033,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "invalidGeometry"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e026",
+          "time_s": 16.67,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 2003,
+            "time": 16.7,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e027",
+          "time_s": 17.39,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 2091,
+            "time": 17.433,
+            "rejection": "outsidePersonRegion",
+            "handConfirmed": false
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e028",
+          "time_s": 18.01,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 2161,
+            "time": 18.016,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "juggling_second_ball_very_far.mov",
+      "total_count": 23,
+      "labelled_valid": 22,
+      "labelled_uncertain": 2,
+      "accepted_valid": 20,
+      "missed_valid": [
+        {
+          "label_id": "e005",
+          "time_s": 2.8,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 334,
+            "time": 2.783,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e015",
+          "time_s": 10.88,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1302,
+            "time": 10.858,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [
+        {
+          "counter_time_s": 4.083,
+          "frame": 490,
+          "reason": "Ball hits ground, then is retrieved, held and released"
+        }
+      ],
+      "uncertain_accepted": [
+        {
+          "label_id": "u001",
+          "label_time_s": 0.04,
+          "counter_time_s": 0.025,
+          "frame": 3
+        },
+        {
+          "label_id": "u002",
+          "label_time_s": 13.48,
+          "counter_time_s": 13.466,
+          "frame": 1615
+        }
+      ],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "low.mov",
+      "total_count": 171,
+      "labelled_valid": 195,
+      "labelled_uncertain": 0,
+      "accepted_valid": 171,
+      "missed_valid": [
+        {
+          "label_id": "e001",
+          "time_s": 0.125,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e014",
+          "time_s": 4.06,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e018",
+          "time_s": 5.25,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 157,
+            "time": 5.264,
+            "rejection": "amplitudeTooSmall",
+            "handConfirmed": false
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e024",
+          "time_s": 7.07,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e032",
+          "time_s": 9.56,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 285,
+            "time": 9.528,
+            "rejection": "amplitudeTooSmall",
+            "handConfirmed": false
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e052",
+          "time_s": 15.74,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e062",
+          "time_s": 18.75,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e068",
+          "time_s": 20.6,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e070",
+          "time_s": 21.25,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 636,
+            "time": 21.222,
+            "rejection": "amplitudeTooSmall",
+            "handConfirmed": false
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e076",
+          "time_s": 23.11,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 692,
+            "time": 23.088,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e081",
+          "time_s": 24.65,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 737,
+            "time": 24.587,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e082",
+          "time_s": 24.96,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e094",
+          "time_s": 28.63,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e095",
+          "time_s": 28.94,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e106",
+          "time_s": 32.31,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e113",
+          "time_s": 34.41,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e126",
+          "time_s": 38.36,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e140",
+          "time_s": 42.58,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e150",
+          "time_s": 45.65,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e153",
+          "time_s": 46.6,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e161",
+          "time_s": 49.1,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e167",
+          "time_s": 50.93,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1527,
+            "time": 50.907,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e168",
+          "time_s": 51.22,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e194",
+          "time_s": 59.31,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1777,
+            "time": 59.237,
+            "rejection": "amplitudeTooSmall",
+            "handConfirmed": false
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "nomral_juggling_6.mov",
+      "total_count": 36,
+      "labelled_valid": 34,
+      "labelled_uncertain": 0,
+      "accepted_valid": 34,
+      "missed_valid": [],
+      "false_accepted": [
+        {
+          "counter_time_s": 10.291,
+          "frame": 1233,
+          "reason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch"
+        },
+        {
+          "counter_time_s": 10.708,
+          "frame": 1283,
+          "reason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch"
+        }
+      ],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "normal_juggling_1.mov",
+      "total_count": 24,
+      "labelled_valid": 25,
+      "labelled_uncertain": 1,
+      "accepted_valid": 24,
+      "missed_valid": [
+        {
+          "label_id": "e016",
+          "time_s": 8.89,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1064,
+            "time": 8.875,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsUncertain"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "normal_juggling_2.mov",
+      "total_count": 21,
+      "labelled_valid": 24,
+      "labelled_uncertain": 0,
+      "accepted_valid": 21,
+      "missed_valid": [
+        {
+          "label_id": "e004",
+          "time_s": 2.32,
+          "contact": "high_foot",
+          "decision": {
+            "frameIndex": 280,
+            "time": 2.333,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e020",
+          "time_s": 12.15,
+          "contact": "high_foot",
+          "decision": {
+            "frameIndex": 1458,
+            "time": 12.15,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": true,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "u024",
+          "time_s": 14.5,
+          "contact": "foot_sideways_deflection",
+          "decision": {
+            "frameIndex": 1754,
+            "time": 14.616,
+            "rejection": "trackLost",
+            "handConfirmed": false
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "normal_juggling_3.mov",
+      "total_count": 63,
+      "labelled_valid": 64,
+      "labelled_uncertain": 3,
+      "accepted_valid": 62,
+      "missed_valid": [
+        {
+          "label_id": "e027",
+          "time_s": 17.57,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 2107,
+            "time": 17.575,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e043",
+          "time_s": 29.74,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 3568,
+            "time": 29.758,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": true,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [
+        {
+          "label_id": "u002",
+          "label_time_s": 37.43,
+          "counter_time_s": 37.408,
+          "frame": 4486
+        }
+      ],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "normal_juggling_4.mov",
+      "total_count": 32,
+      "labelled_valid": 32,
+      "labelled_uncertain": 2,
+      "accepted_valid": 29,
+      "missed_valid": [
+        {
+          "label_id": "e013",
+          "time_s": 7.12,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 852,
+            "time": 7.1,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsUncertain"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e014",
+          "time_s": 8.08,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 968,
+            "time": 8.066,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": true,
+            "bodyFailure": "handsUncertain"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e023",
+          "time_s": 20.28,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 2436,
+            "time": 20.308,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [
+        {
+          "counter_time_s": 27.183,
+          "frame": 3260,
+          "reason": "Ground bounces then foot trap/rolling ball; no airborne juggle"
+        },
+        {
+          "counter_time_s": 27.6,
+          "frame": 3310,
+          "reason": "Ground bounces then foot trap/rolling ball; no airborne juggle"
+        }
+      ],
+      "uncertain_accepted": [
+        {
+          "label_id": "u002",
+          "label_time_s": 19.72,
+          "counter_time_s": 19.7,
+          "frame": 2363
+        }
+      ],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "normal_juggling_5.mov",
+      "total_count": 37,
+      "labelled_valid": 38,
+      "labelled_uncertain": 0,
+      "accepted_valid": 37,
+      "missed_valid": [
+        {
+          "label_id": "e035",
+          "time_s": 20.96,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 2512,
+            "time": 20.941,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "normal_juggling_7.mov",
+      "total_count": 29,
+      "labelled_valid": 31,
+      "labelled_uncertain": 0,
+      "accepted_valid": 29,
+      "missed_valid": [
+        {
+          "label_id": "e017",
+          "time_s": 10.36,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1242,
+            "time": 10.35,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e019",
+          "time_s": 11.63,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 1395,
+            "time": 11.625,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "missingPose"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "normal_juggling_8.mov",
+      "total_count": 37,
+      "labelled_valid": 38,
+      "labelled_uncertain": 0,
+      "accepted_valid": 37,
+      "missed_valid": [
+        {
+          "label_id": "e038",
+          "time_s": 56.89,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 6821,
+            "time": 56.883,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    },
+    {
+      "source": "raw-juggling.mov",
+      "total_count": 8,
+      "labelled_valid": 10,
+      "labelled_uncertain": 0,
+      "accepted_valid": 8,
+      "missed_valid": [
+        {
+          "label_id": "e007",
+          "time_s": 7.39,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 140,
+            "time": 7.406,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "insufficientContactViews"
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e009",
+          "time_s": 8.55,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 169,
+            "time": 8.537,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsUncertain"
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": []
+    }
+  ]
+}
