@@ -105,12 +105,20 @@ struct FootContactEvidenceTests {
         #expect(!gradualMotion(ankleX: [0.482,0.5,0.59]).confirms)
     }
 
-    private func machine(hand: Bool = false, evidence: FootContactEvidence?) -> TouchStateMachine {
+    private func machine(hand: Bool = false, evidence: FootContactEvidence?, unresolvedLow: Bool = false) -> TouchStateMachine {
         let c = TouchStateMachine(config: CounterConfig())
         c.footContactEvidence = { _ in evidence }
         c.rejectsHandContact = { _ in hand }
+        if unresolvedLow {
+            c.groundContactEvidence = { frame in
+                .init(contactMs: frame*33, samples: [.init(timestampMs: frame*33,
+                    ballX: 0.5,ballY: 0.6,width: 0.18,height: 0.1,confidence: 0.9,imageAspect: 0.5625,
+                    ankles: [.left: .init(x: 0.4,y: 0.6),.right: .init(x: 0.6,y: 0.6)],hips: [:])],
+                    requiresPositiveLowContact: true)
+            }
+        }
         for i in 0...8 {
-            c.personBoxes[i] = .init(x: 0.5,y: 0.31,width: 0.8,height: 0.62)
+            c.personBoxes[i] = .init(x: 0.5,y: unresolvedLow ? 0.45 : 0.31,width: 0.8,height: unresolvedLow ? 0.9 : 0.62)
             c.detectedFrames.insert(i); c.ballHeights[i] = 0.04
         }
         for (i,y) in [0.4,0.45,0.55,0.6,0.58,0.55].enumerated() {
@@ -125,6 +133,52 @@ struct FootContactEvidenceTests {
         #expect(machine(evidence: nil).rejected.last?.reason == .groundBounce)
         #expect(machine(evidence: samples(time: 199)).count == 0)
         #expect(machine(hand: true,evidence: samples()).rejected.last?.reason == .handContact)
+    }
+
+    /// Saved stance evidence re-timed onto the synthetic arc; the counter
+    /// supplies the floor line (box bottom 0.65) and the observed ball bottom.
+    private func besideFloorMachine(_ name: String, flagged: Bool, hand: Bool = false) throws -> TouchStateMachine {
+        let url = try #require(Bundle(for: BundleToken.self).url(forResource: name, withExtension: "json"))
+        let saved = try JSONDecoder().decode(GroundContactEvidence.self, from: Data(contentsOf: url))
+        let shift = 99-saved.contactMs
+        let evidence = GroundContactEvidence(contactMs: 99, samples: saved.samples.map {
+            .init(timestampMs: $0.timestampMs+shift, ballX: $0.ballX, ballY: $0.ballY, width: $0.width,
+                  height: $0.height, confidence: $0.confidence, imageAspect: $0.imageAspect,
+                  ankles: $0.ankles, hips: $0.hips)
+        }, checksBallBelowFeet: true, requiresLowBallCenter: true, usesLocalImpactSize: true,
+           checksBallBesideFeet: flagged ? true : nil)
+        let c = TouchStateMachine(config: CounterConfig())
+        c.footContactEvidence = { _ in nil }
+        c.rejectsHandContact = { _ in hand }
+        c.groundContactEvidence = { _ in evidence }
+        for i in 0...8 {
+            c.personBoxes[i] = .init(x: 0.5, y: 0.34, width: 0.8, height: 0.62)
+            c.detectedFrames.insert(i); c.ballHeights[i] = 0.1
+        }
+        for (i,y) in [0.4,0.45,0.55,0.6,0.58,0.55].enumerated() {
+            c.observedBalls[i] = .init(frameIndex: i, timestampMs: i*33, x: 0.5, y: y, width: 0.18, height: 0.1, confidence: 0.9)
+            _ = c.push(.init(frameIndex: i,timestampMs: i*33,x: 0.5,y: y,
+                vy: i < 4 ? 0.5 : -0.5,confidence: 0.9,valid: true,motion: i < 4 ? .falling : .rising))
+        }
+        return c
+    }
+
+    @Test func floorBounceBesideTheFeetIsRejectedOnlyWhenTheBallReachesTheFloorLine() throws {
+        // Old evidence without the flag keeps its original acceptance.
+        #expect(try besideFloorMachine("floor-beside-3260-20261025", flagged: false).count == 1)
+        #expect(try besideFloorMachine("floor-beside-3260-20261025", flagged: true).rejected.last?.reason == .groundBounce)
+        #expect(try besideFloorMachine("floor-beside-490-20261025", flagged: true).rejected.last?.reason == .groundBounce)
+        // A legal low touch beside one foot is untouched by the new proof.
+        #expect(try besideFloorMachine("floor-beside-low-388-20261025", flagged: true).count == 1)
+        // The ground gate still runs before the hand veto.
+        #expect(try besideFloorMachine("floor-beside-3260-20261025", flagged: true, hand: true).rejected.last?.reason == .groundBounce)
+    }
+
+    @Test func unresolvedLowContactRequiresPositiveFootProofAndRetainsHandVeto() {
+        #expect(machine(evidence: nil, unresolvedLow: true).rejected.last?.reason == .unresolvedLowContact)
+        #expect(machine(evidence: samples(), unresolvedLow: true).count == 1)
+        #expect(machine(hand: true, evidence: samples(), unresolvedLow: true).rejected.last?.reason == .handContact)
+
     }
 
     @Test func fullFootEvidenceReplaysWithoutPoseAndMissingEvidenceFails() throws {

@@ -68,7 +68,7 @@ actor SessionAnalysisStore {
         let os = ProcessInfo.processInfo.operatingSystemVersionString
         let options = pipelineOptions(arguments:ProcessInfo.processInfo.arguments,defaults:.standard)
         // Increment when detector, composition geometry, counter or repair rules change.
-        return "analysis-v14-source-frame-timing-v1|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)" + CountingPolicy.current.bodySignature + CountingPolicy.current.handlingSignature + TimedTrajectory.signature + GroundContactEvidence.signature + ActiveJugglerTracker.signature + PlayerGroundEstimate.signature
+        return "analysis-v15-contact-evidence-v2|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)" + CountingPolicy.current.bodySignature + CountingPolicy.current.handlingSignature + TimedTrajectory.signature + GroundContactEvidence.signature + ActiveJugglerTracker.signature + PlayerGroundEstimate.signature
     }
 
     /// Experimental visual execution must not read or overwrite serial artifacts.
@@ -96,6 +96,9 @@ actor SessionAnalysisStore {
             #endif
             return [resource, identity, "ball=0.40", "person=0.50",
                     "association=rf-v1",
+                    "motionRecovery=\(RFMotionRecovery.enabled(arguments: arguments))\(RFMotionRecovery.signature)"
+                        + (StationaryCandidateGate.version(arguments: arguments) >= 2 ? StationaryCandidateGate.signatureV2 : "")
+                        + (RFContactRecheckTier.select(arguments: arguments) == .compact ? RFContactRecheckTier.compactSignature : ""),
                     "hands=\(CountingPolicy.configured(arguments: arguments).verifiesContacts)"].joined(separator: "|")
         }
         let guarded=resource == "KickLabYOLO26MotionSegmentation" &&

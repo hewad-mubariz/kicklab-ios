@@ -1,9 +1,40 @@
+import CoreImage
 import CoreML
 import CoreVideo
 import XCTest
 @testable import kicklab
 
 final class RFSegBridgeTests: XCTestCase {
+    private final class WeakBuffer {
+        weak var value: CVPixelBuffer?
+        init(_ value: CVPixelBuffer) { self.value = value }
+    }
+
+    func testChangingCropSizesReleasesEverySupersededPixelBuffer() throws {
+        var observed: [WeakBuffer] = []
+        try autoreleasepool {
+            let context = CIContext(options: [.useSoftwareRenderer: true, .cacheIntermediates: false])
+            let bridge = RFSegBridge()
+            // Match preparation's changing crop dimensions, including returning
+            // to an earlier size. Same-size frames must reuse the current buffer.
+            for side in [128, 256, 192, 384, 128, 256] {
+                try autoreleasepool {
+                    let image = CIImage(color: CIColor(red: 0.3, green: 0.5, blue: 0.7))
+                        .cropped(to: CGRect(x: 0, y: 0, width: side, height: side))
+                    _ = try bridge.input(image: image, context: context)
+                    let buffer = try XCTUnwrap(bridge.inputBufferForReview)
+                    observed.append(WeakBuffer(buffer))
+                    _ = try bridge.input(image: image, context: context)
+                    XCTAssertTrue(buffer === bridge.inputBufferForReview)
+                }
+            }
+            context.clearCaches()
+        }
+        XCTAssertEqual(observed.count, 6)
+        XCTAssertTrue(observed.allSatisfy { $0.value == nil },
+                      "Changing crop dimensions must not strand earlier Core Video buffers")
+    }
+
     private func array(_ shape: [NSNumber], fill: Float, type: MLMultiArrayDataType) throws -> MLMultiArray {
         let result = try MLMultiArray(shape: shape, dataType: type)
         if type == .float16 {

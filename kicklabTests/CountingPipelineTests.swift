@@ -8,13 +8,16 @@ struct CountingPipelineTests {
         var body = true
         var calls: [String] = []
         var policies: [CountingPolicy.BodyContact] = []
+        var groundWindows: [Bool] = []
 
         func rejectsHandContact(at frameIndex: Int) -> Bool { calls.append("hand"); return hand }
         func allowsBodyContact(at frameIndex: Int, policy: CountingPolicy.BodyContact) -> Bool {
             calls.append("body"); policies.append(policy); return body
         }
         func footEvidence(at frameIndex: Int) -> FootContactEvidence? { calls.append("foot"); return nil }
-        func groundEvidence(at frameIndex: Int, timed: Bool) -> GroundContactEvidence? { calls.append("ground"); return nil }
+        func groundEvidence(at frameIndex: Int, timed: Bool) -> GroundContactEvidence? {
+            calls.append("ground"); groundWindows.append(timed); return nil
+        }
         var holdsBall = false
         var missingHandling = false
         func handlingEvidence(at frameIndex: Int) -> BallHandlingEvidence? {
@@ -32,7 +35,7 @@ struct CountingPipelineTests {
         func diagnostic(for decision: CounterDecision, ball: BallObservation?) -> TouchDebugEvent {
             .init(frameIndex: decision.frameIndex, time: Double(decision.timestampMs)/1000,
                   rejection: decision.rejection, handConfirmed: decision.handRejected == true,
-                  bodyFailure: nil, ball: ball)
+                  bodyFailure: decision.rejection == .disallowedBodyContact ? .handsUncertain : nil, ball: ball)
         }
     }
 
@@ -108,13 +111,83 @@ struct CountingPipelineTests {
         let disabled = CountingPolicy.configured(arguments: ["--juggling-no-hand-check"])
         #expect(normal.verifiesContacts)
         #expect(normal.ground == .corroboratedFeet)
-        #expect(normal.body == .raisedFootV14)
-        #expect(normal.bodySignature == "|raised-foot-v14")
-        #expect(!normal.body.allowsObservedLegRecovery(after: .lowContactNeedsFootEvidence))
-        #expect(normal.handling == .sustainedGripV1)
-        #expect(normal.handlingSignature == "|handling-v1")
+        #expect(normal.body == .floorRescueV19 && normal.bodySignature == "|floor-rescue-v19")
+        #expect(normal.body.usesFloorEvidence && normal.body.usesImpactWindow && normal.body.usesContactEvidence)
+        #expect(normal.handling == .temporalGripV2 && normal.handlingSignature == "|handling-v2")
+        #expect(disabled == normal)
+        #if !DEBUG
+        #expect(CountingPolicy.configured(arguments: ["--foot-evidence-v15"]) == normal)
+        #endif
         #expect(disabled.verifiesContacts)
     }
+
+    #if DEBUG
+    @Test func contactEvidenceExperimentKeepsAllContactGatesEnabled() {
+        let experiment = CountingPolicy.configured(arguments: ["--contact-evidence-v16"])
+        #expect(experiment.body == .contactEvidenceV16)
+        #expect(experiment.handling == .temporalGripV2)
+        #expect(experiment.verifiesContacts)
+        #expect(experiment.ground == .corroboratedFeet)
+        #expect(experiment.bodySignature == "|contact-evidence-v16")
+        #expect(!experiment.body.allowsObservedLegRecovery(after: .lowContactNeedsFootEvidence))
+        #expect(CountingPolicy.configured(arguments: ["--foot-evidence-v15"]).body == .footEvidenceV15)
+        let impact = CountingPolicy.configured(arguments: ["--impact-window-v17"])
+        #expect(impact.body == .impactWindowV17 && impact.body.usesContactEvidence)
+        #expect(impact.verifiesContacts && impact.handling == .temporalGripV2)
+        #expect(impact.ground == .corroboratedFeet)
+        #expect(impact.bodySignature == "|impact-window-v17")
+        let floor = CountingPolicy.configured(arguments: ["--floor-evidence-v18"])
+        #expect(floor.body == .floorEvidenceV18 && floor.body.usesContactEvidence && floor.body.usesImpactWindow)
+        #expect(floor.verifiesContacts && floor.handling == .temporalGripV2 && floor.ground == .corroboratedFeet)
+        #expect(floor.bodySignature == "|floor-evidence-v18")
+        #expect(!CountingPolicy.BodyContact.contactEvidenceV16.usesImpactWindow)
+    }
+
+    @Test func bodyGateExperimentChangesOnlyEligibilityAndPreservesTraceEvidence() throws {
+        let current = CountingPolicy.configured(arguments: [])
+        var traces: [CounterTrace] = []
+        for bypass in [false, true] {
+            let evidence = Evidence(); evidence.body = false
+            let experiment = BodyGateReplayEvidence(evidence, bypassBodyRejection: bypass)
+            let counter = ContactCounterFactory.make(verifier: experiment, policy: current)
+            feed(counter)
+            #expect(counter.count == (bypass ? 1 : 0))
+            #expect(evidence.policies == [current.body])
+            #expect(evidence.groundWindows == [true])
+            #expect(evidence.calls == (bypass ? ["ground", "body", "hand", "handling"] : ["ground", "body"]))
+            let assessment = try #require(experiment.assessments.first)
+            #expect(!assessment.originalBodyAllowed)
+            #expect(assessment.originalBodyFailure == .handsUncertain)
+            #expect(assessment.resultingRejection == (bypass ? nil : .disallowedBodyContact))
+            let trace = try #require(counter.traceSnapshot())
+            #expect(try trace.replay() == counter.touches)
+            #expect(trace.diagnostics?.last?.rejection == (bypass ? nil : .disallowedBodyContact))
+            traces.append(trace)
+        }
+        let encoder = JSONEncoder(); encoder.outputFormatting = .sortedKeys
+        #expect(try encoder.encode(traces[0].operations) == encoder.encode(traces[1].operations))
+    }
+
+    @Test func bodyGateExperimentRetainsHandHandlingAndGroundVetoes() throws {
+        for veto in [RejectionReason.handContact, .heldBall, .groundBounce] {
+            let evidence = Evidence(); evidence.body = false
+            evidence.hand = veto == .handContact
+            evidence.holdsBall = veto == .heldBall
+            let experiment = BodyGateReplayEvidence(evidence, bypassBodyRejection: true)
+            var config = CounterConfig()
+            if veto == .groundBounce { config.groundTolerance = 0.2 }
+            let counter = ContactCounterFactory.make(verifier: experiment,
+                policy: CountingPolicy.configured(arguments: []), config: config)
+            feed(counter)
+            #expect(counter.count == 0)
+            let trace = try #require(counter.traceSnapshot())
+            #expect(trace.decisions.last?.value.rejection == veto)
+            #expect(try trace.replay().isEmpty)
+            if veto == .groundBounce { #expect(evidence.policies.isEmpty) }
+            else { #expect(evidence.policies == [CountingPolicy.configured(arguments: []).body]) }
+        }
+    }
+    #endif
 
     @Test func currentLegEligibilityStillCannotBypassHandOrHoldingVeto() throws {
         let current = CountingPolicy.configured(arguments: [])
@@ -125,7 +198,7 @@ struct CountingPipelineTests {
             let counter = ContactCounterFactory.make(verifier:evidence,policy:current)
             feed(counter)
             #expect(counter.count == 0)
-            #expect(evidence.policies == [.raisedFootV14])
+            #expect(evidence.policies == [current.body])
             #expect(evidence.calls == (handContact ? ["ground","body","hand"] : ["ground","body","hand","handling"]))
             let trace = try #require(counter.traceSnapshot())
             #expect(trace.decisions.last?.value.rejection == (handContact ? .handContact : .heldBall))

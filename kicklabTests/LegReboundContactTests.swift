@@ -52,6 +52,18 @@ struct LegReboundContactTests {
         #expect(recovered(unresolved) == nil)
     }
 
+    @Test func imageSupportKeepsTheReviewedLegAndUncertainContactVerdicts() throws {
+        for row in try rows() {
+            let samples = selected(row)
+            let current = ObservedLegContactRules.contactTime(samples, at: row.contactMs,
+                usesTemporalEvidence: true, usesCadenceWindow: true,
+                allowsNearSupportFoot: true, usesImageSupport: true)
+                ?? RaisedKneeReboundRules.contactTime(samples, at: row.contactMs)
+                ?? RaisedFootReboundRules.contactTime(samples, at: row.contactMs)
+            #expect(current == recovered(row), "\(row.id)")
+        }
+    }
+
     @Test func bothFeetAndBothSidesOfAnkleUseTheSameReach() throws {
         for row in try rows().filter({ ["user900-064","user900-082"].contains($0.id) }) {
             let expected = try #require(recovered(row))

@@ -129,7 +129,7 @@ nonisolated struct Touch: Codable, Equatable, Sendable {
 nonisolated enum RejectionReason: String, Codable, Sendable {
     case amplitudeTooSmall, insufficientImpulse, groundBounce, cooldown
     case unsupportedByDetection, noPersonRegion, outsidePersonRegion, trackLost
-    case handContact, disallowedBodyContact, heldBall
+    case handContact, disallowedBodyContact, heldBall, unresolvedLowContact
 }
 
 /// One accepted or rejected trajectory proposal. Missing fields indicate a
@@ -420,19 +420,31 @@ nonisolated final class TouchStateMachine {
            apex.y + (ballHeights[apex.frameIndex] ?? 0)/2 >= person.bottom-person.height*0.35,
            let provider = groundContactEvidence {
             groundEvidence = provider(apex.frameIndex)
+            // The floor line comes from the counter's stabilized ground
+            // estimate; the pose evidence only establishes the stance.
+            let floorLineReached = ground.map { floor in
+                observedBottom.map { $0 >= floor-boundaryTolerance } ?? false
+            } ?? false
             plantedFeetConfirmed = groundEvidence.map {
-                $0.contactMs == apex.timestampMs && $0.confirmsGroundContact(
+                $0.contactMs == apex.timestampMs && ($0.confirmsGroundContact(
                     corroboratingWeakAnkles: groundPolicy == .corroboratedFeet,
                     cadenceAware: sparseGround)
+                    || (floorLineReached && $0.confirmsBallBesideFeet))
             } ?? false
-            if plantedFeetConfirmed == true {
+            if plantedFeetConfirmed == true || groundEvidence?.needsPositiveFootContact == true {
                 // A resolved kick can still rescue the contact. Reuse a prior
                 // check when the body-box ground gate already requested it.
                 if footConfirmed == nil, let provider = footContactEvidence {
                     footEvidence = provider(apex.frameIndex)
                     footConfirmed = footEvidence.map(confirmsFoot) ?? false
                 }
-                if footConfirmed != true { return reject(.groundBounce) }
+                // A confirmed floor contact needs a real foot movement to be
+                // overturned, not a hip-relative artefact of pose jitter.
+                let jitterOnly = plantedFeetConfirmed == true && groundEvidence?.requiresMovingAnkleForRescue == true
+                    && !(footEvidence.map { FootContactRules.ankleTravels($0) } ?? false)
+                if footConfirmed != true || jitterOnly {
+                    return reject(plantedFeetConfirmed == true ? .groundBounce : .unresolvedLowContact)
+                }
             }
         }
 

@@ -75,6 +75,34 @@ nonisolated enum FootContactRules {
     }
 
 
+    /// An ankle near the ball moved at least `minimum` ball widths in image
+    /// space: in one half of the contact, or gradually across both halves in
+    /// the same direction (the same shape the hip-relative rule accepts).
+    /// Hip-relative travel can be assembled from ankle and hip jitter while
+    /// nothing moved, and jitter reverses between halves; this cannot pass.
+    static func ankleTravels(_ evidence: FootContactEvidence, minimum: Double = 0.2) -> Bool {
+        let before = evidence.before, contact = evidence.contact
+        guard contact.width > 0, contact.height > 0 else { return false }
+        for side in BodySide.allCases {
+            guard let a = before.ankles[side], let b = contact.ankles[side],
+                  [a.x,a.y,a.confidence,b.x,b.y,b.confidence].allSatisfy(\.isFinite),
+                  min(a.confidence, b.confidence) >= 0.5,
+                  hypot((contact.ballX-b.x)/contact.width, (contact.ballY-b.y)/contact.height) <= 0.75 else { continue }
+            let inX = (b.x-a.x)/contact.width, inY = (b.y-a.y)/contact.height
+            var outX = 0.0, outY = 0.0
+            if let c = evidence.after.ankles[side], [c.x,c.y,c.confidence].allSatisfy(\.isFinite), c.confidence >= 0.5 {
+                outX = (c.x-b.x)/contact.width; outY = (c.y-b.y)/contact.height
+            }
+            let incoming = hypot(inX, inY), outgoing = hypot(outX, outY)
+            if max(incoming, outgoing) >= minimum { return true }
+            // Gradual: both halves resolved, aligned, and adding up to the minimum.
+            if incoming >= 0.05, outgoing >= 0.05,
+               inX*outX+inY*outY >= 0.5*incoming*outgoing,
+               hypot(inX+outX, inY+outY) >= minimum { return true }
+        }
+        return false
+    }
+
     /// Positive stationary-foot evidence for the additional lower-edge ground
     /// gate. Uncertain pose is not evidence that the feet stayed on the floor.
     static func stationaryFeet(_ evidence: FootContactEvidence) -> Bool {

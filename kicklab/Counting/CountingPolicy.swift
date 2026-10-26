@@ -4,7 +4,7 @@ import Foundation
 /// the same rules. Historical policies remain available for saved comparisons.
 nonisolated struct CountingPolicy: Equatable, Sendable {
     enum BodyContact: String, Sendable {
-        case unrestricted, headKneeFoot, clearHandsV2, movingFootV3, poseContinuityV4, observedJointContinuityV5, timedFootMotionV6, observedLegMotionV7, observedLegMotionV8, temporalEvidenceV9, trackedFootV10, observedImpactV11, independentLegV12, legReboundV13, raisedFootV14
+        case unrestricted, headKneeFoot, clearHandsV2, movingFootV3, poseContinuityV4, observedJointContinuityV5, timedFootMotionV6, observedLegMotionV7, observedLegMotionV8, temporalEvidenceV9, trackedFootV10, observedImpactV11, independentLegV12, legReboundV13, raisedFootV14, footEvidenceV15, contactEvidenceV16, impactWindowV17, floorEvidenceV18, floorRescueV19
 
         var usesClearHands: Bool { self != .headKneeFoot && self != .unrestricted }
         var usesMovingFoot: Bool { self == .movingFootV3 || usesPoseContinuity }
@@ -12,7 +12,11 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
         var usesObservedJointContinuity: Bool { self == .observedJointContinuityV5 || usesTimedFootMotion }
         var usesTimedFootMotion: Bool { self == .timedFootMotionV6 || self == .observedLegMotionV7 || self == .observedLegMotionV8 || usesTemporalEvidence }
         var usesTemporalEvidence: Bool { self == .temporalEvidenceV9 || self == .trackedFootV10 || usesObservedImpact }
-        var usesObservedImpact: Bool { self == .observedImpactV11 || self == .independentLegV12 || self == .legReboundV13 || self == .raisedFootV14 }
+        var usesObservedImpact: Bool { self == .observedImpactV11 || self == .independentLegV12 || self == .legReboundV13 || usesRaisedFoot }
+        var usesContactEvidence: Bool { self == .contactEvidenceV16 || usesImpactWindow }
+        var usesImpactWindow: Bool { self == .impactWindowV17 || usesFloorEvidence }
+        var usesFloorEvidence: Bool { self == .floorEvidenceV18 || self == .floorRescueV19 }
+        var usesRaisedFoot: Bool { self == .raisedFootV14 || self == .footEvidenceV15 || usesContactEvidence }
         var bodyTracksFootPixels: Bool { self == .trackedFootV10 }
 
         /// Arm proximity is not a confirmed hand touch. Strong independent leg
@@ -24,7 +28,7 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
             case .temporalEvidenceV9, .trackedFootV10, .observedImpactV11: failure == .handsUncertain || failure == .handsNearBall || failure == .invalidGeometry
             // Missing shoulders or sparse arm views must not veto visible leg
             // motion. Keep low-contact/floor eligibility on its existing path.
-            case .independentLegV12, .legReboundV13, .raisedFootV14:
+            case .independentLegV12, .legReboundV13, .raisedFootV14, .footEvidenceV15, .contactEvidenceV16, .impactWindowV17, .floorEvidenceV18, .floorRescueV19:
                 BodyContact.observedImpactV11.allowsObservedLegRecovery(after: failure)
                     || failure == .missingPose || failure == .insufficientContactViews
             default: false
@@ -32,7 +36,7 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
         }
     }
 
-    enum Handling: String, Sendable { case disabled, sustainedGripV1 }
+    enum Handling: String, Sendable { case disabled, sustainedGripV1, temporalGripV2 }
     var handling: Handling = .disabled
 
     let verifiesContacts: Bool
@@ -42,12 +46,39 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
     static var current: Self { configured(arguments: ProcessInfo.processInfo.arguments) }
 
     static func configured(arguments: [String]) -> Self {
-        let body = BodyContact.raisedFootV14
-        return .init(handling: .sustainedGripV1, verifiesContacts: true,
-                     body: body, ground: .corroboratedFeet)
+        #if DEBUG
+        if arguments.contains("--floor-rescue-v19") {
+            return .init(handling: .temporalGripV2, verifiesContacts: true,
+                         body: .floorRescueV19, ground: .corroboratedFeet)
+        }
+        if arguments.contains("--floor-evidence-v18") {
+            return .init(handling: .temporalGripV2, verifiesContacts: true,
+                         body: .floorEvidenceV18, ground: .corroboratedFeet)
+        }
+        if arguments.contains("--impact-window-v17") {
+            return .init(handling: .temporalGripV2, verifiesContacts: true,
+                         body: .impactWindowV17, ground: .corroboratedFeet)
+        }
+        if arguments.contains("--contact-evidence-v16") {
+            return .init(handling: .temporalGripV2, verifiesContacts: true,
+                         body: .contactEvidenceV16, ground: .corroboratedFeet)
+        }
+        if arguments.contains("--foot-evidence-v15") {
+            return .init(handling: .sustainedGripV1, verifiesContacts: true,
+                         body: .footEvidenceV15, ground: .corroboratedFeet)
+        }
+        #endif
+        return .init(handling: .temporalGripV2, verifiesContacts: true,
+                     body: .floorRescueV19, ground: .corroboratedFeet)
     }
 
-    var handlingSignature: String { handling == .disabled ? "" : "|handling-v1" }
+    var handlingSignature: String {
+        switch handling {
+        case .disabled: ""
+        case .sustainedGripV1: "|handling-v1"
+        case .temporalGripV2: "|handling-v2"
+        }
+    }
 
     var bodySignature: String {
         switch body {
@@ -66,6 +97,11 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
         case .independentLegV12: "|independent-leg-v12"
         case .legReboundV13: "|leg-rebound-v13"
         case .raisedFootV14: "|raised-foot-v14"
+        case .footEvidenceV15: "|foot-evidence-v15"
+        case .contactEvidenceV16: "|contact-evidence-v16"
+        case .impactWindowV17: "|impact-window-v17"
+        case .floorEvidenceV18: "|floor-evidence-v18"
+        case .floorRescueV19: "|floor-rescue-v19"
         }
     }
 }
