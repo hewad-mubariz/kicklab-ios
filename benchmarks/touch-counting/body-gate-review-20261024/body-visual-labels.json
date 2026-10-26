@@ -1,0 +1,194 @@
+{
+  "source_sha256": "4de39918ddbf91623edf202cb9592d968d500f0cf1327bb6e7427c974663f8c3",
+  "reviewer": "assistant_visual_review",
+  "human_confirmed": false,
+  "selection": "20 equally spaced indices from the 84 disallowedBodyContact decisions in the original trace archive; not current production rejection counts.",
+  "method": "Seven source frames at 12 fps spanning candidate minus 250 ms to plus 250 ms. Ambiguous bottom-edge contacts remain uncertain.",
+  "counts": {
+    "valid": 7,
+    "invalid": 8,
+    "uncertain": 5
+  },
+  "events": [
+    {
+      "frame": 100,
+      "time_s": 3.4002206250152085,
+      "original_body_failure": "invalidGeometry",
+      "label": "invalid",
+      "reason": "Visible hand hold, catch or hand release at the candidate; no legal touch.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "handContact"
+    },
+    {
+      "frame": 692,
+      "time_s": 25.872220625024056,
+      "original_body_failure": "missingBall",
+      "label": "uncertain",
+      "reason": "Ball/foot impact at or beyond the lower image boundary; exact contact not visible enough to distinguish foot and floor.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 1289,
+      "time_s": 51.61022062500706,
+      "original_body_failure": "insufficientContactViews",
+      "label": "valid",
+      "reason": "Visible raised-foot contact and upward rebound.",
+      "before_current_decision": "accepted",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 1980,
+      "time_s": 85.55022062500939,
+      "original_body_failure": "insufficientContactViews",
+      "label": "valid",
+      "reason": "Visible raised-foot contact and upward rebound.",
+      "before_current_decision": "accepted",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 2142,
+      "time_s": 91.88422062501195,
+      "original_body_failure": "handsNearBall",
+      "label": "invalid",
+      "reason": "Visible hand hold, catch or hand release at the candidate; no legal touch.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "handContact"
+    },
+    {
+      "frame": 2330,
+      "time_s": 100.48622062502545,
+      "original_body_failure": "missingBall",
+      "label": "uncertain",
+      "reason": "Ball/foot impact at or beyond the lower image boundary; exact contact not visible enough to distinguish foot and floor.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 2733,
+      "time_s": 116.98922062502243,
+      "original_body_failure": "missingBall",
+      "label": "uncertain",
+      "reason": "Ball/foot impact at or beyond the lower image boundary; exact contact not visible enough to distinguish foot and floor.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 3675,
+      "time_s": 158.06322062501567,
+      "original_body_failure": "invalidGeometry",
+      "label": "uncertain",
+      "reason": "Ball/foot impact at or beyond the lower image boundary; exact contact not visible enough to distinguish foot and floor.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 4168,
+      "time_s": 178.9002206250152,
+      "original_body_failure": "missingBall",
+      "label": "uncertain",
+      "reason": "Ball/foot impact at or beyond the lower image boundary; exact contact not visible enough to distinguish foot and floor.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 4588,
+      "time_s": 198.20322062500054,
+      "original_body_failure": "handsUncertain",
+      "label": "valid",
+      "reason": "Visible raised-foot contact and upward rebound.",
+      "before_current_decision": "accepted",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 4967,
+      "time_s": 219.50722062500427,
+      "original_body_failure": "insufficientContactViews",
+      "label": "invalid",
+      "reason": "Visible hand hold, catch or hand release at the candidate; no legal touch.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "handContact"
+    },
+    {
+      "frame": 5072,
+      "time_s": 227.10922062501777,
+      "original_body_failure": "insufficientContactViews",
+      "label": "valid",
+      "reason": "Visible raised-foot contact and upward rebound.",
+      "before_current_decision": "accepted",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 5149,
+      "time_s": 232.41022062502452,
+      "original_body_failure": "handsNearBall",
+      "label": "invalid",
+      "reason": "Visible hand hold, catch or hand release at the candidate; no legal touch.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "handContact"
+    },
+    {
+      "frame": 5199,
+      "time_s": 236.0602206250187,
+      "original_body_failure": "insufficientContactViews",
+      "label": "valid",
+      "reason": "Visible raised-foot contact and upward rebound.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 5312,
+      "time_s": 244.51222062500892,
+      "original_body_failure": "insufficientContactViews",
+      "label": "invalid",
+      "reason": "Visible hand hold, catch or hand release at the candidate; no legal touch.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "handContact"
+    },
+    {
+      "frame": 5591,
+      "time_s": 263.366220625001,
+      "original_body_failure": "insufficientContactViews",
+      "label": "invalid",
+      "reason": "Visible hand hold, catch or hand release at the candidate; no legal touch.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "handContact"
+    },
+    {
+      "frame": 5703,
+      "time_s": 270.6172206250194,
+      "original_body_failure": "insufficientContactViews",
+      "label": "valid",
+      "reason": "Visible raised-foot contact and upward rebound.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 5774,
+      "time_s": 275.81822062502033,
+      "original_body_failure": "handsNearBall",
+      "label": "invalid",
+      "reason": "Visible hand hold, catch or hand release at the candidate; no legal touch.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "handContact"
+    },
+    {
+      "frame": 5845,
+      "time_s": 280.3192206250096,
+      "original_body_failure": "handsNearBall",
+      "label": "valid",
+      "reason": "Visible raised-foot contact and upward rebound.",
+      "before_current_decision": "accepted",
+      "after_current_decision": "accepted"
+    },
+    {
+      "frame": 5967,
+      "time_s": 289.5712206250173,
+      "original_body_failure": "handsNearBall",
+      "label": "invalid",
+      "reason": "Visible hand hold, catch or hand release at the candidate; no legal touch.",
+      "before_current_decision": "disallowedBodyContact",
+      "after_current_decision": "handContact"
+    }
+  ]
+}

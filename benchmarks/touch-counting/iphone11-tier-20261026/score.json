@@ -1,0 +1,60 @@
+[
+ {
+  "run": "latest-live-tier-run1",
+  "count": 32,
+  "fps": 30.0,
+  "late": 0,
+  "rechecks": 10,
+  "gap_retries": 0,
+  "regular": 538,
+  "notify_median_ms": 585,
+  "notify_p95_ms": 689,
+  "peak_mib": 173,
+  "thermal": "0->0",
+  "tier": "compact",
+  "policy": "floor-rescue-v19",
+  "known_legal": "30/31",
+  "missed": [
+   41.55
+  ],
+  "unmatched": [
+   22.29,
+   29.87
+  ]
+ },
+ {
+  "run": "latest-live-tier-run2",
+  "count": 32,
+  "fps": 30.0,
+  "late": 0,
+  "rechecks": 7,
+  "gap_retries": 0,
+  "regular": 538,
+  "notify_median_ms": 585,
+  "notify_p95_ms": 648,
+  "peak_mib": 165,
+  "thermal": "0->2",
+  "tier": "compact",
+  "policy": "floor-rescue-v19",
+  "known_legal": "31/31",
+  "missed": [],
+  "unmatched": [
+   22.29
+  ]
+ },
+ {
+  "run": "low-tier-run1",
+  "count": 153,
+  "fps": 30.0,
+  "late": 0,
+  "rechecks": 4,
+  "gap_retries": 0,
+  "regular": 570,
+  "notify_median_ms": 576,
+  "notify_p95_ms": 665,
+  "peak_mib": 168,
+  "thermal": "2->2",
+  "tier": "compact",
+  "policy": "floor-rescue-v19"
+ }
+]

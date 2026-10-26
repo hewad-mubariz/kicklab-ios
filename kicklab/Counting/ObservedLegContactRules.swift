@@ -9,7 +9,8 @@ nonisolated enum ObservedLegContactRules {
     typealias Point = PosePoint
 
     static func contactTime(_ input: [Sample], at timestampMs: Int, usesTemporalEvidence: Bool = false,
-                            usesCadenceWindow: Bool = false, allowsNearSupportFoot: Bool = false) -> Int? {
+                            usesCadenceWindow: Bool = false, allowsNearSupportFoot: Bool = false,
+                            usesImageSupport: Bool = false) -> Int? {
         // Preserve an already established physical impact time. A recovery
         // must not move the downstream hand check away from that contact.
         if usesTemporalEvidence, !usesCadenceWindow,
@@ -82,7 +83,8 @@ nonisolated enum ObservedLegContactRules {
                                   views.filter({ point($0,name,confidence: 0.5) != nil }).count >= 2,
                                   max(distance(aHip,hip),distance(cHip,hip)) <= 0.35*diameter,
                                   stableSupport(views, side: other, diameter: diameter)
-                                    || (usesTemporalEvidence && TemporalContactEvidence.stableSupport(views,side:other,diameter:diameter)) else { continue }
+                                    || (usesTemporalEvidence && TemporalContactEvidence.stableSupport(views,side:other,diameter:diameter))
+                                    || (usesImageSupport && stableImageSupport(views, side: other, diameter: diameter)) else { continue }
                             let a = relative(aJoint,to: aHip), b = relative(joint,to: hip), c = relative(cJoint,to: cHip)
                             // Require observed movement before impact and a
                             // changed position afterward. A stationary foot,
@@ -115,6 +117,18 @@ nonisolated enum ObservedLegContactRules {
             positions.append(relative(ankle,to: .init(x: (left.x+right.x)/2, y: (left.y+right.y)/2)))
         }
         return positions.allSatisfy { a in positions.allSatisfy { distance(a,$0) <= 0.2*diameter } }
+    }
+
+    /// Turning the hips can move their projected center while the supporting
+    /// ankle remains planted. Three confident, stationary image observations
+    /// can establish support too. The caller still requires hip-relative kick
+    /// motion, a bounded hip displacement and ball approach/release; whole-body
+    /// translation or an unmoving kicking foot cannot supply that evidence.
+    private static func stableImageSupport(_ views: [Sample], side: BodySide, diameter: Double) -> Bool {
+        let ankles = views.compactMap { point($0, side.ankle, confidence: 0.5) }
+        return ankles.count == views.count && ankles.allSatisfy { a in
+            ankles.allSatisfy { distance(a,$0) <= 0.1*diameter }
+        }
     }
 
     private static func point(_ sample: Sample, _ name: BodyJoint, confidence: Double = 0.3) -> Point? {

@@ -1,0 +1,217 @@
+{
+  "source": "normal_juggling_7.mov",
+  "source_sha256": "7bf2abca3914072eb091cbb2d1a148df7db6ccd445293bd1f1346b309fa4a10a",
+  "label_review_status": "reviewed",
+  "time_tolerance_s": 0.2,
+  "total_count": 29,
+  "labelled_valid": 31,
+  "labelled_uncertain": 0,
+  "accepted_valid": 29,
+  "missed_valid": [
+    {
+      "label_id": "e017",
+      "time_s": 10.36,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 1242,
+        "time": 10.35,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "missingPose"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e019",
+      "time_s": 11.63,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 1395,
+        "time": 11.625,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "missingPose"
+      },
+      "stage": "rejected_candidate"
+    }
+  ],
+  "false_accepted": [],
+  "uncertain_accepted": [],
+  "unmatched_needing_review": [],
+  "matched": [
+    {
+      "label_id": "e001",
+      "label_time_s": 0.53,
+      "counter_time_s": 0.491,
+      "frame": 59
+    },
+    {
+      "label_id": "e002",
+      "label_time_s": 1.08,
+      "counter_time_s": 1.058,
+      "frame": 127
+    },
+    {
+      "label_id": "e003",
+      "label_time_s": 1.65,
+      "counter_time_s": 1.65,
+      "frame": 198
+    },
+    {
+      "label_id": "e004",
+      "label_time_s": 2.23,
+      "counter_time_s": 2.216,
+      "frame": 266
+    },
+    {
+      "label_id": "e005",
+      "label_time_s": 2.73,
+      "counter_time_s": 2.733,
+      "frame": 328
+    },
+    {
+      "label_id": "e006",
+      "label_time_s": 3.24,
+      "counter_time_s": 3.25,
+      "frame": 390
+    },
+    {
+      "label_id": "e007",
+      "label_time_s": 3.89,
+      "counter_time_s": 3.866,
+      "frame": 464
+    },
+    {
+      "label_id": "e008",
+      "label_time_s": 4.36,
+      "counter_time_s": 4.325,
+      "frame": 519
+    },
+    {
+      "label_id": "e009",
+      "label_time_s": 5.06,
+      "counter_time_s": 5.075,
+      "frame": 609
+    },
+    {
+      "label_id": "e010",
+      "label_time_s": 5.64,
+      "counter_time_s": 5.625,
+      "frame": 675
+    },
+    {
+      "label_id": "e011",
+      "label_time_s": 6.26,
+      "counter_time_s": 6.25,
+      "frame": 750
+    },
+    {
+      "label_id": "e012",
+      "label_time_s": 6.8,
+      "counter_time_s": 6.791,
+      "frame": 815
+    },
+    {
+      "label_id": "e013",
+      "label_time_s": 7.5,
+      "counter_time_s": 7.433,
+      "frame": 892
+    },
+    {
+      "label_id": "e014",
+      "label_time_s": 7.99,
+      "counter_time_s": 7.966,
+      "frame": 956
+    },
+    {
+      "label_id": "e015",
+      "label_time_s": 9.11,
+      "counter_time_s": 9.091,
+      "frame": 1091
+    },
+    {
+      "label_id": "e016",
+      "label_time_s": 9.69,
+      "counter_time_s": 9.658,
+      "frame": 1159
+    },
+    {
+      "label_id": "e018",
+      "label_time_s": 11.05,
+      "counter_time_s": 11.066,
+      "frame": 1328
+    },
+    {
+      "label_id": "e020",
+      "label_time_s": 12.25,
+      "counter_time_s": 12.191,
+      "frame": 1463
+    },
+    {
+      "label_id": "e021",
+      "label_time_s": 12.86,
+      "counter_time_s": 12.833,
+      "frame": 1540
+    },
+    {
+      "label_id": "e022",
+      "label_time_s": 13.56,
+      "counter_time_s": 13.541,
+      "frame": 1623
+    },
+    {
+      "label_id": "e023",
+      "label_time_s": 14.02,
+      "counter_time_s": 13.991,
+      "frame": 1677
+    },
+    {
+      "label_id": "e024",
+      "label_time_s": 14.55,
+      "counter_time_s": 14.616,
+      "frame": 1752
+    },
+    {
+      "label_id": "e025",
+      "label_time_s": 15.13,
+      "counter_time_s": 15.133,
+      "frame": 1814
+    },
+    {
+      "label_id": "e026",
+      "label_time_s": 15.8,
+      "counter_time_s": 15.775,
+      "frame": 1891
+    },
+    {
+      "label_id": "e027",
+      "label_time_s": 16.39,
+      "counter_time_s": 16.4,
+      "frame": 1966
+    },
+    {
+      "label_id": "e028",
+      "label_time_s": 16.96,
+      "counter_time_s": 16.958,
+      "frame": 2033
+    },
+    {
+      "label_id": "e029",
+      "label_time_s": 17.61,
+      "counter_time_s": 17.575,
+      "frame": 2107
+    },
+    {
+      "label_id": "e030",
+      "label_time_s": 18.23,
+      "counter_time_s": 18.225,
+      "frame": 2185
+    },
+    {
+      "label_id": "e031",
+      "label_time_s": 18.77,
+      "counter_time_s": 18.741,
+      "frame": 2247
+    }
+  ]
+}

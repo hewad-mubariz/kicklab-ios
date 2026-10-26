@@ -16,6 +16,9 @@ nonisolated final class RFSegBridge {
     init(edge: Int = RFInputNormalization.edge) { self.edge = edge }
 
     #if DEBUG
+    /// Weak-reference lifecycle checks must not keep the buffer alive themselves.
+    var inputBufferForReview: CVPixelBuffer? { pixels }
+
     /// Camera coordinates are top-left, including a nonzero crop origin. Read
     /// the BGRA rows directly so a wall crop needs no extra image allocation.
     func wallInput(_ buffer: CVPixelBuffer, crop: CGRect) throws -> MLFeatureProvider {
@@ -90,9 +93,14 @@ nonisolated final class RFSegBridge {
         let width = Int(image.extent.width), height = Int(image.extent.height)
         guard width > 0, height > 0 else { throw failure("Empty source frame") }
         if pixels == nil || CVPixelBufferGetWidth(pixels!) != width || CVPixelBufferGetHeight(pixels!) != height {
+            // Core Video writes an owning reference through this C out-pointer.
+            // Do not overwrite an already-owned property through that pointer:
+            // each different crop size would strand the previous IOSurface.
+            var replacement: CVPixelBuffer?
             let result = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA,
-                [kCVPixelBufferIOSurfacePropertiesKey: [:]] as CFDictionary, &pixels)
-            guard result == kCVReturnSuccess else { throw failure("Cannot allocate RF input buffer") }
+                [kCVPixelBufferIOSurfacePropertiesKey: [:]] as CFDictionary, &replacement)
+            guard result == kCVReturnSuccess, let replacement else { throw failure("Cannot allocate RF input buffer") }
+            pixels = replacement
         }
         if array == nil {
             let value = try MLMultiArray(shape: [1, 3, NSNumber(value: edge), NSNumber(value: edge)], dataType: .float32)

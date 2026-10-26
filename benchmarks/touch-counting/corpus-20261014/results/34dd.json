@@ -1,0 +1,132 @@
+{
+  "source": "34dd.mov",
+  "source_sha256": "48549a3133216db7ba2fd74a61f915412c154ecea1091087fbbff05613c573e7",
+  "label_review_status": "reviewed_with_uncertainty",
+  "time_tolerance_s": 0.2,
+  "total_count": 17,
+  "labelled_valid": 18,
+  "labelled_uncertain": 1,
+  "accepted_valid": 17,
+  "missed_valid": [
+    {
+      "label_id": "e018",
+      "time_s": 14.45,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 865,
+        "time": 14.433,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsNearBall"
+      },
+      "stage": "rejected_candidate"
+    }
+  ],
+  "false_accepted": [],
+  "uncertain_accepted": [],
+  "unmatched_needing_review": [],
+  "matched": [
+    {
+      "label_id": "e001",
+      "label_time_s": 4.15,
+      "counter_time_s": 4.15,
+      "frame": 248
+    },
+    {
+      "label_id": "e002",
+      "label_time_s": 4.77,
+      "counter_time_s": 4.75,
+      "frame": 284
+    },
+    {
+      "label_id": "e003",
+      "label_time_s": 5.37,
+      "counter_time_s": 5.35,
+      "frame": 320
+    },
+    {
+      "label_id": "e004",
+      "label_time_s": 5.98,
+      "counter_time_s": 5.966,
+      "frame": 357
+    },
+    {
+      "label_id": "e005",
+      "label_time_s": 6.58,
+      "counter_time_s": 6.533,
+      "frame": 391
+    },
+    {
+      "label_id": "e006",
+      "label_time_s": 7.14,
+      "counter_time_s": 7.1,
+      "frame": 425
+    },
+    {
+      "label_id": "e007",
+      "label_time_s": 7.85,
+      "counter_time_s": 7.833,
+      "frame": 469
+    },
+    {
+      "label_id": "e008",
+      "label_time_s": 8.35,
+      "counter_time_s": 8.316,
+      "frame": 498
+    },
+    {
+      "label_id": "e009",
+      "label_time_s": 8.87,
+      "counter_time_s": 8.866,
+      "frame": 531
+    },
+    {
+      "label_id": "e010",
+      "label_time_s": 9.46,
+      "counter_time_s": 9.4,
+      "frame": 563
+    },
+    {
+      "label_id": "e011",
+      "label_time_s": 10.08,
+      "counter_time_s": 10.066,
+      "frame": 603
+    },
+    {
+      "label_id": "e012",
+      "label_time_s": 10.8,
+      "counter_time_s": 10.766,
+      "frame": 645
+    },
+    {
+      "label_id": "e013",
+      "label_time_s": 11.45,
+      "counter_time_s": 11.433,
+      "frame": 685
+    },
+    {
+      "label_id": "e014",
+      "label_time_s": 11.98,
+      "counter_time_s": 11.966,
+      "frame": 717
+    },
+    {
+      "label_id": "e015",
+      "label_time_s": 12.58,
+      "counter_time_s": 12.566,
+      "frame": 753
+    },
+    {
+      "label_id": "e016",
+      "label_time_s": 13.16,
+      "counter_time_s": 13.15,
+      "frame": 788
+    },
+    {
+      "label_id": "e017",
+      "label_time_s": 13.78,
+      "counter_time_s": 13.75,
+      "frame": 824
+    }
+  ]
+}

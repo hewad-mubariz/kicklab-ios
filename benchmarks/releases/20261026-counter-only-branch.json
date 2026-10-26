@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-26",
+  "branch": "codex/touch-counter-release",
+  "base": "d3401d9fdf4468c355ea1c20568f8e7b621ec364",
+  "source_commit": "5806f26",
+  "source_snapshot": "068f5152bce2464fe3ba985b42c05a151362b4d8",
+  "scope": [
+    "V19 floor/contact rules and V2 grip handling",
+    "stationary candidate gate V2",
+    "motion recovery from observed RF candidates",
+    "bounded impact-gap retry and compact-device rechecks",
+    "shared capture timestamp and reused Core ML input buffers",
+    "Normal-style live counter with immediate digits and +1 indicator",
+    "counter replay tools, labelled evidence and regression tests"
+  ],
+  "defaults": {
+    "body": "floorRescueV19",
+    "handling": "temporalGripV2",
+    "stationary_gate": 2,
+    "hand_verification": true,
+    "legacy_policy_overrides": "Debug only"
+  },
+  "kept_at_main": [
+    "leaderboard and email-sign-in visibility",
+    "leaderboard submission/review flow and backend",
+    "ball-replacement rendering and live effects",
+    "camera exposure and recording bitrate",
+    "app version/build settings"
+  ],
+  "validation": {
+    "debug_tests": {
+      "passed": 87,
+      "failed": 0
+    },
+    "release_tests": {
+      "passed": 73,
+      "failed": 0,
+      "configuration": "Release without TOUCH_COUNTER_BETA"
+    },
+    "offline_saved_traces": {
+      "replayed_exactly": 4
+    },
+    "rf_model_manifest": "verified",
+    "feature_scope_audit": "pass"
+  },
+  "limits": [
+    "Branch separation does not replace device testing of this exact build, including outdoor recordings.",
+    "Existing uploaded TestFlight 1.0.2 (28) still contains the mixed feature snapshot. A new archive and build number are required for a counter-only TestFlight."
+  ],
+  "historical_evidence": "Copied benchmark reports describe their original builds and remain historical evidence, not measurements of this extracted build."
+}

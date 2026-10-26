@@ -1,0 +1,393 @@
+{
+  "source_sha256": "4de39918ddbf91623edf202cb9592d968d500f0cf1327bb6e7427c974663f8c3",
+  "reviewer": "assistant_visual_review",
+  "human_confirmed": false,
+  "method": "All 38 added events; seven source views spanning +/-250 ms. Conservative uncertainty at image edges. Only an added-event audit, not full-clip accuracy.",
+  "counts": {
+    "valid": 24,
+    "invalid": 1,
+    "uncertain": 13
+  },
+  "events": [
+    {
+      "frame": 427,
+      "time_s": 15.20322062500054,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "handsNearBall",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/01.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 640,
+      "time_s": 23.204220625018934,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "invalidGeometry",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/01.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 692,
+      "time_s": 25.872220625024056,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/01.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 807,
+      "time_s": 30.639220625016605,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "invalidGeometry",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/02.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 839,
+      "time_s": 32.106220625020796,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingPose",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/02.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 852,
+      "time_s": 32.57322062502499,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/02.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 1032,
+      "time_s": 40.04122062501847,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingPose",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/03.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 1663,
+      "time_s": 69.84722062500077,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/03.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 1861,
+      "time_s": 79.11522062501172,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "insufficientContactViews",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/03.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 2127,
+      "time_s": 91.38422062501195,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/04.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 2309,
+      "time_s": 99.78622062501381,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/04.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 2330,
+      "time_s": 100.48622062502545,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/04.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 2576,
+      "time_s": 109.75422062500729,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/05.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 2618,
+      "time_s": 111.62122062500566,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingPose",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/05.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 2733,
+      "time_s": 116.98922062502243,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/05.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 2775,
+      "time_s": 118.75622062501498,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "invalidGeometry",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/06.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 3258,
+      "time_s": 139.0592206250003,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/06.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 3374,
+      "time_s": 144.36022062500706,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "handsNearBall",
+      "hand_confirmed": false,
+      "label": "invalid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/06.jpg",
+      "reason": "Visible two-hand catch/hold at waist height; no legal body contact."
+    },
+    {
+      "frame": 3441,
+      "time_s": 147.26122062501963,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/07.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 3675,
+      "time_s": 158.06322062501567,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "invalidGeometry",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/07.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 3706,
+      "time_s": 159.39622062499984,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/07.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 3737,
+      "time_s": 160.7302206250024,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/08.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 4168,
+      "time_s": 178.9002206250152,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "uncertain",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/08.jpg",
+      "reason": "Exact contact partly outside the image or obscured at the lower edge; not credited as a recovered legal touch."
+    },
+    {
+      "frame": 4185,
+      "time_s": 179.56722062500194,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "missingBall",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/08.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 4213,
+      "time_s": 180.9342206250003,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "invalidGeometry",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/09.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 4697,
+      "time_s": 203.33822062500985,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "handsNearBall",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/09.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 4901,
+      "time_s": 214.55622062500333,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "handsUncertain",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/09.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5009,
+      "time_s": 222.65822062501684,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "insufficientContactViews",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/10.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5093,
+      "time_s": 228.5592206250003,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "handsNearBall",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/10.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5156,
+      "time_s": 233.11022062500706,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "insufficientContactViews",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/10.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5169,
+      "time_s": 233.91022062502452,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "handsNearBall",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/11.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5199,
+      "time_s": 236.0602206250187,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "insufficientContactViews",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/11.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5212,
+      "time_s": 237.01122062501963,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "handsNearBall",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/11.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5294,
+      "time_s": 242.76222062500892,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "handsNearBall",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/12.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5421,
+      "time_s": 252.61422062502243,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "insufficientContactViews",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/12.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5703,
+      "time_s": 270.6172206250194,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "insufficientContactViews",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/12.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5767,
+      "time_s": 275.2182206250145,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "invalidGeometry",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/13.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    },
+    {
+      "frame": 5815,
+      "time_s": 278.26922062502126,
+      "previous_rejection": "disallowedBodyContact",
+      "original_body_failure": "invalidGeometry",
+      "hand_confirmed": false,
+      "label": "valid",
+      "visual_evidence": "artifacts/body-gate-review-20261024/walkthrough-added-review/13.jpg",
+      "reason": "Visible raised-foot contact and upward rebound."
+    }
+  ]
+}

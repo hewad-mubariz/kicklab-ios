@@ -29,6 +29,7 @@ nonisolated struct TouchDebugEvent: Codable, Equatable, Sendable {
         case .amplitudeTooSmall: return "Ball drop too small"
         case .insufficientImpulse: return "Direction change too weak"
         case .groundBounce: return "Ground filter · Foot contact unconfirmed"
+        case .unresolvedLowContact: return "Low contact uncertain · Foot contact unconfirmed"
         case .cooldown: return "Too close to the previous touch"
         case .unsupportedByDetection: return "Ball detection missing near contact"
         case .noPersonRegion: return "Player not detected"

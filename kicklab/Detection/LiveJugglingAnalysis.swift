@@ -227,7 +227,7 @@ nonisolated final class RFAppCounterCore {
         let pixels = frame.pixels
         let sourceTime = frame.sourceTime
         recordingStartSeconds = frame.startTime
-        let stampMs = Int(sourceTime * 1000)
+        let stampMs = output.frame.timestampMs
         let index = frameIndex
         frameIndex += 1
         let inferenceSucceeded = true

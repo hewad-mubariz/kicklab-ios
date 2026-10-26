@@ -1,0 +1,252 @@
+{
+  "date": "2026-10-19",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "status": "Fixes implemented and installed in build 25; local frozen-input replay and actual paced iPhone replay both count 22.",
+  "source": {
+    "local": "artifacts/foot-contact-investigation-20261019/source.mov",
+    "phone_original": "tmp/juggledude-run-56C351EF-FEAC-40ED-A1A4-42F560C947F3.mov",
+    "sha256": "58219ae241615df1d0ba73d5b86f721354a9391df4b0a55773d499b715e87f66",
+    "seconds": 27.641667,
+    "size": [
+      720,
+      1280
+    ],
+    "frames": 1655,
+    "phone_capture_build": "1.0.1 (24)",
+    "analysis_inputs": 828,
+    "phone_original_count": 18,
+    "thermal": "nominal",
+    "cadence_note": "About 30Hz analysis input; ball observations around some contacts are sparser because tracking loses the ball. This clip was not thermally throttled."
+  },
+  "reviewed_misses": [
+    {
+      "seconds": 7.667,
+      "analysis_frame": 229,
+      "label": "clean foot flick",
+      "original_rejection": "groundBounce",
+      "cause": "A brief toe flick was smoothed into stationary ankles, which the floor filter treated as sufficient ground evidence although the ball center remained above the ankle line.",
+      "fix": "Require positive low ball-center evidence in the planted-feet floor path.",
+      "local_after": "accepted"
+    },
+    {
+      "seconds": 10.802,
+      "analysis_frame": 323,
+      "label": "clean sideways foot contact",
+      "original_rejection": "disallowedBodyContact / insufficientContactViews",
+      "cause": "Turning the hips moved the projected pelvis, making a stationary support ankle fail pelvis-relative stability.",
+      "fix": "Accept three confident, stationary image-space support-ankle observations, still requiring independent kick and ball rebound evidence. Original sparse observations suffice; no extra neighbor-frame model retry.",
+      "local_after": "accepted"
+    },
+    {
+      "seconds": 20.272,
+      "analysis_frame": 607,
+      "label": "clean foot contact",
+      "original_rejection": "disallowedBodyContact / missingBall",
+      "cause": "Rechecked pixels were stamped with rounded milliseconds; the observation store used truncation and refused the same exposure because its time differed by 1ms.",
+      "fix": "Use PacedFrame.timestampMs for both ingestion and contact recheck.",
+      "local_after": "accepted"
+    },
+    {
+      "seconds": 22.306,
+      "analysis_frame": 668,
+      "label": "clean foot contact",
+      "original_rejection": "disallowedBodyContact / missingBall",
+      "cause": "The independently tracked approach was 133ms before contact; the old 100ms hint limit prevented a retry of the retained contact image.",
+      "fix": "Allow up to 134ms on either side with the existing dual identity and timing guards.",
+      "local_after": "accepted"
+    }
+  ],
+  "implementation": [
+    {
+      "path": "kicklab/Counting/CountingPolicy.swift",
+      "purpose": "Version the updated foot-contact policy.",
+      "sha256": "774bdf77a0a78e27e1f3cb75e4c69cbf3cc8cbacea1a7784c67e50c27af3f10f"
+    },
+    {
+      "path": "kicklab/Counting/GroundContactEvidence.swift",
+      "purpose": "Require low ball-center evidence before stationary ankles can prove a floor bounce; historical evidence preserves its original verdict.",
+      "sha256": "b5815b6c2e0efa864461b1462b157974c7ec22f32f2ff30913a00b80f91ddb0c"
+    },
+    {
+      "path": "kicklab/Counting/ObservedLegContactRules.swift",
+      "purpose": "Permit three confident stationary support-ankle image observations while retaining hip-relative kicking motion, approach/release and clearance checks.",
+      "sha256": "8fc7a06363c0d2b6e0f86a4468c8eb5f1ab27afe1982a11c38d49f8e440e495a"
+    },
+    {
+      "path": "kicklab/Detection/JugglingContactVerifier.swift",
+      "purpose": "Apply revised ground and foot evidence while keeping original/aligned hand and handling vetoes.",
+      "sha256": "3dabefe64fae87359aa75d97bc574483b3516b0eceedbb9453522425bb366e74"
+    },
+    {
+      "path": "kicklab/Detection/RFAppContactRecheckPolicy.swift",
+      "purpose": "Allow 134ms approach/release hints; retain identity gates, memory bounds, rate limits and deadlines.",
+      "sha256": "2652c829ad0466f3f373cb9f7e7ff84b2f84c050f50284eb87c562ef3c25efdd"
+    },
+    {
+      "path": "kicklab/Detection/RFBufferedLivePipeline.swift",
+      "purpose": "Use the same truncated exposure millisecond timestamp for original and rechecked contact frames.",
+      "sha256": "175c1096e199f9a6070484d2db547b2f29bb2f4abd8cf07ce03e75f7545c96ba"
+    },
+    {
+      "path": "kicklab/Detection/LiveJugglingAnalysis.swift",
+      "purpose": "Consume the canonical frame timestamp.",
+      "sha256": "59d80a4ed4223c8e4fb025aa8600271610fb8f8b3eb128b917a0c27712515dc5"
+    },
+    {
+      "path": "kicklab/Effects/SessionAnalysisStore.swift",
+      "purpose": "Invalidate counting caches for the revised policy.",
+      "sha256": "42361304e802175dedf48faa1ed1076a94721a36a5038e40ff13bd5e49cb5abe"
+    },
+    {
+      "path": "kicklab/Debug/TouchContactReplay.swift",
+      "purpose": "Add the footEvidence comparison; older comparison modes preserve previous ground behavior.",
+      "sha256": "331f3c62749e0e45dadf692ee081f64b9b9dd58a13c99ea0b8aea4b8c524126a"
+    }
+  ],
+  "local_replay": {
+    "artifact": "artifacts/foot-contact-investigation-20261019/mac-final.plist",
+    "log": "artifacts/foot-contact-investigation-20261019/mac-final.log",
+    "rechecks": "artifacts/foot-contact-investigation-20261019/mac-final-rechecks.json",
+    "count": 22,
+    "original_accepted_frames_preserved": [
+      212,
+      243,
+      258,
+      279,
+      293,
+      309,
+      344,
+      362,
+      382,
+      515,
+      535,
+      553,
+      574,
+      589,
+      627,
+      653,
+      689,
+      709
+    ],
+    "recovered_frames": [
+      229,
+      323,
+      607,
+      668
+    ],
+    "accepted_frames": [
+      212,
+      229,
+      243,
+      258,
+      279,
+      293,
+      309,
+      323,
+      344,
+      362,
+      382,
+      515,
+      535,
+      553,
+      574,
+      589,
+      607,
+      627,
+      653,
+      668,
+      689,
+      709
+    ],
+    "method": "Freeze the phone trajectory inputs; decode actual saved pixels at their source indices; run RF384 FP16 contact rechecks and Apple Vision pose with production contact code on macOS. Use original capture.plist exposure times, not rounded movie PTS. Two model warmups precede the paced input loop.",
+    "negative_controls": [
+      {
+        "seconds": 6.3,
+        "analysis_frame": 188,
+        "label": "hand release / handling",
+        "after": "disallowedBodyContact"
+      },
+      {
+        "seconds": 13.703,
+        "analysis_frame": 410,
+        "label": "visible floor bounce",
+        "after": "groundBounce"
+      }
+    ],
+    "limits": [
+      "This is not an end-to-end phone run. Original trajectory is frozen, decoded pixels differ from raw camera pixels, and macOS Vision may differ from iOS.",
+      "The standalone replay isolates contact logic; backlogGuard is disabled, so device scheduling and live worker contention still require physical-device verification.",
+      "Earlier mac-before.plist used movie PTS and is not a valid controlled baseline. The recorded phone trace is the 18-touch baseline.",
+      "baseline/latest-after.plist is a frozen-detection Vision-only replay (17); it lacks live RF rechecked detections and must not be compared directly to the recorded count."
+    ]
+  },
+  "verification": {
+    "native": {
+      "swift_testing_passed": 143,
+      "xctest_passed": 3,
+      "failed": 0,
+      "log": "artifacts/foot-contact-investigation-20261019/native-tests.log",
+      "scope": "Production Foundation counting sources compiled in a local SwiftPM runner. App-cache integration test excluded; resource lookup adapted to Bundle.module."
+    },
+    "ios": {
+      "passed_tests": 26,
+      "parameterized_cases_total": 36,
+      "failed": 0,
+      "skipped": 0,
+      "result_bundle": "artifacts/foot-contact-investigation-20261019/contact-final-checks.xcresult"
+    },
+    "regression_notes": [
+      "All reviewed positive floor-evidence fixtures remain positive with the new low-center requirement.",
+      "Reviewed leg/uncertain-contact fixtures retain their verdicts with image-space support enabled.",
+      "Historical low.mov trace retains its 171 accepted event identities; this is not a fresh full-video device replay.",
+      "Stored hand, holding and floor veto tests pass; no guarantee of perfect detection on unreviewed videos."
+    ],
+    "signed_device_build": "passed",
+    "diff_check": "passed"
+  },
+  "build": {
+    "version": "1.0.1",
+    "number": 25,
+    "configuration": "Debug",
+    "bundle": "com.juggledude",
+    "installed_device": "iPhone 17 Pro Max",
+    "device_identifier": "0440AB85-BD17-5A51-AF30-B00F6F7E3382",
+    "version_readback": "artifacts/foot-contact-investigation-20261019/installed-build25.json",
+    "testflight_uploaded": false,
+    "foreground_validation": "Paced replay completed on unlocked iPhone, count 22."
+  },
+  "replacement_review": {
+    "comparison_image": "artifacts/foot-contact-investigation-20261019/effect-crops.jpg",
+    "finding": "The earlier export showed distorted Pearl contours at foot contacts. The subsequent shared-coverage fix smooths those outlines in the complete phone export; some source-colour fringe remains in strongly blurred edges.",
+    "counting_pixel_source": "Original camera pixels; appearance masks do not supply counter evidence.",
+    "followup": "Shared renderer correction and completed physical-device export documented in ball-replacement-contact-20261019.json. Build remains 1.0.1 (25); 22 matched frames reviewed, 17.35s full export, nominal thermal state.",
+    "followup_comparison": "artifacts/ball-replacement-contact-20261019/device-comparison-16.png"
+  },
+  "fixture_provenance": {
+    "foot-flick-20261019-ground.json": "Original recorded iPhone frame 229 ground evidence.",
+    "side-on-foot-20261019.json": "Actual decoded source frames and macOS Vision joints near frame 323, including an independently measured RF contact frame 324. Tests also remove frame 324 to verify recovery using the original sparse observations."
+  },
+  "remaining": [
+    "Confirm live inside/outside foot recording and retained clear hand/floor vetoes."
+  ],
+  "physical_device_replay": {
+    "admitted_frames": 828,
+    "count": 22,
+    "elapsed_seconds": 27.95118833334709,
+    "expected_end_seconds": 27.641666666666666,
+    "last_source_seconds": 27.625,
+    "late_source_skips": 0,
+    "mask_frames": 194,
+    "memory_mib": 106.7833023071289,
+    "mode": "paced",
+    "processed_frames": 828,
+    "source_frames": 1655,
+    "state": "completed",
+    "thermal": 0,
+    "trace_replay_exact": true,
+    "track_frames": 497,
+    "updated": "2026-10-19T06:09:11Z",
+    "artifacts": "artifacts/ball-replacement-contact-20261019/paced-device",
+    "note": "Actual LiveJugglingAnalysis on decoded source frames at 30Hz admission, including model/track/worker/backlog guards; this is not a fresh camera recording."
+  }
+}

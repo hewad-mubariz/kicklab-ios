@@ -61,8 +61,7 @@ struct CaptureSessionBadge: View {
 struct CaptureTouchCounter: View {
     let count: Int
     var warn = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var increments = 0
+    @State private var incrementCount: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -70,40 +69,29 @@ struct CaptureTouchCounter: View {
                 Text(NormalCounterAppearance.label(count))
                     .font(.custom(NormalCounterAppearance.fontName, size: NormalCounterAppearance.fontSize(count, base: 84)))
                     .monospacedDigit().foregroundStyle(warn ? Theme.warn : Color(cgColor: NormalCounterAppearance.white))
-                    .contentTransition(.numericText(value: Double(count)))
-                    .animation(reduceMotion ? nil : .snappy(duration: 0.25), value: count)
-                    .sessionKick(increments, amount: 0.08, anchor: .leading)
-                // Each counted touch floats a +1 up and away.
-                Text("+1").font(.system(size: 13, weight: .semibold))
+                // The free Normal counter flashes +1 beside its unchanged digits.
+                Text("+1").font(.custom("HelveticaNeue-Medium", size: 13))
                     .foregroundStyle(Color(cgColor: NormalCounterAppearance.lime))
-                    .keyframeAnimator(initialValue: FloatingIncrement(), trigger: increments) { [reduceMotion] label, value in
-                        label.offset(y: reduceMotion ? 0 : value.rise).opacity(value.opacity)
+                    .keyframeAnimator(initialValue: 0.0, trigger: incrementCount) { [showIncrement = incrementCount == count] label, opacity in
+                        label.opacity(showIncrement ? opacity : 0)
                     } keyframes: { _ in
-                        KeyframeTrack(\.rise) {
-                            LinearKeyframe(8, duration: 0.01)
-                            SpringKeyframe(-4, duration: 0.24, spring: .snappy)
-                            CubicKeyframe(-16, duration: 0.36)
-                        }
-                        KeyframeTrack(\.opacity) {
-                            LinearKeyframe(1, duration: 0.06)
-                            LinearKeyframe(1, duration: 0.26)
-                            CubicKeyframe(0, duration: 0.29)
-                        }
+                        LinearKeyframe(1, duration: 0.01)
+                        LinearKeyframe(0, duration: 0.3)
                     }
             }
             Text("TOUCHES").font(.system(size: 10, weight: .medium)).tracking(1.7).foregroundStyle(.white)
         }
+        // Confirmed counts update immediately, including during an animated HUD change.
+        .transaction { transaction in
+            transaction.animation = nil
+            transaction.disablesAnimations = true
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(count) touches").accessibilityIdentifier("capture-touch-counter")
         .onChange(of: count) { old, new in
-            if new > old { increments += 1 }
+            incrementCount = new > old ? new : nil
         }
     }
-}
-
-private struct FloatingIncrement {
-    var rise: CGFloat = 0
-    var opacity: Double = 0
 }
 
 struct CaptureMetrics: View {

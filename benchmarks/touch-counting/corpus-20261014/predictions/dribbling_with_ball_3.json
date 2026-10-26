@@ -1,0 +1,57 @@
+{
+  "source_sha256": "93ba1a0dedbe99b6dcdd98ba4c73195a64ea883b317e03af19e1ec62061a41e2",
+  "policy": {
+    "body": "timedFootMotionV6",
+    "ground": "corroboratedFeet",
+    "handling": "sustainedGripV1"
+  },
+  "touches": [
+    {
+      "index": 0,
+      "frameIndex": 473,
+      "timestampMs": 3950,
+      "x": 0.10289352911489981,
+      "y": 0.47176650100284157,
+      "fallAmplitude": 0.041141453319125776,
+      "riseAmplitude": 0.00874567959043726,
+      "impulse": 0.565132619508732
+    }
+  ],
+  "diagnostics": [
+    {
+      "frameIndex": 325,
+      "time": 2.716,
+      "rejection": "insufficientImpulse",
+      "handConfirmed": false
+    },
+    {
+      "frameIndex": 473,
+      "time": 3.95,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 473,
+        "timestampMs": 3950,
+        "x": 0.10243055555555555,
+        "y": 0.4742187261581421,
+        "width": 0.0638888676961263,
+        "height": 0.03749999403953552,
+        "confidence": 0.91943359375
+      }
+    },
+    {
+      "frameIndex": 494,
+      "time": 4.125,
+      "rejection": "amplitudeTooSmall",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 494,
+        "timestampMs": 4125,
+        "x": 0.15104166666666666,
+        "y": 0.505859375,
+        "width": 0.06944444444444445,
+        "height": 0.04062497615814209,
+        "confidence": 0.92626953125
+      }
+    }
+  ]
+}

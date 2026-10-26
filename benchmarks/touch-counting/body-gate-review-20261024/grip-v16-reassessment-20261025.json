@@ -1,0 +1,1062 @@
+{
+  "date": "2026-10-25",
+  "purpose": "Evaluate the claim that the existing V16 grip-jitter rule removes the known false events introduced by the historical body-gate bypass.",
+  "method": "Strict CounterTrace.replay validates exact saved contacts and decisions first. Then replay the identical inputs and all other saved evidence, changing only BallHandlingEvidence.bridgesGripJitter to true. Evidence callbacks are keyed by operation and frame, with missing requests explicitly counted.",
+  "traceScope": {
+    "historicalBodyGateBefore": 22,
+    "historicalBodyGateBypass": 22,
+    "moreRecentSavedTraces": 25,
+    "total": 69,
+    "overlappingRecordings": true
+  },
+  "strictBaselinesMatched": 69,
+  "missingEvidenceRequests": 0,
+  "changedTouchTraces": 0,
+  "handlingVerdictChanges": 0,
+  "sixKnownFalseEventsRejectedByGripV16": 0,
+  "sixKnownFalseEvents": [
+    {
+      "firstOffsetMs": -50,
+      "frame": 2284,
+      "gripV2": "uncertain",
+      "lastOffsetMs": 25,
+      "operation": 2321,
+      "samples": 10,
+      "samplesWithAnyWrist": 0,
+      "saved": "uncertain",
+      "seconds": 19.041,
+      "clip": "juggling_second_ball_in_video",
+      "eventType": "hold"
+    },
+    {
+      "firstOffsetMs": -50,
+      "frame": 2389,
+      "gripV2": "uncertain",
+      "lastOffsetMs": 25,
+      "operation": 2394,
+      "samples": 10,
+      "samplesWithAnyWrist": 0,
+      "saved": "uncertain",
+      "seconds": 19.916,
+      "clip": "juggling_second_ball_in_video",
+      "eventType": "hold"
+    },
+    {
+      "firstOffsetMs": -50,
+      "frame": 2464,
+      "gripV2": "uncertain",
+      "lastOffsetMs": 25,
+      "operation": 2469,
+      "samples": 10,
+      "samplesWithAnyWrist": 0,
+      "saved": "uncertain",
+      "seconds": 20.541,
+      "clip": "juggling_second_ball_in_video",
+      "eventType": "hold"
+    },
+    {
+      "firstOffsetMs": -50,
+      "frame": 2486,
+      "gripV2": "uncertain",
+      "lastOffsetMs": 25,
+      "operation": 2491,
+      "samples": 10,
+      "samplesWithAnyWrist": 0,
+      "saved": "uncertain",
+      "seconds": 20.725,
+      "clip": "juggling_second_ball_in_video",
+      "eventType": "hold"
+    },
+    {
+      "firstOffsetMs": -50,
+      "frame": 4107,
+      "gripV2": "uncertain",
+      "lastOffsetMs": 25,
+      "operation": 4121,
+      "samples": 10,
+      "samplesWithAnyWrist": 0,
+      "saved": "uncertain",
+      "seconds": 34.241,
+      "clip": "normal_juggling_4",
+      "eventType": "ground_roll"
+    },
+    {
+      "firstOffsetMs": -166,
+      "frame": 3374,
+      "gripV2": "uncertain",
+      "lastOffsetMs": 134,
+      "operation": 3380,
+      "samples": 8,
+      "samplesWithAnyWrist": 8,
+      "saved": "uncertain",
+      "seconds": 144.36022062500706,
+      "clip": "walkthrough",
+      "eventType": "catch"
+    }
+  ],
+  "corpusTotals": {
+    "before": {
+      "savedRule": {
+        "clips": 20,
+        "labelled_valid": 615,
+        "accepted_valid": 568,
+        "missed_valid": 47,
+        "false_accepted": 5,
+        "uncertain_accepted": 5,
+        "unmatched_needing_review": 0
+      },
+      "gripV16Only": {
+        "clips": 20,
+        "labelled_valid": 615,
+        "accepted_valid": 568,
+        "missed_valid": 47,
+        "false_accepted": 5,
+        "uncertain_accepted": 5,
+        "unmatched_needing_review": 0
+      }
+    },
+    "after": {
+      "savedRule": {
+        "clips": 20,
+        "labelled_valid": 615,
+        "accepted_valid": 592,
+        "missed_valid": 23,
+        "false_accepted": 10,
+        "uncertain_accepted": 7,
+        "unmatched_needing_review": 2
+      },
+      "gripV16Only": {
+        "clips": 20,
+        "labelled_valid": 615,
+        "accepted_valid": 592,
+        "missed_valid": 23,
+        "false_accepted": 10,
+        "uncertain_accepted": 7,
+        "unmatched_needing_review": 2
+      }
+    },
+    "recent": {
+      "savedRule": {
+        "clips": 20,
+        "labelled_valid": 615,
+        "accepted_valid": 568,
+        "missed_valid": 47,
+        "false_accepted": 5,
+        "uncertain_accepted": 5,
+        "unmatched_needing_review": 0
+      },
+      "gripV16Only": {
+        "clips": 20,
+        "labelled_valid": 615,
+        "accepted_valid": 568,
+        "missed_valid": 47,
+        "false_accepted": 5,
+        "uncertain_accepted": 5,
+        "unmatched_needing_review": 0
+      }
+    }
+  },
+  "coverage": [
+    {
+      "clip": "34dd",
+      "handlingRecords": 18,
+      "under150ms": 0,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "150": 18
+      }
+    },
+    {
+      "clip": "ball_in_hand",
+      "handlingRecords": 0,
+      "under150ms": 0,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {}
+    },
+    {
+      "clip": "dribbling_with_ball_1",
+      "handlingRecords": 0,
+      "under150ms": 0,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {}
+    },
+    {
+      "clip": "dribbling_with_ball_2",
+      "handlingRecords": 0,
+      "under150ms": 0,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {}
+    },
+    {
+      "clip": "dribbling_with_ball_3",
+      "handlingRecords": 1,
+      "under150ms": 1,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "75": 1
+      }
+    },
+    {
+      "clip": "dribbling_with_the_ball_1",
+      "handlingRecords": 0,
+      "under150ms": 0,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {}
+    },
+    {
+      "clip": "eighteen",
+      "handlingRecords": 18,
+      "under150ms": 0,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "267": 4,
+        "301": 5,
+        "300": 9
+      }
+    },
+    {
+      "clip": "juggling",
+      "handlingRecords": 37,
+      "under150ms": 0,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "300": 37
+      }
+    },
+    {
+      "clip": "juggling_second_ball_in_video",
+      "handlingRecords": 34,
+      "under150ms": 34,
+      "withoutAnyWrists": 15,
+      "spanMsCounts": {
+        "75": 33,
+        "74": 1
+      }
+    },
+    {
+      "clip": "juggling_second_ball_very_far",
+      "handlingRecords": 25,
+      "under150ms": 25,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "50": 1,
+        "75": 24
+      }
+    },
+    {
+      "clip": "latest",
+      "handlingRecords": 12,
+      "under150ms": 0,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "267": 2,
+        "300": 6,
+        "234": 1,
+        "200": 2,
+        "233": 1
+      }
+    },
+    {
+      "clip": "low",
+      "handlingRecords": 177,
+      "under150ms": 0,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "300": 151,
+        "299": 26
+      }
+    },
+    {
+      "clip": "nomral_juggling_6",
+      "handlingRecords": 36,
+      "under150ms": 36,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "75": 36
+      }
+    },
+    {
+      "clip": "normal_juggling_1",
+      "handlingRecords": 25,
+      "under150ms": 25,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "75": 25
+      }
+    },
+    {
+      "clip": "normal_juggling_2",
+      "handlingRecords": 22,
+      "under150ms": 22,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "75": 22
+      }
+    },
+    {
+      "clip": "normal_juggling_3",
+      "handlingRecords": 64,
+      "under150ms": 64,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "75": 63,
+        "83": 1
+      }
+    },
+    {
+      "clip": "normal_juggling_4",
+      "handlingRecords": 36,
+      "under150ms": 36,
+      "withoutAnyWrists": 1,
+      "spanMsCounts": {
+        "75": 36
+      }
+    },
+    {
+      "clip": "normal_juggling_5",
+      "handlingRecords": 38,
+      "under150ms": 38,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "75": 37,
+        "84": 1
+      }
+    },
+    {
+      "clip": "normal_juggling_7",
+      "handlingRecords": 31,
+      "under150ms": 31,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "75": 31
+      }
+    },
+    {
+      "clip": "normal_juggling_8",
+      "handlingRecords": 38,
+      "under150ms": 38,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "75": 36,
+        "84": 1,
+        "67": 1
+      }
+    },
+    {
+      "clip": "raw-juggling",
+      "handlingRecords": 10,
+      "under150ms": 0,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "234": 3,
+        "312": 6,
+        "195": 1
+      }
+    },
+    {
+      "clip": "walkthrough",
+      "handlingRecords": 225,
+      "under150ms": 5,
+      "withoutAnyWrists": 0,
+      "spanMsCounts": {
+        "300": 103,
+        "266": 9,
+        "233": 4,
+        "267": 18,
+        "333": 28,
+        "334": 19,
+        "234": 3,
+        "167": 2,
+        "100": 4,
+        "133": 1,
+        "200": 4,
+        "166": 1,
+        "301": 2,
+        "350": 18,
+        "250": 9
+      }
+    }
+  ],
+  "findings": [
+    "The historical corpus bypass recovered 24 labelled valid contacts (568 to 592) and added five confirmed false counts (5 to 10). Those five comprise four held-ball events and one ground roll; they are not all hand contacts. The walkthrough catch is an additional sixth case outside that corpus total.",
+    "All six saved handling records stay uncertain under V16. Five contain no wrist landmarks in any sample, and each covers only -50ms to +25ms. A sustained-hold rule requiring 150ms cannot confirm a hold from these 75ms records.",
+    "The walkthrough catch has wrists in eight saved samples over 300ms. At contact, wrist separation is 1.626257 ball diameters, above the unchanged 1.6 bracketing limit, even though the V16 radial allowance includes both wrists. V16 alone does not resolve it.",
+    "Several second-ball windows alternate between small distant-ball and larger foreground-ball observations. This is an evidence-association concern; a wrist threshold cannot establish which person and ball belong together.",
+    "The current handling-evidence collector also intersects its time window with frameIndex-6 through frameIndex+3. At 120fps that yields approximately 75ms; timestamp-based evidence selection is needed for a sustained-hold evaluation on those high-frame-rate inputs.",
+    "A one-hand test was not invented or applied. These saved records cannot support a wrist-based one-hand test in five of the six cases. Obtaining sufficient correctly associated evidence requires rereading source pixels or otherwise collecting new evidence.",
+    "No count changes means no additional labelled valid contacts were lost in this isolated experiment, but also none of the six newly exposed false events were repaired. This does not justify a blanket body-gate bypass."
+  ],
+  "limits": [
+    "Numeric saved-evidence replay only; no new detector, Vision, camera or live performance run.",
+    "The 69 traces include before/after versions of the same clips; they are not 69 independent videos.",
+    "Enabling the grip flag alone does not simulate all V16/V17/V18 pipeline changes or current selected-player tracking.",
+    "A proposed one-hand rule is a separate, unimplemented change requiring its own positive and negative validation.",
+    "Historical bypass also left seven uncertain accepted corpus events and two unmatched events; the walkthrough added 13 uncertain events. Fixing only the six known negatives would not establish release safety."
+  ],
+  "recommendedNextStep": "Retain the body gate. First collect cadence-correct, time-spanning hand evidence tied to the intended player and ball for the known bad events. Then evaluate a targeted hold/catch change and narrowly defined body-gate relaxation across labelled legal contacts, negatives, uncertain events and fresh recordings.",
+  "applicationSourceChanged": false,
+  "countingSourceHashesUnchanged": true,
+  "phoneBuildChanged": false,
+  "committedOrPushed": false,
+  "countingSourceHashes": {
+    "kicklab/Counting/TouchReviewEvidence.swift": "63407da2d3bf19ba6bae4fa11623806ce68ce917e11453e03c7145813f45339a",
+    "kicklab/Counting/CountingPolicy.swift": "0ba2b65e7d0f73464e9db75f1d4a54d6c66e33bdc14e5ce3fa29e318c9cf2daa",
+    "kicklab/Counting/ContactPose.swift": "81d7c959e9f678ada0f74c2be156ca763833477f114b66f69440a320b9bbb980",
+    "kicklab/Counting/TimedTrajectory.swift": "b259eaa8220b5e4e23a951aaf5bf6e3ca7f02d4f221b3f7254c064d01a5ab894",
+    "kicklab/Counting/ActivePlayerPoseMatcher.swift": "d662d1686e815f9f344181d8e7d1e2e6bb297ef9dc204a1d0cef5763c1127af2",
+    "kicklab/Counting/ContactCounterFactory.swift": "a4b2773dfb439e5c16348064b648dcf30c6c6e1d75cdf75f4054e04876286e8b",
+    "kicklab/Counting/TrackedFootContactRules.swift": "62c6468b15fbe3f1f3b9a5a6b30b81ac2aa13bcb5ad249daf2522c04977f1575",
+    "kicklab/Counting/TemporalContactEvidence.swift": "ce67b856e3747dc3409929b297140badfc1eb41b94d6a835bb8d8103841f9175",
+    "kicklab/Counting/FootContactRules.swift": "466bc9b62412d34993261a2bb03c833a86d24253e21103deaf96909f0f01f3e1",
+    "kicklab/Counting/TouchCounter.swift": "899b2eaabac668a2a55dd7b06810a04d2e17958c64838b2b3fc4c8b6acccfc0c",
+    "kicklab/Counting/ClearHandsContactRules.swift": "79dd1b6be12b3cda85d31549db0e0849558dbf63a6cd3964cba4fe1a43e49577",
+    "kicklab/Counting/RaisedFootContactRules.swift": "87ddfb1c276160a192f32207310ad6caaa039172f17ef1d020d1da0c782c08f5",
+    "kicklab/Counting/MovingFootContactRules.swift": "f53dfa55ab7b418d052a1ee8e047dd2bfd5af5dc602bbddc1dd2ba9198f95a57",
+    "kicklab/Counting/ObservedGapContactRules.swift": "a36f7e911eb4409d8ead0bb0599b18955260d7d5c32dc60b090f469be6dae87b",
+    "kicklab/Counting/ObservedLegContactRules.swift": "8fc7a06363c0d2b6e0f86a4468c8eb5f1ab27afe1982a11c38d49f8e440e495a",
+    "kicklab/Counting/RestrictedTouchPolicy.swift": "3d030f589d083d4be73adfc3e04dcd8069b7e687ba59081d270289efbe748bcc",
+    "kicklab/Counting/RaisedKneeReboundRules.swift": "08abab543f9dda6fa84120e04ea1f0c55c9b744c5dface1e840128db8d8f1aee",
+    "kicklab/Counting/ActiveJugglerTracker.swift": "6731659af2eef2347ba1e79eeac76840e53715c525ea006e649a338c913f05dc",
+    "kicklab/Counting/BallHandlingEvidence.swift": "44c0649529abfbd1a670e9044372e02c73f7e7198c904a74f7dca617475ab6a9",
+    "kicklab/Counting/GroundContactEvidence.swift": "3d210e206f325130cb88fe5dea26fc7aad0c37dc8ffafd7825e146319661f5c4",
+    "kicklab/Counting/StreamingCounter.swift": "5c61a1bfddae1d7580580d6cf7c0b1e17b8d98a1ec38812325e1f54c564cd122",
+    "kicklab/Counting/CounterTrace.swift": "3080bdba1395a0bfbbed44c53ca273f15c0de60c1898f8d205dc19cd807559b9",
+    "kicklab/Counting/ReciprocalJointContactRules.swift": "5f9a6efe132489fb7cdfb4c0a8dcd68ac224cb314c08aa3f755995946bd786a0",
+    "kicklab/Counting/TouchDebugEvent.swift": "486570c4237834802519c139a02d371623b52cfe84ab33d5b7e64a44e7463b66",
+    "kicklab/Counting/PlayerGroundEstimate.swift": "6c41d29659d53c1cc729b142b1aca5e66e8b03570da3467830a4b0fe1b018020",
+    "kicklab/Counting/RaisedFootReboundRules.swift": "a6e3ace2b1d7e3ded643bad4c1da91a5cf50ad15cda542950e19da6a8358ff0b",
+    "kicklab/Counting/JugglingContactRules.swift": "7c3859535b08e27cbfed9a190a20bacf5e01db9420540401ba66616f9333f6c0",
+    "kicklab/Counting/ContactPoseContinuity.swift": "d9cee9e29988291defad53956ff72d55d9042eb12b16c6c5b5b716ee7703589d",
+    "kicklab/Counting/RaisedKneeContactRules.swift": "5923ddf683cc694ff9e0b0bcf5a65ed8e35bd3ff670e108b9cd6e662105584be",
+    "kicklab/Counting/ContactFrameWindow.swift": "262b4054defa01ad77a192ebbf9bae024af8b1f9e5b0e655d3a604c835b86d2b"
+  },
+  "traces": [
+    {
+      "id": "34dd__before",
+      "strictBaselineExact": true,
+      "beforeCount": 17,
+      "afterCount": 17,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "34dd__after",
+      "strictBaselineExact": true,
+      "beforeCount": 18,
+      "afterCount": 18,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "ball_in_hand__before",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "ball_in_hand__after",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_ball_1__before",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_ball_1__after",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_ball_2__before",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_ball_2__after",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_ball_3__before",
+      "strictBaselineExact": true,
+      "beforeCount": 1,
+      "afterCount": 1,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_ball_3__after",
+      "strictBaselineExact": true,
+      "beforeCount": 1,
+      "afterCount": 1,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_the_ball_1__before",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_the_ball_1__after",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "eighteen__before",
+      "strictBaselineExact": true,
+      "beforeCount": 15,
+      "afterCount": 15,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "eighteen__after",
+      "strictBaselineExact": true,
+      "beforeCount": 18,
+      "afterCount": 18,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "juggling__before",
+      "strictBaselineExact": true,
+      "beforeCount": 37,
+      "afterCount": 37,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "juggling__after",
+      "strictBaselineExact": true,
+      "beforeCount": 37,
+      "afterCount": 37,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "juggling_second_ball_in_video__before",
+      "strictBaselineExact": true,
+      "beforeCount": 19,
+      "afterCount": 19,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "juggling_second_ball_in_video__after",
+      "strictBaselineExact": true,
+      "beforeCount": 34,
+      "afterCount": 34,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "juggling_second_ball_very_far__before",
+      "strictBaselineExact": true,
+      "beforeCount": 23,
+      "afterCount": 23,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "juggling_second_ball_very_far__after",
+      "strictBaselineExact": true,
+      "beforeCount": 25,
+      "afterCount": 25,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "low__before",
+      "strictBaselineExact": true,
+      "beforeCount": 175,
+      "afterCount": 175,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "low__after",
+      "strictBaselineExact": true,
+      "beforeCount": 177,
+      "afterCount": 177,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "nomral_juggling_6__before",
+      "strictBaselineExact": true,
+      "beforeCount": 36,
+      "afterCount": 36,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "nomral_juggling_6__after",
+      "strictBaselineExact": true,
+      "beforeCount": 36,
+      "afterCount": 36,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_1__before",
+      "strictBaselineExact": true,
+      "beforeCount": 25,
+      "afterCount": 25,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_1__after",
+      "strictBaselineExact": true,
+      "beforeCount": 25,
+      "afterCount": 25,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_2__before",
+      "strictBaselineExact": true,
+      "beforeCount": 21,
+      "afterCount": 21,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_2__after",
+      "strictBaselineExact": true,
+      "beforeCount": 22,
+      "afterCount": 22,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_3__before",
+      "strictBaselineExact": true,
+      "beforeCount": 63,
+      "afterCount": 63,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_3__after",
+      "strictBaselineExact": true,
+      "beforeCount": 65,
+      "afterCount": 65,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_4__before",
+      "strictBaselineExact": true,
+      "beforeCount": 33,
+      "afterCount": 33,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_4__after",
+      "strictBaselineExact": true,
+      "beforeCount": 36,
+      "afterCount": 36,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_5__before",
+      "strictBaselineExact": true,
+      "beforeCount": 37,
+      "afterCount": 37,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_5__after",
+      "strictBaselineExact": true,
+      "beforeCount": 38,
+      "afterCount": 38,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_7__before",
+      "strictBaselineExact": true,
+      "beforeCount": 29,
+      "afterCount": 29,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_7__after",
+      "strictBaselineExact": true,
+      "beforeCount": 31,
+      "afterCount": 31,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_8__before",
+      "strictBaselineExact": true,
+      "beforeCount": 37,
+      "afterCount": 37,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_8__after",
+      "strictBaselineExact": true,
+      "beforeCount": 38,
+      "afterCount": 38,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "raw-juggling__before",
+      "strictBaselineExact": true,
+      "beforeCount": 10,
+      "afterCount": 10,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "raw-juggling__after",
+      "strictBaselineExact": true,
+      "beforeCount": 10,
+      "afterCount": 10,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "walkthrough__before",
+      "strictBaselineExact": true,
+      "beforeCount": 201,
+      "afterCount": 201,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "walkthrough__after",
+      "strictBaselineExact": true,
+      "beforeCount": 239,
+      "afterCount": 239,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "latest__before",
+      "strictBaselineExact": true,
+      "beforeCount": 12,
+      "afterCount": 12,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "latest__after",
+      "strictBaselineExact": true,
+      "beforeCount": 13,
+      "afterCount": 13,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "34dd__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 17,
+      "afterCount": 17,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "ball_in_hand__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_ball_1__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_ball_2__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_ball_3__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 1,
+      "afterCount": 1,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "dribbling_with_the_ball_1__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 0,
+      "afterCount": 0,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "eighteen__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 15,
+      "afterCount": 15,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "juggling__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 37,
+      "afterCount": 37,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "juggling_second_ball_in_video__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 19,
+      "afterCount": 19,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "juggling_second_ball_very_far__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 23,
+      "afterCount": 23,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "low__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 175,
+      "afterCount": 175,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "nomral_juggling_6__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 36,
+      "afterCount": 36,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_1__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 25,
+      "afterCount": 25,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_2__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 21,
+      "afterCount": 21,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_3__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 63,
+      "afterCount": 63,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_4__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 33,
+      "afterCount": 33,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_5__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 37,
+      "afterCount": 37,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_7__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 29,
+      "afterCount": 29,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "normal_juggling_8__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 37,
+      "afterCount": 37,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "raw-juggling__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 10,
+      "afterCount": 10,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "walkthrough__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 203,
+      "afterCount": 203,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "latest__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 13,
+      "afterCount": 13,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "take-20261024-2126__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 18,
+      "afterCount": 18,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "live-20261025-1742__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 27,
+      "afterCount": 27,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    },
+    {
+      "id": "take-20261024-2306__recent",
+      "strictBaselineExact": true,
+      "beforeCount": 31,
+      "afterCount": 31,
+      "removed": [],
+      "added": [],
+      "missingEvidenceRequests": []
+    }
+  ],
+  "artifacts": {
+    "strictReplay": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/grip-v16-body-gate-audit-20261025/strict-replay.json",
+    "auditSource": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/grip-v16-body-gate-audit-20261025/audit.swift",
+    "inputs": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/grip-v16-body-gate-audit-20261025/clips.json",
+    "log": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/grip-v16-body-gate-audit-20261025/replay.log"
+  }
+}

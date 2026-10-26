@@ -9,6 +9,22 @@ import Foundation
 nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     /// Diagnostic opt-out is also included in the analysis cache signature.
     static let enabled = CountingPolicy.current.verifiesContacts
+    private var usesContactEvidenceV16 = false
+    private var requiresPositiveLowContact = false
+    private var usesFloorEvidenceV18 = false
+    private var usesFloorRescueV19 = false
+    func configure(policy: CountingPolicy) {
+        usesContactEvidenceV16 = policy.body.usesContactEvidence
+        // The gap gate rejects an ankle-height reversal with a detection hole at
+        // impact unless a kick is proven. With the impact-window repair it rarely
+        // fires on a legal touch; without it (compact tier) it removed nine
+        // labelled low touches for four reviewed bounces across every saved
+        // compact trace, so the compact tier relies on the positive floor proofs
+        // (planted feet, below feet, stationary hole, deep contact) instead.
+        requiresPositiveLowContact = policy.body.usesImpactWindow && RFContactRecheckTier.current == .full
+        usesFloorEvidenceV18 = policy.body.usesFloorEvidence
+        usesFloorRescueV19 = policy.body == .floorRescueV19
+    }
     private typealias Frame = ContactObservationStore.Frame
     private typealias Pose = ContactObservationStore.Pose
     private let observations: ContactObservationStore
@@ -31,6 +47,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     var lastError: String? { observations.lastError }
     private var isDiagnosing = false
     private var evidencePlayer: ActivePlayerSelection?
+    var requiresGroundHeightEvidence = true
     #if DEBUG
     var usesSelectedPoseRecovery = false
     private let selectedPoseRecovery = SelectedPlayerPoseRecovery()
@@ -177,7 +194,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                 alignedFootFrames[frameIndex] = aligned.index
                 return true
             }
-            if (policy == .legReboundV13 || policy == .raisedFootV14), policy.allowsObservedLegRecovery(after: failure) {
+            if (policy == .legReboundV13 || policy.usesRaisedFoot), policy.allowsObservedLegRecovery(after: failure) {
                 let indices = ContactFrameWindow.reboundIndices(
                     observations.frames.map { .init(index: $0.index, timestampMs: $0.timestampMs) },
                     around: .init(index: frame.index, timestampMs: frame.timestampMs))
@@ -188,9 +205,11 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                 // Recovery uses only already arrived exposures. Arm uncertainty
                 // is not kick evidence: require a measured leg/ball rebound.
                 let impact = ObservedLegContactRules.contactTime(rebound, at: frame.timestampMs,
-                    usesTemporalEvidence: true, usesCadenceWindow: true, allowsNearSupportFoot: policy == .raisedFootV14)
+                    usesTemporalEvidence: true, usesCadenceWindow: true, allowsNearSupportFoot: policy.usesRaisedFoot,
+                    usesImageSupport: policy == .footEvidenceV15 || policy.usesContactEvidence)
                     ?? RaisedKneeReboundRules.contactTime(rebound, at: frame.timestampMs)
-                    ?? (policy == .raisedFootV14 ? RaisedFootReboundRules.contactTime(rebound, at: frame.timestampMs) : nil)
+                    ?? (policy.usesRaisedFoot ? RaisedFootReboundRules.contactTime(rebound, at: frame.timestampMs) : nil)
+                    ?? (policy.usesContactEvidence ? ReciprocalJointContactRules.contactTime(rebound, at: frame.timestampMs) : nil)
                 if let impact, let aligned = frames.first(where: { $0.timestampMs == impact }),
                    groundEvidence(at: aligned.index, timed: true)?.confirmsGroundContact(corroboratingWeakAnkles: true) != true,
                    handlingEvidence(at: aligned.index)?.state != .held, lastError == nil {
@@ -477,7 +496,20 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                 imageAspect: Double(CVPixelBufferGetWidth(frame.pixels))/Double(CVPixelBufferGetHeight(frame.pixels)),
                 ankles: pose.ankles, hips: pose.hips)
         }
-        return .init(contactMs: contact.timestampMs, samples: samples, checksBallBelowFeet: timed ? true : nil)
+        return .init(contactMs: contact.timestampMs, samples: samples, checksBallBelowFeet: timed ? true : nil,
+                     requiresLowBallCenter: requiresGroundHeightEvidence ? true : nil,
+                     usesLocalImpactSize: usesContactEvidenceV16 ? true : nil,
+                     requiresPositiveLowContact: requiresPositiveLowContact
+                        && GroundContactEvidence.hasImpactTrackingGap(contactMs: contact.timestampMs,
+                            originalTimestampsMs: observations.frames.filter { !$0.isContactRecheck }.map(\.timestampMs),
+                            missingBallTimestampsMs: observations.originalMissingBallTimestampsMs)
+                        ? true : nil,
+                     toleratesApproachGap: usesFloorEvidenceV18 ? true : nil,
+                     checksBallBesideFeet: usesFloorEvidenceV18 ? true : nil,
+                     toleratesPlantedApproachGap: usesFloorRescueV19 ? true : nil,
+                     requiresMovingAnkleForRescue: usesFloorRescueV19 ? true : nil,
+                     allowsStationaryHole: usesFloorRescueV19 ? true : nil,
+                     checksDeepFloorContact: usesFloorRescueV19 ? true : nil)
     }
 
     /// Only proposals that passed the existing gates request this extra window.
@@ -490,7 +522,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
            let aligned = alignedFootFrames[frameIndex], aligned != frameIndex,
            let time = observations.timestamp(at: frameIndex),
            let evidence = handlingEvidence(at: aligned) {
-            return .init(contactMs: time, samples: evidence.samples, observedImpactMs: evidence.contactMs)
+            return .init(contactMs: time, samples: evidence.samples, observedImpactMs: evidence.contactMs,
+                         bridgesGripJitter: usesContactEvidenceV16 ? true : nil)
         }
         guard lastError == nil, let contact = frames.first(where: { $0.index == frameIndex }) else { return nil }
         let samples = frames.filter {
@@ -505,7 +538,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                 wrists: pose.wrists)
         }
         guard lastError == nil else { return nil }
-        return .init(contactMs: contact.timestampMs, samples: samples)
+        return .init(contactMs: contact.timestampMs, samples: samples, bridgesGripJitter: usesContactEvidenceV16 ? true : nil)
     }
 
     private func isHand(_ frame: Frame) -> Bool {

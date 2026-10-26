@@ -1,0 +1,207 @@
+{
+  "source_digest": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+  "source_video": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/latest-recording-20261024-2126/source.mov",
+  "manual_review_method": "Full 6fps chronological scan; all 31 saved decisions viewed at 12fps in +/-0.25s windows; ambiguous floor, raised foot and final foot contacts checked at exact source PTS in all saved 60fps frames. Timestamp values identify events, not independently measured sub-frame contact times. Final contact is approximate 31.33-31.35s.",
+  "live_count": 18,
+  "visually_reviewed_legal_contacts": 19,
+  "true_positives": 16,
+  "false_positives": 2,
+  "false_negatives": 3,
+  "precision": 0.8888888888888888,
+  "recall": 0.8421052631578947,
+  "events": [
+    {
+      "source_seconds": 8.432505,
+      "counter_frame": 252,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 9.199505,
+      "counter_frame": 275,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 9.932505,
+      "counter_frame": 297,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 12.665505,
+      "counter_frame": 379,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 14.465505,
+      "counter_frame": 433,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 16.098505,
+      "counter_frame": 482,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 16.632505,
+      "counter_frame": 498,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 17.232505,
+      "counter_frame": 516,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 20.098505,
+      "counter_frame": 602,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 20.798505,
+      "counter_frame": 623,
+      "visual_label": "hand-held movement",
+      "live_result": "false positive"
+    },
+    {
+      "source_seconds": 21.465505,
+      "counter_frame": 643,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 22.065505,
+      "counter_frame": 661,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 22.7985,
+      "counter_frame": 683,
+      "visual_label": "legal raised-foot touch",
+      "live_result": "false negative",
+      "live_reason": "disallowedBodyContact / handsNearBall"
+    },
+    {
+      "source_seconds": 23.365505,
+      "counter_frame": 700,
+      "visual_label": "floor bounce",
+      "live_result": "false positive"
+    },
+    {
+      "source_seconds": 24.531505,
+      "counter_frame": 735,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 26.164505,
+      "counter_frame": 784,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 27.064505,
+      "counter_frame": 811,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 27.731505,
+      "counter_frame": 831,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 28.398505,
+      "counter_frame": 851,
+      "visual_label": "legal foot touch",
+      "live_result": "true positive"
+    },
+    {
+      "source_seconds": 30.565,
+      "counter_frame": 916,
+      "visual_label": "legal raised-foot touch",
+      "live_result": "false negative",
+      "live_reason": "disallowedBodyContact / insufficientContactViews"
+    },
+    {
+      "source_seconds": 31.34,
+      "counter_frame": null,
+      "visual_label": "legal foot touch with small upward and sideways rebound",
+      "live_result": "false negative",
+      "live_reason": "no candidate generated"
+    }
+  ],
+  "live_errors": [
+    {
+      "source_seconds": 20.798505,
+      "counter_frame": 623,
+      "visual_label": "hand-held movement",
+      "live_result": "false positive"
+    },
+    {
+      "source_seconds": 22.7985,
+      "counter_frame": 683,
+      "visual_label": "legal raised-foot touch",
+      "live_result": "false negative",
+      "live_reason": "disallowedBodyContact / handsNearBall"
+    },
+    {
+      "source_seconds": 23.365505,
+      "counter_frame": 700,
+      "visual_label": "floor bounce",
+      "live_result": "false positive"
+    },
+    {
+      "source_seconds": 30.565,
+      "counter_frame": 916,
+      "visual_label": "legal raised-foot touch",
+      "live_result": "false negative",
+      "live_reason": "disallowedBodyContact / insufficientContactViews"
+    },
+    {
+      "source_seconds": 31.34,
+      "counter_frame": null,
+      "visual_label": "legal foot touch with small upward and sideways rebound",
+      "live_result": "false negative",
+      "live_reason": "no candidate generated"
+    }
+  ],
+  "replay_limitation": "Fresh Vision frozen-detection replay is diagnostic, not the original live run. Current-policy replay count15; body eligibility bypass20. Original live count18. Fresh replay does not reconstruct every live contact recheck. All other checks remain enabled in bypass arm.",
+  "follow_up": {
+    "history_id": "F191C09B-E972-4AB5-B20C-1A6FBDBAF335",
+    "same_recording_verified": true,
+    "saved_ranked_proposal": {
+      "count": 6,
+      "startMS": 19949,
+      "endMS": 24682
+    },
+    "visual_run_lengths": [
+      3,
+      1,
+      1,
+      3,
+      1,
+      3,
+      1,
+      4,
+      2
+    ],
+    "visual_best_streak": 4,
+    "visual_best_streak_times_s": [
+      26.165,
+      27.065,
+      27.732,
+      28.399
+    ],
+    "all_identified_counting_errors_after_19_seconds": true
+  }
+}

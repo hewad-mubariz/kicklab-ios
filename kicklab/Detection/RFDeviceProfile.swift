@@ -61,3 +61,22 @@ nonisolated enum RFDeviceProfile {
     // mid-session resolution change. Future remote policy can resolve here.
     static let current = resolution(for: hardwareIdentifier)
 }
+
+/// How much extra detector work the contact checks may add around a candidate.
+/// The single RF worker is shared with regular detection; on the compact
+/// profile one prediction takes about 70 ms, so three impact-window rechecks
+/// plus a gap retry per contact starve regular detection and break the track.
+/// Compact keeps the base contact recheck and the backlog-guarded impact-gap
+/// retry; it drops the three-image impact window and the neighbour repair.
+/// Debug flags force either tier for same-device comparisons.
+nonisolated enum RFContactRecheckTier: String {
+    case full, compact
+    static let compactSignature = "|recheck-compact"
+    static func select(resolution: RFInputResolution = RFDeviceProfile.current,
+                       arguments: [String] = ProcessInfo.processInfo.arguments) -> RFContactRecheckTier {
+        if arguments.contains("--recheck-tier-full") { return .full }
+        if arguments.contains("--recheck-tier-compact") { return .compact }
+        return resolution == .compact ? .compact : .full
+    }
+    static let current = select()
+}

@@ -1,0 +1,1274 @@
+{
+  "status": "ready_for_new_recording",
+  "build": "2026102514",
+  "device": "iPhone 17 Pro Max",
+  "launch_argument": "--impact-window-v17",
+  "source_manifest": "artifacts/impact-window-v17-20261024/source-manifest-14.json",
+  "change": [
+    "Recover up to three independently bracketed real impact images within the existing worker, queue and time limits.",
+    "Require positive foot contact only when at least two actual analyzed images lacked a ball within \u00b167 ms, original impact tracking has a gap >70 ms, and the ball reaches the confident ankle-height region.",
+    "Keep uncertainty separate from positively confirmed ground contact; preserve hand and holding vetoes.",
+    "Do not apply the extra proof requirement to continuous low taps or sparse capture cadence alone."
+  ],
+  "target_scores": [
+    {
+      "recording": "new-take",
+      "run": "frozen-before",
+      "identical_inputs": true,
+      "score": {
+        "source": "47-second live recording, 2026-10-24 23:06",
+        "source_sha256": "6a771df2a60ac140a21ea8840fd50208216db358d13917a7150a38cf0c623c63",
+        "label_review_status": "All 33 accepted candidates visually reviewed; exact source frames inspected for the two false floor bounces. This is not an exhaustive missed-touch ground-truth annotation. The final very low movement near 43.4s remains unlabelled.",
+        "time_tolerance_s": 0.2,
+        "total_count": 33,
+        "labelled_valid": 31,
+        "labelled_uncertain": 0,
+        "accepted_valid": 31,
+        "missed_valid": [],
+        "false_accepted": [
+          {
+            "label_id": "reviewed-25",
+            "label_time_s": 26.698376,
+            "counter_time_s": 26.698375874996184,
+            "frame": 800
+          },
+          {
+            "label_id": "reviewed-26",
+            "label_time_s": 28.097376,
+            "counter_time_s": 28.097375874996185,
+            "frame": 842
+          }
+        ],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "reviewed-1",
+            "label_time_s": 5.765376,
+            "counter_time_s": 5.765375874996185,
+            "frame": 172
+          },
+          {
+            "label_id": "reviewed-2",
+            "label_time_s": 6.265376,
+            "counter_time_s": 6.265375874996185,
+            "frame": 187
+          },
+          {
+            "label_id": "reviewed-3",
+            "label_time_s": 6.832376,
+            "counter_time_s": 6.832375874996186,
+            "frame": 204
+          },
+          {
+            "label_id": "reviewed-4",
+            "label_time_s": 7.399376,
+            "counter_time_s": 7.399375874996185,
+            "frame": 221
+          },
+          {
+            "label_id": "reviewed-5",
+            "label_time_s": 8.065376,
+            "counter_time_s": 8.065375874996185,
+            "frame": 241
+          },
+          {
+            "label_id": "reviewed-6",
+            "label_time_s": 8.499376,
+            "counter_time_s": 8.499375874996185,
+            "frame": 254
+          },
+          {
+            "label_id": "reviewed-7",
+            "label_time_s": 9.199376,
+            "counter_time_s": 9.199375874996186,
+            "frame": 275
+          },
+          {
+            "label_id": "reviewed-8",
+            "label_time_s": 9.765376,
+            "counter_time_s": 9.765375874996185,
+            "frame": 292
+          },
+          {
+            "label_id": "reviewed-9",
+            "label_time_s": 10.265376,
+            "counter_time_s": 10.265375874996185,
+            "frame": 307
+          },
+          {
+            "label_id": "reviewed-10",
+            "label_time_s": 10.899376,
+            "counter_time_s": 10.899375874996185,
+            "frame": 326
+          },
+          {
+            "label_id": "reviewed-11",
+            "label_time_s": 11.432376,
+            "counter_time_s": 11.432375874996186,
+            "frame": 342
+          },
+          {
+            "label_id": "reviewed-12",
+            "label_time_s": 11.998376,
+            "counter_time_s": 11.998375874996185,
+            "frame": 359
+          },
+          {
+            "label_id": "reviewed-13",
+            "label_time_s": 12.532376,
+            "counter_time_s": 12.532375874996186,
+            "frame": 375
+          },
+          {
+            "label_id": "reviewed-14",
+            "label_time_s": 13.065376,
+            "counter_time_s": 13.065375874996185,
+            "frame": 391
+          },
+          {
+            "label_id": "reviewed-15",
+            "label_time_s": 13.732376,
+            "counter_time_s": 13.732375874996185,
+            "frame": 411
+          },
+          {
+            "label_id": "reviewed-16",
+            "label_time_s": 14.365376,
+            "counter_time_s": 14.365375874996186,
+            "frame": 430
+          },
+          {
+            "label_id": "reviewed-17",
+            "label_time_s": 14.865376,
+            "counter_time_s": 14.865375874996186,
+            "frame": 445
+          },
+          {
+            "label_id": "reviewed-18",
+            "label_time_s": 15.398376,
+            "counter_time_s": 15.398375874996185,
+            "frame": 461
+          },
+          {
+            "label_id": "reviewed-19",
+            "label_time_s": 19.231376,
+            "counter_time_s": 19.231375874996186,
+            "frame": 576
+          },
+          {
+            "label_id": "reviewed-20",
+            "label_time_s": 19.931376,
+            "counter_time_s": 19.931375874996185,
+            "frame": 597
+          },
+          {
+            "label_id": "reviewed-21",
+            "label_time_s": 20.465376,
+            "counter_time_s": 20.465375874996184,
+            "frame": 613
+          },
+          {
+            "label_id": "reviewed-22",
+            "label_time_s": 20.998376,
+            "counter_time_s": 20.998375874996185,
+            "frame": 629
+          },
+          {
+            "label_id": "reviewed-23",
+            "label_time_s": 23.164376,
+            "counter_time_s": 23.164375874996185,
+            "frame": 694
+          },
+          {
+            "label_id": "reviewed-24",
+            "label_time_s": 23.731376,
+            "counter_time_s": 23.731375874996186,
+            "frame": 711
+          },
+          {
+            "label_id": "reviewed-27",
+            "label_time_s": 35.197376,
+            "counter_time_s": 35.19737587499618,
+            "frame": 1054
+          },
+          {
+            "label_id": "reviewed-28",
+            "label_time_s": 38.230376,
+            "counter_time_s": 38.230375874996184,
+            "frame": 1145
+          },
+          {
+            "label_id": "reviewed-29",
+            "label_time_s": 40.297376,
+            "counter_time_s": 40.297375874996185,
+            "frame": 1207
+          },
+          {
+            "label_id": "reviewed-30",
+            "label_time_s": 40.663376,
+            "counter_time_s": 40.663375874996184,
+            "frame": 1218
+          },
+          {
+            "label_id": "reviewed-31",
+            "label_time_s": 41.197376,
+            "counter_time_s": 41.19737587499618,
+            "frame": 1234
+          },
+          {
+            "label_id": "reviewed-32",
+            "label_time_s": 42.530376,
+            "counter_time_s": 42.53037587499619,
+            "frame": 1274
+          },
+          {
+            "label_id": "reviewed-33",
+            "label_time_s": 43.097376,
+            "counter_time_s": 43.09737587499619,
+            "frame": 1291
+          }
+        ]
+      }
+    },
+    {
+      "recording": "new-take",
+      "run": "frozen-after",
+      "identical_inputs": true,
+      "score": {
+        "source": "47-second live recording, 2026-10-24 23:06",
+        "source_sha256": "6a771df2a60ac140a21ea8840fd50208216db358d13917a7150a38cf0c623c63",
+        "label_review_status": "All 33 accepted candidates visually reviewed; exact source frames inspected for the two false floor bounces. This is not an exhaustive missed-touch ground-truth annotation. The final very low movement near 43.4s remains unlabelled.",
+        "time_tolerance_s": 0.2,
+        "total_count": 31,
+        "labelled_valid": 31,
+        "labelled_uncertain": 0,
+        "accepted_valid": 31,
+        "missed_valid": [],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "reviewed-1",
+            "label_time_s": 5.765376,
+            "counter_time_s": 5.765375874996185,
+            "frame": 172
+          },
+          {
+            "label_id": "reviewed-2",
+            "label_time_s": 6.265376,
+            "counter_time_s": 6.265375874996185,
+            "frame": 187
+          },
+          {
+            "label_id": "reviewed-3",
+            "label_time_s": 6.832376,
+            "counter_time_s": 6.832375874996186,
+            "frame": 204
+          },
+          {
+            "label_id": "reviewed-4",
+            "label_time_s": 7.399376,
+            "counter_time_s": 7.399375874996185,
+            "frame": 221
+          },
+          {
+            "label_id": "reviewed-5",
+            "label_time_s": 8.065376,
+            "counter_time_s": 8.065375874996185,
+            "frame": 241
+          },
+          {
+            "label_id": "reviewed-6",
+            "label_time_s": 8.499376,
+            "counter_time_s": 8.499375874996185,
+            "frame": 254
+          },
+          {
+            "label_id": "reviewed-7",
+            "label_time_s": 9.199376,
+            "counter_time_s": 9.199375874996186,
+            "frame": 275
+          },
+          {
+            "label_id": "reviewed-8",
+            "label_time_s": 9.765376,
+            "counter_time_s": 9.765375874996185,
+            "frame": 292
+          },
+          {
+            "label_id": "reviewed-9",
+            "label_time_s": 10.265376,
+            "counter_time_s": 10.265375874996185,
+            "frame": 307
+          },
+          {
+            "label_id": "reviewed-10",
+            "label_time_s": 10.899376,
+            "counter_time_s": 10.899375874996185,
+            "frame": 326
+          },
+          {
+            "label_id": "reviewed-11",
+            "label_time_s": 11.432376,
+            "counter_time_s": 11.432375874996186,
+            "frame": 342
+          },
+          {
+            "label_id": "reviewed-12",
+            "label_time_s": 11.998376,
+            "counter_time_s": 11.998375874996185,
+            "frame": 359
+          },
+          {
+            "label_id": "reviewed-13",
+            "label_time_s": 12.532376,
+            "counter_time_s": 12.532375874996186,
+            "frame": 375
+          },
+          {
+            "label_id": "reviewed-14",
+            "label_time_s": 13.065376,
+            "counter_time_s": 13.065375874996185,
+            "frame": 391
+          },
+          {
+            "label_id": "reviewed-15",
+            "label_time_s": 13.732376,
+            "counter_time_s": 13.732375874996185,
+            "frame": 411
+          },
+          {
+            "label_id": "reviewed-16",
+            "label_time_s": 14.365376,
+            "counter_time_s": 14.365375874996186,
+            "frame": 430
+          },
+          {
+            "label_id": "reviewed-17",
+            "label_time_s": 14.865376,
+            "counter_time_s": 14.865375874996186,
+            "frame": 445
+          },
+          {
+            "label_id": "reviewed-18",
+            "label_time_s": 15.398376,
+            "counter_time_s": 15.398375874996185,
+            "frame": 461
+          },
+          {
+            "label_id": "reviewed-19",
+            "label_time_s": 19.231376,
+            "counter_time_s": 19.231375874996186,
+            "frame": 576
+          },
+          {
+            "label_id": "reviewed-20",
+            "label_time_s": 19.931376,
+            "counter_time_s": 19.931375874996185,
+            "frame": 597
+          },
+          {
+            "label_id": "reviewed-21",
+            "label_time_s": 20.465376,
+            "counter_time_s": 20.465375874996184,
+            "frame": 613
+          },
+          {
+            "label_id": "reviewed-22",
+            "label_time_s": 20.998376,
+            "counter_time_s": 20.998375874996185,
+            "frame": 629
+          },
+          {
+            "label_id": "reviewed-23",
+            "label_time_s": 23.164376,
+            "counter_time_s": 23.164375874996185,
+            "frame": 694
+          },
+          {
+            "label_id": "reviewed-24",
+            "label_time_s": 23.731376,
+            "counter_time_s": 23.731375874996186,
+            "frame": 711
+          },
+          {
+            "label_id": "reviewed-27",
+            "label_time_s": 35.197376,
+            "counter_time_s": 35.19737587499618,
+            "frame": 1054
+          },
+          {
+            "label_id": "reviewed-28",
+            "label_time_s": 38.230376,
+            "counter_time_s": 38.230375874996184,
+            "frame": 1145
+          },
+          {
+            "label_id": "reviewed-29",
+            "label_time_s": 40.297376,
+            "counter_time_s": 40.297375874996185,
+            "frame": 1207
+          },
+          {
+            "label_id": "reviewed-30",
+            "label_time_s": 40.663376,
+            "counter_time_s": 40.663375874996184,
+            "frame": 1218
+          },
+          {
+            "label_id": "reviewed-31",
+            "label_time_s": 41.197376,
+            "counter_time_s": 41.19737587499618,
+            "frame": 1234
+          },
+          {
+            "label_id": "reviewed-32",
+            "label_time_s": 42.530376,
+            "counter_time_s": 42.53037587499619,
+            "frame": 1274
+          },
+          {
+            "label_id": "reviewed-33",
+            "label_time_s": 43.097376,
+            "counter_time_s": 43.09737587499619,
+            "frame": 1291
+          }
+        ]
+      }
+    },
+    {
+      "recording": "previous-take",
+      "run": "frozen-before",
+      "identical_inputs": true,
+      "score": {
+        "source": "latest-recording-20261024-2126/source.mov",
+        "source_sha256": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+        "label_review_status": "assistant_frame_review_user_reported_failures",
+        "time_tolerance_s": 0.2,
+        "total_count": 18,
+        "labelled_valid": 19,
+        "labelled_uncertain": 0,
+        "accepted_valid": 18,
+        "missed_valid": [
+          {
+            "label_id": "e21",
+            "time_s": 31.34,
+            "contact": "legal foot touch with small upward and sideways rebound",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e01",
+            "label_time_s": 8.432505,
+            "counter_time_s": 8.432504791975022,
+            "frame": 252
+          },
+          {
+            "label_id": "e02",
+            "label_time_s": 9.199505,
+            "counter_time_s": 9.199504791975022,
+            "frame": 275
+          },
+          {
+            "label_id": "e03",
+            "label_time_s": 9.932505,
+            "counter_time_s": 9.932504791975022,
+            "frame": 297
+          },
+          {
+            "label_id": "e04",
+            "label_time_s": 12.665505,
+            "counter_time_s": 12.665504791975021,
+            "frame": 379
+          },
+          {
+            "label_id": "e05",
+            "label_time_s": 14.465505,
+            "counter_time_s": 14.465504791975022,
+            "frame": 433
+          },
+          {
+            "label_id": "e06",
+            "label_time_s": 16.098505,
+            "counter_time_s": 16.09850479197502,
+            "frame": 482
+          },
+          {
+            "label_id": "e07",
+            "label_time_s": 16.632505,
+            "counter_time_s": 16.63250479197502,
+            "frame": 498
+          },
+          {
+            "label_id": "e08",
+            "label_time_s": 17.232505,
+            "counter_time_s": 17.23250479197502,
+            "frame": 516
+          },
+          {
+            "label_id": "e09",
+            "label_time_s": 20.098505,
+            "counter_time_s": 20.09850479197502,
+            "frame": 602
+          },
+          {
+            "label_id": "e11",
+            "label_time_s": 21.465505,
+            "counter_time_s": 21.46550479197502,
+            "frame": 643
+          },
+          {
+            "label_id": "e12",
+            "label_time_s": 22.065505,
+            "counter_time_s": 22.065504791975023,
+            "frame": 661
+          },
+          {
+            "label_id": "e13",
+            "label_time_s": 22.7985,
+            "counter_time_s": 22.79850479197502,
+            "frame": 683
+          },
+          {
+            "label_id": "e15",
+            "label_time_s": 24.531505,
+            "counter_time_s": 24.53150479197502,
+            "frame": 735
+          },
+          {
+            "label_id": "e16",
+            "label_time_s": 26.164505,
+            "counter_time_s": 26.16450479197502,
+            "frame": 784
+          },
+          {
+            "label_id": "e17",
+            "label_time_s": 27.064505,
+            "counter_time_s": 27.064504791975022,
+            "frame": 811
+          },
+          {
+            "label_id": "e18",
+            "label_time_s": 27.731505,
+            "counter_time_s": 27.73150479197502,
+            "frame": 831
+          },
+          {
+            "label_id": "e19",
+            "label_time_s": 28.398505,
+            "counter_time_s": 28.39850479197502,
+            "frame": 851
+          },
+          {
+            "label_id": "e20",
+            "label_time_s": 30.565,
+            "counter_time_s": 30.564504791975022,
+            "frame": 916
+          }
+        ]
+      }
+    },
+    {
+      "recording": "previous-take",
+      "run": "frozen-after",
+      "identical_inputs": true,
+      "score": {
+        "source": "latest-recording-20261024-2126/source.mov",
+        "source_sha256": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+        "label_review_status": "assistant_frame_review_user_reported_failures",
+        "time_tolerance_s": 0.2,
+        "total_count": 18,
+        "labelled_valid": 19,
+        "labelled_uncertain": 0,
+        "accepted_valid": 18,
+        "missed_valid": [
+          {
+            "label_id": "e21",
+            "time_s": 31.34,
+            "contact": "legal foot touch with small upward and sideways rebound",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e01",
+            "label_time_s": 8.432505,
+            "counter_time_s": 8.432504791975022,
+            "frame": 252
+          },
+          {
+            "label_id": "e02",
+            "label_time_s": 9.199505,
+            "counter_time_s": 9.199504791975022,
+            "frame": 275
+          },
+          {
+            "label_id": "e03",
+            "label_time_s": 9.932505,
+            "counter_time_s": 9.932504791975022,
+            "frame": 297
+          },
+          {
+            "label_id": "e04",
+            "label_time_s": 12.665505,
+            "counter_time_s": 12.665504791975021,
+            "frame": 379
+          },
+          {
+            "label_id": "e05",
+            "label_time_s": 14.465505,
+            "counter_time_s": 14.465504791975022,
+            "frame": 433
+          },
+          {
+            "label_id": "e06",
+            "label_time_s": 16.098505,
+            "counter_time_s": 16.09850479197502,
+            "frame": 482
+          },
+          {
+            "label_id": "e07",
+            "label_time_s": 16.632505,
+            "counter_time_s": 16.63250479197502,
+            "frame": 498
+          },
+          {
+            "label_id": "e08",
+            "label_time_s": 17.232505,
+            "counter_time_s": 17.23250479197502,
+            "frame": 516
+          },
+          {
+            "label_id": "e09",
+            "label_time_s": 20.098505,
+            "counter_time_s": 20.09850479197502,
+            "frame": 602
+          },
+          {
+            "label_id": "e11",
+            "label_time_s": 21.465505,
+            "counter_time_s": 21.46550479197502,
+            "frame": 643
+          },
+          {
+            "label_id": "e12",
+            "label_time_s": 22.065505,
+            "counter_time_s": 22.065504791975023,
+            "frame": 661
+          },
+          {
+            "label_id": "e13",
+            "label_time_s": 22.7985,
+            "counter_time_s": 22.79850479197502,
+            "frame": 683
+          },
+          {
+            "label_id": "e15",
+            "label_time_s": 24.531505,
+            "counter_time_s": 24.53150479197502,
+            "frame": 735
+          },
+          {
+            "label_id": "e16",
+            "label_time_s": 26.164505,
+            "counter_time_s": 26.16450479197502,
+            "frame": 784
+          },
+          {
+            "label_id": "e17",
+            "label_time_s": 27.064505,
+            "counter_time_s": 27.064504791975022,
+            "frame": 811
+          },
+          {
+            "label_id": "e18",
+            "label_time_s": 27.731505,
+            "counter_time_s": 27.73150479197502,
+            "frame": 831
+          },
+          {
+            "label_id": "e19",
+            "label_time_s": 28.398505,
+            "counter_time_s": 28.39850479197502,
+            "frame": 851
+          },
+          {
+            "label_id": "e20",
+            "label_time_s": 30.565,
+            "counter_time_s": 30.564504791975022,
+            "frame": 916
+          }
+        ]
+      }
+    },
+    {
+      "recording": "new-take",
+      "run": "paced-before",
+      "score": {
+        "source": "47-second live recording, 2026-10-24 23:06",
+        "source_sha256": "6a771df2a60ac140a21ea8840fd50208216db358d13917a7150a38cf0c623c63",
+        "label_review_status": "All 33 accepted candidates visually reviewed; exact source frames inspected for the two false floor bounces. This is not an exhaustive missed-touch ground-truth annotation. The final very low movement near 43.4s remains unlabelled.",
+        "time_tolerance_s": 0.2,
+        "total_count": 31,
+        "labelled_valid": 31,
+        "labelled_uncertain": 0,
+        "accepted_valid": 31,
+        "missed_valid": [],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "reviewed-1",
+            "label_time_s": 5.765376,
+            "counter_time_s": 5.766,
+            "frame": 172
+          },
+          {
+            "label_id": "reviewed-2",
+            "label_time_s": 6.265376,
+            "counter_time_s": 6.266,
+            "frame": 187
+          },
+          {
+            "label_id": "reviewed-3",
+            "label_time_s": 6.832376,
+            "counter_time_s": 6.833,
+            "frame": 204
+          },
+          {
+            "label_id": "reviewed-4",
+            "label_time_s": 7.399376,
+            "counter_time_s": 7.4,
+            "frame": 221
+          },
+          {
+            "label_id": "reviewed-5",
+            "label_time_s": 8.065376,
+            "counter_time_s": 8.066,
+            "frame": 241
+          },
+          {
+            "label_id": "reviewed-6",
+            "label_time_s": 8.499376,
+            "counter_time_s": 8.5,
+            "frame": 254
+          },
+          {
+            "label_id": "reviewed-7",
+            "label_time_s": 9.199376,
+            "counter_time_s": 9.2,
+            "frame": 275
+          },
+          {
+            "label_id": "reviewed-8",
+            "label_time_s": 9.765376,
+            "counter_time_s": 9.766,
+            "frame": 292
+          },
+          {
+            "label_id": "reviewed-9",
+            "label_time_s": 10.265376,
+            "counter_time_s": 10.266,
+            "frame": 307
+          },
+          {
+            "label_id": "reviewed-10",
+            "label_time_s": 10.899376,
+            "counter_time_s": 10.9,
+            "frame": 326
+          },
+          {
+            "label_id": "reviewed-11",
+            "label_time_s": 11.432376,
+            "counter_time_s": 11.433,
+            "frame": 342
+          },
+          {
+            "label_id": "reviewed-12",
+            "label_time_s": 11.998376,
+            "counter_time_s": 12.0,
+            "frame": 359
+          },
+          {
+            "label_id": "reviewed-13",
+            "label_time_s": 12.532376,
+            "counter_time_s": 12.533,
+            "frame": 375
+          },
+          {
+            "label_id": "reviewed-14",
+            "label_time_s": 13.065376,
+            "counter_time_s": 13.066,
+            "frame": 391
+          },
+          {
+            "label_id": "reviewed-15",
+            "label_time_s": 13.732376,
+            "counter_time_s": 13.733,
+            "frame": 411
+          },
+          {
+            "label_id": "reviewed-16",
+            "label_time_s": 14.365376,
+            "counter_time_s": 14.366,
+            "frame": 430
+          },
+          {
+            "label_id": "reviewed-17",
+            "label_time_s": 14.865376,
+            "counter_time_s": 14.866,
+            "frame": 445
+          },
+          {
+            "label_id": "reviewed-18",
+            "label_time_s": 15.398376,
+            "counter_time_s": 15.381,
+            "frame": 460
+          },
+          {
+            "label_id": "reviewed-19",
+            "label_time_s": 19.231376,
+            "counter_time_s": 19.248,
+            "frame": 576
+          },
+          {
+            "label_id": "reviewed-20",
+            "label_time_s": 19.931376,
+            "counter_time_s": 19.948,
+            "frame": 597
+          },
+          {
+            "label_id": "reviewed-21",
+            "label_time_s": 20.465376,
+            "counter_time_s": 20.448,
+            "frame": 612
+          },
+          {
+            "label_id": "reviewed-22",
+            "label_time_s": 20.998376,
+            "counter_time_s": 20.981,
+            "frame": 628
+          },
+          {
+            "label_id": "reviewed-23",
+            "label_time_s": 23.164376,
+            "counter_time_s": 23.115,
+            "frame": 692
+          },
+          {
+            "label_id": "reviewed-24",
+            "label_time_s": 23.731376,
+            "counter_time_s": 23.748,
+            "frame": 711
+          },
+          {
+            "label_id": "reviewed-27",
+            "label_time_s": 35.197376,
+            "counter_time_s": 35.215,
+            "frame": 1055
+          },
+          {
+            "label_id": "reviewed-28",
+            "label_time_s": 38.230376,
+            "counter_time_s": 38.215,
+            "frame": 1145
+          },
+          {
+            "label_id": "reviewed-29",
+            "label_time_s": 40.297376,
+            "counter_time_s": 40.281,
+            "frame": 1207
+          },
+          {
+            "label_id": "reviewed-30",
+            "label_time_s": 40.663376,
+            "counter_time_s": 40.648,
+            "frame": 1218
+          },
+          {
+            "label_id": "reviewed-31",
+            "label_time_s": 41.197376,
+            "counter_time_s": 41.181,
+            "frame": 1234
+          },
+          {
+            "label_id": "reviewed-32",
+            "label_time_s": 42.530376,
+            "counter_time_s": 42.563,
+            "frame": 1275
+          },
+          {
+            "label_id": "reviewed-33",
+            "label_time_s": 43.097376,
+            "counter_time_s": 43.096,
+            "frame": 1291
+          }
+        ]
+      },
+      "performance": {
+        "admitted_frames": 1414,
+        "count": 31,
+        "elapsed_seconds": 47.60375362500781,
+        "expected_end_seconds": 47.18,
+        "last_source_seconds": 47.163333333333334,
+        "late_source_skips": 0,
+        "mask_frames": 405,
+        "memory_mib": 95.89256286621094,
+        "mode": "paced",
+        "processed_frames": 1414,
+        "source_frames": 2828,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 1133,
+        "updated": "2026-10-25T16:25:18Z"
+      }
+    },
+    {
+      "recording": "new-take",
+      "run": "paced-after",
+      "score": {
+        "source": "47-second live recording, 2026-10-24 23:06",
+        "source_sha256": "6a771df2a60ac140a21ea8840fd50208216db358d13917a7150a38cf0c623c63",
+        "label_review_status": "All 33 accepted candidates visually reviewed; exact source frames inspected for the two false floor bounces. This is not an exhaustive missed-touch ground-truth annotation. The final very low movement near 43.4s remains unlabelled.",
+        "time_tolerance_s": 0.2,
+        "total_count": 31,
+        "labelled_valid": 31,
+        "labelled_uncertain": 0,
+        "accepted_valid": 31,
+        "missed_valid": [],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "reviewed-1",
+            "label_time_s": 5.765376,
+            "counter_time_s": 5.766,
+            "frame": 172
+          },
+          {
+            "label_id": "reviewed-2",
+            "label_time_s": 6.265376,
+            "counter_time_s": 6.266,
+            "frame": 187
+          },
+          {
+            "label_id": "reviewed-3",
+            "label_time_s": 6.832376,
+            "counter_time_s": 6.833,
+            "frame": 204
+          },
+          {
+            "label_id": "reviewed-4",
+            "label_time_s": 7.399376,
+            "counter_time_s": 7.4,
+            "frame": 221
+          },
+          {
+            "label_id": "reviewed-5",
+            "label_time_s": 8.065376,
+            "counter_time_s": 8.066,
+            "frame": 241
+          },
+          {
+            "label_id": "reviewed-6",
+            "label_time_s": 8.499376,
+            "counter_time_s": 8.5,
+            "frame": 254
+          },
+          {
+            "label_id": "reviewed-7",
+            "label_time_s": 9.199376,
+            "counter_time_s": 9.2,
+            "frame": 275
+          },
+          {
+            "label_id": "reviewed-8",
+            "label_time_s": 9.765376,
+            "counter_time_s": 9.766,
+            "frame": 292
+          },
+          {
+            "label_id": "reviewed-9",
+            "label_time_s": 10.265376,
+            "counter_time_s": 10.266,
+            "frame": 307
+          },
+          {
+            "label_id": "reviewed-10",
+            "label_time_s": 10.899376,
+            "counter_time_s": 10.9,
+            "frame": 326
+          },
+          {
+            "label_id": "reviewed-11",
+            "label_time_s": 11.432376,
+            "counter_time_s": 11.433,
+            "frame": 342
+          },
+          {
+            "label_id": "reviewed-12",
+            "label_time_s": 11.998376,
+            "counter_time_s": 12.0,
+            "frame": 359
+          },
+          {
+            "label_id": "reviewed-13",
+            "label_time_s": 12.532376,
+            "counter_time_s": 12.533,
+            "frame": 375
+          },
+          {
+            "label_id": "reviewed-14",
+            "label_time_s": 13.065376,
+            "counter_time_s": 13.033,
+            "frame": 390
+          },
+          {
+            "label_id": "reviewed-15",
+            "label_time_s": 13.732376,
+            "counter_time_s": 13.733,
+            "frame": 411
+          },
+          {
+            "label_id": "reviewed-16",
+            "label_time_s": 14.365376,
+            "counter_time_s": 14.366,
+            "frame": 430
+          },
+          {
+            "label_id": "reviewed-17",
+            "label_time_s": 14.865376,
+            "counter_time_s": 14.9,
+            "frame": 446
+          },
+          {
+            "label_id": "reviewed-18",
+            "label_time_s": 15.398376,
+            "counter_time_s": 15.381,
+            "frame": 460
+          },
+          {
+            "label_id": "reviewed-19",
+            "label_time_s": 19.231376,
+            "counter_time_s": 19.248,
+            "frame": 576
+          },
+          {
+            "label_id": "reviewed-20",
+            "label_time_s": 19.931376,
+            "counter_time_s": 19.915,
+            "frame": 596
+          },
+          {
+            "label_id": "reviewed-21",
+            "label_time_s": 20.465376,
+            "counter_time_s": 20.448,
+            "frame": 612
+          },
+          {
+            "label_id": "reviewed-22",
+            "label_time_s": 20.998376,
+            "counter_time_s": 20.981,
+            "frame": 628
+          },
+          {
+            "label_id": "reviewed-23",
+            "label_time_s": 23.164376,
+            "counter_time_s": 23.115,
+            "frame": 692
+          },
+          {
+            "label_id": "reviewed-24",
+            "label_time_s": 23.731376,
+            "counter_time_s": 23.748,
+            "frame": 711
+          },
+          {
+            "label_id": "reviewed-27",
+            "label_time_s": 35.197376,
+            "counter_time_s": 35.215,
+            "frame": 1055
+          },
+          {
+            "label_id": "reviewed-28",
+            "label_time_s": 38.230376,
+            "counter_time_s": 38.215,
+            "frame": 1145
+          },
+          {
+            "label_id": "reviewed-29",
+            "label_time_s": 40.297376,
+            "counter_time_s": 40.281,
+            "frame": 1207
+          },
+          {
+            "label_id": "reviewed-30",
+            "label_time_s": 40.663376,
+            "counter_time_s": 40.648,
+            "frame": 1218
+          },
+          {
+            "label_id": "reviewed-31",
+            "label_time_s": 41.197376,
+            "counter_time_s": 41.181,
+            "frame": 1234
+          },
+          {
+            "label_id": "reviewed-32",
+            "label_time_s": 42.530376,
+            "counter_time_s": 42.563,
+            "frame": 1275
+          },
+          {
+            "label_id": "reviewed-33",
+            "label_time_s": 43.097376,
+            "counter_time_s": 43.096,
+            "frame": 1291
+          }
+        ]
+      },
+      "performance": {
+        "admitted_frames": 1414,
+        "count": 31,
+        "elapsed_seconds": 47.60864812502405,
+        "expected_end_seconds": 47.18,
+        "last_source_seconds": 47.163333333333334,
+        "late_source_skips": 0,
+        "mask_frames": 395,
+        "memory_mib": 101.87691497802734,
+        "mode": "paced",
+        "processed_frames": 1414,
+        "source_frames": 2828,
+        "state": "completed",
+        "thermal": 1,
+        "trace_replay_exact": true,
+        "track_frames": 1117,
+        "updated": "2026-10-25T16:36:05Z"
+      }
+    }
+  ],
+  "corpus": {
+    "clips": 22,
+    "changed_accepted_contacts": [],
+    "totals": {
+      "before": {
+        "clips": 20,
+        "labelled_valid": 615,
+        "accepted_valid": 568,
+        "missed_valid": 47,
+        "false_accepted": 5,
+        "uncertain_accepted": 5,
+        "unreviewed_accepted": 0
+      },
+      "after": {
+        "clips": 20,
+        "labelled_valid": 615,
+        "accepted_valid": 568,
+        "missed_valid": 47,
+        "false_accepted": 5,
+        "uncertain_accepted": 5,
+        "unreviewed_accepted": 0
+      }
+    },
+    "baseline_build": "2026102513",
+    "candidate_build": "2026102514",
+    "baseline_reuse": "The v16 path is unchanged by the build14 provenance refinement. All 22 v17 candidate arms were rerun on build14; baseline inputs, current configuration and gates are checked identical."
+  },
+  "local_tests": {
+    "passed": 61,
+    "failed": 0,
+    "skipped": 0,
+    "summary": "artifacts/impact-window-v17-20261024/tests-14-summary.json",
+    "final_captured_fixture_retest": "Passed; final-captured-14.xcresult"
+  },
+  "performance": {
+    "before": {
+      "status": {
+        "admitted_frames": 1414,
+        "count": 31,
+        "elapsed_seconds": 47.60375362500781,
+        "expected_end_seconds": 47.18,
+        "last_source_seconds": 47.163333333333334,
+        "late_source_skips": 0,
+        "mask_frames": 405,
+        "memory_mib": 95.89256286621094,
+        "mode": "paced",
+        "processed_frames": 1414,
+        "source_frames": 2828,
+        "state": "completed",
+        "thermal": 0,
+        "trace_replay_exact": true,
+        "track_frames": 1133,
+        "updated": "2026-10-25T16:25:18Z"
+      },
+      "signature": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792944245.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|hands=true|contact-evidence-v16|handling-v2|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "counter": {
+        "maximum_queue_depth": 6,
+        "outstanding": 0,
+        "processed": 1414,
+        "queue_capacity": 32
+      },
+      "overflow_drops": 0,
+      "late_replies": 0,
+      "maximum_buffered_frames": 9,
+      "notification_latency_median_ms": 472.8264166940935,
+      "notification_latency_max_ms": 549.2334167198278,
+      "attempted_contact_rechecks": 6
+    },
+    "after": {
+      "status": {
+        "admitted_frames": 1414,
+        "count": 31,
+        "elapsed_seconds": 47.60864812502405,
+        "expected_end_seconds": 47.18,
+        "last_source_seconds": 47.163333333333334,
+        "late_source_skips": 0,
+        "mask_frames": 395,
+        "memory_mib": 101.87691497802734,
+        "mode": "paced",
+        "processed_frames": 1414,
+        "source_frames": 2828,
+        "state": "completed",
+        "thermal": 1,
+        "trace_replay_exact": true,
+        "track_frames": 1117,
+        "updated": "2026-10-25T16:36:05Z"
+      },
+      "signature": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792945674.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|hands=true|impact-window-v17|handling-v2|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "counter": {
+        "maximum_queue_depth": 12,
+        "outstanding": 0,
+        "processed": 1414,
+        "queue_capacity": 32
+      },
+      "overflow_drops": 0,
+      "late_replies": 0,
+      "maximum_buffered_frames": 9,
+      "notification_latency_median_ms": 484.5927083357237,
+      "notification_latency_max_ms": 726.2231666711159,
+      "attempted_contact_rechecks": 25
+    }
+  },
+  "limitations": [
+    "The latest recording labels cover its 33 originally accepted events, not exhaustive missed-contact ground truth; the very low movement near 43.4 s remains unlabelled.",
+    "The broader labelled corpus retains 47 missed valid contacts, 5 confirmed false counts and 5 uncertain accepted contacts; these existing results did not change.",
+    "Fresh real-time tracking counted 31 valid and zero false contacts in BOTH versions, so only the identical-input replay demonstrates removal of the original two false bounces.",
+    "The initial build13 before/after corpus batch needed two process restarts of unestablished cause. All final build14 candidate passes completed in one resumed-validation launch. This is not a long camera-recording endurance test.",
+    "Experimental selection is a launch argument; a manual app relaunch without it uses the existing default policy."
+  ],
+  "normal_launch": "artifacts/impact-window-v17-20261024/normal-recording-launch-14.json"
+}

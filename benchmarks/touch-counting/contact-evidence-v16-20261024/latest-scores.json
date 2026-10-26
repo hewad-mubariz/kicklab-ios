@@ -1,0 +1,1211 @@
+[
+  {
+    "run": "original_live",
+    "score": {
+      "source": "latest-recording-20261024-2126/source.mov",
+      "source_sha256": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+      "label_review_status": "assistant_frame_review_user_reported_failures",
+      "time_tolerance_s": 0.2,
+      "total_count": 18,
+      "labelled_valid": 19,
+      "labelled_uncertain": 0,
+      "accepted_valid": 16,
+      "missed_valid": [
+        {
+          "label_id": "e13",
+          "time_s": 22.7985,
+          "contact": "legal raised-foot touch",
+          "decision": {
+            "frameIndex": 683,
+            "time": 22.798504791979212,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall",
+            "player": {
+              "state": "locked",
+              "id": 1,
+              "box": {
+                "x": 0.62939453125,
+                "y": 0.29443359375,
+                "width": 0.468505859375,
+                "height": 0.580078125
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e20",
+          "time_s": 30.565,
+          "contact": "legal raised-foot touch",
+          "decision": {
+            "frameIndex": 916,
+            "time": 30.564504791982472,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "insufficientContactViews",
+            "player": {
+              "state": "locked",
+              "id": 1,
+              "box": {
+                "x": 0.41259765625,
+                "y": 0.30908203125,
+                "width": 0.494873046875,
+                "height": 0.611328125
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e21",
+          "time_s": 31.34,
+          "contact": "legal foot touch with small upward and sideways rebound",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        }
+      ],
+      "false_accepted": [
+        {
+          "label_id": "e10",
+          "label_time_s": 20.798505,
+          "counter_time_s": 20.79850479197502,
+          "frame": 623
+        },
+        {
+          "label_id": "e14",
+          "label_time_s": 23.365505,
+          "counter_time_s": 23.36550479197502,
+          "frame": 700
+        }
+      ],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": [],
+      "matched": [
+        {
+          "label_id": "e01",
+          "label_time_s": 8.432505,
+          "counter_time_s": 8.432504791975022,
+          "frame": 252
+        },
+        {
+          "label_id": "e02",
+          "label_time_s": 9.199505,
+          "counter_time_s": 9.199504791975022,
+          "frame": 275
+        },
+        {
+          "label_id": "e03",
+          "label_time_s": 9.932505,
+          "counter_time_s": 9.932504791975022,
+          "frame": 297
+        },
+        {
+          "label_id": "e04",
+          "label_time_s": 12.665505,
+          "counter_time_s": 12.665504791975021,
+          "frame": 379
+        },
+        {
+          "label_id": "e05",
+          "label_time_s": 14.465505,
+          "counter_time_s": 14.465504791975022,
+          "frame": 433
+        },
+        {
+          "label_id": "e06",
+          "label_time_s": 16.098505,
+          "counter_time_s": 16.09850479197502,
+          "frame": 482
+        },
+        {
+          "label_id": "e07",
+          "label_time_s": 16.632505,
+          "counter_time_s": 16.63250479197502,
+          "frame": 498
+        },
+        {
+          "label_id": "e08",
+          "label_time_s": 17.232505,
+          "counter_time_s": 17.23250479197502,
+          "frame": 516
+        },
+        {
+          "label_id": "e09",
+          "label_time_s": 20.098505,
+          "counter_time_s": 20.09850479197502,
+          "frame": 602
+        },
+        {
+          "label_id": "e11",
+          "label_time_s": 21.465505,
+          "counter_time_s": 21.46550479197502,
+          "frame": 643
+        },
+        {
+          "label_id": "e12",
+          "label_time_s": 22.065505,
+          "counter_time_s": 22.065504791975023,
+          "frame": 661
+        },
+        {
+          "label_id": "e15",
+          "label_time_s": 24.531505,
+          "counter_time_s": 24.53150479197502,
+          "frame": 735
+        },
+        {
+          "label_id": "e16",
+          "label_time_s": 26.164505,
+          "counter_time_s": 26.16450479197502,
+          "frame": 784
+        },
+        {
+          "label_id": "e17",
+          "label_time_s": 27.064505,
+          "counter_time_s": 27.064504791975022,
+          "frame": 811
+        },
+        {
+          "label_id": "e18",
+          "label_time_s": 27.731505,
+          "counter_time_s": 27.73150479197502,
+          "frame": 831
+        },
+        {
+          "label_id": "e19",
+          "label_time_s": 28.398505,
+          "counter_time_s": 28.39850479197502,
+          "frame": 851
+        }
+      ]
+    },
+    "performance": null
+  },
+  {
+    "run": "frozen_before",
+    "score": {
+      "source": "latest-recording-20261024-2126/source.mov",
+      "source_sha256": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+      "label_review_status": "assistant_frame_review_user_reported_failures",
+      "time_tolerance_s": 0.2,
+      "total_count": 18,
+      "labelled_valid": 19,
+      "labelled_uncertain": 0,
+      "accepted_valid": 16,
+      "missed_valid": [
+        {
+          "label_id": "e13",
+          "time_s": 22.7985,
+          "contact": "legal raised-foot touch",
+          "decision": {
+            "frameIndex": 683,
+            "time": 22.798504791979212,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall",
+            "player": {
+              "state": "locked",
+              "id": 1,
+              "box": {
+                "x": 0.62939453125,
+                "y": 0.29443359375,
+                "width": 0.468505859375,
+                "height": 0.580078125
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e20",
+          "time_s": 30.565,
+          "contact": "legal raised-foot touch",
+          "decision": {
+            "frameIndex": 916,
+            "time": 30.564504791982472,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "insufficientContactViews",
+            "player": {
+              "state": "locked",
+              "id": 1,
+              "box": {
+                "x": 0.41259765625,
+                "y": 0.30908203125,
+                "width": 0.494873046875,
+                "height": 0.611328125
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e21",
+          "time_s": 31.34,
+          "contact": "legal foot touch with small upward and sideways rebound",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        }
+      ],
+      "false_accepted": [
+        {
+          "label_id": "e10",
+          "label_time_s": 20.798505,
+          "counter_time_s": 20.79850479197502,
+          "frame": 623
+        },
+        {
+          "label_id": "e14",
+          "label_time_s": 23.365505,
+          "counter_time_s": 23.36550479197502,
+          "frame": 700
+        }
+      ],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": [],
+      "matched": [
+        {
+          "label_id": "e01",
+          "label_time_s": 8.432505,
+          "counter_time_s": 8.432504791975022,
+          "frame": 252
+        },
+        {
+          "label_id": "e02",
+          "label_time_s": 9.199505,
+          "counter_time_s": 9.199504791975022,
+          "frame": 275
+        },
+        {
+          "label_id": "e03",
+          "label_time_s": 9.932505,
+          "counter_time_s": 9.932504791975022,
+          "frame": 297
+        },
+        {
+          "label_id": "e04",
+          "label_time_s": 12.665505,
+          "counter_time_s": 12.665504791975021,
+          "frame": 379
+        },
+        {
+          "label_id": "e05",
+          "label_time_s": 14.465505,
+          "counter_time_s": 14.465504791975022,
+          "frame": 433
+        },
+        {
+          "label_id": "e06",
+          "label_time_s": 16.098505,
+          "counter_time_s": 16.09850479197502,
+          "frame": 482
+        },
+        {
+          "label_id": "e07",
+          "label_time_s": 16.632505,
+          "counter_time_s": 16.63250479197502,
+          "frame": 498
+        },
+        {
+          "label_id": "e08",
+          "label_time_s": 17.232505,
+          "counter_time_s": 17.23250479197502,
+          "frame": 516
+        },
+        {
+          "label_id": "e09",
+          "label_time_s": 20.098505,
+          "counter_time_s": 20.09850479197502,
+          "frame": 602
+        },
+        {
+          "label_id": "e11",
+          "label_time_s": 21.465505,
+          "counter_time_s": 21.46550479197502,
+          "frame": 643
+        },
+        {
+          "label_id": "e12",
+          "label_time_s": 22.065505,
+          "counter_time_s": 22.065504791975023,
+          "frame": 661
+        },
+        {
+          "label_id": "e15",
+          "label_time_s": 24.531505,
+          "counter_time_s": 24.53150479197502,
+          "frame": 735
+        },
+        {
+          "label_id": "e16",
+          "label_time_s": 26.164505,
+          "counter_time_s": 26.16450479197502,
+          "frame": 784
+        },
+        {
+          "label_id": "e17",
+          "label_time_s": 27.064505,
+          "counter_time_s": 27.064504791975022,
+          "frame": 811
+        },
+        {
+          "label_id": "e18",
+          "label_time_s": 27.731505,
+          "counter_time_s": 27.73150479197502,
+          "frame": 831
+        },
+        {
+          "label_id": "e19",
+          "label_time_s": 28.398505,
+          "counter_time_s": 28.39850479197502,
+          "frame": 851
+        }
+      ]
+    },
+    "performance": null
+  },
+  {
+    "run": "frozen_after",
+    "score": {
+      "source": "latest-recording-20261024-2126/source.mov",
+      "source_sha256": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+      "label_review_status": "assistant_frame_review_user_reported_failures",
+      "time_tolerance_s": 0.2,
+      "total_count": 18,
+      "labelled_valid": 19,
+      "labelled_uncertain": 0,
+      "accepted_valid": 18,
+      "missed_valid": [
+        {
+          "label_id": "e21",
+          "time_s": 31.34,
+          "contact": "legal foot touch with small upward and sideways rebound",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": [],
+      "matched": [
+        {
+          "label_id": "e01",
+          "label_time_s": 8.432505,
+          "counter_time_s": 8.432504791975022,
+          "frame": 252
+        },
+        {
+          "label_id": "e02",
+          "label_time_s": 9.199505,
+          "counter_time_s": 9.199504791975022,
+          "frame": 275
+        },
+        {
+          "label_id": "e03",
+          "label_time_s": 9.932505,
+          "counter_time_s": 9.932504791975022,
+          "frame": 297
+        },
+        {
+          "label_id": "e04",
+          "label_time_s": 12.665505,
+          "counter_time_s": 12.665504791975021,
+          "frame": 379
+        },
+        {
+          "label_id": "e05",
+          "label_time_s": 14.465505,
+          "counter_time_s": 14.465504791975022,
+          "frame": 433
+        },
+        {
+          "label_id": "e06",
+          "label_time_s": 16.098505,
+          "counter_time_s": 16.09850479197502,
+          "frame": 482
+        },
+        {
+          "label_id": "e07",
+          "label_time_s": 16.632505,
+          "counter_time_s": 16.63250479197502,
+          "frame": 498
+        },
+        {
+          "label_id": "e08",
+          "label_time_s": 17.232505,
+          "counter_time_s": 17.23250479197502,
+          "frame": 516
+        },
+        {
+          "label_id": "e09",
+          "label_time_s": 20.098505,
+          "counter_time_s": 20.09850479197502,
+          "frame": 602
+        },
+        {
+          "label_id": "e11",
+          "label_time_s": 21.465505,
+          "counter_time_s": 21.46550479197502,
+          "frame": 643
+        },
+        {
+          "label_id": "e12",
+          "label_time_s": 22.065505,
+          "counter_time_s": 22.065504791975023,
+          "frame": 661
+        },
+        {
+          "label_id": "e13",
+          "label_time_s": 22.7985,
+          "counter_time_s": 22.79850479197502,
+          "frame": 683
+        },
+        {
+          "label_id": "e15",
+          "label_time_s": 24.531505,
+          "counter_time_s": 24.53150479197502,
+          "frame": 735
+        },
+        {
+          "label_id": "e16",
+          "label_time_s": 26.164505,
+          "counter_time_s": 26.16450479197502,
+          "frame": 784
+        },
+        {
+          "label_id": "e17",
+          "label_time_s": 27.064505,
+          "counter_time_s": 27.064504791975022,
+          "frame": 811
+        },
+        {
+          "label_id": "e18",
+          "label_time_s": 27.731505,
+          "counter_time_s": 27.73150479197502,
+          "frame": 831
+        },
+        {
+          "label_id": "e19",
+          "label_time_s": 28.398505,
+          "counter_time_s": 28.39850479197502,
+          "frame": 851
+        },
+        {
+          "label_id": "e20",
+          "label_time_s": 30.565,
+          "counter_time_s": 30.564504791975022,
+          "frame": 916
+        }
+      ]
+    },
+    "performance": null
+  },
+  {
+    "run": "paced-before",
+    "score": {
+      "source": "latest-recording-20261024-2126/source.mov",
+      "source_sha256": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+      "label_review_status": "assistant_frame_review_user_reported_failures",
+      "time_tolerance_s": 0.2,
+      "total_count": 19,
+      "labelled_valid": 19,
+      "labelled_uncertain": 0,
+      "accepted_valid": 18,
+      "missed_valid": [
+        {
+          "label_id": "e13",
+          "time_s": 22.7985,
+          "contact": "legal raised-foot touch",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        }
+      ],
+      "false_accepted": [
+        {
+          "label_id": "e14",
+          "label_time_s": 23.365505,
+          "counter_time_s": 23.381,
+          "frame": 700
+        }
+      ],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": [],
+      "matched": [
+        {
+          "label_id": "e01",
+          "label_time_s": 8.432505,
+          "counter_time_s": 8.466,
+          "frame": 253
+        },
+        {
+          "label_id": "e02",
+          "label_time_s": 9.199505,
+          "counter_time_s": 9.2,
+          "frame": 275
+        },
+        {
+          "label_id": "e03",
+          "label_time_s": 9.932505,
+          "counter_time_s": 9.933,
+          "frame": 297
+        },
+        {
+          "label_id": "e04",
+          "label_time_s": 12.665505,
+          "counter_time_s": 12.666,
+          "frame": 379
+        },
+        {
+          "label_id": "e05",
+          "label_time_s": 14.465505,
+          "counter_time_s": 14.466,
+          "frame": 433
+        },
+        {
+          "label_id": "e06",
+          "label_time_s": 16.098505,
+          "counter_time_s": 16.1,
+          "frame": 482
+        },
+        {
+          "label_id": "e07",
+          "label_time_s": 16.632505,
+          "counter_time_s": 16.666,
+          "frame": 499
+        },
+        {
+          "label_id": "e08",
+          "label_time_s": 17.232505,
+          "counter_time_s": 17.233,
+          "frame": 516
+        },
+        {
+          "label_id": "e09",
+          "label_time_s": 20.098505,
+          "counter_time_s": 20.115,
+          "frame": 602
+        },
+        {
+          "label_id": "e11",
+          "label_time_s": 21.465505,
+          "counter_time_s": 21.481,
+          "frame": 643
+        },
+        {
+          "label_id": "e12",
+          "label_time_s": 22.065505,
+          "counter_time_s": 22.081,
+          "frame": 661
+        },
+        {
+          "label_id": "e15",
+          "label_time_s": 24.531505,
+          "counter_time_s": 24.515,
+          "frame": 734
+        },
+        {
+          "label_id": "e16",
+          "label_time_s": 26.164505,
+          "counter_time_s": 26.148,
+          "frame": 783
+        },
+        {
+          "label_id": "e17",
+          "label_time_s": 27.064505,
+          "counter_time_s": 27.048,
+          "frame": 810
+        },
+        {
+          "label_id": "e18",
+          "label_time_s": 27.731505,
+          "counter_time_s": 27.715,
+          "frame": 830
+        },
+        {
+          "label_id": "e19",
+          "label_time_s": 28.398505,
+          "counter_time_s": 28.381,
+          "frame": 850
+        },
+        {
+          "label_id": "e20",
+          "label_time_s": 30.565,
+          "counter_time_s": 30.548,
+          "frame": 915
+        },
+        {
+          "label_id": "e21",
+          "label_time_s": 31.34,
+          "counter_time_s": 31.415,
+          "frame": 941
+        }
+      ]
+    },
+    "performance": {
+      "admitted_frames": 1051,
+      "count": 19,
+      "elapsed_seconds": 35.43915466667386,
+      "expected_end_seconds": 35.065,
+      "last_source_seconds": 35.04833333333333,
+      "late_source_skips": 0,
+      "mask_frames": 253,
+      "memory_mib": 87.50191497802734,
+      "mode": "paced",
+      "processed_frames": 1051,
+      "source_frames": 2101,
+      "state": "completed",
+      "thermal": 0,
+      "trace_replay_exact": true,
+      "track_frames": 666,
+      "updated": "2026-10-24T20:07:17Z"
+    }
+  },
+  {
+    "run": "paced-04-after",
+    "score": {
+      "source": "latest-recording-20261024-2126/source.mov",
+      "source_sha256": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+      "label_review_status": "assistant_frame_review_user_reported_failures",
+      "time_tolerance_s": 0.2,
+      "total_count": 19,
+      "labelled_valid": 19,
+      "labelled_uncertain": 0,
+      "accepted_valid": 18,
+      "missed_valid": [
+        {
+          "label_id": "e13",
+          "time_s": 22.7985,
+          "contact": "legal raised-foot touch",
+          "decision": {
+            "frameIndex": 680,
+            "time": 22.781,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall",
+            "player": {
+              "state": "locked",
+              "id": 1,
+              "box": {
+                "x": 0.62890625,
+                "y": 0.29443359375,
+                "width": 0.467529296875,
+                "height": 0.58203125
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [
+        {
+          "label_id": "e14",
+          "label_time_s": 23.365505,
+          "counter_time_s": 23.415,
+          "frame": 699
+        }
+      ],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": [],
+      "matched": [
+        {
+          "label_id": "e01",
+          "label_time_s": 8.432505,
+          "counter_time_s": 8.466,
+          "frame": 253
+        },
+        {
+          "label_id": "e02",
+          "label_time_s": 9.199505,
+          "counter_time_s": 9.2,
+          "frame": 275
+        },
+        {
+          "label_id": "e03",
+          "label_time_s": 9.932505,
+          "counter_time_s": 9.933,
+          "frame": 297
+        },
+        {
+          "label_id": "e04",
+          "label_time_s": 12.665505,
+          "counter_time_s": 12.666,
+          "frame": 379
+        },
+        {
+          "label_id": "e05",
+          "label_time_s": 14.465505,
+          "counter_time_s": 14.466,
+          "frame": 433
+        },
+        {
+          "label_id": "e06",
+          "label_time_s": 16.098505,
+          "counter_time_s": 16.066,
+          "frame": 479
+        },
+        {
+          "label_id": "e07",
+          "label_time_s": 16.632505,
+          "counter_time_s": 16.633,
+          "frame": 496
+        },
+        {
+          "label_id": "e08",
+          "label_time_s": 17.232505,
+          "counter_time_s": 17.233,
+          "frame": 514
+        },
+        {
+          "label_id": "e09",
+          "label_time_s": 20.098505,
+          "counter_time_s": 20.115,
+          "frame": 600
+        },
+        {
+          "label_id": "e11",
+          "label_time_s": 21.465505,
+          "counter_time_s": 21.448,
+          "frame": 640
+        },
+        {
+          "label_id": "e12",
+          "label_time_s": 22.065505,
+          "counter_time_s": 22.081,
+          "frame": 659
+        },
+        {
+          "label_id": "e15",
+          "label_time_s": 24.531505,
+          "counter_time_s": 24.515,
+          "frame": 731
+        },
+        {
+          "label_id": "e16",
+          "label_time_s": 26.164505,
+          "counter_time_s": 26.148,
+          "frame": 780
+        },
+        {
+          "label_id": "e17",
+          "label_time_s": 27.064505,
+          "counter_time_s": 27.048,
+          "frame": 807
+        },
+        {
+          "label_id": "e18",
+          "label_time_s": 27.731505,
+          "counter_time_s": 27.715,
+          "frame": 827
+        },
+        {
+          "label_id": "e19",
+          "label_time_s": 28.398505,
+          "counter_time_s": 28.381,
+          "frame": 847
+        },
+        {
+          "label_id": "e20",
+          "label_time_s": 30.565,
+          "counter_time_s": 30.548,
+          "frame": 912
+        },
+        {
+          "label_id": "e21",
+          "label_time_s": 31.34,
+          "counter_time_s": 31.348,
+          "frame": 936
+        }
+      ]
+    },
+    "performance": {
+      "admitted_frames": 1047,
+      "count": 19,
+      "elapsed_seconds": 35.43894762499258,
+      "expected_end_seconds": 35.065,
+      "last_source_seconds": 35.04833333333333,
+      "late_source_skips": 4,
+      "mask_frames": 248,
+      "memory_mib": 193.3458709716797,
+      "mode": "paced",
+      "processed_frames": 1047,
+      "source_frames": 2101,
+      "state": "completed",
+      "thermal": 0,
+      "trace_replay_exact": true,
+      "track_frames": 674,
+      "updated": "2026-10-24T20:09:10Z"
+    }
+  },
+  {
+    "run": "paced-07-after",
+    "score": {
+      "source": "latest-recording-20261024-2126/source.mov",
+      "source_sha256": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+      "label_review_status": "assistant_frame_review_user_reported_failures",
+      "time_tolerance_s": 0.2,
+      "total_count": 17,
+      "labelled_valid": 19,
+      "labelled_uncertain": 0,
+      "accepted_valid": 17,
+      "missed_valid": [
+        {
+          "label_id": "e03",
+          "time_s": 9.932505,
+          "contact": "legal foot touch",
+          "decision": {
+            "frameIndex": 298,
+            "time": 10.066,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "insufficientContactViews",
+            "player": {
+              "state": "locked",
+              "id": 1,
+              "box": {
+                "x": 0.341796875,
+                "y": 0.2880859375,
+                "width": 0.56494140625,
+                "height": 0.56884765625
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e13",
+          "time_s": 22.7985,
+          "contact": "legal raised-foot touch",
+          "decision": {
+            "frameIndex": 670,
+            "time": 22.815,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall",
+            "player": {
+              "state": "locked",
+              "id": 1,
+              "box": {
+                "x": 0.625,
+                "y": 0.294189453125,
+                "width": 0.4736328125,
+                "height": 0.583984375
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": [],
+      "matched": [
+        {
+          "label_id": "e01",
+          "label_time_s": 8.432505,
+          "counter_time_s": 8.466,
+          "frame": 253
+        },
+        {
+          "label_id": "e02",
+          "label_time_s": 9.199505,
+          "counter_time_s": 9.2,
+          "frame": 275
+        },
+        {
+          "label_id": "e04",
+          "label_time_s": 12.665505,
+          "counter_time_s": 12.666,
+          "frame": 366
+        },
+        {
+          "label_id": "e05",
+          "label_time_s": 14.465505,
+          "counter_time_s": 14.466,
+          "frame": 420
+        },
+        {
+          "label_id": "e06",
+          "label_time_s": 16.098505,
+          "counter_time_s": 16.1,
+          "frame": 469
+        },
+        {
+          "label_id": "e07",
+          "label_time_s": 16.632505,
+          "counter_time_s": 16.666,
+          "frame": 486
+        },
+        {
+          "label_id": "e08",
+          "label_time_s": 17.232505,
+          "counter_time_s": 17.266,
+          "frame": 504
+        },
+        {
+          "label_id": "e09",
+          "label_time_s": 20.098505,
+          "counter_time_s": 20.115,
+          "frame": 589
+        },
+        {
+          "label_id": "e11",
+          "label_time_s": 21.465505,
+          "counter_time_s": 21.481,
+          "frame": 630
+        },
+        {
+          "label_id": "e12",
+          "label_time_s": 22.065505,
+          "counter_time_s": 22.081,
+          "frame": 648
+        },
+        {
+          "label_id": "e15",
+          "label_time_s": 24.531505,
+          "counter_time_s": 24.548,
+          "frame": 722
+        },
+        {
+          "label_id": "e16",
+          "label_time_s": 26.164505,
+          "counter_time_s": 26.148,
+          "frame": 770
+        },
+        {
+          "label_id": "e17",
+          "label_time_s": 27.064505,
+          "counter_time_s": 27.048,
+          "frame": 797
+        },
+        {
+          "label_id": "e18",
+          "label_time_s": 27.731505,
+          "counter_time_s": 27.715,
+          "frame": 817
+        },
+        {
+          "label_id": "e19",
+          "label_time_s": 28.398505,
+          "counter_time_s": 28.381,
+          "frame": 837
+        },
+        {
+          "label_id": "e20",
+          "label_time_s": 30.565,
+          "counter_time_s": 30.548,
+          "frame": 902
+        },
+        {
+          "label_id": "e21",
+          "label_time_s": 31.34,
+          "counter_time_s": 31.348,
+          "frame": 926
+        }
+      ]
+    },
+    "performance": {
+      "admitted_frames": 1037,
+      "count": 17,
+      "elapsed_seconds": 35.43500250001671,
+      "expected_end_seconds": 35.065,
+      "last_source_seconds": 35.04833333333333,
+      "late_source_skips": 14,
+      "mask_frames": 248,
+      "memory_mib": 98.34564208984375,
+      "mode": "paced",
+      "processed_frames": 1037,
+      "source_frames": 2101,
+      "state": "completed",
+      "thermal": 0,
+      "trace_replay_exact": true,
+      "track_frames": 659,
+      "updated": "2026-10-24T20:16:28Z"
+    }
+  },
+  {
+    "run": "paced-09-after",
+    "score": {
+      "source": "latest-recording-20261024-2126/source.mov",
+      "source_sha256": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+      "label_review_status": "assistant_frame_review_user_reported_failures",
+      "time_tolerance_s": 0.2,
+      "total_count": 18,
+      "labelled_valid": 19,
+      "labelled_uncertain": 0,
+      "accepted_valid": 18,
+      "missed_valid": [
+        {
+          "label_id": "e13",
+          "time_s": 22.7985,
+          "contact": "legal raised-foot touch",
+          "decision": {
+            "frameIndex": 682,
+            "time": 22.781,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall",
+            "player": {
+              "state": "locked",
+              "id": 1,
+              "box": {
+                "x": 0.62890625,
+                "y": 0.29443359375,
+                "width": 0.467529296875,
+                "height": 0.58203125
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "false_accepted": [],
+      "uncertain_accepted": [],
+      "unmatched_needing_review": [],
+      "matched": [
+        {
+          "label_id": "e01",
+          "label_time_s": 8.432505,
+          "counter_time_s": 8.433,
+          "frame": 252
+        },
+        {
+          "label_id": "e02",
+          "label_time_s": 9.199505,
+          "counter_time_s": 9.2,
+          "frame": 275
+        },
+        {
+          "label_id": "e03",
+          "label_time_s": 9.932505,
+          "counter_time_s": 9.933,
+          "frame": 297
+        },
+        {
+          "label_id": "e04",
+          "label_time_s": 12.665505,
+          "counter_time_s": 12.666,
+          "frame": 379
+        },
+        {
+          "label_id": "e05",
+          "label_time_s": 14.465505,
+          "counter_time_s": 14.466,
+          "frame": 433
+        },
+        {
+          "label_id": "e06",
+          "label_time_s": 16.098505,
+          "counter_time_s": 16.066,
+          "frame": 481
+        },
+        {
+          "label_id": "e07",
+          "label_time_s": 16.632505,
+          "counter_time_s": 16.633,
+          "frame": 498
+        },
+        {
+          "label_id": "e08",
+          "label_time_s": 17.232505,
+          "counter_time_s": 17.233,
+          "frame": 516
+        },
+        {
+          "label_id": "e09",
+          "label_time_s": 20.098505,
+          "counter_time_s": 20.115,
+          "frame": 602
+        },
+        {
+          "label_id": "e11",
+          "label_time_s": 21.465505,
+          "counter_time_s": 21.481,
+          "frame": 643
+        },
+        {
+          "label_id": "e12",
+          "label_time_s": 22.065505,
+          "counter_time_s": 22.081,
+          "frame": 661
+        },
+        {
+          "label_id": "e15",
+          "label_time_s": 24.531505,
+          "counter_time_s": 24.515,
+          "frame": 734
+        },
+        {
+          "label_id": "e16",
+          "label_time_s": 26.164505,
+          "counter_time_s": 26.148,
+          "frame": 783
+        },
+        {
+          "label_id": "e17",
+          "label_time_s": 27.064505,
+          "counter_time_s": 27.048,
+          "frame": 810
+        },
+        {
+          "label_id": "e18",
+          "label_time_s": 27.731505,
+          "counter_time_s": 27.715,
+          "frame": 830
+        },
+        {
+          "label_id": "e19",
+          "label_time_s": 28.398505,
+          "counter_time_s": 28.381,
+          "frame": 850
+        },
+        {
+          "label_id": "e20",
+          "label_time_s": 30.565,
+          "counter_time_s": 30.548,
+          "frame": 915
+        },
+        {
+          "label_id": "e21",
+          "label_time_s": 31.34,
+          "counter_time_s": 31.348,
+          "frame": 939
+        }
+      ]
+    },
+    "performance": {
+      "admitted_frames": 1051,
+      "count": 18,
+      "elapsed_seconds": 35.439514583325945,
+      "expected_end_seconds": 35.065,
+      "last_source_seconds": 35.04833333333333,
+      "late_source_skips": 0,
+      "mask_frames": 255,
+      "memory_mib": 95.51756286621094,
+      "mode": "paced",
+      "processed_frames": 1051,
+      "source_frames": 2101,
+      "state": "completed",
+      "thermal": 0,
+      "trace_replay_exact": true,
+      "track_frames": 676,
+      "updated": "2026-10-24T20:25:48Z"
+    }
+  }
+]

@@ -6,6 +6,24 @@ import XCTest
 final class ContactBufferReuseTests: XCTestCase {
     private let ball = Detection(score: 0.9, x: 0.5, y: 0.5, width: 0.1, height: 0.1)
 
+    func testContactRetryUsesTheOriginalExposureClockAcrossFractionalMilliseconds() throws {
+        let store = ContactObservationStore()
+        let pixels = try source(width: 72, height: 128, seed: 1)
+        // Original capture times of the two missed kicks at 20.27s and 22.31s.
+        for (index, time) in [36921.137531541, 36923.171685833].enumerated() {
+            let frame = PacedFrame(index: index, time: time, due: time,
+                image: CIImage(cvPixelBuffer: pixels), pixels: pixels)
+            store.store(pixels, frameIndex: index, timestampMs: frame.timestampMs, ball: nil)
+            XCTAssertFalse(store.insertRecheckedContact(pixels, frameIndex: index,
+                timestampMs: Int((time * 1000).rounded()), ball: ball), "A different exposure clock must stay invalid")
+            XCTAssertTrue(store.insertRecheckedContact(pixels, frameIndex: index,
+                timestampMs: frame.timestampMs, ball: ball))
+            XCTAssertEqual(store.frames.last?.timestampMs, Int(time * 1000))
+            XCTAssertFalse(store.insertRecheckedContact(pixels, frameIndex: index,
+                timestampMs: frame.timestampMs, ball: ball), "A retry cannot duplicate the observation")
+        }
+    }
+
     private func source(width: Int, height: Int, seed: Int) throws -> CVPixelBuffer {
         var result: CVPixelBuffer?
         XCTAssertEqual(CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA,

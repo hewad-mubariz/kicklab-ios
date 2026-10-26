@@ -1,0 +1,871 @@
+{
+  "evaluatedPolicy": "floorEvidenceV18",
+  "baselinePolicy": "impactWindowV17",
+  "scope": "Evaluation only; application counting source was not changed. Local uncommitted v18 changes were compiled as debug build 2026102518.",
+  "offline": {
+    "traces": 25,
+    "strictExactBaselines": 25,
+    "missingEvidenceRequests": 0,
+    "totalsAcross20LabelledClips": {
+      "before": {
+        "labelled_valid": 615,
+        "accepted_valid": 568,
+        "missed_valid": 47,
+        "false_accepted": 5,
+        "uncertain_accepted": 5,
+        "unmatched": 0
+      },
+      "after": {
+        "labelled_valid": 615,
+        "accepted_valid": 568,
+        "missed_valid": 47,
+        "false_accepted": 3,
+        "uncertain_accepted": 5,
+        "unmatched": 0
+      }
+    },
+    "changedAcceptedEvents": [
+      {
+        "clip": "juggling_second_ball_very_far",
+        "removedFrames": [
+          490
+        ],
+        "addedFrames": [],
+        "changedDecisions": [
+          {
+            "after": "groundBounce",
+            "before": "accepted",
+            "frame": 490,
+            "savedFootWasChecked": true,
+            "seconds": 4.083
+          }
+        ]
+      },
+      {
+        "clip": "normal_juggling_4",
+        "removedFrames": [
+          3260
+        ],
+        "addedFrames": [],
+        "changedDecisions": [
+          {
+            "after": "groundBounce",
+            "before": "accepted",
+            "frame": 3260,
+            "savedFootWasChecked": true,
+            "seconds": 27.183
+          }
+        ]
+      },
+      {
+        "clip": "live-20261025-1742",
+        "removedFrames": [
+          685
+        ],
+        "addedFrames": [],
+        "changedDecisions": [
+          {
+            "after": "groundBounce",
+            "before": "accepted",
+            "frame": 685,
+            "savedFootWasChecked": true,
+            "seconds": 22.881938292004634
+          }
+        ]
+      }
+    ]
+  },
+  "freshDeviceComparison": {
+    "state": "complete",
+    "completedPairs": 22,
+    "scheduledPairs": 22,
+    "remainingClips": [],
+    "scope": "Fresh Vision and bounded RF rechecks on identical saved ball/person inputs; not a fresh full-tracking or paced-performance test.",
+    "totals": {
+      "before": {
+        "clips": 20,
+        "labelled_valid": 615,
+        "accepted_valid": 568,
+        "missed_valid": 47,
+        "false_accepted": 5,
+        "uncertain_accepted": 5,
+        "unmatched_needing_review": 0
+      },
+      "after": {
+        "clips": 20,
+        "labelled_valid": 615,
+        "accepted_valid": 568,
+        "missed_valid": 47,
+        "false_accepted": 3,
+        "uncertain_accepted": 5,
+        "unmatched_needing_review": 0
+      }
+    },
+    "clips": [
+      {
+        "id": "normal_juggling_4",
+        "inputsIdentical": true,
+        "beforeCount": 33,
+        "afterCount": 32,
+        "removed": [
+          3260
+        ],
+        "added": [],
+        "sourceSHA256": "14df979f808de60f82b76a43458115690167caef6a5d8d28dc9f8e4bc0f60857",
+        "changedDecisions": [
+          {
+            "frame": 3260,
+            "seconds": 27.183,
+            "before": "accepted",
+            "after": "groundBounce"
+          }
+        ]
+      },
+      {
+        "id": "juggling_second_ball_very_far",
+        "inputsIdentical": true,
+        "beforeCount": 23,
+        "afterCount": 22,
+        "removed": [
+          490
+        ],
+        "added": [],
+        "sourceSHA256": "3fabc2030b3d8509026297b43fbc7fa29718f3d7f23b9df3356f7631e87d89c3",
+        "changedDecisions": [
+          {
+            "frame": 490,
+            "seconds": 4.083,
+            "before": "accepted",
+            "after": "groundBounce"
+          }
+        ]
+      },
+      {
+        "id": "low",
+        "inputsIdentical": true,
+        "beforeCount": 175,
+        "afterCount": 175,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "6e250e0976e4c584adef498bbe43cb5d7705ef374f1c7437f0cfe0d53f331e81",
+        "changedDecisions": []
+      },
+      {
+        "id": "nomral_juggling_6",
+        "inputsIdentical": true,
+        "beforeCount": 36,
+        "afterCount": 36,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "de6af4939c1b4350b5d72123e1ba6b9bd99fa87a0df518538a93765389d3f2cd",
+        "changedDecisions": []
+      },
+      {
+        "id": "ball_in_hand",
+        "inputsIdentical": true,
+        "beforeCount": 0,
+        "afterCount": 0,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "3aa786708d1819d92887ce90bd8598c96fad34997f39637a7600c60fe021a434",
+        "changedDecisions": []
+      },
+      {
+        "id": "dribbling_with_ball_1",
+        "inputsIdentical": true,
+        "beforeCount": 0,
+        "afterCount": 0,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "dffb0c5af65f618bb1b97eee905f5ba10394ceb45865f6376a59aaa5498654aa",
+        "changedDecisions": []
+      },
+      {
+        "id": "dribbling_with_ball_2",
+        "inputsIdentical": true,
+        "beforeCount": 0,
+        "afterCount": 0,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "6b2ea0998747038e7a432edba32df645442b6fb9d27d462d66af2182badc6767",
+        "changedDecisions": []
+      },
+      {
+        "id": "34dd",
+        "inputsIdentical": true,
+        "beforeCount": 17,
+        "afterCount": 17,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "48549a3133216db7ba2fd74a61f915412c154ecea1091087fbbff05613c573e7",
+        "changedDecisions": []
+      },
+      {
+        "id": "dribbling_with_ball_3",
+        "inputsIdentical": true,
+        "beforeCount": 1,
+        "afterCount": 1,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "93ba1a0dedbe99b6dcdd98ba4c73195a64ea883b317e03af19e1ec62061a41e2",
+        "changedDecisions": []
+      },
+      {
+        "id": "dribbling_with_the_ball_1",
+        "inputsIdentical": true,
+        "beforeCount": 0,
+        "afterCount": 0,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "bcbd9c927606cdb507b41df55f7c3bd89918fd0b67bf77a2a94d7c95ca35ec01",
+        "changedDecisions": []
+      },
+      {
+        "id": "eighteen",
+        "inputsIdentical": true,
+        "beforeCount": 15,
+        "afterCount": 15,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "4a54b84afee6389e5229716e3d987ff6c4295ed297651e765d56ec1dd8cc64ae",
+        "changedDecisions": []
+      },
+      {
+        "id": "juggling",
+        "inputsIdentical": true,
+        "beforeCount": 37,
+        "afterCount": 37,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "f57fd1d8b12df457329a988b0051fffc4c738138612ee04bc87cc78997fdca60",
+        "changedDecisions": []
+      },
+      {
+        "id": "juggling_second_ball_in_video",
+        "inputsIdentical": true,
+        "beforeCount": 19,
+        "afterCount": 19,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "0e688e36a58294a54290eb3a99eee47b8a47e1eaea2a17d739fdbb77cb5ad032",
+        "changedDecisions": []
+      },
+      {
+        "id": "latest",
+        "inputsIdentical": true,
+        "beforeCount": 13,
+        "afterCount": 13,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "225ddde7e339c7665df213ea5e9ec0f1118a83a47a21043a1bf21724ce5ac1e7",
+        "changedDecisions": []
+      },
+      {
+        "id": "normal_juggling_1",
+        "inputsIdentical": true,
+        "beforeCount": 25,
+        "afterCount": 25,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "c7533bacac2ed702ce278daf7eb42f1e74ecbdedf09f18bf4e024008cf7c7d8a",
+        "changedDecisions": []
+      },
+      {
+        "id": "normal_juggling_2",
+        "inputsIdentical": true,
+        "beforeCount": 21,
+        "afterCount": 21,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "b2993f54388d812405b74e2783c87850b6adfdbda1d2cd0f5cc0bafdbaa5a8e2",
+        "changedDecisions": []
+      },
+      {
+        "id": "normal_juggling_3",
+        "inputsIdentical": true,
+        "beforeCount": 63,
+        "afterCount": 63,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "04cc386923c49960d281dc87d504d9f088227d62ababf7179a879d71a29b1eff",
+        "changedDecisions": []
+      },
+      {
+        "id": "normal_juggling_5",
+        "inputsIdentical": true,
+        "beforeCount": 37,
+        "afterCount": 37,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "a1267bb4e0223ace84cc2559d44cc7800b248ae18ad5725f1a10081403155218",
+        "changedDecisions": []
+      },
+      {
+        "id": "normal_juggling_7",
+        "inputsIdentical": true,
+        "beforeCount": 29,
+        "afterCount": 29,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "7bf2abca3914072eb091cbb2d1a148df7db6ccd445293bd1f1346b309fa4a10a",
+        "changedDecisions": []
+      },
+      {
+        "id": "normal_juggling_8",
+        "inputsIdentical": true,
+        "beforeCount": 37,
+        "afterCount": 37,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "42f14f0e3f63b239e7daf47aa1e6e5ee0def25937165a439ec264c1ebfc4e736",
+        "changedDecisions": []
+      },
+      {
+        "id": "raw-juggling",
+        "inputsIdentical": true,
+        "beforeCount": 10,
+        "afterCount": 10,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "05a85434a892926291ace9d88e11a414883664fb7e080f2d80f71ff290fc2c0e",
+        "changedDecisions": []
+      },
+      {
+        "id": "walkthrough",
+        "inputsIdentical": true,
+        "beforeCount": 203,
+        "afterCount": 203,
+        "removed": [],
+        "added": [],
+        "sourceSHA256": "4de39918ddbf91623edf202cb9592d968d500f0cf1327bb6e7427c974663f8c3",
+        "changedDecisions": []
+      }
+    ],
+    "lastReadableStatus": "DONE",
+    "interruption": "The first batch completed nine pairs, then AVFoundation reported Operation Interrupted (-11847). After the user reconnected and unlocked the phone, the remaining 13 pairs were restarted without replacing the nine completed pairs.",
+    "all22PairsMatchSavedContactFramesAndNormalizedTimestamps": true
+  },
+  "recordedFailures": {
+    "low": {
+      "validAccepted": 175,
+      "labelledValid": 195,
+      "missed": 20,
+      "missesByNearestSavedDiagnostic": {
+        "no_candidate": 14,
+        "amplitudeTooSmall": 4,
+        "missingPose": 2
+      }
+    },
+    "secondPersonAndBall": {
+      "validAccepted": 19,
+      "labelledValid": 28,
+      "missed": 9,
+      "observedDiagnostics": "Missing body pose, invalid body geometry, and outside person region. Legacy frozen inputs have no active-player selection; this is not proof of current live player-tracking accuracy.",
+      "missesByNearestSavedDiagnostic": {
+        "missingPose": 6,
+        "invalidGeometry": 2,
+        "outsidePersonRegion": 1
+      }
+    },
+    "remainingFalseEvents": [
+      {
+        "clip": "normal_juggling_4",
+        "seconds": 27.6,
+        "visual": "Ground bounce followed by foot trap/rolling ball; not airborne juggling.",
+        "savedEvidence": "footConfirmed=true"
+      },
+      {
+        "clip": "nomral_juggling_6",
+        "seconds": 10.291,
+        "visual": "Floor bounce during hand-dribbling, not hand contact at the counted instant.",
+        "savedEvidence": "Weak ankles at impact; footConfirmed=false; ground proof inconclusive."
+      },
+      {
+        "clip": "nomral_juggling_6",
+        "seconds": 10.708,
+        "visual": "Second floor bounce during hand-dribbling, not hand contact at the counted instant.",
+        "savedEvidence": "Weak ankles; footConfirmed=true despite no visible kick."
+      }
+    ],
+    "freshDeviceFalseEventEvidence": [
+      {
+        "clip": "normal_juggling_4",
+        "frame": 3260,
+        "decisions": [
+          {
+            "frameIndex": 3260,
+            "timestampMs": 27183,
+            "rejection": "groundBounce",
+            "footConfirmed": false,
+            "fall": 0.1965494950612386,
+            "requiredFall": 0.008515626192092896,
+            "rise": 0.010156234105427986,
+            "impulse": 1.8066403766473158,
+            "ground": 0.6265624761581421,
+            "observedBallBottom": 0.6312500238418579,
+            "plantedFeetConfirmed": true
+          }
+        ],
+        "impactAnkles": {
+          "right": {
+            "confidence": 0.828125,
+            "x": 0.30362969636917114,
+            "y": 0.5764335989952087
+          },
+          "left": {
+            "confidence": 0.8037109375,
+            "x": 0.35872527956962585,
+            "y": 0.5843896865844727
+          }
+        }
+      },
+      {
+        "clip": "normal_juggling_4",
+        "frame": 3310,
+        "decisions": [
+          {
+            "frameIndex": 3310,
+            "timestampMs": 27600,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "footConfirmed": true,
+            "fall": 0.07395835717519128,
+            "requiredFall": 0.008984375000000001,
+            "rise": 0.009244819482167599,
+            "impulse": 1.0799637027815299,
+            "ground": 0.628125011920929,
+            "observedBallBottom": 0.633984386920929,
+            "plantedFeetConfirmed": false,
+            "handlingChecked": true
+          }
+        ],
+        "impactAnkles": {
+          "right": {
+            "x": 0.03303694725036621,
+            "confidence": 0.6083984375,
+            "y": 0.5355516672134399
+          },
+          "left": {
+            "x": 0.357584148645401,
+            "confidence": 0.69873046875,
+            "y": 0.5902897119522095
+          }
+        }
+      },
+      {
+        "clip": "nomral_juggling_6",
+        "frame": 1233,
+        "decisions": [
+          {
+            "frameIndex": 1233,
+            "timestampMs": 10291,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "footConfirmed": false,
+            "fall": 0.6141276409228642,
+            "requiredFall": 0.01781250238418579,
+            "rise": 0.026302119096120125,
+            "impulse": 6.070965280135468,
+            "ground": 0.7445312738418579,
+            "observedBallBottom": 0.7960937917232513,
+            "plantedFeetConfirmed": false,
+            "handlingChecked": true
+          }
+        ],
+        "impactAnkles": {
+          "right": {
+            "confidence": 0.302978515625,
+            "x": 0.5190513730049133,
+            "y": 0.6711550354957581
+          },
+          "left": {
+            "confidence": 0.217041015625,
+            "x": 0.4613907039165497,
+            "y": 0.6034977436065674
+          }
+        }
+      },
+      {
+        "clip": "nomral_juggling_6",
+        "frame": 1283,
+        "decisions": [
+          {
+            "frameIndex": 1283,
+            "timestampMs": 10708,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "footConfirmed": true,
+            "fall": 0.38749995827674866,
+            "requiredFall": 0.01851562261581421,
+            "rise": 0.01751299699147546,
+            "impulse": 6.477622790079495,
+            "ground": 0.705859363079071,
+            "observedBallBottom": 0.8023437261581421,
+            "plantedFeetConfirmed": false,
+            "handlingChecked": true
+          }
+        ],
+        "impactAnkles": {
+          "right": {
+            "confidence": 0.465576171875,
+            "y": 0.6487235426902771,
+            "x": 0.5340651869773865
+          },
+          "left": {
+            "confidence": 0.440673828125,
+            "y": 0.6275430917739868,
+            "x": 0.6041147112846375
+          }
+        }
+      }
+    ]
+  },
+  "latestLiveRecording": {
+    "ground22_88": "Removed by v18 on saved evidence.",
+    "hand26_48": "Still accepted.",
+    "smallTouch34_90": "Still no candidate."
+  },
+  "notesOnPriorV18Summary": [
+    "There are 25 saved traces, not 24.",
+    "The final build-14 walkthrough baseline has 203 contacts; the earlier 202-contact trace predates the final v17 correction. This evaluation retains all 203.",
+    "The two remaining counts in nomral_juggling_6 occur on floor impacts in a hand-dribbling sequence. Calling them only hand-contact cases misses their actual timing."
+  ],
+  "limits": [
+    "These are previously reviewed development clips, not an unseen holdout.",
+    "The offline comparison reuses saved evidence; the fresh device comparison reruns Vision and bounded RF rechecks on frozen ball/person inputs.",
+    "Neither test measures a new full live tracker pass, sustained camera runtime, or iPhone 11 performance.",
+    "Five ambiguous accepted contacts remain separate from confirmed false counts."
+  ],
+  "existingUnitTestResult": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "5CB7D794-12E4-430D-83E0-1AB354D07223",
+          "deviceName": "iPhone 17 Pro",
+          "modelName": "iPhone 17 Pro",
+          "osBuildNumber": "23F77",
+          "osVersion": "26.5",
+          "platform": "iOS Simulator"
+        },
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "passedTests": 40,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "TouchCountingDebug \u00b7 Built with macOS 26.5.1",
+    "expectedFailures": 0,
+    "failedTests": 0,
+    "finishTime": 1792949423.998,
+    "passedTests": 40,
+    "result": "Passed",
+    "skippedTests": 0,
+    "startTime": 1792949379.1,
+    "statistics": [],
+    "testFailures": [],
+    "title": "Test - TouchCountingDebug",
+    "topInsights": [
+      {
+        "category": "Longest Test Runs",
+        "impact": "91% of duration",
+        "text": "2 longest test runs with outlier durations exceeding 0.50s (three standard deviations)"
+      }
+    ],
+    "totalTestCount": 40
+  },
+  "sourceHashes": {
+    "kicklab/Counting/ActiveJugglerTracker.swift": "6731659af2eef2347ba1e79eeac76840e53715c525ea006e649a338c913f05dc",
+    "kicklab/Counting/ActivePlayerPoseMatcher.swift": "d662d1686e815f9f344181d8e7d1e2e6bb297ef9dc204a1d0cef5763c1127af2",
+    "kicklab/Counting/BallHandlingEvidence.swift": "44c0649529abfbd1a670e9044372e02c73f7e7198c904a74f7dca617475ab6a9",
+    "kicklab/Counting/ClearHandsContactRules.swift": "79dd1b6be12b3cda85d31549db0e0849558dbf63a6cd3964cba4fe1a43e49577",
+    "kicklab/Counting/ContactCounterFactory.swift": "a4b2773dfb439e5c16348064b648dcf30c6c6e1d75cdf75f4054e04876286e8b",
+    "kicklab/Counting/ContactFrameWindow.swift": "262b4054defa01ad77a192ebbf9bae024af8b1f9e5b0e655d3a604c835b86d2b",
+    "kicklab/Counting/ContactPose.swift": "81d7c959e9f678ada0f74c2be156ca763833477f114b66f69440a320b9bbb980",
+    "kicklab/Counting/ContactPoseContinuity.swift": "d9cee9e29988291defad53956ff72d55d9042eb12b16c6c5b5b716ee7703589d",
+    "kicklab/Counting/CounterTrace.swift": "3080bdba1395a0bfbbed44c53ca273f15c0de60c1898f8d205dc19cd807559b9",
+    "kicklab/Counting/CountingPolicy.swift": "0ba2b65e7d0f73464e9db75f1d4a54d6c66e33bdc14e5ce3fa29e318c9cf2daa",
+    "kicklab/Counting/FootContactRules.swift": "466bc9b62412d34993261a2bb03c833a86d24253e21103deaf96909f0f01f3e1",
+    "kicklab/Counting/GroundContactEvidence.swift": "3d210e206f325130cb88fe5dea26fc7aad0c37dc8ffafd7825e146319661f5c4",
+    "kicklab/Counting/JugglingContactRules.swift": "7c3859535b08e27cbfed9a190a20bacf5e01db9420540401ba66616f9333f6c0",
+    "kicklab/Counting/MovingFootContactRules.swift": "f53dfa55ab7b418d052a1ee8e047dd2bfd5af5dc602bbddc1dd2ba9198f95a57",
+    "kicklab/Counting/ObservedGapContactRules.swift": "a36f7e911eb4409d8ead0bb0599b18955260d7d5c32dc60b090f469be6dae87b",
+    "kicklab/Counting/ObservedLegContactRules.swift": "8fc7a06363c0d2b6e0f86a4468c8eb5f1ab27afe1982a11c38d49f8e440e495a",
+    "kicklab/Counting/PlayerGroundEstimate.swift": "6c41d29659d53c1cc729b142b1aca5e66e8b03570da3467830a4b0fe1b018020",
+    "kicklab/Counting/RaisedFootContactRules.swift": "87ddfb1c276160a192f32207310ad6caaa039172f17ef1d020d1da0c782c08f5",
+    "kicklab/Counting/RaisedFootReboundRules.swift": "a6e3ace2b1d7e3ded643bad4c1da91a5cf50ad15cda542950e19da6a8358ff0b",
+    "kicklab/Counting/RaisedKneeContactRules.swift": "5923ddf683cc694ff9e0b0bcf5a65ed8e35bd3ff670e108b9cd6e662105584be",
+    "kicklab/Counting/RaisedKneeReboundRules.swift": "08abab543f9dda6fa84120e04ea1f0c55c9b744c5dface1e840128db8d8f1aee",
+    "kicklab/Counting/ReciprocalJointContactRules.swift": "5f9a6efe132489fb7cdfb4c0a8dcd68ac224cb314c08aa3f755995946bd786a0",
+    "kicklab/Counting/RestrictedTouchPolicy.swift": "3d030f589d083d4be73adfc3e04dcd8069b7e687ba59081d270289efbe748bcc",
+    "kicklab/Counting/StreamingCounter.swift": "5c61a1bfddae1d7580580d6cf7c0b1e17b8d98a1ec38812325e1f54c564cd122",
+    "kicklab/Counting/TemporalContactEvidence.swift": "ce67b856e3747dc3409929b297140badfc1eb41b94d6a835bb8d8103841f9175",
+    "kicklab/Counting/TimedTrajectory.swift": "b259eaa8220b5e4e23a951aaf5bf6e3ca7f02d4f221b3f7254c064d01a5ab894",
+    "kicklab/Counting/TouchCounter.swift": "899b2eaabac668a2a55dd7b06810a04d2e17958c64838b2b3fc4c8b6acccfc0c",
+    "kicklab/Counting/TouchDebugEvent.swift": "486570c4237834802519c139a02d371623b52cfe84ab33d5b7e64a44e7463b66",
+    "kicklab/Counting/TouchReviewEvidence.swift": "63407da2d3bf19ba6bae4fa11623806ce68ce917e11453e03c7145813f45339a",
+    "kicklab/Counting/TrackedFootContactRules.swift": "62c6468b15fbe3f1f3b9a5a6b30b81ac2aa13bcb5ad249daf2522c04977f1575",
+    "kicklab/Detection/JugglingContactVerifier.swift": "6eef85475b8a34007c82e08f9d5ffe09615849d077ba47edbfcf8ad76f9a6715",
+    "kicklab/Debug/TouchContactReplay.swift": "2d6d2bfc34420d2e08c661bc98a28024df6c510efc7043a58fba46728d755f7c"
+  },
+  "perClipSavedEvidenceResults": [
+    {
+      "id": "34dd",
+      "acceptedValid": 17,
+      "labelledValid": 18,
+      "missesByNearestDiagnostic": {
+        "handsNearBall": 1
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "ball_in_hand",
+      "acceptedValid": 0,
+      "labelledValid": 0,
+      "missesByNearestDiagnostic": {},
+      "falseCounts": []
+    },
+    {
+      "id": "dribbling_with_ball_1",
+      "acceptedValid": 0,
+      "labelledValid": 0,
+      "missesByNearestDiagnostic": {},
+      "falseCounts": []
+    },
+    {
+      "id": "dribbling_with_ball_2",
+      "acceptedValid": 0,
+      "labelledValid": 0,
+      "missesByNearestDiagnostic": {},
+      "falseCounts": []
+    },
+    {
+      "id": "dribbling_with_ball_3",
+      "acceptedValid": 0,
+      "labelledValid": 0,
+      "missesByNearestDiagnostic": {},
+      "falseCounts": []
+    },
+    {
+      "id": "dribbling_with_the_ball_1",
+      "acceptedValid": 0,
+      "labelledValid": 0,
+      "missesByNearestDiagnostic": {},
+      "falseCounts": []
+    },
+    {
+      "id": "eighteen",
+      "acceptedValid": 15,
+      "labelledValid": 18,
+      "missesByNearestDiagnostic": {
+        "handsUncertain": 3
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "juggling",
+      "acceptedValid": 37,
+      "labelledValid": 38,
+      "missesByNearestDiagnostic": {
+        "no_candidate": 1
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "juggling_second_ball_in_video",
+      "acceptedValid": 19,
+      "labelledValid": 28,
+      "missesByNearestDiagnostic": {
+        "missingPose": 6,
+        "invalidGeometry": 2,
+        "outsidePersonRegion": 1
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "juggling_second_ball_very_far",
+      "acceptedValid": 20,
+      "labelledValid": 22,
+      "missesByNearestDiagnostic": {
+        "handsNearBall": 2
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "low",
+      "acceptedValid": 175,
+      "labelledValid": 195,
+      "missesByNearestDiagnostic": {
+        "no_candidate": 14,
+        "amplitudeTooSmall": 4,
+        "missingPose": 2
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "nomral_juggling_6",
+      "acceptedValid": 34,
+      "labelledValid": 34,
+      "missesByNearestDiagnostic": {},
+      "falseCounts": [
+        {
+          "counter_time_s": 10.291,
+          "frame": 1233,
+          "reason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch"
+        },
+        {
+          "counter_time_s": 10.708,
+          "frame": 1283,
+          "reason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch"
+        }
+      ]
+    },
+    {
+      "id": "normal_juggling_1",
+      "acceptedValid": 25,
+      "labelledValid": 25,
+      "missesByNearestDiagnostic": {},
+      "falseCounts": []
+    },
+    {
+      "id": "normal_juggling_2",
+      "acceptedValid": 21,
+      "labelledValid": 24,
+      "missesByNearestDiagnostic": {
+        "handsNearBall": 1,
+        "handContact": 1,
+        "trackLost": 1
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "normal_juggling_3",
+      "acceptedValid": 62,
+      "labelledValid": 64,
+      "missesByNearestDiagnostic": {
+        "handsNearBall": 2
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "normal_juggling_4",
+      "acceptedValid": 30,
+      "labelledValid": 32,
+      "missesByNearestDiagnostic": {
+        "handsUncertain": 1,
+        "handContact": 1
+      },
+      "falseCounts": [
+        {
+          "counter_time_s": 27.6,
+          "frame": 3310,
+          "reason": "Ground bounces then foot trap/rolling ball; no airborne juggle"
+        }
+      ]
+    },
+    {
+      "id": "normal_juggling_5",
+      "acceptedValid": 37,
+      "labelledValid": 38,
+      "missesByNearestDiagnostic": {
+        "handsNearBall": 1
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "normal_juggling_7",
+      "acceptedValid": 29,
+      "labelledValid": 31,
+      "missesByNearestDiagnostic": {
+        "missingPose": 2
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "normal_juggling_8",
+      "acceptedValid": 37,
+      "labelledValid": 38,
+      "missesByNearestDiagnostic": {
+        "handsNearBall": 1
+      },
+      "falseCounts": []
+    },
+    {
+      "id": "raw-juggling",
+      "acceptedValid": 10,
+      "labelledValid": 10,
+      "missesByNearestDiagnostic": {},
+      "falseCounts": []
+    }
+  ],
+  "sourceUnchangedDuringEvaluation": true,
+  "implementationScopeNotes": [
+    "The 134ms allowance applies to every adjacent pair of confident samples, not specifically one gap during approach; the current comments describe a narrower change than the code implements.",
+    "The beside-feet rule requires confident ankle/hip geometry and the floor-line check, but does not test that the stance stays stationary; positive foot evidence remains the rescue path. No labelled regression was observed in the available comparisons."
+  ],
+  "artifacts": {
+    "offlineComparison": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/v18-cross-clip-evaluation-20261025/scored-offline.json",
+    "freshComparison": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/v18-cross-clip-evaluation-20261025/scored-device.json",
+    "videoEvidence": {
+      "floor-then-trap": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/v18-cross-clip-evaluation-20261025/floor-then-trap.jpg",
+      "far-ball-floor": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/v18-cross-clip-evaluation-20261025/far-ball-floor.jpg",
+      "hand-and-floor": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/v18-cross-clip-evaluation-20261025/hand-and-floor.jpg",
+      "multi-ball-misses": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/v18-cross-clip-evaluation-20261025/multi-ball-misses.jpg"
+    },
+    "freshFalseEventEvidence": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/v18-cross-clip-evaluation-20261025/fresh-false-event-evidence.json",
+    "freshSavedContactComparison": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/artifacts/v18-cross-clip-evaluation-20261025/fresh-vs-saved-contacts.json"
+  },
+  "status": "Evaluated all 25 saved traces; fresh device comparison completed, 22 of 22 pairs verified.",
+  "git": {
+    "branch": "codex/touch-counter-improvements-v17",
+    "baseCommit": "ef941c25f19e0b501a37b1920ff41ba24da16d39",
+    "v18CommittedOrPushedByThisEvaluation": false
+  },
+  "sourceFilesChangedDuringEvaluation": [],
+  "phoneAfterEvaluation": {
+    "app": "Touch Counting Debug",
+    "build": "2026102518",
+    "policy": "floorEvidenceV18",
+    "launchArguments": [
+      "--floor-evidence-v18"
+    ],
+    "replayMode": false,
+    "launchResult": {
+      "deviceIdentifier": "0440AB85-BD17-5A51-AF30-B00F6F7E3382",
+      "launchOptions": {
+        "activatedWhenStarted": true,
+        "arguments": [
+          "--floor-evidence-v18"
+        ],
+        "environmentVariables": {
+          "TERM": "dumb"
+        },
+        "platformSpecificOptions": {},
+        "startStopped": false,
+        "terminateExistingInstances": true,
+        "user": {
+          "active": true
+        }
+      },
+      "process": {
+        "auditToken": [
+          4294967295,
+          501,
+          501,
+          501,
+          501,
+          13978,
+          0,
+          34866
+        ],
+        "executable": "file:///private/var/containers/Bundle/Application/A26F084F-4F18-47C2-9C8C-755EBBBE056B/Touch%20Counting%20Debug.app/Touch%20Counting%20Debug",
+        "processIdentifier": 13978
+      }
+    },
+    "note": "V18 is enabled for this launched process; production/default policy remains footEvidenceV15. No recording was started."
+  }
+}

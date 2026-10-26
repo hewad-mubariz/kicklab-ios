@@ -1,0 +1,15 @@
+{
+  "source": "dribbling_with_ball_2.mov",
+  "source_sha256": "6b2ea0998747038e7a432edba32df645442b6fb9d27d462d66af2182badc6767",
+  "label_review_status": "reviewed",
+  "time_tolerance_s": 0.2,
+  "total_count": 0,
+  "labelled_valid": 0,
+  "labelled_uncertain": 0,
+  "accepted_valid": 0,
+  "missed_valid": [],
+  "false_accepted": [],
+  "uncertain_accepted": [],
+  "unmatched_needing_review": [],
+  "matched": []
+}

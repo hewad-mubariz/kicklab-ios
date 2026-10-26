@@ -1,0 +1,75 @@
+{
+  "status": "complete",
+  "recording_policy": "footEvidenceV15; experimental bypass is replay-only",
+  "device_build": "2026102402",
+  "completed_clip_pairs": 22,
+  "completed_replays": 44,
+  "corpus": {
+    "before": {
+      "clips": 20,
+      "labelled_valid": 615,
+      "accepted_valid": 568,
+      "missed_valid": 47,
+      "false_accepted": 5,
+      "uncertain_accepted": 5,
+      "unreviewed_accepted": 0
+    },
+    "after": {
+      "clips": 20,
+      "labelled_valid": 615,
+      "accepted_valid": 592,
+      "missed_valid": 23,
+      "false_accepted": 10,
+      "uncertain_accepted": 7,
+      "unreviewed_accepted": 2
+    }
+  },
+  "corpus_recall": {
+    "before": 0.9235772357723577,
+    "after": 0.9626016260162602
+  },
+  "walkthrough": {
+    "before": 201,
+    "after": 239,
+    "reviewed_added_events": {
+      "valid": 24,
+      "invalid": 1,
+      "uncertain": 13
+    },
+    "previously_reviewed_misses": {
+      "total": 20,
+      "before": 10,
+      "after": 18
+    }
+  },
+  "remaining_labelled_misses": {
+    "before": {
+      "handsNearBall": 8,
+      "handsUncertain": 4,
+      "no_nearby_candidate": 15,
+      "missingPose": 10,
+      "invalidGeometry": 2,
+      "outsidePersonRegion": 1,
+      "amplitudeTooSmall": 4,
+      "handContact": 2,
+      "trackLost": 1
+    },
+    "after": {
+      "no_nearby_candidate": 15,
+      "amplitudeTooSmall": 4,
+      "handContact": 3,
+      "trackLost": 1
+    }
+  },
+  "added_by_original_body_failure": {
+    "handsNearBall": 14,
+    "handsUncertain": 6,
+    "missingPose": 18,
+    "invalidGeometry": 12,
+    "missingBall": 16,
+    "insufficientContactViews": 6
+  },
+  "removed_events": 0,
+  "new_events_not_previously_body_rejected": [],
+  "decision": "Do not enable the blanket body-gate bypass in live counting. It recovers legal contacts but adds confirmed false counts, including hand holds and ground activity. Collect a new well-framed live recording before targeted changes."
+}

@@ -1,0 +1,27 @@
+{
+  "source_sha256": "bcbd9c927606cdb507b41df55f7c3bd89918fd0b67bf77a2a94d7c95ca35ec01",
+  "source_name": "dribbling_with_the_ball_1.mov",
+  "review_status": "reviewed",
+  "coverage_s": [
+    0,
+    17.506667
+  ],
+  "method": "Full 6 fps visual sweep; source-labelled before inspecting counter outcomes. Dense review of mismatches where needed.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [],
+  "segments": [
+    {
+      "start_s": 0,
+      "end_s": 14.1,
+      "label": "invalid",
+      "reason": "Ground dribbling, sole rolls and direction changes"
+    },
+    {
+      "start_s": 14.1,
+      "end_s": 17.5067,
+      "label": "invalid",
+      "reason": "Shot from the ground into the goal, rebound and retrieval; no juggling sequence"
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,5349 @@
+{
+  "scope": "Fresh production live pipeline (RF-DETR, rf-v1 association) at normal <=30 fps cadence on the staged corpus videos; current default counting policy; time-based label matching.",
+  "totals": {
+    "labelled_valid": 615,
+    "accepted_valid": 527,
+    "missed_valid": 88,
+    "false_accepted": 4,
+    "uncertain_accepted": 5,
+    "unreviewed_accepted": 0,
+    "clips": 20
+  },
+  "clips": [
+    {
+      "id": "normal_juggling_1",
+      "status": "scored",
+      "count": 24,
+      "analysis_fps": 29.17,
+      "analysis_frames": 535,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "amplitudeTooSmall": 1,
+        "accepted": 24,
+        "trackLost": 2
+      },
+      "score": {
+        "source": "normal_juggling_1.mov",
+        "source_sha256": "c7533bacac2ed702ce278daf7eb42f1e74ecbdedf09f18bf4e024008cf7c7d8a",
+        "label_review_status": "reviewed_with_uncertainty",
+        "time_tolerance_s": 0.2,
+        "total_count": 24,
+        "labelled_valid": 25,
+        "labelled_uncertain": 1,
+        "accepted_valid": 23,
+        "missed_valid": [
+          {
+            "label_id": "e001",
+            "time_s": 0.25,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e002",
+            "time_s": 0.65,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 5,
+              "time": 0.672,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.5283203125,
+                  "y": 0.404296875,
+                  "width": 0.288330078125,
+                  "height": 0.379150390625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [
+          {
+            "label_id": "u026",
+            "label_time_s": 11.93,
+            "counter_time_s": 11.877,
+            "frame": 341
+          }
+        ],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e003",
+            "label_time_s": 1.4,
+            "counter_time_s": 1.372,
+            "frame": 26
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 1.82,
+            "counter_time_s": 1.839,
+            "frame": 40
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 2.51,
+            "counter_time_s": 2.473,
+            "frame": 59
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 3.07,
+            "counter_time_s": 3.04,
+            "frame": 76
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 3.72,
+            "counter_time_s": 3.707,
+            "frame": 96
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 4.47,
+            "counter_time_s": 4.474,
+            "frame": 119
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 5.0,
+            "counter_time_s": 4.974,
+            "frame": 134
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 5.43,
+            "counter_time_s": 5.441,
+            "frame": 148
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 6.19,
+            "counter_time_s": 6.175,
+            "frame": 170
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 6.7,
+            "counter_time_s": 6.708,
+            "frame": 186
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 7.18,
+            "counter_time_s": 7.175,
+            "frame": 200
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 7.84,
+            "counter_time_s": 7.809,
+            "frame": 219
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 8.31,
+            "counter_time_s": 8.275,
+            "frame": 233
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 8.89,
+            "counter_time_s": 8.876,
+            "frame": 251
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 9.38,
+            "counter_time_s": 9.409,
+            "frame": 267
+          },
+          {
+            "label_id": "e018",
+            "label_time_s": 10.07,
+            "counter_time_s": 10.043,
+            "frame": 286
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 10.83,
+            "counter_time_s": 10.777,
+            "frame": 308
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 11.4,
+            "counter_time_s": 11.343,
+            "frame": 325
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 12.57,
+            "counter_time_s": 12.611,
+            "frame": 363
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 13.07,
+            "counter_time_s": 13.044,
+            "frame": 376
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 13.6,
+            "counter_time_s": 13.611,
+            "frame": 393
+          },
+          {
+            "label_id": "e024",
+            "label_time_s": 14.22,
+            "counter_time_s": 14.178,
+            "frame": 410
+          },
+          {
+            "label_id": "e025",
+            "label_time_s": 14.64,
+            "counter_time_s": 14.612,
+            "frame": 423
+          }
+        ]
+      }
+    },
+    {
+      "id": "normal_juggling_2",
+      "status": "scored",
+      "count": 19,
+      "analysis_fps": 28.57,
+      "analysis_frames": 471,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "accepted": 19,
+        "outsidePersonRegion": 1,
+        "disallowedBodyContact": 2,
+        "trackLost": 1
+      },
+      "score": {
+        "source": "normal_juggling_2.mov",
+        "source_sha256": "b2993f54388d812405b74e2783c87850b6adfdbda1d2cd0f5cc0bafdbaa5a8e2",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 19,
+        "labelled_valid": 24,
+        "labelled_uncertain": 0,
+        "accepted_valid": 19,
+        "missed_valid": [
+          {
+            "label_id": "e001",
+            "time_s": 0.6,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e008",
+            "time_s": 4.76,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 124,
+              "time": 4.736,
+              "rejection": "outsidePersonRegion",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.5400390625,
+                  "y": 0.466064453125,
+                  "width": 0.321533203125,
+                  "height": 0.463134765625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e017",
+            "time_s": 10.4,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 288,
+              "time": 10.406,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.59326171875,
+                  "y": 0.452880859375,
+                  "width": 0.39208984375,
+                  "height": 0.50048828125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e020",
+            "time_s": 12.15,
+            "contact": "high_foot",
+            "decision": {
+              "frameIndex": 340,
+              "time": 12.14,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.438720703125,
+                  "y": 0.452392578125,
+                  "width": 0.43603515625,
+                  "height": 0.51123046875
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "u024",
+            "time_s": 14.5,
+            "contact": "foot_sideways_deflection",
+            "decision": {
+              "frameIndex": 414,
+              "time": 14.607,
+              "rejection": "trackLost",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.395751953125,
+                  "y": 0.43017578125,
+                  "width": 0.417236328125,
+                  "height": 0.5634765625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e002",
+            "label_time_s": 1.25,
+            "counter_time_s": 1.235,
+            "frame": 19
+          },
+          {
+            "label_id": "e003",
+            "label_time_s": 1.75,
+            "counter_time_s": 1.668,
+            "frame": 32
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 2.32,
+            "counter_time_s": 2.302,
+            "frame": 51
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 3.0,
+            "counter_time_s": 2.969,
+            "frame": 71
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 3.73,
+            "counter_time_s": 3.702,
+            "frame": 93
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 4.23,
+            "counter_time_s": 4.203,
+            "frame": 108
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 5.5,
+            "counter_time_s": 5.503,
+            "frame": 147
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 5.99,
+            "counter_time_s": 5.97,
+            "frame": 161
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 6.66,
+            "counter_time_s": 6.637,
+            "frame": 181
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 7.24,
+            "counter_time_s": 7.204,
+            "frame": 198
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 7.89,
+            "counter_time_s": 7.838,
+            "frame": 217
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 8.45,
+            "counter_time_s": 8.438,
+            "frame": 235
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 9.09,
+            "counter_time_s": 9.105,
+            "frame": 255
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 9.9,
+            "counter_time_s": 9.839,
+            "frame": 277
+          },
+          {
+            "label_id": "e018",
+            "label_time_s": 11.08,
+            "counter_time_s": 11.072,
+            "frame": 308
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 11.56,
+            "counter_time_s": 11.506,
+            "frame": 321
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 12.94,
+            "counter_time_s": 12.907,
+            "frame": 363
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 13.57,
+            "counter_time_s": 13.54,
+            "frame": 382
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 14.08,
+            "counter_time_s": 14.074,
+            "frame": 398
+          }
+        ]
+      }
+    },
+    {
+      "id": "normal_juggling_3",
+      "status": "scored",
+      "count": 62,
+      "analysis_fps": 28.93,
+      "analysis_frames": 1340,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "accepted": 62,
+        "disallowedBodyContact": 4,
+        "insufficientImpulse": 1,
+        "trackLost": 1
+      },
+      "score": {
+        "source": "normal_juggling_3.mov",
+        "source_sha256": "04cc386923c49960d281dc87d504d9f088227d62ababf7179a879d71a29b1eff",
+        "label_review_status": "reviewed_with_uncertainty",
+        "time_tolerance_s": 0.2,
+        "total_count": 62,
+        "labelled_valid": 64,
+        "labelled_uncertain": 3,
+        "accepted_valid": 60,
+        "missed_valid": [
+          {
+            "label_id": "e001",
+            "time_s": 0.85,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e002",
+            "time_s": 2.08,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e004",
+            "time_s": 3.4,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 53,
+              "time": 3.405,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.416748046875,
+                  "y": 0.430419921875,
+                  "width": 0.3017578125,
+                  "height": 0.472412109375
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e064",
+            "time_s": 43.17,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1246,
+              "time": 43.19,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.36572265625,
+                  "y": 0.405517578125,
+                  "width": 0.446044921875,
+                  "height": 0.5361328125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [
+          {
+            "label_id": "u002",
+            "label_time_s": 37.43,
+            "counter_time_s": 37.388,
+            "frame": 1072
+          },
+          {
+            "label_id": "u003",
+            "label_time_s": 40.82,
+            "counter_time_s": 40.756,
+            "frame": 1173
+          }
+        ],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e003",
+            "label_time_s": 2.64,
+            "counter_time_s": 2.639,
+            "frame": 30
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 3.87,
+            "counter_time_s": 3.839,
+            "frame": 66
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 4.36,
+            "counter_time_s": 4.373,
+            "frame": 82
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 5.02,
+            "counter_time_s": 5.006,
+            "frame": 101
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 5.59,
+            "counter_time_s": 5.607,
+            "frame": 119
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 6.21,
+            "counter_time_s": 6.207,
+            "frame": 137
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 6.9,
+            "counter_time_s": 6.874,
+            "frame": 157
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 7.41,
+            "counter_time_s": 7.441,
+            "frame": 174
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 8.0,
+            "counter_time_s": 7.975,
+            "frame": 190
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 8.64,
+            "counter_time_s": 8.675,
+            "frame": 211
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 9.2,
+            "counter_time_s": 9.175,
+            "frame": 226
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 9.68,
+            "counter_time_s": 9.642,
+            "frame": 240
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 10.36,
+            "counter_time_s": 10.342,
+            "frame": 261
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 11.08,
+            "counter_time_s": 11.042,
+            "frame": 282
+          },
+          {
+            "label_id": "e018",
+            "label_time_s": 11.43,
+            "counter_time_s": 11.442,
+            "frame": 294
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 12.08,
+            "counter_time_s": 12.076,
+            "frame": 313
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 12.62,
+            "counter_time_s": 12.643,
+            "frame": 330
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 13.08,
+            "counter_time_s": 13.11,
+            "frame": 344
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 13.47,
+            "counter_time_s": 13.477,
+            "frame": 355
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 14.08,
+            "counter_time_s": 14.077,
+            "frame": 373
+          },
+          {
+            "label_id": "e024",
+            "label_time_s": 15.9,
+            "counter_time_s": 15.878,
+            "frame": 427
+          },
+          {
+            "label_id": "e025",
+            "label_time_s": 16.49,
+            "counter_time_s": 16.478,
+            "frame": 445
+          },
+          {
+            "label_id": "e026",
+            "label_time_s": 16.98,
+            "counter_time_s": 16.979,
+            "frame": 460
+          },
+          {
+            "label_id": "e027",
+            "label_time_s": 17.57,
+            "counter_time_s": 17.579,
+            "frame": 478
+          },
+          {
+            "label_id": "e028",
+            "label_time_s": 18.17,
+            "counter_time_s": 18.146,
+            "frame": 495
+          },
+          {
+            "label_id": "e029",
+            "label_time_s": 18.72,
+            "counter_time_s": 18.712,
+            "frame": 512
+          },
+          {
+            "label_id": "e030",
+            "label_time_s": 19.24,
+            "counter_time_s": 19.146,
+            "frame": 525
+          },
+          {
+            "label_id": "e031",
+            "label_time_s": 22.75,
+            "counter_time_s": 22.748,
+            "frame": 633
+          },
+          {
+            "label_id": "e032",
+            "label_time_s": 23.5,
+            "counter_time_s": 23.482,
+            "frame": 655
+          },
+          {
+            "label_id": "e033",
+            "label_time_s": 24.0,
+            "counter_time_s": 23.982,
+            "frame": 670
+          },
+          {
+            "label_id": "e034",
+            "label_time_s": 24.58,
+            "counter_time_s": 24.549,
+            "frame": 687
+          },
+          {
+            "label_id": "e035",
+            "label_time_s": 25.08,
+            "counter_time_s": 25.082,
+            "frame": 703
+          },
+          {
+            "label_id": "e036",
+            "label_time_s": 25.73,
+            "counter_time_s": 25.682,
+            "frame": 721
+          },
+          {
+            "label_id": "e037",
+            "label_time_s": 26.25,
+            "counter_time_s": 26.216,
+            "frame": 737
+          },
+          {
+            "label_id": "e038",
+            "label_time_s": 26.92,
+            "counter_time_s": 26.95,
+            "frame": 759
+          },
+          {
+            "label_id": "e039",
+            "label_time_s": 27.54,
+            "counter_time_s": 27.517,
+            "frame": 776
+          },
+          {
+            "label_id": "e040",
+            "label_time_s": 28.1,
+            "counter_time_s": 28.117,
+            "frame": 794
+          },
+          {
+            "label_id": "e041",
+            "label_time_s": 28.59,
+            "counter_time_s": 28.517,
+            "frame": 806
+          },
+          {
+            "label_id": "e042",
+            "label_time_s": 29.08,
+            "counter_time_s": 29.117,
+            "frame": 824
+          },
+          {
+            "label_id": "e043",
+            "label_time_s": 29.74,
+            "counter_time_s": 29.751,
+            "frame": 843
+          },
+          {
+            "label_id": "e044",
+            "label_time_s": 30.25,
+            "counter_time_s": 30.251,
+            "frame": 858
+          },
+          {
+            "label_id": "e045",
+            "label_time_s": 31.08,
+            "counter_time_s": 31.118,
+            "frame": 884
+          },
+          {
+            "label_id": "e046",
+            "label_time_s": 31.56,
+            "counter_time_s": 31.519,
+            "frame": 896
+          },
+          {
+            "label_id": "e047",
+            "label_time_s": 32.26,
+            "counter_time_s": 32.285,
+            "frame": 919
+          },
+          {
+            "label_id": "e048",
+            "label_time_s": 32.78,
+            "counter_time_s": 32.786,
+            "frame": 934
+          },
+          {
+            "label_id": "e049",
+            "label_time_s": 33.33,
+            "counter_time_s": 33.32,
+            "frame": 950
+          },
+          {
+            "label_id": "e050",
+            "label_time_s": 33.9,
+            "counter_time_s": 33.886,
+            "frame": 967
+          },
+          {
+            "label_id": "e051",
+            "label_time_s": 34.55,
+            "counter_time_s": 34.553,
+            "frame": 987
+          },
+          {
+            "label_id": "e052",
+            "label_time_s": 35.05,
+            "counter_time_s": 35.087,
+            "frame": 1003
+          },
+          {
+            "label_id": "e053",
+            "label_time_s": 35.67,
+            "counter_time_s": 35.654,
+            "frame": 1020
+          },
+          {
+            "label_id": "e054",
+            "label_time_s": 36.24,
+            "counter_time_s": 36.254,
+            "frame": 1038
+          },
+          {
+            "label_id": "e055",
+            "label_time_s": 36.78,
+            "counter_time_s": 36.787,
+            "frame": 1054
+          },
+          {
+            "label_id": "e056",
+            "label_time_s": 38.08,
+            "counter_time_s": 38.088,
+            "frame": 1093
+          },
+          {
+            "label_id": "e057",
+            "label_time_s": 38.7,
+            "counter_time_s": 38.688,
+            "frame": 1111
+          },
+          {
+            "label_id": "e058",
+            "label_time_s": 39.24,
+            "counter_time_s": 39.222,
+            "frame": 1127
+          },
+          {
+            "label_id": "e059",
+            "label_time_s": 39.73,
+            "counter_time_s": 39.756,
+            "frame": 1143
+          },
+          {
+            "label_id": "e060",
+            "label_time_s": 40.25,
+            "counter_time_s": 40.256,
+            "frame": 1158
+          },
+          {
+            "label_id": "e061",
+            "label_time_s": 41.58,
+            "counter_time_s": 41.557,
+            "frame": 1197
+          },
+          {
+            "label_id": "e062",
+            "label_time_s": 42.0,
+            "counter_time_s": 42.023,
+            "frame": 1211
+          },
+          {
+            "label_id": "e063",
+            "label_time_s": 42.59,
+            "counter_time_s": 42.624,
+            "frame": 1229
+          }
+        ]
+      }
+    },
+    {
+      "id": "normal_juggling_4",
+      "status": "scored",
+      "count": 29,
+      "analysis_fps": 29.52,
+      "analysis_frames": 1077,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "accepted": 29,
+        "outsidePersonRegion": 2,
+        "disallowedBodyContact": 4,
+        "unsupportedByDetection": 1
+      },
+      "score": {
+        "source": "normal_juggling_4.mov",
+        "source_sha256": "14df979f808de60f82b76a43458115690167caef6a5d8d28dc9f8e4bc0f60857",
+        "label_review_status": "reviewed_with_uncertainty",
+        "time_tolerance_s": 0.2,
+        "total_count": 29,
+        "labelled_valid": 32,
+        "labelled_uncertain": 2,
+        "accepted_valid": 27,
+        "missed_valid": [
+          {
+            "label_id": "e001",
+            "time_s": 0.34,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e002",
+            "time_s": 0.9,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e013",
+            "time_s": 7.12,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 195,
+              "time": 7.074,
+              "rejection": "outsidePersonRegion",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.49609375,
+                  "y": 0.379638671875,
+                  "width": 0.39111328125,
+                  "height": 0.48193359375
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e021",
+            "time_s": 11.88,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 339,
+              "time": 11.876,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.32568359375,
+                  "y": 0.3828125,
+                  "width": 0.404541015625,
+                  "height": 0.47021484375
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e028",
+            "time_s": 23.91,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 700,
+              "time": 23.915,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 3,
+                "box": {
+                  "x": 0.2469482421875,
+                  "y": 0.325439453125,
+                  "width": 0.48583984375,
+                  "height": 0.60595703125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [
+          {
+            "counter_time_s": 27.183,
+            "frame": 798,
+            "reason": "Ground bounces then foot trap/rolling ball; no airborne juggle"
+          }
+        ],
+        "uncertain_accepted": [
+          {
+            "label_id": "u002",
+            "label_time_s": 19.72,
+            "counter_time_s": 19.68,
+            "frame": 573
+          }
+        ],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e003",
+            "label_time_s": 1.37,
+            "counter_time_s": 1.338,
+            "frame": 23
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 2.05,
+            "counter_time_s": 2.038,
+            "frame": 44
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 2.54,
+            "counter_time_s": 2.505,
+            "frame": 58
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 3.08,
+            "counter_time_s": 3.005,
+            "frame": 73
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 3.56,
+            "counter_time_s": 3.539,
+            "frame": 89
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 4.07,
+            "counter_time_s": 4.072,
+            "frame": 105
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 4.56,
+            "counter_time_s": 4.473,
+            "frame": 117
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 5.41,
+            "counter_time_s": 5.407,
+            "frame": 145
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 5.94,
+            "counter_time_s": 5.907,
+            "frame": 160
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 6.69,
+            "counter_time_s": 6.674,
+            "frame": 183
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 8.08,
+            "counter_time_s": 8.074,
+            "frame": 225
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 8.71,
+            "counter_time_s": 8.675,
+            "frame": 243
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 9.25,
+            "counter_time_s": 9.208,
+            "frame": 259
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 9.9,
+            "counter_time_s": 9.842,
+            "frame": 278
+          },
+          {
+            "label_id": "e018",
+            "label_time_s": 10.4,
+            "counter_time_s": 10.409,
+            "frame": 295
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 10.91,
+            "counter_time_s": 10.976,
+            "frame": 312
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 11.4,
+            "counter_time_s": 11.376,
+            "frame": 324
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 19.08,
+            "counter_time_s": 19.08,
+            "frame": 555
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 20.28,
+            "counter_time_s": 20.28,
+            "frame": 591
+          },
+          {
+            "label_id": "e024",
+            "label_time_s": 21.87,
+            "counter_time_s": 21.814,
+            "frame": 637
+          },
+          {
+            "label_id": "e025",
+            "label_time_s": 22.41,
+            "counter_time_s": 22.381,
+            "frame": 654
+          },
+          {
+            "label_id": "e026",
+            "label_time_s": 22.91,
+            "counter_time_s": 22.915,
+            "frame": 670
+          },
+          {
+            "label_id": "e027",
+            "label_time_s": 23.4,
+            "counter_time_s": 23.415,
+            "frame": 685
+          },
+          {
+            "label_id": "e029",
+            "label_time_s": 24.85,
+            "counter_time_s": 24.815,
+            "frame": 727
+          },
+          {
+            "label_id": "e030",
+            "label_time_s": 25.31,
+            "counter_time_s": 25.282,
+            "frame": 741
+          },
+          {
+            "label_id": "e031",
+            "label_time_s": 26.01,
+            "counter_time_s": 25.95,
+            "frame": 761
+          },
+          {
+            "label_id": "e032",
+            "label_time_s": 26.5,
+            "counter_time_s": 26.45,
+            "frame": 776
+          }
+        ]
+      }
+    },
+    {
+      "id": "normal_juggling_5",
+      "status": "scored",
+      "count": 34,
+      "analysis_fps": 29.33,
+      "analysis_frames": 670,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "accepted": 34,
+        "outsidePersonRegion": 1,
+        "disallowedBodyContact": 2
+      },
+      "score": {
+        "source": "normal_juggling_5.mov",
+        "source_sha256": "a1267bb4e0223ace84cc2559d44cc7800b248ae18ad5725f1a10081403155218",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 34,
+        "labelled_valid": 38,
+        "labelled_uncertain": 0,
+        "accepted_valid": 34,
+        "missed_valid": [
+          {
+            "label_id": "e018",
+            "time_s": 11.17,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 327,
+              "time": 11.143,
+              "rejection": "outsidePersonRegion",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.43212890625,
+                  "y": 0.441162109375,
+                  "width": 0.341796875,
+                  "height": 0.469482421875
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e029",
+            "time_s": 17.5,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 514,
+              "time": 17.646,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsUncertain",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.463134765625,
+                  "y": 0.4560546875,
+                  "width": 0.399658203125,
+                  "height": 0.43408203125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e035",
+            "time_s": 20.96,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 613,
+              "time": 20.947,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.422119140625,
+                  "y": 0.438720703125,
+                  "width": 0.3134765625,
+                  "height": 0.466552734375
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "u001",
+            "time_s": 22.79,
+            "contact": "foot",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e001",
+            "label_time_s": 0.98,
+            "counter_time_s": 0.938,
+            "frame": 21
+          },
+          {
+            "label_id": "e002",
+            "label_time_s": 1.65,
+            "counter_time_s": 1.639,
+            "frame": 42
+          },
+          {
+            "label_id": "e003",
+            "label_time_s": 2.25,
+            "counter_time_s": 2.239,
+            "frame": 60
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 2.94,
+            "counter_time_s": 2.939,
+            "frame": 81
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 3.57,
+            "counter_time_s": 3.54,
+            "frame": 99
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 4.16,
+            "counter_time_s": 4.14,
+            "frame": 117
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 4.85,
+            "counter_time_s": 4.807,
+            "frame": 137
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 5.44,
+            "counter_time_s": 5.44,
+            "frame": 156
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 6.01,
+            "counter_time_s": 5.974,
+            "frame": 172
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 6.64,
+            "counter_time_s": 6.641,
+            "frame": 192
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 7.26,
+            "counter_time_s": 7.275,
+            "frame": 211
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 7.83,
+            "counter_time_s": 7.808,
+            "frame": 227
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 8.42,
+            "counter_time_s": 8.408,
+            "frame": 245
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 8.99,
+            "counter_time_s": 9.009,
+            "frame": 263
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 9.58,
+            "counter_time_s": 9.509,
+            "frame": 278
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 10.08,
+            "counter_time_s": 10.076,
+            "frame": 295
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 10.68,
+            "counter_time_s": 10.676,
+            "frame": 313
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 11.82,
+            "counter_time_s": 11.81,
+            "frame": 347
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 12.5,
+            "counter_time_s": 12.477,
+            "frame": 367
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 13.0,
+            "counter_time_s": 12.977,
+            "frame": 382
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 13.66,
+            "counter_time_s": 13.677,
+            "frame": 403
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 14.08,
+            "counter_time_s": 14.077,
+            "frame": 415
+          },
+          {
+            "label_id": "e024",
+            "label_time_s": 14.59,
+            "counter_time_s": 14.611,
+            "frame": 431
+          },
+          {
+            "label_id": "e025",
+            "label_time_s": 15.26,
+            "counter_time_s": 15.178,
+            "frame": 448
+          },
+          {
+            "label_id": "e026",
+            "label_time_s": 15.72,
+            "counter_time_s": 15.678,
+            "frame": 463
+          },
+          {
+            "label_id": "e027",
+            "label_time_s": 16.26,
+            "counter_time_s": 16.212,
+            "frame": 479
+          },
+          {
+            "label_id": "e028",
+            "label_time_s": 16.84,
+            "counter_time_s": 16.812,
+            "frame": 497
+          },
+          {
+            "label_id": "e030",
+            "label_time_s": 18.0,
+            "counter_time_s": 17.98,
+            "frame": 524
+          },
+          {
+            "label_id": "e031",
+            "label_time_s": 18.59,
+            "counter_time_s": 18.513,
+            "frame": 540
+          },
+          {
+            "label_id": "e032",
+            "label_time_s": 19.16,
+            "counter_time_s": 19.18,
+            "frame": 560
+          },
+          {
+            "label_id": "e033",
+            "label_time_s": 19.83,
+            "counter_time_s": 19.814,
+            "frame": 579
+          },
+          {
+            "label_id": "e034",
+            "label_time_s": 20.41,
+            "counter_time_s": 20.38,
+            "frame": 596
+          },
+          {
+            "label_id": "e036",
+            "label_time_s": 21.73,
+            "counter_time_s": 21.681,
+            "frame": 635
+          },
+          {
+            "label_id": "e037",
+            "label_time_s": 22.25,
+            "counter_time_s": 22.248,
+            "frame": 652
+          }
+        ]
+      }
+    },
+    {
+      "id": "nomral_juggling_6",
+      "status": "scored",
+      "count": 33,
+      "analysis_fps": 29.91,
+      "analysis_frames": 1012,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "disallowedBodyContact": 2,
+        "accepted": 33,
+        "outsidePersonRegion": 2,
+        "handContact": 1
+      },
+      "score": {
+        "source": "nomral_juggling_6.mov",
+        "source_sha256": "de6af4939c1b4350b5d72123e1ba6b9bd99fa87a0df518538a93765389d3f2cd",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 33,
+        "labelled_valid": 34,
+        "labelled_uncertain": 0,
+        "accepted_valid": 31,
+        "missed_valid": [
+          {
+            "label_id": "e027",
+            "time_s": 25.55,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 761,
+              "time": 25.478,
+              "rejection": "outsidePersonRegion",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.427001953125,
+                  "y": 0.454833984375,
+                  "width": 0.3388671875,
+                  "height": 0.51611328125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e034",
+            "time_s": 29.75,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 889,
+              "time": 29.747,
+              "rejection": "handContact",
+              "handConfirmed": true,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.3955078125,
+                  "y": 0.453857421875,
+                  "width": 0.35400390625,
+                  "height": 0.51220703125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e035",
+            "time_s": 30.27,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 902,
+              "time": 30.18,
+              "rejection": "outsidePersonRegion",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.419189453125,
+                  "y": 0.455322265625,
+                  "width": 0.356201171875,
+                  "height": 0.517578125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [
+          {
+            "counter_time_s": 10.304,
+            "frame": 306,
+            "reason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch"
+          },
+          {
+            "counter_time_s": 10.738,
+            "frame": 319,
+            "reason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch"
+          }
+        ],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e001",
+            "label_time_s": 8.25,
+            "counter_time_s": 8.203,
+            "frame": 243
+          },
+          {
+            "label_id": "e002",
+            "label_time_s": 8.91,
+            "counter_time_s": 8.87,
+            "frame": 263
+          },
+          {
+            "label_id": "e003",
+            "label_time_s": 9.29,
+            "counter_time_s": 9.237,
+            "frame": 274
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 12.47,
+            "counter_time_s": 12.472,
+            "frame": 371
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 13.06,
+            "counter_time_s": 13.039,
+            "frame": 388
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 13.66,
+            "counter_time_s": 13.639,
+            "frame": 406
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 14.31,
+            "counter_time_s": 14.306,
+            "frame": 426
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 14.77,
+            "counter_time_s": 14.773,
+            "frame": 440
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 15.37,
+            "counter_time_s": 15.373,
+            "frame": 458
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 15.99,
+            "counter_time_s": 15.974,
+            "frame": 476
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 16.63,
+            "counter_time_s": 16.64,
+            "frame": 496
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 17.24,
+            "counter_time_s": 17.241,
+            "frame": 514
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 17.79,
+            "counter_time_s": 17.808,
+            "frame": 531
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 18.48,
+            "counter_time_s": 18.441,
+            "frame": 550
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 19.16,
+            "counter_time_s": 19.142,
+            "frame": 571
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 19.74,
+            "counter_time_s": 19.675,
+            "frame": 587
+          },
+          {
+            "label_id": "e018",
+            "label_time_s": 20.3,
+            "counter_time_s": 20.275,
+            "frame": 605
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 20.9,
+            "counter_time_s": 20.876,
+            "frame": 623
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 21.4,
+            "counter_time_s": 21.343,
+            "frame": 637
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 21.93,
+            "counter_time_s": 21.91,
+            "frame": 654
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 22.74,
+            "counter_time_s": 22.677,
+            "frame": 677
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 23.36,
+            "counter_time_s": 23.31,
+            "frame": 696
+          },
+          {
+            "label_id": "e024",
+            "label_time_s": 24.05,
+            "counter_time_s": 24.011,
+            "frame": 717
+          },
+          {
+            "label_id": "e025",
+            "label_time_s": 24.5,
+            "counter_time_s": 24.477,
+            "frame": 731
+          },
+          {
+            "label_id": "e026",
+            "label_time_s": 25.07,
+            "counter_time_s": 25.078,
+            "frame": 749
+          },
+          {
+            "label_id": "e028",
+            "label_time_s": 26.39,
+            "counter_time_s": 26.412,
+            "frame": 789
+          },
+          {
+            "label_id": "e029",
+            "label_time_s": 26.89,
+            "counter_time_s": 26.845,
+            "frame": 802
+          },
+          {
+            "label_id": "e030",
+            "label_time_s": 27.31,
+            "counter_time_s": 27.279,
+            "frame": 815
+          },
+          {
+            "label_id": "e031",
+            "label_time_s": 27.92,
+            "counter_time_s": 27.879,
+            "frame": 833
+          },
+          {
+            "label_id": "e032",
+            "label_time_s": 28.42,
+            "counter_time_s": 28.379,
+            "frame": 848
+          },
+          {
+            "label_id": "e033",
+            "label_time_s": 29.13,
+            "counter_time_s": 29.113,
+            "frame": 870
+          }
+        ]
+      }
+    },
+    {
+      "id": "normal_juggling_7",
+      "status": "scored",
+      "count": 27,
+      "analysis_fps": 29.99,
+      "analysis_frames": 806,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792961795.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "accepted": 27,
+        "disallowedBodyContact": 4,
+        "trackLost": 1
+      },
+      "score": {
+        "source": "normal_juggling_7.mov",
+        "source_sha256": "7bf2abca3914072eb091cbb2d1a148df7db6ccd445293bd1f1346b309fa4a10a",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 27,
+        "labelled_valid": 31,
+        "labelled_uncertain": 0,
+        "accepted_valid": 27,
+        "missed_valid": [
+          {
+            "label_id": "e008",
+            "time_s": 4.36,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 129,
+              "time": 4.304,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "missingBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.68505859375,
+                  "y": 0.50439453125,
+                  "width": 0.251220703125,
+                  "height": 0.3056640625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e012",
+            "time_s": 6.8,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 206,
+              "time": 6.872,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "missingBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.68310546875,
+                  "y": 0.5029296875,
+                  "width": 0.244873046875,
+                  "height": 0.3017578125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e016",
+            "time_s": 9.69,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 293,
+              "time": 9.773,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "missingBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.57080078125,
+                  "y": 0.499267578125,
+                  "width": 0.294189453125,
+                  "height": 0.31201171875
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e017",
+            "time_s": 10.36,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 310,
+              "time": 10.34,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "missingPose",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.6123046875,
+                  "y": 0.51171875,
+                  "width": 0.2313232421875,
+                  "height": 0.290771484375
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e001",
+            "label_time_s": 0.53,
+            "counter_time_s": 0.502,
+            "frame": 15
+          },
+          {
+            "label_id": "e002",
+            "label_time_s": 1.08,
+            "counter_time_s": 1.069,
+            "frame": 32
+          },
+          {
+            "label_id": "e003",
+            "label_time_s": 1.65,
+            "counter_time_s": 1.67,
+            "frame": 50
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 2.23,
+            "counter_time_s": 2.27,
+            "frame": 68
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 2.73,
+            "counter_time_s": 2.737,
+            "frame": 82
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 3.24,
+            "counter_time_s": 3.237,
+            "frame": 97
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 3.89,
+            "counter_time_s": 3.904,
+            "frame": 117
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 5.06,
+            "counter_time_s": 5.071,
+            "frame": 152
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 5.64,
+            "counter_time_s": 5.605,
+            "frame": 168
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 6.26,
+            "counter_time_s": 6.238,
+            "frame": 187
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 7.5,
+            "counter_time_s": 7.439,
+            "frame": 223
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 7.99,
+            "counter_time_s": 7.939,
+            "frame": 238
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 9.11,
+            "counter_time_s": 9.106,
+            "frame": 273
+          },
+          {
+            "label_id": "e018",
+            "label_time_s": 11.05,
+            "counter_time_s": 11.074,
+            "frame": 332
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 11.63,
+            "counter_time_s": 11.607,
+            "frame": 348
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 12.25,
+            "counter_time_s": 12.208,
+            "frame": 366
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 12.86,
+            "counter_time_s": 12.808,
+            "frame": 384
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 13.56,
+            "counter_time_s": 13.542,
+            "frame": 406
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 14.02,
+            "counter_time_s": 13.975,
+            "frame": 419
+          },
+          {
+            "label_id": "e024",
+            "label_time_s": 14.55,
+            "counter_time_s": 14.609,
+            "frame": 438
+          },
+          {
+            "label_id": "e025",
+            "label_time_s": 15.13,
+            "counter_time_s": 15.142,
+            "frame": 454
+          },
+          {
+            "label_id": "e026",
+            "label_time_s": 15.8,
+            "counter_time_s": 15.776,
+            "frame": 473
+          },
+          {
+            "label_id": "e027",
+            "label_time_s": 16.39,
+            "counter_time_s": 16.376,
+            "frame": 491
+          },
+          {
+            "label_id": "e028",
+            "label_time_s": 16.96,
+            "counter_time_s": 17.01,
+            "frame": 510
+          },
+          {
+            "label_id": "e029",
+            "label_time_s": 17.61,
+            "counter_time_s": 17.544,
+            "frame": 526
+          },
+          {
+            "label_id": "e030",
+            "label_time_s": 18.23,
+            "counter_time_s": 18.21,
+            "frame": 546
+          },
+          {
+            "label_id": "e031",
+            "label_time_s": 18.77,
+            "counter_time_s": 18.744,
+            "frame": 562
+          }
+        ]
+      }
+    },
+    {
+      "id": "normal_juggling_8",
+      "status": "scored",
+      "count": 33,
+      "analysis_fps": 29.99,
+      "analysis_frames": 1829,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "trackLost": 3,
+        "insufficientImpulse": 1,
+        "amplitudeTooSmall": 1,
+        "accepted": 33,
+        "disallowedBodyContact": 5,
+        "outsidePersonRegion": 1
+      },
+      "score": {
+        "source": "normal_juggling_8.mov",
+        "source_sha256": "42f14f0e3f63b239e7daf47aa1e6e5ee0def25937165a439ec264c1ebfc4e736",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 33,
+        "labelled_valid": 38,
+        "labelled_uncertain": 0,
+        "accepted_valid": 33,
+        "missed_valid": [
+          {
+            "label_id": "e008",
+            "time_s": 37.92,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1137,
+              "time": 37.917,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "missingBall",
+              "player": {
+                "state": "locked",
+                "id": 86,
+                "box": {
+                  "x": 0.6123046875,
+                  "y": 0.5224609375,
+                  "width": 0.2186279296875,
+                  "height": 0.286376953125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e027",
+            "time_s": 50.03,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1499,
+              "time": 49.989,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 86,
+                "box": {
+                  "x": 0.52880859375,
+                  "y": 0.52099609375,
+                  "width": 0.244384765625,
+                  "height": 0.286376953125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e034",
+            "time_s": 54.31,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1627,
+              "time": 54.258,
+              "rejection": "outsidePersonRegion",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 86,
+                "box": {
+                  "x": 0.4697265625,
+                  "y": 0.5205078125,
+                  "width": 0.16162109375,
+                  "height": 0.295654296875
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e037",
+            "time_s": 56.06,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1679,
+              "time": 55.992,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "missingBall",
+              "player": {
+                "state": "locked",
+                "id": 86,
+                "box": {
+                  "x": 0.427734375,
+                  "y": 0.5068359375,
+                  "width": 0.1962890625,
+                  "height": 0.332275390625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e038",
+            "time_s": 56.89,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1706,
+              "time": 56.892,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 86,
+                "box": {
+                  "x": 0.5390625,
+                  "y": 0.49853515625,
+                  "width": 0.4189453125,
+                  "height": 0.36181640625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e001",
+            "label_time_s": 25.7,
+            "counter_time_s": 25.678,
+            "frame": 770
+          },
+          {
+            "label_id": "e002",
+            "label_time_s": 26.32,
+            "counter_time_s": 26.312,
+            "frame": 789
+          },
+          {
+            "label_id": "e003",
+            "label_time_s": 26.9,
+            "counter_time_s": 26.879,
+            "frame": 806
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 27.42,
+            "counter_time_s": 27.412,
+            "frame": 822
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 27.88,
+            "counter_time_s": 27.846,
+            "frame": 835
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 36.61,
+            "counter_time_s": 36.617,
+            "frame": 1098
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 37.25,
+            "counter_time_s": 37.217,
+            "frame": 1116
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 38.6,
+            "counter_time_s": 38.617,
+            "frame": 1158
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 39.38,
+            "counter_time_s": 39.317,
+            "frame": 1179
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 39.78,
+            "counter_time_s": 39.685,
+            "frame": 1190
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 40.26,
+            "counter_time_s": 40.185,
+            "frame": 1205
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 41.23,
+            "counter_time_s": 41.185,
+            "frame": 1235
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 41.89,
+            "counter_time_s": 41.885,
+            "frame": 1256
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 42.51,
+            "counter_time_s": 42.486,
+            "frame": 1274
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 43.11,
+            "counter_time_s": 43.053,
+            "frame": 1291
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 43.68,
+            "counter_time_s": 43.686,
+            "frame": 1310
+          },
+          {
+            "label_id": "e018",
+            "label_time_s": 44.25,
+            "counter_time_s": 44.187,
+            "frame": 1325
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 44.75,
+            "counter_time_s": 44.753,
+            "frame": 1342
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 45.55,
+            "counter_time_s": 45.554,
+            "frame": 1366
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 46.07,
+            "counter_time_s": 46.087,
+            "frame": 1382
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 46.72,
+            "counter_time_s": 46.688,
+            "frame": 1400
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 47.5,
+            "counter_time_s": 47.488,
+            "frame": 1424
+          },
+          {
+            "label_id": "e024",
+            "label_time_s": 48.11,
+            "counter_time_s": 48.155,
+            "frame": 1444
+          },
+          {
+            "label_id": "e025",
+            "label_time_s": 48.8,
+            "counter_time_s": 48.789,
+            "frame": 1463
+          },
+          {
+            "label_id": "e026",
+            "label_time_s": 49.47,
+            "counter_time_s": 49.456,
+            "frame": 1483
+          },
+          {
+            "label_id": "e028",
+            "label_time_s": 50.75,
+            "counter_time_s": 50.756,
+            "frame": 1522
+          },
+          {
+            "label_id": "e029",
+            "label_time_s": 51.4,
+            "counter_time_s": 51.357,
+            "frame": 1540
+          },
+          {
+            "label_id": "e030",
+            "label_time_s": 52.07,
+            "counter_time_s": 52.09,
+            "frame": 1562
+          },
+          {
+            "label_id": "e031",
+            "label_time_s": 52.6,
+            "counter_time_s": 52.59,
+            "frame": 1577
+          },
+          {
+            "label_id": "e032",
+            "label_time_s": 53.12,
+            "counter_time_s": 53.124,
+            "frame": 1593
+          },
+          {
+            "label_id": "e033",
+            "label_time_s": 53.84,
+            "counter_time_s": 53.825,
+            "frame": 1614
+          },
+          {
+            "label_id": "e035",
+            "label_time_s": 54.92,
+            "counter_time_s": 54.892,
+            "frame": 1646
+          },
+          {
+            "label_id": "e036",
+            "label_time_s": 55.59,
+            "counter_time_s": 55.592,
+            "frame": 1667
+          }
+        ]
+      }
+    },
+    {
+      "id": "34dd",
+      "status": "scored",
+      "count": 17,
+      "analysis_fps": 29.99,
+      "analysis_frames": 547,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "disallowedBodyContact": 2,
+        "accepted": 17,
+        "trackLost": 1
+      },
+      "score": {
+        "source": "34dd.mov",
+        "source_sha256": "48549a3133216db7ba2fd74a61f915412c154ecea1091087fbbff05613c573e7",
+        "label_review_status": "reviewed_with_uncertainty",
+        "time_tolerance_s": 0.2,
+        "total_count": 17,
+        "labelled_valid": 18,
+        "labelled_uncertain": 1,
+        "accepted_valid": 17,
+        "missed_valid": [
+          {
+            "label_id": "e018",
+            "time_s": 14.45,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 433,
+              "time": 14.436,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.56396484375,
+                  "y": 0.59716796875,
+                  "width": 0.4736328125,
+                  "height": 0.67236328125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e001",
+            "label_time_s": 4.15,
+            "counter_time_s": 4.135,
+            "frame": 124
+          },
+          {
+            "label_id": "e002",
+            "label_time_s": 4.77,
+            "counter_time_s": 4.735,
+            "frame": 142
+          },
+          {
+            "label_id": "e003",
+            "label_time_s": 5.37,
+            "counter_time_s": 5.335,
+            "frame": 160
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 5.98,
+            "counter_time_s": 5.935,
+            "frame": 178
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 6.58,
+            "counter_time_s": 6.501,
+            "frame": 195
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 7.14,
+            "counter_time_s": 7.068,
+            "frame": 212
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 7.85,
+            "counter_time_s": 7.835,
+            "frame": 235
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 8.35,
+            "counter_time_s": 8.301,
+            "frame": 249
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 8.87,
+            "counter_time_s": 8.835,
+            "frame": 265
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 9.46,
+            "counter_time_s": 9.368,
+            "frame": 281
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 10.08,
+            "counter_time_s": 10.068,
+            "frame": 302
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 10.8,
+            "counter_time_s": 10.735,
+            "frame": 322
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 11.45,
+            "counter_time_s": 11.403,
+            "frame": 342
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 11.98,
+            "counter_time_s": 11.936,
+            "frame": 358
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 12.58,
+            "counter_time_s": 12.536,
+            "frame": 376
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 13.16,
+            "counter_time_s": 13.136,
+            "frame": 394
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 13.78,
+            "counter_time_s": 13.736,
+            "frame": 412
+          }
+        ]
+      }
+    },
+    {
+      "id": "ball_in_hand",
+      "status": "scored",
+      "count": 0,
+      "analysis_fps": 29.99,
+      "analysis_frames": 136,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "trackLost": 1
+      },
+      "score": {
+        "source": "ball_in_hand.mov",
+        "source_sha256": "3aa786708d1819d92887ce90bd8598c96fad34997f39637a7600c60fe021a434",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 0,
+        "labelled_valid": 0,
+        "labelled_uncertain": 0,
+        "accepted_valid": 0,
+        "missed_valid": [],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": []
+      }
+    },
+    {
+      "id": "dribbling_with_ball_1",
+      "status": "scored",
+      "count": 0,
+      "analysis_fps": 30.01,
+      "analysis_frames": 690,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "insufficientImpulse": 2,
+        "trackLost": 3
+      },
+      "score": {
+        "source": "dribbling_with_ball_1.mov",
+        "source_sha256": "dffb0c5af65f618bb1b97eee905f5ba10394ceb45865f6376a59aaa5498654aa",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 0,
+        "labelled_valid": 0,
+        "labelled_uncertain": 0,
+        "accepted_valid": 0,
+        "missed_valid": [],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": []
+      }
+    },
+    {
+      "id": "dribbling_with_ball_2",
+      "status": "scored",
+      "count": 0,
+      "analysis_fps": 29.78,
+      "analysis_frames": 177,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {},
+      "score": {
+        "source": "dribbling_with_ball_2.mov",
+        "source_sha256": "6b2ea0998747038e7a432edba32df645442b6fb9d27d462d66af2182badc6767",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 0,
+        "labelled_valid": 0,
+        "labelled_uncertain": 0,
+        "accepted_valid": 0,
+        "missed_valid": [],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": []
+      }
+    },
+    {
+      "id": "dribbling_with_ball_3",
+      "status": "scored",
+      "count": 0,
+      "analysis_fps": 29.72,
+      "analysis_frames": 136,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {},
+      "score": {
+        "source": "dribbling_with_ball_3.mov",
+        "source_sha256": "93ba1a0dedbe99b6dcdd98ba4c73195a64ea883b317e03af19e1ec62061a41e2",
+        "label_review_status": "reviewed_with_uncertainty",
+        "time_tolerance_s": 0.2,
+        "total_count": 0,
+        "labelled_valid": 0,
+        "labelled_uncertain": 0,
+        "accepted_valid": 0,
+        "missed_valid": [],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": []
+      }
+    },
+    {
+      "id": "dribbling_with_the_ball_1",
+      "status": "scored",
+      "count": 0,
+      "analysis_fps": 29.93,
+      "analysis_frames": 524,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "groundBounce": 4,
+        "insufficientImpulse": 1,
+        "outsidePersonRegion": 2
+      },
+      "score": {
+        "source": "dribbling_with_the_ball_1.mov",
+        "source_sha256": "bcbd9c927606cdb507b41df55f7c3bd89918fd0b67bf77a2a94d7c95ca35ec01",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 0,
+        "labelled_valid": 0,
+        "labelled_uncertain": 0,
+        "accepted_valid": 0,
+        "missed_valid": [],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": []
+      }
+    },
+    {
+      "id": "eighteen",
+      "status": "scored",
+      "count": 12,
+      "analysis_fps": 29.94,
+      "analysis_frames": 556,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "disallowedBodyContact": 8,
+        "accepted": 12,
+        "trackLost": 1
+      },
+      "score": {
+        "source": "eighteen.mov",
+        "source_sha256": "4a54b84afee6389e5229716e3d987ff6c4295ed297651e765d56ec1dd8cc64ae",
+        "label_review_status": "reviewed_with_uncertainty",
+        "time_tolerance_s": 0.2,
+        "total_count": 12,
+        "labelled_valid": 18,
+        "labelled_uncertain": 1,
+        "accepted_valid": 12,
+        "missed_valid": [
+          {
+            "label_id": "e002",
+            "time_s": 3.75,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 111,
+              "time": 3.735,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsUncertain",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.6513671875,
+                  "y": 0.5419921875,
+                  "width": 0.53515625,
+                  "height": 0.685546875
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e005",
+            "time_s": 6.32,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 188,
+              "time": 6.301,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "invalidGeometry",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.53466796875,
+                  "y": 0.53466796875,
+                  "width": 0.492919921875,
+                  "height": 0.708984375
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "u001",
+            "time_s": 7.65,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 227,
+              "time": 7.601,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "invalidGeometry",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.50244140625,
+                  "y": 0.54052734375,
+                  "width": 0.6611328125,
+                  "height": 0.73828125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "u002",
+            "time_s": 10.98,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 326,
+              "time": 10.901,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsUncertain",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.619140625,
+                  "y": 0.53369140625,
+                  "width": 0.75048828125,
+                  "height": 0.71728515625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e013",
+            "time_s": 13.88,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 414,
+              "time": 13.836,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsUncertain",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.74609375,
+                  "y": 0.53955078125,
+                  "width": 0.5078125,
+                  "height": 0.90185546875
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e014",
+            "time_s": 14.59,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 437,
+              "time": 14.603,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.68310546875,
+                  "y": 0.51953125,
+                  "width": 0.51025390625,
+                  "height": 0.8330078125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e001",
+            "label_time_s": 3.13,
+            "counter_time_s": 3.1,
+            "frame": 92
+          },
+          {
+            "label_id": "e003",
+            "label_time_s": 5.08,
+            "counter_time_s": 5.101,
+            "frame": 152
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 5.72,
+            "counter_time_s": 5.701,
+            "frame": 170
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 7.12,
+            "counter_time_s": 7.201,
+            "frame": 215
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 8.6,
+            "counter_time_s": 8.535,
+            "frame": 255
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 9.19,
+            "counter_time_s": 9.135,
+            "frame": 273
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 9.85,
+            "counter_time_s": 9.835,
+            "frame": 294
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 10.35,
+            "counter_time_s": 10.335,
+            "frame": 309
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 11.86,
+            "counter_time_s": 11.836,
+            "frame": 354
+          },
+          {
+            "label_id": "u003",
+            "label_time_s": 12.59,
+            "counter_time_s": 12.536,
+            "frame": 375
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 13.25,
+            "counter_time_s": 13.236,
+            "frame": 396
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 15.23,
+            "counter_time_s": 15.336,
+            "frame": 459
+          }
+        ]
+      }
+    },
+    {
+      "id": "juggling",
+      "status": "scored",
+      "count": 35,
+      "analysis_fps": 30.0,
+      "analysis_frames": 686,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "accepted": 35,
+        "outsidePersonRegion": 1,
+        "disallowedBodyContact": 1
+      },
+      "score": {
+        "source": "juggling.mp4",
+        "source_sha256": "f57fd1d8b12df457329a988b0051fffc4c738138612ee04bc87cc78997fdca60",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 35,
+        "labelled_valid": 38,
+        "labelled_uncertain": 0,
+        "accepted_valid": 35,
+        "missed_valid": [
+          {
+            "label_id": "e030",
+            "time_s": 18.0,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 539,
+              "time": 17.966,
+              "rejection": "outsidePersonRegion",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.400634765625,
+                  "y": 0.449462890625,
+                  "width": 0.264404296875,
+                  "height": 0.45166015625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e035",
+            "time_s": 20.97,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 627,
+              "time": 20.9,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.41455078125,
+                  "y": 0.438232421875,
+                  "width": 0.321044921875,
+                  "height": 0.466796875
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "u001",
+            "time_s": 22.78,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e001",
+            "label_time_s": 0.99,
+            "counter_time_s": 0.933,
+            "frame": 28
+          },
+          {
+            "label_id": "e002",
+            "label_time_s": 1.67,
+            "counter_time_s": 1.633,
+            "frame": 49
+          },
+          {
+            "label_id": "e003",
+            "label_time_s": 2.27,
+            "counter_time_s": 2.233,
+            "frame": 67
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 2.98,
+            "counter_time_s": 2.966,
+            "frame": 89
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 3.55,
+            "counter_time_s": 3.533,
+            "frame": 106
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 4.15,
+            "counter_time_s": 4.133,
+            "frame": 124
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 4.83,
+            "counter_time_s": 4.833,
+            "frame": 145
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 5.47,
+            "counter_time_s": 5.433,
+            "frame": 163
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 6.01,
+            "counter_time_s": 5.966,
+            "frame": 179
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 6.65,
+            "counter_time_s": 6.633,
+            "frame": 199
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 7.3,
+            "counter_time_s": 7.266,
+            "frame": 218
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 7.84,
+            "counter_time_s": 7.8,
+            "frame": 234
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 8.42,
+            "counter_time_s": 8.433,
+            "frame": 253
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 9.0,
+            "counter_time_s": 9.0,
+            "frame": 270
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 9.58,
+            "counter_time_s": 9.533,
+            "frame": 286
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 10.08,
+            "counter_time_s": 10.066,
+            "frame": 302
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 10.68,
+            "counter_time_s": 10.666,
+            "frame": 320
+          },
+          {
+            "label_id": "e018",
+            "label_time_s": 11.17,
+            "counter_time_s": 11.166,
+            "frame": 335
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 11.84,
+            "counter_time_s": 11.8,
+            "frame": 354
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 12.5,
+            "counter_time_s": 12.5,
+            "frame": 375
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 13.02,
+            "counter_time_s": 12.966,
+            "frame": 389
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 13.65,
+            "counter_time_s": 13.633,
+            "frame": 409
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 14.1,
+            "counter_time_s": 14.066,
+            "frame": 422
+          },
+          {
+            "label_id": "e024",
+            "label_time_s": 14.65,
+            "counter_time_s": 14.6,
+            "frame": 438
+          },
+          {
+            "label_id": "e025",
+            "label_time_s": 15.19,
+            "counter_time_s": 15.166,
+            "frame": 455
+          },
+          {
+            "label_id": "e026",
+            "label_time_s": 15.72,
+            "counter_time_s": 15.7,
+            "frame": 471
+          },
+          {
+            "label_id": "e027",
+            "label_time_s": 16.24,
+            "counter_time_s": 16.2,
+            "frame": 486
+          },
+          {
+            "label_id": "e028",
+            "label_time_s": 16.84,
+            "counter_time_s": 16.8,
+            "frame": 504
+          },
+          {
+            "label_id": "e029",
+            "label_time_s": 17.49,
+            "counter_time_s": 17.5,
+            "frame": 525
+          },
+          {
+            "label_id": "e031",
+            "label_time_s": 18.53,
+            "counter_time_s": 18.5,
+            "frame": 555
+          },
+          {
+            "label_id": "e032",
+            "label_time_s": 19.18,
+            "counter_time_s": 19.166,
+            "frame": 575
+          },
+          {
+            "label_id": "e033",
+            "label_time_s": 19.82,
+            "counter_time_s": 19.8,
+            "frame": 594
+          },
+          {
+            "label_id": "e034",
+            "label_time_s": 20.4,
+            "counter_time_s": 20.366,
+            "frame": 611
+          },
+          {
+            "label_id": "e036",
+            "label_time_s": 21.72,
+            "counter_time_s": 21.666,
+            "frame": 650
+          },
+          {
+            "label_id": "e037",
+            "label_time_s": 22.25,
+            "counter_time_s": 22.2,
+            "frame": 666
+          }
+        ]
+      }
+    },
+    {
+      "id": "juggling_second_ball_in_video",
+      "status": "scored",
+      "count": 28,
+      "analysis_fps": 29.67,
+      "analysis_frames": 703,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "accepted": 28,
+        "disallowedBodyContact": 1,
+        "trackLost": 1
+      },
+      "score": {
+        "source": "juggling_second_ball_in_video.mov",
+        "source_sha256": "0e688e36a58294a54290eb3a99eee47b8a47e1eaea2a17d739fdbb77cb5ad032",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 28,
+        "labelled_valid": 28,
+        "labelled_uncertain": 0,
+        "accepted_valid": 28,
+        "missed_valid": [],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e001",
+            "label_time_s": 1.25,
+            "counter_time_s": 1.24,
+            "frame": 29
+          },
+          {
+            "label_id": "e002",
+            "label_time_s": 2.05,
+            "counter_time_s": 2.041,
+            "frame": 53
+          },
+          {
+            "label_id": "e003",
+            "label_time_s": 2.58,
+            "counter_time_s": 2.541,
+            "frame": 68
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 3.12,
+            "counter_time_s": 3.108,
+            "frame": 85
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 3.65,
+            "counter_time_s": 3.641,
+            "frame": 101
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 4.22,
+            "counter_time_s": 4.208,
+            "frame": 118
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 4.75,
+            "counter_time_s": 4.742,
+            "frame": 134
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 5.52,
+            "counter_time_s": 5.509,
+            "frame": 157
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 6.24,
+            "counter_time_s": 6.242,
+            "frame": 179
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 6.7,
+            "counter_time_s": 6.676,
+            "frame": 192
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 7.44,
+            "counter_time_s": 7.41,
+            "frame": 214
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 8.05,
+            "counter_time_s": 8.043,
+            "frame": 233
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 8.71,
+            "counter_time_s": 8.744,
+            "frame": 254
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 9.25,
+            "counter_time_s": 9.244,
+            "frame": 269
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 9.93,
+            "counter_time_s": 9.911,
+            "frame": 289
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 10.5,
+            "counter_time_s": 10.478,
+            "frame": 306
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 11.04,
+            "counter_time_s": 11.045,
+            "frame": 323
+          },
+          {
+            "label_id": "e018",
+            "label_time_s": 11.9,
+            "counter_time_s": 11.912,
+            "frame": 349
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 12.39,
+            "counter_time_s": 12.379,
+            "frame": 363
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 12.94,
+            "counter_time_s": 12.879,
+            "frame": 378
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 13.53,
+            "counter_time_s": 13.512,
+            "frame": 397
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 14.22,
+            "counter_time_s": 14.146,
+            "frame": 416
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 14.66,
+            "counter_time_s": 14.68,
+            "frame": 432
+          },
+          {
+            "label_id": "e024",
+            "label_time_s": 15.43,
+            "counter_time_s": 15.447,
+            "frame": 455
+          },
+          {
+            "label_id": "e025",
+            "label_time_s": 16.06,
+            "counter_time_s": 16.08,
+            "frame": 474
+          },
+          {
+            "label_id": "e026",
+            "label_time_s": 16.67,
+            "counter_time_s": 16.681,
+            "frame": 492
+          },
+          {
+            "label_id": "e027",
+            "label_time_s": 17.39,
+            "counter_time_s": 17.415,
+            "frame": 514
+          },
+          {
+            "label_id": "e028",
+            "label_time_s": 18.01,
+            "counter_time_s": 18.015,
+            "frame": 532
+          }
+        ]
+      }
+    },
+    {
+      "id": "juggling_second_ball_very_far",
+      "status": "scored",
+      "count": 21,
+      "analysis_fps": 27.84,
+      "analysis_frames": 470,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "accepted": 21,
+        "disallowedBodyContact": 2
+      },
+      "score": {
+        "source": "juggling_second_ball_very_far.mov",
+        "source_sha256": "3fabc2030b3d8509026297b43fbc7fa29718f3d7f23b9df3356f7631e87d89c3",
+        "label_review_status": "reviewed_with_uncertainty",
+        "time_tolerance_s": 0.2,
+        "total_count": 21,
+        "labelled_valid": 22,
+        "labelled_uncertain": 2,
+        "accepted_valid": 19,
+        "missed_valid": [
+          {
+            "label_id": "e001",
+            "time_s": 0.57,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e002",
+            "time_s": 1.06,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e015",
+            "time_s": 10.88,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 288,
+              "time": 10.844,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "handsNearBall",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.385498046875,
+                  "y": 0.40673828125,
+                  "width": 0.3798828125,
+                  "height": 0.51416015625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [
+          {
+            "counter_time_s": 4.074,
+            "frame": 85,
+            "reason": "Ball hits ground, then is retrieved, held and released"
+          }
+        ],
+        "uncertain_accepted": [
+          {
+            "label_id": "u002",
+            "label_time_s": 13.48,
+            "counter_time_s": 13.478,
+            "frame": 367
+          }
+        ],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e003",
+            "label_time_s": 1.67,
+            "counter_time_s": 1.64,
+            "frame": 12
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 2.25,
+            "counter_time_s": 2.24,
+            "frame": 30
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 2.8,
+            "counter_time_s": 2.773,
+            "frame": 46
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 3.35,
+            "counter_time_s": 3.34,
+            "frame": 63
+          },
+          {
+            "label_id": "e007",
+            "label_time_s": 5.68,
+            "counter_time_s": 5.641,
+            "frame": 132
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 6.32,
+            "counter_time_s": 6.308,
+            "frame": 152
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 6.88,
+            "counter_time_s": 6.875,
+            "frame": 169
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 7.68,
+            "counter_time_s": 7.642,
+            "frame": 192
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 8.4,
+            "counter_time_s": 8.376,
+            "frame": 214
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 8.98,
+            "counter_time_s": 8.976,
+            "frame": 232
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 9.61,
+            "counter_time_s": 9.61,
+            "frame": 251
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 10.29,
+            "counter_time_s": 10.277,
+            "frame": 271
+          },
+          {
+            "label_id": "e016",
+            "label_time_s": 11.67,
+            "counter_time_s": 11.677,
+            "frame": 313
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 12.19,
+            "counter_time_s": 12.177,
+            "frame": 328
+          },
+          {
+            "label_id": "e018",
+            "label_time_s": 12.77,
+            "counter_time_s": 12.745,
+            "frame": 345
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 14.03,
+            "counter_time_s": 14.012,
+            "frame": 383
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 14.59,
+            "counter_time_s": 14.579,
+            "frame": 400
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 15.15,
+            "counter_time_s": 15.112,
+            "frame": 416
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 15.73,
+            "counter_time_s": 15.712,
+            "frame": 434
+          }
+        ]
+      }
+    },
+    {
+      "id": "low",
+      "status": "scored",
+      "count": 154,
+      "analysis_fps": 30.01,
+      "analysis_frames": 1793,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "accepted": 154,
+        "amplitudeTooSmall": 10,
+        "groundBounce": 2,
+        "disallowedBodyContact": 2
+      },
+      "score": {
+        "source": "low.mov",
+        "source_sha256": "6e250e0976e4c584adef498bbe43cb5d7705ef374f1c7437f0cfe0d53f331e81",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.12,
+        "total_count": 154,
+        "labelled_valid": 195,
+        "labelled_uncertain": 0,
+        "accepted_valid": 154,
+        "missed_valid": [
+          {
+            "label_id": "e001",
+            "time_s": 0.125,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e002",
+            "time_s": 0.4,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e003",
+            "time_s": 0.7,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e004",
+            "time_s": 0.98,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e005",
+            "time_s": 1.33,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e006",
+            "time_s": 1.66,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e007",
+            "time_s": 1.94,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e008",
+            "time_s": 2.23,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e016",
+            "time_s": 4.67,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e018",
+            "time_s": 5.25,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 156,
+              "time": 5.2,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.4765625,
+                  "y": 0.3837890625,
+                  "width": 0.390380859375,
+                  "height": 0.487548828125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e024",
+            "time_s": 7.07,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e030",
+            "time_s": 8.98,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e032",
+            "time_s": 9.56,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e040",
+            "time_s": 12.07,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e042",
+            "time_s": 12.72,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 379,
+              "time": 12.633,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.347900390625,
+                  "y": 0.432861328125,
+                  "width": 0.44189453125,
+                  "height": 0.5400390625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e053",
+            "time_s": 16.03,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 479,
+              "time": 15.966,
+              "rejection": "groundBounce",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.234375,
+                  "y": 0.423828125,
+                  "width": 0.33740234375,
+                  "height": 0.5205078125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e057",
+            "time_s": 17.25,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 517,
+              "time": 17.233,
+              "rejection": "groundBounce",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.3115234375,
+                  "y": 0.426513671875,
+                  "width": 0.371337890625,
+                  "height": 0.489501953125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e062",
+            "time_s": 18.75,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e068",
+            "time_s": 20.6,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 616,
+              "time": 20.533,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.54150390625,
+                  "y": 0.407958984375,
+                  "width": 0.505859375,
+                  "height": 0.54541015625
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e070",
+            "time_s": 21.25,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 635,
+              "time": 21.166,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.52734375,
+                  "y": 0.39794921875,
+                  "width": 0.457763671875,
+                  "height": 0.53564453125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e076",
+            "time_s": 23.11,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 692,
+              "time": 23.066,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "missingPose",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.50244140625,
+                  "y": 0.375,
+                  "width": 0.42578125,
+                  "height": 0.497314453125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e081",
+            "time_s": 24.65,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e082",
+            "time_s": 24.96,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e092",
+            "time_s": 28.06,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 839,
+              "time": 27.966,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.50390625,
+                  "y": 0.37744140625,
+                  "width": 0.4375,
+                  "height": 0.50341796875
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e094",
+            "time_s": 28.63,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 857,
+              "time": 28.566,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.4921875,
+                  "y": 0.364501953125,
+                  "width": 0.41162109375,
+                  "height": 0.462646484375
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e095",
+            "time_s": 28.94,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e106",
+            "time_s": 32.31,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e113",
+            "time_s": 34.41,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e120",
+            "time_s": 36.54,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e124",
+            "time_s": 37.72,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e126",
+            "time_s": 38.36,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e128",
+            "time_s": 38.94,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e140",
+            "time_s": 42.58,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e148",
+            "time_s": 45.0,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e150",
+            "time_s": 45.65,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e166",
+            "time_s": 50.6,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1516,
+              "time": 50.533,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.3486328125,
+                  "y": 0.4951171875,
+                  "width": 0.56591796875,
+                  "height": 0.6162109375
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e167",
+            "time_s": 50.93,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1527,
+              "time": 50.9,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "missingPose",
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.376220703125,
+                  "y": 0.485107421875,
+                  "width": 0.5576171875,
+                  "height": 0.5830078125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e168",
+            "time_s": 51.22,
+            "contact": "legal_leg",
+            "decision": null,
+            "stage": "no_nearby_candidate"
+          },
+          {
+            "label_id": "e187",
+            "time_s": 57.15,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1712,
+              "time": 57.066,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.351318359375,
+                  "y": 0.51513671875,
+                  "width": 0.56103515625,
+                  "height": 0.59033203125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e188",
+            "time_s": 57.44,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1722,
+              "time": 57.4,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.338623046875,
+                  "y": 0.501953125,
+                  "width": 0.53076171875,
+                  "height": 0.564453125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e190",
+            "time_s": 58.08,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 1740,
+              "time": 58.0,
+              "rejection": "amplitudeTooSmall",
+              "handConfirmed": false,
+              "player": {
+                "state": "locked",
+                "id": 1,
+                "box": {
+                  "x": 0.312744140625,
+                  "y": 0.483642578125,
+                  "width": 0.492431640625,
+                  "height": 0.58251953125
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e009",
+            "label_time_s": 2.54,
+            "counter_time_s": 2.5,
+            "frame": 75
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 2.86,
+            "counter_time_s": 2.833,
+            "frame": 85
+          },
+          {
+            "label_id": "e011",
+            "label_time_s": 3.15,
+            "counter_time_s": 3.1,
+            "frame": 93
+          },
+          {
+            "label_id": "e012",
+            "label_time_s": 3.4,
+            "counter_time_s": 3.366,
+            "frame": 101
+          },
+          {
+            "label_id": "e013",
+            "label_time_s": 3.73,
+            "counter_time_s": 3.733,
+            "frame": 112
+          },
+          {
+            "label_id": "e014",
+            "label_time_s": 4.06,
+            "counter_time_s": 4.033,
+            "frame": 121
+          },
+          {
+            "label_id": "e015",
+            "label_time_s": 4.35,
+            "counter_time_s": 4.3,
+            "frame": 129
+          },
+          {
+            "label_id": "e017",
+            "label_time_s": 4.98,
+            "counter_time_s": 4.9,
+            "frame": 147
+          },
+          {
+            "label_id": "e019",
+            "label_time_s": 5.61,
+            "counter_time_s": 5.566,
+            "frame": 167
+          },
+          {
+            "label_id": "e020",
+            "label_time_s": 5.91,
+            "counter_time_s": 5.866,
+            "frame": 176
+          },
+          {
+            "label_id": "e021",
+            "label_time_s": 6.23,
+            "counter_time_s": 6.166,
+            "frame": 185
+          },
+          {
+            "label_id": "e022",
+            "label_time_s": 6.5,
+            "counter_time_s": 6.466,
+            "frame": 194
+          },
+          {
+            "label_id": "e023",
+            "label_time_s": 6.8,
+            "counter_time_s": 6.8,
+            "frame": 204
+          },
+          {
+            "label_id": "e025",
+            "label_time_s": 7.4,
+            "counter_time_s": 7.366,
+            "frame": 221
+          },
+          {
+            "label_id": "e026",
+            "label_time_s": 7.67,
+            "counter_time_s": 7.633,
+            "frame": 229
+          },
+          {
+            "label_id": "e027",
+            "label_time_s": 7.97,
+            "counter_time_s": 7.933,
+            "frame": 238
+          },
+          {
+            "label_id": "e028",
+            "label_time_s": 8.3,
+            "counter_time_s": 8.233,
+            "frame": 247
+          },
+          {
+            "label_id": "e029",
+            "label_time_s": 8.68,
+            "counter_time_s": 8.666,
+            "frame": 260
+          },
+          {
+            "label_id": "e031",
+            "label_time_s": 9.25,
+            "counter_time_s": 9.2,
+            "frame": 276
+          },
+          {
+            "label_id": "e033",
+            "label_time_s": 9.85,
+            "counter_time_s": 9.833,
+            "frame": 295
+          },
+          {
+            "label_id": "e034",
+            "label_time_s": 10.14,
+            "counter_time_s": 10.1,
+            "frame": 303
+          },
+          {
+            "label_id": "e035",
+            "label_time_s": 10.44,
+            "counter_time_s": 10.433,
+            "frame": 313
+          },
+          {
+            "label_id": "e036",
+            "label_time_s": 10.74,
+            "counter_time_s": 10.7,
+            "frame": 321
+          },
+          {
+            "label_id": "e037",
+            "label_time_s": 11.1,
+            "counter_time_s": 11.066,
+            "frame": 332
+          },
+          {
+            "label_id": "e038",
+            "label_time_s": 11.42,
+            "counter_time_s": 11.366,
+            "frame": 341
+          },
+          {
+            "label_id": "e039",
+            "label_time_s": 11.78,
+            "counter_time_s": 11.766,
+            "frame": 353
+          },
+          {
+            "label_id": "e041",
+            "label_time_s": 12.4,
+            "counter_time_s": 12.366,
+            "frame": 371
+          },
+          {
+            "label_id": "e043",
+            "label_time_s": 13.01,
+            "counter_time_s": 12.966,
+            "frame": 389
+          },
+          {
+            "label_id": "e044",
+            "label_time_s": 13.31,
+            "counter_time_s": 13.2,
+            "frame": 396
+          },
+          {
+            "label_id": "e045",
+            "label_time_s": 13.59,
+            "counter_time_s": 13.566,
+            "frame": 407
+          },
+          {
+            "label_id": "e046",
+            "label_time_s": 13.91,
+            "counter_time_s": 13.866,
+            "frame": 416
+          },
+          {
+            "label_id": "e047",
+            "label_time_s": 14.22,
+            "counter_time_s": 14.166,
+            "frame": 425
+          },
+          {
+            "label_id": "e048",
+            "label_time_s": 14.5,
+            "counter_time_s": 14.466,
+            "frame": 434
+          },
+          {
+            "label_id": "e049",
+            "label_time_s": 14.84,
+            "counter_time_s": 14.8,
+            "frame": 444
+          },
+          {
+            "label_id": "e050",
+            "label_time_s": 15.11,
+            "counter_time_s": 15.066,
+            "frame": 452
+          },
+          {
+            "label_id": "e051",
+            "label_time_s": 15.42,
+            "counter_time_s": 15.4,
+            "frame": 462
+          },
+          {
+            "label_id": "e052",
+            "label_time_s": 15.74,
+            "counter_time_s": 15.7,
+            "frame": 471
+          },
+          {
+            "label_id": "e054",
+            "label_time_s": 16.36,
+            "counter_time_s": 16.266,
+            "frame": 488
+          },
+          {
+            "label_id": "e055",
+            "label_time_s": 16.67,
+            "counter_time_s": 16.633,
+            "frame": 499
+          },
+          {
+            "label_id": "e056",
+            "label_time_s": 16.96,
+            "counter_time_s": 16.866,
+            "frame": 506
+          },
+          {
+            "label_id": "e058",
+            "label_time_s": 17.58,
+            "counter_time_s": 17.5,
+            "frame": 525
+          },
+          {
+            "label_id": "e059",
+            "label_time_s": 17.84,
+            "counter_time_s": 17.833,
+            "frame": 535
+          },
+          {
+            "label_id": "e060",
+            "label_time_s": 18.13,
+            "counter_time_s": 18.066,
+            "frame": 542
+          },
+          {
+            "label_id": "e061",
+            "label_time_s": 18.45,
+            "counter_time_s": 18.4,
+            "frame": 552
+          },
+          {
+            "label_id": "e063",
+            "label_time_s": 19.07,
+            "counter_time_s": 19.033,
+            "frame": 571
+          },
+          {
+            "label_id": "e064",
+            "label_time_s": 19.39,
+            "counter_time_s": 19.333,
+            "frame": 580
+          },
+          {
+            "label_id": "e065",
+            "label_time_s": 19.71,
+            "counter_time_s": 19.666,
+            "frame": 590
+          },
+          {
+            "label_id": "e066",
+            "label_time_s": 19.98,
+            "counter_time_s": 19.933,
+            "frame": 598
+          },
+          {
+            "label_id": "e067",
+            "label_time_s": 20.33,
+            "counter_time_s": 20.3,
+            "frame": 609
+          },
+          {
+            "label_id": "e069",
+            "label_time_s": 20.91,
+            "counter_time_s": 20.866,
+            "frame": 626
+          },
+          {
+            "label_id": "e071",
+            "label_time_s": 21.58,
+            "counter_time_s": 21.533,
+            "frame": 646
+          },
+          {
+            "label_id": "e072",
+            "label_time_s": 21.88,
+            "counter_time_s": 21.833,
+            "frame": 655
+          },
+          {
+            "label_id": "e073",
+            "label_time_s": 22.18,
+            "counter_time_s": 22.166,
+            "frame": 665
+          },
+          {
+            "label_id": "e074",
+            "label_time_s": 22.48,
+            "counter_time_s": 22.433,
+            "frame": 673
+          },
+          {
+            "label_id": "e075",
+            "label_time_s": 22.81,
+            "counter_time_s": 22.766,
+            "frame": 683
+          },
+          {
+            "label_id": "e077",
+            "label_time_s": 23.43,
+            "counter_time_s": 23.4,
+            "frame": 702
+          },
+          {
+            "label_id": "e078",
+            "label_time_s": 23.73,
+            "counter_time_s": 23.666,
+            "frame": 710
+          },
+          {
+            "label_id": "e079",
+            "label_time_s": 24.04,
+            "counter_time_s": 24.033,
+            "frame": 721
+          },
+          {
+            "label_id": "e080",
+            "label_time_s": 24.32,
+            "counter_time_s": 24.266,
+            "frame": 728
+          },
+          {
+            "label_id": "e083",
+            "label_time_s": 25.25,
+            "counter_time_s": 25.233,
+            "frame": 757
+          },
+          {
+            "label_id": "e084",
+            "label_time_s": 25.58,
+            "counter_time_s": 25.566,
+            "frame": 767
+          },
+          {
+            "label_id": "e085",
+            "label_time_s": 25.9,
+            "counter_time_s": 25.9,
+            "frame": 777
+          },
+          {
+            "label_id": "e086",
+            "label_time_s": 26.23,
+            "counter_time_s": 26.166,
+            "frame": 785
+          },
+          {
+            "label_id": "e087",
+            "label_time_s": 26.56,
+            "counter_time_s": 26.533,
+            "frame": 796
+          },
+          {
+            "label_id": "e088",
+            "label_time_s": 26.86,
+            "counter_time_s": 26.8,
+            "frame": 804
+          },
+          {
+            "label_id": "e089",
+            "label_time_s": 27.19,
+            "counter_time_s": 27.133,
+            "frame": 814
+          },
+          {
+            "label_id": "e090",
+            "label_time_s": 27.48,
+            "counter_time_s": 27.433,
+            "frame": 823
+          },
+          {
+            "label_id": "e091",
+            "label_time_s": 27.78,
+            "counter_time_s": 27.766,
+            "frame": 833
+          },
+          {
+            "label_id": "e093",
+            "label_time_s": 28.36,
+            "counter_time_s": 28.333,
+            "frame": 850
+          },
+          {
+            "label_id": "e096",
+            "label_time_s": 29.23,
+            "counter_time_s": 29.133,
+            "frame": 874
+          },
+          {
+            "label_id": "e097",
+            "label_time_s": 29.51,
+            "counter_time_s": 29.466,
+            "frame": 884
+          },
+          {
+            "label_id": "e098",
+            "label_time_s": 29.82,
+            "counter_time_s": 29.8,
+            "frame": 894
+          },
+          {
+            "label_id": "e099",
+            "label_time_s": 30.16,
+            "counter_time_s": 30.133,
+            "frame": 904
+          },
+          {
+            "label_id": "e100",
+            "label_time_s": 30.45,
+            "counter_time_s": 30.4,
+            "frame": 912
+          },
+          {
+            "label_id": "e101",
+            "label_time_s": 30.75,
+            "counter_time_s": 30.7,
+            "frame": 921
+          },
+          {
+            "label_id": "e102",
+            "label_time_s": 31.07,
+            "counter_time_s": 31.033,
+            "frame": 931
+          },
+          {
+            "label_id": "e103",
+            "label_time_s": 31.41,
+            "counter_time_s": 31.4,
+            "frame": 942
+          },
+          {
+            "label_id": "e104",
+            "label_time_s": 31.71,
+            "counter_time_s": 31.633,
+            "frame": 949
+          },
+          {
+            "label_id": "e105",
+            "label_time_s": 32.0,
+            "counter_time_s": 31.966,
+            "frame": 959
+          },
+          {
+            "label_id": "e107",
+            "label_time_s": 32.58,
+            "counter_time_s": 32.6,
+            "frame": 978
+          },
+          {
+            "label_id": "e108",
+            "label_time_s": 32.91,
+            "counter_time_s": 32.866,
+            "frame": 986
+          },
+          {
+            "label_id": "e109",
+            "label_time_s": 33.23,
+            "counter_time_s": 33.166,
+            "frame": 995
+          },
+          {
+            "label_id": "e110",
+            "label_time_s": 33.49,
+            "counter_time_s": 33.466,
+            "frame": 1004
+          },
+          {
+            "label_id": "e111",
+            "label_time_s": 33.76,
+            "counter_time_s": 33.733,
+            "frame": 1012
+          },
+          {
+            "label_id": "e112",
+            "label_time_s": 34.07,
+            "counter_time_s": 34.0,
+            "frame": 1020
+          },
+          {
+            "label_id": "e114",
+            "label_time_s": 34.71,
+            "counter_time_s": 34.633,
+            "frame": 1039
+          },
+          {
+            "label_id": "e115",
+            "label_time_s": 35.0,
+            "counter_time_s": 34.966,
+            "frame": 1049
+          },
+          {
+            "label_id": "e116",
+            "label_time_s": 35.29,
+            "counter_time_s": 35.3,
+            "frame": 1059
+          },
+          {
+            "label_id": "e117",
+            "label_time_s": 35.63,
+            "counter_time_s": 35.6,
+            "frame": 1068
+          },
+          {
+            "label_id": "e118",
+            "label_time_s": 35.94,
+            "counter_time_s": 35.9,
+            "frame": 1077
+          },
+          {
+            "label_id": "e119",
+            "label_time_s": 36.25,
+            "counter_time_s": 36.233,
+            "frame": 1087
+          },
+          {
+            "label_id": "e121",
+            "label_time_s": 36.79,
+            "counter_time_s": 36.766,
+            "frame": 1103
+          },
+          {
+            "label_id": "e122",
+            "label_time_s": 37.12,
+            "counter_time_s": 37.066,
+            "frame": 1112
+          },
+          {
+            "label_id": "e123",
+            "label_time_s": 37.43,
+            "counter_time_s": 37.433,
+            "frame": 1123
+          },
+          {
+            "label_id": "e125",
+            "label_time_s": 38.04,
+            "counter_time_s": 38.033,
+            "frame": 1141
+          },
+          {
+            "label_id": "e127",
+            "label_time_s": 38.65,
+            "counter_time_s": 38.6,
+            "frame": 1158
+          },
+          {
+            "label_id": "e129",
+            "label_time_s": 39.26,
+            "counter_time_s": 39.233,
+            "frame": 1177
+          },
+          {
+            "label_id": "e130",
+            "label_time_s": 39.51,
+            "counter_time_s": 39.466,
+            "frame": 1184
+          },
+          {
+            "label_id": "e131",
+            "label_time_s": 39.8,
+            "counter_time_s": 39.766,
+            "frame": 1193
+          },
+          {
+            "label_id": "e132",
+            "label_time_s": 40.08,
+            "counter_time_s": 40.066,
+            "frame": 1202
+          },
+          {
+            "label_id": "e133",
+            "label_time_s": 40.41,
+            "counter_time_s": 40.433,
+            "frame": 1213
+          },
+          {
+            "label_id": "e134",
+            "label_time_s": 40.72,
+            "counter_time_s": 40.666,
+            "frame": 1220
+          },
+          {
+            "label_id": "e135",
+            "label_time_s": 41.03,
+            "counter_time_s": 40.966,
+            "frame": 1229
+          },
+          {
+            "label_id": "e136",
+            "label_time_s": 41.33,
+            "counter_time_s": 41.266,
+            "frame": 1238
+          },
+          {
+            "label_id": "e137",
+            "label_time_s": 41.66,
+            "counter_time_s": 41.633,
+            "frame": 1249
+          },
+          {
+            "label_id": "e138",
+            "label_time_s": 41.97,
+            "counter_time_s": 41.9,
+            "frame": 1257
+          },
+          {
+            "label_id": "e139",
+            "label_time_s": 42.25,
+            "counter_time_s": 42.166,
+            "frame": 1265
+          },
+          {
+            "label_id": "e141",
+            "label_time_s": 42.83,
+            "counter_time_s": 42.766,
+            "frame": 1283
+          },
+          {
+            "label_id": "e142",
+            "label_time_s": 43.16,
+            "counter_time_s": 43.1,
+            "frame": 1293
+          },
+          {
+            "label_id": "e143",
+            "label_time_s": 43.48,
+            "counter_time_s": 43.4,
+            "frame": 1302
+          },
+          {
+            "label_id": "e144",
+            "label_time_s": 43.79,
+            "counter_time_s": 43.7,
+            "frame": 1311
+          },
+          {
+            "label_id": "e145",
+            "label_time_s": 44.08,
+            "counter_time_s": 44.0,
+            "frame": 1320
+          },
+          {
+            "label_id": "e146",
+            "label_time_s": 44.39,
+            "counter_time_s": 44.366,
+            "frame": 1331
+          },
+          {
+            "label_id": "e147",
+            "label_time_s": 44.71,
+            "counter_time_s": 44.666,
+            "frame": 1340
+          },
+          {
+            "label_id": "e149",
+            "label_time_s": 45.24,
+            "counter_time_s": 45.166,
+            "frame": 1355
+          },
+          {
+            "label_id": "e151",
+            "label_time_s": 45.97,
+            "counter_time_s": 45.933,
+            "frame": 1378
+          },
+          {
+            "label_id": "e152",
+            "label_time_s": 46.28,
+            "counter_time_s": 46.233,
+            "frame": 1387
+          },
+          {
+            "label_id": "e153",
+            "label_time_s": 46.6,
+            "counter_time_s": 46.6,
+            "frame": 1398
+          },
+          {
+            "label_id": "e154",
+            "label_time_s": 46.91,
+            "counter_time_s": 46.8,
+            "frame": 1404
+          },
+          {
+            "label_id": "e155",
+            "label_time_s": 47.24,
+            "counter_time_s": 47.166,
+            "frame": 1415
+          },
+          {
+            "label_id": "e156",
+            "label_time_s": 47.52,
+            "counter_time_s": 47.466,
+            "frame": 1424
+          },
+          {
+            "label_id": "e157",
+            "label_time_s": 47.84,
+            "counter_time_s": 47.833,
+            "frame": 1435
+          },
+          {
+            "label_id": "e158",
+            "label_time_s": 48.14,
+            "counter_time_s": 48.1,
+            "frame": 1443
+          },
+          {
+            "label_id": "e159",
+            "label_time_s": 48.49,
+            "counter_time_s": 48.433,
+            "frame": 1453
+          },
+          {
+            "label_id": "e160",
+            "label_time_s": 48.77,
+            "counter_time_s": 48.733,
+            "frame": 1462
+          },
+          {
+            "label_id": "e161",
+            "label_time_s": 49.1,
+            "counter_time_s": 49.066,
+            "frame": 1472
+          },
+          {
+            "label_id": "e162",
+            "label_time_s": 49.4,
+            "counter_time_s": 49.366,
+            "frame": 1481
+          },
+          {
+            "label_id": "e163",
+            "label_time_s": 49.73,
+            "counter_time_s": 49.666,
+            "frame": 1490
+          },
+          {
+            "label_id": "e164",
+            "label_time_s": 49.99,
+            "counter_time_s": 49.933,
+            "frame": 1498
+          },
+          {
+            "label_id": "e165",
+            "label_time_s": 50.3,
+            "counter_time_s": 50.266,
+            "frame": 1508
+          },
+          {
+            "label_id": "e169",
+            "label_time_s": 51.55,
+            "counter_time_s": 51.466,
+            "frame": 1544
+          },
+          {
+            "label_id": "e170",
+            "label_time_s": 51.84,
+            "counter_time_s": 51.766,
+            "frame": 1553
+          },
+          {
+            "label_id": "e171",
+            "label_time_s": 52.18,
+            "counter_time_s": 52.133,
+            "frame": 1564
+          },
+          {
+            "label_id": "e172",
+            "label_time_s": 52.48,
+            "counter_time_s": 52.4,
+            "frame": 1572
+          },
+          {
+            "label_id": "e173",
+            "label_time_s": 52.78,
+            "counter_time_s": 52.733,
+            "frame": 1582
+          },
+          {
+            "label_id": "e174",
+            "label_time_s": 53.1,
+            "counter_time_s": 53.0,
+            "frame": 1590
+          },
+          {
+            "label_id": "e175",
+            "label_time_s": 53.4,
+            "counter_time_s": 53.333,
+            "frame": 1600
+          },
+          {
+            "label_id": "e176",
+            "label_time_s": 53.72,
+            "counter_time_s": 53.666,
+            "frame": 1610
+          },
+          {
+            "label_id": "e177",
+            "label_time_s": 54.08,
+            "counter_time_s": 54.033,
+            "frame": 1621
+          },
+          {
+            "label_id": "e178",
+            "label_time_s": 54.39,
+            "counter_time_s": 54.3,
+            "frame": 1629
+          },
+          {
+            "label_id": "e179",
+            "label_time_s": 54.73,
+            "counter_time_s": 54.666,
+            "frame": 1640
+          },
+          {
+            "label_id": "e180",
+            "label_time_s": 55.03,
+            "counter_time_s": 54.966,
+            "frame": 1649
+          },
+          {
+            "label_id": "e181",
+            "label_time_s": 55.32,
+            "counter_time_s": 55.3,
+            "frame": 1659
+          },
+          {
+            "label_id": "e182",
+            "label_time_s": 55.63,
+            "counter_time_s": 55.566,
+            "frame": 1667
+          },
+          {
+            "label_id": "e183",
+            "label_time_s": 55.96,
+            "counter_time_s": 55.9,
+            "frame": 1677
+          },
+          {
+            "label_id": "e184",
+            "label_time_s": 56.26,
+            "counter_time_s": 56.2,
+            "frame": 1686
+          },
+          {
+            "label_id": "e185",
+            "label_time_s": 56.56,
+            "counter_time_s": 56.466,
+            "frame": 1694
+          },
+          {
+            "label_id": "e186",
+            "label_time_s": 56.87,
+            "counter_time_s": 56.833,
+            "frame": 1705
+          },
+          {
+            "label_id": "e189",
+            "label_time_s": 57.78,
+            "counter_time_s": 57.7,
+            "frame": 1731
+          },
+          {
+            "label_id": "e191",
+            "label_time_s": 58.4,
+            "counter_time_s": 58.333,
+            "frame": 1750
+          },
+          {
+            "label_id": "e192",
+            "label_time_s": 58.72,
+            "counter_time_s": 58.666,
+            "frame": 1760
+          },
+          {
+            "label_id": "e193",
+            "label_time_s": 59.0,
+            "counter_time_s": 58.933,
+            "frame": 1768
+          },
+          {
+            "label_id": "e194",
+            "label_time_s": 59.31,
+            "counter_time_s": 59.266,
+            "frame": 1778
+          },
+          {
+            "label_id": "e195",
+            "label_time_s": 59.63,
+            "counter_time_s": 59.566,
+            "frame": 1787
+          }
+        ]
+      }
+    },
+    {
+      "id": "raw-juggling",
+      "status": "scored",
+      "count": 8,
+      "analysis_fps": 25.49,
+      "analysis_frames": 340,
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792960989.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|hands=true|foot-evidence-v15|handling-v1|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "model": "RFDETRSmallRecovery040FP16",
+      "rejections": {
+        "disallowedBodyContact": 3,
+        "accepted": 8
+      },
+      "score": {
+        "source": "raw-juggling.mov",
+        "source_sha256": "05a85434a892926291ace9d88e11a414883664fb7e080f2d80f71ff290fc2c0e",
+        "label_review_status": "reviewed",
+        "time_tolerance_s": 0.2,
+        "total_count": 8,
+        "labelled_valid": 10,
+        "labelled_uncertain": 0,
+        "accepted_valid": 8,
+        "missed_valid": [
+          {
+            "label_id": "e001",
+            "time_s": 3.84,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 57,
+              "time": 3.901,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "missingBall",
+              "player": {
+                "state": "locked",
+                "id": 2,
+                "box": {
+                  "x": 0.4541015625,
+                  "y": 0.51953125,
+                  "width": 0.349365234375,
+                  "height": 0.60498046875
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          },
+          {
+            "label_id": "e007",
+            "time_s": 7.39,
+            "contact": "legal_leg",
+            "decision": {
+              "frameIndex": 162,
+              "time": 7.401,
+              "rejection": "disallowedBodyContact",
+              "handConfirmed": false,
+              "bodyFailure": "missingBall",
+              "player": {
+                "state": "locked",
+                "id": 2,
+                "box": {
+                  "x": 0.53466796875,
+                  "y": 0.51025390625,
+                  "width": 0.66650390625,
+                  "height": 0.64990234375
+                },
+                "observed": true,
+                "peopleCount": 1
+              }
+            },
+            "stage": "rejected_candidate"
+          }
+        ],
+        "false_accepted": [],
+        "uncertain_accepted": [],
+        "unmatched_needing_review": [],
+        "matched": [
+          {
+            "label_id": "e002",
+            "label_time_s": 4.43,
+            "counter_time_s": 4.335,
+            "frame": 70
+          },
+          {
+            "label_id": "e003",
+            "label_time_s": 4.98,
+            "counter_time_s": 4.968,
+            "frame": 89
+          },
+          {
+            "label_id": "e004",
+            "label_time_s": 5.6,
+            "counter_time_s": 5.635,
+            "frame": 109
+          },
+          {
+            "label_id": "e005",
+            "label_time_s": 6.15,
+            "counter_time_s": 6.101,
+            "frame": 123
+          },
+          {
+            "label_id": "e006",
+            "label_time_s": 6.62,
+            "counter_time_s": 6.568,
+            "frame": 137
+          },
+          {
+            "label_id": "e008",
+            "label_time_s": 8.1,
+            "counter_time_s": 8.068,
+            "frame": 182
+          },
+          {
+            "label_id": "e009",
+            "label_time_s": 8.55,
+            "counter_time_s": 8.535,
+            "frame": 196
+          },
+          {
+            "label_id": "e010",
+            "label_time_s": 8.96,
+            "counter_time_s": 8.901,
+            "frame": 207
+          }
+        ]
+      }
+    }
+  ]
+}
