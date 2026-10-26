@@ -8,10 +8,8 @@ extension View {
                              capture: CaptureCadenceSnapshot? = nil, recording: Bool = false,
                              topInset: CGFloat = 64, onOpenTests: (() -> Void)? = nil) -> some View {
         #if DEBUG
-        overlay(alignment: .topTrailing) {
-            DebugRuntimeHUD(performance: performance, capture: capture, recording: recording, onOpenTests: onOpenTests)
-                .padding(.top, topInset).padding(.trailing, 12)
-        }
+        modifier(DebugRuntimeOverlay(performance: performance, capture: capture, recording: recording,
+                                     topInset: topInset, onOpenTests: onOpenTests))
         #else
         self
         #endif
@@ -20,6 +18,35 @@ extension View {
 
 #if DEBUG
 import Combine
+
+/// One persisted switch hides all diagnostic visuals, including existing touch-outline preferences.
+/// Main-app builds start clean; the dedicated touch-testing app keeps its diagnostic default.
+enum DebugOverlayPreferences {
+    static let visibilityKey = "debug.overlaysVisible"
+    #if TOUCH_COUNTING_DEBUG
+    static let visibleByDefault = true
+    #else
+    static let visibleByDefault = false
+    #endif
+}
+
+private struct DebugRuntimeOverlay: ViewModifier {
+    let performance: DetectorPerformanceSnapshot?
+    let capture: CaptureCadenceSnapshot?
+    let recording: Bool
+    let topInset: CGFloat
+    let onOpenTests: (() -> Void)?
+    @AppStorage(DebugOverlayPreferences.visibilityKey) private var visible = DebugOverlayPreferences.visibleByDefault
+
+    func body(content: Content) -> some View {
+        content.overlay(alignment: .topTrailing) {
+            if visible {
+                DebugRuntimeHUD(performance: performance, capture: capture, recording: recording, onOpenTests: onOpenTests)
+                    .padding(.top, topInset).padding(.trailing, 12)
+            }
+        }
+    }
+}
 
 @MainActor
 private final class DebugRuntimeMonitor: ObservableObject {
@@ -65,23 +92,36 @@ private struct DebugRuntimeHUD: View {
     @State private var showTests = false
     @ObservedObject private var monitor = DebugRuntimeMonitor.shared
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage(DebugOverlayPreferences.visibilityKey) private var visible = DebugOverlayPreferences.visibleByDefault
     @AppStorage("debug.touchOutlines") private var showTouchOutlines = true
     @State private var expanded = true
     @State private var observing = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Button { expanded.toggle() } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "ladybug")
-                    Text("\(monitor.memory, specifier: "%.0f") MiB · Thermal: \(monitor.thermal)")
-                    Image(systemName: expanded ? "chevron.up" : "chevron.down")
+            HStack(spacing: 6) {
+                Button { expanded.toggle() } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "ladybug")
+                        Text("\(monitor.memory, specifier: "%.0f") MiB · Thermal: \(monitor.thermal)")
+                        Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                    }
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .frame(minHeight: 44)
                 }
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                .frame(minHeight: 30)
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("debug-runtime-toggle")
+                Button { visible = false } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 12, weight: .semibold))
+                        .frame(width: 44, height: 44)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Hide debug overlays")
+                .accessibilityHint("Restore them in Profile, Settings.")
+                .accessibilityIdentifier("debug-runtime-close")
             }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("debug-runtime-toggle")
             if expanded {
                 Text(RFSmallModel(rawValue: BallDetector.configuredResourceName)?.displayName ?? BallDetector.configuredResourceName)
                 Text("Counter V9 · completed rise")

@@ -4,6 +4,9 @@ struct TrainingHomeSettings: View {
     @Binding var appearance: String
     @ObservedObject private var analytics = ProductAnalytics.shared
     @Environment(\.colorScheme) private var scheme
+    #if DEBUG
+    @AppStorage(DebugOverlayPreferences.visibilityKey) private var showDebugOverlays = DebugOverlayPreferences.visibleByDefault
+    #endif
 
     var body: some View {
         Form {
@@ -30,6 +33,16 @@ struct TrainingHomeSettings: View {
                     LabeledContent("Juggle Dude", value: "Version \(version)")
                 }
             }
+            #if DEBUG
+            Section {
+                Toggle("Show debug overlays", isOn: $showDebugOverlays)
+                    .accessibilityIdentifier("settings-debug-overlays")
+            } header: {
+                Text("Developer")
+            } footer: {
+                Text("Show memory, thermal state and touch/body diagnostics. Close the debug panel to hide them everywhere. This setting is only available in local debug builds.")
+            }
+            #endif
         }
         .scrollContentBackground(.hidden)
         .background(TrainingHomeStyle.background(scheme))

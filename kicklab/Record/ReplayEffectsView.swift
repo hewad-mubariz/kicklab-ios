@@ -55,6 +55,7 @@ struct ReplayEffectsView: View {
     @State private var timeObserver: Any?
     @State private var sourceSize = CGSize(width: 9, height: 16)
     #if DEBUG
+    @AppStorage(DebugOverlayPreferences.visibilityKey) private var showDebugOverlays = DebugOverlayPreferences.visibleByDefault
     @AppStorage("debug.touchOutlines") private var showTouchOutlines = true
     @State private var debugContacts: [TouchDebugEvent] = []
     #endif
@@ -394,7 +395,8 @@ struct ReplayEffectsView: View {
                     ExportOverlayLayer(settings: effectiveOverlays,
                         timeline: .init(touches: summary.touchesMarked, total: summary.touches), time: currentTime, size: size)
                     #if DEBUG
-                    if showsTouchTools && showTouchOutlines, let event = TouchDebugEvent.visible(in: debugContacts, at: currentTime) {
+                    if showsTouchTools && showDebugOverlays && showTouchOutlines,
+                       let event = TouchDebugEvent.visible(in: debugContacts, at: currentTime) {
                         TouchDebugOverlay(event: event, sourceSize: sourceSize)
                     }
                     #endif

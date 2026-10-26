@@ -46,6 +46,7 @@ struct RecordView: View {
     @State private var hudShown = false
 
     #if DEBUG
+    @AppStorage(DebugOverlayPreferences.visibilityKey) private var showDebugOverlays = DebugOverlayPreferences.visibleByDefault
     @AppStorage("debug.touchOutlines") private var showTouchOutlines = true
     @State private var processingReviewStarted = false
     private var processingReviewPath: String? { SessionDesignReview.argument("--capture-processing-video") }
@@ -70,7 +71,7 @@ struct RecordView: View {
                                 LiveEffectSurface(frames: camera.liveEffectFrames)
                             }
                             #if DEBUG
-                            if camera.isRecording && showTouchOutlines {
+                            if camera.isRecording && showDebugOverlays && showTouchOutlines {
                                 ActivePlayerDebugOverlay(players: camera.activePlayers, selection: camera.activePlayer,
                                                          fillsFrame: true)
                                 LiveTouchDebugOverlay(event: camera.touchDiagnostic)

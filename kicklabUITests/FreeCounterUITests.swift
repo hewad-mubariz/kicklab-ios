@@ -60,7 +60,8 @@ final class FreeCounterUITests: XCTestCase {
         let fixture = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("kicklabTests/Fixtures/juggling-eighteen.mov").path
         let app = XCUIApplication()
-        app.launchArguments = ["--session-design", "motion-replay", "--session-video", fixture]
+        app.launchArguments = ["--session-design", "motion-replay", "--session-video", fixture,
+                               "-debug.overlaysVisible", "YES"]
         app.launch()
         XCTAssertTrue(app.buttons["debug-final-tests"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["debug-thermal-state"].exists)

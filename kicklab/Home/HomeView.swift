@@ -102,7 +102,7 @@ struct HomeView: View {
             ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
             : AnyLayout(HStackLayout(spacing: 12))
         return layout {
-            Image(systemName: "trophy")
+            Image(systemName: "medal")
                 .font(.system(size: 19, weight: .medium))
                 .foregroundStyle(TrainingHomeStyle.accent(scheme))
                 .frame(width: 42, height: 42)

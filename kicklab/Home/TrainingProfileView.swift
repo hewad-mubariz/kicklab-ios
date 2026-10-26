@@ -238,7 +238,7 @@ struct TrainingProfileView: View {
 
     private var record: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Label("PERSONAL BEST", systemImage: "trophy")
+            Label("PERSONAL BEST", systemImage: "medal")
                 .font(.caption.weight(.semibold))
                 .tracking(1)
                 .foregroundStyle(TrainingHomeStyle.accent(scheme))
