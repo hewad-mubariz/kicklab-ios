@@ -1,8 +1,8 @@
 import CoreVideo
 import Foundation
 
-/// Inspect only candidate contacts, using a bounded cache of small images. No
-/// pose inference runs in preview or on every camera frame. A suspected floor
+/// Inspect contacts and bounded inter-contact streak probes using a shared
+/// cache of small images. No pose inference runs in preview or on every camera frame. A suspected floor
 /// contact may reuse three buffered views to establish approach and separation
 /// at a foot; the same poses also serve the hand veto. Uncertain/missing
 /// pose is not evidence of a hand; the trajectory gates still decide the touch.
@@ -92,6 +92,19 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     }
 
     func warmUp() { observations.warmUp() }
+
+    func streakHandlingEvidence(now: Int, after lastTouchMs: Int) -> BallHandlingEvidence? {
+        StreakHoldVerifier.evidence(in: observations, now: now, after: lastTouchMs)
+    }
+
+    func streakGroundEvidence(at frameIndex: Int, timed: Bool) -> GroundContactEvidence? {
+        // A ranking-only probe must not turn a transient Vision error into a
+        // sticky failure of subsequent training touch checks.
+        let previous = isDiagnosing
+        isDiagnosing = true
+        defer { isDiagnosing = previous }
+        return groundEvidence(at: frameIndex, timed: timed)
+    }
 
     func store(_ pixels: CVPixelBuffer, frameIndex: Int, timestampMs: Int,
                ball: Detection?, orientLandscapeAsPortrait: Bool = true, player: ActivePlayerSelection? = nil) {

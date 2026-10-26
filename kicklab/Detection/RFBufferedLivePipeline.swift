@@ -628,6 +628,12 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
     func handlingEvidence(at frameIndex: Int) -> BallHandlingEvidence? {
         prepare(frameIndex, trigger: "handling"); return verifier.handlingEvidence(at: frameIndex)
     }
+    func streakHandlingEvidence(now: Int, after lastTouchMs: Int) -> BallHandlingEvidence? {
+        verifier.streakHandlingEvidence(now: now, after: lastTouchMs)
+    }
+    func streakGroundEvidence(at frameIndex: Int, timed: Bool) -> GroundContactEvidence? {
+        verifier.streakGroundEvidence(at: frameIndex, timed: timed)
+    }
     func diagnostic(for decision: CounterDecision, ball: BallObservation?) -> TouchDebugEvent {
         // Diagnostics must never start inference after a decision was made.
         verifier.diagnostic(for: decision, ball: ball)

@@ -142,7 +142,9 @@ final class PlayerStoreTests: XCTestCase {
         service.submitFails = false; service.attempts = []
         await store.useAccount(identity(b))
         store.record(try result(b, touches: 7))
-        await waitUntil { store.pendingCount == 0 }
+        // Saving is asynchronous: zero can be the initial state before the
+        // new result reaches the queue, not proof that upload completed.
+        await waitUntil { service.attempts.count == 1 && store.pendingCount == 0 }
         XCTAssertEqual(service.attempts.map(\.ownerID), [b])
         XCTAssertEqual(try queue.pending(for: a).count, 1)
         XCTAssertEqual(store.profile?.id, b)

@@ -2,6 +2,42 @@ import XCTest
 @testable import kicklab
 
 final class RankedStreakProposalTests: XCTestCase {
+    func testNinetyTotalRanksLongestFiftyAfterHandAndGroundInterruptions() throws {
+        let first = (1...10).map(Double.init)
+        let second = (13...62).map(Double.init)
+        let third = (65...94).map(Double.init)
+        let times = first + second + third
+        var evidence = TouchReviewEvidence()
+        // Opening hand release and finishing catch must not invalidate a run.
+        for (time, kind): (Double, ContactReviewReason) in [(0.5, .handContact), (11, .heldBall), (63, .groundContact), (95, .heldBall)] {
+            evidence.append(time: time, kind: kind)
+        }
+        let review = try XCTUnwrap(LeaderboardTouchReview.make(evidence: evidence, touchTimes: times, duration: 96))
+        let result = try XCTUnwrap(RankedStreakProposal.suggest(touchTimes: times,
+            boundaries: review.streakBoundaries, duration: 96))
+        XCTAssertEqual(times.count, 90)
+        XCTAssertEqual(result.count, 50)
+        XCTAssertEqual(result.startMS, 12850)
+        XCTAssertEqual(result.endMS, 62150)
+    }
+
+    func testOpeningHandDropThenUninterruptedRunKeepsEveryValidTouch() throws {
+        let times = (1...90).map(Double.init)
+        let result = try XCTUnwrap(RankedStreakProposal.suggest(touchTimes: times,
+            boundaries: [0, 0.2, 0.6, 91], duration: 92))
+        XCTAssertEqual(result.count, 90)
+        XCTAssertEqual(result.startMS, 850)
+        XCTAssertEqual(result.endMS, 90150)
+    }
+
+    func testNewScoresIdentifyStreakFixAndOldStoredVersionIsPreserved() throws {
+        let result = try SavedJugglingResult(ownerID: UUID(), touches: 90, duration: 96, source: .recording)
+        XCTAssertEqual(result.counterVersion, "juggling-v1-streak-v2")
+        let old = try SavedJugglingResult(ownerID: UUID(), touches: 14, duration: 29,
+            source: .recording, counterVersion: "juggling-v1")
+        let restored = try JSONDecoder().decode(SavedJugglingResult.self, from: JSONEncoder().encode(old))
+        XCTAssertEqual(restored.counterVersion, "juggling-v1")
+    }
     func testProposalChoosesOneRunInsteadOfTotalSessionTouches() throws {
         let result = try XCTUnwrap(RankedStreakProposal.suggest(touchTimes: [1,2,3,4,5,6],
             boundaries: [3.5], duration: 8))

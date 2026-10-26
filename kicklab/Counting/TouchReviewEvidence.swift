@@ -23,11 +23,12 @@ nonisolated struct TouchReviewEvidence: Sendable {
         return result
     }
 
-    mutating func append(_ event: TouchDebugEvent, groundConfirmed: Bool = false) {
-        guard event.time.isFinite, let rejection = event.rejection else { return }
+    @discardableResult
+    mutating func append(_ event: TouchDebugEvent, groundConfirmed: Bool = false) -> Observation? {
+        guard event.time.isFinite, let rejection = event.rejection else { return nil }
         let kind: ContactReviewReason
         switch rejection {
-        case .cooldown, .amplitudeTooSmall, .insufficientImpulse: return
+        case .cooldown, .amplitudeTooSmall, .insufficientImpulse: return nil
         case .heldBall: kind = .heldBall
         case .handContact: kind = .handContact
         case .groundBounce: kind = groundConfirmed ? .groundContact : .lowContactUncertain
@@ -42,7 +43,15 @@ nonisolated struct TouchReviewEvidence: Sendable {
             else if event.bodyFailure == .lowContactNeedsFootEvidence { kind = .lowContactUncertain }
             else { kind = .bodyUncertain }
         }
-        guard observations.count < limit else { complete = false; return }
-        observations.append(.init(time: event.time, kind: kind))
+        return append(time: event.time, kind: kind)
+    }
+
+    @discardableResult
+    mutating func append(time: Double, kind: ContactReviewReason) -> Observation? {
+        guard time.isFinite else { return nil }
+        guard observations.count < limit else { complete = false; return nil }
+        let observation = Observation(time: time, kind: kind)
+        observations.append(observation)
+        return observation
     }
 }

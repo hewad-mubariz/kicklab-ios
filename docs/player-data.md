@@ -16,7 +16,8 @@ Profiles start with `Player` and sharing off. OAuth names, emails and provider p
 
 ## Score rules
 
-- Ranking uses total touches in the **best completed recorded session**. The current detector does not provide reliable drop-separated streaks, so this is not advertised as a consecutive-streak record.
+- Ranking uses the device's **best continuous streak** (`streak_touches` and its start/end timestamps), not the session total. A 10-touch run, interruption, 50-touch run, interruption and 30-touch run saves 90 total touches and ranks 50. Legacy results without streak metadata do not rank. Approved review overrides are disabled in the automatic beta.
+- A normal hand release before the first juggling touch earns no points and does not invalidate the run. Confirmed hand contact, holding or floor contact ends a run; the next accepted juggling touch starts another. Missing pose, hidden hands or a long flight alone are not evidence of a foul. These are device estimates, not guaranteed verification of continuity.
 - Only `source = recording` results count. Gallery imports are saved to private account history and can contribute to that account's personal best, but never to the leaderboard.
 - Weekly ranking starts Monday at 00:00 UTC; all-time ranking retains the history. Equal scores are ordered by the earlier achievement, then user UUID for deterministic ordering.
 - Each player appears once. Country filtering uses the profile's self-selected country. The UI falls back to the device region when choosing which country board to browse; it does not assign that region to the profile.

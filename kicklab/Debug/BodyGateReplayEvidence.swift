@@ -34,6 +34,12 @@ nonisolated final class BodyGateReplayEvidence: ContactEvidenceProviding {
         underlying.groundEvidence(at: frameIndex, timed: timed)
     }
     func handlingEvidence(at frameIndex: Int) -> BallHandlingEvidence? { underlying.handlingEvidence(at: frameIndex) }
+    func streakHandlingEvidence(now: Int, after lastTouchMs: Int) -> BallHandlingEvidence? {
+        underlying.streakHandlingEvidence(now: now, after: lastTouchMs)
+    }
+    func streakGroundEvidence(at frameIndex: Int, timed: Bool) -> GroundContactEvidence? {
+        underlying.streakGroundEvidence(at: frameIndex, timed: timed)
+    }
     func retainContactFrames(around index: Int?) { underlying.retainContactFrames(around: index) }
 
     func diagnostic(for decision: CounterDecision, ball: BallObservation?) -> TouchDebugEvent {

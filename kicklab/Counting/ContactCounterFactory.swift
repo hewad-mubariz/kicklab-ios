@@ -8,12 +8,16 @@ nonisolated protocol ContactEvidenceProviding: AnyObject {
     func footEvidence(at frameIndex: Int) -> FootContactEvidence?
     func groundEvidence(at frameIndex: Int, timed: Bool) -> GroundContactEvidence?
     func handlingEvidence(at frameIndex: Int) -> BallHandlingEvidence?
+    func streakHandlingEvidence(now: Int, after lastTouchMs: Int) -> BallHandlingEvidence?
+    func streakGroundEvidence(at frameIndex: Int, timed: Bool) -> GroundContactEvidence?
     func retainContactFrames(around index: Int?)
     func diagnostic(for decision: CounterDecision, ball: BallObservation?) -> TouchDebugEvent
 }
 
 nonisolated extension ContactEvidenceProviding {
     func configure(policy: CountingPolicy) {}
+    func streakHandlingEvidence(now: Int, after lastTouchMs: Int) -> BallHandlingEvidence? { nil }
+    func streakGroundEvidence(at frameIndex: Int, timed: Bool) -> GroundContactEvidence? { nil }
 }
 
 nonisolated enum ContactCounterFactory {
@@ -43,6 +47,10 @@ nonisolated enum ContactCounterFactory {
             groundPolicy: policy.ground,
             groundContactEvidence: verifies ? { [weak verifier] in verifier?.groundEvidence(at: $0, timed: policy.body.usesObservedImpact) } : nil,
             handlingEvidence: verifies && policy.handling != .disabled
-                ? { [weak verifier] in verifier?.handlingEvidence(at: $0) } : nil)
+                ? { [weak verifier] in verifier?.handlingEvidence(at: $0) } : nil,
+            streakHandlingEvidence: verifies && policy.handling != .disabled
+                ? { [weak verifier] in verifier?.streakHandlingEvidence(now: $0, after: $1) } : nil,
+            streakGroundEvidence: verifies
+                ? { [weak verifier] in verifier?.streakGroundEvidence(at: $0, timed: policy.body.usesObservedImpact) } : nil)
     }
 }

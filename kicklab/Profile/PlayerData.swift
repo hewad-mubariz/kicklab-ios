@@ -13,6 +13,8 @@ struct PlayerProfile: Codable, Equatable, Sendable {
 }
 
 nonisolated struct SavedJugglingResult: Codable, Equatable, Sendable {
+    /// Identifies newly computed streaks without rewriting older synced results.
+    static let currentCounterVersion = "juggling-v1-streak-v2"
     enum Source: String, Codable, Sendable { case recording, gallery }
     let id: UUID
     let ownerID: UUID
@@ -27,7 +29,7 @@ nonisolated struct SavedJugglingResult: Codable, Equatable, Sendable {
     private(set) var streak: RankedStreakProposal? = nil
 
     init(id: UUID = UUID(), ownerID: UUID, touches: Int, duration: TimeInterval,
-         source: Source, completedAt: Date = Date(), appVersion: String = "1.0", counterVersion: String = "juggling-v1") throws {
+         source: Source, completedAt: Date = Date(), appVersion: String = "1.0", counterVersion: String = Self.currentCounterVersion) throws {
         guard (0...1_000_000).contains(touches), duration.isFinite, duration > 0, duration <= 86400 else {
             throw PlayerDataError.invalidResult
         }

@@ -88,6 +88,8 @@ nonisolated struct BallHandlingEvidence: Codable, Equatable, Sendable {
         let delta = offset(wrist,s)
         return hypot(delta.x,delta.y)
     }
+    /// Screening only: a nearby pair of wrists is not itself a catch/hold.
+    static func hasGrip(_ sample: Sample) -> Bool { usable(sample) && grip(sample, tolerance: 1.25) }
     private static func grip(_ s: Sample, tolerance: Double = 1.15) -> Bool {
         guard let left = s.wrists[.left], let right = s.wrists[.right],
               left.confidence >= 0.5, right.confidence >= 0.5,

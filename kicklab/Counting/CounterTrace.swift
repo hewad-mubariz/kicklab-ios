@@ -18,6 +18,8 @@ nonisolated struct CounterTrace: Codable, Sendable {
     let touches: [Touch]
     /// Optional, debug-only annotations. Never used as counting evidence.
     var diagnostics: [TouchDebugEvent]? = nil
+    /// Ranking-only evidence. Old traces omit it; touch replay is unchanged.
+    var streakInterruptions: [StreakInterruption]? = nil
 
     struct Input: Codable, Sendable {
         let frameIndex, timestampMs: Int
@@ -147,6 +149,7 @@ nonisolated final class CounterTraceRecorder {
     private var operations: [CounterTrace.Operation] = []
     private var decisions: [CounterTrace.Decision] = []
     private var diagnostics: [TouchDebugEvent]? = nil
+    private var streakInterruptions: [StreakInterruption]? = nil
 
     /// 18,000 operations cover about ten minutes of live inference. Longer takes
     /// keep counting normally; their bounded diagnostic is explicitly incomplete.
@@ -177,7 +180,14 @@ nonisolated final class CounterTraceRecorder {
             usesHandVerifier: usesHandVerifier, usesFootVerifier: usesFootVerifier,
             usesBodyVerifier: usesBodyVerifier ? true : nil, usesGroundVerifier: usesGroundVerifier ? true : nil,
             usesHandlingVerifier: usesHandlingVerifier ? true : nil, complete: complete, operations: operations,
-            decisions: decisions, touches: Array(touches.prefix(limit)), diagnostics: diagnostics)
+            decisions: decisions, touches: Array(touches.prefix(limit)), diagnostics: diagnostics,
+            streakInterruptions: streakInterruptions)
+    }
+
+    func append(interruption: StreakInterruption) {
+        guard complete, !operations.isEmpty, (streakInterruptions?.count ?? 0) < limit else { return }
+        if streakInterruptions == nil { streakInterruptions = [] }
+        streakInterruptions?.append(interruption)
     }
 }
 

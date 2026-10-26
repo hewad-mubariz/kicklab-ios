@@ -29,6 +29,8 @@ nonisolated final class StreamingCounter {
     private let traceRecorder: CounterTraceRecorder?
     private let countsTouches: Bool
     private let retainContactFrames: ((Int?) -> Void)?
+    private let streakHandlingEvidence: ((Int, Int) -> BallHandlingEvidence?)?
+    private var streakSchedule = StreakInterruptionSchedule()
 
     private var stamps: [Int: Int] = [:]
     private var balls: [Int: BallObservation] = [:]
@@ -64,10 +66,13 @@ nonisolated final class StreamingCounter {
          diagnoseContact: ((CounterDecision, BallObservation?) -> TouchDebugEvent?)? = nil,
          groundPolicy: GroundContactPolicy = .corroboratedFeet,
          groundContactEvidence: ((Int) -> GroundContactEvidence?)? = nil,
-         handlingEvidence: ((Int) -> BallHandlingEvidence?)? = nil) {
+         handlingEvidence: ((Int) -> BallHandlingEvidence?)? = nil,
+         streakHandlingEvidence: ((Int, Int) -> BallHandlingEvidence?)? = nil,
+         streakGroundEvidence: ((Int) -> GroundContactEvidence?)? = nil) {
         self.config = config
         self.countsTouches = countsTouches
         self.retainContactFrames = retainContactFrames
+        self.streakHandlingEvidence = streakHandlingEvidence
         self.machine = TouchStateMachine(config: config, groundPolicy: groundPolicy)
         self.machine.rejectsHandContact = rejectsHandContact
         self.machine.allowsBodyContact = allowsBodyContact
@@ -88,7 +93,22 @@ nonisolated final class StreamingCounter {
             if ball != nil { ball!.y -= self.cameraOffsets[decision.frameIndex] ?? 0 }
             guard let diagnostic = diagnoseContact(decision, ball) else { return }
             self.latestDiagnostic = diagnostic
-            self.reviewEvidence.append(diagnostic, groundConfirmed: decision.plantedFeetConfirmed == true)
+            var groundConfirmed = decision.plantedFeetConfirmed == true
+            // The early floor gate rejects before asking for sustained pose
+            // evidence. Obtain it separately for ranking, leaving the decision
+            // and its exact-replay trace unchanged.
+            if !groundConfirmed, decision.rejection == .groundBounce,
+               self.streakSchedule.hasOpenRun(lastTouchMs: self.touches.last?.timestampMs),
+               let evidence = streakGroundEvidence?(decision.frameIndex),
+               let interruption = StreakInterruption.floor(decision, evidence: evidence,
+                    policy: groundPolicy, cadenceAware: config.cadenceAwareGroundContact == true) {
+                groundConfirmed = true
+                recorder?.append(interruption: interruption)
+            }
+            if let observation = self.reviewEvidence.append(diagnostic, groundConfirmed: groundConfirmed),
+               [.handContact, .heldBall, .groundContact].contains(observation.kind) {
+                self.streakSchedule.end(at: decision.timestampMs)
+            }
             #if DEBUG
             self.debugDiagnosticObserver?(diagnostic)
             #endif
@@ -150,7 +170,19 @@ nonisolated final class StreamingCounter {
             next = n + 1
             trim()
         }
+        inspectStreak(now: timestampMs, hasBall: ball != nil)
         return emitted
+    }
+
+    private func inspectStreak(now: Int, hasBall: Bool) {
+        guard countsTouches, let streakHandlingEvidence,
+              streakSchedule.shouldProbe(now: now, lastTouchMs: touches.last?.timestampMs, hasBall: hasBall),
+              let lastTouchMs = touches.last?.timestampMs,
+              let evidence = streakHandlingEvidence(now, lastTouchMs),
+              let interruption = StreakInterruption.held(evidence, after: lastTouchMs) else { return }
+        streakSchedule.end(at: interruption.timestampMs)
+        reviewEvidence.append(time: Double(interruption.timestampMs)/1000, kind: interruption.reviewReason)
+        traceRecorder?.append(interruption: interruption)
     }
 
     /// Judge the frames still held in the lookahead window. Call once, at the end.
