@@ -31,6 +31,7 @@ nonisolated struct TouchReviewEvidence: Sendable {
         case .heldBall: kind = .heldBall
         case .handContact: kind = .handContact
         case .groundBounce: kind = groundConfirmed ? .groundContact : .lowContactUncertain
+        case .unresolvedLowContact: kind = .lowContactUncertain
         case .noPersonRegion, .outsidePersonRegion: kind = .playerUncertain
         case .unsupportedByDetection, .trackLost: kind = .ballUncertain
         case .disallowedBodyContact:

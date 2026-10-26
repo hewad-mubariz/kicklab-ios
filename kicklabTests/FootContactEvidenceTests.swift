@@ -178,7 +178,10 @@ struct FootContactEvidenceTests {
         #expect(machine(evidence: nil, unresolvedLow: true).rejected.last?.reason == .unresolvedLowContact)
         #expect(machine(evidence: samples(), unresolvedLow: true).count == 1)
         #expect(machine(hand: true, evidence: samples(), unresolvedLow: true).rejected.last?.reason == .handContact)
-
+        var review = TouchReviewEvidence()
+        review.append(.init(frameIndex: 3,time: 0.099,rejection: .unresolvedLowContact,
+            handConfirmed: false,bodyFailure: nil,ball: nil))
+        #expect(review.observations.map(\.kind) == [.lowContactUncertain])
     }
 
     @Test func fullFootEvidenceReplaysWithoutPoseAndMissingEvidenceFails() throws {
