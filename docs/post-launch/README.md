@@ -4,6 +4,11 @@ Documented: 2026-10-11. Product priorities updated: 2026-10-19.
 Status: in progress; implementation and verification status must be read separately.
 Week 1 starts after the first public release, rather than on the documentation date.
 
+**Leaderboard scope, updated 26 October:** the first beta uses automatic best
+continuous streaks only. Touch checks, uploads and human review are postponed.
+The [current beta rules and testing checklist](#leaderboard-rules--automatic-beta)
+supersede the reviewed-leaderboard rollout requirements recorded below.
+
 The first month's priorities are trustworthy counting, better ball detection and
 tracking, dependable sessions on older devices, and a fair leaderboard. Ball
 replacement quality in recordings made inside the app is the current highest
@@ -30,11 +35,10 @@ supersedes the ordering below; the current candidate's release checks continue.
    The [account setup notes](../auth-setup.md) record completed Google branding and
    SES production setup; email sending limits and delivery monitoring still need
    an explicit rollout decision.
-2. **Reviewed leaderboard beta.** Implement continuous ranked streaks, deliberate
-   original-video submission, pending/approved/rejected states and backend-controlled
-   approval. Start with reviewed scores and separate optional training-data consent
-   from score review. Confirm the proposed contact policy before implementing scoring;
-   the 18 October design draft below recommends including clean knee/thigh contacts.
+2. **Automatic leaderboard beta (scope updated 24 October).** Rank each player's
+   best device-counted continuous streak from signed-in, in-app recordings. Keep
+   joining optional. Submissions, video uploads and reviewed corrections are deferred;
+   their earlier implementation and deployment notes are retained below as history.
 3. **Ball replacement — current highest priority (updated 19 October).**
    Treat this as a core-feature quality milestone. Prioritize recordings made inside
    Juggle Dude: recover missing ball regions, preserve hands/feet, remove original-ball
@@ -932,6 +936,9 @@ submissions and uploaded clips (dry run first, `--confirm` to delete).
 
 ### Automatic streak leaderboard — 22 October
 
+This section records the original automatic-plus-corrections implementation. The
+24/26 October beta decisions below supersede its touch-check and correction behavior.
+
 This replaces reviewed-only ranking. Every session recorded in the app while signed in
 ranks by its best continuous streak as the device counted it, as soon as it syncs;
 nothing is submitted. A hand, hold or ground call ends a streak and touches after it
@@ -964,7 +971,8 @@ more scores 27.
 full-recording upload, and the review service isn't connected, so nothing is fetched
 or sent (including a check queued by an earlier build). The rules page, leaderboard,
 Profile, history and post-session strip show no review or upload wording. Turning the
-switch on restores every entry point; the server functions and bucket stay deployed
+switch on restores app entry points; restoring reviewed ranking also requires an
+explicit server migration. The server functions and bucket stay deployed
 but unused. To take a score off the board, `scripts/remove-leaderboard-score.py`
 lists the sessions that rank and marks one `rejected` (dry run first, `--confirm` to
 apply, `restore` to undo; every change goes to a private log in `config/local`).
@@ -972,44 +980,121 @@ apply, `restore` to undo; every change goes to a private log in `config/local`).
 `supabase/tests/streak_leaderboard.sql` covers ranking, immutability, corrections,
 periods, moderation and visibility (`scripts/test-account-backend.sh`).
 
-### Leaderboard rules — beta-1
+**Automatic-only consistency — 26 October:**
+`202610260001_automatic_leaderboard_beta.sql` removes approved-review overrides
+from ranking, including the winning session and duration. The existing RPC name,
+permissions and response shape are kept for installed clients; `attempt_id` is
+always null. Review records/functions are retained, and no sessions are deleted.
+The app also suppresses review badges, accessibility claims and reporting when
+touch checks are off, even if an older server response still contains an attempt ID.
+The UI cannot undo an old server's score override. The migration was deployed to
+the Juggle Dude Supabase project on 26 October and its function body was compared
+with the local migration. Both endpoints agree; before/after checksums confirm all
+11 stored sessions and existing access grants are unchanged (no review records
+were present). No fictional scores were added. The full disposable backend suite passes, including a new
+regression suite proving that approved counts above or below the device count do
+not affect ranking. **Simulator verification passed:** 21 account/cache/streak unit
+tests and all 6 leaderboard UI tests. The UI suite caught a preview-only pending
+review label; its guard was fixed and all 6 UI tests then passed on a fresh build.
+Evidence is under `artifacts/leaderboard-beta-20261026/`; private deployment snapshots
+and the previous function are in `config/local/automatic-leaderboard-beta-20261026/`.
+At that stage no phone build or TestFlight upload was made. The subsequent
+interrupted-run fix below was installed locally on the iPhone 17 Pro Max; the
+fresh-recording/sync walkthrough and TestFlight upload are still pending.
 
-The approved implementation request uses this beta policy in source. Valid contacts
-are verified by human review, including clean leg, knee and thigh contacts.
-Ordinary training counts are not retroactively changed.
+**Interrupted-run fix — 26 October:** the saved 29-second test contained 14
+accepted touches in runs of 5, 4, 2 and 3, but only the setup hand release was
+stored as a definite interruption. Early floor rejections were uncertain and
+holds between contact candidates were not inspected. `StreakHoldVerifier` now
+checks the existing image/pose cache at most four times per second during an open
+run, stopping after a positive boundary until the next accepted touch. It requires
+a sustained two-wrist grip; missing hands do not become fouls. Early floor
+rejections can supply a boundary only with the existing positive ground proofs.
+This evidence never feeds back into touch acceptance. Initial hand releases and
+finishing catches do not invalidate a completed run. No timeout-only reset was added.
+
+Physical-device regression passed: with the original accepted contacts frozen,
+real-pixel interruption detection gives **14 total / 5 best**, and the clean clip
+gives **6 / 6**. A separate full pixel replay with checks disabled/enabled preserves
+every counter decision and touch: the interrupted clip is 12 in both arms (the
+encoded replay independently loses two contacts accepted live), and the clean
+clip is 6 in both arms. Peak retained frames are unchanged (18 and 16). The new
+checks add 65 and 3 pose requests respectively; the short replay timing difference
+is about 0.30 s and 0.04 s. This is not a long-session thermal benchmark.
+The unit tests also cover 10+50+30 => 90 total / 50 best, setup/final hand contacts,
+uncertain wrists, the probe budget and positive versus uncertain floor evidence.
+Private recordings/results are under `artifacts/leaderboard-streak-audit-20261026/`.
+New results identify this behavior as `juggling-v1-streak-v2`; previously synced
+scores, including the faulty 14, are not silently recalculated or overwritten.
+
+### Leaderboard rules — automatic beta
+
+The beta publishes device-counted streaks, not independently verified scores.
+These rules describe intended play; automatic detection cannot guarantee every
+invalid contact is caught. There are no score submissions or human touch checks
+in this release, and ordinary training counting is unchanged by this cleanup.
 
 | Topic | Rule |
 | --- | --- |
-| Score | Longest uninterrupted valid streak, not accumulated session touches. Counted automatically by the device; an approved touch check replaces it. |
+| Score | Best continuous streak counted by the device, not accumulated session touches. Old approved reviews do not alter the beta score or duration. |
 | Valid contacts | Feet (including inside and outside), lower legs, knees/thighs, chest and head. One distinct contact earns one point; no extra points for height, speed, spin or difficulty. |
 | Hands, arms, ground and outside help | End the current streak. A wall, another player or another supporting object also ends it. Subsequent juggling starts a new streak; do not merely omit the invalid contact and keep adding. |
 | Initial hand release | A normal setup release earns no points; the streak begins at the first valid contact. |
 | Stalls | A catch or deliberate held/balanced stall ends this continuous-juggling streak and earns no points. Trick/stall scoring is outside this beta. |
-| Uncertain contact or tracking gap | A missed model detection is not itself a foul. An unsure touch is left out of the count without ending the streak; a gap does not end it either. The player can ask for a check of left-out touches and stops; a reviewer confirms only what the clips clearly show. Never label an unseen hand as a confirmed foul. |
-| Source | Original, unedited in-app recordings initially. Gallery imports remain available for personal analysis. |
-| Framing | One active player and one active ball; keep the player, contact areas, ball and nearby ground visible. A passerby is not automatically a foul. Ambiguous player/ball identity requires review. |
-| Equipment | Start the single beta board with one size-5 football, declared at submission and checked where possible in review. Resolve the policy for smaller/youth balls before opening their scores to this board; this restriction is not a training restriction. |
-| Older devices | In-app recordings analysed afterward use the same scoring and review rules. Live processing speed does not determine eligibility. |
+| Uncertain contact or tracking gap | An unsure touch is omitted without ending the streak; a tracking gap alone does not end it either. There is no review/correction request in this beta. Never label an unseen hand as a confirmed foul. |
+| Source | Sessions recorded in the app while signed in, with saved streak metadata. Gallery imports, guest sessions and old results without streak metadata do not rank. |
+| Framing | One active player and one active ball; keep the player, contact areas, ball and nearby ground visible. A passerby is not automatically a foul. |
+| Equipment | Ask players to use one size-5 football. The beta does not verify equipment or provide separate ball-size divisions. |
+| Older devices | The same streak rules apply. A lower live processing rate is not itself a disqualification. |
 | Board | One best streak per account per period, weekly and all-time views, your rank and nearby players. Do not sum sessions. |
-| Week / ties | Monday 00:00 UTC resets. The session's completion time assigns its week and breaks equal-score ties; a check finished later keeps the session's week. |
-| Suspicious results | Review implausible touch rates, unusually high scores and duplicate recordings. A legitimate 1,000-touch run can still qualify. |
-| Disputes | Provide reporting and re-review, with a timestamp and specific reason when a streak is shortened or does not qualify. Preserve the submitted estimate and reviewed result separately for an audit trail. |
+| Week / ties | Monday 00:00 UTC resets. Completion time assigns the week and breaks equal-score ties; user ID is the final deterministic tie-breaker. |
+| Suspicious results | An operator can remove/restore a session's score with `scripts/remove-leaderboard-score.py`; the tool logs the reason locally. This is not automatic fraud verification. |
+| Disputes | In-app reports, appeals and corrected touch counts are deferred. Do not advertise them in this beta. |
 | Participation | Opt-in, asked once on the leaderboard; ordinary training remains available without entering it. |
-| Privacy | Original recordings are private for score review by default. Public video sharing and model-training consent are separate choices. Publish retention/deletion behavior before enabling uploads; account deletion must remove public entries and related retained data according to that policy. |
+| Privacy | Videos stay on the phone; session metadata syncs to the account. Public entries show opted-in profile information and the ranked streak. Hiding/deleting an account removes it from ranking. Retained legacy review data still follows the deployed deletion/retention cleanup. |
 | Excluded initially | Prizes, paid score advantages, Around the World recognition/badges/bonuses, trick multipliers, multiple divisions and numerous separate boards. Merely attempting a trick adds no points; visible valid contacts still follow the ordinary rule. |
 
-**More useful than trick scores for this beta:** reviewed streak and duration first;
-personal improvement and distance to the next place second. Rhythm (touches/minute),
-left/right balance, contact mix, estimated backspin and relative ball height can
-describe the attempt once validated. They must not affect rank. Use “Unavailable”
-for insufficient evidence; do not invent exact RPM or body-part percentages. Inside
-and outside foot technique must not depend on a reliable subtype classifier to count.
+**Included statistics:** device-counted streak, its duration and average counted
+touches/minute. These describe the run and do not add ranking points. Backspin,
+height categories, contact mix and left/right balance are deferred; sample design
+values are not measurements from real accounts.
 
-Before public beta, complete the deployment and device checks above and ensure the
-team can review every published score. Submission limits catch some obvious abuse,
-but plausible numbers do not prove legitimate contacts. Automatic verification beyond
-the reviewed beta requires separate validation; reviewing only top scores would
-leave lower positions less protected.
+### Automatic beta testing checklist — 26 October
+
+Use the leaderboard branch, two dedicated test accounts and the current Supabase
+project. Keep fictional UI fixtures in the simulator; do not seed fake public
+scores. Record device/build, account, session ID, visible total, saved streak,
+expected rank and actual rank for each device case. Inspect the session rows using
+the owner/session query before diagnosing a ranking mismatch as a counter failure.
+
+| Order | Check | Expected result | Status |
+| --- | --- | --- | --- |
+| 1 | Disposable database suite, including retained approved reviews | Automatic score, duration and winning session ignore reviews; legacy RPC, periods/ties, privacy, opt-out and moderation remain correct. | Passed locally |
+| 2 | Simulator regression suite with pending and legacy approved review fixtures | No review prompts, checked badges or report action; ordinary board loading, refresh, period switching and details work. | Passed: 21 unit + 6 UI tests |
+| 3 | Deploy forward migration and inspect both public ranking endpoints | Automatic-only function is live, response shape stays compatible, review IDs are null, stored records remain intact. | Deployed and verified; board was empty at deployment, populated cases covered in disposable tests |
+| 4 | Account A joins and records a short clean run, then two runs separated by a clear hand stop/ground bounce | The saved longest counted streak ranks, not the session total. A shorter subsequent result does not replace the best; a longer result does. No submission prompt or video upload. | First recording exposed 14 accumulated as one streak; fix passed saved-pixel comparisons. Fresh recording → local history → server → board validation pending |
+| 5 | Account B records; compare each account and a signed-out viewer | Correct owner, one best entry per person, correct relative ranks; gallery imports and guest recordings never rank. | Device walkthrough pending |
+| 6 | Record offline; reconnect; restart; switch accounts during sync | Session persists, retries once without duplicates, belongs to its original account and cannot leak into the second account's history. | Device walkthrough pending |
+| 7 | Hide/show profile; delete a disposable test account; remove/restore one test score | Public row disappears/reappears correctly; account deletion removes owned data; score removal falls back to another eligible streak. Use disposable recordings for deletion. | Device walkthrough pending |
+| 8 | iPhone 11 and iPhone 17, light/dark, large text, Reduce Motion, empty/one/many players | Rank, avatar, duration, rhythm and navigation remain readable; debug overlays are hidden for the final user-facing check. | Device walkthrough pending |
+
+The updated branch is installed locally. Start the fresh device walkthrough with
+case 4: a 30–60 second recording, one recording at a time, and compare the result
+before continuing. Include a one-handed catch and a ground bounce followed by
+immediate juggling without picking up the ball; the saved regression established
+two-handed holds, not every type of interruption. Check a clean run with high
+flights, brief occlusion and low foot contacts for false streak breaks.
+
+On iPhone 11, check the same cases at the normal and thermally reduced analysis
+cadences. Start with a 2–3 minute live session and compare extra pose work, memory,
+thermal state and missed contacts against the existing baseline. The new bounded
+streak probes can add Vision requests, so the short replay timing is not enough
+to clear the long-session thermal risk. Extend the run if the short check exposes
+a concern. The separate live-versus-encoded-replay difference of two contacts
+also remains open. Correct or remove the known bad historical 14-point test entry
+as a separate explicit data operation; new code does not overwrite synced scores.
+Prepare a TestFlight build only after these gates pass and the owner is ready to
+review it.
 
 ## Week 3: Detection continuity, replay quality, effects and UI
 
