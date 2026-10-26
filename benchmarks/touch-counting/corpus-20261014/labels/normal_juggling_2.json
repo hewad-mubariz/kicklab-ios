@@ -1,0 +1,242 @@
+{
+  "source_sha256": "b2993f54388d812405b74e2783c87850b6adfdbda1d2cd0f5cc0bafdbaa5a8e2",
+  "source_name": "normal_juggling_2.mov",
+  "review_status": "reviewed",
+  "coverage_s": [
+    0,
+    16.486667
+  ],
+  "method": "Full 6 fps sweep; 2.15\u20132.55 s, 11.95\u201312.4 s and 13.9\u201314.8 s reviewed at 24 fps. All three unmatched visible leg contacts confirmed in the source.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [
+    {
+      "id": "e001",
+      "time_s": 0.6,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e002",
+      "time_s": 1.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e003",
+      "time_s": 1.75,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e004",
+      "time_s": 2.32,
+      "label": "valid",
+      "contact": "high_foot",
+      "time_uncertainty_s": 0.04,
+      "visibility": "visible"
+    },
+    {
+      "id": "e005",
+      "time_s": 3.0,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e006",
+      "time_s": 3.73,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e007",
+      "time_s": 4.23,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e008",
+      "time_s": 4.76,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e009",
+      "time_s": 5.5,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e010",
+      "time_s": 5.99,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e011",
+      "time_s": 6.66,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e012",
+      "time_s": 7.24,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e013",
+      "time_s": 7.89,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e014",
+      "time_s": 8.45,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e015",
+      "time_s": 9.09,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e016",
+      "time_s": 9.9,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e017",
+      "time_s": 10.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e018",
+      "time_s": 11.08,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e019",
+      "time_s": 11.56,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e020",
+      "time_s": 12.15,
+      "label": "valid",
+      "contact": "high_foot",
+      "time_uncertainty_s": 0.04,
+      "visibility": "visible"
+    },
+    {
+      "id": "e021",
+      "time_s": 12.94,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e022",
+      "time_s": 13.57,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e023",
+      "time_s": 14.08,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "u024",
+      "time_s": 14.5,
+      "label": "valid",
+      "contact": "foot_sideways_deflection",
+      "time_uncertainty_s": 0.04,
+      "visibility": "visible"
+    }
+  ],
+  "segments": [
+    {
+      "start_s": 0,
+      "end_s": 0.4,
+      "label": "invalid",
+      "reason": "Setup hold and release; earns no touch."
+    },
+    {
+      "start_s": 14.8,
+      "end_s": 16.486667,
+      "label": "uncertain",
+      "reason": "Ball outside image while player approaches camera."
+    }
+  ],
+  "findings": [
+    {
+      "time_s": 2.32,
+      "label": "missed_valid",
+      "observed": "High foot strike, hands visibly clear.",
+      "counter_reason": "disallowedBodyContact/handsNearBall",
+      "hand_confirmed": false
+    },
+    {
+      "time_s": 12.15,
+      "label": "missed_valid",
+      "observed": "Foot strikes and separates from ball; hand projects near it but is behind the foot/ball in the source sequence.",
+      "counter_reason": "disallowedBodyContact/handsNearBall",
+      "hand_confirmed": true
+    },
+    {
+      "time_s": 14.5,
+      "label": "missed_valid",
+      "observed": "Visible low foot deflection sends ball sideways out of frame without a resolved upward arc.",
+      "counter_reason": "trackLost",
+      "mechanism": "Incomplete outgoing trajectory, not a body veto."
+    }
+  ]
+}

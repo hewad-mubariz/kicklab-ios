@@ -1,0 +1,21 @@
+{
+  "source_sha256": "dffb0c5af65f618bb1b97eee905f5ba10394ceb45865f6376a59aaa5498654aa",
+  "source_name": "dribbling_with_ball_1.mov",
+  "review_status": "reviewed",
+  "coverage_s": [
+    0,
+    22.993333
+  ],
+  "method": "Full 6 fps visual sweep; source-labelled before inspecting counter outcomes. Dense review of mismatches where needed.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [],
+  "segments": [
+    {
+      "start_s": 0,
+      "end_s": 22.9933,
+      "label": "invalid",
+      "reason": "Ground dribbling, sole rolls and retrieval; no airborne juggling contacts"
+    }
+  ],
+  "notes": []
+}

@@ -1,0 +1,132 @@
+{
+  "recording": "juggledude-run-952B6EAA-7E86-4C12-B0ED-5900757E8573.mov",
+  "sourceSHA256": "83c163c95c899729e6d0f22f543de344ed8aa97a3036e51041e60cfbe05f1d8e",
+  "pipelineSignature": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1792945674.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|hands=true|impact-window-v17|handling-v2|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+  "reviewScope": "User-reported events around 22\u201323s, 26s, and 35s. Final seconds excluded from visual accuracy review. This is not a full-clip precision/recall annotation.",
+  "verification": {
+    "traceComplete": true,
+    "numericReplayMatchesAllSavedDecisionsAndTouches": true,
+    "savedTouchCount": 27,
+    "appCodeChangedDuringReview": false,
+    "phoneBuildChangedDuringReview": false
+  },
+  "events": [
+    {
+      "kind": "false_positive_ground",
+      "countNumber": 14,
+      "counterFrame": 685,
+      "counterSeconds": 22.882,
+      "visualImpactSecondsApprox": [
+        22.898,
+        22.915
+      ],
+      "visualFinding": "Ball hits the floor between planted feet; no visible kick.",
+      "savedEvidence": {
+        "groundConfirmed": false,
+        "footConfirmed": false,
+        "bodyAllowed": true,
+        "handRejected": false,
+        "requiresPositiveLowContact": false,
+        "originalMissingBallFrames": [
+          680,
+          681,
+          682
+        ],
+        "originalMissingBallOffsetsMs": [
+          -167,
+          -134,
+          -100
+        ],
+        "largestApproachGapMs": 133,
+        "continuousSamplesAfterGap": 6,
+        "requiredStrongSamples": 7,
+        "requiredApproachMs": 200
+      },
+      "diagnosis": "The approach gap breaks the sustained stationary-feet evidence. Only six continuous samples remain after the gap. The additional v17 foot-proof guard only recognizes impact-neighborhood gaps, so this earlier gap does not activate it. Body eligibility then allows the count despite absent positive foot confirmation.",
+      "nextChangeToEvaluate": "Recover missing approach observations for an ankle-height candidate within a bounded budget; evaluate unresolved approach gaps without globally requiring stronger evidence for every low touch.",
+      "visualEvidence": "artifacts/latest-recording-v17-20261025-1742/focus-floor.jpg"
+    },
+    {
+      "kind": "false_positive_hand",
+      "countNumber": 15,
+      "counterFrame": 793,
+      "counterSeconds": 26.481,
+      "visualImpactSecondsApprox": [
+        26.515,
+        26.548
+      ],
+      "visualFinding": "The palm/fingers propel the ball upward in front of the face; the reviewed sequence does not show a head strike.",
+      "savedEvidence": {
+        "bodyAllowed": true,
+        "handRejected": false,
+        "handlingState": "uncertain",
+        "originalMissingBallFrames": [
+          794,
+          795,
+          796
+        ],
+        "originalMissingBallOffsetsMs": [
+          34,
+          67,
+          100
+        ],
+        "recoveredVerifierBallOffsetsMs": [
+          34,
+          67
+        ],
+        "leftWristConfidenceAtCandidateAndRecoveredViews": [
+          0.433349609375,
+          0.410400390625,
+          0.304443359375
+        ]
+      },
+      "diagnosis": "The original trajectory interpolates through the missing physical impact and places the candidate early. Rechecks recovered ball observations for the verifier at +34 and +67ms, but do not revise trajectory timing. The hand veto remains centered on the earlier candidate and its first following view, with two-of-three finger fallback limited to torso cases. Saved handling evidence evaluates to uncertain and cannot reject a one-hand hit.",
+      "uncertainty": "The live archive stores body allowed/blocked, not the accepted body region or per-view hand classifications. Face/head overlap is a plausible contributing mechanism from video and code, not a proven saved head label.",
+      "nextChangeToEvaluate": "Align hand verification to the recovered physical impact and require consistent actual hand evidence in that local window; retain genuine header controls.",
+      "visualEvidence": "artifacts/latest-recording-v17-20261025-1742/focus-hand.jpg"
+    },
+    {
+      "kind": "false_negative_low_foot",
+      "visualImpactSecondsApprox": [
+        34.898,
+        34.932
+      ],
+      "visualFinding": "A small legal toe/foot touch lifts the ball between the accepted contacts assigned to 34.481s and 35.114s.",
+      "savedEvidence": {
+        "candidateCreated": false,
+        "ballMissingInLocalWindow": false,
+        "smoothedRise": 0.00221723794937134,
+        "requiredRise": 0.007,
+        "maximumUpwardSpeedDuringSmallRebound": 0.03359451438441428,
+        "requiredUpwardSpeed": 0.05,
+        "neighboringAcceptedFrames": [
+          1031,
+          1050
+        ]
+      },
+      "diagnosis": "The median-plus-average trajectory smoothing suppresses the short rebound. It does not establish rising motion and does not reach the minimum rise amplitude, so the event never reaches ground, foot, body, hand, or cooldown evaluation. The continuing arc is counted at the next stronger kick.",
+      "nextChangeToEvaluate": "A narrowly validated small-rebound candidate route supported by observed foot motion, rather than a global decrease in trajectory thresholds.",
+      "visualEvidence": "artifacts/latest-recording-v17-20261025-1742/focus-low-b.jpg"
+    }
+  ],
+  "nearbyGroundControls": [
+    {
+      "counterFrame": 653,
+      "seconds": 21.815,
+      "rejection": "groundBounce",
+      "groundConfirmed": true
+    },
+    {
+      "counterFrame": 715,
+      "seconds": 23.882,
+      "rejection": "unresolvedLowContact",
+      "groundConfirmed": false,
+      "requiresPositiveLowContact": true
+    }
+  ],
+  "reproduction": {
+    "command": "swiftc kicklab/Counting/*.swift artifacts/latest-recording-v17-20261025-1742/inspect-evidence.swift -o artifacts/latest-recording-v17-20261025-1742/inspect-evidence && artifacts/latest-recording-v17-20261025-1742/inspect-evidence artifacts/latest-recording-v17-20261025-1742",
+    "verifiedEvidence": "artifacts/latest-recording-v17-20261025-1742/verified-evidence.json"
+  },
+  "conclusion": "Three distinct remaining failure modes: a gap before floor impact, hand-contact timing/attribution, and low-touch candidate suppression. Neighboring rejected floor events support local improvement; no whole-clip accuracy claim is made."
+}

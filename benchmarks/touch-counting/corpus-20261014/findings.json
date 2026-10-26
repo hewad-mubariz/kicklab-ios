@@ -1,0 +1,71 @@
+{
+  "missed_first_diagnostics": {
+    "handsNearBall": 12,
+    "handsUncertain": 10,
+    "invalidGeometry": 3,
+    "no_nearby_candidate": 18,
+    "missingPose": 11,
+    "outsidePersonRegion": 1,
+    "amplitudeTooSmall": 4,
+    "trackLost": 1,
+    "insufficientContactViews": 1
+  },
+  "ground_false_acceptances": [
+    {
+      "clip": "normal_juggling_4",
+      "time_s": 27.183,
+      "frame": 3260,
+      "first_ground_sample_relative_ms": -75,
+      "last_ground_sample_relative_ms": 25,
+      "sample_count": 13,
+      "required_approach_ms": 200,
+      "planted_feet_confirmed": false,
+      "body_contact_allowed": true
+    },
+    {
+      "clip": "normal_juggling_4",
+      "time_s": 27.6,
+      "frame": 3310,
+      "first_ground_sample_relative_ms": -75,
+      "last_ground_sample_relative_ms": 25,
+      "sample_count": 13,
+      "required_approach_ms": 200,
+      "planted_feet_confirmed": false,
+      "body_contact_allowed": true
+    },
+    {
+      "clip": "nomral_juggling_6",
+      "time_s": 10.291,
+      "frame": 1233,
+      "first_ground_sample_relative_ms": -75,
+      "last_ground_sample_relative_ms": 25,
+      "sample_count": 13,
+      "required_approach_ms": 200,
+      "planted_feet_confirmed": false,
+      "body_contact_allowed": true
+    },
+    {
+      "clip": "nomral_juggling_6",
+      "time_s": 10.708,
+      "frame": 1283,
+      "first_ground_sample_relative_ms": -75,
+      "last_ground_sample_relative_ms": 25,
+      "sample_count": 13,
+      "required_approach_ms": 200,
+      "planted_feet_confirmed": false,
+      "body_contact_allowed": true
+    },
+    {
+      "clip": "juggling_second_ball_very_far",
+      "time_s": 4.083,
+      "frame": 490,
+      "first_ground_sample_relative_ms": -75,
+      "last_ground_sample_relative_ms": 25,
+      "sample_count": 13,
+      "required_approach_ms": 200,
+      "planted_feet_confirmed": false,
+      "body_contact_allowed": true
+    }
+  ],
+  "diagnostic_caveat": "Nearest first-failure diagnostic, not proof of every underlying cause. Multi-ball frames may attach a diagnostic to a different ball. No nearby diagnostic is not a named filter failure."
+}

@@ -1,0 +1,174 @@
+{
+  "source": "eighteen.mov",
+  "source_sha256": "4a54b84afee6389e5229716e3d987ff6c4295ed297651e765d56ec1dd8cc64ae",
+  "label_review_status": "reviewed_with_uncertainty",
+  "time_tolerance_s": 0.2,
+  "total_count": 11,
+  "labelled_valid": 18,
+  "labelled_uncertain": 1,
+  "accepted_valid": 11,
+  "missed_valid": [
+    {
+      "label_id": "e002",
+      "time_s": 3.75,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 111,
+        "time": 3.74,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsUncertain"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e005",
+      "time_s": 6.32,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 188,
+        "time": 6.312,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsUncertain"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "u001",
+      "time_s": 7.65,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 228,
+        "time": 7.648,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "invalidGeometry"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "u002",
+      "time_s": 10.98,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 326,
+        "time": 10.921,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsUncertain"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e011",
+      "time_s": 11.86,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 354,
+        "time": 11.857,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsUncertain"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e013",
+      "time_s": 13.88,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 414,
+        "time": 13.861,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsUncertain"
+      },
+      "stage": "rejected_candidate"
+    },
+    {
+      "label_id": "e014",
+      "time_s": 14.59,
+      "contact": "legal_leg",
+      "decision": {
+        "frameIndex": 436,
+        "time": 14.595,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsNearBall"
+      },
+      "stage": "rejected_candidate"
+    }
+  ],
+  "false_accepted": [],
+  "uncertain_accepted": [],
+  "unmatched_needing_review": [],
+  "matched": [
+    {
+      "label_id": "e001",
+      "label_time_s": 3.13,
+      "counter_time_s": 3.106,
+      "frame": 92
+    },
+    {
+      "label_id": "e003",
+      "label_time_s": 5.08,
+      "counter_time_s": 5.043,
+      "frame": 150
+    },
+    {
+      "label_id": "e004",
+      "label_time_s": 5.72,
+      "counter_time_s": 5.711,
+      "frame": 170
+    },
+    {
+      "label_id": "e006",
+      "label_time_s": 7.12,
+      "counter_time_s": 7.08,
+      "frame": 211
+    },
+    {
+      "label_id": "e007",
+      "label_time_s": 8.6,
+      "counter_time_s": 8.55,
+      "frame": 255
+    },
+    {
+      "label_id": "e008",
+      "label_time_s": 9.19,
+      "counter_time_s": 9.151,
+      "frame": 273
+    },
+    {
+      "label_id": "e009",
+      "label_time_s": 9.85,
+      "counter_time_s": 9.853,
+      "frame": 294
+    },
+    {
+      "label_id": "e010",
+      "label_time_s": 10.35,
+      "counter_time_s": 10.32,
+      "frame": 308
+    },
+    {
+      "label_id": "u003",
+      "label_time_s": 12.59,
+      "counter_time_s": 12.558,
+      "frame": 375
+    },
+    {
+      "label_id": "e012",
+      "label_time_s": 13.25,
+      "counter_time_s": 13.226,
+      "frame": 395
+    },
+    {
+      "label_id": "e015",
+      "label_time_s": 15.23,
+      "counter_time_s": 15.263,
+      "frame": 456
+    }
+  ]
+}

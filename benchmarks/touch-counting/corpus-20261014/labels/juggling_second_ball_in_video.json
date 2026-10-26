@@ -1,0 +1,255 @@
+{
+  "source_sha256": "0e688e36a58294a54290eb3a99eee47b8a47e1eaea2a17d739fdbb77cb5ad032",
+  "source_name": "juggling_second_ball_in_video.mov",
+  "review_status": "reviewed",
+  "coverage_s": [
+    0,
+    23.691667
+  ],
+  "method": "Full 6 fps visual sweep; source-labelled before inspecting counter outcomes. Dense review of mismatches where needed.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [
+    {
+      "id": "e001",
+      "time_s": 1.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e002",
+      "time_s": 2.05,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e003",
+      "time_s": 2.58,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e004",
+      "time_s": 3.12,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e005",
+      "time_s": 3.65,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e006",
+      "time_s": 4.22,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e007",
+      "time_s": 4.75,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e008",
+      "time_s": 5.52,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e009",
+      "time_s": 6.24,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e010",
+      "time_s": 6.7,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e011",
+      "time_s": 7.44,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e012",
+      "time_s": 8.05,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e013",
+      "time_s": 8.71,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e014",
+      "time_s": 9.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e015",
+      "time_s": 9.93,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e016",
+      "time_s": 10.5,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e017",
+      "time_s": 11.04,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e018",
+      "time_s": 11.9,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e019",
+      "time_s": 12.39,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e020",
+      "time_s": 12.94,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e021",
+      "time_s": 13.53,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e022",
+      "time_s": 14.22,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e023",
+      "time_s": 14.66,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e024",
+      "time_s": 15.43,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e025",
+      "time_s": 16.06,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e026",
+      "time_s": 16.67,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e027",
+      "time_s": 17.39,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e028",
+      "time_s": 18.01,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    }
+  ],
+  "segments": [
+    {
+      "start_s": 0,
+      "end_s": 1.1,
+      "label": "invalid",
+      "reason": "Holding and release"
+    },
+    {
+      "start_s": 18.75,
+      "end_s": 23.6917,
+      "label": "invalid",
+      "reason": "Foreground player catches and holds the ball; background person handles and rolls a second ball"
+    }
+  ],
+  "notes": [
+    "Labels follow the foreground juggling ball. Second person enters around 12.7 s with a separate ball; their handling must not contribute to the foreground count.",
+    "All remaining mismatches received dense five-frame source review around each event (2026-10-14)."
+  ]
+}

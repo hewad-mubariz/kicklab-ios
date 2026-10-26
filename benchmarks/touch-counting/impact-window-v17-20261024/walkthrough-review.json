@@ -1,0 +1,19 @@
+{
+  "source_sha256": "4de39918ddbf91623edf202cb9592d968d500f0cf1327bb6e7427c974663f8c3",
+  "frame": 4754,
+  "time_s": 206.33822062500985,
+  "visual_label": "valid_foot_contact",
+  "evidence": "walkthrough-206-contact.jpg, 15 fps review from 205.8 to 207.0 s; toe lifts into ball at about 206.33 s",
+  "original_inputs_ms_relative_to_contact": [
+    -166,
+    -133,
+    -100,
+    -66,
+    0,
+    100,
+    167,
+    234
+  ],
+  "all_original_inputs_contain_ball": true,
+  "finding": "Cadence gap is not a ball tracking dropout. Build13 incorrectly requested strict foot proof; build14 requires two actual missing-ball input frames near impact before enabling that guard."
+}

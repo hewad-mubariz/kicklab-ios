@@ -1,0 +1,227 @@
+{
+  "source_sha256": "bcbd9c927606cdb507b41df55f7c3bd89918fd0b67bf77a2a94d7c95ca35ec01",
+  "policy": {
+    "body": "timedFootMotionV6",
+    "ground": "corroboratedFeet",
+    "handling": "sustainedGripV1"
+  },
+  "touches": [],
+  "diagnostics": [
+    {
+      "frameIndex": 65,
+      "time": 0.55,
+      "rejection": "trackLost",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 65,
+        "timestampMs": 550,
+        "x": 0.43680556615193683,
+        "y": 0.4625000059604645,
+        "width": 0.022222201029459637,
+        "height": 0.01171875,
+        "confidence": 0.615234375
+      }
+    },
+    {
+      "frameIndex": 110,
+      "time": 0.925,
+      "rejection": "trackLost",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 110,
+        "timestampMs": 925,
+        "x": 0.41726833908922145,
+        "y": 0.48935027439147233,
+        "width": 0.022451169043779372,
+        "height": 0.012106932001188397,
+        "confidence": 0.857421875
+      }
+    },
+    {
+      "frameIndex": 194,
+      "time": 1.625,
+      "rejection": "trackLost",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 194,
+        "timestampMs": 1625,
+        "x": 0.3170138994852702,
+        "y": 0.5355468988418579,
+        "width": 0.024305555555555556,
+        "height": 0.014062464237213135,
+        "confidence": 0.401611328125
+      }
+    },
+    {
+      "frameIndex": 763,
+      "time": 6.366,
+      "rejection": "groundBounce",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 763,
+        "timestampMs": 6366,
+        "x": 0.5694444444444444,
+        "y": 0.740234375,
+        "width": 0.0680554707845052,
+        "height": 0.04140627384185791,
+        "confidence": 0.92724609375
+      }
+    },
+    {
+      "frameIndex": 949,
+      "time": 7.916,
+      "rejection": "insufficientImpulse",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 949,
+        "timestampMs": 7916,
+        "x": 0.5972222222222222,
+        "y": 0.653515636920929,
+        "width": 0.05555555555555555,
+        "height": 0.03125,
+        "confidence": 0.91357421875
+      }
+    },
+    {
+      "frameIndex": 1057,
+      "time": 8.816,
+      "rejection": "groundBounce",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1057,
+        "timestampMs": 8816,
+        "x": 0.3230902883741591,
+        "y": 0.669921875,
+        "width": 0.06770833333333333,
+        "height": 0.03984379768371582,
+        "confidence": 0.93115234375
+      }
+    },
+    {
+      "frameIndex": 1223,
+      "time": 10.2,
+      "rejection": "groundBounce",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1223,
+        "timestampMs": 10200,
+        "x": 0.3416666454739041,
+        "y": 0.7771484851837158,
+        "width": 0.10972219043307835,
+        "height": 0.06757813692092896,
+        "confidence": 0.93408203125
+      }
+    },
+    {
+      "frameIndex": 1293,
+      "time": 10.783,
+      "rejection": "groundBounce",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1293,
+        "timestampMs": 10783,
+        "x": 0.05711804495917426,
+        "y": 0.8492187261581421,
+        "width": 0.11284722222222222,
+        "height": 0.07656246423721313,
+        "confidence": 0.94970703125
+      }
+    },
+    {
+      "frameIndex": 1311,
+      "time": 10.933,
+      "rejection": "amplitudeTooSmall",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1311,
+        "timestampMs": 10933,
+        "x": 0.1545138888888889,
+        "y": 0.804882824420929,
+        "width": 0.13402779897054037,
+        "height": 0.07773435115814209,
+        "confidence": 0.9404296875
+      }
+    },
+    {
+      "frameIndex": 1457,
+      "time": 12.15,
+      "rejection": "amplitudeTooSmall",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1457,
+        "timestampMs": 12150,
+        "x": 0.5826388465033637,
+        "y": 0.680859386920929,
+        "width": 0.08888891008165148,
+        "height": 0.04062497615814209,
+        "confidence": 0.888671875
+      }
+    },
+    {
+      "frameIndex": 1583,
+      "time": 13.2,
+      "rejection": "outsidePersonRegion",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1583,
+        "timestampMs": 13200,
+        "x": 0.5559027989705404,
+        "y": 0.740234375,
+        "width": 0.08402782016330296,
+        "height": 0.05078125,
+        "confidence": 0.93994140625
+      }
+    },
+    {
+      "frameIndex": 1813,
+      "time": 15.116,
+      "rejection": "trackLost",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1813,
+        "timestampMs": 15116,
+        "x": 0.6055556403266059,
+        "y": 0.40898436307907104,
+        "width": 0.022222201029459637,
+        "height": 0.013281255960464478,
+        "confidence": 0.60498046875
+      }
+    },
+    {
+      "frameIndex": 1841,
+      "time": 15.35,
+      "rejection": "trackLost",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1841,
+        "timestampMs": 15350,
+        "x": 0.5055555767483182,
+        "y": 0.43964844942092896,
+        "width": 0.025000042385525174,
+        "height": 0.012890607118606567,
+        "confidence": 0.444580078125
+      }
+    },
+    {
+      "frameIndex": 1880,
+      "time": 15.675,
+      "rejection": "outsidePersonRegion",
+      "handConfirmed": false
+    },
+    {
+      "frameIndex": 1945,
+      "time": 16.216,
+      "rejection": "amplitudeTooSmall",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1945,
+        "timestampMs": 16216,
+        "x": 0.5229166878594292,
+        "y": 0.48710936307907104,
+        "width": 0.025000042385525174,
+        "height": 0.014062494039535522,
+        "confidence": 0.6201171875
+      }
+    }
+  ]
+}

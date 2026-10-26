@@ -1,0 +1,23 @@
+{
+  "source_sha256": "6b2ea0998747038e7a432edba32df645442b6fb9d27d462d66af2182badc6767",
+  "source_name": "dribbling_with_ball_2.mov",
+  "review_status": "reviewed",
+  "coverage_s": [
+    0,
+    5.943333
+  ],
+  "method": "Full 6 fps visual sweep; source-labelled before inspecting counter outcomes. Dense review of mismatches where needed.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [],
+  "segments": [
+    {
+      "start_s": 0,
+      "end_s": 5.94333,
+      "label": "invalid",
+      "reason": "Ground dribbling and direction changes, not airborne juggling"
+    }
+  ],
+  "notes": [
+    "Physical ground-dribble foot contacts are not labelled valid juggling contacts."
+  ]
+}

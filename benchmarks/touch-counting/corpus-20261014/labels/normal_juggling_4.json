@@ -1,0 +1,314 @@
+{
+  "source_sha256": "14df979f808de60f82b76a43458115690167caef6a5d8d28dc9f8e4bc0f60857",
+  "source_name": "normal_juggling_4.mov",
+  "review_status": "reviewed_with_uncertainty",
+  "coverage_s": [
+    0,
+    36.486667
+  ],
+  "method": "Full 6 fps visual sweep; source-labelled before inspecting counter outcomes. Dense review of mismatches where needed.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [
+    {
+      "id": "e001",
+      "time_s": 0.34,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e002",
+      "time_s": 0.9,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e003",
+      "time_s": 1.37,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e004",
+      "time_s": 2.05,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e005",
+      "time_s": 2.54,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e006",
+      "time_s": 3.08,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e007",
+      "time_s": 3.56,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e008",
+      "time_s": 4.07,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e009",
+      "time_s": 4.56,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e010",
+      "time_s": 5.41,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e011",
+      "time_s": 5.94,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e012",
+      "time_s": 6.69,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e013",
+      "time_s": 7.12,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e014",
+      "time_s": 8.08,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e015",
+      "time_s": 8.71,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e016",
+      "time_s": 9.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e017",
+      "time_s": 9.9,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e018",
+      "time_s": 10.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e019",
+      "time_s": 10.91,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e020",
+      "time_s": 11.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e021",
+      "time_s": 11.88,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "u001",
+      "time_s": 12.46,
+      "label": "uncertain",
+      "contact": "possible_contact",
+      "time_uncertainty_s": 0.1,
+      "visibility": "partial_or_ambiguous"
+    },
+    {
+      "id": "e022",
+      "time_s": 19.08,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "u002",
+      "time_s": 19.72,
+      "label": "uncertain",
+      "contact": "possible_contact",
+      "time_uncertainty_s": 0.1,
+      "visibility": "partial_or_ambiguous"
+    },
+    {
+      "id": "e023",
+      "time_s": 20.28,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e024",
+      "time_s": 21.87,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e025",
+      "time_s": 22.41,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e026",
+      "time_s": 22.91,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e027",
+      "time_s": 23.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e028",
+      "time_s": 23.91,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e029",
+      "time_s": 24.85,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e030",
+      "time_s": 25.31,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e031",
+      "time_s": 26.01,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    },
+    {
+      "id": "e032",
+      "time_s": 26.5,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.1,
+      "visibility": "visible"
+    }
+  ],
+  "segments": [
+    {
+      "start_s": 12.6,
+      "end_s": 16,
+      "label": "uncertain",
+      "reason": "Ball and then player outside frame"
+    },
+    {
+      "start_s": 16,
+      "end_s": 18.9,
+      "label": "invalid",
+      "reason": "Holding and setup release"
+    },
+    {
+      "start_s": 20.85,
+      "end_s": 21.7,
+      "label": "invalid",
+      "reason": "Catch and new release"
+    },
+    {
+      "start_s": 27.1,
+      "end_s": 36.486667,
+      "label": "invalid",
+      "reason": "Ground bounces then foot trap/rolling ball; no airborne juggle"
+    }
+  ],
+  "notes": [
+    "24 fps review confirms missed feet at 7.12, 8.08 and 20.28. Ground bounces around 27.18 and 27.60 are both counted; the foot only approaches to control the ball after the first ground impact."
+  ]
+}

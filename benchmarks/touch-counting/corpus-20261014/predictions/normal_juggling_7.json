@@ -1,0 +1,755 @@
+{
+  "source_sha256": "7bf2abca3914072eb091cbb2d1a148df7db6ccd445293bd1f1346b309fa4a10a",
+  "policy": {
+    "body": "timedFootMotionV6",
+    "ground": "corroboratedFeet",
+    "handling": "sustainedGripV1"
+  },
+  "touches": [
+    {
+      "index": 0,
+      "frameIndex": 59,
+      "timestampMs": 491,
+      "x": 0.6462963245533131,
+      "y": 0.5856770873069763,
+      "fallAmplitude": 0.09257811307907104,
+      "riseAmplitude": 0.007421871026357052,
+      "impulse": 1.0225192150648903
+    },
+    {
+      "index": 1,
+      "frameIndex": 127,
+      "timestampMs": 1058,
+      "x": 0.701157393278899,
+      "y": 0.5936198234558105,
+      "fallAmplitude": 0.0713542103767395,
+      "riseAmplitude": 0.007421910762786865,
+      "impulse": 1.0009768108526842
+    },
+    {
+      "index": 2,
+      "frameIndex": 198,
+      "timestampMs": 1650,
+      "x": 0.7638888888888888,
+      "y": 0.5901041428248087,
+      "fallAmplitude": 0.07317705949147535,
+      "riseAmplitude": 0.008203109105427986,
+      "impulse": 0.9765600164731366
+    },
+    {
+      "index": 3,
+      "frameIndex": 266,
+      "timestampMs": 2216,
+      "x": 0.6636574356644241,
+      "y": 0.5766926805178324,
+      "fallAmplitude": 0.05950520435969031,
+      "riseAmplitude": 0.007812480131785038,
+      "impulse": 0.8056648075580666
+    },
+    {
+      "index": 4,
+      "frameIndex": 328,
+      "timestampMs": 2733,
+      "x": 0.6624999576144748,
+      "y": 0.5838541587193807,
+      "fallAmplitude": 0.060546875,
+      "riseAmplitude": 0.008072932561238644,
+      "impulse": 0.9562162061532362
+    },
+    {
+      "index": 5,
+      "frameIndex": 390,
+      "timestampMs": 3250,
+      "x": 0.6527777777777778,
+      "y": 0.5776041746139526,
+      "fallAmplitude": 0.05481775601704919,
+      "riseAmplitude": 0.009895821412404415,
+      "impulse": 1.018688959233901
+    },
+    {
+      "index": 6,
+      "frameIndex": 464,
+      "timestampMs": 3866,
+      "x": 0.6018518518518519,
+      "y": 0.5386718511581421,
+      "fallAmplitude": 0.06588539481163025,
+      "riseAmplitude": 0.009244779745737675,
+      "impulse": 0.7659313725490152
+    },
+    {
+      "index": 7,
+      "frameIndex": 519,
+      "timestampMs": 4325,
+      "x": 0.5655093016447844,
+      "y": 0.5893229643503824,
+      "fallAmplitude": 0.07473963499069214,
+      "riseAmplitude": 0.010156293710072761,
+      "impulse": 1.171878228584923
+    },
+    {
+      "index": 8,
+      "frameIndex": 609,
+      "timestampMs": 5075,
+      "x": 0.5388889312744141,
+      "y": 0.5811197956403097,
+      "fallAmplitude": 0.11119790871938073,
+      "riseAmplitude": 0.010546863079071045,
+      "impulse": 1.0689522559736242
+    },
+    {
+      "index": 9,
+      "frameIndex": 675,
+      "timestampMs": 5625,
+      "x": 0.5895832909478081,
+      "y": 0.5829426844914755,
+      "fallAmplitude": 0.0641926725705465,
+      "riseAmplitude": 0.00807289282480883,
+      "impulse": 0.9602850996980523
+    },
+    {
+      "index": 10,
+      "frameIndex": 750,
+      "timestampMs": 6250,
+      "x": 0.6166666878594292,
+      "y": 0.559765617052714,
+      "fallAmplitude": 0.07421873013178504,
+      "riseAmplitude": 0.010937492052713993,
+      "impulse": 1.040231509535918
+    },
+    {
+      "index": 11,
+      "frameIndex": 815,
+      "timestampMs": 6791,
+      "x": 0.5958332838835539,
+      "y": 0.5876301924387614,
+      "fallAmplitude": 0.07968747615814209,
+      "riseAmplitude": 0.01132810115814209,
+      "impulse": 1.1642154525308048
+    },
+    {
+      "index": 12,
+      "frameIndex": 892,
+      "timestampMs": 7433,
+      "x": 0.5805555979410807,
+      "y": 0.544140617052714,
+      "fallAmplitude": 0.06835935513178504,
+      "riseAmplitude": 0.009960929552713993,
+      "impulse": 1.000975569089249
+    },
+    {
+      "index": 13,
+      "frameIndex": 956,
+      "timestampMs": 7966,
+      "x": 0.5386574356644241,
+      "y": 0.5500651399294535,
+      "fallAmplitude": 0.0680339137713114,
+      "riseAmplitude": 0.015820324420928955,
+      "impulse": 1.5725547484323088
+    },
+    {
+      "index": 14,
+      "frameIndex": 1091,
+      "timestampMs": 9091,
+      "x": 0.5465278625488281,
+      "y": 0.5360677242279053,
+      "fallAmplitude": 0.29602866868178046,
+      "riseAmplitude": 0.009375015894571903,
+      "impulse": 1.59481186054501
+    },
+    {
+      "index": 15,
+      "frameIndex": 1159,
+      "timestampMs": 9658,
+      "x": 0.46087962609750255,
+      "y": 0.582812507947286,
+      "fallAmplitude": 0.09908854961395269,
+      "riseAmplitude": 0.008072912693023682,
+      "impulse": 1.1344522237777661
+    },
+    {
+      "index": 16,
+      "frameIndex": 1328,
+      "timestampMs": 11066,
+      "x": 0.5833333333333334,
+      "y": 0.592968742052714,
+      "fallAmplitude": 0.09921873609224952,
+      "riseAmplitude": 0.007877588272094727,
+      "impulse": 0.9497567719104285
+    },
+    {
+      "index": 17,
+      "frameIndex": 1463,
+      "timestampMs": 12191,
+      "x": 0.6449074215359158,
+      "y": 0.6061197916666666,
+      "fallAmplitude": 0.08111981550852454,
+      "riseAmplitude": 0.009635408719380623,
+      "impulse": 0.9650739968991768
+    },
+    {
+      "index": 18,
+      "frameIndex": 1540,
+      "timestampMs": 12833,
+      "x": 0.6530092733877676,
+      "y": 0.6045573155085245,
+      "fallAmplitude": 0.08502606550852454,
+      "riseAmplitude": 0.011328160762786865,
+      "impulse": 1.1893458956596898
+    },
+    {
+      "index": 19,
+      "frameIndex": 1623,
+      "timestampMs": 13541,
+      "x": 0.6090277919062862,
+      "y": 0.5778645873069763,
+      "fallAmplitude": 0.09270831942558289,
+      "riseAmplitude": 0.00820314884185791,
+      "impulse": 0.9851788042807115
+    },
+    {
+      "index": 20,
+      "frameIndex": 1677,
+      "timestampMs": 13991,
+      "x": 0.6627314885457357,
+      "y": 0.584765632947286,
+      "fallAmplitude": 0.05039062102635705,
+      "riseAmplitude": 0.009765644868214962,
+      "impulse": 1.0569878652984042
+    },
+    {
+      "index": 21,
+      "frameIndex": 1752,
+      "timestampMs": 14616,
+      "x": 0.5895832909478081,
+      "y": 0.5854166746139526,
+      "fallAmplitude": 0.08880207935969037,
+      "riseAmplitude": 0.007421890894571903,
+      "impulse": 0.9607668308650745
+    },
+    {
+      "index": 22,
+      "frameIndex": 1814,
+      "timestampMs": 15133,
+      "x": 0.5131944373801902,
+      "y": 0.5873697797457377,
+      "fallAmplitude": 0.05885418256123853,
+      "riseAmplitude": 0.008072932561238533,
+      "impulse": 0.9684227406978607
+    },
+    {
+      "index": 23,
+      "frameIndex": 1891,
+      "timestampMs": 15775,
+      "x": 0.6773148289433232,
+      "y": 0.5592448115348816,
+      "fallAmplitude": 0.07552085320154828,
+      "riseAmplitude": 0.009505212306976318,
+      "impulse": 1.0746954848953387
+    },
+    {
+      "index": 24,
+      "frameIndex": 1966,
+      "timestampMs": 16400,
+      "x": 0.6557870441012912,
+      "y": 0.5981770753860474,
+      "fallAmplitude": 0.10638019442558289,
+      "riseAmplitude": 0.008593757947286007,
+      "impulse": 1.0751778734665358
+    },
+    {
+      "index": 25,
+      "frameIndex": 2033,
+      "timestampMs": 16958,
+      "x": 0.5940972080937138,
+      "y": 0.5832031567891439,
+      "fallAmplitude": 0.06210943063100183,
+      "riseAmplitude": 0.008463561534881592,
+      "impulse": 1.1393241584300995
+    },
+    {
+      "index": 26,
+      "frameIndex": 2107,
+      "timestampMs": 17575,
+      "x": 0.4851851993136935,
+      "y": 0.5602864225705465,
+      "fallAmplitude": 0.0739582975705465,
+      "riseAmplitude": 0.010546843210856194,
+      "impulse": 1.1800130208333357
+    },
+    {
+      "index": 27,
+      "frameIndex": 2185,
+      "timestampMs": 18225,
+      "x": 0.6657407195479781,
+      "y": 0.534374992052714,
+      "fallAmplitude": 0.08111978570620215,
+      "riseAmplitude": 0.009505212306976318,
+      "impulse": 0.8889583542066481
+    },
+    {
+      "index": 28,
+      "frameIndex": 2247,
+      "timestampMs": 18741,
+      "x": 0.7236110899183484,
+      "y": 0.5884114503860474,
+      "fallAmplitude": 0.08880206942558289,
+      "riseAmplitude": 0.007942696412404415,
+      "impulse": 0.9318021874801738
+    }
+  ],
+  "diagnostics": [
+    {
+      "frameIndex": 59,
+      "time": 0.491,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 59,
+        "timestampMs": 491,
+        "x": 0.6465278201633029,
+        "y": 0.5894531011581421,
+        "width": 0.0763888888888889,
+        "height": 0.043749988079071045,
+        "confidence": 0.91650390625
+      }
+    },
+    {
+      "frameIndex": 127,
+      "time": 1.058,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 127,
+        "timestampMs": 1058,
+        "x": 0.7006944020589193,
+        "y": 0.5953124761581421,
+        "width": 0.0763888888888889,
+        "height": 0.040625035762786865,
+        "confidence": 0.9169921875
+      }
+    },
+    {
+      "frameIndex": 198,
+      "time": 1.65,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 198,
+        "timestampMs": 1650,
+        "x": 0.7638888888888888,
+        "y": 0.5914062261581421,
+        "width": 0.0763888888888889,
+        "height": 0.04296875,
+        "confidence": 0.904296875
+      }
+    },
+    {
+      "frameIndex": 266,
+      "time": 2.216,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 266,
+        "timestampMs": 2216,
+        "x": 0.6631944444444444,
+        "y": 0.579296886920929,
+        "width": 0.0763888888888889,
+        "height": 0.04531252384185791,
+        "confidence": 0.91943359375
+      }
+    },
+    {
+      "frameIndex": 328,
+      "time": 2.733,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 328,
+        "timestampMs": 2733,
+        "x": 0.6631944444444444,
+        "y": 0.5863281488418579,
+        "width": 0.07777786254882812,
+        "height": 0.043749988079071045,
+        "confidence": 0.89697265625
+      }
+    },
+    {
+      "frameIndex": 390,
+      "time": 3.25,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 390,
+        "timestampMs": 3250,
+        "x": 0.6534722646077474,
+        "y": 0.580859363079071,
+        "width": 0.0805554919772678,
+        "height": 0.04531252384185791,
+        "confidence": 0.931640625
+      }
+    },
+    {
+      "frameIndex": 464,
+      "time": 3.866,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 464,
+        "timestampMs": 3866,
+        "x": 0.6020833121405708,
+        "y": 0.5414062738418579,
+        "width": 0.07916662428114149,
+        "height": 0.046875,
+        "confidence": 0.9072265625
+      }
+    },
+    {
+      "frameIndex": 519,
+      "time": 4.325,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 519,
+        "timestampMs": 4325,
+        "x": 0.5659722222222222,
+        "y": 0.5906250476837158,
+        "width": 0.07777786254882812,
+        "height": 0.046093761920928955,
+        "confidence": 0.89990234375
+      }
+    },
+    {
+      "frameIndex": 609,
+      "time": 5.075,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 609,
+        "timestampMs": 5075,
+        "x": 0.5388889312744141,
+        "y": 0.583984375,
+        "width": 0.07777775658501519,
+        "height": 0.04140627384185791,
+        "confidence": 0.93115234375
+      }
+    },
+    {
+      "frameIndex": 675,
+      "time": 5.625,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 675,
+        "timestampMs": 5625,
+        "x": 0.5895832909478081,
+        "y": 0.5855468511581421,
+        "width": 0.07777775658501519,
+        "height": 0.040625035762786865,
+        "confidence": 0.88623046875
+      }
+    },
+    {
+      "frameIndex": 750,
+      "time": 6.25,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 750,
+        "timestampMs": 6250,
+        "x": 0.6166666878594292,
+        "y": 0.5619140863418579,
+        "width": 0.08055559794108073,
+        "height": 0.044140636920928955,
+        "confidence": 0.92431640625
+      }
+    },
+    {
+      "frameIndex": 815,
+      "time": 6.791,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 815,
+        "timestampMs": 6791,
+        "x": 0.5958333545260959,
+        "y": 0.5894531011581421,
+        "width": 0.0763888888888889,
+        "height": 0.04296875,
+        "confidence": 0.92529296875
+      }
+    },
+    {
+      "frameIndex": 892,
+      "time": 7.433,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 892,
+        "timestampMs": 7433,
+        "x": 0.5805555979410807,
+        "y": 0.5457031726837158,
+        "width": 0.08194446563720703,
+        "height": 0.043749988079071045,
+        "confidence": 0.90380859375
+      }
+    },
+    {
+      "frameIndex": 956,
+      "time": 7.966,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 956,
+        "timestampMs": 7966,
+        "x": 0.5388889312744141,
+        "y": 0.5523437261581421,
+        "width": 0.0833333863152398,
+        "height": 0.048437535762786865,
+        "confidence": 0.9091796875
+      }
+    },
+    {
+      "frameIndex": 1091,
+      "time": 9.091,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1091,
+        "timestampMs": 9091,
+        "x": 0.5479166242811415,
+        "y": 0.540234386920929,
+        "width": 0.08888891008165148,
+        "height": 0.05234372615814209,
+        "confidence": 0.89111328125
+      }
+    },
+    {
+      "frameIndex": 1159,
+      "time": 9.658,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1159,
+        "timestampMs": 9658,
+        "x": 0.46111106872558594,
+        "y": 0.583984375,
+        "width": 0.08055554495917426,
+        "height": 0.04609370231628418,
+        "confidence": 0.93896484375
+      }
+    },
+    {
+      "frameIndex": 1242,
+      "time": 10.35,
+      "rejection": "disallowedBodyContact",
+      "handConfirmed": false,
+      "bodyFailure": "missingPose",
+      "ball": {
+        "frameIndex": 1242,
+        "timestampMs": 10350,
+        "x": 0.5534723069932725,
+        "y": 0.6015625,
+        "width": 0.07500002119276258,
+        "height": 0.04140627384185791,
+        "confidence": 0.91748046875
+      }
+    },
+    {
+      "frameIndex": 1328,
+      "time": 11.066,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1328,
+        "timestampMs": 11066,
+        "x": 0.5847223069932725,
+        "y": 0.5941406488418579,
+        "width": 0.07777775658501519,
+        "height": 0.041406214237213135,
+        "confidence": 0.90234375
+      }
+    },
+    {
+      "frameIndex": 1395,
+      "time": 11.625,
+      "rejection": "disallowedBodyContact",
+      "handConfirmed": false,
+      "bodyFailure": "missingPose",
+      "ball": {
+        "frameIndex": 1395,
+        "timestampMs": 11625,
+        "x": 0.5340277353922526,
+        "y": 0.5738281011581421,
+        "width": 0.07222228580050999,
+        "height": 0.0390625,
+        "confidence": 0.9013671875
+      }
+    },
+    {
+      "frameIndex": 1463,
+      "time": 12.191,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1463,
+        "timestampMs": 12191,
+        "x": 0.6500000423855252,
+        "y": 0.607421875,
+        "width": 0.08333333333333333,
+        "height": 0.04375004768371582,
+        "confidence": 0.90771484375
+      }
+    },
+    {
+      "frameIndex": 1540,
+      "time": 12.833,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1540,
+        "timestampMs": 12833,
+        "x": 0.6541666454739041,
+        "y": 0.6058593988418579,
+        "width": 0.07916662428114149,
+        "height": 0.044531285762786865,
+        "confidence": 0.9326171875
+      }
+    },
+    {
+      "frameIndex": 1623,
+      "time": 13.541,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1623,
+        "timestampMs": 13541,
+        "x": 0.6083333757188585,
+        "y": 0.5804687738418579,
+        "width": 0.07916673024495442,
+        "height": 0.045312464237213135,
+        "confidence": 0.94775390625
+      }
+    },
+    {
+      "frameIndex": 1677,
+      "time": 13.991,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1677,
+        "timestampMs": 13991,
+        "x": 0.6631944444444444,
+        "y": 0.5863281488418579,
+        "width": 0.0819443596733941,
+        "height": 0.047656238079071045,
+        "confidence": 0.9326171875
+      }
+    },
+    {
+      "frameIndex": 1752,
+      "time": 14.616,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1752,
+        "timestampMs": 14616,
+        "x": 0.5895832909478081,
+        "y": 0.5867187976837158,
+        "width": 0.08194446563720703,
+        "height": 0.042187511920928955,
+        "confidence": 0.908203125
+      }
+    },
+    {
+      "frameIndex": 1814,
+      "time": 15.133,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1814,
+        "timestampMs": 15133,
+        "x": 0.5131944020589193,
+        "y": 0.589062511920929,
+        "width": 0.07361110051472981,
+        "height": 0.04062497615814209,
+        "confidence": 0.9169921875
+      }
+    },
+    {
+      "frameIndex": 1891,
+      "time": 15.775,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1891,
+        "timestampMs": 15775,
+        "x": 0.6777778201633029,
+        "y": 0.5613281726837158,
+        "width": 0.08333333333333333,
+        "height": 0.046093761920928955,
+        "confidence": 0.92333984375
+      }
+    },
+    {
+      "frameIndex": 1966,
+      "time": 16.4,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 1966,
+        "timestampMs": 16400,
+        "x": 0.65625,
+        "y": 0.6003906726837158,
+        "width": 0.07916662428114149,
+        "height": 0.043749988079071045,
+        "confidence": 0.92236328125
+      }
+    },
+    {
+      "frameIndex": 2033,
+      "time": 16.958,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 2033,
+        "timestampMs": 16958,
+        "x": 0.5930555131700304,
+        "y": 0.584765613079071,
+        "width": 0.08611117468939887,
+        "height": 0.046875,
+        "confidence": 0.90087890625
+      }
+    },
+    {
+      "frameIndex": 2107,
+      "time": 17.575,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 2107,
+        "timestampMs": 17575,
+        "x": 0.4847222434149848,
+        "y": 0.5617187023162842,
+        "width": 0.08055559794108073,
+        "height": 0.043749988079071045,
+        "confidence": 0.921875
+      }
+    },
+    {
+      "frameIndex": 2185,
+      "time": 18.225,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 2185,
+        "timestampMs": 18225,
+        "x": 0.6659721798366971,
+        "y": 0.536328136920929,
+        "width": 0.08611117468939887,
+        "height": 0.04843747615814209,
+        "confidence": 0.95556640625
+      }
+    },
+    {
+      "frameIndex": 2247,
+      "time": 18.741,
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 2247,
+        "timestampMs": 18741,
+        "x": 0.7222222222222222,
+        "y": 0.58984375,
+        "width": 0.07777786254882812,
+        "height": 0.04453122615814209,
+        "confidence": 0.90576171875
+      }
+    },
+    {
+      "frameIndex": 2304,
+      "time": 19.216,
+      "rejection": "trackLost",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 2304,
+        "timestampMs": 19216,
+        "x": 0.9854166242811415,
+        "y": 0.5921875238418579,
+        "width": 0.02916664547390408,
+        "height": 0.046875,
+        "confidence": 0.5732421875
+      }
+    }
+  ]
+}

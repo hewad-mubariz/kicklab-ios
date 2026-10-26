@@ -1,0 +1,29 @@
+[
+  {
+    "id": "new-take",
+    "source_sha256": "6a771df2a60ac140a21ea8840fd50208216db358d13917a7150a38cf0c623c63",
+    "complete": true,
+    "identical_inputs": true,
+    "before_count": 33,
+    "after_count": 31,
+    "removed": [
+      800,
+      842
+    ],
+    "added": [],
+    "reviewed_valid_retained": 31,
+    "reviewed_valid_lost": [],
+    "known_false_floors_remaining": [],
+    "scope": "All 33 accepted candidates visually reviewed; exact source frames inspected for the two false floor bounces. This is not an exhaustive missed-touch ground-truth annotation. The final very low movement near 43.4s remains unlabelled."
+  },
+  {
+    "id": "previous-take",
+    "source_sha256": "536dc21ae695775e23ba35c38d5a035b0e82bebe386b6bbb5142d74a9731a912",
+    "complete": true,
+    "identical_inputs": true,
+    "before_count": 18,
+    "after_count": 18,
+    "removed": [],
+    "added": []
+  }
+]

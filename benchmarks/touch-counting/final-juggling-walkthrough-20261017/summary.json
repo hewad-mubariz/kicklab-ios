@@ -1,0 +1,896 @@
+{
+  "schemaVersion": 1,
+  "reviewDate": "2026-10-17",
+  "purpose": "Review new real-app five-minute juggling session with deliberate passerby; no app/code/build changes made for this review.",
+  "session": {
+    "id": "491EC4A2-B537-417E-91BA-1B28D206799C",
+    "build": "1.0.1 (21)",
+    "device": "iPhone (iPhone18,2)",
+    "os": "27.0.1",
+    "model": "RF-DETR Small FP16 \u00b7 dev.8 \u00b7 0.40",
+    "pipeline": "analysis-v12|RFDETRSmallRecovery040FP16|0.0|1792233512.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfseg-dev8-rgb384-fp16-gpu-v1|ball=0.40|person=0.50|association=rf-v1|hands=true|leg-rebound-v13|handling-v1|timed-trajectory-v1|cadence-ground-v1|active-juggler-v1",
+    "sourceSHA256": "4de39918ddbf91623edf202cb9592d968d500f0cf1327bb6e7427c974663f8c3",
+    "durationSeconds": 300.34,
+    "localEvidenceRoot": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017",
+    "sourceVideo": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/device/source.mov",
+    "exportVideo": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/device/export-A0DBE4D0-FF59-49DE-B035-11471FE9946A.mp4",
+    "cacheSourceIdentityVerified": true,
+    "numericTraceComplete": true,
+    "liveTouchCount": 191,
+    "traceTouchCount": 191,
+    "captureTouchCount": 191,
+    "freshAnalysisRun": false,
+    "freshAnalysisNote": "Normal saved-video export reused live analysis; fresh analysis intentionally not required for this recording."
+  },
+  "performance": {
+    "recordingMemoryStartMiB": 146.1895751953125,
+    "recordingMemoryEndMiB": 281.3927917480469,
+    "peakMemoryMiB": 292.7209167480469,
+    "postExportMemoryMiB": 158.11154174804688,
+    "postExportSampleTime": "2026-10-17T12:42:11Z",
+    "thermalStates": {
+      "nominal": 203,
+      "fair": 87
+    },
+    "firstFairSeconds": 210.35863616669667,
+    "allRecordingSamplesForeground": true,
+    "batteryStart": 0.45,
+    "batteryEnd": 0.45,
+    "capture": {
+      "analysedFrames": 6127,
+      "analysisOffered": 8109,
+      "analysisReplaced": 1981,
+      "analysisThrottled": 9905,
+      "captureDrops": 3,
+      "duration": 300.32391808301327,
+      "height": 720,
+      "position": "front",
+      "receivedFrames": 18014,
+      "requestedFPS": 60,
+      "selectedFPS": 60,
+      "width": 1280,
+      "writerDrops": 0,
+      "writtenFrames": 18014
+    },
+    "counterTraceInputs": 6126,
+    "overallAnalysisFPS": 20.401305494111266,
+    "perMinute": [
+      {
+        "startSeconds": 0,
+        "endSeconds": 60,
+        "counterInputFPS": 24.466666666666665,
+        "p95InputGapMs": 100,
+        "maxInputGapMs": 134,
+        "startMemoryMiB": 146.1895751953125,
+        "endMemoryMiB": 262.3927917480469,
+        "peakMemoryMiB": 276.5958709716797
+      },
+      {
+        "startSeconds": 60,
+        "endSeconds": 120,
+        "counterInputFPS": 22.183333333333334,
+        "p95InputGapMs": 100,
+        "maxInputGapMs": 167,
+        "startMemoryMiB": 255.84591674804688,
+        "endMemoryMiB": 276.3771438598633,
+        "peakMemoryMiB": 280.3615417480469
+      },
+      {
+        "startSeconds": 120,
+        "endSeconds": 180,
+        "counterInputFPS": 23.266666666666666,
+        "p95InputGapMs": 67,
+        "maxInputGapMs": 134,
+        "startMemoryMiB": 274.8146438598633,
+        "endMemoryMiB": 282.9552917480469,
+        "peakMemoryMiB": 288.3302917480469
+      },
+      {
+        "startSeconds": 180,
+        "endSeconds": 240,
+        "counterInputFPS": 17.616666666666667,
+        "p95InputGapMs": 100,
+        "maxInputGapMs": 200,
+        "startMemoryMiB": 283.7990417480469,
+        "endMemoryMiB": 285.8458938598633,
+        "peakMemoryMiB": 292.4865417480469
+      },
+      {
+        "startSeconds": 240,
+        "endSeconds": 300,
+        "counterInputFPS": 14.516666666666667,
+        "p95InputGapMs": 100,
+        "maxInputGapMs": 200,
+        "startMemoryMiB": 280.2521438598633,
+        "endMemoryMiB": 281.3927917480469,
+        "peakMemoryMiB": 292.7209167480469
+      }
+    ],
+    "endRetainedMaskBytes": 14519049,
+    "assessment": "No serious/critical thermal state observed; memory returned close to starting level after export. Analysis throughput falls toward 14-15 FPS in later minutes. This single device/session does not certify all devices."
+  },
+  "export": {
+    "status": "completed",
+    "wallSeconds": 61.56824994087219,
+    "savedToPhotosPerDeviceReport": true,
+    "counterAndTimerChecks": [
+      {
+        "timeSeconds": 60,
+        "expectedCount": 48,
+        "expectedTimer": "01:00",
+        "observedCount": 48,
+        "observedTimer": "01:00",
+        "result": "matches",
+        "reviewer": "assistant_visual_review"
+      },
+      {
+        "timeSeconds": 150,
+        "expectedCount": 118,
+        "expectedTimer": "02:30",
+        "observedCount": 118,
+        "observedTimer": "02:30",
+        "result": "matches",
+        "reviewer": "assistant_visual_review"
+      },
+      {
+        "timeSeconds": 299.8,
+        "expectedCount": 191,
+        "expectedTimer": "04:59",
+        "observedCount": 191,
+        "observedTimer": "04:59",
+        "result": "matches",
+        "reviewer": "assistant_visual_review"
+      }
+    ],
+    "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/export-check.jpg",
+    "fullDecode": {
+      "source": "passed",
+      "export": "passed",
+      "method": "ffmpeg -v error -i <video> -map 0:v:0 -f null -; both processes completed with exit 0 during this review"
+    },
+    "limitation": "Three sampled overlay frames verified; no continuous visual certification of every effect frame or in-app replay UI."
+  },
+  "touchReview": {
+    "totalJournalEvents": 342,
+    "acceptedEvents": 191,
+    "rejectionEvents": 151,
+    "rejectionBreakdown": {
+      "amplitudeTooSmall": 1,
+      "invalidGeometry": 6,
+      "insufficientImpulse": 5,
+      "handsUncertain": 5,
+      "missingBall": 16,
+      "handContact": 4,
+      "groundBounce": 43,
+      "missingPose": 2,
+      "trackLost": 12,
+      "insufficientContactViews": 21,
+      "outsidePersonRegion": 2,
+      "handsNearBall": 34
+    },
+    "confirmedMissedContacts": 20,
+    "labels": [
+      {
+        "rejectionIndex": 3,
+        "timeSeconds": 8.901220625004498,
+        "timeDisplay": "00:08.901",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "handsUncertain",
+        "nearestAcceptedDistanceSeconds": 0.5,
+        "ballConfidence": 0.9524858131235034,
+        "player": {
+          "id": 2,
+          "peopleCount": 1,
+          "state": "locked",
+          "observed": true,
+          "box": {
+            "y": 0.6943359375,
+            "width": 0.4833984375,
+            "x": 0.3916015625,
+            "height": 0.48095703125
+          }
+        },
+        "groundY": 0.934814453125,
+        "observedBallBottom": 0.861968994140625,
+        "neighborInputOffsetsMs": [
+          -66,
+          -33,
+          0,
+          34,
+          67
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-01.jpg"
+      },
+      {
+        "rejectionIndex": 6,
+        "timeSeconds": 23.204220625018934,
+        "timeDisplay": "00:23.204",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "invalidGeometry",
+        "nearestAcceptedDistanceSeconds": 0.532999999995809,
+        "ballConfidence": 0.5012559864329357,
+        "player": {
+          "box": {
+            "x": 0.370361328125,
+            "width": 0.3310546875,
+            "y": 0.703125,
+            "height": 0.53125
+          },
+          "state": "locked",
+          "id": 2,
+          "observed": true,
+          "peopleCount": 1
+        },
+        "groundY": 0.99072265625,
+        "observedBallBottom": 0.89166259765625,
+        "neighborInputOffsetsMs": [
+          -66,
+          -33,
+          0,
+          34,
+          100
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-01.jpg"
+      },
+      {
+        "rejectionIndex": 17,
+        "timeSeconds": 40.04122062501847,
+        "timeDisplay": "00:40.041",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "missingPose",
+        "nearestAcceptedDistanceSeconds": 0.6999999999825377,
+        "ballConfidence": 0.9628132248397597,
+        "player": {
+          "box": {
+            "y": 0.69091796875,
+            "height": 0.58740234375,
+            "width": 0.71044921875,
+            "x": 0.52734375
+          },
+          "peopleCount": 1,
+          "observed": true,
+          "state": "locked",
+          "id": 2
+        },
+        "groundY": 0.9931640625,
+        "observedBallBottom": 0.86920166015625,
+        "neighborInputOffsetsMs": [
+          -133,
+          -67,
+          0,
+          67,
+          133
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-01.jpg"
+      },
+      {
+        "rejectionIndex": 36,
+        "timeSeconds": 84.44922062501428,
+        "timeDisplay": "01:24.449",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "insufficientContactViews",
+        "nearestAcceptedDistanceSeconds": 0.6009999999951106,
+        "ballConfidence": 0.9118099551992372,
+        "player": {
+          "state": "locked",
+          "box": {
+            "x": 0.339111328125,
+            "y": 0.70458984375,
+            "width": 0.416259765625,
+            "height": 0.5263671875
+          },
+          "observed": true,
+          "peopleCount": 1,
+          "id": 2
+        },
+        "groundY": 0.968505859375,
+        "observedBallBottom": 0.86749267578125,
+        "neighborInputOffsetsMs": [
+          -100,
+          -66,
+          0,
+          100,
+          200
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-02.jpg"
+      },
+      {
+        "rejectionIndex": 37,
+        "timeSeconds": 85.55022062500939,
+        "timeDisplay": "01:25.550",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "insufficientContactViews",
+        "nearestAcceptedDistanceSeconds": 0.5,
+        "ballConfidence": 0.9145963319978375,
+        "player": {
+          "peopleCount": 1,
+          "state": "locked",
+          "id": 2,
+          "box": {
+            "width": 0.39599609375,
+            "height": 0.509765625,
+            "y": 0.703125,
+            "x": 0.344482421875
+          },
+          "observed": true
+        },
+        "groundY": 0.9580078125,
+        "observedBallBottom": 0.7652740478515625,
+        "neighborInputOffsetsMs": [
+          -167,
+          -67,
+          0,
+          100,
+          200
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-02.jpg"
+      },
+      {
+        "rejectionIndex": 56,
+        "timeSeconds": 111.62122062500566,
+        "timeDisplay": "01:51.621",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "missingPose",
+        "nearestAcceptedDistanceSeconds": 0.8000000000174623,
+        "ballConfidence": 0.9736446471538801,
+        "player": {
+          "id": 2,
+          "box": {
+            "x": 0.52685546875,
+            "width": 0.72509765625,
+            "y": 0.68212890625,
+            "height": 0.60498046875
+          },
+          "observed": true,
+          "peopleCount": 1,
+          "state": "locked"
+        },
+        "groundY": 0.98681640625,
+        "observedBallBottom": 0.91949462890625,
+        "neighborInputOffsetsMs": [
+          -67,
+          -33,
+          0,
+          33,
+          67
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-02.jpg"
+      },
+      {
+        "rejectionIndex": 72,
+        "timeSeconds": 153.1292206250073,
+        "timeDisplay": "02:33.129",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "groundBounce",
+        "bodyFailure": null,
+        "nearestAcceptedDistanceSeconds": 0.8999999999941792,
+        "ballConfidence": 0.9883127420043056,
+        "player": {
+          "observed": false,
+          "state": "obscured",
+          "peopleCount": 2,
+          "id": 2
+        },
+        "groundY": 0.7568733723958333,
+        "observedBallBottom": 0.9243790690104167,
+        "neighborInputOffsetsMs": [
+          -67,
+          -34,
+          0,
+          33,
+          66
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-04.jpg"
+      },
+      {
+        "rejectionIndex": 73,
+        "timeSeconds": 155.09622062501148,
+        "timeDisplay": "02:35.096",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "groundBounce",
+        "bodyFailure": null,
+        "nearestAcceptedDistanceSeconds": 0.7330000000074506,
+        "ballConfidence": 0.9630919338027948,
+        "player": {
+          "state": "obscured",
+          "id": 8,
+          "observed": false,
+          "peopleCount": 1
+        },
+        "groundY": 0.8233740234375001,
+        "observedBallBottom": 0.9210302734375,
+        "neighborInputOffsetsMs": [
+          -134,
+          -67,
+          0,
+          66,
+          133
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-04.jpg"
+      },
+      {
+        "rejectionIndex": 97,
+        "timeSeconds": 203.33822062500985,
+        "timeDisplay": "03:23.338",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "handsNearBall",
+        "nearestAcceptedDistanceSeconds": 0.6000000000058208,
+        "ballConfidence": 0.8768454440200762,
+        "player": {
+          "observed": true,
+          "peopleCount": 1,
+          "id": 9,
+          "state": "locked",
+          "box": {
+            "height": 0.53662109375,
+            "y": 0.69482421875,
+            "x": 0.48583984375,
+            "width": 0.480712890625
+          }
+        },
+        "groundY": 0.9624023437499999,
+        "observedBallBottom": 0.8067626953124999,
+        "neighborInputOffsetsMs": [
+          -134,
+          -67,
+          0,
+          66,
+          133
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-04.jpg"
+      },
+      {
+        "rejectionIndex": 104,
+        "timeSeconds": 222.65822062501684,
+        "timeDisplay": "03:42.658",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "insufficientContactViews",
+        "nearestAcceptedDistanceSeconds": 0.6499999999941792,
+        "ballConfidence": 0.7205649407848504,
+        "player": {
+          "peopleCount": 1,
+          "state": "locked",
+          "id": 9,
+          "box": {
+            "width": 0.438720703125,
+            "height": 0.55029296875,
+            "y": 0.70263671875,
+            "x": 0.421875
+          },
+          "observed": true
+        },
+        "groundY": 0.9799804687499999,
+        "observedBallBottom": 0.6461486816406249,
+        "neighborInputOffsetsMs": [
+          -100,
+          -50,
+          0,
+          50,
+          100
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-05.jpg"
+      },
+      {
+        "rejectionIndex": 107,
+        "timeSeconds": 227.10922062501777,
+        "timeDisplay": "03:47.109",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "insufficientContactViews",
+        "nearestAcceptedDistanceSeconds": 2.1499999999941792,
+        "ballConfidence": 0.8200374981453415,
+        "player": {
+          "box": {
+            "y": 0.705078125,
+            "width": 0.5068359375,
+            "height": 0.5517578125,
+            "x": 0.472412109375
+          },
+          "state": "locked",
+          "id": 9,
+          "observed": true,
+          "peopleCount": 1
+        },
+        "groundY": 0.9790039062499999,
+        "observedBallBottom": 0.6713562011718749,
+        "neighborInputOffsetsMs": [
+          -200,
+          -100,
+          0,
+          100,
+          200
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-05.jpg"
+      },
+      {
+        "rejectionIndex": 112,
+        "timeSeconds": 233.11022062500706,
+        "timeDisplay": "03:53.110",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "insufficientContactViews",
+        "nearestAcceptedDistanceSeconds": 3.8509999999951106,
+        "ballConfidence": 0.834541775934969,
+        "player": {
+          "state": "locked",
+          "box": {
+            "width": 0.497802734375,
+            "height": 0.5673828125,
+            "y": 0.7109375,
+            "x": 0.497802734375
+          },
+          "id": 9,
+          "observed": true,
+          "peopleCount": 1
+        },
+        "groundY": 0.9938964843750001,
+        "observedBallBottom": 0.6633605957031251,
+        "neighborInputOffsetsMs": [
+          -250,
+          -100,
+          0,
+          50,
+          150
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-05.jpg"
+      },
+      {
+        "rejectionIndex": 115,
+        "timeSeconds": 235.41022062502452,
+        "timeDisplay": "03:55.410",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "insufficientContactViews",
+        "nearestAcceptedDistanceSeconds": 2.25099999998929,
+        "ballConfidence": 0.715622774752325,
+        "player": {
+          "id": 9,
+          "state": "locked",
+          "observed": true,
+          "box": {
+            "x": 0.52587890625,
+            "width": 0.449951171875,
+            "height": 0.5693359375,
+            "y": 0.71142578125
+          },
+          "peopleCount": 1
+        },
+        "groundY": 0.9960937500000001,
+        "observedBallBottom": 0.7505798339843751,
+        "neighborInputOffsetsMs": [
+          -200,
+          -100,
+          0,
+          100,
+          200
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-06.jpg"
+      },
+      {
+        "rejectionIndex": 119,
+        "timeSeconds": 241.86222062501474,
+        "timeDisplay": "04:01.862",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "handsNearBall",
+        "nearestAcceptedDistanceSeconds": 3.4500000000116415,
+        "ballConfidence": 0.9561454366001265,
+        "player": {
+          "state": "locked",
+          "id": 9,
+          "observed": true,
+          "box": {
+            "x": 0.50634765625,
+            "y": 0.705078125,
+            "width": 0.437744140625,
+            "height": 0.578125
+          },
+          "peopleCount": 1
+        },
+        "groundY": 0.99267578125,
+        "observedBallBottom": 0.77655029296875,
+        "neighborInputOffsetsMs": [
+          -200,
+          -100,
+          0,
+          50,
+          150
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-06.jpg"
+      },
+      {
+        "rejectionIndex": 121,
+        "timeSeconds": 243.51222062500892,
+        "timeDisplay": "04:03.512",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "insufficientContactViews",
+        "nearestAcceptedDistanceSeconds": 1.8000000000174623,
+        "ballConfidence": 0.9543079676184154,
+        "player": {
+          "peopleCount": 1,
+          "state": "locked",
+          "id": 9,
+          "box": {
+            "height": 0.5927734375,
+            "y": 0.6962890625,
+            "x": 0.56982421875,
+            "width": 0.5517578125
+          },
+          "observed": true
+        },
+        "groundY": 0.99365234375,
+        "observedBallBottom": 0.71258544921875,
+        "neighborInputOffsetsMs": [
+          -200,
+          -100,
+          0,
+          100,
+          200
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-06.jpg"
+      },
+      {
+        "rejectionIndex": 133,
+        "timeSeconds": 268.3672206250194,
+        "timeDisplay": "04:28.367",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "handsNearBall",
+        "nearestAcceptedDistanceSeconds": 1.3500000000058208,
+        "ballConfidence": 0.8369547432098816,
+        "player": {
+          "state": "locked",
+          "peopleCount": 1,
+          "id": 9,
+          "box": {
+            "y": 0.7080078125,
+            "x": 0.5166015625,
+            "width": 0.43896484375,
+            "height": 0.5771484375
+          },
+          "observed": true
+        },
+        "groundY": 0.99462890625,
+        "observedBallBottom": 0.673858642578125,
+        "neighborInputOffsetsMs": [
+          -200,
+          -100,
+          0,
+          50,
+          100
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-07.jpg"
+      },
+      {
+        "rejectionIndex": 135,
+        "timeSeconds": 270.6172206250194,
+        "timeDisplay": "04:30.617",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "insufficientContactViews",
+        "nearestAcceptedDistanceSeconds": 0.6499999999941792,
+        "ballConfidence": 0.8651101636647724,
+        "player": {
+          "box": {
+            "width": 0.468017578125,
+            "height": 0.578125,
+            "x": 0.580078125,
+            "y": 0.7060546875
+          },
+          "state": "locked",
+          "id": 9,
+          "observed": true,
+          "peopleCount": 1
+        },
+        "groundY": 0.99462890625,
+        "observedBallBottom": 0.623016357421875,
+        "neighborInputOffsetsMs": [
+          -200,
+          -100,
+          0,
+          100,
+          150
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-07.jpg"
+      },
+      {
+        "rejectionIndex": 138,
+        "timeSeconds": 275.2182206250145,
+        "timeDisplay": "04:35.218",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "invalidGeometry",
+        "nearestAcceptedDistanceSeconds": 1.2000000000116415,
+        "ballConfidence": 0.48127097401381,
+        "player": {
+          "state": "locked",
+          "box": {
+            "width": 0.412109375,
+            "height": 0.580078125,
+            "x": 0.51416015625,
+            "y": 0.703125
+          },
+          "id": 9,
+          "observed": true,
+          "peopleCount": 1
+        },
+        "groundY": 0.996787109375,
+        "observedBallBottom": 0.7129484049479167,
+        "neighborInputOffsetsMs": [
+          -100,
+          -50,
+          0,
+          100,
+          200
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-07.jpg"
+      },
+      {
+        "rejectionIndex": 143,
+        "timeSeconds": 279.6192206250271,
+        "timeDisplay": "04:39.619",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "handsNearBall",
+        "nearestAcceptedDistanceSeconds": 2.3509999999951106,
+        "ballConfidence": 0.9846936454393053,
+        "player": {
+          "box": {
+            "height": 0.5703125,
+            "x": 0.53466796875,
+            "y": 0.7080078125,
+            "width": 0.509765625
+          },
+          "observed": true,
+          "state": "locked",
+          "id": 9,
+          "peopleCount": 1
+        },
+        "groundY": 0.9946289062500001,
+        "observedBallBottom": 0.7903747558593751,
+        "neighborInputOffsetsMs": [
+          -100,
+          -50,
+          0,
+          100,
+          200
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-08.jpg"
+      },
+      {
+        "rejectionIndex": 144,
+        "timeSeconds": 280.3192206250096,
+        "timeDisplay": "04:40.319",
+        "label": "visible_legal_foot_contact_rejected",
+        "reviewer": "assistant_visual_review",
+        "reviewMethod": "seven source frames spanning candidate +/- 250 ms; visible foot contact and upward rebound; checked nearby accepted timestamps",
+        "rejection": "disallowedBodyContact",
+        "bodyFailure": "handsNearBall",
+        "nearestAcceptedDistanceSeconds": 1.6510000000125729,
+        "ballConfidence": 0.9372107914029487,
+        "player": {
+          "peopleCount": 1,
+          "id": 9,
+          "state": "locked",
+          "box": {
+            "width": 0.56982421875,
+            "y": 0.71044921875,
+            "x": 0.41455078125,
+            "height": 0.55859375
+          },
+          "observed": true
+        },
+        "groundY": 0.99861328125,
+        "observedBallBottom": 0.7708711751302084,
+        "neighborInputOffsetsMs": [
+          -100,
+          -50,
+          0,
+          50,
+          100
+        ],
+        "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/focus-08.jpg"
+      }
+    ],
+    "ambiguousClippedContactIndices": [
+      68,
+      69,
+      70
+    ],
+    "scope": "All rejection timestamps screened; 23 candidates inspected in seven-frame windows. 20 clear foot contacts labeled missed and 3 clipped contacts left ambiguous. Not exhaustive ground truth; do not compute overall accuracy or assume every rejection is a missed touch. Accepted contacts have not all been manually validated.",
+    "assessment": "Ordinary-foot false rejections remain; this is not an accuracy pass."
+  },
+  "passerby": {
+    "intervalSeconds": [
+      152.36,
+      155.4
+    ],
+    "selectedIDs": [
+      2,
+      8,
+      9
+    ],
+    "observedBehavior": "Brief occlusion/ambiguity, then reacquisition of the correct juggler. No stable transfer to the passerby observed in the reviewed sequence. Identity continuity was lost twice.",
+    "visualEvidence": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/final-juggling-walkthrough-20261017/visual/passer-tracking.jpg",
+    "missedFootContactsSeconds": [
+      153.1292206250073,
+      155.09622062501148
+    ],
+    "groundProxyY": [
+      0.7568733723958333,
+      0.8233740234375001
+    ],
+    "diagnosis": "Partial/occluded person-box bottoms feed the floor proxy. At these two contacts the proxy rises to about 0.757/0.823 of image height, triggering groundBounce despite visible foot rebounds. Source code effectiveGround uses nearby person-box bottoms or nearestPerson fallback.",
+    "certainty": "Strong evidence from matching saved decisions, selected-player states, source images, and current source code; prospective fix still requires replay validation."
+  },
+  "nextSteps": [
+    {
+      "priority": 1,
+      "task": "Repair ordinary raised-foot acceptance at actual analysis cadence. Use positive foot/ball motion evidence, inspect saved pose evidence in replay, and preserve confirmed hand/ground rejection.",
+      "evidence": "Several visible raised-foot contacts return insufficientContactViews, handsNearBall, or invalidGeometry. ClearHands fallback requires a before/after bracket <=150 ms; several saved cases span 200 ms. Labels are fallback failure reasons and not a full pose diagnostic."
+    },
+    {
+      "priority": 2,
+      "task": "Stop treating an occluded/partial person-box bottom as a newly reliable floor estimate; validate against this passerby window plus old real-ground clips.",
+      "evidence": "Clear foot impacts at 153.129 and 155.096 seconds rejected as groundBounce with raised floor proxies."
+    },
+    {
+      "priority": 3,
+      "task": "Replay targeted changes on this saved source and the existing hand/ground/low-touch regressions before installing a new build.",
+      "evidence": "Current recording is retained locally; another user recording is not needed to reproduce these misses."
+    }
+  ],
+  "limitations": [
+    "Only this iPhone session assessed; not a low-end-device guarantee.",
+    "Full hand/body pose samples are not contained in numeric counter inputs, so some specific body failures need pose replay to establish exact cause.",
+    "Seated selected-pose recovery experiment remains disabled for normal recordings; current issues are ordinary juggling cases.",
+    "No rules changed, new build installed, TestFlight upload, or server write performed in this review."
+  ]
+}

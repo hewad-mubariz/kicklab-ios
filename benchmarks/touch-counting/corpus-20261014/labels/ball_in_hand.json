@@ -1,0 +1,21 @@
+{
+  "source_sha256": "3aa786708d1819d92887ce90bd8598c96fad34997f39637a7600c60fe021a434",
+  "source_name": "ball_in_hand.mov",
+  "review_status": "reviewed",
+  "coverage_s": [
+    0,
+    4.535
+  ],
+  "method": "Full 6 fps visual sweep; source-labelled before inspecting counter outcomes. Dense review of mismatches where needed.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [],
+  "segments": [
+    {
+      "start_s": 0,
+      "end_s": 4.535,
+      "label": "invalid",
+      "reason": "Ball held continuously while camera changes framing; no juggling contacts"
+    }
+  ],
+  "notes": []
+}

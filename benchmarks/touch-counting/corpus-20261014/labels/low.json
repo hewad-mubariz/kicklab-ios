@@ -1,0 +1,1579 @@
+{
+  "source_sha256": "6e250e0976e4c584adef498bbe43cb5d7705ef374f1c7437f0cfe0d53f331e81",
+  "source_name": "low.mov",
+  "review_status": "reviewed",
+  "coverage_s": [
+    0,
+    59.75
+  ],
+  "method": "Full 12 fps source visual sweep across all 59.75 seconds before inspecting counter outcomes; contact times approximate within 0.06 s. Dense mismatch review follows.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [
+    {
+      "id": "e001",
+      "time_s": 0.125,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e002",
+      "time_s": 0.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e003",
+      "time_s": 0.7,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e004",
+      "time_s": 0.98,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e005",
+      "time_s": 1.33,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e006",
+      "time_s": 1.66,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e007",
+      "time_s": 1.94,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e008",
+      "time_s": 2.23,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e009",
+      "time_s": 2.54,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e010",
+      "time_s": 2.86,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e011",
+      "time_s": 3.15,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e012",
+      "time_s": 3.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e013",
+      "time_s": 3.73,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e014",
+      "time_s": 4.06,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e015",
+      "time_s": 4.35,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e016",
+      "time_s": 4.67,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e017",
+      "time_s": 4.98,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e018",
+      "time_s": 5.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e019",
+      "time_s": 5.61,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e020",
+      "time_s": 5.91,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e021",
+      "time_s": 6.23,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e022",
+      "time_s": 6.5,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e023",
+      "time_s": 6.8,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e024",
+      "time_s": 7.07,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e025",
+      "time_s": 7.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e026",
+      "time_s": 7.67,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e027",
+      "time_s": 7.97,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e028",
+      "time_s": 8.3,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e029",
+      "time_s": 8.68,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e030",
+      "time_s": 8.98,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e031",
+      "time_s": 9.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e032",
+      "time_s": 9.56,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e033",
+      "time_s": 9.85,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e034",
+      "time_s": 10.14,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e035",
+      "time_s": 10.44,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e036",
+      "time_s": 10.74,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e037",
+      "time_s": 11.1,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e038",
+      "time_s": 11.42,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e039",
+      "time_s": 11.78,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e040",
+      "time_s": 12.07,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e041",
+      "time_s": 12.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e042",
+      "time_s": 12.72,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e043",
+      "time_s": 13.01,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e044",
+      "time_s": 13.31,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e045",
+      "time_s": 13.59,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e046",
+      "time_s": 13.91,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e047",
+      "time_s": 14.22,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e048",
+      "time_s": 14.5,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e049",
+      "time_s": 14.84,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e050",
+      "time_s": 15.11,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e051",
+      "time_s": 15.42,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e052",
+      "time_s": 15.74,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e053",
+      "time_s": 16.03,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e054",
+      "time_s": 16.36,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e055",
+      "time_s": 16.67,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e056",
+      "time_s": 16.96,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e057",
+      "time_s": 17.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e058",
+      "time_s": 17.58,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e059",
+      "time_s": 17.84,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e060",
+      "time_s": 18.13,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e061",
+      "time_s": 18.45,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e062",
+      "time_s": 18.75,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e063",
+      "time_s": 19.07,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e064",
+      "time_s": 19.39,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e065",
+      "time_s": 19.71,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e066",
+      "time_s": 19.98,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e067",
+      "time_s": 20.33,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e068",
+      "time_s": 20.6,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e069",
+      "time_s": 20.91,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e070",
+      "time_s": 21.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e071",
+      "time_s": 21.58,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e072",
+      "time_s": 21.88,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e073",
+      "time_s": 22.18,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e074",
+      "time_s": 22.48,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e075",
+      "time_s": 22.81,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e076",
+      "time_s": 23.11,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e077",
+      "time_s": 23.43,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e078",
+      "time_s": 23.73,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e079",
+      "time_s": 24.04,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e080",
+      "time_s": 24.32,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e081",
+      "time_s": 24.65,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e082",
+      "time_s": 24.96,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e083",
+      "time_s": 25.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e084",
+      "time_s": 25.58,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e085",
+      "time_s": 25.9,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e086",
+      "time_s": 26.23,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e087",
+      "time_s": 26.56,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e088",
+      "time_s": 26.86,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e089",
+      "time_s": 27.19,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e090",
+      "time_s": 27.48,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e091",
+      "time_s": 27.78,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e092",
+      "time_s": 28.06,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e093",
+      "time_s": 28.36,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e094",
+      "time_s": 28.63,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e095",
+      "time_s": 28.94,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e096",
+      "time_s": 29.23,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e097",
+      "time_s": 29.51,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e098",
+      "time_s": 29.82,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e099",
+      "time_s": 30.16,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e100",
+      "time_s": 30.45,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e101",
+      "time_s": 30.75,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e102",
+      "time_s": 31.07,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e103",
+      "time_s": 31.41,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e104",
+      "time_s": 31.71,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e105",
+      "time_s": 32.0,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e106",
+      "time_s": 32.31,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e107",
+      "time_s": 32.58,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e108",
+      "time_s": 32.91,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e109",
+      "time_s": 33.23,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e110",
+      "time_s": 33.49,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e111",
+      "time_s": 33.76,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e112",
+      "time_s": 34.07,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e113",
+      "time_s": 34.41,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e114",
+      "time_s": 34.71,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e115",
+      "time_s": 35.0,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e116",
+      "time_s": 35.29,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e117",
+      "time_s": 35.63,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e118",
+      "time_s": 35.94,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e119",
+      "time_s": 36.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e120",
+      "time_s": 36.54,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e121",
+      "time_s": 36.79,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e122",
+      "time_s": 37.12,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e123",
+      "time_s": 37.43,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e124",
+      "time_s": 37.72,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e125",
+      "time_s": 38.04,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e126",
+      "time_s": 38.36,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e127",
+      "time_s": 38.65,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e128",
+      "time_s": 38.94,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e129",
+      "time_s": 39.26,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e130",
+      "time_s": 39.51,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e131",
+      "time_s": 39.8,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e132",
+      "time_s": 40.08,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e133",
+      "time_s": 40.41,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e134",
+      "time_s": 40.72,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e135",
+      "time_s": 41.03,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e136",
+      "time_s": 41.33,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e137",
+      "time_s": 41.66,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e138",
+      "time_s": 41.97,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e139",
+      "time_s": 42.25,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e140",
+      "time_s": 42.58,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e141",
+      "time_s": 42.83,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e142",
+      "time_s": 43.16,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e143",
+      "time_s": 43.48,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e144",
+      "time_s": 43.79,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e145",
+      "time_s": 44.08,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e146",
+      "time_s": 44.39,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e147",
+      "time_s": 44.71,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e148",
+      "time_s": 45.0,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e149",
+      "time_s": 45.24,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e150",
+      "time_s": 45.65,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e151",
+      "time_s": 45.97,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e152",
+      "time_s": 46.28,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e153",
+      "time_s": 46.6,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e154",
+      "time_s": 46.91,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e155",
+      "time_s": 47.24,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e156",
+      "time_s": 47.52,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e157",
+      "time_s": 47.84,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e158",
+      "time_s": 48.14,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e159",
+      "time_s": 48.49,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e160",
+      "time_s": 48.77,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e161",
+      "time_s": 49.1,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e162",
+      "time_s": 49.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e163",
+      "time_s": 49.73,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e164",
+      "time_s": 49.99,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e165",
+      "time_s": 50.3,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e166",
+      "time_s": 50.6,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e167",
+      "time_s": 50.93,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e168",
+      "time_s": 51.22,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e169",
+      "time_s": 51.55,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e170",
+      "time_s": 51.84,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e171",
+      "time_s": 52.18,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e172",
+      "time_s": 52.48,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e173",
+      "time_s": 52.78,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e174",
+      "time_s": 53.1,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e175",
+      "time_s": 53.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e176",
+      "time_s": 53.72,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e177",
+      "time_s": 54.08,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e178",
+      "time_s": 54.39,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e179",
+      "time_s": 54.73,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e180",
+      "time_s": 55.03,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e181",
+      "time_s": 55.32,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e182",
+      "time_s": 55.63,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e183",
+      "time_s": 55.96,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e184",
+      "time_s": 56.26,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e185",
+      "time_s": 56.56,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e186",
+      "time_s": 56.87,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e187",
+      "time_s": 57.15,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e188",
+      "time_s": 57.44,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e189",
+      "time_s": 57.78,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e190",
+      "time_s": 58.08,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e191",
+      "time_s": 58.4,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e192",
+      "time_s": 58.72,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e193",
+      "time_s": 59.0,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e194",
+      "time_s": 59.31,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e195",
+      "time_s": 59.63,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    }
+  ],
+  "segments": [],
+  "notes": [
+    "Continuous rapid low airborne foot juggling; labels were established from the source before inspecting this run. Moving camera and changing body angle. No visible ground contact in the reviewed sequence.",
+    "All remaining mismatches received dense five-frame source review around each event (2026-10-14)."
+  ],
+  "time_tolerance_s": 0.12
+}

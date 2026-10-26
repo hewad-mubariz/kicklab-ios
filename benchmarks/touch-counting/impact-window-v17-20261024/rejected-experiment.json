@@ -1,0 +1,18 @@
+{
+  "build": "2026102412",
+  "rule": "Positive foot evidence required for all observed ankle-height reversals",
+  "target_recording": {
+    "valid_before": 31,
+    "valid_after": 31,
+    "false_floor_before": 2,
+    "false_floor_after": 0
+  },
+  "low_juggling_regression": {
+    "valid_before": 175,
+    "valid_after": 101,
+    "valid_lost": 74,
+    "labelled_valid": 195
+  },
+  "resolution": "Build2026102513 only adds the uncertainty gate when original impact tracking has a gap greater than 70 ms. Contact recheck provenance prevents repaired images from concealing that original gap. Complete original impact windows retain previous low-touch eligibility.",
+  "status": "Rejected; superseded by build2026102513"
+}

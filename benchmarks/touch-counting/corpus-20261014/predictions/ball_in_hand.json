@@ -1,0 +1,26 @@
+{
+  "source_sha256": "3aa786708d1819d92887ce90bd8598c96fad34997f39637a7600c60fe021a434",
+  "policy": {
+    "body": "timedFootMotionV6",
+    "ground": "corroboratedFeet",
+    "handling": "sustainedGripV1"
+  },
+  "touches": [],
+  "diagnostics": [
+    {
+      "frameIndex": 61,
+      "time": 2.034,
+      "rejection": "trackLost",
+      "handConfirmed": false,
+      "ball": {
+        "frameIndex": 61,
+        "timestampMs": 2034,
+        "x": 0.5187499788072374,
+        "y": 0.47539061307907104,
+        "width": 0.034722222222222224,
+        "height": 0.022656232118606567,
+        "confidence": 0.51708984375
+      }
+    }
+  ]
+}
