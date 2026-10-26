@@ -20,9 +20,9 @@ final class LeaderboardUITests: XCTestCase {
         add(attachment)
     }
 
-    /// 30 touches with 3 sent for a check: 27 ranks, and your row says 3 are in review.
+    /// Retained pending-check data must not revive the postponed review flow.
     @MainActor
-    func testTouchesInReviewShowBesideTheScoreThatRanks() {
+    func testAutomaticBetaHidesPendingTouchChecks() {
         let app = XCUIApplication()
         app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-preview", "inReview", "-kicklab.appearance", "light"]
         app.launch()
@@ -30,7 +30,7 @@ final class LeaderboardUITests: XCTestCase {
         app.buttons["home-leaderboard"].tap()
         let pill = app.buttons["leaderboard-you-pill"]
         XCTAssertTrue(pill.waitForExistence(timeout: 8))
-        XCTAssertTrue(pill.label.contains("3 more in review"), pill.label)
+        XCTAssertFalse(pill.label.contains("in review"), pill.label)
         pill.tap()
         let row = app.buttons["leaderboard-row-11"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
@@ -38,9 +38,35 @@ final class LeaderboardUITests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { settled.fulfill() }
         wait(for: [settled], timeout: 3)
         XCTAssertTrue(row.label.contains("27 touches"), row.label)
-        XCTAssertTrue(row.label.contains("3 in review · 30 if confirmed"), row.label)
+        XCTAssertFalse(row.label.contains("in review"), row.label)
+        XCTAssertFalse(row.label.contains("if confirmed"), row.label)
+        XCTAssertFalse(app.buttons["leaderboard-my-submissions"].exists)
         let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = "Touches in review beside your score"
+        attachment.name = "Automatic beta without pending-check prompts"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    /// An old response can carry an approved attempt ID even when checks are off.
+    @MainActor
+    func testAutomaticBetaHidesLegacyReviewDetailsAndReporting() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-review-count", "1",
+                               "--leaderboard-legacy-review", "-kicklab.appearance", "light"]
+        app.launch()
+        XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 10))
+        app.buttons["home-leaderboard"].tap()
+        let first = app.descendants(matching: .any)["leaderboard-pennant-1"]
+        XCTAssertTrue(first.waitForExistence(timeout: 8))
+        first.tap()
+        XCTAssertTrue(app.buttons["leaderboard-player-close"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Best streak"].exists)
+        XCTAssertTrue(app.staticTexts["Counted automatically from a recorded session."].exists)
+        XCTAssertFalse(app.staticTexts["Checked streak"].exists)
+        XCTAssertFalse(app.buttons["Report this score"].exists)
+        XCTAssertFalse(app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] %@", "reviewer confirmed")).firstMatch.exists)
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "Legacy review response renders as automatic beta"
         attachment.lifetime = .keepAlways
         add(attachment)
     }

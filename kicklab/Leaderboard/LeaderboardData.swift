@@ -1,7 +1,6 @@
 import Foundation
 
-/// One ranked player. `touches` is their best continuous streak in the period: the
-/// device's count, or a reviewer's when a touch check was confirmed.
+/// One ranked player. The beta ranks the device's best continuous streak.
 struct LeaderboardEntry: Identifiable, Equatable {
     let rank: Int
     let name: String
@@ -11,6 +10,9 @@ struct LeaderboardEntry: Identifiable, Equatable {
     var photo: URL? = nil
     /// Set when a confirmed touch check scores this entry.
     var attemptID: UUID? = nil
+    /// Old responses can still contain a review ID. Review presentation must also
+    /// respect the beta switch, including cached entries and accessibility labels.
+    var hasConfirmedTouchCheck: Bool { LeaderboardRules.touchChecks && attemptID != nil }
     /// The session that ranks, on your own entry only.
     var sessionID: UUID? = nil
     var streakDurationMS: Int? = nil
@@ -109,7 +111,12 @@ enum LeaderboardReview {
         let revision = requests[period, default: 1] - 1
         try await Task.sleep(for: .milliseconds(700))
         if count == 1 {
-            return ([LeaderboardEntry(rank: 1, name: "Alex", touches: (period == .week ? 74 : 96) + revision, isYou: true)], [])
+            // Exercise a legacy server response through the real detail rendering.
+            // This launch-only fixture never fetches or writes account data.
+            let legacyReview = ProcessInfo.processInfo.arguments.contains("--leaderboard-legacy-review")
+            return ([LeaderboardEntry(rank: 1, name: "Alex", touches: (period == .week ? 74 : 96) + revision,
+                                      isYou: !legacyReview,
+                                      attemptID: legacyReview ? UUID(uuidString: "00000000-0000-0000-0000-000000000001") : nil)], [])
         }
         let entries = LeaderboardSample.board(.init(period: period), personalBest: 0, yourName: "")
         return (Array(entries.prefix(count)), [])

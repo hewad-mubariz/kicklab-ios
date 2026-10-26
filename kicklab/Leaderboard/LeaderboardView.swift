@@ -351,13 +351,13 @@ struct LeaderboardView: View {
 
     /// A check still open beside your score. Your score stays the device's streak until it's decided.
     private func openCheck(for entry: LeaderboardEntry) -> LeaderboardOpenCheck? {
-        guard entry.isYou else { return nil }
+        guard LeaderboardRules.touchChecks, entry.isYou else { return nil }
         #if DEBUG
         if previewScenario == .inReview {
             return LeaderboardOpenCheck(sessionID: UUID(), touches: 3, count: entry.touches + 3, sending: false)
         }
         #endif
-        return usesSamples || !LeaderboardRules.touchChecks ? nil : openChecks.beside(entry)
+        return usesSamples ? nil : openChecks.beside(entry)
     }
 
     private func anchor(for entry: LeaderboardEntry) -> String {
@@ -591,7 +591,7 @@ struct LeaderboardRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(lit ? "You" : entry.name).font(.body.weight(.semibold)).lineLimit(1)
-                    if entry.attemptID != nil {
+                    if entry.hasConfirmedTouchCheck {
                         // Only a score a reviewer confirmed carries the seal.
                         Image(systemName: "checkmark.seal.fill").font(.caption)
                     }
@@ -671,7 +671,7 @@ struct LeaderboardRow: View {
             withAnimation(.spring(response: 0.95, dampingFraction: 0.7).delay(delay)) { rolled = true }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Rank \(entry.rank), \(lit ? "you" : entry.name), \(entry.touches) touches\(entry.attemptID != nil ? ", confirmed by a reviewer" : ""). \(review.map { "\($0). " } ?? "")Streak duration \(entry.streakDurationLabel), average rhythm \(entry.averageRhythmLabel)\(chase.map { ". \($0)" } ?? "")")
+        .accessibilityLabel("Rank \(entry.rank), \(lit ? "you" : entry.name), \(entry.touches) touches\(entry.hasConfirmedTouchCheck ? ", confirmed by a reviewer" : ""). \(review.map { "\($0). " } ?? "")Streak duration \(entry.streakDurationLabel), average rhythm \(entry.averageRhythmLabel)\(chase.map { ". \($0)" } ?? "")")
         .accessibilityIdentifier("leaderboard-row-\(entry.rank)")
     }
 }

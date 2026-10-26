@@ -3,7 +3,8 @@ import Foundation
 nonisolated enum LeaderboardRules {
     static let version = "beta-1"
     /// Touch checks (sending unsure touches for review) are postponed past the first beta,
-    /// which ranks the automatic count only. Turning this on brings back every entry point.
+    /// which ranks the automatic count only. Restoring checks also requires an explicit
+    /// server migration to restore reviewed ranking; this switch controls the app only.
     static let touchChecks = false
     // Matches the deployed project's 50 MiB Storage limit. Raise the app,
     // bucket and database limits together when the hosting plan changes.
@@ -17,7 +18,7 @@ nonisolated enum LeaderboardRules {
     }
 }
 
-/// A proposal is evidence for a reviewer, never a score eligible for publication.
+/// The device's best continuous streak. The same shape is retained for future review proposals.
 nonisolated struct RankedStreakProposal: Codable, Equatable, Sendable {
     var count: Int
     var startMS: Int
@@ -27,8 +28,8 @@ nonisolated struct RankedStreakProposal: Codable, Equatable, Sendable {
     }
 
     /// Split at explicit interruption evidence only. Uncertain visibility and long
-    /// gaps need review, not an assumed drop. A reviewer must verify continuity and
-    /// can split/join segments or restore contacts missed by the device.
+    /// gaps alone do not prove a drop. The beta does not restore contacts missed by
+    /// the device or claim that continuity was independently verified.
     static func suggest(touchTimes: [Double], boundaries: [Double], duration: Double) -> Self? {
         guard duration.isFinite, duration > 0, duration <= 86_400 else { return nil }
         let times = Array(Set(touchTimes.filter { $0.isFinite && $0 >= 0 && $0 <= duration })).sorted()

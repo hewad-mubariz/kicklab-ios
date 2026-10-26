@@ -14,8 +14,8 @@ struct LeaderboardPlayerDetailView: View {
                         LeaderboardMedallion(entry: entry, size: 88, ring: TrainingHomeStyle.accent(scheme))
                         VStack(alignment: .leading, spacing: 4) {
                             Text(entry.touches.formatted()).font(TrainingHomeStyle.display(80, relativeTo: .largeTitle)).monospacedDigit()
-                            Label(entry.isPreview ? "Sample streak" : entry.attemptID != nil ? "Checked streak" : "Best streak",
-                                  systemImage: entry.attemptID != nil ? "checkmark.seal.fill" : "soccerball").font(.headline)
+                            Label(entry.isPreview ? "Sample streak" : entry.hasConfirmedTouchCheck ? "Checked streak" : "Best streak",
+                                  systemImage: entry.hasConfirmedTouchCheck ? "checkmark.seal.fill" : "soccerball").font(.headline)
                             Text("Rank #\(entry.rank)").foregroundStyle(.secondary)
                         }
                     }
@@ -44,14 +44,14 @@ struct LeaderboardPlayerDetailView: View {
                         Label("Temporary player · no account or recording is attached to this sample.", systemImage: "eye")
                             .font(.subheadline).foregroundStyle(.secondary)
                     } else {
-                        Label(entry.attemptID != nil ? "A reviewer confirmed touches the counter had left out. The clips are private to the player and the review team."
-                              : "Counted automatically from a recorded session.", systemImage: entry.attemptID != nil ? "lock" : "bolt")
+                        Label(entry.hasConfirmedTouchCheck ? "A reviewer confirmed touches the counter had left out. The clips are private to the player and the review team."
+                              : "Counted automatically from a recorded session.", systemImage: entry.hasConfirmedTouchCheck ? "lock" : "bolt")
                             .font(.subheadline).foregroundStyle(.secondary)
                         if entry.isYou {
                             if LeaderboardRules.touchChecks {
                                 Text("Open Touch checks to see touches left out of your sessions, or the result of a check.").font(.subheadline)
                             }
-                        } else if entry.attemptID != nil {
+                        } else if entry.hasConfirmedTouchCheck {
                             Button("Report this score", systemImage: "flag") { showsReport = true }
                                 .disabled(review.owner == nil)
                             if review.owner == nil { Text("Sign in through Profile to report a score.").font(.caption).foregroundStyle(.secondary) }
@@ -65,7 +65,7 @@ struct LeaderboardPlayerDetailView: View {
                 Button("Done") { dismiss() }.accessibilityIdentifier("leaderboard-player-close")
             } }
             .sheet(isPresented: $showsReport) {
-                if let id = entry.attemptID {
+                if entry.hasConfirmedTouchCheck, let id = entry.attemptID {
                     LeaderboardFeedbackView(title: "Report this score", review: review) { await review.report(id, reason: $0) }
                 }
             }
