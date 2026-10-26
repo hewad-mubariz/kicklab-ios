@@ -1,0 +1,76 @@
+{
+  "app": "Juggle Dude",
+  "bundle_identifier": "com.juggledude",
+  "version": "1.0.2",
+  "build": "29",
+  "status": "testing",
+  "branch": "main",
+  "source_head": "f2a7508d9c59861e175709ff696e744e2bd411b8",
+  "counter_release_branch_head": "93f5e56d8d447fb547a5d5fc19bfce65f1b4edc8",
+  "includes_uncommitted_candidate_changes": false,
+  "counter_only": true,
+  "build_configuration": "JuggleDude / normal Release",
+  "version_overrides": {
+    "MARKETING_VERSION": "1.0.2",
+    "CURRENT_PROJECT_VERSION": "29"
+  },
+  "source_manifest_sha256": "7f25a112091131477cd51809d62f50aa15f9cef4aa49fe38f8dc24399ac9c259",
+  "counter_policy": "floorRescueV19",
+  "handling": "temporalGripV2",
+  "stationary_gate": 2,
+  "recheck_tier": {
+    "iPhone11ProMax": "compact",
+    "iPhone17ProMax": "full"
+  },
+  "scope_audit": "benchmarks/releases/20261026-counter-only-branch.json",
+  "excluded_feature_work": [
+    "leaderboard changes",
+    "email sign-in changes",
+    "ball replacement and live-effects changes",
+    "camera exposure and bitrate changes"
+  ],
+  "validation": {
+    "debug_tests_passed": 87,
+    "release_tests_passed": 73,
+    "exact_saved_trace_replays": 4,
+    "same_source_as_tests": true,
+    "archive_checks_passed": true,
+    "signature_verified": true,
+    "client_configuration_verified": true,
+    "rf_model_verified": true
+  },
+  "artifacts": "artifacts/releases/20261026-counter-only-29",
+  "upload_completed_at": "2026-10-26T20:28:24+01:00",
+  "upload_succeeded": true,
+  "processing_completed": true,
+  "tester_availability_verified": true,
+  "public_release_submitted": false,
+  "notes": "Build 29 is the isolated counter update. Build 28 remains the earlier mixed feature build. Indoor/outdoor and warm-device testing is still required before public release.",
+  "app_store_connect_build_id": "2a52d6fe-f796-4140-ab24-cc40c714dfcd",
+  "verified_at": "2026-10-26T20:35:16.444780+01:00",
+  "internal_testing": {
+    "group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "assigned": true,
+    "testers": 3,
+    "build": "1.0.2 (29)"
+  },
+  "external_testing": {
+    "group": "iPhone 11 testing",
+    "group_id": "b2818480-1246-45db-83af-c8364ccb790e",
+    "assigned": true,
+    "build": "1.0.2 (29)",
+    "status": "Testing",
+    "public_link": "https://testflight.apple.com/join/53WDPmfc",
+    "public_link_active": true,
+    "tester_limit": 1,
+    "testers": 0,
+    "automatically_notify_testers": true
+  },
+  "what_to_test_saved": true,
+  "proof": [
+    "testflight-testing.jpg",
+    "testflight-external-testing.jpg",
+    "testflight-iphone11-link.jpg"
+  ]
+}
