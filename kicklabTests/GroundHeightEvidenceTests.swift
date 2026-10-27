@@ -240,3 +240,55 @@ struct DeepFloorContactTests {
         #expect(try JSONDecoder().decode(GroundContactEvidence.self, from: JSONEncoder().encode(evidence)) == evidence)
     }
 }
+
+struct CompactFootContactTests {
+    private final class Resources {}
+    private func read<T: Decodable>(_ name: String, as type: T.Type) throws -> T {
+        let url = try #require(Bundle(for: Resources.self).url(forResource: name, withExtension: "json"))
+        return try JSONDecoder().decode(type, from: Data(contentsOf: url))
+    }
+
+    @Test func reviewedOutdoorToeContactsAreNotMistakenForPlantedFloorContacts() throws {
+        let contacts = try read("outdoor-toe-contacts-20261027", as: [Int: GroundContactEvidence].self)
+        #expect(Set(contacts.keys) == [355, 611, 674])
+        for (frame, old) in contacts {
+            #expect(old.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true), "Reproduce the missed touch at \(frame)")
+            var fixed = old; fixed.checksCompactFootContact = true
+            #expect(fixed.confirmsCompactFootContact)
+            #expect(!fixed.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true))
+            #expect(try JSONDecoder().decode(GroundContactEvidence.self, from: JSONEncoder().encode(fixed)) == fixed)
+        }
+    }
+
+    @Test func reviewedGroundContactsRemainGroundContacts() throws {
+        for name in ["visible-ground-bounces-pose", "sparse-floor-bounces-pose"] {
+            let contacts = try read(name, as: [Int: GroundContactEvidence].self)
+            for (frame, old) in contacts {
+                var fixed = old; fixed.checksCompactFootContact = true
+                #expect(fixed.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true)
+                        == old.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true), "\(name) \(frame)")
+            }
+        }
+        // In particular, visible-floor frame 284 has close ankle overlap and
+        // some upward pose jitter, but the ball continues DOWN after that
+        // candidate. Only its later floor rebound supplies departure.
+        let visible = try read("visible-ground-bounces-pose", as: [Int: GroundContactEvidence].self)
+        #expect(try !#require(visible[284]).confirmsCompactFootContact)
+    }
+
+    @Test func overlapWithoutLiftOrImmediateDepartureCannotRescue() throws {
+        let contacts = try read("outdoor-toe-contacts-20261027", as: [Int: GroundContactEvidence].self)
+        for old in contacts.values {
+            let contact = try #require(old.samples.first { $0.timestampMs == old.contactMs })
+            let still = GroundContactEvidence(contactMs: old.contactMs, samples: old.samples.map { s in
+                .init(timestampMs: s.timestampMs, ballX: s.ballX, ballY: s.ballY, width: s.width,
+                      height: s.height, confidence: s.confidence, imageAspect: s.imageAspect,
+                      ankles: contact.ankles, hips: s.hips)
+            })
+            #expect(!still.confirmsCompactFootContact)
+            let noRelease = GroundContactEvidence(contactMs: old.contactMs,
+                samples: old.samples.filter { $0.timestampMs <= old.contactMs })
+            #expect(!noRelease.confirmsCompactFootContact)
+        }
+    }
+}

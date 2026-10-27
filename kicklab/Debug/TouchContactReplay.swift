@@ -71,6 +71,8 @@ nonisolated enum TouchContactReplay {
         /// Resume an interrupted comparison when its baseline is already saved.
         let afterOnly: Bool?
         let poseAuditFrames: [Int]?
+        /// Explicit experiment override; nil preserves the selected production config.
+        let toeContact: Bool?
     }
     @MainActor static func run(folderName: String) async {
         let wasIdleDisabled = UIApplication.shared.isIdleTimerDisabled
@@ -105,7 +107,7 @@ nonisolated enum TouchContactReplay {
                         throw failure("Video and trace do not match")
                     }
                     for after in (config.afterOnly == true ? [true] : [false, true]) {
-                        let policy = (config.comparison ?? .body).policy(after: after)
+                        let policy = config.toeContact == true ? CountingPolicy.configured(arguments: ["--toe-contact-v20"]) : (config.comparison ?? .body).policy(after: after)
                         var counterConfig = archive.trace.config
                         if config.comparison == .bodyGateAblation || (config.comparison == .contactEvidence || config.comparison == .impactWindow || config.comparison == .floorEvidence || config.comparison == .floorRescue) { counterConfig = CounterConfig() }
                         if config.comparison == .completedRise {

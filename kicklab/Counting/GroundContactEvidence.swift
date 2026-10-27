@@ -39,6 +39,9 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
     /// a ball height under both planted ankles, between them, after a clear
     /// drop, with a rebound. One view suffices when nothing else moved.
     var checksDeepFloorContact: Bool? = nil
+    /// A close toe contact can rotate the shoe without large ankle travel.
+    /// Missing in old traces preserves their original ground verdict.
+    var checksCompactFootContact: Bool? = nil
 
     /// Only sparse impact tracks take the extra foot-proof route. Continuous
     /// low taps keep their existing rules. Rechecked images must be excluded:
@@ -82,19 +85,57 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
     static let signature = "|cadence-ground-v2"
 
     func confirmsGroundContact(corroboratingWeakAnkles: Bool, cadenceAware: Bool = false) -> Bool {
-        confirmsPlantedFeet(corroboratingWeakAnkles: corroboratingWeakAnkles)
+        if checksCompactFootContact == true && confirmsCompactFootContact { return false }
+        return confirmsPlantedFeet(corroboratingWeakAnkles: corroboratingWeakAnkles)
             || (checksBallBelowFeet == true && confirmsBallBelowFeet)
             || (cadenceAware && confirmsSparsePlantedFeet)
             || (checksDeepFloorContact == true && confirmsDeepFloorContact)
     }
 
+    /// Tight impact overlap, a measured pre-impact lift and an immediate ball
+    /// departure. Proximity alone and a later rebound beside a still foot are
+    /// insufficient. Uses the existing poses; no extra image work or latency.
+    var confirmsCompactFootContact: Bool {
+        let views = samples.sorted { $0.timestampMs < $1.timestampMs }
+        guard let contact = views.first(where: { $0.timestampMs == contactMs }),
+              Set(views.map(\.timestampMs)).count == views.count,
+              views.allSatisfy({ s in
+                  [s.ballX,s.ballY,s.width,s.height,s.confidence].allSatisfy(\.isFinite)
+                    && (0...1).contains(s.ballX) && (0...1).contains(s.ballY)
+                    && (0...1).contains(s.confidence) && s.confidence >= 0.5
+                    && s.width > 0 && s.width <= 1 && s.height > 0 && s.height <= 1
+              }) else { return false }
+        func ankle(_ s: Sample, _ side: BodySide) -> PoseLandmark? {
+            guard let a = s.ankles[side], [a.x,a.y,a.confidence].allSatisfy(\.isFinite),
+                  (0...1).contains(a.x), (0...1).contains(a.y), (0.5...1).contains(a.confidence) else { return nil }
+            return a
+        }
+        for side in BodySide.allCases {
+            guard let foot = ankle(contact, side),
+                  hypot((contact.ballX-foot.x)/contact.width, (contact.ballY-foot.y)/contact.height) <= 0.3,
+                  contact.ballY-foot.y <= 0.2*contact.height else { continue }
+            let before = views.filter { (25...250).contains(contactMs-$0.timestampMs) && ankle($0, side) != nil }
+            let after = views.filter { (25...100).contains($0.timestampMs-contactMs) && ankle($0, side) != nil }
+            guard before.count >= 2, after.count >= 2, after.first!.timestampMs-contactMs <= 50,
+                  after.allSatisfy({ s in
+                      let a = ankle(s, side)!
+                      return contact.ballY-s.ballY >= 0.12*contact.height
+                        && (contact.ballY-foot.y)-(s.ballY-a.y) >= 0.12*contact.height
+                  }),
+                  before.contains(where: { (ankle($0, side)!.y-foot.y) >= max(0.003,0.08*contact.height) }),
+                  before.contains(where: { (contact.ballY-foot.y)-($0.ballY-ankle($0, side)!.y) >= 0.35*contact.height }) else { continue }
+            return true
+        }
+        return false
+    }
+
     /// The ball's lower edge is at least half a ball height below the lower of
     /// two confident, planted ankles and between them, after at least two
     /// approach views above both ankles, with a rebound. The ankles must stay
-    /// within 0.15 ball heights across every confident view within 67 ms, so a
-    /// foot that could have cushioned or kicked the ball disqualifies the proof.
-    /// Measured against 3,158 accepted touches with floor evidence: zero legal
-    /// contacts reach this geometry; eight reviewed carpet bounces do.
+    /// within 0.15 ball heights across every confident view within 67 ms.
+    /// Outdoor toe taps can also reach this geometry with little ankle travel;
+    /// the versioned compact-contact check in confirmsGroundContact handles
+    /// that ambiguity before this heuristic supplies a floor verdict.
     var confirmsDeepFloorContact: Bool {
         guard checksDeepFloorContact == true else { return false }
         let views = samples.sorted { $0.timestampMs < $1.timestampMs }

@@ -13,6 +13,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     private var requiresPositiveLowContact = false
     private var usesFloorEvidenceV18 = false
     private var usesFloorRescueV19 = false
+    private var usesToeContactV20 = false
     func configure(policy: CountingPolicy) {
         usesContactEvidenceV16 = policy.body.usesContactEvidence
         // The gap gate rejects an ankle-height reversal with a detection hole at
@@ -23,7 +24,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
         // (planted feet, below feet, stationary hole, deep contact) instead.
         requiresPositiveLowContact = policy.body.usesImpactWindow && RFContactRecheckTier.current == .full
         usesFloorEvidenceV18 = policy.body.usesFloorEvidence
-        usesFloorRescueV19 = policy.body == .floorRescueV19
+        usesToeContactV20 = policy.body == .toeContactV20
+        usesFloorRescueV19 = policy.body == .floorRescueV19 || usesToeContactV20
     }
     private typealias Frame = ContactObservationStore.Frame
     private typealias Pose = ContactObservationStore.Pose
@@ -253,6 +255,11 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
         if failure != nil, usesSelectedPoseRecovery, lastError == nil,
            recoverRaisedShin(at: frame) { return true }
         #endif
+        // The same positive foot evidence used for low contacts can establish
+        // a raised kick despite an arm projecting nearby. Ground has already
+        // been checked; hand and holding vetoes still run after eligibility.
+        if usesToeContactV20, policy.allowsObservedLegRecovery(after: failure), lastError == nil,
+           footEvidence(at: frameIndex)?.confirms == true { return true }
         bodyFailures[frameIndex] = lastError == nil ? failure : .missingPose
         return lastError == nil && failure == nil
     }
@@ -509,7 +516,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                      toleratesPlantedApproachGap: usesFloorRescueV19 ? true : nil,
                      requiresMovingAnkleForRescue: usesFloorRescueV19 ? true : nil,
                      allowsStationaryHole: usesFloorRescueV19 ? true : nil,
-                     checksDeepFloorContact: usesFloorRescueV19 ? true : nil)
+                     checksDeepFloorContact: usesFloorRescueV19 ? true : nil,
+                     checksCompactFootContact: usesToeContactV20 ? true : nil)
     }
 
     /// Only proposals that passed the existing gates request this extra window.

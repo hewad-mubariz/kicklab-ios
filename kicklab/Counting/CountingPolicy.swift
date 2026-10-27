@@ -4,7 +4,7 @@ import Foundation
 /// the same rules. Historical policies remain available for saved comparisons.
 nonisolated struct CountingPolicy: Equatable, Sendable {
     enum BodyContact: String, Sendable {
-        case unrestricted, headKneeFoot, clearHandsV2, movingFootV3, poseContinuityV4, observedJointContinuityV5, timedFootMotionV6, observedLegMotionV7, observedLegMotionV8, temporalEvidenceV9, trackedFootV10, observedImpactV11, independentLegV12, legReboundV13, raisedFootV14, footEvidenceV15, contactEvidenceV16, impactWindowV17, floorEvidenceV18, floorRescueV19
+        case unrestricted, headKneeFoot, clearHandsV2, movingFootV3, poseContinuityV4, observedJointContinuityV5, timedFootMotionV6, observedLegMotionV7, observedLegMotionV8, temporalEvidenceV9, trackedFootV10, observedImpactV11, independentLegV12, legReboundV13, raisedFootV14, footEvidenceV15, contactEvidenceV16, impactWindowV17, floorEvidenceV18, floorRescueV19, toeContactV20
 
         var usesClearHands: Bool { self != .headKneeFoot && self != .unrestricted }
         var usesMovingFoot: Bool { self == .movingFootV3 || usesPoseContinuity }
@@ -15,7 +15,7 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
         var usesObservedImpact: Bool { self == .observedImpactV11 || self == .independentLegV12 || self == .legReboundV13 || usesRaisedFoot }
         var usesContactEvidence: Bool { self == .contactEvidenceV16 || usesImpactWindow }
         var usesImpactWindow: Bool { self == .impactWindowV17 || usesFloorEvidence }
-        var usesFloorEvidence: Bool { self == .floorEvidenceV18 || self == .floorRescueV19 }
+        var usesFloorEvidence: Bool { self == .floorEvidenceV18 || self == .floorRescueV19 || self == .toeContactV20 }
         var usesRaisedFoot: Bool { self == .raisedFootV14 || self == .footEvidenceV15 || usesContactEvidence }
         var bodyTracksFootPixels: Bool { self == .trackedFootV10 }
 
@@ -28,7 +28,7 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
             case .temporalEvidenceV9, .trackedFootV10, .observedImpactV11: failure == .handsUncertain || failure == .handsNearBall || failure == .invalidGeometry
             // Missing shoulders or sparse arm views must not veto visible leg
             // motion. Keep low-contact/floor eligibility on its existing path.
-            case .independentLegV12, .legReboundV13, .raisedFootV14, .footEvidenceV15, .contactEvidenceV16, .impactWindowV17, .floorEvidenceV18, .floorRescueV19:
+            case .independentLegV12, .legReboundV13, .raisedFootV14, .footEvidenceV15, .contactEvidenceV16, .impactWindowV17, .floorEvidenceV18, .floorRescueV19, .toeContactV20:
                 BodyContact.observedImpactV11.allowsObservedLegRecovery(after: failure)
                     || failure == .missingPose || failure == .insufficientContactViews
             default: false
@@ -47,6 +47,10 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
 
     static func configured(arguments: [String]) -> Self {
         #if DEBUG
+        if arguments.contains("--toe-contact-v20") {
+            return .init(handling: .temporalGripV2, verifiesContacts: true,
+                         body: .toeContactV20, ground: .corroboratedFeet)
+        }
         if arguments.contains("--floor-rescue-v19") {
             return .init(handling: .temporalGripV2, verifiesContacts: true,
                          body: .floorRescueV19, ground: .corroboratedFeet)
@@ -69,7 +73,7 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
         }
         #endif
         return .init(handling: .temporalGripV2, verifiesContacts: true,
-                     body: .floorRescueV19, ground: .corroboratedFeet)
+                     body: .toeContactV20, ground: .corroboratedFeet)
     }
 
     var handlingSignature: String {
@@ -102,6 +106,7 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
         case .impactWindowV17: "|impact-window-v17"
         case .floorEvidenceV18: "|floor-evidence-v18"
         case .floorRescueV19: "|floor-rescue-v19"
+        case .toeContactV20: "|toe-contact-v20"
         }
     }
 }

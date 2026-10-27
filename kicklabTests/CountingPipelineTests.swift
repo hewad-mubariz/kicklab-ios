@@ -111,7 +111,7 @@ struct CountingPipelineTests {
         let disabled = CountingPolicy.configured(arguments: ["--juggling-no-hand-check"])
         #expect(normal.verifiesContacts)
         #expect(normal.ground == .corroboratedFeet)
-        #expect(normal.body == .floorRescueV19 && normal.bodySignature == "|floor-rescue-v19")
+        #expect(normal.body == .toeContactV20 && normal.bodySignature == "|toe-contact-v20")
         #expect(normal.body.usesFloorEvidence && normal.body.usesImpactWindow && normal.body.usesContactEvidence)
         #expect(normal.handling == .temporalGripV2 && normal.handlingSignature == "|handling-v2")
         #expect(disabled == normal)
