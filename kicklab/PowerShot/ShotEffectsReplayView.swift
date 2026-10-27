@@ -432,7 +432,7 @@ struct ShotEffectsReplayView: View {
         .frame(maxWidth: 420).frame(maxWidth: .infinity)
     }
 
-    private func roundButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
+    private func roundButton(_ symbol: String, label: LocalizedStringKey, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol).font(.system(size: 18, weight: .medium)).frame(width: 32, height: 32)
                 .contentTransition(.symbolEffect(.replace))
@@ -486,7 +486,7 @@ struct ShotEffectsReplayView: View {
         } catch is CancellationError {
             return
         } catch {
-            playbackError = "This shot couldn’t be prepared. \(error.localizedDescription)"
+            playbackError = String(localized: "This shot couldn’t be prepared. \(error.localizedDescription)")
             await finishProcessing()
             return
         }
@@ -505,7 +505,7 @@ struct ShotEffectsReplayView: View {
                     sourceFrames = frames
                 } catch is CancellationError {
                     return
-                } catch { show(.failed("Frame selection couldn’t be prepared. " + error.localizedDescription)) }
+                } catch { show(.failed(String(localized: "Frame selection couldn’t be prepared. \(error.localizedDescription)"))) }
             }
             let item = AVPlayerItem(asset: asset)
             if let videoTrack = try await asset.loadTracks(withMediaType: .video).first {
@@ -520,7 +520,7 @@ struct ShotEffectsReplayView: View {
             observe(player)
             self.player = player
         } catch {
-            playbackError = "This shot can’t be played. \(error.localizedDescription)"
+            playbackError = String(localized: "This shot can’t be played. \(error.localizedDescription)")
             await finishProcessing()
             return
         }
@@ -541,12 +541,12 @@ struct ShotEffectsReplayView: View {
                     ready(found)
                 } else {
                     track = found
-                    trackingProblem = "We couldn’t follow the ball in this shot. Keep the whole flight in view."
+                    trackingProblem = String(localized: "We couldn’t follow the ball in this shot. Keep the whole flight in view.")
                 }
             } catch is CancellationError {
                 return
             } catch {
-                trackingProblem = "Ball tracking stopped. \(error.localizedDescription)"
+                trackingProblem = String(localized: "Ball tracking stopped. \(error.localizedDescription)")
             }
         }
         step = 3; progress = 0.95
@@ -766,7 +766,7 @@ struct ShotEffectsReplayView: View {
                 return
             } catch {
                 guard !Task.isCancelled, revision == cameraRevision else { return }
-                show(.failed("Couldn’t prepare this replay. " + error.localizedDescription))
+                show(.failed(String(localized: "Couldn’t prepare this replay. \(error.localizedDescription)")))
             }
         }
     }
@@ -870,7 +870,7 @@ struct ShotEffectsReplayView: View {
                             try await ShotEffectExporter.render(source: source, track: track, style: look, intensity: strength,
                                 distance: timeline, camera: cameraLook, flight: flightLook, atlas: atlasLook, arc: readyArc,
                                 slowMotion: readySlowMotion) { amount in
-                                    VideoWorkExecution.lease?.progress(amount * 0.96, subtitle: "Rendering your shot")
+                                    VideoWorkExecution.lease?.progress(amount * 0.96, subtitle: String(localized: "Rendering your shot"))
                                     Task { @MainActor in
                                         if exportID == jobID && save.isBusy {
                                             save = .exporting(amount); saveProgress = amount
@@ -883,7 +883,7 @@ struct ShotEffectsReplayView: View {
                         defer { if !saved { try? FileManager.default.removeItem(at: url) } }
                         try await VideoWorkExecution.checkpoint()
                         await MainActor.run { save = .saving }
-                        VideoWorkExecution.lease?.progress(0.98, subtitle: "Saving to Photos")
+                        VideoWorkExecution.lease?.progress(0.98, subtitle: String(localized: "Saving to Photos"))
                         #if DEBUG
                         if let exportFolder {
                             let name = cameraLook.isEmpty ? look.rawValue : cameraLook.clips.map(\.move.rawValue).joined(separator: "+") + "-" + look.rawValue
@@ -915,8 +915,8 @@ struct ShotEffectsReplayView: View {
                     guard save != .saved else { outcome = .completed; return }
                     outcome = .cancelled
                     saveProgress = 0
-                    save = .failed("Saving stopped. Tap Download to try again.")
-                    show(.failed("Saving stopped. Tap Download to try again."))
+                    save = .failed(String(localized: "Saving stopped. Tap Download to try again."))
+                    show(.failed(String(localized: "Saving stopped. Tap Download to try again.")))
                 } catch {
                     save = .failed(error.localizedDescription)
                     show(.failed(error.localizedDescription))
@@ -934,7 +934,7 @@ struct ShotEffectsReplayView: View {
             return try await VideoWorkExecution.$lease.withValue(VideoWorkLease(allowed: false, cpuOnly: false, backgroundGPU: false), operation: operation)
         }
         #endif
-        return try await VideoBackgroundWork.shared.run(title: "Saving your shot", operation: operation)
+        return try await VideoBackgroundWork.shared.run(title: String(localized: "Saving your shot"), operation: operation)
     }
 
     private func saveOutdated() {

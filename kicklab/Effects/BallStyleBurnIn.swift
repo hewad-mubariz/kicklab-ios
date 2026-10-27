@@ -30,12 +30,12 @@ final class BallStyleBurnIn: ObservableObject {
         isExporting = true; progress = 0; outputURL = nil; status = "Preparing video…"
         worker = Task {
             do {
-                let url = try await VideoBackgroundWork.shared.run(title: "Exporting video",
+                let url = try await VideoBackgroundWork.shared.run(title: String(localized: "Exporting video"),
                     requiresGPU: (style != .none && intensity > 0) || environment != .original) {
                     let renderTask = VideoWorkExecution.detached {
                         try await Self.render(source: source, track: track, style: style, skin: skin,
                                               intensity: intensity, environment: environment, shortEdge: shortEdge, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes, distanceTimeline: distanceTimeline, motionTimeline: motionTimeline) { p in
-                            VideoWorkExecution.lease?.progress(p, subtitle: p < 0.94 ? "Rendering your video" : "Finishing video")
+                            VideoWorkExecution.lease?.progress(p, subtitle: p < 0.94 ? String(localized: "Rendering your video") : String(localized: "Finishing video"))
                             await MainActor.run { self.progress = p; self.status = p < 0.94 ? "Rendering effects…" : "Finishing video…" }
                         }
                     }

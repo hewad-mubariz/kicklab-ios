@@ -35,7 +35,7 @@ struct ExportMotionGraphLayer: View {
             .scaleEffect(rect.width / ExportMotionGraphRenderer.cardWidth)
             .position(x: rect.midX, y: rect.midY)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(style.title + ": included in saved video")
+            .accessibilityLabel(style.title + ": " + String(localized: "included in saved video"))
             .accessibilityValue(style.rawValue)
             .accessibilityIdentifier("capture-motion-graph")
     }

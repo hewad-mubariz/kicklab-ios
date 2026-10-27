@@ -86,7 +86,7 @@ struct SignInView: View {
     }
 
     private var wordmark: some View {
-        Text("\(Text("Juggle ").foregroundColor(TrainingHomeStyle.ink(scheme)))\(Text("Dude").foregroundColor(accent))")
+        Text("\(Text(verbatim: "Juggle ").foregroundColor(TrainingHomeStyle.ink(scheme)))\(Text(verbatim: "Dude").foregroundColor(accent))")
             .font(TrainingHomeStyle.display(30, relativeTo: .title2)).tracking(0.8)
             .accessibilityLabel("Juggle Dude")
     }
@@ -115,7 +115,7 @@ struct SignInView: View {
         .sessionEntrance(arrived, order: 2)
     }
 
-    private var subtitle: String {
+    private var subtitle: LocalizedStringKey {
         if signedIn { return account.user?.name.map { "Welcome, \($0)." } ?? "Let’s get juggling." }
         return presentation == .welcome ? "Sign in or start training as a guest." : "Sign in to keep your records safe."
     }
@@ -338,7 +338,7 @@ struct SignInView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func legalButton(_ title: String, url: URL, id: String) -> some View {
+    private func legalButton(_ title: LocalizedStringKey, url: URL, id: String) -> some View {
         Button(title) { openURL(url) }
             .buttonStyle(.plain).frame(minHeight: 44)
             .accessibilityIdentifier(id)
@@ -493,7 +493,7 @@ private struct SignInProviderButtons: View {
     private func dimmed(_ provider: SignInProvider) -> Bool { busy != nil && busy != provider }
 
     /// Covers Apple's control only while its sheet is up, so the wait reads in place.
-    private func waiting(_ title: String) -> some View {
+    private func waiting(_ title: LocalizedStringKey) -> some View {
         HStack(spacing: 10) {
             ProgressView().tint(.black)
             Text(title).font(.system(size: fontSize, weight: .medium))

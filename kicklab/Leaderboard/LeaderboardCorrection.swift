@@ -77,11 +77,11 @@ nonisolated struct LeaderboardOpenCheck: Equatable, Sendable {
     func label(beside score: Int, ranked: UUID?) -> String? {
         guard count > score else { return nil }
         if ranked == nil || ranked == sessionID {
-            return sending ? "\(touches) waiting to send · \(count) if confirmed"
-                           : "\(touches) in review · \(count) if confirmed"
+            return sending ? String(localized: "\(touches) waiting to send · \(count) if confirmed")
+                           : String(localized: "\(touches) in review · \(count) if confirmed")
         }
         // A check on another session of yours that could beat this one.
-        return sending ? "A \(count) is waiting to send" : "A \(count) is in review"
+        return sending ? String(localized: "A \(count) is waiting to send") : String(localized: "A \(count) is in review")
     }
 }
 

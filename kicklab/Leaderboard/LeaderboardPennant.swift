@@ -26,14 +26,17 @@ enum LeaderboardStyle {
     static func number(_ size: CGFloat) -> Font { TrainingHomeStyle.display(size, relativeTo: .title) }
 
     /// "st", "nd", "rd" or "th" after a place.
+    /// The place as the app's language writes it: 1st, 1., 1.º, 1er.
+    static func ordinalPlace(_ place: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .ordinal
+        formatter.usesGroupingSeparator = false
+        return formatter.string(from: place as NSNumber) ?? "\(place)"
+    }
+
+    /// Only the mark after the number, drawn smaller beside it.
     static func ordinal(_ place: Int) -> String {
-        if (11...13).contains(place % 100) { return "th" }
-        switch place % 10 {
-        case 1: return "st"
-        case 2: return "nd"
-        case 3: return "rd"
-        default: return "th"
-        }
+        String(ordinalPlace(place).drop(while: \.isNumber))
     }
 }
 
@@ -266,12 +269,12 @@ private struct PennantSlot: View {
                 } label: { hanging(entry) }
                 .buttonStyle(.plain)
                 .sensoryFeedback(.impact(weight: .light), trigger: pushes)
-                .accessibilityLabel("Rank \(entry.rank), \(entry.isYou ? "you" : entry.name), \(entry.touches) touches")
+                .accessibilityLabel("Rank \(entry.rank), \(entry.isYou ? String(localized: "you") : entry.name), \(entry.touches) touches")
                 .accessibilityIdentifier("leaderboard-pennant-\(entry.rank)")
             } else {
                 hanging(nil)
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(place)\(LeaderboardStyle.ordinal(place)) place open")
+                    .accessibilityLabel("\(LeaderboardStyle.ordinalPlace(place)) place open")
             }
         }
         .frame(width: width + PennantMetrics.rodOverhang,
@@ -503,7 +506,7 @@ private struct PennantCloth: View {
             .frame(height: first ? 58 : 50)
             // A lit lower edge, as if embroidered.
             .shadow(color: .white.opacity(0.35), radius: 0, y: 1)
-            Text(entry.isYou ? "You" : entry.name)
+            Text(entry.isYou ? String(localized: "You") : entry.name)
                 .font(.system(size: first ? 15 : 14, weight: .semibold))
                 .lineLimit(1).minimumScaleFactor(0.7)
                 .padding(.horizontal, 10)

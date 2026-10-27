@@ -8,9 +8,9 @@ nonisolated enum ShotEffectExporter {
         case noVideo, writer(String), photos
         var errorDescription: String? {
             switch self {
-            case .noVideo: "This shot has no video track."
-            case .writer(let reason): "Couldn’t render the shot. \(reason)"
-            case .photos: "Allow Photos access in Settings to save your shot."
+            case .noVideo: String(localized: "This shot has no video track.")
+            case .writer(let reason): String(localized: "Couldn’t render the shot. \(reason)")
+            case .photos: String(localized: "Allow Photos access in Settings to save your shot.")
             }
         }
     }
@@ -67,7 +67,7 @@ nonisolated enum ShotEffectExporter {
         ])
         frames.videoComposition = composition
         frames.alwaysCopiesSampleData = false
-        guard reader.canAdd(frames) else { throw Failure.writer("Cannot decode this video.") }
+        guard reader.canAdd(frames) else { throw Failure.writer(String(localized: "Cannot decode this video.")) }
         reader.add(frames)
         // Sound gets its own reader: two outputs of one reader can block each other.
         let audioTrack = try await asset.loadTracks(withMediaType: .audio).first
@@ -82,7 +82,7 @@ nonisolated enum ShotEffectExporter {
             return output
         }
         if let sound, let soundReader {
-            guard soundReader.canAdd(sound) else { throw Failure.writer("Cannot decode the source audio.") }
+            guard soundReader.canAdd(sound) else { throw Failure.writer(String(localized: "Cannot decode the source audio.")) }
             soundReader.add(sound)
         }
 
@@ -109,7 +109,7 @@ nonisolated enum ShotEffectExporter {
         // 600 ticks cannot represent every 240 fps timestamp. Match juggling's
         // time scale so encoding does not round frame duration/cadence.
         picture.mediaTimeScale = 60_000
-        guard writer.canAdd(picture) else { throw Failure.writer("Cannot encode this video.") }
+        guard writer.canAdd(picture) else { throw Failure.writer(String(localized: "Cannot encode this video.")) }
         writer.add(picture)
         let format = try await audioTrack?.load(.formatDescriptions).first
         let audioSettings: [String: Any]? = clock.isOriginal ? nil : [
@@ -118,10 +118,10 @@ nonisolated enum ShotEffectExporter {
         let audioInput = sound == nil ? nil : AVAssetWriterInput(mediaType: .audio, outputSettings: audioSettings,
                                                                sourceFormatHint: clock.isOriginal ? format : nil)
         if let input = audioInput {
-            guard writer.canAdd(input) else { throw Failure.writer("Cannot preserve this audio format.") }
+            guard writer.canAdd(input) else { throw Failure.writer(String(localized: "Cannot preserve this audio format.")) }
             writer.add(input)
             guard soundReader?.startReading() == true else {
-                throw Failure.writer("The source audio could not be opened.")
+                throw Failure.writer(String(localized: "The source audio could not be opened."))
             }
         }
         let audioRange = try await audioTrack?.load(.timeRange)
@@ -151,17 +151,17 @@ nonisolated enum ShotEffectExporter {
             while let next = pendingSound, CMSampleBufferGetPresentationTimeStamp(next).seconds <= time {
                 while !audioInput.isReadyForMoreMediaData {
                     try await VideoWorkExecution.checkpoint(requiresGPU: engine != nil)
-                    guard writer.status == .writing else { throw Failure.writer(writer.error?.localizedDescription ?? "Audio encoding stopped.") }
+                    guard writer.status == .writing else { throw Failure.writer(writer.error?.localizedDescription ?? String(localized: "Audio encoding stopped.")) }
                     try await Task.sleep(for: .milliseconds(4))
                 }
-                guard audioInput.append(next) else { throw Failure.writer(writer.error?.localizedDescription ?? "Couldn’t save the sound.") }
+                guard audioInput.append(next) else { throw Failure.writer(writer.error?.localizedDescription ?? String(localized: "Couldn’t save the sound.")) }
                 let end = CMSampleBufferGetPresentationTimeStamp(next).seconds + CMSampleBufferGetDuration(next).seconds
                 if end.isFinite { audioEnd = max(audioEnd ?? end, end) }
                 pendingSound = sound?.copyNextSampleBuffer()
             }
             if pendingSound == nil {
                 guard soundReader?.status == .completed else {
-                    throw Failure.writer("Audio decoding stopped before it finished.")
+                    throw Failure.writer(String(localized: "Audio decoding stopped before it finished."))
                 }
                 audioInput.markAsFinished(); soundFinished = true
             }
@@ -170,11 +170,11 @@ nonisolated enum ShotEffectExporter {
         func duplicate(_ source: CVPixelBuffer) throws -> CVPixelBuffer {
             var copy: CVPixelBuffer?
             if let pool = adaptor.pixelBufferPool { CVPixelBufferPoolCreatePixelBuffer(nil, pool, &copy) }
-            guard let copy else { throw Failure.writer("Cannot prepare a replay frame.") }
+            guard let copy else { throw Failure.writer(String(localized: "Cannot prepare a replay frame.")) }
             CVPixelBufferLockBaseAddress(source, .readOnly); CVPixelBufferLockBaseAddress(copy, [])
             defer { CVPixelBufferUnlockBaseAddress(source, .readOnly); CVPixelBufferUnlockBaseAddress(copy, []) }
             guard let from = CVPixelBufferGetBaseAddress(source), let to = CVPixelBufferGetBaseAddress(copy) else {
-                throw Failure.writer("Cannot prepare a replay frame.")
+                throw Failure.writer(String(localized: "Cannot prepare a replay frame."))
             }
             let rowFrom = CVPixelBufferGetBytesPerRow(source), rowTo = CVPixelBufferGetBytesPerRow(copy)
             for y in 0..<min(CVPixelBufferGetHeight(source), CVPixelBufferGetHeight(copy)) {
@@ -209,7 +209,7 @@ nonisolated enum ShotEffectExporter {
             try await feedSound(through: time + 0.25)
             while !picture.isReadyForMoreMediaData {
                 try await VideoWorkExecution.checkpoint(requiresGPU: engine != nil)
-                guard writer.status == .writing else { throw Failure.writer(writer.error?.localizedDescription ?? "Video encoding stopped.") }
+                guard writer.status == .writing else { throw Failure.writer(writer.error?.localizedDescription ?? String(localized: "Video encoding stopped.")) }
                 // A silent hold has no sound until it ends, and the writer can stop taking pictures
                 // until it has sound to interleave: hand it the next sound early instead of waiting.
                 if let audioInput, !soundFinished, audioInput.isReadyForMoreMediaData, let next = pendingSound {
@@ -219,7 +219,7 @@ nonisolated enum ShotEffectExporter {
                 try await Task.sleep(for: .milliseconds(4))
             }
             guard adaptor.append(pixels, withPresentationTime: CMTime(seconds: time, preferredTimescale: 60_000)) else {
-                throw Failure.writer(writer.error?.localizedDescription ?? "Couldn’t save this frame.")
+                throw Failure.writer(writer.error?.localizedDescription ?? String(localized: "Couldn’t save this frame."))
             }
             videoFrames += 1
             progress(min(0.98, time / total))
@@ -240,12 +240,12 @@ nonisolated enum ShotEffectExporter {
         if !soundFinished { audioInput?.markAsFinished() }
         writer.endSession(atSourceTime: duration)
         guard reader.status == .completed, videoFrames > 0 else {
-            throw Failure.writer(reader.error?.localizedDescription ?? "Video decoding did not finish.")
+            throw Failure.writer(reader.error?.localizedDescription ?? String(localized: "Video decoding did not finish."))
         }
         if let audioRange, audioRange.duration.seconds > 0 {
             let expectedEnd = min(duration.seconds, CMTimeRangeGetEnd(audioRange).seconds)
             guard let audioEnd, audioEnd >= expectedEnd - 0.1 else {
-                throw Failure.writer("The source audio ended unexpectedly. Try another copy of the video.")
+                throw Failure.writer(String(localized: "The source audio ended unexpectedly. Try another copy of the video."))
             }
         }
         await writer.finishWriting()
@@ -263,7 +263,7 @@ nonisolated enum ShotEffectExporter {
                                       bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(pixels),
                                       space: CGColorSpaceCreateDeviceRGB(),
                                       bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue) else {
-            throw Failure.writer("Cannot draw the distance badge.")
+            throw Failure.writer(String(localized: "Cannot draw the distance badge."))
         }
         context.translateBy(x: 0, y: size.height); context.scaleBy(x: 1, y: -1)
         BallDistanceBadgeRenderer.draw(in: context, size: size, state: state)
@@ -276,7 +276,7 @@ nonisolated enum ShotEffectExporter {
                                       bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(pixels),
                                       space: CGColorSpaceCreateDeviceRGB(),
                                       bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue) else {
-            throw Failure.writer("Cannot draw the replay captions.")
+            throw Failure.writer(String(localized: "Cannot draw the replay captions."))
         }
         ShotCaptionRenderer.draw(captions, in: context, height: size.height)
     }

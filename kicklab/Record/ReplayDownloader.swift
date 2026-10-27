@@ -72,7 +72,7 @@ final class ReplayDownloader: ObservableObject {
             ProductAnalytics.shared.track(.exportFinished(activity, outcome, elapsed: Double(elapsed.components.seconds)))
         }
         do {
-            try await VideoBackgroundWork.shared.run(title: "Saving your replay",
+            try await VideoBackgroundWork.shared.run(title: String(localized: "Saving your replay"),
                 requiresGPU: (edit.style != .none && edit.intensity > 0) || edit.environment != .original || edit.scene != nil
                     || (edit.ballSkin != .original && summary.needsVisualPreparation && preparation.prepared == nil)) {
                 try await self.performDownload(summary: summary, edit: edit, overlays: overlays,
@@ -86,7 +86,7 @@ final class ReplayDownloader: ObservableObject {
             if case .saved = phase { outcome = .completed; return }
             outcome = .cancelled
             await burnIn.cancelAndWait()
-            phase = .failed("Saving stopped. Tap Download to try again.")
+            phase = .failed(String(localized: "Saving stopped. Tap Download to try again."))
             #if DEBUG
             await FinalTestCoordinator.shared.exportFinished(summary.videoURL, output: nil, error: "Export cancelled")
             #endif
@@ -105,7 +105,7 @@ final class ReplayDownloader: ObservableObject {
         needsForeground = VideoWorkExecution.lease?.canContinue != true
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else {
-            throw NSError(domain: "ReplayExport", code: 1, userInfo: [NSLocalizedDescriptionKey: "Allow Photos access in Settings to save your replay."])
+            throw NSError(domain: "ReplayExport", code: 1, userInfo: [NSLocalizedDescriptionKey: String(localized: "Allow Photos access in Settings to save your replay.")])
         }
         let media: ScenePlayback
         do {
@@ -128,7 +128,7 @@ final class ReplayDownloader: ObservableObject {
                       }, touchTimes: summary.touchesMarked.map(\.time)) : nil)
         while burnIn.isExporting {
             try await VideoWorkExecution.checkpoint()
-            VideoWorkExecution.lease?.progress(burnIn.progress * 0.96, subtitle: "Saving your replay")
+            VideoWorkExecution.lease?.progress(burnIn.progress * 0.96, subtitle: String(localized: "Saving your replay"))
             phase = .exporting(burnIn.progress)
             #if DEBUG
             FinalTestCoordinator.shared.exportProgress(summary.videoURL, progress: burnIn.progress, saving: false)
@@ -136,7 +136,7 @@ final class ReplayDownloader: ObservableObject {
             try await Task.sleep(for: .milliseconds(80))
         }
         guard let url = burnIn.outputURL else {
-            throw NSError(domain: "ReplayExport", code: 2, userInfo: [NSLocalizedDescriptionKey: burnIn.status.isEmpty ? "Couldn’t render your replay." : burnIn.status])
+            throw NSError(domain: "ReplayExport", code: 2, userInfo: [NSLocalizedDescriptionKey: burnIn.status.isEmpty ? String(localized: "Couldn’t render your replay.") : burnIn.status])
         }
         #if DEBUG && TOUCH_COUNTING_DEBUG
         RFEffectsRoutingAudit.exported(source: summary.videoURL, output: url, track: media.track,
@@ -239,11 +239,11 @@ struct ReplayDownloadButton: View {
 
     private var label: String {
         switch phase {
-        case .preparing: "Preparing download"
-        case .exporting: "Saving, \(Int((progress * 100).rounded())) percent"
-        case .saving: "Saving to Photos"
-        case .saved: "Saved to Photos. Share"
-        default: "Download"
+        case .preparing: String(localized: "Preparing download")
+        case .exporting: String(localized: "Saving, \(Int((progress * 100).rounded())) percent")
+        case .saving: String(localized: "Saving to Photos")
+        case .saved: String(localized: "Saved to Photos. Share")
+        default: String(localized: "Download")
         }
     }
 

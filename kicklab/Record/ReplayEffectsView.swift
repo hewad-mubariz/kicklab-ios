@@ -15,7 +15,7 @@ struct ReplayEffectsView: View {
     var showsTouchTools = true
     var distanceTimeline: BallDistanceTimeline? = nil
     var historySessionID: UUID? = nil
-    var closeLabel = "Close editor"
+    var closeLabel: LocalizedStringKey = "Close editor"
     /// Shown once over the replay, e.g. when recording ended early.
     var notice: String? = nil
 
@@ -508,7 +508,7 @@ struct ReplayEffectsView: View {
         }.frame(maxWidth: 420).frame(maxWidth: .infinity)
     }
 
-    private func roundButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
+    private func roundButton(_ symbol: String, label: LocalizedStringKey, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol).font(.system(size: 18, weight: .medium)).frame(width: 32, height: 32)
                 .contentTransition(.symbolEffect(.replace))
@@ -615,7 +615,7 @@ struct ReplayEffectsView: View {
                 }
             } catch is CancellationError { }
             catch {
-                playbackError = "Couldn’t open this video. \(error.localizedDescription)"
+                playbackError = String(localized: "Couldn’t open this video. \(error.localizedDescription)")
                 #if DEBUG
                 FinalTestCoordinator.shared.replayFailed(summary.videoURL, message: error.localizedDescription)
                 #endif
@@ -626,13 +626,13 @@ struct ReplayEffectsView: View {
     private var effectsStatus: String? {
         guard displayedLook.edit.requiresVisualTrack else { return nil }
         if preparation.isPreparing || (summary.needsVisualPreparation && preparation.prepared == nil) {
-            if preparation.error != nil || surfaceMotionError != nil { return "Effects unavailable — tap to retry" }
-            return "Preparing effects · \(Int(preparation.progress * 100))%"
+            if preparation.error != nil || surfaceMotionError != nil { return String(localized: "Effects unavailable — tap to retry") }
+            return String(localized: "Preparing effects · \(Int(preparation.progress * 100))%")
         }
-        guard displayedLook.edit.ballSkin != .original else { return "Effects ready" }
-        if surfaceMotionError != nil { return "Ball effects unavailable — tap to retry" }
-        if surfaceMotionTask != nil { return "Preparing source spin…" }
-        return effectTrack.surfaceMotion?.status(at: currentTime).label ?? "Spin uncertain"
+        guard displayedLook.edit.ballSkin != .original else { return String(localized: "Effects ready") }
+        if surfaceMotionError != nil { return String(localized: "Ball effects unavailable — tap to retry") }
+        if surfaceMotionTask != nil { return String(localized: "Preparing source spin…") }
+        return effectTrack.surfaceMotion?.status(at: currentTime).label ?? String(localized: "Spin uncertain")
     }
 
     private var renderedEdit: SessionEditState {

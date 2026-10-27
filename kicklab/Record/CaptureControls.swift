@@ -7,11 +7,11 @@ nonisolated enum CaptureControlState: Equatable {
     var isBusy: Bool { self == .preparing || self == .recording || self == .finishing }
     var title: String {
         switch self {
-        case .ready: "Record"
-        case .warming: "Getting ready"
-        case .preparing: "Starting…"
-        case .recording: "Stop"
-        case .finishing: "Finishing…"
+        case .ready: String(localized: "Record")
+        case .warming: String(localized: "Getting ready")
+        case .preparing: String(localized: "Starting…")
+        case .recording: String(localized: "Stop")
+        case .finishing: String(localized: "Finishing…")
         }
     }
 }
@@ -170,7 +170,7 @@ struct CaptureControls: View {
             .shadow(color: .red.opacity(state == .recording ? 0.12 : 0.28), radius: 9, y: 3)
     }
 
-    private func sideControl(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
+    private func sideControl(_ title: LocalizedStringKey, symbol: String, action: @escaping () -> Void) -> some View {
         VStack(spacing: 9) {
             Button(action: action) {
                 Image(systemName: symbol).font(.system(size: 20, weight: .medium))

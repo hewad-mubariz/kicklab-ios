@@ -123,10 +123,10 @@ struct LeaderboardReplayReviewCard: View {
         return HStack(spacing: 10) {
             Image(systemName: "trophy")
             VStack(alignment: .leading, spacing: 3) {
-                Text(item.rankedProposal.map { "Best streak \($0.count)" } ?? "Leaderboard streak")
+                Text(item.rankedProposal.map { String(localized: "Best streak \($0.count)") } ?? String(localized: "Leaderboard streak"))
                     .font(.subheadline.weight(.semibold))
                 Text(askable == 0 ? "Counts on the leaderboard by itself"
-                     : "\(askable) \(askable == 1 ? "touch" : "touches") to check · counts by itself")
+                     : "\(askable) touches to check · counts by itself")
                     .font(.caption).foregroundStyle(.white.opacity(0.75))
             }
             Spacer(minLength: 0)

@@ -101,16 +101,16 @@ private struct HomeReviewedLeaderboardCard: View {
         }
     }
     private var chase: String {
-        if state.error != nil, state.board != nil { return "Saved ranking · open to refresh" }
+        if state.error != nil, state.board != nil { return String(localized: "Saved ranking · open to refresh") }
         if let you, let check = review.openCheck(for: you)?.label(beside: you.touches, ranked: you.sessionID) {
             return check
         }
-        guard let you else { return pending || waiting ? "View your touch check" : "Best streaks · weekly & all-time" }
-        if you.rank == 1 { return "You lead this week" }
-        guard let ahead = entries.first(where: { $0.rank == you.rank-1 }) else { return "View nearby players" }
-        return "\(max(1,ahead.touches-you.touches+1)) touches to #\(ahead.rank)"
+        guard let you else { return pending || waiting ? String(localized: "View your touch check") : String(localized: "Best streaks · weekly & all-time") }
+        if you.rank == 1 { return String(localized: "You lead this week") }
+        guard let ahead = entries.first(where: { $0.rank == you.rank-1 }) else { return String(localized: "View nearby players") }
+        return String(localized: "\(max(1,ahead.touches-you.touches+1)) touches to #\(ahead.rank)")
     }
-    private func metric(_ value: String, _ label: String) -> some View {
+    private func metric(_ value: String, _ label: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(value).font(TrainingHomeStyle.display(42, relativeTo: .largeTitle)).monospacedDigit()
             Text(label).font(.caption).foregroundStyle(.white.opacity(0.85))

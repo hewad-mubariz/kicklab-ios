@@ -4,6 +4,15 @@ enum ReplayTool: String, Identifiable {
     case counter = "Counter", timer = "Timer", ball = "Ball", effects = "Effects", graph = "Graph"
     var id: String { rawValue }
     var requiresPro: Bool { self != .counter && self != .timer }
+    var title: String {
+        switch self {
+        case .counter: String(localized: "Counter")
+        case .timer: String(localized: "Timer")
+        case .ball: String(localized: "Ball")
+        case .effects: String(localized: "Effects")
+        case .graph: String(localized: "Graph")
+        }
+    }
 }
 
 /// The Customize panel. Tools open in place, like a tray: the panel's height glides to fit
@@ -91,7 +100,7 @@ struct ReplayToolbox: View {
             }
             // The title swaps with the content, so the old and new words never blend letter by letter.
             ZStack(alignment: .leading) {
-                Text(page?.rawValue ?? "Customize replay").font(.system(size: 17, weight: .semibold))
+                Text(page?.title ?? String(localized: "Customize replay")).font(.system(size: 17, weight: .semibold))
                     .id(page?.rawValue ?? "tools")
                     .transition(swap)
             }
@@ -170,7 +179,7 @@ struct ReplayToolbox: View {
             VStack(spacing: 6) {
                 preview(for: tool).frame(height: 52).accessibilityHidden(true)
                 HStack(spacing: 4) {
-                    Text(tool.rawValue).font(.system(size: 11, weight: .medium))
+                    Text(tool.title).font(.system(size: 11, weight: .medium))
                     if !isPro && tool.requiresPro { ProBadge() }
                 }
             }.padding(.horizontal, 10).padding(.vertical, 10)
@@ -183,7 +192,7 @@ struct ReplayToolbox: View {
                 }
                 .contentShape(.rect(cornerRadius: 17))
         }.buttonStyle(SessionPressStyle(scale: 0.92))
-            .accessibilityLabel(tool.rawValue + (!isPro && tool.requiresPro ? ", Pro" : ""))
+            .accessibilityLabel(tool.title + (!isPro && tool.requiresPro ? ", Pro" : ""))
             .accessibilityIdentifier("replay-tool-\(tool.rawValue.lowercased())")
     }
 
@@ -304,7 +313,7 @@ struct ReplayToolbox: View {
                     .overlay(alignment: .topTrailing) {
                         if !isPro && skin != .original { ProBadge().offset(x: 5, y: -4) }
                     }
-                Text(skin == .original ? "Original" : skin.title)
+                Text(skin == .original ? String(localized: "Original") : skin.title)
                     .font(.system(size: 10, weight: selected ? .semibold : .medium))
                     .foregroundStyle(selected ? SessionStyle.mint : .white.opacity(0.8))
                     .lineLimit(1).minimumScaleFactor(0.7)
@@ -313,7 +322,7 @@ struct ReplayToolbox: View {
             .contentShape(.rect)
         }
         .buttonStyle(SessionPressStyle(scale: 0.9))
-        .accessibilityLabel(skin == .original ? "Original ball" : skin.title)
+        .accessibilityLabel(skin == .original ? String(localized: "Original ball") : skin.title)
         .accessibilityIdentifier("ball-picker-\(skin.rawValue)")
         .accessibilityAddTraits(selected ? .isSelected : [])
         .zIndex(selected ? 1 : 0)
@@ -375,12 +384,12 @@ struct ReplayToolbox: View {
             .contentShape(.rect)
         }
         .buttonStyle(SessionPressStyle(scale: 0.92))
-        .accessibilityLabel(style == .none ? "No effect" : style.title)
+        .accessibilityLabel(style == .none ? String(localized: "No effect") : style.title)
         .accessibilityIdentifier("effect-picker-\(style.rawValue)")
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
-    private func togglePage<Preview: View>(title: String, note: String, isOn: Binding<Bool>,
+    private func togglePage<Preview: View>(title: LocalizedStringKey, note: LocalizedStringKey, isOn: Binding<Bool>,
                                           @ViewBuilder preview: () -> Preview) -> some View {
         HStack(spacing: 14) {
             preview()

@@ -7,7 +7,7 @@ enum MediaReadiness {
     enum Failure: LocalizedError {
         case unavailable, timedOut
         var errorDescription: String? {
-            "The video could not open. Please close it and try again."
+            String(localized: "The video could not open. Please close it and try again.")
         }
     }
     static func wait(timeout: Duration = .seconds(15),

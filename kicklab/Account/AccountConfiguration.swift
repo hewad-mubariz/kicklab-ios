@@ -67,12 +67,12 @@ enum AccountFailure: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .configuration: "Sign-in is unavailable in this build. You can still train as a guest."
-        case .invalidEmail: "Enter a valid email address."
-        case .invalidCallback: "This sign-in link is invalid. Request a new link and open it on this device."
-        case .missingAppleToken: "Apple could not complete sign-in. Please try again."
-        case .unavailableWindow: "Please reopen the sign-in screen and try again."
-        case .nonce: "Unable to start secure sign-in. Please try again."
+        case .configuration: String(localized: "Sign-in is unavailable in this build. You can still train as a guest.")
+        case .invalidEmail: String(localized: "Enter a valid email address.")
+        case .invalidCallback: String(localized: "This sign-in link is invalid. Request a new link and open it on this device.")
+        case .missingAppleToken: String(localized: "Apple could not complete sign-in. Please try again.")
+        case .unavailableWindow: String(localized: "Please reopen the sign-in screen and try again.")
+        case .nonce: String(localized: "Unable to start secure sign-in. Please try again.")
         }
     }
 }

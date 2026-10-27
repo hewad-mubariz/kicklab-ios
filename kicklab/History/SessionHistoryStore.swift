@@ -43,7 +43,7 @@ final class SessionHistoryStore: ObservableObject {
                 }
             }
             items = saved.sorted { $0.completedAt == $1.completedAt ? $0.id.uuidString > $1.id.uuidString : $0.completedAt > $1.completedAt }
-        } catch { errorMessage = "Some saved sessions could not be read. Try again." }
+        } catch { errorMessage = String(localized: "Some saved sessions could not be read. Try again.") }
     }
 
     func save(_ item: HistorySession) throws {
@@ -75,7 +75,7 @@ final class SessionHistoryStore: ObservableObject {
 
     func persistenceFailed(for item: HistorySession) {
         guard item.ownerID == ownerID else { return }
-        errorMessage = "This session couldn’t be saved to history. Your current replay is still available."
+        errorMessage = String(localized: "This session couldn’t be saved to history. Your current replay is still available.")
     }
 
     func videoRetained(for item: HistorySession) {
@@ -86,7 +86,7 @@ final class SessionHistoryStore: ObservableObject {
 
     func videoRetentionFailed(for item: HistorySession) {
         guard item.ownerID == ownerID else { return }
-        errorMessage = "Your result is saved, but the replay couldn’t be kept. Check the free space on your phone."
+        errorMessage = String(localized: "Your result is saved, but the replay couldn’t be kept. Check the free space on your phone.")
     }
 
     func markRejected(_ result: SavedJugglingResult) async throws {
@@ -125,7 +125,7 @@ final class SessionHistoryStore: ObservableObject {
     func removeVideo(for item: HistorySession) {
         guard ownerID == item.ownerID else { return }
         do { try library.removeVideo(for: item); videoRevision += 1 }
-        catch { errorMessage = "The replay could not be removed. Try again." }
+        catch { errorMessage = String(localized: "The replay could not be removed. Try again.") }
     }
 
     func refresh() async {
@@ -163,7 +163,7 @@ final class SessionHistoryStore: ObservableObject {
             reloadLocal()
         } catch {
             if current == generation, !Task.isCancelled {
-                errorMessage = "Couldn’t refresh your history. Sessions saved on this phone are still available."
+                errorMessage = String(localized: "Couldn’t refresh your history. Sessions saved on this phone are still available.")
             }
         }
     }

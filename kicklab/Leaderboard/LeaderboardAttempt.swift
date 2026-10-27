@@ -9,7 +9,7 @@ nonisolated enum LeaderboardRules {
     // Matches the deployed project's 50 MiB Storage limit. Raise the app,
     // bucket and database limits together when the hosting plan changes.
     static let maximumVideoBytes: Int64 = 52_428_800
-    static let privacy = "Clips are sent only when you ask for a check, and only short ones around the touches you choose, never the whole recording. They are private to you and the review team, are not used for model training and are never shown to other players. Pending and rejected clips expire 30 days after the check or its latest review; confirmed clips are kept until you withdraw the check or delete your account. Withdrawing removes its correction immediately and queues clip deletion within 24 hours."
+    static let privacy = String(localized: "Clips are sent only when you ask for a check, and only short ones around the touches you choose, never the whole recording. They are private to you and the review team, are not used for model training and are never shown to other players. Pending and rejected clips expire 30 days after the check or its latest review; confirmed clips are kept until you withdraw the check or delete your account. Withdrawing removes its correction immediately and queues clip deletion within 24 hours.")
     static func nextReset(after date: Date = Date()) -> Date {
         var calendar = Calendar(identifier: .iso8601)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
@@ -61,11 +61,11 @@ nonisolated struct LeaderboardAttempt: Codable, Identifiable, Equatable, Sendabl
         case uploading, pending, approved, rejected, withdrawn
         var label: String {
             switch self {
-            case .uploading: "Upload unfinished"
-            case .pending: "In review"
-            case .approved: "Reviewed"
-            case .rejected: "Not qualified"
-            case .withdrawn: "Withdrawn"
+            case .uploading: String(localized: "Upload unfinished")
+            case .pending: String(localized: "In review")
+            case .approved: String(localized: "Reviewed")
+            case .rejected: String(localized: "Not qualified")
+            case .withdrawn: String(localized: "Withdrawn")
             }
         }
     }
@@ -111,17 +111,17 @@ nonisolated enum LeaderboardFailure: LocalizedError {
     case unavailable, signIn, originalRequired, invalidSegment, tooLarge, changedVideo, upload, limit, expired, conflict, clips
     var errorDescription: String? {
         switch self {
-        case .unavailable: "The reviewed leaderboard is unavailable. Please try again later."
-        case .signIn: "Sign in to send touches from a session recorded on your account."
-        case .originalRequired: "Choose an original in-app recording saved on this phone. Imports and guest recordings stay in your personal history."
-        case .invalidSegment: "Enter the continuous streak’s touch count and a valid start/end time within the recording."
-        case .tooLarge: "These clips are larger than the current 50 MB upload limit. Choose fewer touches. Your recording remains saved on this phone."
-        case .changedVideo: "The original recording has changed. This upload cannot continue."
-        case .upload: "Upload paused. Keep the original on this phone and try again to resume."
-        case .limit: "The beta allows three checks per day and three waiting for review. Please try again later."
-        case .expired: "This upload expired. Withdraw the check and send it again."
-        case .clips: "The clips for this check couldn’t be made from your recording. Your recording remains saved on this phone."
-        case .conflict: "This session already has a touch check. Open Touch checks to see its status."
+        case .unavailable: String(localized: "The reviewed leaderboard is unavailable. Please try again later.")
+        case .signIn: String(localized: "Sign in to send touches from a session recorded on your account.")
+        case .originalRequired: String(localized: "Choose an original in-app recording saved on this phone. Imports and guest recordings stay in your personal history.")
+        case .invalidSegment: String(localized: "Enter the continuous streak’s touch count and a valid start/end time within the recording.")
+        case .tooLarge: String(localized: "These clips are larger than the current 50 MB upload limit. Choose fewer touches. Your recording remains saved on this phone.")
+        case .changedVideo: String(localized: "The original recording has changed. This upload cannot continue.")
+        case .upload: String(localized: "Upload paused. Keep the original on this phone and try again to resume.")
+        case .limit: String(localized: "The beta allows three checks per day and three waiting for review. Please try again later.")
+        case .expired: String(localized: "This upload expired. Withdraw the check and send it again.")
+        case .clips: String(localized: "The clips for this check couldn’t be made from your recording. Your recording remains saved on this phone.")
+        case .conflict: String(localized: "This session already has a touch check. Open Touch checks to see its status.")
         }
     }
 }

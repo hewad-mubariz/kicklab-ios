@@ -228,7 +228,7 @@ struct BallDistanceView: View {
         }.frame(maxWidth: 400).frame(maxWidth: .infinity)
     }
 
-    private func sideButton(_ title: String, symbol: String, action: @escaping () -> Void) -> some View {
+    private func sideButton(_ title: LocalizedStringKey, symbol: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 12) {
                 Image(systemName: symbol).font(.system(size: 21)).frame(width: 46, height: 46)

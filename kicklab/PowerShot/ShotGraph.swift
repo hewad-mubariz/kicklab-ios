@@ -887,7 +887,7 @@ struct ShotGraphPicker: View {
                                 }
                         }
                         .buttonStyle(SessionPressStyle(scale: reduceMotion ? 1 : 0.95))
-                        .accessibilityLabel(option.title + (option == .comet ? ", Default" : ""))
+                        .accessibilityLabel(option.title + (option == .comet ? ", " + String(localized: "Default") : ""))
                         .accessibilityHint(option.caption)
                         .accessibilityAddTraits(style == option ? .isSelected : [])
                         .accessibilityIdentifier("shot-graph-\(option.rawValue)")
@@ -920,7 +920,7 @@ private struct ShotGraphOption: View {
                         .transition(.sessionPop(scale: 0.2))
                 }
             }
-            Text(style == .comet ? "DEFAULT" : style.measure)
+            Text(style == .comet ? String(localized: "DEFAULT") : style.measure)
                 .font(.system(size: 7, weight: .medium)).tracking(0.6)
                 .foregroundStyle(style == .comet ? SessionStyle.mint : .white.opacity(0.45))
         }

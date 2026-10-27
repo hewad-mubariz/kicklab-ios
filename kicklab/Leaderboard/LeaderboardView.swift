@@ -134,7 +134,9 @@ struct LeaderboardView: View {
                                 .accessibilityIdentifier("leaderboard-my-submissions")
                         }
                     }
-                    Text("Ranked by each player’s best continuous streak, counted automatically. A hand, a catch or a ground touch ends a streak. Touches the counter wasn’t sure of are left out without ending it\(LeaderboardRules.touchChecks ? ", and you can send them for a check" : ""). Duration and rhythm don’t add points.")
+                    Text(LeaderboardRules.touchChecks
+                         ? "Ranked by each player’s best continuous streak, counted automatically. A hand, a catch or a ground touch ends a streak. Touches the counter wasn’t sure of are left out without ending it, and you can send them for a check. Duration and rhythm don’t add points."
+                         : "Ranked by each player’s best continuous streak, counted automatically. A hand, a catch or a ground touch ends a streak. Touches the counter wasn’t sure of are left out without ending it. Duration and rhythm don’t add points.")
                         .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 20)
@@ -289,7 +291,7 @@ struct LeaderboardView: View {
         }
     }
 
-    private func chip(_ text: String, systemImage: String) -> some View {
+    private func chip(_ text: LocalizedStringKey, systemImage: String) -> some View {
         Label(text, systemImage: systemImage)
             .font(.caption.weight(.semibold))
             .foregroundStyle(TrainingHomeStyle.muted(scheme))
@@ -335,7 +337,7 @@ struct LeaderboardView: View {
         let check = openCheck(for: entry)
         return Button { selectedEntry = entry } label: {
             LeaderboardRow(entry: entry, best: best,
-                           chase: ahead.map { "\($0.touches - entry.touches + 1) to pass \($0.name)" },
+                           chase: ahead.map { String(localized: "\($0.touches - entry.touches + 1) to pass \($0.name)") },
                            target: ahead?.touches,
                            review: check?.label(beside: entry.touches, ranked: entry.sessionID),
                            pending: check.flatMap { $0.count > entry.touches ? $0.count : nil },
@@ -477,7 +479,8 @@ struct LeaderboardView: View {
             .glassEffect(.regular.interactive(), in: .capsule)
             .padding(.bottom, 6)
             .transition(.sessionRise)
-            .accessibilityLabel("Jump to your place, rank \(you.rank), \(you.touches) touches\(pillReview(you).map { ", \($0) more in review" } ?? "")")
+            .accessibilityLabel([String(localized: "Jump to your place, rank \(you.rank), \(you.touches) touches"),
+                                 pillReview(you).map { String(localized: "\($0) more in review") }].compactMap { $0 }.joined(separator: ", "))
             .accessibilityIdentifier("leaderboard-you-pill")
         }
     }
@@ -522,7 +525,7 @@ struct LeaderboardPeriodSwitch: View {
                 Button {
                     withAnimation(SessionMotion.snap) { period = option }
                 } label: {
-                    Text(option.rawValue.uppercased())
+                    Text(option.title.uppercased())
                         .font(LeaderboardStyle.number(19)).tracking(1.4)
                         .padding(.top, 3)
                         .foregroundStyle(selected ? selectedInk : TrainingHomeStyle.muted(scheme))
@@ -573,6 +576,14 @@ struct LeaderboardRow: View {
     private var lit: Bool { entry.isYou }
     private var shown: Int { rolled ? entry.touches : 0 }
 
+    /// Whole phrases joined by full stops, so each language keeps its own word order.
+    private var spokenRow: String {
+        var rank = String(localized: "Rank \(entry.rank), \(lit ? String(localized: "you") : entry.name), \(entry.touches) touches")
+        if entry.hasConfirmedTouchCheck { rank += ", " + String(localized: "confirmed by a reviewer") }
+        let stats = String(localized: "Streak duration \(entry.streakDurationLabel), average rhythm \(entry.averageRhythmLabel)")
+        return [rank, review, stats, chase].compactMap { $0 }.joined(separator: ". ")
+    }
+
     private func share(_ touches: Int) -> Double {
         best > 0 ? min(1, Double(touches) / Double(best)) : 0
     }
@@ -590,7 +601,7 @@ struct LeaderboardRow: View {
                                  ringWidth: lit ? 2.5 : 1.5)
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(lit ? "You" : entry.name).font(.body.weight(.semibold)).lineLimit(1)
+                    Text(lit ? String(localized: "You") : entry.name).font(.body.weight(.semibold)).lineLimit(1)
                     if entry.hasConfirmedTouchCheck {
                         // Only a score a reviewer confirmed carries the seal.
                         Image(systemName: "checkmark.seal.fill").font(.caption)
@@ -671,7 +682,7 @@ struct LeaderboardRow: View {
             withAnimation(.spring(response: 0.95, dampingFraction: 0.7).delay(delay)) { rolled = true }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Rank \(entry.rank), \(lit ? "you" : entry.name), \(entry.touches) touches\(entry.hasConfirmedTouchCheck ? ", confirmed by a reviewer" : ""). \(review.map { "\($0). " } ?? "")Streak duration \(entry.streakDurationLabel), average rhythm \(entry.averageRhythmLabel)\(chase.map { ". \($0)" } ?? "")")
+        .accessibilityLabel(spokenRow)
         .accessibilityIdentifier("leaderboard-row-\(entry.rank)")
     }
 }
@@ -759,7 +770,7 @@ private struct LeaderboardLoadingBall: View {
 private struct CheckedSession: Identifiable { let id: UUID }
 
 private struct LeaderboardUnranked: View {
-    var message = "Record a juggling session to get on the board."
+    var message: LocalizedStringKey = "Record a juggling session to get on the board."
 
     var body: some View {
         HStack(spacing: 12) {

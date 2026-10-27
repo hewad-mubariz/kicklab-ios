@@ -90,7 +90,7 @@ struct ReplayMotionPicker: View {
                                     }
                             }
                             .buttonStyle(SessionPressStyle(scale: reduceMotion ? 1 : 0.97))
-                            .accessibilityLabel(option.title + (option == .ballMotion ? ", Default" : ""))
+                            .accessibilityLabel(option.title + (option == .ballMotion ? ", " + String(localized: "Default") : ""))
                             .accessibilityHint(option.caption)
                             .accessibilityAddTraits(style == option ? .isSelected : [])
                             .accessibilityIdentifier("motion-style-\(option.rawValue)")
@@ -123,7 +123,7 @@ struct MotionStyleOption: View {
                         .foregroundStyle(.black, SessionStyle.mint)
                 }
             }
-            Text(style == .ballMotion ? "DEFAULT" : style.measure)
+            Text(style == .ballMotion ? String(localized: "DEFAULT") : style.measure)
                 .font(.system(size: 7, weight: .medium)).tracking(0.6)
                 .foregroundStyle(style == .ballMotion ? SessionStyle.mint : .white.opacity(0.45))
         }

@@ -99,7 +99,7 @@ nonisolated struct QueuedLeaderboardSubmission: Codable, Equatable, Sendable {
         retryTask?.cancel(); retryTask = nil
         let current = generation
         let entry = ready.entry, item = ready.item, video = ready.video
-        uploadingSession = item.id; progress = 0; phase = "Checking submission…"; errorMessage = nil
+        uploadingSession = item.id; progress = 0; phase = String(localized: "Checking submission…"); errorMessage = nil
         uploadTask = Task { [weak self] in
             guard let self else { return }
             defer {
@@ -112,7 +112,7 @@ nonisolated struct QueuedLeaderboardSubmission: Codable, Equatable, Sendable {
                 guard generation == current, !Task.isCancelled else { return }
                 if latest.allSatisfy({ $0.userID == owner }) { attempts = latest; revision += 1 }
                 // For now only short clips of the flagged moments are sent, never the whole recording.
-                phase = "Preparing clips…"
+                phase = String(localized: "Preparing clips…")
                 let prepared = try await LeaderboardMomentClips.prepare(source: video, review: entry.request ?? item.touchReview,
                     proposal: entry.proposal, durationMS: item.durationMS, folder: clipFolder(owner),
                     session: item.id, limit: LeaderboardRules.maximumVideoBytes)
@@ -145,12 +145,12 @@ nonisolated struct QueuedLeaderboardSubmission: Codable, Equatable, Sendable {
                     else {
                         try Task.checkCancellation()
                         guard generation == current else { return }
-                        phase = "Uploading clips…"
+                        phase = String(localized: "Uploading clips…")
                         try await service.upload(file: clips, attempt: attempt, checkpoint: checkpoint, accountRoot: root) { [weak self] value in
                             guard self?.generation == current else { return }; self?.progress = value
                         }
                         try Task.checkCancellation()
-                        phase = "Sending for review…"
+                        phase = String(localized: "Sending for review…")
                         attempt = try await service.finish(id: attempt.id, owner: owner)
                     }
                 }
@@ -237,7 +237,7 @@ nonisolated struct QueuedLeaderboardSubmission: Codable, Equatable, Sendable {
             }
         } catch is CancellationError {
         } catch {
-            errorMessage = "This submission couldn’t be saved on your phone. Keep the app open until it sends."
+            errorMessage = String(localized: "This submission couldn’t be saved on your phone. Keep the app open until it sends.")
         }
     }
     func withdraw(_ attempt: LeaderboardAttempt) async {

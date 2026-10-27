@@ -156,7 +156,7 @@ final class PlayerStore: ObservableObject {
         catch {
             // Cleanup is still attempted. Do not promise a durable retry if the
             // journal itself could not be written (for example, a full disk).
-            errorMessage = "Local cleanup could not be scheduled. If replays remain after reopening, remove the app to clear its local data."
+            errorMessage = String(localized: "Local cleanup could not be scheduled. If replays remain after reopening, remove the app to clear its local data.")
         }
         let activeSync = userID == owner ? syncTask : nil
         activeSync?.cancel()
@@ -257,7 +257,7 @@ final class PlayerStore: ObservableObject {
                 pendingCount = try queue.pending(for: result.ownerID).count
                 syncPending()
             }
-        } catch { errorMessage = "The session could not be queued for your account. Your video is still available on this device." }
+        } catch { errorMessage = String(localized: "The session could not be queued for your account. Your video is still available on this device.") }
     }
 
     /// Returns immediately. The root-owned task keeps only metadata and a URL,
@@ -297,7 +297,7 @@ final class PlayerStore: ObservableObject {
             history.showImmediately(item, videoURL: summary.videoURL)
             if owner == userID { personalBest = max(personalBest, item.touches) }
             return startSave(request)
-        } catch { errorMessage = "This session could not be saved to history. Your current replay is still available."; return nil }
+        } catch { errorMessage = String(localized: "This session could not be saved to history. Your current replay is still available."); return nil }
     }
 
     private func startSave(_ request: SessionSaveRequest) -> Task<Void, Never> {
@@ -360,7 +360,7 @@ final class PlayerStore: ObservableObject {
                     guard !Task.isCancelled, self.generation == current else { return }
                     self.pendingCount = pending.count
                     if (try? queue.rejectedCount(for: owner)) ?? 0 > 0 {
-                        self.errorMessage = "Some results could not sync and are kept on this phone. Contact support if you need help."
+                        self.errorMessage = String(localized: "Some results could not sync and are kept on this phone. Contact support if you need help.")
                     }
                     guard let result = pending.first else {
                         if revision != self.syncRevision { continue }

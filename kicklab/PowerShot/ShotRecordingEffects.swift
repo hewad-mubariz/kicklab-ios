@@ -72,7 +72,7 @@ struct ShotEffectsButton: View {
         preparing = true; problem = nil
         defer { preparing = false }
         do { video = PreparedShot(url: try await ShotRecordingStore.uprightVideo(for: recording)) }
-        catch { problem = "This shot couldn’t be prepared. \(error.localizedDescription)" }
+        catch { problem = String(localized: "This shot couldn’t be prepared. \(error.localizedDescription)") }
     }
 }
 

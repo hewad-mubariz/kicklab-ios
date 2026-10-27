@@ -197,6 +197,6 @@ struct ExportOverlayEditor: View {
                 }
             }
         } catch is CancellationError { }
-        catch { self.error = "Couldn’t prepare the preview: \(error.localizedDescription)" }
+        catch { self.error = String(localized: "Couldn’t prepare the preview: \(error.localizedDescription)") }
     }
 }

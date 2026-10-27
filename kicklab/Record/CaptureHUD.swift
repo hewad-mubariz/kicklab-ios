@@ -27,7 +27,9 @@ enum JugglingSessionIdentity {
     @discardableResult static func begin(in defaults: UserDefaults = .standard) -> Int {
         let number = next(in: defaults); defaults.set(number, forKey: key); return number
     }
-    static func label(_ number: Int) -> String { String(format: "SESSION %02d", max(1, number)) }
+    static func label(_ number: Int) -> String {
+        String(localized: "SESSION \(String(format: "%02d", max(1, number)))")
+    }
 }
 
 struct CaptureSessionBadge: View {
@@ -141,31 +143,33 @@ struct CaptureMetrics: View {
             let rhythm = CaptureRhythm(touchTimes: touchTimes, at: time)
             HStack(spacing: 12) {
                 if showsTouchMetrics {
-                metric("RHYTHM", value: rhythm.perMinute.map { String(format: "%.0f", $0) } ?? "—",
+                metric("RHYTHM", id: "rhythm", value: rhythm.perMinute.map { String(format: "%.0f", $0) } ?? "—",
                        unit: rhythm.perMinute == nil ? nil : "/ min", alignment: .leading)
-                metric("TOUCH INTERVAL", value: rhythm.intervalLabel, alignment: .leading)
+                metric("TOUCH INTERVAL", id: "touch-interval", value: rhythm.intervalLabel, alignment: .leading)
                 }
                 if showTime {
-                    metric("TIME", value: ExportPreviewTime.label(at: time), alignment: .trailing)
+                    metric("TIME", id: "time", value: ExportPreviewTime.label(at: time), alignment: .trailing)
                 }
             }
         }
         .foregroundStyle(.white)
     }
 
-    private func metric(_ title: String, value: String, unit: String? = nil, alignment: HorizontalAlignment) -> some View {
-        VStack(alignment: alignment, spacing: 6) {
+    private func metric(_ title: LocalizedStringKey, id: String, value: String, unit: LocalizedStringKey? = nil,
+                        alignment: HorizontalAlignment) -> some View {
+        let isTime = id == "time"
+        return VStack(alignment: alignment, spacing: 6) {
             Text(title).font(.system(size: 9, weight: .medium)).tracking(0.5)
                 .foregroundStyle(.white.opacity(0.72)).lineLimit(1).minimumScaleFactor(0.7)
             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(value).font(.system(size: title == "TIME" ? 21 : 24, weight: title == "TIME" ? .semibold : .bold))
+                Text(value).font(.system(size: isTime ? 21 : 24, weight: isTime ? .semibold : .bold))
                     .monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
                     .contentTransition(.numericText()).animation(reduceMotion ? nil : .easeOut(duration: 0.2), value: value)
                 if let unit { Text(unit).font(.system(size: 10, weight: .medium)).foregroundStyle(.white.opacity(0.65)) }
             }
         }.frame(maxWidth: .infinity, alignment: Alignment(horizontal: alignment, vertical: .center))
             .accessibilityElement(children: .combine)
-            .accessibilityIdentifier(title == "TIME" ? "capture-elapsed-time" : "capture-\(title.lowercased().replacingOccurrences(of: " ", with: "-"))")
+            .accessibilityIdentifier(isTime ? "capture-elapsed-time" : "capture-\(id)")
     }
 
 }

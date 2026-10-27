@@ -28,6 +28,21 @@ struct SessionHistoryContent: View {
     private enum HistoryFilter: String, CaseIterable, Identifiable {
         case all = "All", recorded = "Recorded", imported = "Imported"
         var id: Self { self }
+        /// Own keys: a filter names many sessions, the source label names one.
+        var title: LocalizedStringResource {
+            switch self {
+            case .all: LocalizedStringResource("history.filter.all", defaultValue: "All")
+            case .recorded: LocalizedStringResource("history.filter.recorded", defaultValue: "Recorded")
+            case .imported: LocalizedStringResource("history.filter.imported", defaultValue: "Imported")
+            }
+        }
+        var emptyTitle: LocalizedStringKey {
+            switch self {
+            case .all: "Your next session starts here"
+            case .recorded: "No recorded sessions here yet"
+            case .imported: "No imported sessions here yet"
+            }
+        }
     }
     private var filtered: [HistorySession] {
         store.items.filter { filter == .all || (filter == .recorded ? $0.source == .recording : $0.source == .gallery) }
@@ -53,7 +68,7 @@ struct SessionHistoryContent: View {
                 }
 
                 Picker("Session source", selection: $filter) {
-                    ForEach(HistoryFilter.allCases) { Text($0.rawValue).tag($0) }
+                    ForEach(HistoryFilter.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented).accessibilityIdentifier("history-filter")
 
@@ -69,8 +84,7 @@ struct SessionHistoryContent: View {
                         ProgressView("Loading sessions…").frame(maxWidth: .infinity).padding(.vertical, 60)
                     } else {
                         ContentUnavailableView {
-                            Label(filter == .all ? "Your next session starts here" : "No \(filter.rawValue.lowercased()) sessions here yet",
-                                  systemImage: "figure.soccer")
+                            Label(filter.emptyTitle, systemImage: "figure.soccer")
                         } description: {
                             Text(store.hasMore ? "Load older sessions to keep looking."
                                  : "Completed juggling sessions will appear here with your touches, time and replay.")
@@ -120,8 +134,8 @@ struct SessionHistoryContent: View {
     }
 
     private func dayLabel(_ day: Date) -> String {
-        if Calendar.current.isDateInToday(day) { return "TODAY" }
-        if Calendar.current.isDateInYesterday(day) { return "YESTERDAY" }
+        if Calendar.current.isDateInToday(day) { return String(localized: "TODAY") }
+        if Calendar.current.isDateInYesterday(day) { return String(localized: "YESTERDAY") }
         return day.formatted(date: .abbreviated, time: .omitted).uppercased()
     }
     private func notice(_ text: String, symbol: String, retry: @escaping () -> Void) -> some View {
@@ -235,8 +249,8 @@ private struct SessionHistoryDetail: View {
                         } label: { Label("Leaderboard streak", systemImage: "trophy") }
                         .accessibilityIdentifier("history-leaderboard-submit")
                     } else if item.ownerID != nil && item.source == .recording {
-                        Label(item.rankedProposal.map { "Best streak \($0.count) · counts on the leaderboard" }
-                              ?? "Counts on the leaderboard by its best streak", systemImage: "trophy")
+                        Label(item.rankedProposal.map { String(localized: "Best streak \($0.count) · counts on the leaderboard") }
+                              ?? String(localized: "Counts on the leaderboard by its best streak"), systemImage: "trophy")
                             .font(.subheadline.weight(.semibold))
                             .accessibilityIdentifier("history-leaderboard-streak")
                     } else {
@@ -267,7 +281,7 @@ private struct SessionHistoryDetail: View {
         .accessibilityIdentifier("history-detail")
     }
 
-    private func stat(_ title: String, value: String, symbol: String) -> some View {
+    private func stat(_ title: LocalizedStringKey, value: String, symbol: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Label(title, systemImage: symbol).font(.caption2.weight(.semibold))
                 .foregroundStyle(TrainingHomeStyle.muted(scheme))
