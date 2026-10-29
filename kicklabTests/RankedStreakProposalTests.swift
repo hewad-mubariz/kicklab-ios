@@ -32,7 +32,8 @@ final class RankedStreakProposalTests: XCTestCase {
 
     func testNewScoresIdentifyStreakFixAndOldStoredVersionIsPreserved() throws {
         let result = try SavedJugglingResult(ownerID: UUID(), touches: 90, duration: 96, source: .recording)
-        XCTAssertEqual(result.counterVersion, "juggling-v1-streak-v2")
+        XCTAssertEqual(result.counterVersion, TouchCountingBetaProfile.enabledForBuild
+            ? "outdoor-balanced-v3-20261029-streak-v2" : "juggling-v1-streak-v2")
         let old = try SavedJugglingResult(ownerID: UUID(), touches: 14, duration: 29,
             source: .recording, counterVersion: "juggling-v1")
         let restored = try JSONDecoder().decode(SavedJugglingResult.self, from: JSONEncoder().encode(old))

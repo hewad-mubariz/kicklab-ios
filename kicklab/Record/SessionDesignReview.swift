@@ -10,7 +10,9 @@ struct SessionDesignReview: View {
     @State private var closedLeaderboard = false
     @StateObject private var sceneModel = StadiumPreviewModel()
     @State private var overlays = ExportOverlaySettings.load()
-    @State private var edit = SessionEditState(style: .fire, intensity: 0.7)
+    @State private var edit = SessionEditState(
+        style: SessionDesignReview.argument("--rf-full-app-review") == nil ? .fire : .none,
+        intensity: 0.7)
 
     static var requestedScreen: String? { argument("--session-design") }
     nonisolated static func argument(_ flag: String) -> String? {
@@ -38,6 +40,13 @@ struct SessionDesignReview: View {
                 var result = SessionSummary.make(touches: touches.count, duration: 30, bestCombo: touches.count,
                     personalBest: touches.count, videoURL: folder.appendingPathComponent("source.mov"),
                     touchesMarked: touches, track: frames.map(\.frame))
+                // Show the same decisions as this saved paced run. Looking up
+                // the video's general cache can return a different analysis.
+                if let data = try? Data(contentsOf: folder.appendingPathComponent("counter.plist")),
+                   let trace = try? PropertyListDecoder().decode(CounterTrace.self, from: data),
+                   trace.complete, trace.touches.count == touches.count {
+                    result.debugContacts = trace.diagnostics ?? []
+                }
                 if let data = try? Data(contentsOf: folder.appendingPathComponent("visual-track.plist")),
                    let frames = try? PropertyListDecoder().decode([StoredFrame].self, from: data) {
                     result.visualTrack = frames.map(\.frame)

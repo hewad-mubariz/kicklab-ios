@@ -32,11 +32,33 @@ nonisolated enum ContactCounterFactory {
         let verifies = counts && policy.verifiesContacts
         let checksBody = counts && policy.body != .unrestricted
         verifier?.configure(policy: policy)
+        var config = config
+        if policy.body.usesVisibleFoot { config.recoversVisibleFootOutsideRegion = true }
+        if policy.body.usesMeasuredFoot {
+            config.usesRecheckedRegionContact = true
+            config.recoversSmallVisibleContacts = true
+        }
+        if policy.body == .smallArcV23 {
+            if MeasuredReboundPolicy.settledProbe() { config.probesSettledMeasuredRebound = true }
+            if MeasuredReboundPolicy.confirmation() {
+                config.recoversUnsmoothedFootRebound = true
+                config.usesJointGapRelease = true
+                config.requiresDistantLowFootProof = true
+            }
+            config.recoversMeasuredSmallArcs = true
+            if MeasuredReboundPolicy.slowRise() { config.recoversMeasuredSlowRise = true }
+            if ObservedContactRecoveryPolicy.terminalRebound() { config.recoversMeasuredTerminalRebound = true }
+            if ObservedContactRecoveryPolicy.gapRebound() { config.recoversMeasuredGapRebound = true }
+            if AlignedFootRegionPolicy.enabled() { config.recoversAlignedFootRegion = true }
+            if MeasuredFootImpactPolicy.toeLift() { config.recoversBriefToeLift = true }
+            if MeasuredFootImpactPolicy.floorRebound() { config.rejectsDescendingFloorRebound = true }
+        }
         return StreamingCounter(config: config,
             rejectsHandContact: { [weak verifier] in
                 verifies ? (verifier?.rejectsHandContact(at: $0) ?? false) : false
             },
             recordTrace: counts && recordTrace,
+            traceLimit: TouchCountingDebugProfile.traceLimit,
             footContactEvidence: verifies ? { [weak verifier] in verifier?.footEvidence(at: $0) } : nil,
             countsTouches: counts,
             retainContactFrames: { [weak verifier] in verifier?.retainContactFrames(around: $0) },

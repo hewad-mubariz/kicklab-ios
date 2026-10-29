@@ -46,7 +46,9 @@ struct GroundHeightEvidenceTests {
             missingBallTimestampsMs: [])
         #expect(!evidence.needsPositiveFootContact)
         #expect(!evidence.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true))
+
     }
+
 
     @Test func reviewedFloorBouncesKeepTheirPositiveFloorEvidence() throws {
         for name in ["visible-ground-bounces-pose", "sparse-floor-bounces-pose"] {
@@ -238,5 +240,143 @@ struct DeepFloorContactTests {
         }, checksDeepFloorContact: true)
         #expect(!shallow.confirmsDeepFloorContact)
         #expect(try JSONDecoder().decode(GroundContactEvidence.self, from: JSONEncoder().encode(evidence)) == evidence)
+    }
+}
+
+struct CompactFootContactTests {
+    private final class Resources {}
+    private func read<T: Decodable>(_ name: String, as type: T.Type) throws -> T {
+        let url = try #require(Bundle(for: Resources.self).url(forResource: name, withExtension: "json"))
+        return try JSONDecoder().decode(type, from: Data(contentsOf: url))
+    }
+
+    @Test func reviewedOutdoorToeContactsAreNotMistakenForPlantedFloorContacts() throws {
+        let contacts = try read("outdoor-toe-contacts-20261027", as: [Int: GroundContactEvidence].self)
+        #expect(Set(contacts.keys) == [355, 611, 674])
+        for (frame, old) in contacts {
+            #expect(old.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true), "Reproduce the missed touch at \(frame)")
+            var fixed = old; fixed.checksCompactFootContact = true
+            #expect(fixed.confirmsCompactFootContact)
+            #expect(!fixed.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true))
+            #expect(try JSONDecoder().decode(GroundContactEvidence.self, from: JSONEncoder().encode(fixed)) == fixed)
+        }
+    }
+
+    @Test func provenCompactKickSatisfiesThePositiveContactRequirement() throws {
+        // Original live evidence: 180 s test at 22.615 / 179.439 s and 300 s
+        // test at 30.913 s. Each visible kick passed the compact-foot proof
+        // but was rejected as unresolvedLowContact by the second proof route.
+        let contacts = try read("outdoor-compact-eligibility-20261027", as: [String: GroundContactEvidence].self)
+        #expect(contacts.count == 3)
+        for (name, old) in contacts {
+            #expect(old.confirmsCompactFootContact && old.needsPositiveFootContact, "\(name)")
+            var fixed = old; fixed.usesCompactFootEligibility = true
+            #expect(!fixed.needsPositiveFootContact, "\(name)")
+            #expect(!fixed.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true))
+            #expect(try JSONDecoder().decode(GroundContactEvidence.self, from: JSONEncoder().encode(fixed)) == fixed)
+            fixed.checksCompactFootContact = nil
+            #expect(fixed.needsPositiveFootContact, "An unconfigured proof cannot supply eligibility")
+        }
+    }
+
+    @Test func unresolvedImpactStillNeedsFootEvidenceWithoutCompactProof() throws {
+        for name in ["floor-gap-25-20261024", "floor-gap-26-20261024"] {
+            var evidence = try read(name, as: GroundContactEvidence.self)
+            evidence.requiresPositiveLowContact = true
+            evidence.checksCompactFootContact = true
+            evidence.usesCompactFootEligibility = true
+            #expect(!evidence.confirmsCompactFootContact)
+            #expect(evidence.needsPositiveFootContact)
+        }
+    }
+
+    @Test func firstReleaseCanStillBeNearTheMinimumButCannotContinueDownward() throws {
+        // 120 s outdoor test at 31.982 s: a visible toe kick. At +33 ms the
+        // ball has risen 0.06 diameters and separated from the foot by 0.24;
+        // at +100 ms the ball has risen 0.70 diameters. The old requirement
+        // of 0.12 diameters in every release exposure rejects this kick.
+        var evidence = try read("outdoor-toe-settling-20261027", as: GroundContactEvidence.self)
+        #expect(!evidence.confirmsCompactFootContact)
+        evidence.allowsSettlingCompactRelease = true
+        evidence.usesCompactFootEligibility = true
+        #expect(evidence.confirmsCompactFootContact)
+        #expect(!evidence.needsPositiveFootContact)
+        #expect(!evidence.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true))
+        let firstRelease = evidence.samples.filter { $0.timestampMs > evidence.contactMs }.min { $0.timestampMs < $1.timestampMs }!
+        let contactY = evidence.samples.first { $0.timestampMs == evidence.contactMs }!.ballY
+        let descending = evidence.samples.map { s in
+            GroundContactEvidence.Sample(timestampMs: s.timestampMs, ballX: s.ballX,
+                ballY: s.timestampMs == firstRelease.timestampMs ? contactY+0.001 : s.ballY,
+                width: s.width, height: s.height, confidence: s.confidence, imageAspect: s.imageAspect,
+                ankles: s.ankles, hips: s.hips)
+        }
+        let stillFalling = GroundContactEvidence(contactMs: evidence.contactMs, samples: descending,
+            checksCompactFootContact: true, usesCompactFootEligibility: true, allowsSettlingCompactRelease: true)
+        #expect(!stillFalling.confirmsCompactFootContact)
+        let floors = try read("visible-ground-bounces-pose", as: [Int: GroundContactEvidence].self)
+        for (frame, old) in floors {
+            var candidate = old
+            candidate.checksCompactFootContact = true
+            candidate.usesCompactFootEligibility = true
+            candidate.allowsSettlingCompactRelease = true
+            #expect(!candidate.confirmsCompactFootContact, "Reviewed floor event \(frame)")
+        }
+    }
+
+    @Test func compactImpactCanUseTheImmediatelyAdjacentObservedExposure() throws {
+        let contacts = try read("outdoor-adjacent-toe-20261027", as: [String: GroundContactEvidence].self)
+        #expect(contacts.count == 3)
+        for (name, old) in contacts {
+            var evidence = old
+            evidence.allowsSettlingCompactRelease = true
+            #expect(!evidence.confirmsCompactFootContact, "\(name)")
+            evidence.usesCompactFootEligibility = true
+            evidence.checksAdjacentCompactImpact = true
+            let impact = try #require(evidence.compactFootContactMs, "\(name)")
+            #expect((33...34).contains(abs(impact-evidence.contactMs)))
+            #expect(!evidence.needsPositiveFootContact)
+            #expect(!evidence.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true))
+            let missingImpact = GroundContactEvidence(contactMs: evidence.contactMs,
+                samples: evidence.samples.filter { $0.timestampMs != impact }, checksCompactFootContact: true,
+                usesCompactFootEligibility: true, allowsSettlingCompactRelease: true, checksAdjacentCompactImpact: true)
+            #expect(!missingImpact.confirmsCompactFootContact, "No invented impact for \(name)")
+            #expect(try JSONDecoder().decode(GroundContactEvidence.self, from: JSONEncoder().encode(evidence)) == evidence)
+        }
+    }
+
+    @Test func reviewedGroundContactsRemainGroundContacts() throws {
+        for name in ["visible-ground-bounces-pose", "sparse-floor-bounces-pose"] {
+            let contacts = try read(name, as: [Int: GroundContactEvidence].self)
+            for (frame, old) in contacts {
+                var fixed = old; fixed.checksCompactFootContact = true
+                fixed.usesCompactFootEligibility = true
+                fixed.allowsSettlingCompactRelease = true
+                fixed.checksAdjacentCompactImpact = true
+                #expect(!fixed.confirmsCompactFootContact, "Reviewed floor \(name) \(frame)")
+                #expect(fixed.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true)
+                        == old.confirmsGroundContact(corroboratingWeakAnkles: true, cadenceAware: true), "\(name) \(frame)")
+            }
+        }
+        // In particular, visible-floor frame 284 has close ankle overlap and
+        // some upward pose jitter, but the ball continues DOWN after that
+        // candidate. Only its later floor rebound supplies departure.
+        let visible = try read("visible-ground-bounces-pose", as: [Int: GroundContactEvidence].self)
+        #expect(try !#require(visible[284]).confirmsCompactFootContact)
+    }
+
+    @Test func overlapWithoutLiftOrImmediateDepartureCannotRescue() throws {
+        let contacts = try read("outdoor-toe-contacts-20261027", as: [Int: GroundContactEvidence].self)
+        for old in contacts.values {
+            let contact = try #require(old.samples.first { $0.timestampMs == old.contactMs })
+            let still = GroundContactEvidence(contactMs: old.contactMs, samples: old.samples.map { s in
+                .init(timestampMs: s.timestampMs, ballX: s.ballX, ballY: s.ballY, width: s.width,
+                      height: s.height, confidence: s.confidence, imageAspect: s.imageAspect,
+                      ankles: contact.ankles, hips: s.hips)
+            })
+            #expect(!still.confirmsCompactFootContact)
+            let noRelease = GroundContactEvidence(contactMs: old.contactMs,
+                samples: old.samples.filter { $0.timestampMs <= old.contactMs })
+            #expect(!noRelease.confirmsCompactFootContact)
+        }
     }
 }

@@ -13,11 +13,13 @@ nonisolated enum FootContactRules {
     }
     typealias Point = PoseLandmark
     static func confirms(before: Sample, contact: Sample, after: Sample,
-                         requireBalancedMotion: Bool = true) -> Bool {
+                         requireBalancedMotion: Bool = true, usesFourExposureWindow: Bool = false,
+                         rejectsWeakBelowAnkle: Bool = false) -> Bool {
         let samples = [before, contact, after]
         let beforeMS = contact.timestampMs - before.timestampMs
         let afterMS = after.timestampMs - contact.timestampMs
-        guard (40...130).contains(beforeMS), (40...130).contains(afterMS),
+        let maximumInterval = usesFourExposureWindow ? 134 : 130
+        guard (40...maximumInterval).contains(beforeMS), (40...maximumInterval).contains(afterMS),
               samples.allSatisfy({ s in
                   [s.ballX,s.ballY,s.width,s.height,s.confidence].allSatisfy(\.isFinite)
                       && s.width > 0 && s.height > 0 && s.confidence >= 0.5
@@ -29,6 +31,11 @@ nonisolated enum FootContactRules {
             guard let a = before.ankles[side], let b = contact.ankles[side], let c = after.ankles[side],
                   [a.x,a.y,a.confidence,b.x,b.y,b.confidence,c.x,c.y,c.confidence].allSatisfy(\.isFinite),
                   min(a.confidence, min(b.confidence,c.confidence)) >= 0.3 else { continue }
+            // A weak raised-ankle estimate above the entire ball cannot supply
+            // positive contact proof. Keep confident joints and partial overlap
+            // on their established route; alternate measured proofs can still run.
+            if rejectsWeakBelowAnkle, b.confidence < 0.5,
+               contact.ballY-contact.height/2 > b.y { continue }
             guard let beforeHip = before.hips[side], let contactHip = contact.hips[side],
                   [beforeHip.x,beforeHip.y,beforeHip.confidence,contactHip.x,contactHip.y,contactHip.confidence].allSatisfy(\.isFinite),
                   min(beforeHip.confidence,contactHip.confidence) >= 0.3 else { continue }
@@ -139,7 +146,122 @@ nonisolated struct FootContactEvidence: Codable, Equatable, Sendable {
     let before, contact, after: FootContactRules.Sample
     /// A real later view already buffered at sparse cadence. Older traces omit it.
     var continuation: FootContactRules.Sample? = nil
-    var confirms: Bool { FootContactRules.confirms(before: before, contact: contact, after: after) }
+    /// V21 may reuse the existing observed-leg proof when a side kick extends
+    /// beyond the ankle-sized contact area. All views are real buffered frames;
+    /// the original candidate time and the resolved impact are both retained.
+    var observedLegSamples: [FootPoseSample]? = nil
+    var usesMeasuredFootProof: Bool? = nil
+    /// The observed leg proof can resolve a different exposure than the
+    /// smoothed proposal. Keep its actual floor evidence, not a Boolean bypass.
+    var alignedLegGroundEvidence: GroundContactEvidence? = nil
+    var confirmsAlignedLegGroundClearance: Bool {
+        guard let time = observedLegContactMs, let ground = alignedLegGroundEvidence,
+              ground.contactMs == time, abs(time-candidateTimestampMs) <= 101 else { return false }
+        return !ground.confirmsGroundContact(corroboratingWeakAnkles: true)
+    }
+    var allowsShallowMeasuredApproach: Bool? = nil
+    var corroboratesWeakSupport: Bool? = nil
+    var allowsShallowToeRebound: Bool? = nil
+    /// Versioned separately so earlier experimental trace verdicts stay exact.
+    var allowsAdjacentShallowToeRebound: Bool? = nil
+    var allowsRaisedForefoot: Bool? = nil
+    /// A raised toe can extend beyond the ankle-sized contact region. Require
+    /// measured pre-impact lift, a stable opposite support, floor clearance,
+    /// and two real release views before accepting that extra reach.
+    var confirmsRaisedForefoot: Bool {
+        guard allowsRaisedForefoot == true, let continuation,
+              (40...134).contains(contact.timestampMs-before.timestampMs),
+              (40...100).contains(after.timestampMs-contact.timestampMs),
+              (101...167).contains(continuation.timestampMs-contact.timestampMs),
+              continuation.timestampMs-after.timestampMs <= 100 else { return false }
+        let views = [before, contact, after, continuation]
+        guard views.allSatisfy({ s in
+            [s.ballX,s.ballY,s.width,s.height,s.confidence].allSatisfy(\.isFinite)
+                && s.width > 0 && s.height > 0 && (0.7...1).contains(s.confidence)
+                && s.ballX-s.width/2 >= 0 && s.ballX+s.width/2 <= 1
+                && s.ballY-s.height/2 >= 0 && s.ballY+s.height/2 <= 1
+        }), views.map(\.height).max()! <= 1.35*views.map(\.height).min()!,
+            views.map(\.width).max()! <= 1.35*views.map(\.width).min()!,
+            contact.ballY-before.ballY >= max(0.007,0.35*contact.height),
+            [after,continuation].allSatisfy({ contact.ballY-$0.ballY >= max(0.0035,0.05*contact.height) })
+        else { return false }
+        func reliable(_ p: PoseLandmark, minimum: Double) -> Bool {
+            [p.x,p.y,p.confidence].allSatisfy(\.isFinite)
+                && (0...1).contains(p.x) && (0...1).contains(p.y)
+                && (minimum...1).contains(p.confidence)
+        }
+        for side in BodySide.allCases {
+            guard views.allSatisfy({ s in
+                guard let foot=s.ankles[side], let hip=s.hips[side], let support=s.ankles[side.opposite] else { return false }
+                return reliable(foot,minimum:0.6) && reliable(hip,minimum:0.5)
+                    && reliable(support,minimum:0.6) && foot.y > hip.y
+            }) else { continue }
+            let feet = views.map { $0.ankles[side]! }, hips = views.map { $0.hips[side]! }
+            let support = views.map { $0.ankles[side.opposite]! }
+            guard support.map(\.x).max()!-support.map(\.x).min()! <= 0.1*contact.width,
+                  support.map(\.y).max()!-support.map(\.y).min()! <= 0.1*contact.height,
+                  feet[1].y <= support[1].y-0.3*contact.height,
+                  feet[0].y-feet[1].y >= max(0.007,0.15*contact.height),
+                  (feet[0].y-hips[0].y)-(feet[1].y-hips[1].y) >= 0.15*contact.height,
+                  hypot((contact.ballX-feet[1].x)/contact.width,
+                        (contact.ballY-feet[1].y)/contact.height) <= 1.0,
+                  [1,2,3].allSatisfy({ i in
+                      views[i].ballY+views[i].height/2 <= support[i].y-0.35*contact.height
+                  }),
+                  [2,3].allSatisfy({ i in
+                      (contact.ballY-feet[1].y)-(views[i].ballY-feet[i].y) >= 0.12*contact.height
+                  }) else { continue }
+            return true
+        }
+        return false
+    }
+    var confirmsShallowToeRebound: Bool {
+        allowsShallowToeRebound == true && compactGroundEvidence.map {
+            $0.contactMs == candidateTimestampMs
+                && (MeasuredFootImpactRules.shallowToeRebound($0)
+                    || (allowsAdjacentShallowToeRebound == true
+                        && MeasuredFootImpactRules.adjacentShallowToeRebound($0) != nil))
+        } == true
+    }
+    var compactGroundEvidence: GroundContactEvidence? = nil
+    /// Earlier diagnostic traces retain this proof for exact replay. The live
+    /// verifier now creates measured adjacent evidence with a same-foot height guard.
+    var allowsAdjacentFootContact: Bool? = nil
+    /// Keep the counter proposal separate from the actual measured image.
+    /// Older traces have no alignment and retain their original clock checks.
+    var proposedContactMs: Int? = nil
+    var usesFourExposureWindow: Bool? = nil
+    /// Versioned so historical numeric traces retain their original verdicts.
+    var rejectsWeakBelowAnkle: Bool? = nil
+    var candidateTimestampMs: Int { proposedContactMs ?? contact.timestampMs }
+    var adjacentFootContactMs: Int? {
+        guard allowsAdjacentFootContact == true, let ground = compactGroundEvidence else { return nil }
+        let samples = (ground.compactFootSamples ?? ground.samples).map {
+            FootContactRules.Sample(timestampMs: $0.timestampMs, ballX: $0.ballX, ballY: $0.ballY,
+                width: $0.width, height: $0.height, confidence: $0.confidence, ankles: $0.ankles, hips: $0.hips)
+        }
+        return AdjacentFootContactRules.contactTime(samples, at: contact.timestampMs)
+    }
+    var observedLegContactMs: Int? {
+        guard let observedLegSamples else { return nil }
+        return ObservedLegContactRules.contactTime(observedLegSamples, at: contact.timestampMs,
+            usesTemporalEvidence: true, usesCadenceWindow: true,
+            allowsNearSupportFoot: true, usesImageSupport: true,
+            allowsTurningHip: usesMeasuredFootProof == true, allowsLowToeDeparture: usesMeasuredFootProof == true,
+            allowsShallowApproach: allowsShallowMeasuredApproach == true,
+            corroboratesWeakSupport: corroboratesWeakSupport == true)
+            ?? (usesMeasuredFootProof == true
+                ? RaisedFootReboundRules.contactTime(observedLegSamples, at: contact.timestampMs) : nil)
+    }
+    var confirms: Bool {
+        FootContactRules.confirms(before: before, contact: contact, after: after,
+            usesFourExposureWindow: usesFourExposureWindow == true,
+            rejectsWeakBelowAnkle: rejectsWeakBelowAnkle == true)
+            || confirmsShallowToeRebound
+            || confirmsRaisedForefoot
+            || observedLegContactMs != nil || adjacentFootContactMs != nil
+            || compactGroundEvidence?.confirmsCompactFootContact == true
+    }
 
     /// The ankle is behind the toes. A larger contact area is usable only with
     /// a confidently rising foot, a stable opposite support, and a resolved

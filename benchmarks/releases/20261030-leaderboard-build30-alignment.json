@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-30",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "previous_head": "efe8a33",
+  "submitted_counter": {
+    "version": "1.0.3",
+    "build": "30",
+    "profile": "outdoor-balanced-v3-20261029",
+    "source_snapshot_commit": "3c8826b90e71b3e2e71785b428e00156da9e5c2a",
+    "original_source_manifest_sha256": "5a15109ea6556abaa92003113251eb7fa684b343f7fcbeee429260ea3a94981f",
+    "manifest_scope": [
+      "kicklab/Counting/",
+      "kicklab/Detection/",
+      "kicklab/Effects/SessionAnalysisStore.swift",
+      "config/TouchCounterBeta.xcconfig"
+    ],
+    "snapshot_files_verified": 91,
+    "snapshot_mismatches": 0
+  },
+  "integration": {
+    "normal_debug_and_release_condition": "TOUCH_COUNTER_BETA",
+    "default_ball_tracking_revision": 1,
+    "retry_on_admission": false,
+    "new_saved_counter_version": "outdoor-balanced-v3-20261029-streak-v2",
+    "existing_saved_versions_unchanged": true,
+    "matching_files": 77,
+    "retained_leaderboard_or_appearance_overlays": [
+      "kicklab/Counting/BallHandlingEvidence.swift",
+      "kicklab/Counting/ContactCounterFactory.swift",
+      "kicklab/Counting/CounterTrace.swift",
+      "kicklab/Counting/StreamingCounter.swift",
+      "kicklab/Detection/BallDetector.swift",
+      "kicklab/Detection/BallMask.swift",
+      "kicklab/Detection/CameraSession.swift",
+      "kicklab/Detection/CaptureFrameRate.swift",
+      "kicklab/Detection/JugglingContactVerifier.swift",
+      "kicklab/Detection/LiveJugglingAnalysis.swift",
+      "kicklab/Detection/RFBufferedLivePipeline.swift",
+      "kicklab/Detection/Recorder.swift",
+      "kicklab/Detection/VideoAnalyzer.swift",
+      "kicklab/Effects/SessionAnalysisStore.swift"
+    ],
+    "vision_revision2_experiment_included": false,
+    "localization_worktree_changes_included": false,
+    "pre_existing_package_lock_preserved": true
+  },
+  "validation": {
+    "xcode_project_lint": "passed",
+    "source_diff_whitespace": "passed",
+    "debug_app_and_test_compilation": "passed",
+    "release_build_settings": "TOUCH_COUNTER_BETA confirmed",
+    "simulator_regression_tests": {
+      "result": "passed",
+      "total": 119,
+      "passed": 119,
+      "failed": 0,
+      "skipped": 0,
+      "swift_testing": 93,
+      "xctest": 26,
+      "device": "Leaderboard Beta QA / iPhone 17 Pro / iOS 26.5 simulator",
+      "configuration": "Debug with TOUCH_COUNTER_BETA",
+      "result_bundle": "/tmp/juggledude-leaderboard-build30-tests-20261030.xcresult",
+      "log": "artifacts/leaderboard-counter-build30-20261029/focused-tests.log",
+      "summary": "artifacts/leaderboard-counter-build30-20261029/test-summary.json",
+      "coverage": [
+        "Exact factory configuration and effective switches match submitted build-30 fixture",
+        "Counting, contact recheck, foot and ground evidence regressions",
+        "Historical recorded contact evidence replays",
+        "90 total touches across 10/50/30 runs ranks as 50",
+        "Opening hand release does not penalize the first run",
+        "Sustained inter-contact hold splits ranking without changing training touches",
+        "New session counter version and old saved-version preservation"
+      ],
+      "initial_attempts": "Disk-space exhaustion before testing; then simulator boot timeout. Passed using test-without-building after boot completed."
+    }
+  },
+  "remaining": [
+    "Fresh physical-device recording with total vs longest streak, then verify saved result and server ranking."
+  ],
+  "release_actions": {
+    "version_bumped": false,
+    "phone_installation": false,
+    "app_store_upload_or_submission": false,
+    "main_changed": false
+  }
+}

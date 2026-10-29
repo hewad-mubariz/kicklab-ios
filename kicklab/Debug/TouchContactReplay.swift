@@ -13,9 +13,12 @@ import UIKit
 nonisolated enum TouchContactReplay {
     private struct Configuration: Decodable {
         enum Comparison: String, Decodable {
-            case body, ground, groundContinuity, footMotion, poseContinuity, handling, poseConfidence, contactTiming, legMotion, legRouting, temporalEvidence, completedRise, pixelFoot, observedImpact, independentLeg, ballAssociation, legRebound, trajectoryTiming, selectedPose, raisedFoot, footEvidence, bodyGateAblation, contactEvidence, impactWindow, floorEvidence, floorRescue
+            case body, ground, groundContinuity, footMotion, poseContinuity, handling, poseConfidence, contactTiming, legMotion, legRouting, temporalEvidence, completedRise, pixelFoot, observedImpact, independentLeg, ballAssociation, legRebound, trajectoryTiming, selectedPose, raisedFoot, footEvidence, bodyGateAblation, contactEvidence, impactWindow, floorEvidence, floorRescue, visibleFoot, measuredFoot, smallArc
 
             func policy(after: Bool) -> CountingPolicy {
+                if self == .smallArc { return CountingPolicy.configured(arguments: [after ? "--small-arc-v23" : "--measured-foot-v22"]) }
+                if self == .measuredFoot { return CountingPolicy.configured(arguments: [after ? "--measured-foot-v22" : "--visible-foot-v21"]) }
+                if self == .visibleFoot { return CountingPolicy.configured(arguments: [after ? "--visible-foot-v21" : "--toe-contact-v20"]) }
                 if self == .floorRescue { return CountingPolicy.configured(arguments: [after ? "--floor-rescue-v19" : "--floor-evidence-v18"]) }
                 if self == .floorEvidence { return CountingPolicy.configured(arguments: [after ? "--floor-evidence-v18" : "--impact-window-v17"]) }
                 if self == .impactWindow { return CountingPolicy.configured(arguments: [after ? "--impact-window-v17" : "--contact-evidence-v16"]) }
@@ -27,7 +30,7 @@ nonisolated enum TouchContactReplay {
                 case .groundContinuity: ground = after ? .corroboratedFeet : .plantedFeet
                 case .footMotion, .poseContinuity, .handling, .poseConfidence, .contactTiming, .legMotion, .legRouting, .temporalEvidence, .completedRise, .pixelFoot, .observedImpact, .independentLeg, .ballAssociation, .legRebound, .trajectoryTiming, .selectedPose, .raisedFoot, .footEvidence: ground = .corroboratedFeet
                 case .body: ground = .plantedFeet
-                case .bodyGateAblation, .contactEvidence, .impactWindow, .floorEvidence, .floorRescue: preconditionFailure("Handled above")
+                case .bodyGateAblation, .contactEvidence, .impactWindow, .floorEvidence, .floorRescue, .visibleFoot, .measuredFoot, .smallArc: preconditionFailure("Handled above")
                 }
                 let body: CountingPolicy.BodyContact
                 switch self {
@@ -50,7 +53,7 @@ nonisolated enum TouchContactReplay {
                 case .footEvidence: body = after ? .footEvidenceV15 : .raisedFootV14
                 case .handling: body = .poseContinuityV4
                 case .poseContinuity: body = after ? .poseContinuityV4 : .movingFootV3
-                case .bodyGateAblation, .contactEvidence, .impactWindow, .floorEvidence, .floorRescue: preconditionFailure("Handled above")
+                case .bodyGateAblation, .contactEvidence, .impactWindow, .floorEvidence, .floorRescue, .visibleFoot, .measuredFoot, .smallArc: preconditionFailure("Handled above")
                 }
                 return .init(handling: (self == .handling && after) || self == .poseConfidence || self == .contactTiming || self == .legMotion || self == .legRouting || self == .temporalEvidence || self == .completedRise || self == .pixelFoot || self == .observedImpact || self == .independentLeg || self == .ballAssociation || self == .legRebound || self == .trajectoryTiming || self == .selectedPose || self == .raisedFoot || self == .footEvidence ? .sustainedGripV1 : .disabled, verifiesContacts: true, body: body, ground: ground)
             }
@@ -71,6 +74,8 @@ nonisolated enum TouchContactReplay {
         /// Resume an interrupted comparison when its baseline is already saved.
         let afterOnly: Bool?
         let poseAuditFrames: [Int]?
+        /// Explicit experiment override; nil preserves the selected production config.
+        let toeContact: Bool?
     }
     @MainActor static func run(folderName: String) async {
         let wasIdleDisabled = UIApplication.shared.isIdleTimerDisabled
@@ -86,7 +91,7 @@ nonisolated enum TouchContactReplay {
                 // One stateless detector for the whole comparison. Repeated
                 // model construction across long clip batches needlessly
                 // retains GPU/compiler resources between asynchronous passes.
-                let recheckWorker = (config.comparison == .contactEvidence || config.comparison == .impactWindow || config.comparison == .floorEvidence || config.comparison == .floorRescue)
+                let recheckWorker = (config.comparison == .contactEvidence || config.comparison == .impactWindow || config.comparison == .floorEvidence || config.comparison == .floorRescue || config.comparison == .visibleFoot || config.comparison == .measuredFoot || config.comparison == .smallArc)
                     ? try autoreleasepool { try RFWorker(resources: Bundle.main.resourceURL!) } : nil
                 for clip in config.clips {
                     guard [clip.id, clip.video, clip.trace].allSatisfy({
@@ -105,9 +110,9 @@ nonisolated enum TouchContactReplay {
                         throw failure("Video and trace do not match")
                     }
                     for after in (config.afterOnly == true ? [true] : [false, true]) {
-                        let policy = (config.comparison ?? .body).policy(after: after)
+                        let policy = config.toeContact == true ? CountingPolicy.configured(arguments: ["--toe-contact-v20"]) : (config.comparison ?? .body).policy(after: after)
                         var counterConfig = archive.trace.config
-                        if config.comparison == .bodyGateAblation || (config.comparison == .contactEvidence || config.comparison == .impactWindow || config.comparison == .floorEvidence || config.comparison == .floorRescue) { counterConfig = CounterConfig() }
+                        if config.comparison == .bodyGateAblation || (config.comparison == .contactEvidence || config.comparison == .impactWindow || config.comparison == .floorEvidence || config.comparison == .floorRescue || config.comparison == .visibleFoot || config.comparison == .measuredFoot || config.comparison == .smallArc) { counterConfig = CounterConfig() }
                         if config.comparison == .completedRise {
                             counterConfig.completesRiseWhileSlowing = after
                         }
@@ -125,8 +130,8 @@ nonisolated enum TouchContactReplay {
                         try Data("RUNNING \(label)".utf8).write(to: status, options: .atomic)
                         // The rebound comparison keeps current RF association identical in both passes.
                         let result = try await replay(video: video, archive: archive, policy: policy, counterConfig: counterConfig,
-                                                      status: status, label: label, requiresGroundHeightEvidence: (config.comparison == .footEvidence && after) || config.comparison == .bodyGateAblation || (config.comparison == .contactEvidence || config.comparison == .impactWindow || config.comparison == .floorEvidence || config.comparison == .floorRescue),
-                                                      contactRechecks: (config.comparison == .contactEvidence || config.comparison == .impactWindow || config.comparison == .floorEvidence || config.comparison == .floorRescue),
+                                                      status: status, label: label, requiresGroundHeightEvidence: (config.comparison == .footEvidence && after) || config.comparison == .bodyGateAblation || (config.comparison == .contactEvidence || config.comparison == .impactWindow || config.comparison == .floorEvidence || config.comparison == .floorRescue || config.comparison == .visibleFoot || config.comparison == .measuredFoot || config.comparison == .smallArc),
+                                                      contactRechecks: (config.comparison == .contactEvidence || config.comparison == .impactWindow || config.comparison == .floorEvidence || config.comparison == .floorRescue || config.comparison == .visibleFoot || config.comparison == .measuredFoot || config.comparison == .smallArc),
                                                       recheckWorker: recheckWorker,
                                                       bodyGateAblation: config.comparison == .bodyGateAblation ? after : nil,
                                                       legacyCompositionClock: clip.legacyCompositionClock == true,
@@ -182,6 +187,8 @@ nonisolated enum TouchContactReplay {
         reader.add(output)
         let observations = ContactObservationStore()
         let verifier = JugglingContactVerifier(observations: observations); verifier.warmUp()
+        let replayStarted = ProcessInfo.processInfo.systemUptime
+        let initialThermal = ProcessInfo.processInfo.thermalState.rawValue
         verifier.usesSelectedPoseRecovery = selectedPoseRecovery
         verifier.requiresGroundHeightEvidence = requiresGroundHeightEvidence
         var poseAudit: [[String: Any]] = []
@@ -270,14 +277,28 @@ nonisolated enum TouchContactReplay {
         guard verifier.lastError == nil, let result = counter.traceSnapshot(),
               verifier.peakBufferedFrames <= ContactFrameWindow.maximumBufferedFrames else { throw failure(verifier.lastError ?? "Invalid contact buffer") }
         _ = try result.replay()
-        let groundEvidence = Dictionary(uniqueKeysWithValues: result.decisions.compactMap { decision in
+        // An unsuccessful early probe can be followed by the normal decision
+        // for the same apex. Keep the latest evidence in this frame-keyed
+        // convenience export; the full trace retains both ordered decisions.
+        let groundEvidence = Dictionary(result.decisions.compactMap { decision in
             decision.value.groundEvidence.map { (decision.value.frameIndex, $0) }
-        })
+        }, uniquingKeysWith: { _, latest in latest })
+        var metrics = verifier.poseRecoveryMetrics
+        metrics["replayMilliseconds"] = (ProcessInfo.processInfo.systemUptime-replayStarted)*1000
+        metrics["poseRequests"] = Double(verifier.poseRequests)
+        metrics["handPoseRequests"] = Double(verifier.handPoseRequests)
+        metrics["footChecks"] = Double(verifier.footChecks)
+        metrics["footCheckMilliseconds"] = verifier.footCheckMS
+        metrics["peakBufferedFrames"] = Double(verifier.peakBufferedFrames)
+        metrics["peakRetainedMissingFrames"] = Double(recheck?.peakRetainedMissingFrames ?? 0)
+        metrics["thermalStart"] = Double(initialThermal)
+        metrics["thermalEnd"] = Double(ProcessInfo.processInfo.thermalState.rawValue)
+        metrics["memoryMiBAtEnd"] = DetectorPerformance.memoryMB()
         return Result(trace: result, evidence: try JSONSerialization.data(withJSONObject: evidence, options: [.sortedKeys]),
                       groundEvidence: try JSONEncoder().encode(groundEvidence),
                       poseAudit: try JSONSerialization.data(withJSONObject: poseAudit,options: [.sortedKeys]),
                       pixelTracks: try JSONSerialization.data(withJSONObject: pixelTracks,options: [.sortedKeys]),
-                      recoveryMetrics: try JSONSerialization.data(withJSONObject: verifier.poseRecoveryMetrics,options: [.sortedKeys]),
+                      recoveryMetrics: try JSONSerialization.data(withJSONObject: metrics,options: [.sortedKeys]),
                       bodyGateAssessments: try JSONEncoder().encode(ablation?.assessments ?? []),
                       rechecks: try JSONSerialization.data(withJSONObject: recheck?.events ?? [], options: [.sortedKeys]))
     }

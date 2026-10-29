@@ -66,7 +66,7 @@ actor SessionAnalysisStore {
             try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
         }
         let os = ProcessInfo.processInfo.operatingSystemVersionString
-        let options = pipelineOptions(arguments:ProcessInfo.processInfo.arguments,defaults:.standard)
+        let options = pipelineOptions(arguments:TouchCountingDebugProfile.arguments,defaults:.standard)
         // Increment when detector, composition geometry, counter or repair rules change.
         return "analysis-v15-contact-evidence-v2|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)" + CountingPolicy.current.bodySignature + CountingPolicy.current.handlingSignature + TimedTrajectory.signature + GroundContactEvidence.signature + ActiveJugglerTracker.signature + PlayerGroundEstimate.signature + StreakInterruption.signature
     }
@@ -98,7 +98,31 @@ actor SessionAnalysisStore {
                     "association=rf-v1",
                     "motionRecovery=\(RFMotionRecovery.enabled(arguments: arguments))\(RFMotionRecovery.signature)"
                         + (StationaryCandidateGate.version(arguments: arguments) >= 2 ? StationaryCandidateGate.signatureV2 : "")
-                        + (RFContactRecheckTier.select(arguments: arguments) == .compact ? RFContactRecheckTier.compactSignature : ""),
+                        + (RFContactRecheckTier.select(arguments: arguments) == .compact ? RFContactRecheckTier.compactSignature : "")
+                        + (ContactRecheckPolicy.usesSpannedWindow(arguments: arguments) ? ContactRecheckPolicy.spanSignature : "")
+                        + (RFWorkerAdmissionPolicy.enabled(arguments: arguments) ? RFWorkerAdmissionPolicy.signature : "")
+                        + (ContactSchedulingPolicy.enabled(arguments: arguments) ? ContactSchedulingPolicy.signature : "")
+                        + (MeasuredFootImpactPolicy.corroboratedFloor(arguments: arguments) ? "|corroborated-floor-rebound-v1" : "")
+                        + (AdjacentFootEvidencePolicy.enabled(arguments: arguments) ? AdjacentFootEvidencePolicy.signature : "")
+                        + (GroundImpactEvidencePolicy.enabled(arguments: arguments) ? GroundImpactEvidencePolicy.signature : "")
+                        + (UnliftedFloorReboundPolicy.enabled(arguments: arguments) ? UnliftedFloorReboundPolicy.signature : "")
+                        + (AlignedFootRegionPolicy.enabled(arguments: arguments) ? AlignedFootRegionPolicy.signature : "")
+                        + (MeasuredFootImpactPolicy.toeLift(arguments: arguments) ? "|brief-toe-lift-v1" : "")
+                        + (MeasuredFootImpactPolicy.floorRebound(arguments: arguments) ? "|descending-floor-rebound-v1" : "")
+                        + (MeasuredFootImpactPolicy.weakSupport(arguments: arguments) ? "|corroborated-support-ankle-v1" : "")
+                        + (ObservedContactRecoveryPolicy.alignedLeg(arguments: arguments) ? "|aligned-leg-ground-v1" : "")
+                        + (ObservedContactRecoveryPolicy.gapRebound(arguments: arguments) ? "|measured-gap-candidate-v1" : "")
+                        + (MeasuredReboundPolicy.confirmation(arguments: arguments) ? "|measured-rebound-confirmation-v2" : "")
+                        + (MeasuredReboundPolicy.settledProbe(arguments: arguments) ? "|settled-measured-rebound-v1" : "")
+                        + (MeasuredReboundPolicy.raisedForefoot(arguments: arguments) ? "|raised-forefoot-v1" : "")
+                        + (ImpactGapRecoveryPolicy.chargesAcceptedRetriesOnly(arguments: arguments) ? "|impact-retry-admission-v1" : "")
+                        + (ContactRecheckPolicy.usesBalancedMissingImpact(arguments: arguments) ? "|balanced-missing-impact-v3" : "")
+                        + (WeakLowFootPolicy.enabled(arguments: arguments) ? WeakLowFootPolicy.signature : "")
+                        + (ObservedContactRecoveryPolicy.terminalRebound(arguments: arguments) ? "|terminal-rebound-evidence-v1" : "")
+                        + (MeasuredReboundPolicy.slowRise(arguments: arguments) ? "|slow-measured-rise-v1" : "")
+                        + (MeasuredReboundPolicy.raisedFoot(arguments: arguments) ? "|raised-compact-foot-v3" : "")
+                        + (ContactRecheckPolicy.usesLateApproach(arguments: arguments) ? "|late-impact-evidence-v2" : "")
+                        + (ContactRecheckPolicy.usesEarlyRelease(arguments: arguments) ? "|early-impact-evidence-v1" : ""),
                     "hands=\(CountingPolicy.configured(arguments: arguments).verifiesContacts)"].joined(separator: "|")
         }
         let guarded=resource == "KickLabYOLO26MotionSegmentation" &&

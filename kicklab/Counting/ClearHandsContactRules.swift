@@ -34,39 +34,50 @@ nonisolated enum ClearHandsContactRules {
             return .lowContactNeedsFootEvidence
         }
         for s in views {
-            func point(_ name: BodyJoint) -> Point? {
-                guard let p = s.joints[name], p.x.isFinite, p.y.isFinite,
-                      (0...1).contains(p.x), (0...1).contains(p.y) else { return nil }
-                return .init(x: p.x*s.imageAspect, y: p.y)
-            }
-            func distance(_ a: Point, _ b: Point) -> Double { hypot(a.x-b.x, a.y-b.y) }
-            func segmentDistance(_ p: Point, _ a: Point, _ b: Point) -> Double {
-                let dx = b.x-a.x, dy = b.y-a.y, length = dx*dx+dy*dy
-                let t = length > 0 ? max(0, min(1, ((p.x-a.x)*dx+(p.y-a.y)*dy)/length)) : 0
-                return distance(p, .init(x: a.x+t*dx, y: a.y+t*dy))
-            }
-            let ball = Point(x: s.ball.x*s.imageAspect, y: s.ball.y)
-            let radius = max(s.width*s.imageAspect, s.height)/2
-            // Player proximity was checked by the counter. Hidden hips or
-            // ankles do not make otherwise visible arms uncertain.
-            guard let ls = point(.leftShoulder), let rs = point(.rightShoulder),
-                  distance(ls, rs) > 0.01 else {
-                return .missingPose
-            }
-            for side in BodySide.allCases {
-                guard let wrist = point(side.wrist), let elbow = point(side.elbow),
-                      let shoulder = point(side.shoulder) else { return .handsUncertain }
-                // Wrists are not fingertips. Leave room for the hand beyond
-                // the wrist, scaled by the visible forearm and ball radius.
-                let handReach = max(0.8*radius, 0.4*distance(elbow, wrist))
-                guard distance(ball, wrist) > radius+handReach,
-                      segmentDistance(ball, elbow, wrist) > radius else { return .handsNearBall }
-                // The shoulder itself is legal; an upper arm crossing the
-                // ball is not positive evidence of a clear chest contact.
-                let upperArm = Point(x: shoulder.x+0.3*(elbow.x-shoulder.x),
-                                     y: shoulder.y+0.3*(elbow.y-shoulder.y))
-                guard segmentDistance(ball, upperArm, elbow) > radius else { return .handsNearBall }
-            }
+            if let failure = handFailure(in: s) { return failure }
+        }
+        return nil
+    }
+
+    /// Exact arm-clearance checks, also used when independently measured
+    /// impact and first-release images locate the physical contact.
+    static func handFailure(in s: Sample) -> RestrictedTouchPolicy.Failure? {
+        guard [s.ball.x,s.ball.y,s.width,s.height,s.confidence,s.imageAspect].allSatisfy(\.isFinite),
+              (0...1).contains(s.ball.x), (0...1).contains(s.ball.y),
+              s.width > 0, s.width <= 1, s.height > 0, s.height <= 1,
+              s.confidence >= 0.5, s.imageAspect > 0 else { return .invalidGeometry }
+        func point(_ name: BodyJoint) -> Point? {
+            guard let p = s.joints[name], p.x.isFinite, p.y.isFinite,
+                  (0...1).contains(p.x), (0...1).contains(p.y) else { return nil }
+            return .init(x: p.x*s.imageAspect, y: p.y)
+        }
+        func distance(_ a: Point, _ b: Point) -> Double { hypot(a.x-b.x, a.y-b.y) }
+        func segmentDistance(_ p: Point, _ a: Point, _ b: Point) -> Double {
+            let dx = b.x-a.x, dy = b.y-a.y, length = dx*dx+dy*dy
+            let t = length > 0 ? max(0, min(1, ((p.x-a.x)*dx+(p.y-a.y)*dy)/length)) : 0
+            return distance(p, .init(x: a.x+t*dx, y: a.y+t*dy))
+        }
+        let ball = Point(x: s.ball.x*s.imageAspect, y: s.ball.y)
+        let radius = max(s.width*s.imageAspect, s.height)/2
+        // Player proximity was checked by the counter. Hidden hips or
+        // ankles do not make otherwise visible arms uncertain.
+        guard let ls = point(.leftShoulder), let rs = point(.rightShoulder),
+              distance(ls, rs) > 0.01 else {
+            return .missingPose
+        }
+        for side in BodySide.allCases {
+            guard let wrist = point(side.wrist), let elbow = point(side.elbow),
+                  let shoulder = point(side.shoulder) else { return .handsUncertain }
+            // Wrists are not fingertips. Leave room for the hand beyond
+            // the wrist, scaled by the visible forearm and ball radius.
+            let handReach = max(0.8*radius, 0.4*distance(elbow, wrist))
+            guard distance(ball, wrist) > radius+handReach,
+                  segmentDistance(ball, elbow, wrist) > radius else { return .handsNearBall }
+            // The shoulder itself is legal; an upper arm crossing the
+            // ball is not positive evidence of a clear chest contact.
+            let upperArm = Point(x: shoulder.x+0.3*(elbow.x-shoulder.x),
+                                 y: shoulder.y+0.3*(elbow.y-shoulder.y))
+            guard segmentDistance(ball, upperArm, elbow) > radius else { return .handsNearBall }
         }
         return nil
     }

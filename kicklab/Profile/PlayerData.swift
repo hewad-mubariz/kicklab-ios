@@ -14,7 +14,8 @@ struct PlayerProfile: Codable, Equatable, Sendable {
 
 nonisolated struct SavedJugglingResult: Codable, Equatable, Sendable {
     /// Identifies newly computed streaks without rewriting older synced results.
-    static let currentCounterVersion = "juggling-v1-streak-v2"
+    static let currentCounterVersion = TouchCountingBetaProfile.enabledForBuild
+        ? "\(TouchCountingBetaProfile.identifier)-streak-v2" : "juggling-v1-streak-v2"
     enum Source: String, Codable, Sendable { case recording, gallery }
     let id: UUID
     let ownerID: UUID

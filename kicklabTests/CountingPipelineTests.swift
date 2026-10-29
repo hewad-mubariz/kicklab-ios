@@ -111,10 +111,14 @@ struct CountingPipelineTests {
         let disabled = CountingPolicy.configured(arguments: ["--juggling-no-hand-check"])
         #expect(normal.verifiesContacts)
         #expect(normal.ground == .corroboratedFeet)
-        #expect(normal.body == .floorRescueV19 && normal.bodySignature == "|floor-rescue-v19")
+        #expect(normal.body == .visibleFootV21 && normal.bodySignature == "|visible-foot-v21")
         #expect(normal.body.usesFloorEvidence && normal.body.usesImpactWindow && normal.body.usesContactEvidence)
         #expect(normal.handling == .temporalGripV2 && normal.handlingSignature == "|handling-v2")
         #expect(disabled == normal)
+        let evidence = Evidence()
+        let counter = ContactCounterFactory.make(verifier: evidence, policy: normal)
+        feed(counter)
+        #expect(counter.traceSnapshot()?.config.recoversVisibleFootOutsideRegion == true)
         #if !DEBUG
         #expect(CountingPolicy.configured(arguments: ["--foot-evidence-v15"]) == normal)
         #endif

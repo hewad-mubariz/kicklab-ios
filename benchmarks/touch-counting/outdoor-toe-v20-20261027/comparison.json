@@ -1,0 +1,386 @@
+{
+  "date": "2026-10-27",
+  "policy": "toe-contact-v20",
+  "baseCommit": "fdfc35e",
+  "debugBuild": "2026102705",
+  "device": "iPhone 17 Pro Max",
+  "scope": "Original videos, frozen detector inputs, fresh on-device Vision contact verification. Not a fresh detector or live hardware throughput benchmark.",
+  "sources": {
+    "img8878": {
+      "sha256": "5e5167e6155f8388b250843791808297bbfaf9e2803acfe6615be215d5e3a7db",
+      "durationSeconds": 8.19
+    },
+    "img8880": {
+      "sha256": "fbdf7f5b03e30cfa4800edb05b0b4fa32c9b64d1bfc35b70a1b977d1b2a68be7",
+      "durationSeconds": 15.648333
+    }
+  },
+  "targets": {
+    "clips": 2,
+    "before": 43,
+    "after": 47,
+    "results": [
+      {
+        "clip": "img8878",
+        "before": 13,
+        "after": 16,
+        "identicalInputs": true,
+        "added": [
+          {
+            "frame": 355,
+            "timeMs": 2958,
+            "oldReason": "groundBounce"
+          },
+          {
+            "frame": 611,
+            "timeMs": 5093,
+            "oldReason": "groundBounce"
+          },
+          {
+            "frame": 674,
+            "timeMs": 5618,
+            "oldReason": "groundBounce"
+          }
+        ],
+        "removed": []
+      },
+      {
+        "clip": "img8880",
+        "before": 30,
+        "after": 31,
+        "identicalInputs": true,
+        "added": [
+          {
+            "frame": 1467,
+            "timeMs": 12230,
+            "oldReason": "disallowedBodyContact"
+          }
+        ],
+        "removed": []
+      }
+    ]
+  },
+  "corpus": {
+    "clips": 22,
+    "before": 792,
+    "after": 793,
+    "results": [
+      {
+        "clip": "34dd",
+        "before": 17,
+        "after": 17,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "ball_in_hand",
+        "before": 0,
+        "after": 0,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "dribbling_with_ball_1",
+        "before": 0,
+        "after": 0,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "dribbling_with_ball_2",
+        "before": 0,
+        "after": 0,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "dribbling_with_ball_3",
+        "before": 1,
+        "after": 1,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "dribbling_with_the_ball_1",
+        "before": 0,
+        "after": 0,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "eighteen",
+        "before": 15,
+        "after": 15,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "juggling",
+        "before": 37,
+        "after": 37,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "juggling_second_ball_in_video",
+        "before": 19,
+        "after": 19,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "juggling_second_ball_very_far",
+        "before": 22,
+        "after": 22,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "latest",
+        "before": 13,
+        "after": 13,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "low",
+        "before": 175,
+        "after": 175,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "nomral_juggling_6",
+        "before": 36,
+        "after": 36,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "normal_juggling_1",
+        "before": 25,
+        "after": 25,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "normal_juggling_2",
+        "before": 21,
+        "after": 21,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "normal_juggling_3",
+        "before": 63,
+        "after": 63,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "normal_juggling_4",
+        "before": 32,
+        "after": 32,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "normal_juggling_5",
+        "before": 37,
+        "after": 37,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "normal_juggling_7",
+        "before": 29,
+        "after": 30,
+        "identicalInputs": true,
+        "added": [
+          {
+            "frame": 1395,
+            "timeMs": 11625,
+            "oldReason": "disallowedBodyContact"
+          }
+        ],
+        "removed": []
+      },
+      {
+        "clip": "normal_juggling_8",
+        "before": 37,
+        "after": 37,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "raw-juggling",
+        "before": 10,
+        "after": 10,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "walkthrough",
+        "before": 203,
+        "after": 203,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      }
+    ]
+  },
+  "addedCorpusContactReview": {
+    "clip": "normal_juggling_7",
+    "frame": 1395,
+    "timeSeconds": 11.625,
+    "label": "e019, legal_leg, 11.63 +/- 0.1 s",
+    "independentVisualReview": "Visible left-foot kick with clear ball departure; not a hand contact or floor bounce.",
+    "sourceSHA256": "7bf2abca3914072eb091cbb2d1a148df7db6ccd445293bd1f1346b309fa4a10a"
+  },
+  "tests": {
+    "debugPassed": 85,
+    "releasePassed": 76,
+    "failed": 0
+  },
+  "savedGroundAudit": {
+    "records": 1618,
+    "changedUniqueContacts": 3,
+    "otherRecordsUnchanged": true,
+    "note": "Six changed records are the same three events represented in trace and fixture."
+  },
+  "knownUnresolved": [
+    {
+      "clip": "img8880",
+      "frame": 1822,
+      "timeSeconds": 15.19,
+      "description": "Probable turf bounce with adjacent foot movement remains accepted before and after; brief shoe contact cannot be excluded visually."
+    }
+  ],
+  "latency": "All four recovered contacts retain their original decision operation; no extra frame lookahead.",
+  "limits": [
+    "Older corpus uses frozen pre-RF detector inputs; this isolates rules and does not measure the current detector.",
+    "iPhone 11 hardware performance was not rerun.",
+    "Existing corpus errors remain; preserving events is not proof that all 792 were correct.",
+    "Four 30 FPS sample phases still miss some legal contacts: IMG_8878 counts 15,15,15,16. No prior accepted events were removed in the sampled comparisons."
+  ],
+  "sampled30FPSControl": {
+    "clips": 8,
+    "before": 178,
+    "after": 183,
+    "results": [
+      {
+        "clip": "img8878-phase0",
+        "before": 14,
+        "after": 15,
+        "identicalInputs": true,
+        "added": [
+          {
+            "frame": 89,
+            "timeMs": 2967,
+            "oldReason": "groundBounce"
+          }
+        ],
+        "removed": []
+      },
+      {
+        "clip": "img8878-phase1",
+        "before": 15,
+        "after": 15,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "img8878-phase2",
+        "before": 14,
+        "after": 15,
+        "identicalInputs": true,
+        "added": [
+          {
+            "frame": 168,
+            "timeMs": 5618,
+            "oldReason": "groundBounce"
+          }
+        ],
+        "removed": []
+      },
+      {
+        "clip": "img8878-phase3",
+        "before": 14,
+        "after": 16,
+        "identicalInputs": true,
+        "added": [
+          {
+            "frame": 88,
+            "timeMs": 2958,
+            "oldReason": "groundBounce"
+          },
+          {
+            "frame": 152,
+            "timeMs": 5093,
+            "oldReason": "groundBounce"
+          }
+        ],
+        "removed": []
+      },
+      {
+        "clip": "img8880-phase0",
+        "before": 31,
+        "after": 31,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "img8880-phase1",
+        "before": 29,
+        "after": 30,
+        "identicalInputs": true,
+        "added": [
+          {
+            "frame": 366,
+            "timeMs": 12214,
+            "oldReason": "disallowedBodyContact"
+          }
+        ],
+        "removed": []
+      },
+      {
+        "clip": "img8880-phase2",
+        "before": 31,
+        "after": 31,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      },
+      {
+        "clip": "img8880-phase3",
+        "before": 30,
+        "after": 30,
+        "identicalInputs": true,
+        "added": [],
+        "removed": []
+      }
+    ]
+  }
+}

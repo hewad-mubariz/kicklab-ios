@@ -1061,6 +1061,36 @@ values are not measurements from real accounts.
 
 ### Automatic beta testing checklist — 26 October
 
+**Counter alignment — 29 October:** the leaderboard branch now includes the exact
+counter source snapshot `3c8826b` used for submitted **1.0.3 (30)**, including the
+outdoor-contact changes after build 29. Its normal Debug and Release configurations
+enable `TOUCH_COUNTER_BETA`, selecting `outdoor-balanced-v3-20261029` without launch
+arguments. This preserves the submitted profile's revision-1 ball tracking and
+disabled retry-on-admission option. The separate Vision revision-2 worktree and
+the uncommitted localization work are not included. Existing leaderboard streak
+boundaries and visual-effect work remain on this feature branch.
+
+The source snapshot was checked against all 91 counting/detection/cache/config
+files in the original archive manifest before integration. After merging, 77 are
+byte-identical; the remaining 14 retain the previously reviewed leaderboard or
+appearance extensions. In particular, `TouchCounter`, `CountingPolicy`, foot/floor
+rules, both pixel trackers and the contact-recheck policy match the archive source.
+New leaderboard session metadata records
+`outdoor-balanced-v3-20261029-streak-v2`; existing saved/server results retain their
+original version. A fresh phone recording and server-ranking walkthrough are still
+needed for this combined branch. This integration does not upload or replace an
+App Store build.
+
+**Alignment validation — 30 October:** the combined Debug app and test targets
+compiled, and all 119 focused tests passed (93 Swift Testing + 26 XCTest, zero
+failures or skips). These include the measured build-30 profile, recorded contact
+trace replays, and 90-total/50-best-streak, opening hand-release and inter-contact
+hold cases. Release build settings also resolve `TOUCH_COUNTER_BETA`. Initial
+attempts were blocked by disk space and a simulator boot timeout; the successful
+run reused the compiled products after the simulator was ready. See
+[`20261030-leaderboard-build30-alignment.json`](../../benchmarks/releases/20261030-leaderboard-build30-alignment.json)
+for the source audit and validation details.
+
 Use the leaderboard branch, two dedicated test accounts and the current Supabase
 project. Keep fictional UI fixtures in the simulator; do not seed fake public
 scores. Record device/build, account, session ID, visible total, saved streak,

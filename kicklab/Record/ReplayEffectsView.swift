@@ -570,7 +570,8 @@ struct ReplayEffectsView: View {
                 duration = max(0.1, CMTimeGetSeconds(try await asset.load(.duration)))
                 #if DEBUG
                 debugContacts = summary.debugContacts
-                if let complete = await FinalTestCoordinator.shared.liveContacts(summary.videoURL) { debugContacts = complete }
+                if SessionDesignReview.argument("--rf-full-app-review") == nil,
+                   let complete = await FinalTestCoordinator.shared.liveContacts(summary.videoURL) { debugContacts = complete }
                 if showsTouchTools, debugContacts.isEmpty {
                     let source = summary.videoURL
                     let digest = await Task.detached(priority: .utility) {
@@ -604,6 +605,17 @@ struct ReplayEffectsView: View {
                 let interval = CMTime(seconds: 1.0 / 60, preferredTimescale: 600)
                 #if DEBUG
                 FinalTestCoordinator.shared.replayOpened(summary.videoURL, duration: duration)
+                if let folder = SessionDesignReview.argument("--rf-full-app-review"),
+                   folder.hasPrefix("RFValidation-"), folder == URL(fileURLWithPath: folder).lastPathComponent {
+                    let state: [String: Any] = ["state": "ready", "duration": duration,
+                        "position": currentTime, "touches": summary.touches,
+                        "diagnostics": debugContacts.count,
+                        "outlines": showTouchOutlines, "video": summary.videoURL.lastPathComponent]
+                    if let data = try? JSONSerialization.data(withJSONObject: state, options: [.sortedKeys]) {
+                        try? data.write(to: URL.documentsDirectory.appendingPathComponent(folder)
+                            .appendingPathComponent("review-state.json"), options: .atomic)
+                    }
+                }
                 #endif
                 timeObserver = p.addPeriodicTimeObserver(forInterval: interval, queue: .main) { time in
                     guard !isScrubbing, !restarting else { return }

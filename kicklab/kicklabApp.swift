@@ -32,6 +32,9 @@ struct kicklabApp: App {
         #else
         _player = StateObject(wrappedValue: PlayerStore.live(account: account))
         #endif
+        #if TOUCH_COUNTER_BETA
+        TouchCountingDebugProfile.writeLaunchReport()
+        #endif
         #if DEBUG
         // Rankings are always live. A sample board appears only for the launch a design
         // review asks for one, and a choice saved by older builds is dropped.
@@ -44,6 +47,7 @@ struct kicklabApp: App {
         }
         #if TOUCH_COUNTING_DEBUG
         UserDefaults.standard.set(true, forKey: "kicklab.welcome.completed")
+        TouchCountingDebugProfile.writeLaunchReport()
         #endif
         // Reset once before the first view is created. A UserDefaults launch
         // override would keep forcing false even after the guest button writes true.
