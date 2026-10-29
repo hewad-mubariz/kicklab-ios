@@ -22,6 +22,19 @@ nonisolated enum RFAppValidation {
         do {
             let config = try JSONDecoder().decode(Config.self, from: Data(contentsOf: folder.appendingPathComponent("config.json")))
             save("running", ["mode": config.mode])
+            if config.mode == "cooldown" {
+                // Explicit lab mode: no camera, decoder or model work. Keep
+                // the device awake while a long replay sweep's heat dissipates.
+                let seconds = config.seconds ?? 300
+                guard seconds.isFinite, (0...600).contains(seconds) else { throw NSError(domain: "Invalid cooldown duration", code: 1) }
+                let end = ProcessInfo.processInfo.systemUptime + seconds
+                while ProcessInfo.processInfo.thermalState != .nominal, ProcessInfo.processInfo.systemUptime < end {
+                    save("cooling", ["mode": config.mode])
+                    try await Task.sleep(for: .seconds(10))
+                }
+                save("completed", ["mode": config.mode, "nominal": ProcessInfo.processInfo.thermalState == .nominal])
+                return
+            }
             if config.mode == "capture" {
                 let camera = CameraSession(); defer { camera.stop() }
                 camera.start()

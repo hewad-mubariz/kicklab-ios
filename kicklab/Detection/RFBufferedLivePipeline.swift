@@ -57,6 +57,8 @@ nonisolated final class RFWorker {
     private var occupied = false
     private var reply: RFReply?
     private var priorityRequested = false
+    private let interleavesContact = RFWorkerAdmissionPolicy.enabled()
+    private var interleavedSubmissions = 0
     private var activeInferences = 0
     private var maximumActiveInferences = 0
     private var inferenceCounts: [String: Int] = [:]
@@ -86,6 +88,7 @@ nonisolated final class RFWorker {
             "regular": inferenceCounts["regular", default: 0],
             "warmup": inferenceCounts["warmup", default: 0],
             "contact": inferenceCounts["contact", default: 0],
+            "interleaved_regular": interleavedSubmissions,
             "impact_gap": inferenceCounts["impact_gap", default: 0], "model_instances": 1]
     }
     func recheck(_ frame: PacedFrame, hint: FollowHit, latestStart: Double) -> RFReply? {
@@ -94,7 +97,8 @@ nonisolated final class RFWorker {
         priorityRequested = true; lock.unlock()
         defer { lock.lock(); priorityRequested = false; lock.unlock() }
         // One shared model. Wait behind at most the already-submitted regular job;
-        // fresh regular submissions are blocked until this contact request finishes.
+        // Default admission blocks new regular jobs until this request finishes.
+        // The opt-in interleave policy may reserve one behind this inference.
         return queue.sync {
             guard uptime() <= latestStart, thermal() < 3 else { return nil }
             return infer(frame, hint: hint, purpose: "contact")
@@ -126,7 +130,11 @@ nonisolated final class RFWorker {
             throw NSError(domain: "Diagnostic input shape mismatch", code: 1)
         }
     }
-    var busy: Bool { lock.lock(); defer { lock.unlock() }; return occupied || priorityRequested }
+    var canSubmitRegular: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return RFWorkerAdmissionPolicy.permits(occupied: occupied, contactRequested: priorityRequested,
+            interleaves: interleavesContact, purpose: "regular")
+    }
     func infer(_ frame: PacedFrame, hint: FollowHit?, purpose: String = "regular") -> RFReply {
         lock.lock(); activeInferences += 1
         maximumActiveInferences = max(maximumActiveInferences, activeInferences)
@@ -156,12 +164,17 @@ nonisolated final class RFWorker {
     }
     func submit(_ frame: PacedFrame, hint: FollowHit?, purpose: String = "regular") -> Bool {
         lock.lock()
-        guard !occupied && !priorityRequested else { lock.unlock(); return false }
-        occupied = true; lock.unlock()
+        guard RFWorkerAdmissionPolicy.permits(occupied: occupied, contactRequested: priorityRequested,
+            interleaves: interleavesContact, purpose: purpose) else { lock.unlock(); return false }
+        occupied = true
+        if priorityRequested { interleavedSubmissions += 1 }
+        // Enqueue the reserved slot before releasing the lock. A subsequent
+        // contact request cannot jump ahead of this fresh exposure.
         queue.async {
             let value = self.infer(frame, hint: hint, purpose: purpose)
             self.lock.lock(); self.reply = value; self.lock.unlock()
         }
+        lock.unlock()
         return true
     }
     func take() -> RFReply? {
@@ -196,7 +209,8 @@ nonisolated final class BufferedTracking {
     // minute measured), so both tiers keep it; it is what restores the approach
     // views the floor proof needs when a warm phone drops detections.
     private let repairsImpactGaps = CountingPolicy.current.body.usesContactEvidence
-    private var lastGapSource = -Double.infinity, lastGapWall = -Double.infinity
+    private var gapSchedule = ImpactGapRetrySchedule(
+        chargesAcceptedOnly: ImpactGapRecoveryPolicy.chargesAcceptedRetriesOnly())
     private var gapEvents: [[String: Any]] = []
     private var retryingFrame: Int?
     private var statuses: [Int: String] = [:]
@@ -299,20 +313,28 @@ nonisolated final class BufferedTracking {
                     } else { statuses[first.index] = "no_detection_preserved_track" }
                 }
                 if repairsImpactGaps, hit == nil, !hadRF, let previous {
-                    let policy = ImpactGapRecoveryPolicy(), now = uptime()
+                    let now = uptime()
                     let budget = worker.recheckBudget
                     let depth = counter.summary["outstanding"] ?? Int.max
-                    if policy.permits(source: first.time, hintTime: previous.1, now: now, due: first.due,
-                        lastSource: lastGapSource, lastWall: lastGapWall, outstanding: depth, budget: budget) {
-                        lastGapSource = first.time; lastGapWall = now
-                        if worker.submit(first, hint: previous.0, purpose: "impact_gap") {
+                    let result = gapSchedule.attempt(source: first.time, hintTime: previous.1,
+                        now: now, due: first.due, outstanding: depth, budget: budget) {
+                            worker.submit(first, hint: previous.0, purpose: "impact_gap")
+                        }
+                    switch result {
+                    case .submitted:
                             retryingFrame = first.index; waitingForRetry = true
                             pending.insert(first, at: 0)
                             submissionRecords[first.index] = ["submission_uptime": now,
                                 "target_hz": 1/0.3, "submission_thermal": thermal(), "purpose": "impact_gap"]
                             lastSubmitted = now; submissions += 1
                             return
-                        }
+                    case .workerBusy:
+                        gapEvents.append(["source_frame": first.index, "source_seconds": first.time,
+                            "applied": false, "reason": "retry_worker_busy",
+                            "cooldown_consumed": !ImpactGapRecoveryPolicy.chargesAcceptedRetriesOnly()])
+                        if gapEvents.count > 6000 { gapEvents.removeFirst(gapEvents.count-6000) }
+                    case .ineligible:
+                        break
                     }
                 }
                 if let hit {
@@ -347,7 +369,7 @@ nonisolated final class BufferedTracking {
         try processDue()
         let state = thermal(), now = uptime()
         let targetHz = cadence.targetHz(thermalState: state)
-        if targetHz > 0, now-lastSubmitted >= 1/targetHz, !worker.busy {
+        if targetHz > 0, now-lastSubmitted >= 1/targetHz, worker.canSubmitRegular {
             // Only scheduling changes. The one-job bound and source identity remain.
             if worker.submit(frame, hint: nil) {
                 var record: [String: Any] = ["submission_uptime": now,
@@ -450,12 +472,18 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
         let full = RFContactRecheckTier.current == .full
         repairsNeighbors = policy.body.usesContactEvidence && full
         repairsImpactWindow = policy.body.usesImpactWindow && full
+        self.policy.extendsVisibleApproach = policy.body.usesVisibleFoot
+        self.policy.spansContactWindow = ContactRecheckPolicy.usesSpannedWindow()
+        self.policy.measuresLateApproach = ContactRecheckPolicy.usesLateApproach()
+        self.policy.measuresEarlyRelease = ContactRecheckPolicy.usesEarlyRelease()
+        self.policy.schedulesContactEvidence = ContactSchedulingPolicy.enabled()
+        self.policy.balancesMissingImpact = ContactRecheckPolicy.usesBalancedMissingImpact()
         verifier.configure(policy: policy)
     }
     let backlogGuard: Bool
     var queueSnapshot: () -> (Int, Double) = { (-1, .infinity) }
     private let backlogPolicy = ContactBacklogPolicy()
-    private let policy = ContactRecheckPolicy()
+    private var policy = ContactRecheckPolicy()
     private var missing: [Int: Missing] = [:]
     private var observed: [Observed] = []
     private var attempted: Set<Int> = []
@@ -487,7 +515,7 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
                 width: ball.width*frame.size.width, height: ball.height*frame.size.height)
             observed.append(Observed(hit: FollowHit(rect: box, score: ball.score), time: frame.time, index: index))
         } else if let before = observed.last,
-                  frame.time-before.time <= policy.maximumHintAge+0.000001 {
+                  frame.time-before.time <= policy.maximumApproachHintAge+0.000001 {
             missing[index] = Missing(frame: frame, hint: before.hit, hintTime: before.time, hintIndex: before.index)
         }
         missing = missing.filter { frame.time-$0.value.frame.time <= policy.maximumRetainedAge+0.000001 }
@@ -516,7 +544,10 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
             guard !targets.isEmpty, policy.permitsImpactWindow(source: Double(time)/1000, now: uptime(),
                 lastSource: lastWindowSource, lastWall: enforcesWallRateLimit ? lastWindowWall : -.infinity) else { return }
             lastWindowSource = Double(time)/1000; lastWindowWall = uptime()
-            for target in targets {
+            let requestedAt = uptime()
+            for target in policy.executionOrder(targets, missing: missing.map {
+                .init(index: $0.key, timestampMs: $0.value.frame.timestampMs)
+            }, ages: missing.mapValues { requestedAt-$0.frame.due }, inferenceBudget: worker.recheckBudget) {
                 // Keep per-image age, identity, worker-idle and backlog checks.
                 // Only the rate reservation belongs to the whole contact.
                 measure(target, trigger: trigger+"_impact_window_of_\(index)", withinImpactWindow: true)

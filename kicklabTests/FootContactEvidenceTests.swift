@@ -135,6 +135,60 @@ struct FootContactEvidenceTests {
         #expect(machine(hand: true,evidence: samples()).rejected.last?.reason == .handContact)
     }
 
+    private func regionMachine(enabled: Bool = true, ballX: Double = 0.5, observed: Bool = true,
+                               rechecked: Bool = false, missingContact: Bool = false,
+                               evidence: FootContactEvidence?, hand: Bool = false, body: Bool = true) -> TouchStateMachine {
+        var config = CounterConfig()
+        config.recoversVisibleFootOutsideRegion = enabled ? true : nil
+        config.usesRecheckedRegionContact = rechecked ? true : nil
+        let c = TouchStateMachine(config: config)
+        c.footContactEvidence = { _ in evidence }
+        c.rejectsHandContact = { _ in hand }
+        c.allowsBodyContact = { _ in body }
+        for i in 0...8 {
+            // Right boundary plus the ordinary margin is 0.48: the ball at
+            // 0.5 is visible, but just outside the player's detected box.
+            c.personBoxes[i] = .init(x: 0.25, y: 0.45, width: 0.3, height: 0.9)
+            c.detectedFrames.insert(i); c.ballHeights[i] = 0.1
+        }
+        for (i,y) in [0.4,0.45,0.55,0.6,0.58,0.55].enumerated() {
+            if observed && !(missingContact && i == 3) {
+                c.observedBalls[i] = .init(frameIndex: i, timestampMs: i*33, x: ballX, y: y,
+                                          width: 0.18, height: 0.1, confidence: 0.9)
+            }
+            _ = c.push(.init(frameIndex: i,timestampMs: i*33,x: ballX,y: y,
+                vy: i < 4 ? 0.5 : -0.5,confidence: 0.9,valid: true,motion: i < 4 ? .falling : .rising))
+        }
+        return c
+    }
+
+    @Test func visibleSideKickNeedsPositiveFootProofAndStillRunsBodyAndHandChecks() {
+        #expect(regionMachine(enabled: false,evidence: samples()).rejected.last?.reason == .outsidePersonRegion)
+        #expect(regionMachine(evidence: samples()).count == 1)
+        #expect(regionMachine(evidence: nil).rejected.last?.reason == .outsidePersonRegion)
+        #expect(regionMachine(evidence: samples(),hand: true).rejected.last?.reason == .handContact)
+        #expect(regionMachine(evidence: samples(),body: false).rejected.last?.reason == .disallowedBodyContact)
+    }
+
+    @Test func regionRescueDoesNotInventHiddenClippedOrRemoteContacts() {
+        #expect(regionMachine(observed: false,evidence: samples()).count == 0)
+        #expect(regionMachine(ballX: 0.95,evidence: samples()).count == 0)
+        #expect(regionMachine(ballX: 0.8,evidence: samples()).count == 0)
+        #expect(regionMachine(evidence: samples(time: 199)).count == 0)
+    }
+
+    @Test func recheckedSideKickRequiresAnActualVisibleContactAndPreservesVetoes() {
+        #expect(regionMachine(missingContact: true,evidence: samples()).count == 0)
+        #expect(regionMachine(rechecked: true,missingContact: true,evidence: samples()).count == 1)
+        #expect(regionMachine(rechecked: true,missingContact: true,evidence: nil).count == 0)
+        #expect(regionMachine(rechecked: true,missingContact: true,evidence: samples(confidence: 0.49)).count == 0)
+        #expect(regionMachine(rechecked: true,missingContact: true,evidence: samples(time: 199)).count == 0)
+        #expect(regionMachine(rechecked: true,missingContact: true,evidence: samples(),hand: true).rejected.last?.reason == .handContact)
+        #expect(regionMachine(rechecked: true,missingContact: true,evidence: samples(),body: false).rejected.last?.reason == .disallowedBodyContact)
+        #expect(regionMachine(ballX: 0.95,rechecked: true,missingContact: true,evidence: samples()).count == 0)
+        #expect(regionMachine(observed: false,rechecked: true,missingContact: true,evidence: samples()).count == 0)
+    }
+
     /// Saved stance evidence re-timed onto the synthetic arc; the counter
     /// supplies the floor line (box bottom 0.65) and the observed ball bottom.
     private func besideFloorMachine(_ name: String, flagged: Bool, hand: Bool = false) throws -> TouchStateMachine {

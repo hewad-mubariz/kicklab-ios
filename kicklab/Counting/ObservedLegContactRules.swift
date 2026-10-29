@@ -10,7 +10,17 @@ nonisolated enum ObservedLegContactRules {
 
     static func contactTime(_ input: [Sample], at timestampMs: Int, usesTemporalEvidence: Bool = false,
                             usesCadenceWindow: Bool = false, allowsNearSupportFoot: Bool = false,
-                            usesImageSupport: Bool = false) -> Int? {
+                            usesImageSupport: Bool = false, allowsTurningHip: Bool = false,
+                            allowsLowToeDeparture: Bool = false,
+                            allowsShallowApproach: Bool = false,
+                            corroboratesWeakSupport: Bool = false) -> Int? {
+        if corroboratesWeakSupport,
+           let established = contactTime(input,at:timestampMs,usesTemporalEvidence:usesTemporalEvidence,
+                usesCadenceWindow:usesCadenceWindow,allowsNearSupportFoot:allowsNearSupportFoot,
+                usesImageSupport:usesImageSupport,allowsTurningHip:allowsTurningHip,
+                allowsLowToeDeparture:allowsLowToeDeparture,allowsShallowApproach:allowsShallowApproach) {
+            return established
+        }
         // Preserve an already established physical impact time. A recovery
         // must not move the downstream hand check away from that contact.
         if usesTemporalEvidence, !usesCadenceWindow,
@@ -59,10 +69,15 @@ nonisolated enum ObservedLegContactRules {
                         // Use the same toe reach as the ordinary low-foot
                         // region, in either direction from the ankle. Both the
                         // lifted ankle and the ball must clear the support foot.
+                        // A measured side kick may instead keep its ankle at
+                        // support height while the entire ball clears the floor.
                         guard p.y+radius >= hip.y, p.y <= foot.y+0.25*radius,
                               near <= radius+0.45*footScale,
-                              foot.y <= support.y-0.2*diameter,
-                              p.y+radius <= support.y-(allowsNearSupportFoot ? 0.2 : 0.4)*diameter else { continue }
+                              (foot.y <= support.y-0.2*diameter
+                                || (allowsLowToeDeparture && foot.y <= support.y
+                                    && p.y+radius <= support.y-0.2*diameter)),
+                              (allowsLowToeDeparture ? p.y <= support.y-0.25*diameter
+                                : p.y+radius <= support.y-(allowsNearSupportFoot ? 0.2 : 0.4)*diameter) else { continue }
                     case .knee:
                         guard supportKnee.y-knee.y >= 0.5*supportShin,
                               support.y-foot.y >= 0.5*supportShin,
@@ -81,10 +96,13 @@ nonisolated enum ObservedLegContactRules {
                                   let aHip = point(before,side.hip), let cHip = point(after,side.hip),
                                   let aJoint = point(before,name), let cJoint = point(after,name),
                                   views.filter({ point($0,name,confidence: 0.5) != nil }).count >= 2,
-                                  max(distance(aHip,hip),distance(cHip,hip)) <= 0.35*diameter,
+                                  (max(distance(aHip,hip),distance(cHip,hip)) <= 0.35*diameter
+                                    || (allowsTurningHip && max(distance(aHip,hip),distance(cHip,hip)) <= 0.8*diameter
+                                        && stableImageSupport(views, side: other, diameter: diameter))),
                                   stableSupport(views, side: other, diameter: diameter)
                                     || (usesTemporalEvidence && TemporalContactEvidence.stableSupport(views,side:other,diameter:diameter))
-                                    || (usesImageSupport && stableImageSupport(views, side: other, diameter: diameter)) else { continue }
+                                    || (usesImageSupport && stableImageSupport(views, side: other, diameter: diameter))
+                                    || (corroboratesWeakSupport && corroboratedSupport(views,side:other,diameter:diameter)) else { continue }
                             let a = relative(aJoint,to: aHip), b = relative(joint,to: hip), c = relative(cJoint,to: cHip)
                             // Require observed movement before impact and a
                             // changed position afterward. A stationary foot,
@@ -94,7 +112,18 @@ nonisolated enum ObservedLegContactRules {
                                   distance(a,c) >= 0.1*diameter else { continue }
                             if kind == .knee, a.y-b.y < 0.15*diameter { continue }
                             let aBall = ball(before), cBall = ball(after)
-                            guard (p.y-hip.y)-(aBall.y-aHip.y) >= 0.12*diameter,
+                            let descent = (p.y-hip.y)-(aBall.y-aHip.y)
+                            let release = (p.y-hip.y)-(cBall.y-cHip.y)
+                            // A lifted foot can meet the ball just after its
+                            // apex, before a large descent develops. Require
+                            // reliable upward foot travel into a fully airborne
+                            // ball and a stronger outgoing rebound in that case.
+                            let shallowFoot = allowsShallowApproach && kind == .foot
+                                && descent >= 0 && release >= 0.25*diameter
+                                && a.y-b.y >= 0.2*diameter
+                                && p.y+radius <= support.y-0.5*diameter
+                                && views.allSatisfy { point($0,name,confidence: 0.5) != nil }
+                            guard (descent >= 0.12*diameter || shallowFoot),
                                   (p.y-hip.y)-(cBall.y-cHip.y) >= 0.12*diameter,
                                   distance(aBall,aJoint)-near >= 0.25*diameter,
                                   distance(cBall,cJoint)-near >= 0.12*diameter else { continue }
@@ -107,16 +136,28 @@ nonisolated enum ObservedLegContactRules {
         return nil
     }
 
-    private static func stableSupport(_ views: [Sample], side: BodySide, diameter: Double) -> Bool {
+    private static func stableSupport(_ views: [Sample], side: BodySide, diameter: Double, minimumConfidence: Double = 0.5) -> Bool {
         var positions: [Point] = []
         for view in views {
-            guard let ankle = point(view,side.ankle,confidence: 0.5),
+            guard let ankle = point(view,side.ankle,confidence: minimumConfidence),
                   let left = point(view,.leftHip), let right = point(view,.rightHip) else { return false }
             // The pelvis center is a translation reference. A turn can shift
             // one projected hip while the supporting foot stays planted.
             positions.append(relative(ankle,to: .init(x: (left.x+right.x)/2, y: (left.y+right.y)/2)))
         }
         return positions.allSatisfy { a in positions.allSatisfy { distance(a,$0) <= 0.2*diameter } }
+    }
+
+    /// One marginal support-ankle observation may agree with two strong ones.
+    /// Preserve every measured coordinate and confidence. Require stability in
+    /// both image and pelvis coordinates; absent or drifting joints cannot pass.
+    private static func corroboratedSupport(_ views: [Sample], side: BodySide, diameter: Double) -> Bool {
+        guard views.count == 3,
+              views.filter({ point($0,side.ankle,confidence:0.7) != nil }).count >= 2,
+              views.filter({ point($0,side.ankle,confidence:0.5) != nil }).count == 2,
+              stableSupport(views,side:side,diameter:diameter,minimumConfidence:0.3) else { return false }
+        let ankles=views.compactMap { point($0,side.ankle,confidence:0.3) }
+        return ankles.count == 3 && ankles.allSatisfy { a in ankles.allSatisfy { distance(a,$0) <= 0.15*diameter } }
     }
 
     /// Turning the hips can move their projected center while the supporting

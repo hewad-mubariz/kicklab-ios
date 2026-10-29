@@ -32,9 +32,13 @@ struct kicklabApp: App {
         #else
         _player = StateObject(wrappedValue: PlayerStore.live(account: account))
         #endif
+        #if TOUCH_COUNTER_BETA
+        TouchCountingDebugProfile.writeLaunchReport()
+        #endif
         #if DEBUG
         #if TOUCH_COUNTING_DEBUG
         UserDefaults.standard.set(true, forKey: "kicklab.welcome.completed")
+        TouchCountingDebugProfile.writeLaunchReport()
         #endif
         // Reset once before the first view is created. A UserDefaults launch
         // override would keep forcing false even after the guest button writes true.

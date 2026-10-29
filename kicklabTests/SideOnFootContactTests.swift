@@ -59,4 +59,23 @@ struct SideOnFootContactTests {
             #expect(impact(changed, at: row.contactMs) == nil, "\(kind)")
         }
     }
+
+    @Test func observedLegProofSurvivesNumericTraceRoundTrip() throws {
+        let row = try fixture(), views = row.samples.map(\.sample)
+        let contact = try #require(views.first { $0.pose.timestampMs == row.contactMs })
+        func sample(_ v: FootPoseSample) -> FootContactRules.Sample {
+            .init(timestampMs: v.pose.timestampMs, ballX: v.pose.ball.x, ballY: v.pose.ball.y,
+                  width: v.pose.width, height: v.pose.height, confidence: v.pose.confidence,
+                  ankles: [:], hips: [:])
+        }
+        var evidence = FootContactEvidence(before: sample(views.first!), contact: sample(contact), after: sample(views.last!))
+        #expect(!evidence.confirms)
+        evidence.observedLegSamples = views
+        #expect(evidence.observedLegContactMs == row.contactMs + 33)
+        #expect(evidence.confirms)
+        let decoded = try JSONDecoder().decode(FootContactEvidence.self, from: JSONEncoder().encode(evidence))
+        #expect(decoded == evidence && decoded.confirms)
+        evidence.observedLegSamples = views.filter { $0.pose.timestampMs <= row.contactMs + 33 }
+        #expect(!evidence.confirms, "A nearby foot without an observed release is insufficient")
+    }
 }
