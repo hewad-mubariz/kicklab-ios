@@ -14,7 +14,7 @@ final class SessionEffectsPreparation: ObservableObject {
 
     func prepare(_ summary: SessionSummary, for edit: SessionEditState) async throws -> SessionSummary {
         guard edit.requiresVisualTrack else { return summary }
-        return try await prepare(summary, dense: edit.ballSkin != .original)
+        return try await prepare(summary, dense: edit.usesBallMaterial)
     }
 
     func prepare(_ summary: SessionSummary) async throws -> SessionSummary {

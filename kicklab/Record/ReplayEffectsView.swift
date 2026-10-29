@@ -69,6 +69,11 @@ struct ReplayEffectsView: View {
     @State private var surfaceMotionGeneration = UUID()
     @State private var surfaceMotionError: String?
     @StateObject private var downloader = ReplayDownloader()
+    /// Touch and ball-change cues, played as the clip passes them.
+    @StateObject private var sounds = ReplaySoundPlayer()
+    /// A short run through a ball change from the Ball page; cancelled by any other transport action.
+    @State private var momentTask: Task<Void, Never>?
+    private var sortedTouchTimes: [Double] { summary.touchesMarked.map(\.time).sorted() }
     /// Where the playhead was before a tool page moved it (Effects and Counter loop, Ball holds
     /// a mid-juggle frame); leaving those pages puts it back.
     @State private var positionBeforePreview: Double?
@@ -103,7 +108,10 @@ struct ReplayEffectsView: View {
                                           sourceAspect: sourceSize.width / max(1, sourceSize.height),
                                           isPlaying: isPlaying, onTogglePlayback: togglePlay, page: $toolPage,
                                           onClose: { showToolbox = false }, showsTouchTools: showsTouchTools,
-                                          isPro: subscriptions.isPro, onUnlockTool: unlockTool)
+                                          isPro: subscriptions.isPro, onUnlockTool: unlockTool,
+                                          touchTimes: showsTouchTools ? sortedTouchTimes : [], currentTime: currentTime,
+                                          onSeek: seekPaused, onPreviewMoment: previewMoment,
+                                          onPreviewSound: { sounds.preview($0) })
                             .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
                                 // Same spring as the tray's height, so video and panel move as one.
                                 withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { panelTop = top }
@@ -180,7 +188,7 @@ struct ReplayEffectsView: View {
             if page == .ball { showBallFrame() }
             if page == nil || page == .timer || page == .graph { restorePreviewPosition() }
         }
-        .onChange(of: displayedLook.edit.ballSkin) { _, _ in prepareVisualEffects() }
+        .onChange(of: displayedLook.edit.usesBallMaterial) { _, _ in prepareVisualEffects() }
         .onChange(of: displayedLook.edit.requiresVisualTrack) { _, required in
             if required { prepareVisualEffects() }
         }
@@ -201,6 +209,7 @@ struct ReplayEffectsView: View {
             if old.style != next.style {
                 ProductAnalytics.shared.track(.effectSelected(showsTouchTools ? .juggling : .ballDistance, effect: next.style.rawValue))
             }
+            updateSounds()
             downloadOutdated()
         }
         .onChange(of: showGraph) { _, _ in downloadOutdated() }
@@ -220,6 +229,7 @@ struct ReplayEffectsView: View {
                 pendingProTool = nil; counterSelected = false
                 if toolPage?.requiresPro == true { toolPage = nil }
             }
+            updateSounds()
             downloadOutdated()
         }
         .sheet(isPresented: $showsProPaywall, onDismiss: finishPaywall) {
@@ -248,6 +258,7 @@ struct ReplayEffectsView: View {
                 CaptureMotionPoint(time: $0.time, y: $0.detected ? $0.y : nil, x: $0.detected ? $0.x : nil)
             }, touchTimes: summary.touchesMarked.map(\.time))
             setUpPlayer()
+            updateSounds()
             shown = true
             if let notice, !noticeShown {
                 noticeShown = true
@@ -259,6 +270,8 @@ struct ReplayEffectsView: View {
             #if DEBUG
             FinalTestCoordinator.shared.replayClosed(summary.videoURL)
             #endif
+            momentTask?.cancel(); momentTask = nil
+            sounds.stop()
             tearDownPlayer()
         }
         .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: showToolbox)
@@ -286,8 +299,8 @@ struct ReplayEffectsView: View {
                     Text(status)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.white.opacity(0.8))
-                        .accessibilityIdentifier(displayedLook.edit.ballSkin == .original
-                            ? "replay-effects-status" : "replay-spin-status")
+                        .accessibilityIdentifier(displayedLook.edit.usesBallMaterial
+                            ? "replay-spin-status" : "replay-effects-status")
                         .onTapGesture { prepareVisualEffects() }
                 }
             }
@@ -445,6 +458,7 @@ struct ReplayEffectsView: View {
         VStack(spacing: 0) {
             Slider(value: Binding(get: { currentTime }, set: { value in
                 currentTime = value
+                sounds.seek(to: value)
                 player?.seek(to: CMTime(seconds: value, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
             }), in: 0...max(0.1, duration)) { editing in
                 isScrubbing = editing
@@ -518,12 +532,50 @@ struct ReplayEffectsView: View {
 
     private func pause() { player?.pause(); isPlaying = false }
 
+    private func updateSounds() {
+        sounds.update(ReplaySoundtrack(edit: displayedLook.edit, touchTimes: showsTouchTools ? sortedTouchTimes : []))
+    }
+
+    /// Holds the clip at `time`, paused, so a per-touch pick is seen on that frame.
+    private func seekPaused(to time: Double) {
+        momentTask?.cancel(); momentTask = nil
+        pause()
+        let clamped = min(max(0, time), duration)
+        if positionBeforePreview == nil { positionBeforePreview = currentTime }
+        currentTime = clamped
+        sounds.seek(to: clamped)
+        player?.seek(to: CMTime(seconds: clamped, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+    }
+
+    /// Plays a short run through a ball change, then holds just after it.
+    private func previewMoment(at time: Double) {
+        guard let player else { return }
+        momentTask?.cancel()
+        let start = min(max(0, time - 0.1), duration), end = min(duration, time + 0.8)
+        if positionBeforePreview == nil { positionBeforePreview = currentTime }
+        currentTime = start
+        sounds.seek(to: start)
+        isPlaying = true
+        restarting = true
+        player.seek(to: CMTime(seconds: start, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero) { _ in
+            Task { @MainActor in
+                restarting = false
+                if isPlaying { player.play() }
+            }
+        }
+        momentTask = Task {
+            try? await Task.sleep(for: .seconds(max(0.2, end - start)))
+            guard !Task.isCancelled else { return }
+            pause()
+        }
+    }
+
     private func startPreviewLoop() {
         guard !loopPreview else { return }
         loopPreview = true
         guard let player, !isPlaying else { return }
         if positionBeforePreview == nil { positionBeforePreview = currentTime }
-        if currentTime >= duration - 0.05 { player.seek(to: .zero); currentTime = 0 }
+        if currentTime >= duration - 0.05 { player.seek(to: .zero); currentTime = 0; sounds.seek(to: 0) }
         player.play(); isPlaying = true
     }
 
@@ -532,6 +584,7 @@ struct ReplayEffectsView: View {
         guard let player, currentTime >= duration - 0.1 else { return }
         if positionBeforePreview == nil { positionBeforePreview = currentTime }
         currentTime = duration * 0.4
+        sounds.seek(to: currentTime)
         player.seek(to: CMTime(seconds: currentTime, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
@@ -545,6 +598,7 @@ struct ReplayEffectsView: View {
         guard let position = positionBeforePreview, let player, !isPlaying else { return }
         positionBeforePreview = nil
         currentTime = position
+        sounds.seek(to: position)
         player.seek(to: CMTime(seconds: position, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
@@ -609,6 +663,7 @@ struct ReplayEffectsView: View {
                     guard !isScrubbing, !restarting else { return }
                     let seconds = CMTimeGetSeconds(time)
                     if seconds.isFinite { currentTime = max(0, seconds) }
+                    MainActor.assumeIsolated { sounds.advance(to: currentTime, playing: isPlaying) }
                     if currentTime >= duration - 0.03 {
                         if loopPreview { p.seek(to: .zero); p.play() } else { isPlaying = false }
                     }
@@ -629,7 +684,7 @@ struct ReplayEffectsView: View {
             if preparation.error != nil || surfaceMotionError != nil { return "Effects unavailable — tap to retry" }
             return "Preparing effects · \(Int(preparation.progress * 100))%"
         }
-        guard displayedLook.edit.ballSkin != .original else { return "Effects ready" }
+        guard displayedLook.edit.usesBallMaterial else { return "Effects ready" }
         if surfaceMotionError != nil { return "Ball effects unavailable — tap to retry" }
         if surfaceMotionTask != nil { return "Preparing source spin…" }
         return effectTrack.surfaceMotion?.status(at: currentTime).label ?? "Spin uncertain"
@@ -643,7 +698,7 @@ struct ReplayEffectsView: View {
             value.style = .none
             value.ballSkin = .original
         }
-        if effectTrack.surfaceMotion == nil { value.ballSkin = .original }
+        if effectTrack.surfaceMotion == nil { value.ballSkin = .original; value.ballChanges = [:] }
         return value
     }
 
@@ -693,7 +748,7 @@ struct ReplayEffectsView: View {
     private func prepareVisualEffects() {
         let needsTrack = displayedLook.edit.requiresVisualTrack
             && summary.needsVisualPreparation && preparation.prepared == nil
-        let needsSpin = displayedLook.edit.ballSkin != .original && effectTrack.surfaceMotion == nil
+        let needsSpin = displayedLook.edit.usesBallMaterial && effectTrack.surfaceMotion == nil
         guard needsTrack || needsSpin, let url = motionSource, surfaceMotionTask == nil else { return }
         let token = UUID(); surfaceMotionGeneration = token; surfaceMotionError = nil
         surfaceMotionTask = Task {
@@ -705,7 +760,7 @@ struct ReplayEffectsView: View {
                 if displayedLook.edit.scene == nil {
                     effectTrack = BallEffectTrack(frames: ready.renderTrack, touchTimes: ready.touchesMarked.map(\.time))
                 }
-                if displayedLook.edit.ballSkin != .original {
+                if displayedLook.edit.usesBallMaterial {
                     let motion = try await BallSurfaceTimeline.prepare(source: url, track: BallEffectTrack(frames: ready.renderTrack))
                     try Task.checkCancellation()
                     guard motionSource == url, surfaceMotionGeneration == token else { return }
@@ -735,6 +790,7 @@ struct ReplayEffectsView: View {
 
     private func togglePlay() {
         guard let player else { return }
+        momentTask?.cancel(); momentTask = nil
         if isPlaying {
             player.pause()
             isPlaying = false
@@ -742,6 +798,7 @@ struct ReplayEffectsView: View {
             // From the end: rewind first and only then play, or a stale end-time report stops it again.
             isPlaying = true
             currentTime = 0
+            sounds.seek(to: 0)
             restarting = true
             player.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero) { _ in
                 Task { @MainActor in

@@ -42,7 +42,10 @@ nonisolated final class RFBufferedPixelTrack {
             .samplingLinear().transformed(by:CGAffineTransform(scaleX:16/r.width,y:16/r.height))
         var bytes=[UInt8](repeating:0,count:16*16*4)
         context.render(patch,toBitmap:&bytes,rowBytes:16*4,bounds:CGRect(x:0,y:0,width:16,height:16),format:.RGBA8,colorSpace:CGColorSpaceCreateDeviceRGB())
-        return (0..<256).map { i in 0.299*Float(bytes[4*i])+0.587*Float(bytes[4*i+1])+0.114*Float(bytes[4*i+2]) }
+        return (0..<256).map { i -> Float in
+            let r = Float(bytes[4*i]), g = Float(bytes[4*i+1]), b = Float(bytes[4*i+2])
+            return 0.299*r + 0.587*g + 0.114*b
+        }
     }
     func seed(_ hit: FollowHit, image: CIImage, size: CGSize) {
         // Return the previous Vision tracker to its pool before a detector
