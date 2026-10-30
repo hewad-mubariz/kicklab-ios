@@ -1,6 +1,7 @@
 # Looks, change moments, replay sounds and timer looks
 
-Branch `feature/ball-swaps-and-sounds`, 29 October 2026.
+Branch `feature/leaderboard-editor-upgrade`, built on the leaderboard branch
+(`codex/post-launch-signin-leaderboard-ball-edges` at 4d0c3d1), 29–30 October 2026.
 
 The replay editor can now put a different ball on any touch, play a visible moment
 where the ball changes, and add a sound to every touch and every change. All three
@@ -172,6 +173,3 @@ moments need a device or an exported file.
 
 - No new analytics events for the sound, looks and timer choices.
 - Ball Distance videos (no touches) keep the single-ball picker and have no Sound tile.
-- The two detection files `NativeBallPixelTrack.swift` and `RFBufferedPixelTrack.swift`
-  carry a three-line split of one expression that the current compiler could not type-check
-  in time on a clean build; behaviour is unchanged.
