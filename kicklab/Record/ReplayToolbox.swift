@@ -45,8 +45,6 @@ struct ReplayToolbox: View {
     @State private var applyBall: Task<Void, Never>?
     /// Picking a touch sound muted the original; choosing no touch sound restores it.
     @State private var autoMuted = false
-    @ObservedObject private var myStyle = MyStyleStore.shared
-    @State private var styleSaves = 0
     private var shownBall: BallSkin { pendingBall ?? edit.ballSkin }
     @State private var effectKicks: [BallStyle: Int] = [:]
     /// The tray's height, measured from the page being shown and animated on one spring.
@@ -178,7 +176,6 @@ struct ReplayToolbox: View {
             }
             if !touchTimes.isEmpty {
                 looksTile.sessionEntrance(appeared, order: 6, offset: 14, scale: 0.94)
-                if isPro { myStyleRow.sessionEntrance(appeared, order: 7, offset: 14, scale: 0.94) }
             }
             }
         }
@@ -221,79 +218,6 @@ struct ReplayToolbox: View {
         .buttonStyle(SessionPressStyle(scale: 0.96))
         .accessibilityLabel("Looks" + (!isPro ? ", Pro" : ""))
         .accessibilityIdentifier("replay-tool-looks")
-    }
-
-    /// Saves this replay's look, recipe and sounds for every new session.
-    private var myStyleRow: some View {
-        let saved = myStyle.saved
-        let matches = saved?.matches(edit) == true
-        let customLooks = edit.hasLookChanges && edit.recipe == nil
-        let detail = customLooks ? "Custom looks stay with this replay; recipes are saved"
-            : saved == nil ? "Start every new session with this edit"
-            : matches ? "New sessions start with this edit" : "This replay differs from My style"
-        return HStack(spacing: 10) {
-            Image(systemName: saved == nil ? "bookmark" : "bookmark.fill")
-                .font(.system(size: 15, weight: .semibold)).foregroundStyle(SessionStyle.mint)
-                .frame(width: 30, height: 30)
-                .background(SessionStyle.mint.opacity(0.14), in: .circle)
-                .symbolEffect(.bounce, value: styleSaves)
-                .contentTransition(.symbolEffect(.replace))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(saved == nil ? "Save as My style" : "My style").font(.system(size: 13, weight: .semibold))
-                    .contentTransition(.interpolate)
-                Text(detail).font(.system(size: 10)).foregroundStyle(.white.opacity(0.66))
-                    .lineLimit(1).minimumScaleFactor(0.75)
-                    .contentTransition(.interpolate)
-            }
-            Spacer(minLength: 4)
-            if matches {
-                Label("Saved", systemImage: "checkmark")
-                    .font(.system(size: 11, weight: .semibold)).foregroundStyle(SessionStyle.mint)
-                    .transition(.sessionPop(scale: 0.4))
-                    .accessibilityIdentifier("my-style-saved")
-            } else {
-                Button(saved == nil ? "Save" : "Update") {
-                    withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
-                        myStyle.save(MyStyle(edit: edit))
-                    }
-                    styleSaves += 1
-                }
-                .font(.system(size: 12, weight: .semibold))
-                .buttonStyle(.glass).controlSize(.small)
-                .transition(.sessionPop(scale: 0.4))
-                .accessibilityIdentifier("my-style-save")
-            }
-            if let saved {
-                Menu {
-                    if !matches {
-                        Button("Use My style on this replay", systemImage: "arrow.uturn.backward") {
-                            var next = saved.edit(touchCount: touchTimes.count)
-                            next.environment = edit.environment; next.scene = edit.scene
-                            withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) { edit = next }
-                        }
-                    }
-                    Button("Stop using My style", systemImage: "bookmark.slash", role: .destructive) {
-                        withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) { myStyle.clear() }
-                    }
-                } label: {
-                    Image(systemName: "ellipsis").font(.system(size: 13, weight: .semibold))
-                        .frame(width: 30, height: 30).contentShape(.rect)
-                }
-                .accessibilityLabel("My style options")
-                .accessibilityIdentifier("my-style-menu")
-            }
-        }
-        .padding(.horizontal, 12).padding(.vertical, 8)
-        .background(.white.opacity(0.05), in: .rect(cornerRadius: 15))
-        .overlay {
-            RoundedRectangle(cornerRadius: 15)
-                .strokeBorder(matches ? SessionStyle.mint.opacity(0.4) : .white.opacity(0.07), lineWidth: 0.75)
-        }
-        .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: matches)
-        .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: saved)
-        .sensoryFeedback(.success, trigger: styleSaves)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("my-style")
     }
 
     private func tile(_ tool: ReplayTool) -> some View {

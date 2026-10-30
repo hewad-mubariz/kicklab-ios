@@ -123,7 +123,9 @@ struct ReplayEffectsView: View {
                             .padding(.horizontal, 20).padding(.bottom, 18)
                         } else if showSharePanel {
                             ReplaySharePanel(onShare: share, onClose: { showSharePanel = false },
-                                             onRecordAnother: onRecordAnother, onDone: onDone)
+                                             onRecordAnother: onRecordAnother, onDone: onDone,
+                                             myStyleEdit: subscriptions.isPro && showsTouchTools && committedLook.edit.isEdited
+                                                 ? committedLook.edit : nil)
                                 .padding(.horizontal, 16).padding(.bottom, 10)
                                 .transition(.sessionRise)
                         } else {

@@ -92,13 +92,16 @@ on, are free, and are remembered with the counter settings (`milestones`, `miles
 
 ## My style
 
-A Pro row under the Looks tile saves the replay's ball, effect and intensity, the recipe
-behind its looks, the change moment, and the sounds and original-sound setting. Every new
-session (`PostSessionFlowView`) starts from it; the recipe is laid again for that session's
-touch count, so Power-up still lands on its 10th and 25th touch. Custom runs stay with their
-replay. The row shows *Save*, *Saved* or *Update*, with a menu for *Use My style on this
-replay* and *Stop using My style*. Counter, timer and graph settings already persist on
-their own. Design reviews and UI tests keep My style in memory only.
+Once a Pro replay with edits is saved, the *Your replay is ready* panel offers a row under
+*Share video*: the moment the person has decided they like the result. It saves the replay's
+ball, effect and intensity, the recipe behind its looks, the change moment, and the sounds
+and original-sound setting. Every new session (`PostSessionFlowView`), including *Record
+another*, starts from it; the recipe is laid again for that session's touch count, so
+Power-up still lands on its 10th and 25th touch. Custom runs stay with their replay. The row
+reads *Start every session with this look* (Save), *Make this my new style* (Update) or
+*This is your style* with a check, and its menu has *Stop using My style*. The Customize
+grid stays as it was. Counter, timer and graph settings already persist on their own. Design
+reviews and UI tests keep My style in memory only.
 
 ## Phone check (iPhone 11 Pro Max, 30 October 2026)
 
@@ -198,7 +201,7 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
 - `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): Power-up, split, a run's
   ball and effect, change moment, merge, remix, clear, the Ball page's link to Looks, the
   Auto change sound and its override, original-sound muting, the Milestones switch and
-  fanfare, and My style save, update and stop.
+  fanfare, and My style save and stop from the saved-replay panel.
 
 ## Results (iPhone 18 Pro Simulator)
 

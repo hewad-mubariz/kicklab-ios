@@ -332,6 +332,8 @@ struct ReplaySharePanel: View {
     let onClose: () -> Void
     var onRecordAnother: (() -> Void)?
     var onDone: (() -> Void)?
+    /// The saved replay's edit, when it is worth keeping as My style.
+    var myStyleEdit: SessionEditState? = nil
     @State private var appeared = false
 
     var body: some View {
@@ -364,6 +366,10 @@ struct ReplaySharePanel: View {
             .sessionEntrance(appeared, order: 1, offset: 10)
             .accessibilityHint("Choose an app or action in the share sheet")
             .accessibilityIdentifier("replay-share-video")
+            if let myStyleEdit {
+                MyStyleShareRow(edit: myStyleEdit)
+                    .sessionEntrance(appeared, order: 2, offset: 10)
+            }
             if onRecordAnother != nil || onDone != nil {
                 HStack(spacing: 10) {
                     if let onRecordAnother {
@@ -384,7 +390,7 @@ struct ReplaySharePanel: View {
                         .accessibilityIdentifier("replay-done")
                     }
                 }
-                .sessionEntrance(appeared, order: 2, offset: 10)
+                .sessionEntrance(appeared, order: 3, offset: 10)
             }
         }
         .padding(18)

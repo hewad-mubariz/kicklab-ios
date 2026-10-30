@@ -200,30 +200,23 @@ final class BallSwapsUITests: ProReplayUITestCase {
         capture(app, "06 Milestones")
         app.buttons["replay-tools-back"].tap()
 
-        // My style: save, then a recipe makes this replay differ until it is updated.
+        // My style is offered once the replay is saved, and can be stopped from the same row.
+        app.buttons["replay-close-tools"].tap()
+        XCTAssertFalse(app.buttons["my-style-save"].exists, "My style is not part of the Customize grid")
+        XCTAssertTrue(app.startReplayDownload(), "Download starts in place")
+        XCTAssertTrue(app.waitForReplaySaved(timeout: 240), "The replay is saved to Photos")
         let save = app.buttons["my-style-save"]
         XCTAssertTrue(save.waitForExistence(timeout: 5))
         XCTAssertEqual(save.label, "Save")
         save.tap()
         XCTAssertTrue(app.descendants(matching: .any)["my-style-saved"].waitForExistence(timeout: 3))
-        capture(app, "07 My style saved")
-        app.buttons["replay-tool-looks"].tap()
-        XCTAssertTrue(app.buttons["look-recipe-finale"].waitForExistence(timeout: 5))
-        app.buttons["look-recipe-finale"].tap()
-        app.buttons["replay-tools-back"].tap()
-        XCTAssertTrue(save.waitForExistence(timeout: 3))
-        XCTAssertEqual(save.label, "Update", "The replay now differs from My style")
-        save.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["my-style-saved"].waitForExistence(timeout: 3))
-
-        // Stop using it.
+        capture(app, "07 My style after download")
         app.buttons["my-style-menu"].tap()
         let stop = app.buttons["Stop using My style"]
         XCTAssertTrue(stop.waitForExistence(timeout: 3))
         stop.tap()
         XCTAssertTrue(save.waitForExistence(timeout: 3))
         XCTAssertEqual(save.label, "Save")
-        app.buttons["replay-close-tools"].tap()
     }
 }
 
