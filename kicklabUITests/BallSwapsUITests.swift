@@ -198,6 +198,19 @@ final class BallSwapsUITests: ProReplayUITestCase {
         XCTAssertTrue(isOn(milestones))
         Thread.sleep(forTimeInterval: 0.35)
         capture(app, "06 Milestones")
+
+        // Each counter celebrates its own way: picking a counter picks its milestone, and the row
+        // plays it on the clip.
+        let preview = app.buttons["milestone-preview"]
+        XCTAssertEqual(preview.label, "Milestones, Normal style")
+        for (style, title, shot) in [("comic", "Comic", "06b Comic milestone"), ("goldCoin", "Gold Coin", "06c Gold Coin milestone")] {
+            app.buttons["counter-style-\(style)"].tap()
+            XCTAssertEqual(preview.label, "Milestones, \(title) style")
+            preview.tap()
+            Thread.sleep(forTimeInterval: 0.6)
+            capture(app, shot)
+        }
+        app.buttons["counter-style-normal"].tap()
         app.buttons["replay-tools-back"].tap()
 
         // My style is offered once the replay is saved, and can be stopped from the same row.

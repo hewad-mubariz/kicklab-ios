@@ -82,13 +82,39 @@ Pro; placement and show/hide stay free.
 
 ## Milestones
 
-The counter celebrates the 10th, 25th, 50th, 75th and 100th touch, then every 50th: the
-badge swells and springs back, a flash, two rings and rays burst behind it, confetti is
-thrown up and falls, and a lime "★ 25 TOUCHES" tag rises under the count, all within
-1.3 s (`MilestoneAppearance`, drawn by the export renderer and the replay overlay alike).
-A short four-note fanfare plays on the milestone touch, replacing that touch's touch or
-change sound. The Counter page has a *Milestones* switch and a fanfare button; both default
-on, are free, and are remembered with the counter settings (`milestones`, `milestoneSound`).
+The counter celebrates the 10th, 25th, 50th, 75th and 100th touch, then every 50th, in its
+own style: picking a counter picks its milestone, with no separate picker. Each one lasts
+1.3 s and is drawn by the export renderer and the replay overlay alike (`MilestoneAppearance`
+in `MilestoneMoments.swift`, the showpiece counters in `MilestoneArt.swift`).
+
+| Counter | Celebration | Badge moves | Fanfare |
+| --- | --- | --- | --- |
+| Normal | Flash, rings, rays, confetti, lime "★ 25 TOUCHES" tag | Swell | Four rising notes |
+| Classic | Mint ripples and sparkles, glints on the number, mint tag | Swell | Four rising notes |
+| Odometer | Arcade marquee chasing round the drums, a prize ticket feeds out | Drops and bounces | Arcade bells, ticket ratchet |
+| Broadcast | Flares along the scorebug, stripes, a *MILESTONE 25* banner wipe | Swell | Whoosh into two brass stabs |
+| Comic | Red blast behind the starburst, speed lines, a speech bubble ("GREAT!") | Slam and wobble | Punch and boing |
+| Neon Sign | The sign's frame strikes up, a chase of lights, "great!" in neon script | Flicker | Clicks, then a hum |
+| Molten | Heat bloom, shock ring, ember fountain, lava blobs, glowing tag | Rumble | Whump, rush and crackle |
+| Glitch | RGB slices, dead pixels, brackets blowing out, "LEVEL UP", "LV 3" | Skips sideways | Bit-crushed 8-bit level-up |
+| Graffiti | Paint splats with runs, a sprayed crown with drips | Tilt | Can rattle, then spray |
+| Jelly | A wobbling ring, glossy bubbles that rise and pop, candy tag | Squash and stretch | Rising bloops |
+| Gold Coin | A turning sunburst, a shower of spinning coins, a shine across the medal | Hop | Ka-ching |
+| Chalkboard | The number circled in chalk, a gold star sticker, dust, "Great!" above | Knock | Chalk taps, a bell |
+
+The word grows with the streak (NICE, GREAT, WOW, HUGE, LEGEND, then UNREAL, ON FIRE, BOOM,
+INSANE) and Glitch's level counts the milestones reached. Most of each celebration sits
+behind the counter; Classic, Comic, Glitch, Gold Coin and Chalkboard also draw a layer over
+it that moves with the badge. Everything is clipped to the celebration canvas (twice the
+badge), so the replay's images and the export agree. The fanfare plays on the milestone
+touch in place of that touch's touch or change sound. The Counter page has a *Milestones*
+switch and a fanfare button, both on by default, free and remembered with the counter
+settings (`milestones`, `milestoneSound`). The row names the counter's celebration, and
+tapping it plays the first milestone on the clip, the whole 1.3 s.
+
+On the iPhone 11 Pro Max a celebration costs at most 6.7 ms per replay frame (Comic, p95;
+most are under 4 ms) and 9.5 ms per exported 1080 × 1920 frame, counter included, only
+during its 1.3 s (`EditorPhoneCheckTests.testMilestoneCostOnThisPhone`).
 
 ## My style
 
@@ -183,12 +209,15 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
   every change moment drawing deterministically and fading out.
 - `LookExportTests`: a saved video draws fire for the first run and nothing after the
   change, and the reverse.
-- `MilestoneTests`: milestone touches, the celebration window and pulse, deterministic
-  drawing, the export overlay, settings defaults and the fanfare's priority.
+- `MilestoneTests`: milestone touches, the celebration window and pulse; for every counter
+  its own deterministic celebration that fades out cleanly, its front layer, a badge motion
+  that comes to rest and its own fanfare; the words and levels; the export overlay; settings
+  defaults and the fanfare's priority. Serialized, like `BallSwapTests`, because Core
+  Graphics very rarely rasterizes a few pixels differently when many frames render at once.
 - `MyStyleTests`: saving the recipe and refitting it, custom runs, unknown saved values,
   persistence and memory-only stores.
-- `EditorPhoneCheckTests`: export time and per-frame preview cost, and per-effect GPU cost,
-  on the phone it runs on.
+- `EditorPhoneCheckTests`: export time and per-frame preview cost, per-effect GPU cost, and
+  each counter's milestone cost in replay and export, on the phone it runs on.
 - `GraphWindowTests`: the scrolling window at the start, middle and end, the 30-touch size,
   the fixed scale, and the drawing cost against the whole clip.
 - `ReplaySoundTests`: every cue bounded and audible, waveform shapes, soundtrack placement,
@@ -201,7 +230,8 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
 - `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): Power-up, split, a run's
   ball and effect, change moment, merge, remix, clear, the Ball page's link to Looks, the
   Auto change sound and its override, original-sound muting, the Milestones switch and
-  fanfare, and My style save and stop from the saved-replay panel.
+  fanfare, the row following the counter (Comic, Gold Coin) and its preview, and My style
+  save and stop from the saved-replay panel.
 
 ## Results (iPhone 18 Pro Simulator)
 
@@ -237,3 +267,7 @@ moments need a device or an exported file.
 
 - No new analytics events for the sound, looks and timer choices.
 - Ball Distance videos (no touches) keep the single-ball picker and have no Sound tile.
+- The Simulator does not advance playback after a preview seek, so milestone previews are
+  checked on the phone; the review frames come from `MilestoneTests` (`MILESTONE_SHOTS`).
+- `JugglingReplayMemoryTests` hosts `ReplayEffectsView` without a `SubscriptionStore` and
+  crashes the test host; this is already so on the leaderboard base.

@@ -166,7 +166,8 @@ nonisolated struct ExportOverlaySettings: Codable, Equatable, Sendable {
     var counter = ExportOverlayItem(enabled: true, style: .normal, placement: .init(x: 0.04, y: 0.08, scale: 0.65))
     var graph = ExportGraphSettings()
     var timer = TimerOverlayItem()
-    /// The counter celebrates the 10th, 25th, 50th, 75th and 100th touch, then every 50th.
+    /// The counter celebrates the 10th, 25th, 50th, 75th and 100th touch, then every 50th, in
+    /// its own style.
     var milestones = true
     /// A short fanfare plays with each celebration.
     var milestoneSound = true
@@ -197,6 +198,8 @@ nonisolated struct ExportOverlaySettings: Codable, Equatable, Sendable {
 
     /// Whether milestone fanfares play on this clip.
     var playsMilestoneSound: Bool { counter.enabled && milestones && milestoneSound }
+    /// The counter whose fanfare plays on each milestone, or nil when none does.
+    var milestoneFanfare: ExportBadgeStyle? { playsMilestoneSound ? counter.style : nil }
 
     func encode(to encoder: any Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)

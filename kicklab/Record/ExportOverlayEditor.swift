@@ -25,24 +25,48 @@ struct ExportOverlayLayer: View {
            let badge = ExportOverlayRenderer.image(style: settings.counter.style,
                 time: time, counter: timeline.state(at: time)) {
             let rect = settings.counter.placement.rect(in: size)
+            let style = settings.counter.style
             let milestone = settings.milestones ? Milestones.active(timeline.state(at: time)) : nil
-            if let milestone, let burst = MilestoneAppearance.image(count: milestone.count, progress: milestone.progress) {
-                Image(decorative: burst, scale: 1).resizable()
-                    .frame(width: rect.width * 2, height: rect.height * 2)
-                    .rotationEffect(.radians(settings.counter.placement.radians))
-                    .position(x: rect.midX, y: rect.midY)
-                    .allowsHitTesting(false).accessibilityHidden(true)
+            let motion = milestone.map { Milestones.motion(style, progress: $0.progress) } ?? MilestoneMotion()
+            let unit = rect.width / ExportOverlayRenderer.badgeSize.width
+            if let milestone, let burst = MilestoneAppearance.image(style: style, count: milestone.count, progress: milestone.progress) {
+                milestoneLayer(burst, rect: rect, motion: nil, unit: unit)
             }
             Image(decorative: badge, scale: 1).resizable()
                 .frame(width: rect.width, height: rect.height)
-                .scaleEffect(milestone.map { Milestones.pulse($0.progress) } ?? 1)
+                .milestoneMotion(motion, unit: unit)
                 .rotationEffect(.radians(settings.counter.placement.radians))
                 .position(x: rect.midX, y: rect.midY)
                 // Pops in and out around the sticker's own center, not the canvas center.
                 .transition(.sessionPop(from: UnitPoint(x: rect.midX / max(1, size.width),
                                                         y: rect.midY / max(1, size.height)), scale: 0.4))
                 .allowsHitTesting(false).accessibilityHidden(true)
+            if let milestone, let front = MilestoneAppearance.image(style: style, count: milestone.count,
+                                                                     progress: milestone.progress, front: true) {
+                milestoneLayer(front, rect: rect, motion: motion, unit: unit)
+            }
         }
+    }
+
+    /// A celebration layer: twice the badge, centred on it, turned with it, and moving with it
+    /// when it draws over the badge.
+    private func milestoneLayer(_ image: CGImage, rect: CGRect, motion: MilestoneMotion?, unit: CGFloat) -> some View {
+        Image(decorative: image, scale: 1).resizable()
+            .frame(width: rect.width * 2, height: rect.height * 2)
+            .milestoneMotion(motion ?? MilestoneMotion(), unit: unit)
+            .rotationEffect(.radians(settings.counter.placement.radians))
+            .position(x: rect.midX, y: rect.midY)
+            .allowsHitTesting(false).accessibilityHidden(true)
+    }
+}
+
+extension View {
+    /// The badge's milestone motion, as `MilestoneMotion.apply` draws it: scaled, turned, then
+    /// shifted, all about the view's centre. `unit` is points per badge unit.
+    func milestoneMotion(_ motion: MilestoneMotion, unit: CGFloat) -> some View {
+        scaleEffect(x: motion.scaleX, y: motion.scaleY)
+            .rotationEffect(.radians(motion.angle))
+            .offset(x: motion.dx * unit, y: motion.dy * unit)
     }
 }
 

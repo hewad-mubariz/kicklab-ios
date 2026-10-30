@@ -3,6 +3,9 @@ import Foundation
 import Testing
 @testable import kicklab
 
+/// Serialized: the frame checks compare bytes, and Core Graphics very rarely rasterizes a few
+/// pixels differently when many frames render at once.
+@Suite(.serialized)
 struct BallSwapTests {
     private let touches: [Double] = [1, 2, 3, 4, 5]
 

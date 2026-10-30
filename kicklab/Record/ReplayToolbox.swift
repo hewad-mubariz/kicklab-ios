@@ -367,27 +367,41 @@ struct ReplayToolbox: View {
         }
     }
 
-    /// Milestones on the counter, with the fanfare as its own small switch beside it.
+    /// Milestones on the counter, with the fanfare as its own small switch beside it. Each
+    /// counter style celebrates its own way, so the row names the one picked above, and tapping
+    /// it plays the first milestone on the clip.
     private var milestonesRow: some View {
         HStack(spacing: 10) {
-            Image(systemName: "star.fill")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(milestones ? SessionStyle.background : SessionStyle.mint)
-                .frame(width: 32, height: 32)
-                .background(milestones ? SessionStyle.mint : SessionStyle.mint.opacity(0.14), in: .circle)
-                .symbolEffect(.bounce, value: milestones)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Milestones").font(.system(size: 13, weight: .semibold))
-                Text(milestones ? "At 10, 25, 50 and 100 touches" : "No celebration")
-                    .font(.system(size: 11)).foregroundStyle(.white.opacity(0.66))
-                    .contentTransition(.interpolate)
-                    .lineLimit(1).minimumScaleFactor(0.8)
+            Button {
+                if touchTimes.count >= 10 { onPreviewMoment(touchTimes[9]) }
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(milestones ? SessionStyle.background : SessionStyle.mint)
+                        .frame(width: 32, height: 32)
+                        .background(milestones ? SessionStyle.mint : SessionStyle.mint.opacity(0.14), in: .circle)
+                        .symbolEffect(.bounce, value: milestones)
+                        .symbolEffect(.bounce, value: counter.style)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Milestones").font(.system(size: 13, weight: .semibold))
+                        Text(milestones ? "\(counter.style.title) · 10, 25, 50, 100" : "No celebration")
+                            .font(.system(size: 11)).foregroundStyle(.white.opacity(0.66))
+                            .contentTransition(.interpolate)
+                            .lineLimit(1).minimumScaleFactor(0.8)
+                    }
+                }
+                .contentShape(.rect)
             }
+            .buttonStyle(SessionPressStyle(scale: 0.96))
+            .disabled(!milestones || touchTimes.count < 10)
+            .accessibilityLabel(milestones ? "Milestones, \(counter.style.title) style" : "Milestones off")
+            .accessibilityHint("Plays the first milestone on the clip")
+            .accessibilityIdentifier("milestone-preview")
             Spacer(minLength: 4)
             Button {
                 withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { milestoneSound.toggle() }
-                if milestoneSound { onPreviewSound(.milestone) }
+                if milestoneSound { onPreviewSound(.milestone(counter.style)) }
             } label: {
                 Image(systemName: milestoneSound ? "speaker.wave.2.fill" : "speaker.slash.fill")
                     .font(.system(size: 13, weight: .semibold))

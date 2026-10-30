@@ -128,7 +128,7 @@ final class ReplayDownloader: ObservableObject {
                       }, touchTimes: summary.touchesMarked.map(\.time)) : nil,
                       lookChanges: edit.lookChanges, swapEffect: edit.swapEffect,
                       soundtrack: ReplaySoundtrack(edit: edit, touchTimes: summary.touchesMarked.map(\.time),
-                                                   milestones: overlays.playsMilestoneSound),
+                                                   milestones: overlays.milestoneFanfare),
                       clipAudio: edit.clipAudio)
         while burnIn.isExporting {
             try await VideoWorkExecution.checkpoint()
