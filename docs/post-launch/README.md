@@ -1193,6 +1193,17 @@ all new translations and interpolation placeholders were checked, including
 compiled resources. See
 [`20261030-leaderboard-release-wording.json`](../../benchmarks/releases/20261030-leaderboard-release-wording.json).
 
+**Wording TestFlight build — 30 October:** **1.1.0 (33)** packages that tested
+cleanup from `d5d222d` (only the build number changed after `6a3a289`). It is
+uploaded, processed and **Testing** for the existing Early testers internal group.
+The release archive's source hashes, signing, translated wording, counter profile,
+model and privacy resources were verified. Updated What to Test notes are saved.
+The first upload failed at completion with expired Xcode credentials; after the
+Xcode sign-in flow, the same archive uploaded successfully and App Store Connect
+confirmed it. No App Store or external beta review was submitted, and no device
+installation was performed. See
+[`20261030-testflight-1.1.0-33.json`](../../benchmarks/releases/20261030-testflight-1.1.0-33.json).
+
 **Unresolved public-content review risk:** the automatic leaderboard publishes
 custom names/photos without profile reporting, user blocking or prepublication
 content filtering. The old report action is only for postponed reviewed touch
@@ -1234,7 +1245,7 @@ to clear the long-session thermal risk. Extend the run if the short check expose
 a concern. The separate live-versus-encoded-replay difference of two contacts
 also remains open. Correct or remove the known bad historical 14-point test entry
 as a separate explicit data operation; new code does not overwrite synced scores.
-Continue these checks in TestFlight 1.1.0 (32). Complete the release gates and
+Continue these checks in TestFlight 1.1.0 (33). Complete the release gates and
 obtain the owner's submission instruction before submitting it to App Store review.
 
 ## Week 3: Detection continuity, replay quality, effects and UI

@@ -1,0 +1,86 @@
+{
+  "app": "Juggle Dude",
+  "apple_app_id": "6820780610",
+  "version": "1.1.0",
+  "build": "33",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "source_commit": "d5d222da975cef93aa8f8c97d4c0c19049069c34",
+  "tested_source": "6a3a289",
+  "status": "testing_internal",
+  "updated_at_utc": "2026-10-30T16:16:36.294124+00:00",
+  "prior_wording_ui_tests_passed": 3,
+  "languages": [
+    "en",
+    "de",
+    "es",
+    "fr",
+    "pt-BR"
+  ],
+  "app_store_review_changed": false,
+  "installed_to_device_after_upload": false,
+  "what_to_test_file": "artifacts/releases/20261030-leaderboard-1.1.0-33/what-to-test.txt",
+  "what_to_test_sha256": "275b0a0f8a448a24cc89e4e5322a98afed4d7097c56b7ed292a2953514464882",
+  "source_verified": true,
+  "archive_verified": true,
+  "archive_verification": {
+    "version": "1.1.0",
+    "build": "33",
+    "source_commit": "d5d222da975cef93aa8f8c97d4c0c19049069c34",
+    "archive": "artifacts/releases/20261030-leaderboard-1.1.0-33/JuggleDude-1.1.0-33.xcarchive",
+    "signature_verified": true,
+    "source_files_verified": 503,
+    "matches_tested_source": "6a3a289 (only marketing/build number changed)",
+    "counter_profile": "outdoor-balanced-v3-20261029",
+    "compilation": "Release with TOUCH_COUNTER_BETA; DEBUG modes absent",
+    "models": [
+      "RFDETRSmallRecovery040FP16.mlmodelc"
+    ],
+    "languages": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "pt-BR"
+    ],
+    "minimum_ios": "26.5",
+    "iphone_only": true,
+    "privacy_manifest": true,
+    "model_license": true,
+    "client_configurations_verified": true,
+    "deferred_editor_features_absent": true,
+    "touch_review_disabled": true
+  },
+  "upload_succeeded": true,
+  "upload_log": "artifacts/releases/20261030-leaderboard-1.1.0-33/upload.log",
+  "upload_failure": "Xcode account credentials expired at final completion after transfer reached 100%. Build 33 not yet listed in App Store Connect.",
+  "retry_log": "artifacts/releases/20261030-leaderboard-1.1.0-33/upload-retry.log",
+  "credential_renewal": "Opened Xcode Apple Accounts Sign In; sign-in sheet returned to account/team details without a visible error.",
+  "changes_from_build_32": [
+    "kicklab.xcodeproj/project.pbxproj",
+    "kicklab/Home/TrainingProfileView.swift",
+    "kicklab/Leaderboard/HomeLeaderboardPreview.swift",
+    "kicklab/Leaderboard/LeaderboardCorrectionView.swift",
+    "kicklab/Leaderboard/LeaderboardRulesView.swift",
+    "kicklab/Leaderboard/LeaderboardView.swift",
+    "kicklab/Localizable.xcstrings",
+    "kicklab/Profile/CloudProfileEditor.swift"
+  ],
+  "what_to_test": "Juggle Dude 1.1.0 (33) \u2014 leaderboard wording update\n\nThis build clarifies the leaderboard rules, profile visibility and Apple/email sign-in wording in all five languages. Counting and ranking behavior are unchanged from build 32.\n\n\u2022 Check Home, Leaderboard \u2192 Rules and Profile \u2192 Edit profile. Scores are automatic; recordings stay on your phone.\n\u2022 Join the leaderboard and record while signed in. After syncing, the longest counted streak should rank, while total touches remain in session history.\n\u2022 Try runs separated by a clear hand stop or ground bounce. Check the initial hand release and a new run after an interruption.\n\u2022 Try Apple sign-in, email sign-in and guest mode, then change language without restarting.\n\u2022 Check recording, replay, saving videos and Pro access.\n\nEnglish, German, Spanish, French and Brazilian Portuguese are included. Touch-review submissions and the separate replay-editor upgrade remain postponed.",
+  "processing_confirmed_in_app_store_connect": true,
+  "upload_warning": "Retry exported successfully but retained an account-credentials warning. App Store Connect confirms build 33 Processing.",
+  "build_id": "c3659f76-fe4f-42a5-82df-60ce65c1abfa",
+  "processing_complete": true,
+  "internal_testing": {
+    "group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "existing_testers": 3,
+    "status": "Testing"
+  },
+  "what_to_test_saved": true,
+  "submitted_to_app_store_review": false,
+  "submitted_to_external_beta_review": false,
+  "proof": [
+    "artifacts/releases/20261030-leaderboard-1.1.0-33/testflight-ready.jpg",
+    "artifacts/releases/20261030-leaderboard-1.1.0-33/testflight-notes-and-group.jpg"
+  ]
+}

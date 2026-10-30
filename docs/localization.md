@@ -78,7 +78,7 @@ The translations originate from uploaded 1.0.4 (31). This branch adds immediate 
 switching on top, uploaded as TestFlight 1.1.0 (32). Leaderboard-specific view helpers and
 messages are localized as well. The subsequent release-wording cleanup also translates
 the opt-in, automatic-streak, local-video and Apple/email messages in all five languages;
-that cleanup is not part of build 32.
+that cleanup is available in TestFlight 1.1.0 (33), and is not part of build 32.
 `LeaderboardLocalizationUITests` exercises Apple/email choices, email entry,
 weekly/all-time tabs, rules and automatic-score details in all five languages,
 alternating light and dark appearances. Google and postponed touch-check actions
