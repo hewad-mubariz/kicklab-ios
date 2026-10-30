@@ -54,7 +54,7 @@ struct ReplayMotionPicker: View {
                         Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: 13, weight: .semibold)).frame(width: 30, height: 30)
                     }
-                    .buttonStyle(.glass).buttonBorderShape(.circle)
+                    .appGlassButtonStyle().buttonBorderShape(.circle)
                     .accessibilityLabel(isPlaying ? "Pause motion preview" : "Play motion preview")
                     .accessibilityIdentifier("motion-preview-play")
                 }

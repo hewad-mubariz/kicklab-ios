@@ -127,7 +127,7 @@ struct BallDistanceView: View {
             Button { camera.stop(); dismiss() } label: {
                 Image(systemName: "chevron.left").font(.system(size: 18, weight: .medium))
                     .frame(width: 32, height: 32)
-            }.buttonStyle(.glass).buttonBorderShape(.circle).disabled(isBusy)
+            }.appGlassButtonStyle().buttonBorderShape(.circle).disabled(isBusy)
                 .accessibilityLabel("Close Ball Distance").accessibilityIdentifier("ball-distance-close")
             Spacer(minLength: 0)
             VStack(spacing: 5) {
@@ -143,7 +143,7 @@ struct BallDistanceView: View {
             Button { showSavedTests = true } label: {
                 Image(systemName: "play.rectangle.on.rectangle")
                     .font(.system(size: 18)).frame(width: 32, height: 32)
-            }.buttonStyle(.glass).buttonBorderShape(.circle).disabled(isBusy)
+            }.appGlassButtonStyle().buttonBorderShape(.circle).disabled(isBusy)
                 .accessibilityLabel("Saved tests").accessibilityIdentifier("ball-distance-saved-tests")
             #else
             Color.clear.frame(width: 44, height: 44).accessibilityHidden(true)
@@ -232,7 +232,7 @@ struct BallDistanceView: View {
         Button(action: action) {
             VStack(spacing: 12) {
                 Image(systemName: symbol).font(.system(size: 21)).frame(width: 46, height: 46)
-                    .glassEffect(.regular, in: .circle)
+                    .appGlass(in: .circle)
                 Text(title).font(.system(size: 10, weight: .medium))
             }.frame(width: 76).contentShape(.rect)
         }.buttonStyle(SessionPressStyle(scale: 0.92)).disabled(isBusy)

@@ -499,7 +499,7 @@ struct RecordView: View {
                     Image(systemName: "chevron.left").font(.system(size: 18, weight: .medium))
                         .frame(width: 32, height: 32)
                 }
-                .buttonStyle(.glass).buttonBorderShape(.circle).controlSize(.regular)
+                .appGlassButtonStyle().buttonBorderShape(.circle).controlSize(.regular)
                 .accessibilityLabel(camera.isPreparingRecording ? "Cancel recording setup" : "Close")
                 .accessibilityIdentifier("capture-close")
                 .disabled(camera.isFinishingRecording)

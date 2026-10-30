@@ -139,7 +139,7 @@ struct BallDistanceGroundCaptureView: View {
             Button { capture.pause(); dismiss() } label: {
                 Image(systemName: "chevron.left").font(.system(size: 18, weight: .medium))
                     .frame(width: 32, height: 32)
-            }.buttonStyle(.glass).buttonBorderShape(.circle)
+            }.appGlassButtonStyle().buttonBorderShape(.circle)
                 .disabled(isRecording || capture.finishing)
                 .accessibilityLabel("Close Ball Distance").accessibilityIdentifier("ball-distance-close")
             Spacer(minLength: 0)
@@ -261,7 +261,7 @@ struct BallDistanceGroundCaptureView: View {
         Button(action: action) {
             VStack(spacing: 12) {
                 Image(systemName: symbol).font(.system(size: 21)).frame(width: 46, height: 46)
-                    .glassEffect(.regular, in: .circle)
+                    .appGlass(in: .circle)
                 Text(title).font(.system(size: 10, weight: .medium))
             }
             .frame(width: 76)

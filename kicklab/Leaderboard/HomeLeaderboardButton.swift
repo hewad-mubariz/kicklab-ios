@@ -12,7 +12,7 @@ struct HomeLeaderboardButton: View {
                 .font(.system(size: 19, weight: .medium))
                 .foregroundStyle(TrainingHomeStyle.accent(scheme))
                 .frame(width: 48, height: 48)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .appGlass(in: .circle, interactive: true)
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)

@@ -137,7 +137,7 @@ struct ProPaywallView: View {
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .glassEffect(.regular.interactive(), in: .circle)
+        .appGlass(in: .circle, interactive: true)
         .padding(.trailing, 16).padding(.top, 6)
         .accessibilityLabel("Close")
         .accessibilityIdentifier("pro-close")

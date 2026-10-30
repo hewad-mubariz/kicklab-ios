@@ -264,7 +264,7 @@ private struct BackChip: View {
     var body: some View {
         Image(systemName: symbol).font(.system(size: 16, weight: .semibold))
             .frame(width: 44, height: 44)
-            .glassEffect(.regular.interactive(), in: .circle)
+            .appGlass(in: .circle, interactive: true)
     }
 }
 
@@ -565,7 +565,7 @@ private struct TrayConcept: View {
             }
         }
         .padding(18)
-        .glassEffect(.regular, in: .rect(cornerRadius: 34))
+        .appGlass(in: .rect(cornerRadius: 34))
     }
 }
 
@@ -739,7 +739,7 @@ private struct HomeLanding: View {
                     Text("Signed in as Jules").font(.subheadline.weight(.semibold))
                 }
                 .padding(.horizontal, 18).frame(height: 48)
-                .glassEffect(.regular, in: .capsule)
+                .appGlass(in: .capsule)
                 .padding(.bottom, 12)
             }
     }

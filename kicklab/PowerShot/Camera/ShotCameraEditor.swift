@@ -54,7 +54,7 @@ struct ShotCameraEditor: View {
                         .overlay(alignment: .topTrailing) {
                             if replacing {
                                 Button("Cancel") { withAnimation(motion(SessionMotion.snap)) { replacing = false } }
-                                    .font(.system(size: 11, weight: .semibold)).buttonStyle(.glass)
+                                    .font(.system(size: 11, weight: .semibold)).appGlassButtonStyle()
                                     .padding(.trailing, 16).offset(y: -2)
                             }
                         }
@@ -305,20 +305,21 @@ struct ShotCameraEditor: View {
                 })).labelsHidden().tint(clip.move.tint)
             }
         case .smoothMotion:
-            HStack {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Smooth slow motion").font(.system(size: 12, weight: .medium))
-                    Text(!ShotSlowMotion.isAvailable ? "Needs a newer iPhone"
-                         : makingSmoothMotion && clip.settings.smoothMotion ? "Making smooth frames…" : "New in-between frames, like a TV replay")
-                        .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+            if ShotSlowMotion.isAvailable {
+                HStack {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Smooth slow motion").font(.system(size: 12, weight: .medium))
+                        Text(makingSmoothMotion && clip.settings.smoothMotion ? "Making smooth frames…" : "New in-between frames, like a TV replay")
+                            .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+                    }
+                    Spacer()
+                    Toggle("Smooth slow motion", isOn: Binding(get: { clip.settings.smoothMotion && ShotSlowMotion.isAvailable }, set: { value in
+                        began(); track.update(clip.id) { $0.smoothMotion = value }; ended()
+                    })).labelsHidden().tint(clip.move.tint).disabled(!ShotSlowMotion.isAvailable)
                 }
-                Spacer()
-                Toggle("Smooth slow motion", isOn: Binding(get: { clip.settings.smoothMotion && ShotSlowMotion.isAvailable }, set: { value in
-                    began(); track.update(clip.id) { $0.smoothMotion = value }; ended()
-                })).labelsHidden().tint(clip.move.tint).disabled(!ShotSlowMotion.isAvailable)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("shot-camera-smooth-motion")
             }
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("shot-camera-smooth-motion")
         case .ending:
             HStack(spacing: 6) {
                 Text("Ending").font(.system(size: 12, weight: .medium))

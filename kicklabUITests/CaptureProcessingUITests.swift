@@ -20,6 +20,9 @@ final class CaptureProcessingUITests: ProReplayUITestCase {
         // This deliberately avoids --session-design, which disables preference writes.
         assertResponsiveEditor(app, timeout: 10)
         app.buttons["replay-close"].tap()
+        // Replay Back now returns to the camera; its own Back returns Home.
+        XCTAssertTrue(app.buttons["capture-close"].waitForExistence(timeout: 10))
+        app.buttons["capture-close"].tap()
         XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout: 10))
         app.buttons["module-juggling"].tap()
         assertResponsiveEditor(app, timeout: 10)

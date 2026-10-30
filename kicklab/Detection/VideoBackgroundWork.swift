@@ -96,6 +96,8 @@ final class VideoBackgroundWork: ObservableObject {
     static let shared = VideoBackgroundWork()
     @Published var interruptedMessage: String?
     private let journal = VideoJobJournal(defaults: .standard)
+    private var foregroundJobs = 0
+    private var previousIdleTimerDisabled = false
     private init() {
         if journal.consumeInterruptedCount() > 0 {
             interruptedMessage = String(localized: "A video task was interrupted when the app closed. Check Photos for a saved export. If it is missing, reopen your original video and try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
@@ -110,7 +112,7 @@ final class VideoBackgroundWork: ObservableObject {
         }
     }
     private struct Job {
-        let task: BGContinuedProcessingTask
+        let task: BGTask
         let lease: VideoWorkLease
     }
     private var jobs: [String: Job] = [:]
@@ -122,6 +124,9 @@ final class VideoBackgroundWork: ObservableObject {
         journal.begin(identifier, title: title)
         defer { journal.finish(identifier) }
         let lease = await acquire(identifier: identifier, title: title, requiresGPU: requiresGPU)
+        let needsForeground = !lease.canContinue
+        if needsForeground { beginForegroundWork() }
+        defer { if needsForeground { endForegroundWork() } }
         lease.setForeground(UIApplication.shared.applicationState == .active)
         let observers = [
             NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification,
@@ -155,9 +160,29 @@ final class VideoBackgroundWork: ObservableObject {
         }
     }
 
+    // Count concurrent jobs so one finishing export cannot let the screen sleep
+    // while another foreground-only operation is still using the camera model.
+    private func beginForegroundWork() {
+        if foregroundJobs == 0 {
+            previousIdleTimerDisabled = UIApplication.shared.isIdleTimerDisabled
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+        foregroundJobs += 1
+    }
+
+    private func endForegroundWork() {
+        foregroundJobs -= 1
+        if foregroundJobs == 0 {
+            UIApplication.shared.isIdleTimerDisabled = previousIdleTimerDisabled
+        }
+    }
+
     private func acquire(identifier: String, title: String, requiresGPU: Bool) async -> VideoWorkLease {
-        let gpu = BGTaskScheduler.supportedResources.contains(.gpu)
         let fallback = VideoWorkLease(allowed: false, cpuOnly: false, backgroundGPU: false)
+        // Older systems run the same job in the foreground. Checkpoints pause
+        // it on backgrounding; the journal handles termination and retry.
+        guard #available(iOS 26.0, *) else { return fallback }
+        let gpu = BGTaskScheduler.supportedResources.contains(.gpu)
         // GPU-only effects wait for foreground on devices that cannot grant GPU access.
         guard !requiresGPU || gpu else { return fallback }
         guard UIApplication.shared.applicationState != .background else { return fallback }
@@ -179,9 +204,10 @@ final class VideoBackgroundWork: ObservableObject {
                     }
                     let lease = VideoWorkLease(allowed: true, cpuOnly: !gpu, backgroundGPU: gpu) { value, subtitle in
                         Task { @MainActor in
-                            guard value.isFinite, let job = self.jobs[identifier], !job.lease.isCancelled else { return }
-                            job.task.progress.completedUnitCount = min(99, max(job.task.progress.completedUnitCount, Int64(value * 100)))
-                            job.task.updateTitle(title, subtitle: subtitle)
+                            guard value.isFinite, let job = self.jobs[identifier], !job.lease.isCancelled,
+                                  let task = job.task as? BGContinuedProcessingTask else { return }
+                            task.progress.completedUnitCount = min(99, max(task.progress.completedUnitCount, Int64(value * 100)))
+                            task.updateTitle(title, subtitle: subtitle)
                         }
                     }
                     task.progress.totalUnitCount = 100
@@ -206,7 +232,10 @@ final class VideoBackgroundWork: ObservableObject {
         if let job = jobs.removeValue(forKey: identifier) {
             job.lease.revoke()
             job.task.expirationHandler = nil
-            if success { job.task.progress.completedUnitCount = 100 }
+            if #available(iOS 26.0, *), success,
+               let task = job.task as? BGContinuedProcessingTask {
+                task.progress.completedUnitCount = 100
+            }
             job.task.setTaskCompleted(success: success)
         }
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: identifier)

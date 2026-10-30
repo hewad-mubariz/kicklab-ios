@@ -135,7 +135,7 @@ struct SignInView: View {
         .padding(18)
         .frame(maxWidth: .infinity)
         .mask { RoundedRectangle(cornerRadius: 34) }
-        .glassEffect(.regular, in: .rect(cornerRadius: 34))
+        .appGlass(in: .rect(cornerRadius: 34))
         .offset(y: signedIn && !reduceMotion ? 640 : 0)
         .opacity(signedIn ? 0 : 1)
         .sessionEntrance(arrived, order: 3, offset: 36)
@@ -315,7 +315,7 @@ struct SignInView: View {
             Image(systemName: "chevron.left").font(.system(size: 15, weight: .semibold))
                 .frame(width: 36, height: 36)
         }
-        .buttonStyle(.glass).buttonBorderShape(.circle)
+        .appGlassButtonStyle().buttonBorderShape(.circle)
         .disabled(account.isBusy)
         .accessibilityLabel("Back to sign-in options")
         .accessibilityIdentifier("email-close")

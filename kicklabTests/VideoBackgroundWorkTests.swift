@@ -1,7 +1,38 @@
 import XCTest
+import UIKit
 @testable import kicklab
 
 final class VideoBackgroundWorkTests: XCTestCase {
+    @MainActor
+    func testForegroundJobRestoresScreenSleepAfterSuccessAndFailure() async throws {
+        let previous = UIApplication.shared.isIdleTimerDisabled
+        UIApplication.shared.isIdleTimerDisabled = false
+        defer { UIApplication.shared.isIdleTimerDisabled = previous }
+        let value = try await VideoBackgroundWork.shared.run(title: "Compatibility test") {
+            let lease = try XCTUnwrap(VideoWorkExecution.lease)
+            if #unavailable(iOS 26.0) {
+                XCTAssertFalse(lease.canContinue)
+                XCTAssertFalse(lease.backgroundGPU)
+            }
+            if !lease.canContinue {
+                let awake = await MainActor.run { UIApplication.shared.isIdleTimerDisabled }
+                XCTAssertTrue(awake)
+            }
+            return 42
+        }
+        XCTAssertEqual(value, 42)
+        XCTAssertFalse(UIApplication.shared.isIdleTimerDisabled)
+        enum Expected: Error { case failure }
+        do {
+            try await VideoBackgroundWork.shared.run(title: "Interrupted compatibility test") {
+                throw Expected.failure
+            }
+            XCTFail("Failure must reach the caller")
+        } catch Expected.failure { }
+        XCTAssertFalse(UIApplication.shared.isIdleTimerDisabled)
+        XCTAssertNil(VideoWorkExecution.lease)
+    }
+
     func testAccuracyComparisonPinsCPUWithoutBackgroundGrantAndDoesNotLeak() async throws {
         let lease = VideoWorkLease(allowed: false, cpuOnly: false, backgroundGPU: false)
         try await VideoWorkExecution.$lease.withValue(lease) {

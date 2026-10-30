@@ -72,7 +72,7 @@ struct ShotToolbox: View {
             .mask { Rectangle().padding(.horizontal, -16).padding(.top, -400).padding(.bottom, -16) }
         }
         .padding(16).foregroundStyle(.white)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .appGlass(in: .rect(cornerRadius: 26))
         .onAppear { appeared = true }
         .sensoryFeedback(.selection, trigger: style)
         .sensoryFeedback(.impact(weight: .light), trigger: page)
@@ -87,7 +87,7 @@ struct ShotToolbox: View {
                     Image(systemName: "chevron.left").font(.system(size: 13, weight: .semibold))
                         .frame(width: 32, height: 32)
                 }
-                .buttonStyle(.glass).buttonBorderShape(.circle).controlSize(.regular)
+                .appGlassButtonStyle().buttonBorderShape(.circle).controlSize(.regular)
                 .accessibilityLabel("Back to tools")
                 .accessibilityIdentifier("shot-tools-back")
                 .transition(.sessionPop(scale: 0.4))
@@ -103,7 +103,7 @@ struct ShotToolbox: View {
                 Image(systemName: "xmark").font(.system(size: 13, weight: .semibold))
                     .frame(width: 32, height: 32)
             }
-            .buttonStyle(.glass).buttonBorderShape(.circle).controlSize(.regular)
+            .appGlassButtonStyle().buttonBorderShape(.circle).controlSize(.regular)
             .accessibilityLabel("Close customization tools")
             .accessibilityIdentifier("shot-close-tools")
             .sessionEntrance(appeared, order: 1, offset: 0, scale: 0.5)

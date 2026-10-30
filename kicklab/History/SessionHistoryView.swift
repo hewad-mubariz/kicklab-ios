@@ -118,7 +118,7 @@ struct SessionHistoryContent: View {
                             Text(store.isLoading ? "Loading…" : "Load older sessions")
                         }.frame(maxWidth: .infinity, minHeight: 40)
                     }
-                    .buttonStyle(.glass).disabled(store.isLoading)
+                    .appGlassButtonStyle().disabled(store.isLoading)
                     .accessibilityIdentifier("history-load-more")
                 }
             }
@@ -142,7 +142,7 @@ struct SessionHistoryContent: View {
     private func notice(_ text: String, symbol: String, retry: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Label(text, systemImage: symbol).font(.footnote)
-            Button("Retry", action: retry).font(.subheadline.weight(.semibold)).buttonStyle(.glass)
+            Button("Retry", action: retry).font(.subheadline.weight(.semibold)).appGlassButtonStyle()
         }
         .frame(maxWidth: .infinity, alignment: .leading).padding(16)
         .background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 18))
@@ -226,7 +226,7 @@ private struct SessionHistoryDetail: View {
                                 .font(.headline).frame(maxWidth: .infinity, minHeight: 48)
                                 .foregroundStyle(scheme == .dark ? TrainingHomeStyle.buttonInk : .white)
                         }
-                        .buttonStyle(.glassProminent).tint(TrainingHomeStyle.accent(scheme))
+                        .appGlassButtonStyle(prominent: true).tint(TrainingHomeStyle.accent(scheme))
                         .accessibilityIdentifier("history-watch-replay")
                         Text("Original video · saved on this phone")
                             .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))

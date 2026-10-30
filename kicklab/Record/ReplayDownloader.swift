@@ -199,7 +199,7 @@ struct ReplayDownloadButton: View {
                     }
                     .padding(.leading, 9).padding(.trailing, 13)
                     .frame(height: 44)
-                    .glassEffect(.regular, in: .capsule)
+                    .appGlass(in: .capsule)
                     .transition(.sessionPop(scale: 0.6))
                 case .saved:
                     Image(systemName: "checkmark").font(.system(size: 17, weight: .heavy))
@@ -314,7 +314,7 @@ struct ReplaySavedToast: View {
         }
         .padding(.leading, 8).padding(.trailing, 12).padding(.vertical, 8)
         .frame(maxWidth: 300)
-        .glassEffect(.regular, in: .capsule)
+        .appGlass(in: .capsule)
         .contentShape(.capsule)
         .accessibilityElement(children: .combine)
     }
@@ -339,7 +339,7 @@ struct ReplaySharePanel: View {
                 Button(action: onClose) {
                     Image(systemName: "xmark").font(.system(size: 13, weight: .semibold)).frame(width: 32, height: 32)
                 }
-                .buttonStyle(.glass).buttonBorderShape(.circle).controlSize(.regular)
+                .appGlassButtonStyle().buttonBorderShape(.circle).controlSize(.regular)
                 .accessibilityLabel("Keep editing")
                 .accessibilityIdentifier("replay-share-close")
             }
@@ -385,7 +385,7 @@ struct ReplaySharePanel: View {
         }
         .padding(18)
         .foregroundStyle(.white)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .appGlass(in: .rect(cornerRadius: 26))
         .onAppear { appeared = true }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("replay-share-panel")

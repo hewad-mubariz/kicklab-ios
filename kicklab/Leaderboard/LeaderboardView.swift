@@ -100,7 +100,7 @@ struct LeaderboardView: View {
                         ContentUnavailableView {
                             Label("Rankings unavailable", systemImage: "wifi.exclamationmark")
                         } description: { Text(loadError) } actions: {
-                            Button("Try again") { Task { await loadBoard(refresh: true) } }.buttonStyle(.glass)
+                            Button("Try again") { Task { await loadBoard(refresh: true) } }.appGlassButtonStyle()
                         }
                     } else if boardState.board == nil {
                         LeaderboardLoadingBall()
@@ -222,7 +222,7 @@ struct LeaderboardView: View {
                     .contentShape(.rect)
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: .circle)
+            .appGlass(in: .circle, interactive: true)
             .accessibilityLabel("Close leaderboard")
             .accessibilityIdentifier("leaderboard-close")
             Spacer()
@@ -476,7 +476,7 @@ struct LeaderboardView: View {
                 .contentShape(.capsule)
             }
             .buttonStyle(.plain)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .appGlass(in: .capsule, interactive: true)
             .padding(.bottom, 6)
             .transition(.sessionRise)
             .accessibilityLabel([String(localized: "Jump to your place, rank \(you.rank), \(you.touches) touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale),

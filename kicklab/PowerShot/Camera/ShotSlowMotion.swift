@@ -24,7 +24,8 @@ nonisolated final class ShotSlowMotion: @unchecked Sendable {
         #if targetEnvironment(simulator)
         false
         #else
-        VTFrameRateConversionConfiguration.isSupported
+        if #available(iOS 26.0, *) { VTFrameRateConversionConfiguration.isSupported }
+        else { false }
         #endif
     }
 
@@ -69,7 +70,7 @@ nonisolated final class ShotSlowMotion: @unchecked Sendable {
         let fps = nominal > 1 ? nominal : 30
         var interpolator: (any FrameInterpolating)?
         #if !targetEnvironment(simulator)
-        if interpolate {
+        if #available(iOS 26.0, *), interpolate {
             interpolator = try Interpolator(width: width, height: height)
             guard interpolator != nil else { return nil }
         }
@@ -167,6 +168,7 @@ nonisolated final class ShotSlowMotion: @unchecked Sendable {
 
     #if !targetEnvironment(simulator)
     /// VideoToolbox's machine-learning frame interpolation (it does not exist in the Simulator).
+    @available(iOS 26.0, *)
     private final class Interpolator: FrameInterpolating {
         private let configuration: VTFrameRateConversionConfiguration
         private let processor = VTFrameProcessor()

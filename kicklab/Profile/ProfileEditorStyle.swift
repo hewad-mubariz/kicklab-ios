@@ -79,7 +79,7 @@ struct ProfileSaveBar: View {
             }
             .frame(maxWidth: .infinity, minHeight: 48)
         }
-        .buttonStyle(.glassProminent).tint(TrainingHomeStyle.lime)
+        .appGlassButtonStyle(prominent: true).tint(TrainingHomeStyle.lime)
         .foregroundStyle(TrainingHomeStyle.buttonInk)
         .disabled(!isEnabled || isSaving)
         .accessibilityIdentifier("profile-name-save")

@@ -61,7 +61,10 @@ final class ProPaywallUITests: XCTestCase {
     func testRestoreWithNoSubscriptionAndCloseRemainAvailable() {
         let app = openPaywall()
         expectLabel(app.buttons["pro-purchase"], contains: "29.99/year")
-        app.buttons["pro-restore"].tap()
+        let restore = app.buttons["pro-restore"]
+        for _ in 0..<3 where !restore.isHittable { app.swipeUp() }
+        XCTAssertTrue(restore.isHittable, "Restore must remain reachable on smaller screens")
+        restore.tap()
         XCTAssertTrue(app.alerts["No active subscription"].waitForExistence(timeout: 10))
         app.alerts.buttons["OK"].tap()
         XCTAssertTrue(app.buttons["pro-close"].isHittable)

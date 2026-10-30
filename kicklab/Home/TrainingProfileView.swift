@@ -42,7 +42,7 @@ struct TrainingProfileView: View {
                                     .accessibilityIdentifier("profile-account-email")
                             }
                             Button("Sign out") { Task { await account.signOut() } }
-                                .buttonStyle(.glass).disabled(account.isBusy)
+                                .appGlassButtonStyle().disabled(account.isBusy)
                                 .accessibilityIdentifier("profile-sign-out")
                         }
                     } else { signInEntry }
@@ -51,7 +51,7 @@ struct TrainingProfileView: View {
                         VStack(spacing: 8) {
                             if let error = player.errorMessage { Text(error).font(.footnote).foregroundStyle(.secondary) }
                             if player.errorMessage != nil {
-                                Button("Retry sync") { Task { await player.refresh() } }.buttonStyle(.glass)
+                                Button("Retry sync") { Task { await player.refresh() } }.appGlassButtonStyle()
                             }
                         }
                     }
@@ -230,7 +230,7 @@ struct TrainingProfileView: View {
 
             Button(account.user == nil ? "Edit name" : "Edit profile", systemImage: "pencil") { editsName = true }
                 .font(.subheadline.weight(.medium))
-                .buttonStyle(.glass)
+                .appGlassButtonStyle()
                 .disabled(account.user != nil && player.profile == nil)
                 .accessibilityIdentifier("profile-edit-name")
         }

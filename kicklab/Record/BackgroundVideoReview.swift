@@ -90,8 +90,11 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         if background && progress > previousProgress && (phase == "Exporting" || phase == "Importing") { backgroundUpdates += 1 }
         previousProgress = progress
         status = phase
+        let gpuSupported: Bool
+        if #available(iOS 26.0, *) { gpuSupported = BGTaskScheduler.supportedResources.contains(.gpu) }
+        else { gpuSupported = false }
         let value: [String: Any] = ["phase": phase, "progress": progress, "background": background,
-            "backgroundUpdates": backgroundUpdates, "gpuSupported": BGTaskScheduler.supportedResources.contains(.gpu),
+            "backgroundUpdates": backgroundUpdates, "gpuSupported": gpuSupported,
             "analysisFrames": analyzer.framesRead, "touches": analyzer.touchCount,
             "time": Date().timeIntervalSince1970, "performance": analyzer.performance]
         if let data = try? JSONSerialization.data(withJSONObject: value, options: .prettyPrinted) {

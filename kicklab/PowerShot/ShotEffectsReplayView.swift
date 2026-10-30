@@ -183,7 +183,7 @@ struct ShotEffectsReplayView: View {
                     .overlay(alignment: .top) { toastView.padding(.top, 58).padding(.horizontal, 20) }
                 Spacer(minLength: 12)
                 // Customize and the toolbox share one glass identity, so the pill morphs into the panel.
-                GlassEffectContainer(spacing: 8) {
+                AppGlassContainer(spacing: 8) {
                     VStack(spacing: 0) {
                         if showToolbox {
                             ShotToolbox(style: lookBinding(\.style), intensity: lookBinding(\.intensity), graphStyle: lookBinding(\.graphStyle), showGraph: lookBinding(\.showGraph),
@@ -198,7 +198,7 @@ struct ShotEffectsReplayView: View {
                                 .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
                                     withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { panelTop = top }
                                 }
-                                .glassEffectID("customize", in: glass)
+                                .appGlassID("customize", in: glass)
                                 .padding(.horizontal, 20).padding(.bottom, 18)
                         } else if showSharePanel {
                             ReplaySharePanel(onShare: share, onClose: { showSharePanel = false }, onRecordAnother: nil, onDone: onClose)
@@ -296,7 +296,7 @@ struct ShotEffectsReplayView: View {
                 Text("POWER SHOT").font(.system(size: 12, weight: .semibold)).tracking(1.2)
             }
             .padding(.horizontal, 14).frame(height: 32)
-            .glassEffect(.regular, in: .capsule)
+            .appGlass(in: .capsule)
             Spacer(minLength: 0)
             ReplayDownloadButton(phase: save, progress: saveProgress, action: download, needsForeground: needsForeground)
                 .disabled(!canSave)
@@ -413,11 +413,11 @@ struct ShotEffectsReplayView: View {
                 Label("Customize", systemImage: "wand.and.stars")
                     .font(.system(size: 14, weight: .semibold)).lineLimit(1)
                     .padding(.horizontal, 20).frame(minHeight: 48)
-                    .glassEffect(.regular.interactive(), in: .capsule)
+                    .appGlass(in: .capsule, interactive: true)
                     .contentShape(.capsule)
             }
             .buttonStyle(.plain)
-            .glassEffectID("customize", in: glass)
+            .appGlassID("customize", in: glass)
             .accessibilityIdentifier("shot-effects-customize")
             Spacer(minLength: 0)
             roundButton("arrow.uturn.backward", label: "Reset edits") {
@@ -438,7 +438,7 @@ struct ShotEffectsReplayView: View {
                 .contentTransition(.symbolEffect(.replace))
                 .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: symbol)
         }
-        .buttonStyle(.glass).buttonBorderShape(.circle).controlSize(.regular).accessibilityLabel(label)
+        .appGlassButtonStyle().buttonBorderShape(.circle).controlSize(.regular).accessibilityLabel(label)
     }
 
     private func changeLook(_ change: (inout ShotReplayLook) -> Void) {

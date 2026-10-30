@@ -1,0 +1,216 @@
+{
+  "minimum_ios": "18.0",
+  "baseline": "393dfc5",
+  "release": "1.1.0 (34)",
+  "ios18": {
+    "device": "iPhone 11 Pro Max simulator",
+    "os": "18.0 (22A3351)",
+    "unique_passed": 32,
+    "remaining_failed": 0,
+    "cases": {
+      "kicklabTests/AppLanguageTests/testChoicePersistsAndSystemOptionRemovesOnlyTheAppOverride": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/AppLanguageTests/testRefreshPicksUpExternalPreferenceChangesAndNotifiesReaders": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/AppLanguageTests/testResolvedMessagesResourcesAndCachedLabelsFollowLiveChoice": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/ModernVideoAPITests/testBackgroundVisionRequestsUseCPUAtEveryStage": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/ModernVideoAPITests/testCompositionPreservesDurationOrientationAndSourceCadence": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/ModernVideoAPITests/testCustomizedExportRetainsGappedSourceTimestamps": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/ModernVideoAPITests/testForegroundVisionKeepsAutomaticDeviceSelection": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/ModernVideoAPITests/testSourceTimingPreservesEveryFrameAfterCaptureGapAt60And120FPS": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/RFDeviceProfileTests/testAutomaticDeviceSelectionLoadsLiveAndSavedPaths": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/RFDeviceProfileTests/testBothBundledSizesPassRuntimeContract": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/RFDeviceProfileTests/testBothFunctionsPredictAndAgreeAcrossLiveAndSavedAdapters": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/RFDeviceProfileTests/testMarketingBoundaryUsesExactIdentifiersIncludingProAndSE": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/RFDeviceProfileTests/testResolutionNamespacesCannotReuseOtherSizeOrLegacyResults": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/ShotCameraTests/testSmoothSlowMotionReplacesStretchedFramesWithItsOwn": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/VideoBackgroundWorkTests/testAcceleratedStudyPausesBeforeBackgroundFramesUntilCancelled": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/VideoBackgroundWorkTests/testAccuracyComparisonPinsCPUWithoutBackgroundGrantAndDoesNotLeak": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/VideoBackgroundWorkTests/testDetachedWorkerInheritsOnlyItsOwnLease": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/VideoBackgroundWorkTests/testForegroundJobRestoresScreenSleepAfterSuccessAndFailure": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/VideoBackgroundWorkTests/testForegroundStudyInheritsAccelerationButNotCPUBackgroundPermission": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/VideoBackgroundWorkTests/testGrantedJobAdmitsBackgroundFramesAndExpiryCancelsWork": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/VideoBackgroundWorkTests/testModelStudyFollowsForegroundWithoutChangingImageOrBackgroundPolicy": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/VideoBackgroundWorkTests/testNormalAccelerationDoesNotGrantDeniedBackgroundRuntime": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabTests/VideoBackgroundWorkTests/testNormalJobAcceleratesModelAndFallsBackOnCPUWhenInactive": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabUITests/CaptureProcessingUITests/testSavedCaptureProcessesThenOpensResponsiveEditorWithStoredSettings": {
+        "result": "passed",
+        "log": "ios18-tests-r4.log"
+      },
+      "kicklabUITests/LeaderboardLocalizationUITests/testLanguageSwitchUpdatesOpenScreensWithoutRestartAndPersists": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabUITests/LeaderboardLocalizationUITests/testSignInBoardRulesAndDetailsInEveryLanguage": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabUITests/LegacyVideoProcessingUITests/testExportPausesInBackgroundAndFinishesAfterReturning": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabUITests/ProPaywallUITests/testActiveSubscriberCanReopenProAndRestore": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabUITests/ProPaywallUITests/testLocalizedPlansPurchaseAndProPersistsAfterRelaunch": {
+        "result": "passed",
+        "log": "ios18-tests-r2.log"
+      },
+      "kicklabUITests/ProPaywallUITests/testRestoreWithNoSubscriptionAndCloseRemainAvailable": {
+        "result": "passed",
+        "log": "ios18-tests-r3.log"
+      },
+      "kicklabTests/FreeReplayExportTests/testFreeTimerAndCounterAreEncodedIndependentlyUsingVideoTime": {
+        "result": "passed",
+        "log": "ios18-tests-r3.log"
+      },
+      "kicklabTests/ShotCameraExportTests/testCameraOnlyExportWorksForBothVideoOrientations": {
+        "result": "passed",
+        "log": "ios18-tests-r3.log"
+      }
+    }
+  },
+  "ios26": {
+    "device": "iPhone 17 Pro simulator",
+    "os": "26.5 (23F77)",
+    "passed": 26,
+    "cases": {
+      "kicklabTests/AppLanguageTests/testChoicePersistsAndSystemOptionRemovesOnlyTheAppOverride": "passed",
+      "kicklabTests/AppLanguageTests/testRefreshPicksUpExternalPreferenceChangesAndNotifiesReaders": "passed",
+      "kicklabTests/AppLanguageTests/testResolvedMessagesResourcesAndCachedLabelsFollowLiveChoice": "passed",
+      "kicklabTests/FreeReplayExportTests/testFreeTimerAndCounterAreEncodedIndependentlyUsingVideoTime": "passed",
+      "kicklabTests/ModernVideoAPITests/testBackgroundVisionRequestsUseCPUAtEveryStage": "passed",
+      "kicklabTests/ModernVideoAPITests/testCompositionPreservesDurationOrientationAndSourceCadence": "passed",
+      "kicklabTests/ModernVideoAPITests/testCustomizedExportRetainsGappedSourceTimestamps": "passed",
+      "kicklabTests/ModernVideoAPITests/testForegroundVisionKeepsAutomaticDeviceSelection": "passed",
+      "kicklabTests/ModernVideoAPITests/testSourceTimingPreservesEveryFrameAfterCaptureGapAt60And120FPS": "passed",
+      "kicklabTests/RFDeviceProfileTests/testAutomaticDeviceSelectionLoadsLiveAndSavedPaths": "passed",
+      "kicklabTests/RFDeviceProfileTests/testBothBundledSizesPassRuntimeContract": "passed",
+      "kicklabTests/RFDeviceProfileTests/testBothFunctionsPredictAndAgreeAcrossLiveAndSavedAdapters": "passed",
+      "kicklabTests/RFDeviceProfileTests/testMarketingBoundaryUsesExactIdentifiersIncludingProAndSE": "passed",
+      "kicklabTests/RFDeviceProfileTests/testResolutionNamespacesCannotReuseOtherSizeOrLegacyResults": "passed",
+      "kicklabTests/ShotCameraExportTests/testCameraOnlyExportWorksForBothVideoOrientations": "passed",
+      "kicklabTests/ShotCameraTests/testSmoothSlowMotionReplacesStretchedFramesWithItsOwn": "passed",
+      "kicklabTests/VideoBackgroundWorkTests/testAcceleratedStudyPausesBeforeBackgroundFramesUntilCancelled": "passed",
+      "kicklabTests/VideoBackgroundWorkTests/testAccuracyComparisonPinsCPUWithoutBackgroundGrantAndDoesNotLeak": "passed",
+      "kicklabTests/VideoBackgroundWorkTests/testDetachedWorkerInheritsOnlyItsOwnLease": "passed",
+      "kicklabTests/VideoBackgroundWorkTests/testForegroundJobRestoresScreenSleepAfterSuccessAndFailure": "passed",
+      "kicklabTests/VideoBackgroundWorkTests/testForegroundStudyInheritsAccelerationButNotCPUBackgroundPermission": "passed",
+      "kicklabTests/VideoBackgroundWorkTests/testGrantedJobAdmitsBackgroundFramesAndExpiryCancelsWork": "passed",
+      "kicklabTests/VideoBackgroundWorkTests/testModelStudyFollowsForegroundWithoutChangingImageOrBackgroundPolicy": "passed",
+      "kicklabTests/VideoBackgroundWorkTests/testNormalAccelerationDoesNotGrantDeniedBackgroundRuntime": "passed",
+      "kicklabTests/VideoBackgroundWorkTests/testNormalJobAcceleratesModelAndFallsBackOnCPUWhenInactive": "passed",
+      "kicklabUITests/LeaderboardLocalizationUITests/testSignInBoardRulesAndDetailsInEveryLanguage": "passed"
+    },
+    "status": "Core/model/export tests and five-language UI passed; StoreKit-dependent UI tests blocked by test service",
+    "blocked_tests": [
+      "CaptureProcessingUITests/testSavedCaptureProcessesThenOpensResponsiveEditorWithStoredSettings",
+      "ProPaywallUITests/testActiveSubscriberCanReopenProAndRestore",
+      "ProPaywallUITests/testLocalizedPlansPurchaseAndProPersistsAfterRelaunch",
+      "ProPaywallUITests/testRestoreWithNoSubscriptionAndCloseRemainAvailable"
+    ],
+    "blocker": "SKTestSession configuration writes fail with SKInternalErrorDomain Code 3; off-device test purchase reports notEntitled before app interaction. Retried using JuggleDude-StoreKit with the same failure; stopped those runs. No subscription implementation changed. These four tests pass on iOS 18.",
+    "logs": [
+      "ios26-tests.log",
+      "ios26-tests-r2.log"
+    ]
+  },
+  "fallbacks": [
+    "Native material panels and bordered buttons before iOS 26",
+    "Foreground-only video processing with pause/resume checkpoints and screen-sleep protection before iOS 26",
+    "AVMutableVideoComposition preserving source timing, dimensions, orientation and SDR output before iOS 26",
+    "Ordinary slow motion when enhanced VideoToolbox interpolation is unavailable; unsupported control hidden"
+  ],
+  "unchanged": [
+    "Touch counting and interruption rules",
+    "Longest-streak leaderboard ranking",
+    "RF model package and 288/384 selection",
+    "Camera capture policy",
+    "Backend schema and services"
+  ],
+  "test_harness_corrections": [
+    "Scroll to the Restore Purchases button on smaller screens",
+    "Replay Back returns to camera; close camera before reopening from Home"
+  ],
+  "hardware_validation": {
+    "physical_ios18_tested": false,
+    "needed": [
+      "Live camera recording and counting",
+      "Sustained thermal and memory behavior",
+      "Model performance on older devices",
+      "Saved export on device",
+      "Repeat purchase/restore and paid replay checks in TestFlight on a current iOS phone"
+    ]
+  },
+  "artifacts": "artifacts/ios18-compatibility-20261030",
+  "submitted_to_review": false,
+  "installed_to_phone": false
+}

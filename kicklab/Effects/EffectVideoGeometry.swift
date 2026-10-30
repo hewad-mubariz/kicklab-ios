@@ -70,32 +70,52 @@ nonisolated enum EffectVideoGeometry {
         let size = CGSize(width: max(2, floor(bounds.width * scale / 2) * 2),
                           height: max(2, floor(bounds.height * scale / 2) * 2))
         let fps = try await track.load(.nominalFrameRate)
-        var layer = AVVideoCompositionLayerInstruction.Configuration(assetTrack: track)
         let upright = transform.concatenating(CGAffineTransform(translationX: -bounds.minX, y: -bounds.minY))
             .concatenating(CGAffineTransform(scaleX: size.width / bounds.width, y: size.height / bounds.height))
-        layer.setTransform(upright, at: .zero)
-        var instruction = AVVideoCompositionInstruction.Configuration()
-        instruction.timeRange = CMTimeRange(start: .zero, duration: duration)
-        instruction.layerInstructions = [AVVideoCompositionLayerInstruction(configuration: layer)]
-        var composition = AVVideoComposition.Configuration()
-        composition.renderSize = size
-        // Tone-map HDR inputs into the same SDR space used by CG effects and H.264.
-        composition.colorPrimaries = AVVideoColorPrimaries_ITU_R_709_2
-        composition.colorTransferFunction = AVVideoTransferFunction_ITU_R_709_2
-        composition.colorYCbCrMatrix = AVVideoYCbCrMatrix_ITU_R_709_2
+        let outputFrameDuration: CMTime
         if let frameDuration {
             // Deliberate retiming (for example a prepared scene) keeps its own clock.
-            composition.frameDuration = frameDuration
+            outputFrameDuration = frameDuration
         } else {
             // A capture gap lowers nominalFrameRate even when the remaining footage
             // is 60 fps. Derive output timestamps from the source, not that average.
             // The duration is only a fallback for empty edits and gap-repair sizing.
             let minimum = try await track.load(.minFrameDuration)
-            composition.frameDuration = minimum.isNumeric && minimum.seconds > 0 ? minimum
+            outputFrameDuration = minimum.isNumeric && minimum.seconds > 0 ? minimum
                 : CMTime(seconds: 1 / Double(fps.isFinite && fps > 0 ? fps : 30), preferredTimescale: 60_000)
-            composition.sourceTrackIDForFrameTiming = track.trackID
         }
-        composition.instructions = [AVVideoCompositionInstruction(configuration: instruction)]
-        return AVVideoComposition(configuration: composition)
+        let timeRange = CMTimeRange(start: .zero, duration: duration)
+        if #available(iOS 26.0, *) {
+            var layer = AVVideoCompositionLayerInstruction.Configuration(assetTrack: track)
+            layer.setTransform(upright, at: .zero)
+            var instruction = AVVideoCompositionInstruction.Configuration()
+            instruction.timeRange = timeRange
+            instruction.layerInstructions = [AVVideoCompositionLayerInstruction(configuration: layer)]
+            var composition = AVVideoComposition.Configuration()
+            composition.renderSize = size
+            // Tone-map HDR inputs into the same SDR space used by CG effects and H.264.
+            composition.colorPrimaries = AVVideoColorPrimaries_ITU_R_709_2
+            composition.colorTransferFunction = AVVideoTransferFunction_ITU_R_709_2
+            composition.colorYCbCrMatrix = AVVideoYCbCrMatrix_ITU_R_709_2
+            composition.frameDuration = outputFrameDuration
+            if frameDuration == nil { composition.sourceTrackIDForFrameTiming = track.trackID }
+            composition.instructions = [AVVideoCompositionInstruction(configuration: instruction)]
+            return AVVideoComposition(configuration: composition)
+        } else {
+            let layer = AVMutableVideoCompositionLayerInstruction(assetTrack: track)
+            layer.setTransform(upright, at: .zero)
+            let instruction = AVMutableVideoCompositionInstruction()
+            instruction.timeRange = timeRange
+            instruction.layerInstructions = [layer]
+            let composition = AVMutableVideoComposition()
+            composition.renderSize = size
+            composition.colorPrimaries = AVVideoColorPrimaries_ITU_R_709_2
+            composition.colorTransferFunction = AVVideoTransferFunction_ITU_R_709_2
+            composition.colorYCbCrMatrix = AVVideoYCbCrMatrix_ITU_R_709_2
+            composition.frameDuration = outputFrameDuration
+            if frameDuration == nil { composition.sourceTrackIDForFrameTiming = track.trackID }
+            composition.instructions = [instruction]
+            return composition
+        }
     }
 }

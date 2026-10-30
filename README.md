@@ -3,11 +3,29 @@
 The [four-week post-launch plan](docs/post-launch/README.md) records the agreed
 priority order, weekly shipping scope, leaderboard rules and release checks.
 
-Open `kicklab.xcodeproj` and use the `JuggleDude` scheme. The current target is iOS 26.5;
-use Xcode with that SDK. Core ML packages in `kicklab/Models` and local account/analytics
+Open `kicklab.xcodeproj` and use the `JuggleDude` scheme. The minimum target is iOS 18.0;
+build with Xcode 27.1, the validated toolchain. Core ML packages in `kicklab/Models` and local account/analytics
 configuration are excluded from Git. Obtain the approved
 shared-function `RFDETRSmallRecovery040FP16.mlpackage` before building;
 configuration templates are in `config/`. Never put server credentials in the app bundle.
+
+## iOS 18 compatibility — 30 October 2026
+
+The minimum supported OS is iOS 18.0, matching the pinned RF model's runtime
+requirement. On iOS 26 and later, the app retains Liquid Glass, continued background
+video processing when the system grants it, and enhanced slow-motion interpolation
+on supported hardware. Earlier systems use native material panels and buttons,
+foreground video processing, and ordinary slow motion. Unsupported enhanced
+interpolation controls are hidden. Foreground-only jobs keep the screen awake,
+pause at checkpoints when the app becomes inactive, and resume when it returns.
+If iOS terminates the app, the existing interruption message asks the user to retry.
+
+The legacy video composition preserves the same dimensions, orientation, source
+frame timestamps and SDR colour space. Both RF input sizes remain available;
+counter, camera capture, leaderboard scoring and model-selection rules are unchanged.
+Simulator results and remaining physical-device checks are recorded in
+`benchmarks/releases/20261030-ios18-compatibility.json`. Simulator success does not
+qualify camera capture, thermal behaviour or model performance on a physical iOS 18 phone.
 
 ## Main-app integration — 18 October 2026
 

@@ -102,7 +102,7 @@ private struct BoardHeader: View {
         HStack(spacing: 12) {
             Image(systemName: "chevron.left").font(.system(size: 16, weight: .semibold))
                 .frame(width: 44, height: 44)
-                .glassEffect(.regular.interactive(), in: .circle)
+                .appGlass(in: .circle, interactive: true)
             Text(title).font(Board.display(32)).tracking(0.6)
             Spacer()
             HStack(spacing: 6) {
@@ -111,7 +111,7 @@ private struct BoardHeader: View {
             }
             .font(.subheadline.weight(.semibold))
             .padding(.horizontal, 14).frame(height: 40)
-            .glassEffect(.regular.interactive(), in: .capsule)
+            .appGlass(in: .capsule, interactive: true)
         }
     }
 }
@@ -129,7 +129,7 @@ private struct ScopeSwitch: View {
             }
         }
         .padding(4)
-        .glassEffect(.regular, in: .capsule)
+        .appGlass(in: .capsule)
     }
 }
 
@@ -165,7 +165,7 @@ private struct ChaseCard: View {
             }
         }
         .padding(16)
-        .glassEffect(.regular, in: .rect(cornerRadius: 28))
+        .appGlass(in: .rect(cornerRadius: 28))
     }
 }
 
@@ -441,7 +441,7 @@ private struct SkyConcept: View {
         }
         .padding(16)
         .frame(width: width - 60)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .appGlass(in: .rect(cornerRadius: 26))
         .position(x: width / 2, y: y(for: kenji.touches) + 150)
     }
 
@@ -470,7 +470,7 @@ private struct SkyConcept: View {
             .padding(.horizontal, 6)
         }
         .padding(12)
-        .glassEffect(.regular, in: .rect(cornerRadius: 30))
+        .appGlass(in: .rect(cornerRadius: 30))
     }
 }
 
@@ -737,7 +737,7 @@ private struct GuestTeaser: View {
                 Text("Sign in with Apple, Google or email").font(.caption).foregroundStyle(Board.muted)
             }
             .padding(20)
-            .glassEffect(.regular, in: .rect(cornerRadius: 26))
+            .appGlass(in: .rect(cornerRadius: 26))
             .padding(.horizontal, 18)
         }
     }

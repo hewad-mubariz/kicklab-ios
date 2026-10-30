@@ -93,7 +93,7 @@ struct ReplayEffectsView: View {
                     .overlay(alignment: .top) { toastView.padding(.top, 58).padding(.horizontal, 20) }
                 Spacer(minLength: 12)
                 // Customize and the toolbox share one glass identity, so the pill morphs into the panel.
-                GlassEffectContainer(spacing: 8) {
+                AppGlassContainer(spacing: 8) {
                     VStack(spacing: 0) {
                         if showToolbox {
                             ReplayToolbox(counter: counterBinding, edit: lookBinding(\.edit),
@@ -108,7 +108,7 @@ struct ReplayEffectsView: View {
                                 // Same spring as the tray's height, so video and panel move as one.
                                 withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { panelTop = top }
                             }
-                            .glassEffectID("customize", in: glass)
+                            .appGlassID("customize", in: glass)
                             .padding(.horizontal, 20).padding(.bottom, 18)
                         } else if showSharePanel {
                             ReplaySharePanel(onShare: share, onClose: { showSharePanel = false },
@@ -485,11 +485,11 @@ struct ReplayEffectsView: View {
                 }
                 .font(.system(size: 14, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
                 .padding(.horizontal, 20).frame(minHeight: 48)
-                .glassEffect(.regular.interactive(), in: .capsule)
+                .appGlass(in: .capsule, interactive: true)
                 .contentShape(.capsule)
             }
             .buttonStyle(.plain)
-            .glassEffectID("customize", in: glass)
+            .appGlassID("customize", in: glass)
             .accessibilityIdentifier("replay-customize")
             Spacer(minLength: 0)
             roundButton(counterSelected ? "checkmark" : "arrow.uturn.backward",
@@ -513,7 +513,7 @@ struct ReplayEffectsView: View {
             Image(systemName: symbol).font(.system(size: 18, weight: .medium)).frame(width: 32, height: 32)
                 .contentTransition(.symbolEffect(.replace))
                 .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: symbol)
-        }.buttonStyle(.glass).buttonBorderShape(.circle).controlSize(.regular).accessibilityLabel(label)
+        }.appGlassButtonStyle().buttonBorderShape(.circle).controlSize(.regular).accessibilityLabel(label)
     }
 
     private func pause() { player?.pause(); isPlaying = false }
@@ -784,7 +784,7 @@ private struct ReplayNoticeToast: View {
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
         .frame(maxWidth: 320, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 18))
+        .appGlass(in: .rect(cornerRadius: 18))
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("replay-notice")
     }

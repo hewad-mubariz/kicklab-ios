@@ -176,7 +176,7 @@ struct CaptureControls: View {
                 Image(systemName: symbol).font(.system(size: 20, weight: .medium))
                     .foregroundStyle(.white).frame(width: 36, height: 36)
             }
-            .buttonStyle(.glass)
+            .appGlassButtonStyle()
             .buttonBorderShape(.circle)
             .controlSize(.regular)
             Text(title).font(.system(size: 12, weight: .medium)).foregroundStyle(.white)

@@ -43,13 +43,13 @@ private struct ShotTopBar: View {
     var body: some View {
         HStack {
             Image(systemName: "chevron.left").font(.system(size: 16, weight: .semibold))
-                .frame(width: 44, height: 44).glassEffect(.regular, in: .circle)
+                .frame(width: 44, height: 44).appGlass(in: .circle)
             Spacer()
             HStack(spacing: 7) {
                 Circle().fill(shotLime).frame(width: 7, height: 7)
                 Text(title).font(.system(size: 13, weight: .bold)).tracking(0.8)
             }
-            .padding(.horizontal, 14).frame(height: 34).glassEffect(.regular, in: .capsule)
+            .padding(.horizontal, 14).frame(height: 34).appGlass(in: .capsule)
             Spacer()
             Image(systemName: "arrow.down").font(.system(size: 17, weight: .bold))
                 .foregroundStyle(TrainingHomeStyle.buttonInk)

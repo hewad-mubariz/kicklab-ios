@@ -845,7 +845,7 @@ struct ShotGraphPicker: View {
                             .font(.system(size: 13, weight: .semibold)).frame(width: 30, height: 30)
                             .contentTransition(.symbolEffect(.replace))
                     }
-                    .buttonStyle(.glass).buttonBorderShape(.circle)
+                    .appGlassButtonStyle().buttonBorderShape(.circle)
                     .accessibilityLabel(isPlaying ? "Pause graph preview" : "Play graph preview")
                     .accessibilityIdentifier("shot-graph-play")
                 }

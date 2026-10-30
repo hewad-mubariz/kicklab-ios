@@ -95,7 +95,7 @@ private struct RoundGlassButton: View {
     var body: some View {
         Image(systemName: symbol).font(.system(size: 17, weight: .medium))
             .frame(width: 44, height: 44)
-            .glassEffect(.regular, in: .circle)
+            .appGlass(in: .circle)
     }
 }
 
@@ -113,7 +113,7 @@ private struct EditorChrome<Trailing: View, Bottom: View>: View {
                     Circle().fill(SessionStyle.mint).frame(width: 7, height: 7)
                     Text("SESSION 01").font(.system(size: 11, weight: .semibold))
                 }
-                .padding(.horizontal, 13).padding(.vertical, 10).glassEffect(.regular, in: .capsule)
+                .padding(.horizontal, 13).padding(.vertical, 10).appGlass(in: .capsule)
                 Spacer()
                 trailing
             }
@@ -138,7 +138,7 @@ private struct PlaybackRow: View {
             RoundGlassButton(symbol: "play.fill")
             Spacer()
             Label("Customize", systemImage: "wand.and.stars").font(.system(size: 14, weight: .semibold))
-                .padding(.horizontal, 20).frame(height: 48).glassEffect(.regular, in: .capsule)
+                .padding(.horizontal, 20).frame(height: 48).appGlass(in: .capsule)
             Spacer()
             RoundGlassButton(symbol: "arrow.uturn.backward")
         }
@@ -173,7 +173,7 @@ private struct InstantSaveConcept: View {
                         Text("54%").font(.system(size: 15, weight: .bold, design: .rounded)).monospacedDigit()
                     }
                     .padding(.leading, 8).padding(.trailing, 14).frame(height: 44)
-                    .glassEffect(.regular, in: .capsule)
+                    .appGlass(in: .capsule)
                 case "saved":
                     Image(systemName: "checkmark").font(.system(size: 17, weight: .heavy)).foregroundStyle(.black)
                         .frame(width: 44, height: 44).background(SessionStyle.mint, in: .circle)
@@ -195,7 +195,7 @@ private struct InstantSaveConcept: View {
                     }
                     .padding(.leading, 8).padding(.trailing, 12).padding(.vertical, 8)
                     .frame(width: 280)
-                    .glassEffect(.regular, in: .capsule)
+                    .appGlass(in: .capsule)
                     .padding(.top, 66)
                     Spacer()
                 }
@@ -295,7 +295,7 @@ private struct ExportTrayConcept: View {
             }
         }
         .padding(18)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .appGlass(in: .rect(cornerRadius: 26))
         .padding(.horizontal, 16).padding(.bottom, 10)
     }
 }
@@ -327,7 +327,7 @@ private struct SaveMomentConcept: View {
                         Text("1080p").font(.system(size: 12, weight: .semibold))
                         Image(systemName: "chevron.down").font(.system(size: 9, weight: .bold))
                     }
-                    .padding(.horizontal, 12).padding(.vertical, 9).glassEffect(.regular, in: .capsule)
+                    .padding(.horizontal, 12).padding(.vertical, 9).appGlass(in: .capsule)
                 }
                 .padding(.horizontal, 20).padding(.top, 8)
 

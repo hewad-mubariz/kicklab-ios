@@ -53,7 +53,7 @@ struct CaptureSessionBadge: View {
         }
         .font(.system(size: 11, weight: .semibold)).monospacedDigit().lineLimit(1)
         .foregroundStyle(.white).padding(.horizontal, 13).padding(.vertical, 10)
-        .glassEffect(.regular, in: .capsule)
+        .appGlass(in: .capsule)
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: recording)
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: preparing)
         .accessibilityElement(children: .combine).accessibilityIdentifier("capture-session-name")

@@ -21,7 +21,7 @@ struct HomeProfileButton: View {
                         startPoint: .topLeading, endPoint: .bottomTrailing
                     ))
                 }
-                .glassEffect(.regular.interactive(), in: .circle)
+                .appGlass(in: .circle, interactive: true)
                 .overlay {
                     Circle().strokeBorder(LinearGradient(
                         colors: [.white.opacity(0.38), .white.opacity(0.03), .white.opacity(0.18)],
