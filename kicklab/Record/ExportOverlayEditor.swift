@@ -174,7 +174,7 @@ struct ExportOverlayEditor: View {
             let media = try await sceneModel.media(summary: ready, selection: edit.scene)
             let url = media.url
             effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
-            if edit.ballSkin != .original {
+            if edit.usesBallMaterial {
                 effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: ready.videoURL, track: BallEffectTrack(frames: ready.renderTrack))
             }
             try Task.checkCancellation()

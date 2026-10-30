@@ -296,7 +296,7 @@ struct SaveShareView: View {
     private var previewEdit: SessionEditState {
         var value = version == .edited ? edit : SessionEditState(style: .none, intensity: 0)
         if summary.needsVisualPreparation && preparation.prepared == nil { value.style = .none }
-        if loadingThumb || effectTrack.surfaceMotion == nil { value.ballSkin = .original }
+        if loadingThumb || effectTrack.surfaceMotion == nil { value.ballSkin = .original; value.ballChanges = [:] }
         return value
     }
 
@@ -314,7 +314,7 @@ struct SaveShareView: View {
             statusMessage = "Couldn’t load the video preview. \(error.localizedDescription)"; return
         }
         effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
-        if subscriptions.isPro, version == .edited, edit.ballSkin != .original {
+        if subscriptions.isPro, version == .edited, edit.usesBallMaterial {
             do {
                 effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: summary.videoURL, track: BallEffectTrack(frames: (preparation.prepared ?? summary).renderTrack))
             } catch is CancellationError { return }
@@ -354,7 +354,9 @@ struct SaveShareView: View {
         burnIn.export(source: media.url, track: media.track,
             style: edited ? edit.style : .none, intensity: edited ? edit.intensity : 0,
             skin: edited ? edit.ballSkin : .original, environment: edited ? edit.environment : .original, shortEdge: quality == .p1080 ? 1080 : 720,
-            counter: counterTimeline, overlays: allowedLook.overlays,preserveFrameTimes:edited && edit.scene != nil)
+            counter: counterTimeline, overlays: allowedLook.overlays,preserveFrameTimes:edited && edit.scene != nil,
+            ballChanges: edited ? edit.ballChanges : [:], swapEffect: edited ? edit.swapEffect : .none,
+            soundtrack: edited ? ReplaySoundtrack(edit: edit, touchTimes: summary.touchesMarked.map(\.time)) : nil)
         // Wait until burn-in finishes.
         do {
             while burnIn.isExporting {

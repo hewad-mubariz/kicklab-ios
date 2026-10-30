@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum ReplayTool: String, Identifiable {
-    case counter = "Counter", timer = "Timer", ball = "Ball", effects = "Effects", graph = "Graph"
+    case counter = "Counter", timer = "Timer", ball = "Ball", effects = "Effects", graph = "Graph", sound = "Sound"
     var id: String { rawValue }
     var requiresPro: Bool { self != .counter && self != .timer }
 }
@@ -25,6 +25,14 @@ struct ReplayToolbox: View {
     var showsTouchTools = true
     var isPro = false
     var onUnlockTool: (ReplayTool) -> Void = { _ in }
+    /// Sorted touch times of the clip: the index space of per-touch balls. Empty hides those tools.
+    var touchTimes: [Double] = []
+    var currentTime: Double = 0
+    /// Holds the clip at a moment, paused, so a pick is seen on that frame.
+    var onSeek: (Double) -> Void = { _ in }
+    /// Plays a short run through a ball change.
+    var onPreviewMoment: (Double) -> Void = { _ in }
+    var onPreviewSound: (ReplaySound) -> Void = { _ in }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
     @State private var ballKicks: [BallSkin: Int] = [:]
@@ -32,7 +40,11 @@ struct ReplayToolbox: View {
     /// so redrawing the clip never steals frames from the flight.
     @State private var pendingBall: BallSkin?
     @State private var applyBall: Task<Void, Never>?
-    private var shownBall: BallSkin { pendingBall ?? edit.ballSkin }
+    /// Per-touch mode: picks go to the chosen touch instead of the whole clip.
+    @State private var perTouch = false
+    @State private var selectedTouch = 0
+    private var selectedBall: BallSkin { perTouch ? edit.ballSkin(forTouch: selectedTouch) : edit.ballSkin }
+    private var shownBall: BallSkin { pendingBall ?? selectedBall }
     @State private var effectKicks: [BallStyle: Int] = [:]
     /// The tray's height, measured from the page being shown and animated on one spring.
     @State private var trayHeight: CGFloat = 0
@@ -70,7 +82,11 @@ struct ReplayToolbox: View {
         }
         .padding(16).foregroundStyle(.white)
         .glassEffect(.regular, in: .rect(cornerRadius: 26))
-        .onAppear { appeared = true }
+        .onAppear {
+            appeared = true
+            perTouch = edit.hasBallChanges
+            selectedTouch = nearestTouch(to: currentTime)
+        }
         // The tap is the kick; the slot adds a thud when the ball lands.
         .sensoryFeedback(.impact(flexibility: .rigid, intensity: 0.7), trigger: shownBall)
         .sensoryFeedback(.selection, trigger: edit.style)
@@ -157,6 +173,7 @@ struct ReplayToolbox: View {
             HStack(spacing: 9) {
                 tile(.effects).sessionEntrance(appeared, order: 3, offset: 14, scale: 0.88)
                 tile(.graph).sessionEntrance(appeared, order: 4, offset: 14, scale: 0.88)
+                tile(.sound).sessionEntrance(appeared, order: 5, offset: 14, scale: 0.88)
                 // First release: background replacement and its placeholder stay parked.
                 // backgroundsPreview.sessionEntrance(appeared, order: 5, offset: 14, scale: 0.88)
             }
@@ -207,6 +224,16 @@ struct ReplayToolbox: View {
         case .graph:
             MotionStyleGraph(style: motionStyle, snapshot: MotionStyleSample.preview(for: motionStyle))
                 .padding(.horizontal, 2).padding(.vertical, 6)
+        case .sound:
+            // Shows the touch sound in use, so the tile doubles as the current setting.
+            VStack(spacing: 4) {
+                Image(systemName: edit.hasSounds ? "speaker.wave.2.fill" : "speaker.fill")
+                    .font(.system(size: 22)).foregroundStyle(edit.hasSounds ? SessionStyle.mint : .white)
+                    .contentTransition(.symbolEffect(.replace))
+                Text(edit.touchSound == .none ? "Off" : edit.touchSound.title)
+                    .font(.system(size: 9, weight: .medium)).foregroundStyle(.white.opacity(0.7))
+                    .contentTransition(.interpolate)
+            }
         }
     }
 
@@ -241,6 +268,7 @@ struct ReplayToolbox: View {
             ReplayMotionPicker(style: $motionStyle, showGraph: $showGraph, includeGraph: $includeGraph, snapshot: motionSnapshot,
                                sourceAspect: sourceAspect, isPlaying: isPlaying, onTogglePlayback: onTogglePlayback, showsProBadges: !isPro)
         case .counter: counterPage
+        case .sound: ReplaySoundPage(edit: $edit, onPreview: onPreviewSound)
         }
     }
 
@@ -265,16 +293,146 @@ struct ReplayToolbox: View {
         }
     }
 
-    /// Every ball at once, four to a row, so they can be compared and picked directly.
+    private enum BallMode: String, CaseIterable { case single = "One ball", perTouch = "Per touch" }
+
+    /// One ball: every ball at once, four to a row, so they can be compared and picked directly.
+    /// Per touch: the touch strip chooses the touch, one row of balls picks its ball, and a
+    /// row of moments decides how the change looks.
     private var ballPage: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 22) {
-            ForEach(Array(skins.enumerated()), id: \.element) { index, skin in
-                // The right-hand columns swing left, so no ball leaves the panel's edge.
-                ballOption(skin, direction: index % 4 < 2 ? 1 : -1)
+        VStack(alignment: .leading, spacing: 10) {
+            if !touchTimes.isEmpty {
+                SessionSegments(options: BallMode.allCases, selection: modeBinding, title: { $0.rawValue },
+                                identifier: { $0 == .single ? "ball-mode-single" : "ball-mode-touches" })
+                    .padding(.horizontal, 16)
+            }
+            if perTouch {
+                HStack(spacing: 8) {
+                    caption("Ball per touch", symbol: "hand.point.up.left.fill")
+                    Spacer(minLength: 4)
+                    cycleMenu
+                    Button("Clear") {
+                        commitBall()
+                        withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { edit.ballChanges = [:] }
+                    }
+                    .font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(edit.hasBallChanges ? 0.9 : 0.4))
+                    .disabled(!edit.hasBallChanges)
+                    .accessibilityIdentifier("ball-touches-clear")
+                }
+                .padding(.horizontal, 16)
+                .transition(.sessionRise)
+                BallTouchStrip(touchTimes: touchTimes, edit: edit, selected: $selectedTouch) { index in
+                    commitBall()
+                    withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { selectedTouch = index }
+                    onSeek(holdTime(forTouch: index))
+                }
+                .transition(.sessionRise)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 8) {
+                        ForEach(Array(skins.enumerated()), id: \.element) { index, skin in
+                            // The first balls swing right, the rest left, so none leaves the panel.
+                            ballOption(skin, direction: index < 2 ? 1 : -1).frame(width: 66)
+                        }
+                    }
+                    .padding(.horizontal, 16).padding(.top, 2).padding(.bottom, 2)
+                }
+                .scrollClipDisabled()
+                .transition(.sessionRise)
+                caption("Change effect", symbol: "sparkle").padding(.horizontal, 16)
+                    .transition(.sessionRise)
+                ReplayChipRow(items: BallSwapEffect.allCases, selection: edit.swapEffect, title: \.title, symbol: \.symbol,
+                              identifier: { "ball-swap-\($0.rawValue)" },
+                              accessibilityLabel: { $0 == .none ? "No change effect" : "\($0.title) change effect" }) { effect in
+                    withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { edit.swapEffect = effect }
+                    onPreviewMoment(momentTime)
+                }
+                .transition(.sessionRise)
+            } else {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 22) {
+                    ForEach(Array(skins.enumerated()), id: \.element) { index, skin in
+                        // The right-hand columns swing left, so no ball leaves the panel's edge.
+                        ballOption(skin, direction: index % 4 < 2 ? 1 : -1)
+                    }
+                }
+                .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 2)
+                .transition(.sessionRise)
             }
         }
-        .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 2)
         .onDisappear { applyBall?.cancel(); applyBall = nil; pendingBall = nil }
+    }
+
+    private func caption(_ text: String, symbol: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: symbol).font(.system(size: 11, weight: .semibold)).foregroundStyle(SessionStyle.mint)
+            Text(text).font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
+        }
+        .accessibilityAddTraits(.isHeader)
+    }
+
+    private var modeBinding: Binding<BallMode> {
+        Binding(get: { perTouch ? .perTouch : .single }, set: { mode in
+            commitBall()
+            withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
+                perTouch = mode == .perTouch
+                if !perTouch { edit.ballChanges = [:] }
+            }
+            if perTouch {
+                selectedTouch = nearestTouch(to: currentTime)
+                onSeek(holdTime(forTouch: selectedTouch))
+            }
+        })
+    }
+
+    /// Rotates the balls in use (or a bright default set) across the touches.
+    private var cycleMenu: some View {
+        Menu {
+            ForEach([1, 2, 3, 5, 10], id: \.self) { every in
+                Button(every == 1 ? "Every touch" : "Every \(every) touches") { cycle(every: every) }
+            }
+        } label: {
+            Label("Cycle", systemImage: "arrow.triangle.2.circlepath")
+                .font(.system(size: 11, weight: .semibold)).foregroundStyle(.white)
+                .padding(.horizontal, 10).frame(height: 28)
+                .background(.white.opacity(0.1), in: .capsule)
+        }
+        .accessibilityIdentifier("ball-touches-cycle")
+    }
+
+    private func cycle(every: Int) {
+        commitBall()
+        var order = edit.ballsInOrder
+        for extra in [BallSkin.volt, .lava, .chrome, .galaxy] where order.count < 4 && !order.contains(extra) {
+            order.append(extra)
+        }
+        withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
+            edit.cycleBalls(order, every: every, touchCount: touchTimes.count)
+        }
+    }
+
+    private func nearestTouch(to time: Double) -> Int {
+        guard !touchTimes.isEmpty else { return 0 }
+        var best = 0
+        for (index, touch) in touchTimes.enumerated() where abs(touch - time) < abs(touchTimes[best] - time) { best = index }
+        return best
+    }
+
+    /// A frame just after the touch, once the change moment has cleared and the new ball is in flight.
+    private func holdTime(forTouch index: Int) -> Double {
+        guard touchTimes.indices.contains(index) else { return currentTime }
+        let next = index + 1 < touchTimes.count ? touchTimes[index + 1] - 0.03 : .infinity
+        return min(touchTimes[index] + 0.22, max(touchTimes[index], next))
+    }
+
+    /// The change at or after the chosen touch, or the touch itself when nothing changes there.
+    private var momentTime: Double {
+        let swaps = edit.ballSwaps(touchTimes: touchTimes)
+        return swaps.first { $0.index >= selectedTouch }?.time ?? swaps.last?.time
+            ?? (touchTimes.indices.contains(selectedTouch) ? touchTimes[selectedTouch] : currentTime)
+    }
+
+    /// The same ball as the touch before means no change at this touch.
+    private func setBall(_ skin: BallSkin, forTouch index: Int) {
+        let before = index == 0 ? edit.ballSkin : edit.ballSkin(forTouch: index - 1)
+        edit.ballChanges[index] = skin == before ? nil : skin
     }
 
     private func pick(_ skin: BallSkin) {
@@ -291,7 +449,7 @@ struct ReplayToolbox: View {
     private func commitBall() {
         applyBall?.cancel(); applyBall = nil
         guard page == .ball, let pendingBall else { return }
-        edit.ballSkin = pendingBall
+        if perTouch { setBall(pendingBall, forTouch: selectedTouch) } else { edit.ballSkin = pendingBall }
         self.pendingBall = nil
     }
 

@@ -50,18 +50,21 @@ nonisolated enum BallMaterialRenderer {
 
     static func draw(in ctx: CGContext, size: CGSize, sourceSize: CGSize,
                      skin: BallSkin, sample: BallStyleSample?, time: Double,
-                     replacement: Replacement? = nil) {
+                     replacement: Replacement? = nil, scale: Double = 1) {
         guard skin != .original, let sample, sample.visibility > 0.01 else { return }
         let rect = EffectVideoGeometry.aspectFillRect(source: sourceSize, destination: size)
         let center = CGPoint(x: rect.minX + sample.center.x * rect.width, y: rect.minY + sample.center.y * rect.height)
-        let radius = max(2, sample.pixelRadius(in: rect.size))
+        let radius = max(2, sample.pixelRadius(in: rect.size)) * max(0.5, min(1.6, scale))
         ctx.saveGState()
         ctx.clip(to: CGRect(origin: .zero, size: size))
         ctx.setAlpha(sample.visibility)
         if let replacement {
+            // A swap moment swells the incoming ball about its own centre.
+            let grow = max(0.5, min(1.6, scale))
             let target = CGRect(x: rect.minX + replacement.rect.minX*rect.width,
                                 y: rect.minY + replacement.rect.minY*rect.height,
                                 width: replacement.rect.width*rect.width, height: replacement.rect.height*rect.height)
+                .insetBy(dx: replacement.rect.width*rect.width*(1-grow)/2, dy: replacement.rect.height*rect.height*(1-grow)/2)
             // The public drawing context is top-left; CGImage drawing is y-up.
             ctx.translateBy(x: target.minX, y: target.maxY); ctx.scaleBy(x: 1, y: -1)
             ctx.interpolationQuality = .high
@@ -199,6 +202,13 @@ nonisolated enum BallMaterialRenderer {
                 provider:provider,decode:nil,shouldInterpolate:true,intent:.defaultIntent) else { return nil }
         return Replacement(image:image,rect:CGRect(x:(f.center.x-extent)/f.sourceSize.width,
             y:(f.center.y-extent)/f.sourceSize.height,width:extent*2/f.sourceSize.width,height:extent*2/f.sourceSize.height),footprint:f)
+    }
+
+    /// Where the tracked ball sits on the output canvas, for anything drawn around it.
+    static func outputGeometry(size: CGSize, sourceSize: CGSize, sample: BallStyleSample) -> (center: CGPoint, radius: CGFloat) {
+        let rect = EffectVideoGeometry.aspectFillRect(source: sourceSize, destination: size)
+        return (CGPoint(x: rect.minX + sample.center.x * rect.width, y: rect.minY + sample.center.y * rect.height),
+                max(2, sample.pixelRadius(in: rect.size)))
     }
 
     /// Draw the same material used by replay/export in the style picker.

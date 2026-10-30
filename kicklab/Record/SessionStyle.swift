@@ -79,6 +79,8 @@ struct SessionSegments<Option: Hashable>: View {
     let options: [Option]
     @Binding var selection: Option
     let title: (Option) -> String
+    /// An accessibility identifier per segment, for UI automation.
+    var identifier: ((Option) -> String)? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var indicator
 
@@ -108,6 +110,7 @@ struct SessionSegments<Option: Hashable>: View {
                 }
                 .buttonStyle(SessionPressStyle(scale: 0.94))
                 .accessibilityAddTraits(selection == option ? .isSelected : [])
+                .accessibilityIdentifier(identifier?(option) ?? "")
             }
         }
         .padding(4)

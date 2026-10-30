@@ -165,13 +165,25 @@ nonisolated struct SessionEditState: Hashable, Sendable {
     var ballSkin: BallSkin = .original
     var environment: EffectEnvironment = .original
     var scene: SceneSelection? = nil
+    /// A different ball from a touch on: sorted-touch position to the ball shown from that touch
+    /// until the next change. Empty keeps `ballSkin` for the whole clip.
+    var ballChanges: [Int: BallSkin] = [:]
+    /// Drawn on the ball at every change, and the sound that plays with it.
+    var swapEffect: BallSwapEffect = .pop
+    var swapSound: BallSwapSound = .whoosh
+    /// Played on every counted touch; none by default.
+    var touchSound: TouchSound = .none
     /// Every visible ball-following effect needs the completed source-pixel track.
     /// Counter/timer-only exports can use the saved touch timeline immediately.
-    var requiresVisualTrack: Bool { ballSkin != .original || (style != .none && intensity > 0) }
-    var isEdited: Bool { scene != nil || environment != .original || ballSkin != .original || (style != .none && intensity > 0.02) }
+    var requiresVisualTrack: Bool { usesBallMaterial || (style != .none && intensity > 0) }
+    var isEdited: Bool {
+        scene != nil || environment != .original || usesBallMaterial || hasBallChanges || hasSounds
+            || (style != .none && intensity > 0.02)
+    }
     var label: String {
         [scene?.environment.title,
-         ballSkin != .original ? ballSkin.title : nil,
+         hasBallChanges ? "Ball per touch" : ballSkin != .original ? ballSkin.title : nil,
+         touchSound != .none ? "\(touchSound.title) touches" : nil,
          style != .none && intensity > 0.02 ? "\(style.title) · \(Int((intensity * 100).rounded()))%" : nil,
          environment != .original ? environment.title : nil]
             .compactMap { $0 }.joined(separator: " + ")

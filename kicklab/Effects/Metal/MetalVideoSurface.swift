@@ -88,6 +88,8 @@ final class EffectVideoView: MTKView {
     private var shotArc: ShotArcLayers?
     private var shotLocation: ShotEditTimeline.Location?
     private var track = BallEffectTrack(frames: [])
+    /// The edit's ball changes against this clip's touches, rebuilt when either changes.
+    private var swaps = BallSwapTimeline()
     private var dirty = true
     private var previousSize = CGSize.zero
     private let inFlight = DispatchSemaphore(value: 2)
@@ -158,7 +160,8 @@ final class EffectVideoView: MTKView {
 
     func configure(player: AVPlayer, edit: SessionEditState, track: BallEffectTrack) {
         if self.edit != edit || self.track.surfaceMotion?.entries.count != track.surfaceMotion?.entries.count { dirty = true; setNeedsDisplay() }
-        if edit.ballSkin == .original { materialPool.removeAll() }
+        if self.edit != edit || self.track.touches != track.touches { swaps = BallSwapTimeline(edit: edit, touchTimes: track.touches) }
+        if !edit.usesBallMaterial { materialPool.removeAll() }
         self.edit = edit; self.track = track; self.player = player
         #if DEBUG
         if benchmark == nil, edit.ballSkin != .original, track.surfaceMotion != nil,
@@ -197,7 +200,8 @@ final class EffectVideoView: MTKView {
 
     func configure(image: CGImage, edit: SessionEditState, track: BallEffectTrack, time: Double) {
         if self.edit != edit || frameTime != time { dirty = true; setNeedsDisplay() }
-        if edit.ballSkin == .original { materialPool.removeAll() }
+        if self.edit != edit || self.track.touches != track.touches { swaps = BallSwapTimeline(edit: edit, touchTimes: track.touches) }
+        if !edit.usesBallMaterial { materialPool.removeAll() }
         self.edit = edit; self.track = track; frameTime = time
         if stillImage !== image, let engine {
             stillImage = image
@@ -336,38 +340,52 @@ final class EffectVideoView: MTKView {
     }
 
     private func materialTexture(engine: MetalEffectEngine, size: CGSize, sourceSize: CGSize) throws -> BallMaterialTexturePool.Lease? {
-        guard edit.ballSkin != .original else { return nil }
+        guard edit.usesBallMaterial else { return nil }
+        // The ball on screen at this frame, and the change moment if one is still playing.
+        let skin = edit.ballSkin(at: frameTime, touchTimes: track.touches)
+        let swap = swaps.active(at: frameTime)
+        guard skin != .original || swap != nil else { return nil }
         let width = Int(size.width), height = Int(size.height)
         guard let lease = try materialPool.acquire(device: engine.device, width: width, height: height) else {
             throw MetalEffectEngine.Failure.unavailable("The ball material buffers are still in use.")
         }
         let context = lease.context
         let sample = track.replacementGuide(at: frameTime)
-        let fitted = sample.flatMap { sample -> BallReplacementFootprint? in
-            if let pixels { return BallReplacementFootprint.fit(pixels: pixels, sample: sample, measureTexture: true) }
-            if let stillImage { return BallReplacementFootprint.fit(image: stillImage, sample: sample, measureTexture: true) }
-            return nil
+        var replacement: BallMaterialRenderer.Replacement?
+        if skin != .original {
+            let fitted = sample.flatMap { sample -> BallReplacementFootprint? in
+                if let pixels { return BallReplacementFootprint.fit(pixels: pixels, sample: sample, measureTexture: true) }
+                if let stillImage { return BallReplacementFootprint.fit(image: stillImage, sample: sample, measureTexture: true) }
+                return nil
+            }
+            // Motion smear comes from the shared track, so replay and export agree.
+            let smear = track.smear(at: frameTime, size: sourceSize)
+            let matte = track.replacementMatte(at: frameTime, fitted: fitted, size: sourceSize, smear: smear,
+                photographicSmear: track.surfaceMotion?.photographicExposure != nil)
+            let footprint = track.usesBallMasks ? matte?.footprint : fitted
+            let coverage: ((Double, Double) -> Double)? = matte.map { m in
+                { x, y in m.coverage(x: x, y: y) }
+            }
+            let background = matte.flatMap { m -> BallReplacementBackground? in
+                if let pixels { return BallReplacementBackground(pixels: pixels, matte: m) }
+                if let stillImage { return BallReplacementBackground(image: stillImage, matte: m) }
+                return nil
+            }
+            replacement = BallMaterialRenderer.replacement(footprint: footprint, skin: skin,
+                time: frameTime, coverage: coverage, coverageBounds: matte?.bounds,
+                orientation: track.surfaceMotion?.renderOrientation(at: frameTime), smear: smear,
+                light: track.surfaceMotion?.light(at: frameTime), background: background)
         }
-        // Motion smear comes from the shared track, so replay and export agree.
-        let smear = track.smear(at: frameTime, size: sourceSize)
-        let matte = track.replacementMatte(at: frameTime, fitted: fitted, size: sourceSize, smear: smear,
-            photographicSmear: track.surfaceMotion?.photographicExposure != nil)
-        let footprint = track.usesBallMasks ? matte?.footprint : fitted
-        let coverage: ((Double, Double) -> Double)? = matte.map { m in
-            { x, y in m.coverage(x: x, y: y) }
-        }
-        let background = matte.flatMap { m -> BallReplacementBackground? in
-            if let pixels { return BallReplacementBackground(pixels: pixels, matte: m) }
-            if let stillImage { return BallReplacementBackground(image: stillImage, matte: m) }
-            return nil
-        }
-        let replacement = BallMaterialRenderer.replacement(footprint: footprint, skin: edit.ballSkin,
-            time: frameTime, coverage: coverage, coverageBounds: matte?.bounds,
-            orientation: track.surfaceMotion?.renderOrientation(at: frameTime), smear: smear,
-            light: track.surfaceMotion?.light(at: frameTime), background: background)
         // No supported silhouette: retain the source instead of inventing a ball.
-        BallMaterialRenderer.draw(in: context, size: size, sourceSize: sourceSize, skin: edit.ballSkin,
-            sample: replacement == nil ? nil : sample, time: frameTime, replacement: replacement)
+        BallMaterialRenderer.draw(in: context, size: size, sourceSize: sourceSize, skin: skin,
+            sample: replacement == nil ? nil : sample, time: frameTime, replacement: replacement,
+            scale: swap.map { swaps.effect.ballScale(age: $0.age) } ?? 1)
+        // The moment is drawn around the tracked ball even where no print could be fitted.
+        if let swap, let guide = sample ?? track.sample(at: frameTime) {
+            let geometry = BallMaterialRenderer.outputGeometry(size: size, sourceSize: sourceSize, sample: guide)
+            BallSwapRenderer.draw(in: context, center: geometry.center, radius: geometry.radius,
+                                  effect: swaps.effect, age: swap.age, event: swap.event)
+        }
         lease.upload()
         return lease
     }
