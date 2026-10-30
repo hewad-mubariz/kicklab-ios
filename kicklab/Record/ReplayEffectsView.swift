@@ -198,6 +198,7 @@ struct ReplayEffectsView: View {
             prepareVisualEffects()
         }
         .onChange(of: displayedLook.edit.scene) { _, _ in tearDownPlayer(); setUpPlayer() }
+        .onChange(of: displayedLook.edit.clipAudio) { _, on in player?.isMuted = !on }
         .onChange(of: overlays) { old, value in
             if old.graph.enabled != value.graph.enabled {
                 ProductAnalytics.shared.track(.graphToggled(value.graph.enabled))
@@ -645,7 +646,7 @@ struct ReplayEffectsView: View {
                         duration: try await asset.load(.duration), shortEdge: 1080)
                 }
                 let p = AVPlayer(playerItem: item)
-                p.isMuted = false
+                p.isMuted = !displayedLook.edit.clipAudio
                 player = p
                 currentTime = max(0, duration - 1.0 / 30)
                 #if DEBUG && TOUCH_COUNTING_DEBUG

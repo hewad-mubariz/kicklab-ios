@@ -59,6 +59,29 @@ struct ReplaySoundTests {
         #expect(ReplaySoundtrack(events: [.init(time: -1, sound: .touch(.pop)), .init(time: .nan, sound: .touch(.pop))]).isEmpty)
     }
 
+    @Test func waveformShowsEachCuesLengthAndShape() {
+        let click = ReplaySoundSynth.envelope(.touch(.click), bars: 12)
+        let bell = ReplaySoundSynth.envelope(.touch(.bell), bars: 12)
+        #expect(click.count == 12 && bell.count == 12)
+        #expect((click + bell).allSatisfy { $0 >= 0 && $0 <= 1 })
+        #expect(click.max() == 1 && bell.max() == 1, "Each waveform is scaled to its own peak")
+        let clickBars = click.filter { $0 > 0 }.count, bellBars = bell.filter { $0 > 0 }.count
+        #expect(clickBars < bellBars, "A click reads shorter than a ringing bell: \(clickBars) vs \(bellBars)")
+        #expect(bell.last! > 0, "A bell still rings at the end of its window")
+        #expect(ReplaySoundSynth.envelope(.touch(.none), bars: 12).isEmpty)
+        #expect(ReplaySoundSynth.envelope(.swap(.chime), bars: 0).isEmpty)
+    }
+
+    @Test func mutingTheOriginalIsAnEditThatFreeClipsNeverCarry() {
+        var edit = SessionEditState(style: .none, intensity: 0)
+        #expect(edit.clipAudio && !edit.isEdited)
+        edit.clipAudio = false
+        #expect(edit.isEdited)
+        #expect(edit.label.contains("Original sound off"))
+        let free = JugglingReplayLook(edit: edit, overlays: ExportOverlaySettings(), showGraph: false).allowed(isPro: false)
+        #expect(free.edit.clipAudio, "Without Pro the clip keeps its own sound")
+    }
+
     /// A tiny silent clip, so the export has only the cues to carry.
     private func silentClip(seconds: Double) async throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("replay-sound-\(UUID()).mp4")
@@ -110,6 +133,38 @@ struct ReplaySoundTests {
             }
         }
         return samples
+    }
+
+    @Test func mutedOriginalLeavesOnlyTheChosenSounds() async throws {
+        let silent = try await silentClip(seconds: 2)
+        defer { try? FileManager.default.removeItem(at: silent) }
+        // A clip whose own audio is a kick at 0.5 s.
+        let voiced = try await BallStyleBurnIn.render(source: silent, track: [], style: .none, intensity: 0, shortEdge: 64,
+            soundtrack: ReplaySoundtrack(events: [.init(time: 0.5, sound: .touch(.kick))]))
+        defer { try? FileManager.default.removeItem(at: voiced) }
+        func rms(_ audio: [Float], _ from: Double, _ to: Double) -> Float {
+            let slice = audio[Int(from * 44_100)..<Int(to * 44_100)]
+            return (slice.reduce(0) { $0 + $1 * $1 } / Float(slice.count)).squareRoot()
+        }
+        // Muted with nothing to add: the saved file has no sound at all.
+        let mute = try await BallStyleBurnIn.render(source: voiced, track: [], style: .none, intensity: 0, shortEdge: 64,
+                                                    clipAudio: false)
+        defer { try? FileManager.default.removeItem(at: mute) }
+        #expect(try await AVURLAsset(url: mute).loadTracks(withMediaType: .audio).isEmpty)
+        // Muted with a cue: only the cue remains.
+        let cue = ReplaySoundtrack(events: [.init(time: 1.5, sound: .swap(.chime))])
+        let replaced = try await BallStyleBurnIn.render(source: voiced, track: [], style: .none, intensity: 0, shortEdge: 64,
+                                                        soundtrack: cue, clipAudio: false)
+        defer { try? FileManager.default.removeItem(at: replaced) }
+        let onlyCue = try await mono(replaced, duration: 2)
+        #expect(rms(onlyCue, 0.5, 0.6) < 0.01, "The original kick is gone")
+        #expect(rms(onlyCue, 1.5, 1.6) > 0.03, "The chosen cue plays")
+        // Kept: both play.
+        let both = try await BallStyleBurnIn.render(source: voiced, track: [], style: .none, intensity: 0, shortEdge: 64,
+                                                    soundtrack: cue, clipAudio: true)
+        defer { try? FileManager.default.removeItem(at: both) }
+        let mixed = try await mono(both, duration: 2)
+        #expect(rms(mixed, 0.5, 0.6) > 0.05 && rms(mixed, 1.5, 1.6) > 0.03)
     }
 
     @Test func exportMixesCuesIntoTheSavedVideo() async throws {
