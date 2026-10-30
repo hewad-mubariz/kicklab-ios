@@ -1,0 +1,72 @@
+{
+  "app": "Juggle Dude",
+  "apple_app_id": "6820780610",
+  "version": "1.1.0",
+  "build": "32",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "source_commit": "0a34732bdaf6faee7f8e4dab662bf0ee39bac3e5",
+  "status": "testing_internal",
+  "source_verified": true,
+  "archive_verified": true,
+  "user_device_check": "Immediate language switching confirmed by owner on iPhone 11",
+  "prior_focused_tests_passed": 29,
+  "app_store_review_changed": false,
+  "installed_to_device_after_upload": false,
+  "updated_at_utc": "2026-10-30T15:23:00.685957+00:00",
+  "first_upload_failure": "Xcode account credentials expired at final upload completion; no build 32 was registered in App Store Connect.",
+  "retry_log": "artifacts/releases/20261030-leaderboard-1.1.0-32/upload-retry.log",
+  "upload_succeeded": true,
+  "uploaded_at_local": "2026-10-30T16:09:38+01:00",
+  "archive_verification": {
+    "version": "1.1.0",
+    "build": "32",
+    "source_commit": "0a34732bdaf6faee7f8e4dab662bf0ee39bac3e5",
+    "archive": "artifacts/releases/20261030-leaderboard-1.1.0-32/JuggleDude-1.1.0-32.xcarchive",
+    "signature_verified": true,
+    "source_files_verified": 503,
+    "matches_tested_source": "c532a08 (only marketing/build number changed)",
+    "counter_profile": "outdoor-balanced-v3-20261029",
+    "compilation": "Release with TOUCH_COUNTER_BETA; DEBUG modes absent",
+    "models": [
+      "RFDETRSmallRecovery040FP16.mlmodelc"
+    ],
+    "languages": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "pt-BR"
+    ],
+    "minimum_ios": "26.5",
+    "iphone_only": true,
+    "privacy_manifest": true,
+    "model_license": true,
+    "client_configurations_verified": true,
+    "deferred_editor_features_absent": true,
+    "touch_review_disabled": true
+  },
+  "build_id": "74b2cf11-ac3b-4534-8cee-42d69e7cb100",
+  "what_to_test_file": "artifacts/releases/20261030-leaderboard-1.1.0-32/what-to-test.txt",
+  "what_to_test_sha256": "20a656d497caebf5db608a8b2cb4ebf1944dccffa902f4171b5cd6ad53f78f9e",
+  "processing_complete": true,
+  "internal_testing": {
+    "group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "existing_testers": 3,
+    "status": "Testing"
+  },
+  "what_to_test_saved": true,
+  "submitted_to_app_store_review": false,
+  "submitted_to_external_beta_review": false,
+  "existing_app_store_submission": "1.0.3 left unchanged",
+  "proof": [
+    "artifacts/releases/20261030-leaderboard-1.1.0-32/testflight-ready.jpg",
+    "artifacts/releases/20261030-leaderboard-1.1.0-32/testflight-notes-and-group.jpg"
+  ],
+  "remaining_before_app_store_release": [
+    "Fresh recording to local history to server to ranking walkthrough",
+    "Two-account, offline retry, privacy/deletion device walkthroughs",
+    "Longer iPhone 11 streak-probe thermal check and normal regression testing"
+  ],
+  "what_to_test": "Juggle Dude 1.1.0 \u2014 leaderboard and sign-in beta\n\n\u2022 Join the leaderboard and record a juggling session while signed in. Your longest continuous streak should rank; total session touches remain in your history.\n\u2022 Test hand/ground interruptions, a hand drop at the beginning, and starting another streak after a break.\n\u2022 Try Apple sign-in, email sign-in, returning to a saved account, and guest mode.\n\u2022 Change language in Profile \u2192 Settings \u2192 Language. Text should update immediately and your choice should remain after reopening.\n\u2022 Check recording, replay, saving videos, and Pro access on your device.\n\nEnglish, German, Spanish, French and Brazilian Portuguese are included. Touch-review submissions and the separate replay-editor upgrade remain postponed."
+}

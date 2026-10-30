@@ -1034,7 +1034,8 @@ Evidence is under `artifacts/leaderboard-beta-20261026/`; private deployment sna
 and the previous function are in `config/local/automatic-leaderboard-beta-20261026/`.
 At that stage no phone build or TestFlight upload was made. The subsequent
 interrupted-run fix below was installed locally on the iPhone 17 Pro Max; the
-fresh-recording/sync walkthrough and TestFlight upload are still pending.
+fresh-recording/sync walkthrough remains pending. The later 1.1.0 (32) TestFlight
+upload is recorded below.
 
 **Interrupted-run fix — 26 October:** the saved 29-second test contained 14
 accepted touches in runs of 5, 4, 2 and 3, but only the setup hand release was
@@ -1158,6 +1159,22 @@ run reused the compiled products after the simulator was ready. See
 [`20261030-leaderboard-build30-alignment.json`](../../benchmarks/releases/20261030-leaderboard-build30-alignment.json)
 for the source audit and validation details.
 
+**TestFlight candidate — 30 October:** following the owner's successful iPhone 11
+language-switch check and request to continue testing through TestFlight,
+**1.1.0 (32)** was archived from `0a34732`, uploaded and enabled for the existing
+**Early testers** internal group. App Store Connect shows **Testing**. The saved
+testing notes cover longest streaks, interruptions, Apple/email sign-in, immediate
+language changes and ordinary recording/replay/Pro access. Archive verification
+confirmed the tested source, Release counter profile, five languages, signature,
+privacy manifest and RF-DETR license. Only version/build metadata changed after
+the tested `c532a08` source. The separate editor upgrade and touch-review workflow
+remain excluded. The existing 1.0.3 App Store submission was left unchanged;
+1.1.0 was not submitted to App Store review or external beta review, and no
+TestFlight build was installed on a device automatically. See
+[`20261030-testflight-1.1.0-32.json`](../../benchmarks/releases/20261030-testflight-1.1.0-32.json).
+The device gates below remain release checks; uploading this testing candidate
+does not mark them passed.
+
 Use the leaderboard branch, two dedicated test accounts and the current Supabase
 project. Keep fictional UI fixtures in the simulator; do not seed fake public
 scores. Record device/build, account, session ID, visible total, saved streak,
@@ -1190,8 +1207,8 @@ to clear the long-session thermal risk. Extend the run if the short check expose
 a concern. The separate live-versus-encoded-replay difference of two contacts
 also remains open. Correct or remove the known bad historical 14-point test entry
 as a separate explicit data operation; new code does not overwrite synced scores.
-Prepare a TestFlight build only after these gates pass and the owner is ready to
-review it.
+Continue these checks in TestFlight 1.1.0 (32). Complete the release gates and
+obtain the owner's submission instruction before submitting it to App Store review.
 
 ## Week 3: Detection continuity, replay quality, effects and UI
 
