@@ -9,7 +9,6 @@ nonisolated struct JugglingReplayLook: Equatable {
 
     var requiresPro: Bool {
         edit.isEdited || (overlays.counter.enabled && overlays.counter.style.requiresPro)
-            || (overlays.timer.enabled && overlays.timer.style.requiresPro)
             || overlays.graph.enabled || showGraph
     }
 
@@ -18,7 +17,6 @@ nonisolated struct JugglingReplayLook: Equatable {
         var free = self
         free.edit = SessionEditState(style: .none, intensity: edit.intensity)
         free.overlays.counter.style = .normal
-        free.overlays.timer.style = .pill
         free.overlays.graph.enabled = false
         free.showGraph = false
         return free

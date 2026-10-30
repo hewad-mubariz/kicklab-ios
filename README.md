@@ -3,11 +3,6 @@
 The [four-week post-launch plan](docs/post-launch/README.md) records the agreed
 priority order, weekly shipping scope, leaderboard rules and release checks.
 
-[Looks, change moments, replay sounds and timer looks](docs/ball-swaps-and-sounds.md) describes the
-Looks tool (runs of ball and effect, with recipes), the eleven change moments, the synthesized touch and change cues, and the
-seven timer looks with counter-style placement,
-milestone celebrations, My style and the iPhone 11 phone check.
-
 Open `kicklab.xcodeproj` and use the `JuggleDude` scheme. The current target is iOS 26.5;
 use Xcode with that SDK. Core ML packages in `kicklab/Models` and local account/analytics
 configuration are excluded from Git. Obtain the approved

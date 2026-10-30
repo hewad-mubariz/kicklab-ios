@@ -295,8 +295,8 @@ struct SaveShareView: View {
 
     private var previewEdit: SessionEditState {
         var value = version == .edited ? edit : SessionEditState(style: .none, intensity: 0)
-        if summary.needsVisualPreparation && preparation.prepared == nil { value.style = .none; value.lookChanges = [:] }
-        if loadingThumb || effectTrack.surfaceMotion == nil { value = value.withoutBallPrints() }
+        if summary.needsVisualPreparation && preparation.prepared == nil { value.style = .none }
+        if loadingThumb || effectTrack.surfaceMotion == nil { value.ballSkin = .original }
         return value
     }
 
@@ -314,7 +314,7 @@ struct SaveShareView: View {
             statusMessage = "Couldn’t load the video preview. \(error.localizedDescription)"; return
         }
         effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
-        if subscriptions.isPro, version == .edited, edit.usesBallMaterial {
+        if subscriptions.isPro, version == .edited, edit.ballSkin != .original {
             do {
                 effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: summary.videoURL, track: BallEffectTrack(frames: (preparation.prepared ?? summary).renderTrack))
             } catch is CancellationError { return }
@@ -354,12 +354,7 @@ struct SaveShareView: View {
         burnIn.export(source: media.url, track: media.track,
             style: edited ? edit.style : .none, intensity: edited ? edit.intensity : 0,
             skin: edited ? edit.ballSkin : .original, environment: edited ? edit.environment : .original, shortEdge: quality == .p1080 ? 1080 : 720,
-            counter: counterTimeline, overlays: allowedLook.overlays,preserveFrameTimes:edited && edit.scene != nil,
-            lookChanges: edited ? edit.lookChanges : [:], swapEffect: edited ? edit.swapEffect : .none,
-            soundtrack: ReplaySoundtrack(edit: edited ? edit : SessionEditState(style: .none, intensity: 0),
-                                         touchTimes: summary.touchesMarked.map(\.time),
-                                         milestones: allowedLook.overlays.playsMilestoneSound),
-            clipAudio: edited ? edit.clipAudio : true)
+            counter: counterTimeline, overlays: allowedLook.overlays,preserveFrameTimes:edited && edit.scene != nil)
         // Wait until burn-in finishes.
         do {
             while burnIn.isExporting {

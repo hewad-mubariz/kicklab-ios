@@ -21,16 +21,8 @@ nonisolated enum ExportOverlayRenderer {
 
     static func draw(in ctx: CGContext, size: CGSize, settings: ExportOverlaySettings,
                      time: Double, counter: ExportCounterState) {
-        if settings.timer.enabled {
-            let item = settings.timer, rect = item.placement.rect(in: size, shape: .timer)
-            let canvas = TimerOverlayAppearance.size
-            ctx.saveGState()
-            ctx.translateBy(x: rect.midX, y: rect.midY)
-            ctx.rotate(by: item.placement.radians)
-            ctx.scaleBy(x: rect.width / canvas.width, y: rect.height / canvas.height)
-            ctx.translateBy(x: -canvas.width / 2, y: -canvas.height / 2)
-            TimerOverlayAppearance.draw(item.style, in: ctx, time: time)
-            ctx.restoreGState()
+        if settings.showTimer {
+            TimerOverlayAppearance.draw(in: ctx, rect: TimerOverlayAppearance.rect(in: size), time: time)
         }
         guard settings.counter.enabled else { return }
         let item = settings.counter, rect = item.placement.rect(in: size)
@@ -39,14 +31,6 @@ nonisolated enum ExportOverlayRenderer {
         ctx.rotate(by: item.placement.radians)
         ctx.scaleBy(x: rect.width / badgeSize.width, y: rect.height / badgeSize.height)
         ctx.translateBy(x: -badgeSize.width / 2, y: -badgeSize.height / 2)
-        // A milestone bursts behind the count and pops the badge about its centre.
-        if settings.milestones, let milestone = Milestones.active(counter) {
-            MilestoneAppearance.draw(in: ctx, count: milestone.count, progress: milestone.progress)
-            let pulse = Milestones.pulse(milestone.progress)
-            ctx.translateBy(x: badgeSize.width / 2, y: badgeSize.height / 2)
-            ctx.scaleBy(x: pulse, y: pulse)
-            ctx.translateBy(x: -badgeSize.width / 2, y: -badgeSize.height / 2)
-        }
         drawBadge(in: ctx, style: item.style, time: time, counter: counter)
         ctx.restoreGState()
     }

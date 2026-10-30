@@ -165,37 +165,13 @@ nonisolated struct SessionEditState: Hashable, Sendable {
     var ballSkin: BallSkin = .original
     var environment: EffectEnvironment = .original
     var scene: SceneSelection? = nil
-    /// Runs of looks: sorted-touch position where a run starts, to the ball and effect shown from
-    /// that touch until the next run. The first run is `ballSkin` and `style`; empty keeps one look.
-    var lookChanges: [Int: TouchLook] = [:]
-    /// The recipe the runs came from, until a run is edited by hand; with its seed, for Remix.
-    var recipe: LookRecipe? = nil
-    var recipeSeed = 1
-    /// Drawn on the ball at every change, and the sound that plays with it.
-    var swapEffect: BallSwapEffect = .pop
-    /// A change sound the person picked; nil plays the change effect's own sound.
-    var swapSoundChoice: BallSwapSound? = nil
-    /// The sound heard at every change: the person's pick, else the effect's own sound.
-    var swapSound: BallSwapSound {
-        get { swapSoundChoice ?? swapEffect.defaultSound }
-        set { swapSoundChoice = newValue }
-    }
-    /// Played on every counted touch; none by default.
-    var touchSound: TouchSound = .none
-    /// The sound recorded with the video, in the replay and the saved file.
-    var clipAudio = true
     /// Every visible ball-following effect needs the completed source-pixel track.
     /// Counter/timer-only exports can use the saved touch timeline immediately.
-    var requiresVisualTrack: Bool { usesBallMaterial || usesEffects }
-    var isEdited: Bool {
-        scene != nil || environment != .original || usesBallMaterial || hasLookChanges || hasSounds || !clipAudio
-            || (style != .none && intensity > 0.02)
-    }
+    var requiresVisualTrack: Bool { ballSkin != .original || (style != .none && intensity > 0) }
+    var isEdited: Bool { scene != nil || environment != .original || ballSkin != .original || (style != .none && intensity > 0.02) }
     var label: String {
         [scene?.environment.title,
-         hasLookChanges ? "Looks on touches" : ballSkin != .original ? ballSkin.title : nil,
-         touchSound != .none ? "\(touchSound.title) touches" : nil,
-         clipAudio ? nil : "Original sound off",
+         ballSkin != .original ? ballSkin.title : nil,
          style != .none && intensity > 0.02 ? "\(style.title) · \(Int((intensity * 100).rounded()))%" : nil,
          environment != .original ? environment.title : nil]
             .compactMap { $0 }.joined(separator: " + ")

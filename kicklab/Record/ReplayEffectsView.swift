@@ -42,9 +42,7 @@ struct ReplayEffectsView: View {
     @State private var playbackTop: CGFloat = 0
     /// Ball and Effects loop the clip so every pick is seen on the moving ball.
     @State private var loopPreview = false
-    /// The sticker being moved, pinched and twisted on the video.
-    @State private var selectedSticker: ReplaySticker?
-    private enum ReplaySticker { case counter, timer }
+    @State private var counterSelected = false
     @State private var showGraph = true
     private var motionStyle: MotionStyle { displayedLook.overlays.graph.style }
     @State private var motionTimeline = MotionStyleTimeline(points: [], touchTimes: [])
@@ -71,11 +69,6 @@ struct ReplayEffectsView: View {
     @State private var surfaceMotionGeneration = UUID()
     @State private var surfaceMotionError: String?
     @StateObject private var downloader = ReplayDownloader()
-    /// Touch and ball-change cues, played as the clip passes them.
-    @StateObject private var sounds = ReplaySoundPlayer()
-    /// A short run through a ball change from the Ball page; cancelled by any other transport action.
-    @State private var momentTask: Task<Void, Never>?
-    private var sortedTouchTimes: [Double] { summary.touchesMarked.map(\.time).sorted() }
     /// Where the playhead was before a tool page moved it (Effects and Counter loop, Ball holds
     /// a mid-juggle frame); leaving those pages puts it back.
     @State private var positionBeforePreview: Double?
@@ -104,17 +97,13 @@ struct ReplayEffectsView: View {
                     VStack(spacing: 0) {
                         if showToolbox {
                             ReplayToolbox(counter: counterBinding, edit: lookBinding(\.edit),
-                                          timer: timerBinding, milestones: $overlays.milestones,
-                                          milestoneSound: $overlays.milestoneSound, showGraph: lookBinding(\.showGraph),
+                                          showTime: $overlays.showTimer, showGraph: lookBinding(\.showGraph),
                                           includeGraph: lookBinding(\.overlays.graph.enabled), motionStyle: lookBinding(\.overlays.graph.style),
                                           motionSnapshot: motionTimeline.snapshot(at: currentTime, duration: duration),
                                           sourceAspect: sourceSize.width / max(1, sourceSize.height),
                                           isPlaying: isPlaying, onTogglePlayback: togglePlay, page: $toolPage,
                                           onClose: { showToolbox = false }, showsTouchTools: showsTouchTools,
-                                          isPro: subscriptions.isPro, onUnlockTool: unlockTool,
-                                          touchTimes: showsTouchTools ? sortedTouchTimes : [], currentTime: currentTime,
-                                          onSeek: seekPaused, onPreviewMoment: previewMoment,
-                                          onPreviewSound: { sounds.preview($0) })
+                                          isPro: subscriptions.isPro, onUnlockTool: unlockTool)
                             .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
                                 // Same spring as the tray's height, so video and panel move as one.
                                 withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { panelTop = top }
@@ -151,8 +140,8 @@ struct ReplayEffectsView: View {
                             playbackBar.padding(.horizontal, 24).padding(.bottom, 14)
                                 .sessionEntrance(shown, order: 3)
                                 .transition(.sessionRise)
-                            if selectedSticker != nil {
-                                Text("Drag to move · Pinch to resize · Twist to turn")
+                            if counterSelected {
+                                Text("Drag to move · Pinch to resize")
                                     .font(.system(size: 11)).foregroundStyle(.white.opacity(0.8)).padding(.bottom, 10)
                                     .transition(.sessionRise)
                             }
@@ -191,7 +180,7 @@ struct ReplayEffectsView: View {
             if page == .ball { showBallFrame() }
             if page == nil || page == .timer || page == .graph { restorePreviewPosition() }
         }
-        .onChange(of: displayedLook.edit.usesBallMaterial) { _, _ in prepareVisualEffects() }
+        .onChange(of: displayedLook.edit.ballSkin) { _, _ in prepareVisualEffects() }
         .onChange(of: displayedLook.edit.requiresVisualTrack) { _, required in
             if required { prepareVisualEffects() }
         }
@@ -201,20 +190,17 @@ struct ReplayEffectsView: View {
             prepareVisualEffects()
         }
         .onChange(of: displayedLook.edit.scene) { _, _ in tearDownPlayer(); setUpPlayer() }
-        .onChange(of: displayedLook.edit.clipAudio) { _, on in player?.isMuted = !on }
         .onChange(of: overlays) { old, value in
             if old.graph.enabled != value.graph.enabled {
                 ProductAnalytics.shared.track(.graphToggled(value.graph.enabled))
             }
             if showsTouchTools { value.save() }
-            updateSounds()
             downloadOutdated()
         }
         .onChange(of: edit) { old, next in
             if old.style != next.style {
                 ProductAnalytics.shared.track(.effectSelected(showsTouchTools ? .juggling : .ballDistance, effect: next.style.rawValue))
             }
-            updateSounds()
             downloadOutdated()
         }
         .onChange(of: showGraph) { _, _ in downloadOutdated() }
@@ -231,10 +217,9 @@ struct ReplayEffectsView: View {
         }
         .onChange(of: subscriptions.isPro) { _, isPro in
             if !isPro {
-                pendingProTool = nil; selectedSticker = nil
+                pendingProTool = nil; counterSelected = false
                 if toolPage?.requiresPro == true { toolPage = nil }
             }
-            updateSounds()
             downloadOutdated()
         }
         .sheet(isPresented: $showsProPaywall, onDismiss: finishPaywall) {
@@ -263,7 +248,6 @@ struct ReplayEffectsView: View {
                 CaptureMotionPoint(time: $0.time, y: $0.detected ? $0.y : nil, x: $0.detected ? $0.x : nil)
             }, touchTimes: summary.touchesMarked.map(\.time))
             setUpPlayer()
-            updateSounds()
             shown = true
             if let notice, !noticeShown {
                 noticeShown = true
@@ -275,16 +259,14 @@ struct ReplayEffectsView: View {
             #if DEBUG
             FinalTestCoordinator.shared.replayClosed(summary.videoURL)
             #endif
-            momentTask?.cancel(); momentTask = nil
-            sounds.stop()
             tearDownPlayer()
         }
         .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: showToolbox)
         .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: showSharePanel)
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: toast)
-        .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: selectedSticker)
+        .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: counterSelected)
         .sensoryFeedback(.impact(weight: .light), trigger: showToolbox)
-        .sensoryFeedback(.selection, trigger: selectedSticker)
+        .sensoryFeedback(.selection, trigger: counterSelected)
     }
 
     private var topBar: some View {
@@ -304,8 +286,8 @@ struct ReplayEffectsView: View {
                     Text(status)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.white.opacity(0.8))
-                        .accessibilityIdentifier(displayedLook.edit.usesBallMaterial
-                            ? "replay-spin-status" : "replay-effects-status")
+                        .accessibilityIdentifier(displayedLook.edit.ballSkin == .original
+                            ? "replay-effects-status" : "replay-spin-status")
                         .onTapGesture { prepareVisualEffects() }
                 }
             }
@@ -333,11 +315,11 @@ struct ReplayEffectsView: View {
             return
         case .saved where !downloader.isStale(edit: committedLook.edit, overlays: resolvedOverlays(committedLook)):
             // Already in Photos: the check reopens the share panel.
-            showToolbox = false; selectedSticker = nil
+            showToolbox = false; counterSelected = false
             showSharePanel = true
         default:
             pause()
-            showToolbox = false; selectedSticker = nil; showSharePanel = false; toast = nil
+            showToolbox = false; counterSelected = false; showSharePanel = false; toast = nil
             Task {
                 await downloader.download(summary: summary, edit: exportLook.edit, overlays: exportOverlays,
                                           sceneModel: stadiumPreview, preparation: preparation,
@@ -423,37 +405,19 @@ struct ReplayEffectsView: View {
                             snapshot: motionTimeline.snapshot(at: currentTime, duration: duration), size: size)
                             .allowsHitTesting(false)
                     }
-                    // The timer is a sticker like the counter: tap it to move, pinch and twist it.
-                    if effectiveOverlays.timer.enabled {
-                        let rect = overlays.timer.placement.rect(in: size, shape: .timer)
-                        if selectedSticker == .timer {
-                            CounterStickerInteraction(placement: $overlays.timer.placement, shape: .timer)
-                            CounterSelectionFrame(placement: $overlays.timer.placement, size: size, shape: .timer, name: "timer") {
-                                overlays.timer.enabled = false; selectedSticker = nil
-                            }
-                            .transition(.sessionPop(from: UnitPoint(x: rect.midX / max(1, size.width),
-                                                                    y: rect.midY / max(1, size.height)), scale: 1.3))
-                        } else {
-                            Button { pause(); showToolbox = false; selectedSticker = .timer } label: {
-                                Color.clear.frame(width: rect.width, height: rect.height).contentShape(Rectangle())
-                            }.buttonStyle(.plain).rotationEffect(.radians(overlays.timer.placement.radians))
-                                .position(x: rect.midX, y: rect.midY)
-                                .accessibilityLabel("Adjust timer").accessibilityIdentifier("replay-select-timer")
-                        }
-                    }
                     if showsTouchTools && effectiveOverlays.counter.enabled {
-                        if selectedSticker == .counter {
+                        if counterSelected {
                             let rect = overlays.counter.placement.rect(in: size)
                             CounterStickerInteraction(placement: $overlays.counter.placement)
                             // Handles snap inward onto the sticker, like a focus ring landing.
                             CounterSelectionFrame(placement: $overlays.counter.placement, size: size) {
-                                overlays.counter.enabled = false; selectedSticker = nil
+                                overlays.counter.enabled = false; counterSelected = false
                             }
                             .transition(.sessionPop(from: UnitPoint(x: rect.midX / max(1, size.width),
                                                                     y: rect.midY / max(1, size.height)), scale: 1.3))
                         } else {
                             let rect = overlays.counter.placement.rect(in: size)
-                            Button { pause(); showToolbox = false; selectedSticker = .counter } label: {
+                            Button { pause(); showToolbox = false; counterSelected = true } label: {
                                 Color.clear.frame(width: rect.width, height: rect.height).contentShape(Rectangle())
                             }.buttonStyle(.plain).rotationEffect(.radians(overlays.counter.placement.radians))
                                 .position(x: rect.midX, y: rect.midY)
@@ -481,7 +445,6 @@ struct ReplayEffectsView: View {
         VStack(spacing: 0) {
             Slider(value: Binding(get: { currentTime }, set: { value in
                 currentTime = value
-                sounds.seek(to: value)
                 player?.seek(to: CMTime(seconds: value, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
             }), in: 0...max(0.1, duration)) { editing in
                 isScrubbing = editing
@@ -498,34 +461,26 @@ struct ReplayEffectsView: View {
 
     private var bottomControls: some View {
         HStack(spacing: 18) {
-            roundButton(selectedSticker != nil ? "arrow.uturn.backward" : isPlaying ? "pause.fill" : "play.fill",
-                        label: selectedSticker == .timer ? "Reset timer position"
-                            : selectedSticker == .counter ? "Reset counter position" : isPlaying ? "Pause video" : "Play video") {
-                switch selectedSticker {
-                case .counter:
+            roundButton(counterSelected ? "arrow.uturn.backward" : isPlaying ? "pause.fill" : "play.fill",
+                        label: counterSelected ? "Reset counter position" : isPlaying ? "Pause video" : "Play video") {
+                if counterSelected {
                     withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
                         overlays.counter.placement = .init(x: 0.04, y: 0.08, scale: 0.65)
                     }
-                case .timer:
-                    withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
-                        overlays.timer.placement = TimerOverlayItem.defaultPlacement
-                    }
-                case nil: togglePlay()
                 }
+                else { togglePlay() }
             }.accessibilityIdentifier("replay-play")
             Spacer(minLength: 0)
             Button {
                 pause()
-                // The pill morphs into the tray, opened straight on the selected sticker's styles.
-                if let sticker = selectedSticker {
-                    selectedSticker = nil; toolPage = sticker == .timer ? .timer : .counter; showToolbox = true
-                } else { showToolbox.toggle() }
+                // The pill morphs into the tray, opened straight on the counter styles.
+                if counterSelected { counterSelected = false; toolPage = .counter; showToolbox = true }
+                else { showToolbox.toggle() }
             } label: {
                 Label {
-                    Text(selectedSticker == .timer ? "Timer style" : selectedSticker == .counter ? "Counter style" : "Customize")
-                        .contentTransition(.interpolate)
+                    Text(counterSelected ? "Counter style" : "Customize").contentTransition(.interpolate)
                 } icon: {
-                    Image(systemName: selectedSticker == .timer ? "timer" : selectedSticker == .counter ? "textformat.123" : "wand.and.stars")
+                    Image(systemName: counterSelected ? "textformat.123" : "wand.and.stars")
                         .contentTransition(.symbolEffect(.replace))
                 }
                 .font(.system(size: 14, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
@@ -537,10 +492,9 @@ struct ReplayEffectsView: View {
             .glassEffectID("customize", in: glass)
             .accessibilityIdentifier("replay-customize")
             Spacer(minLength: 0)
-            roundButton(selectedSticker != nil ? "checkmark" : "arrow.uturn.backward",
-                        label: selectedSticker == .timer ? "Done adjusting timer"
-                            : selectedSticker == .counter ? "Done adjusting counter" : "Reset edits") {
-                if selectedSticker != nil { selectedSticker = nil }
+            roundButton(counterSelected ? "checkmark" : "arrow.uturn.backward",
+                        label: counterSelected ? "Done adjusting counter" : "Reset edits") {
+                if counterSelected { counterSelected = false }
                 else {
                     withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
                         if let originalEdit { edit = originalEdit }
@@ -549,7 +503,7 @@ struct ReplayEffectsView: View {
                         overlays.graph.style = .ballMotion
                     }
                 }
-            }.tint(selectedSticker != nil ? SessionStyle.mint : .white)
+            }.tint(counterSelected ? SessionStyle.mint : .white)
                 .accessibilityIdentifier("replay-reset")
         }.frame(maxWidth: 420).frame(maxWidth: .infinity)
     }
@@ -564,51 +518,12 @@ struct ReplayEffectsView: View {
 
     private func pause() { player?.pause(); isPlaying = false }
 
-    private func updateSounds() {
-        sounds.update(ReplaySoundtrack(edit: displayedLook.edit, touchTimes: showsTouchTools ? sortedTouchTimes : [],
-                                       milestones: showsTouchTools && effectiveOverlays.playsMilestoneSound))
-    }
-
-    /// Holds the clip at `time`, paused, so a per-touch pick is seen on that frame.
-    private func seekPaused(to time: Double) {
-        momentTask?.cancel(); momentTask = nil
-        pause()
-        let clamped = min(max(0, time), duration)
-        if positionBeforePreview == nil { positionBeforePreview = currentTime }
-        currentTime = clamped
-        sounds.seek(to: clamped)
-        player?.seek(to: CMTime(seconds: clamped, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
-    }
-
-    /// Plays a short run through a ball change, then holds just after it.
-    private func previewMoment(at time: Double) {
-        guard let player else { return }
-        momentTask?.cancel()
-        let start = min(max(0, time - 0.1), duration), end = min(duration, time + 0.8)
-        if positionBeforePreview == nil { positionBeforePreview = currentTime }
-        currentTime = start
-        sounds.seek(to: start)
-        isPlaying = true
-        restarting = true
-        player.seek(to: CMTime(seconds: start, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero) { _ in
-            Task { @MainActor in
-                restarting = false
-                if isPlaying { player.play() }
-            }
-        }
-        momentTask = Task {
-            try? await Task.sleep(for: .seconds(max(0.2, end - start)))
-            guard !Task.isCancelled else { return }
-            pause()
-        }
-    }
-
     private func startPreviewLoop() {
         guard !loopPreview else { return }
         loopPreview = true
         guard let player, !isPlaying else { return }
         if positionBeforePreview == nil { positionBeforePreview = currentTime }
-        if currentTime >= duration - 0.05 { player.seek(to: .zero); currentTime = 0; sounds.seek(to: 0) }
+        if currentTime >= duration - 0.05 { player.seek(to: .zero); currentTime = 0 }
         player.play(); isPlaying = true
     }
 
@@ -617,7 +532,6 @@ struct ReplayEffectsView: View {
         guard let player, currentTime >= duration - 0.1 else { return }
         if positionBeforePreview == nil { positionBeforePreview = currentTime }
         currentTime = duration * 0.4
-        sounds.seek(to: currentTime)
         player.seek(to: CMTime(seconds: currentTime, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
@@ -631,7 +545,6 @@ struct ReplayEffectsView: View {
         guard let position = positionBeforePreview, let player, !isPlaying else { return }
         positionBeforePreview = nil
         currentTime = position
-        sounds.seek(to: position)
         player.seek(to: CMTime(seconds: position, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
@@ -679,7 +592,7 @@ struct ReplayEffectsView: View {
                         duration: try await asset.load(.duration), shortEdge: 1080)
                 }
                 let p = AVPlayer(playerItem: item)
-                p.isMuted = !displayedLook.edit.clipAudio
+                p.isMuted = false
                 player = p
                 currentTime = max(0, duration - 1.0 / 30)
                 #if DEBUG && TOUCH_COUNTING_DEBUG
@@ -708,7 +621,6 @@ struct ReplayEffectsView: View {
                     guard !isScrubbing, !restarting else { return }
                     let seconds = CMTimeGetSeconds(time)
                     if seconds.isFinite { currentTime = max(0, seconds) }
-                    MainActor.assumeIsolated { sounds.advance(to: currentTime, playing: isPlaying) }
                     if currentTime >= duration - 0.03 {
                         if loopPreview { p.seek(to: .zero); p.play() } else { isPlaying = false }
                     }
@@ -729,7 +641,7 @@ struct ReplayEffectsView: View {
             if preparation.error != nil || surfaceMotionError != nil { return String(localized: "Effects unavailable — tap to retry") }
             return String(localized: "Preparing effects · \(Int(preparation.progress * 100))%")
         }
-        guard displayedLook.edit.usesBallMaterial else { return String(localized: "Effects ready") }
+        guard displayedLook.edit.ballSkin != .original else { return String(localized: "Effects ready") }
         if surfaceMotionError != nil { return String(localized: "Ball effects unavailable — tap to retry") }
         if surfaceMotionTask != nil { return String(localized: "Preparing source spin…") }
         return effectTrack.surfaceMotion?.status(at: currentTime).label ?? String(localized: "Spin uncertain")
@@ -742,9 +654,8 @@ struct ReplayEffectsView: View {
         if summary.needsVisualPreparation && preparation.prepared == nil {
             value.style = .none
             value.ballSkin = .original
-            value.lookChanges = [:]
         }
-        if effectTrack.surfaceMotion == nil { value = value.withoutBallPrints() }
+        if effectTrack.surfaceMotion == nil { value.ballSkin = .original }
         return value
     }
 
@@ -755,14 +666,6 @@ struct ReplayEffectsView: View {
         if !showsTouchTools { value.counter.enabled = false }
         value.graph.enabled = value.graph.enabled && showsTouchTools && look.showGraph
         return value
-    }
-
-    /// Timer looks past the free Pill ask for Pro; placement and show/hide stay free.
-    private var timerBinding: Binding<TimerOverlayItem> {
-        Binding(get: { displayedLook.overlays.timer }, set: { item in
-            guard subscriptions.isPro || !item.style.requiresPro else { unlockTool(.timer); return }
-            overlays.timer = item
-        })
     }
 
     private var counterBinding: Binding<ExportOverlayItem> {
@@ -802,7 +705,7 @@ struct ReplayEffectsView: View {
     private func prepareVisualEffects() {
         let needsTrack = displayedLook.edit.requiresVisualTrack
             && summary.needsVisualPreparation && preparation.prepared == nil
-        let needsSpin = displayedLook.edit.usesBallMaterial && effectTrack.surfaceMotion == nil
+        let needsSpin = displayedLook.edit.ballSkin != .original && effectTrack.surfaceMotion == nil
         guard needsTrack || needsSpin, let url = motionSource, surfaceMotionTask == nil else { return }
         let token = UUID(); surfaceMotionGeneration = token; surfaceMotionError = nil
         surfaceMotionTask = Task {
@@ -814,7 +717,7 @@ struct ReplayEffectsView: View {
                 if displayedLook.edit.scene == nil {
                     effectTrack = BallEffectTrack(frames: ready.renderTrack, touchTimes: ready.touchesMarked.map(\.time))
                 }
-                if displayedLook.edit.usesBallMaterial {
+                if displayedLook.edit.ballSkin != .original {
                     let motion = try await BallSurfaceTimeline.prepare(source: url, track: BallEffectTrack(frames: ready.renderTrack))
                     try Task.checkCancellation()
                     guard motionSource == url, surfaceMotionGeneration == token else { return }
@@ -844,7 +747,6 @@ struct ReplayEffectsView: View {
 
     private func togglePlay() {
         guard let player else { return }
-        momentTask?.cancel(); momentTask = nil
         if isPlaying {
             player.pause()
             isPlaying = false
@@ -852,7 +754,6 @@ struct ReplayEffectsView: View {
             // From the end: rewind first and only then play, or a stale end-time report stops it again.
             isPlaying = true
             currentTime = 0
-            sounds.seek(to: 0)
             restarting = true
             player.seek(to: .zero, toleranceBefore: .zero, toleranceAfter: .zero) { _ in
                 Task { @MainActor in

@@ -8,14 +8,11 @@ struct ExportOverlayLayer: View {
     let size: CGSize
 
     var body: some View {
-        if settings.timer.enabled, let timer = TimerOverlayAppearance.image(style: settings.timer.style, time: time) {
-            let rect = settings.timer.placement.rect(in: size, shape: .timer)
+        if settings.showTimer, let timer = TimerOverlayAppearance.image(time: time) {
+            let rect = TimerOverlayAppearance.rect(in: size)
             Image(decorative: timer, scale: 1).resizable()
                 .frame(width: rect.width, height: rect.height)
-                .rotationEffect(.radians(settings.timer.placement.radians))
                 .position(x: rect.midX, y: rect.midY)
-                .transition(.sessionPop(from: UnitPoint(x: rect.midX / max(1, size.width),
-                                                        y: rect.midY / max(1, size.height)), scale: 0.4))
                 .allowsHitTesting(false)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Elapsed time").accessibilityValue(ExportPreviewTime.label(at: time))
@@ -25,17 +22,8 @@ struct ExportOverlayLayer: View {
            let badge = ExportOverlayRenderer.image(style: settings.counter.style,
                 time: time, counter: timeline.state(at: time)) {
             let rect = settings.counter.placement.rect(in: size)
-            let milestone = settings.milestones ? Milestones.active(timeline.state(at: time)) : nil
-            if let milestone, let burst = MilestoneAppearance.image(count: milestone.count, progress: milestone.progress) {
-                Image(decorative: burst, scale: 1).resizable()
-                    .frame(width: rect.width * 2, height: rect.height * 2)
-                    .rotationEffect(.radians(settings.counter.placement.radians))
-                    .position(x: rect.midX, y: rect.midY)
-                    .allowsHitTesting(false).accessibilityHidden(true)
-            }
             Image(decorative: badge, scale: 1).resizable()
                 .frame(width: rect.width, height: rect.height)
-                .scaleEffect(milestone.map { Milestones.pulse($0.progress) } ?? 1)
                 .rotationEffect(.radians(settings.counter.placement.radians))
                 .position(x: rect.midX, y: rect.midY)
                 // Pops in and out around the sticker's own center, not the canvas center.
@@ -186,7 +174,7 @@ struct ExportOverlayEditor: View {
             let media = try await sceneModel.media(summary: ready, selection: edit.scene)
             let url = media.url
             effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
-            if edit.usesBallMaterial {
+            if edit.ballSkin != .original {
                 effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: ready.videoURL, track: BallEffectTrack(frames: ready.renderTrack))
             }
             try Task.checkCancellation()
