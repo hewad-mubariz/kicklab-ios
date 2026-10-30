@@ -42,7 +42,9 @@ struct ReplayEffectsView: View {
     @State private var playbackTop: CGFloat = 0
     /// Ball and Effects loop the clip so every pick is seen on the moving ball.
     @State private var loopPreview = false
-    @State private var counterSelected = false
+    /// The sticker being moved, pinched and twisted on the video.
+    @State private var selectedSticker: ReplaySticker?
+    private enum ReplaySticker { case counter, timer }
     @State private var showGraph = true
     private var motionStyle: MotionStyle { displayedLook.overlays.graph.style }
     @State private var motionTimeline = MotionStyleTimeline(points: [], touchTimes: [])
@@ -102,7 +104,7 @@ struct ReplayEffectsView: View {
                     VStack(spacing: 0) {
                         if showToolbox {
                             ReplayToolbox(counter: counterBinding, edit: lookBinding(\.edit),
-                                          showTime: $overlays.showTimer, showGraph: lookBinding(\.showGraph),
+                                          timer: timerBinding, showGraph: lookBinding(\.showGraph),
                                           includeGraph: lookBinding(\.overlays.graph.enabled), motionStyle: lookBinding(\.overlays.graph.style),
                                           motionSnapshot: motionTimeline.snapshot(at: currentTime, duration: duration),
                                           sourceAspect: sourceSize.width / max(1, sourceSize.height),
@@ -148,8 +150,8 @@ struct ReplayEffectsView: View {
                             playbackBar.padding(.horizontal, 24).padding(.bottom, 14)
                                 .sessionEntrance(shown, order: 3)
                                 .transition(.sessionRise)
-                            if counterSelected {
-                                Text("Drag to move · Pinch to resize")
+                            if selectedSticker != nil {
+                                Text("Drag to move · Pinch to resize · Twist to turn")
                                     .font(.system(size: 11)).foregroundStyle(.white.opacity(0.8)).padding(.bottom, 10)
                                     .transition(.sessionRise)
                             }
@@ -227,7 +229,7 @@ struct ReplayEffectsView: View {
         }
         .onChange(of: subscriptions.isPro) { _, isPro in
             if !isPro {
-                pendingProTool = nil; counterSelected = false
+                pendingProTool = nil; selectedSticker = nil
                 if toolPage?.requiresPro == true { toolPage = nil }
             }
             updateSounds()
@@ -278,9 +280,9 @@ struct ReplayEffectsView: View {
         .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: showToolbox)
         .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: showSharePanel)
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: toast)
-        .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: counterSelected)
+        .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: selectedSticker)
         .sensoryFeedback(.impact(weight: .light), trigger: showToolbox)
-        .sensoryFeedback(.selection, trigger: counterSelected)
+        .sensoryFeedback(.selection, trigger: selectedSticker)
     }
 
     private var topBar: some View {
@@ -329,11 +331,11 @@ struct ReplayEffectsView: View {
             return
         case .saved where !downloader.isStale(edit: committedLook.edit, overlays: resolvedOverlays(committedLook)):
             // Already in Photos: the check reopens the share panel.
-            showToolbox = false; counterSelected = false
+            showToolbox = false; selectedSticker = nil
             showSharePanel = true
         default:
             pause()
-            showToolbox = false; counterSelected = false; showSharePanel = false; toast = nil
+            showToolbox = false; selectedSticker = nil; showSharePanel = false; toast = nil
             Task {
                 await downloader.download(summary: summary, edit: exportLook.edit, overlays: exportOverlays,
                                           sceneModel: stadiumPreview, preparation: preparation,
@@ -419,19 +421,37 @@ struct ReplayEffectsView: View {
                             snapshot: motionTimeline.snapshot(at: currentTime, duration: duration), size: size)
                             .allowsHitTesting(false)
                     }
+                    // The timer is a sticker like the counter: tap it to move, pinch and twist it.
+                    if effectiveOverlays.timer.enabled {
+                        let rect = overlays.timer.placement.rect(in: size, shape: .timer)
+                        if selectedSticker == .timer {
+                            CounterStickerInteraction(placement: $overlays.timer.placement, shape: .timer)
+                            CounterSelectionFrame(placement: $overlays.timer.placement, size: size, shape: .timer, name: "timer") {
+                                overlays.timer.enabled = false; selectedSticker = nil
+                            }
+                            .transition(.sessionPop(from: UnitPoint(x: rect.midX / max(1, size.width),
+                                                                    y: rect.midY / max(1, size.height)), scale: 1.3))
+                        } else {
+                            Button { pause(); showToolbox = false; selectedSticker = .timer } label: {
+                                Color.clear.frame(width: rect.width, height: rect.height).contentShape(Rectangle())
+                            }.buttonStyle(.plain).rotationEffect(.radians(overlays.timer.placement.radians))
+                                .position(x: rect.midX, y: rect.midY)
+                                .accessibilityLabel("Adjust timer").accessibilityIdentifier("replay-select-timer")
+                        }
+                    }
                     if showsTouchTools && effectiveOverlays.counter.enabled {
-                        if counterSelected {
+                        if selectedSticker == .counter {
                             let rect = overlays.counter.placement.rect(in: size)
                             CounterStickerInteraction(placement: $overlays.counter.placement)
                             // Handles snap inward onto the sticker, like a focus ring landing.
                             CounterSelectionFrame(placement: $overlays.counter.placement, size: size) {
-                                overlays.counter.enabled = false; counterSelected = false
+                                overlays.counter.enabled = false; selectedSticker = nil
                             }
                             .transition(.sessionPop(from: UnitPoint(x: rect.midX / max(1, size.width),
                                                                     y: rect.midY / max(1, size.height)), scale: 1.3))
                         } else {
                             let rect = overlays.counter.placement.rect(in: size)
-                            Button { pause(); showToolbox = false; counterSelected = true } label: {
+                            Button { pause(); showToolbox = false; selectedSticker = .counter } label: {
                                 Color.clear.frame(width: rect.width, height: rect.height).contentShape(Rectangle())
                             }.buttonStyle(.plain).rotationEffect(.radians(overlays.counter.placement.radians))
                                 .position(x: rect.midX, y: rect.midY)
@@ -476,26 +496,34 @@ struct ReplayEffectsView: View {
 
     private var bottomControls: some View {
         HStack(spacing: 18) {
-            roundButton(counterSelected ? "arrow.uturn.backward" : isPlaying ? "pause.fill" : "play.fill",
-                        label: counterSelected ? "Reset counter position" : isPlaying ? "Pause video" : "Play video") {
-                if counterSelected {
+            roundButton(selectedSticker != nil ? "arrow.uturn.backward" : isPlaying ? "pause.fill" : "play.fill",
+                        label: selectedSticker == .timer ? "Reset timer position"
+                            : selectedSticker == .counter ? "Reset counter position" : isPlaying ? "Pause video" : "Play video") {
+                switch selectedSticker {
+                case .counter:
                     withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
                         overlays.counter.placement = .init(x: 0.04, y: 0.08, scale: 0.65)
                     }
+                case .timer:
+                    withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
+                        overlays.timer.placement = TimerOverlayItem.defaultPlacement
+                    }
+                case nil: togglePlay()
                 }
-                else { togglePlay() }
             }.accessibilityIdentifier("replay-play")
             Spacer(minLength: 0)
             Button {
                 pause()
-                // The pill morphs into the tray, opened straight on the counter styles.
-                if counterSelected { counterSelected = false; toolPage = .counter; showToolbox = true }
-                else { showToolbox.toggle() }
+                // The pill morphs into the tray, opened straight on the selected sticker's styles.
+                if let sticker = selectedSticker {
+                    selectedSticker = nil; toolPage = sticker == .timer ? .timer : .counter; showToolbox = true
+                } else { showToolbox.toggle() }
             } label: {
                 Label {
-                    Text(counterSelected ? "Counter style" : "Customize").contentTransition(.interpolate)
+                    Text(selectedSticker == .timer ? "Timer style" : selectedSticker == .counter ? "Counter style" : "Customize")
+                        .contentTransition(.interpolate)
                 } icon: {
-                    Image(systemName: counterSelected ? "textformat.123" : "wand.and.stars")
+                    Image(systemName: selectedSticker == .timer ? "timer" : selectedSticker == .counter ? "textformat.123" : "wand.and.stars")
                         .contentTransition(.symbolEffect(.replace))
                 }
                 .font(.system(size: 14, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
@@ -507,9 +535,10 @@ struct ReplayEffectsView: View {
             .glassEffectID("customize", in: glass)
             .accessibilityIdentifier("replay-customize")
             Spacer(minLength: 0)
-            roundButton(counterSelected ? "checkmark" : "arrow.uturn.backward",
-                        label: counterSelected ? "Done adjusting counter" : "Reset edits") {
-                if counterSelected { counterSelected = false }
+            roundButton(selectedSticker != nil ? "checkmark" : "arrow.uturn.backward",
+                        label: selectedSticker == .timer ? "Done adjusting timer"
+                            : selectedSticker == .counter ? "Done adjusting counter" : "Reset edits") {
+                if selectedSticker != nil { selectedSticker = nil }
                 else {
                     withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
                         if let originalEdit { edit = originalEdit }
@@ -518,7 +547,7 @@ struct ReplayEffectsView: View {
                         overlays.graph.style = .ballMotion
                     }
                 }
-            }.tint(counterSelected ? SessionStyle.mint : .white)
+            }.tint(selectedSticker != nil ? SessionStyle.mint : .white)
                 .accessibilityIdentifier("replay-reset")
         }.frame(maxWidth: 420).frame(maxWidth: .infinity)
     }
@@ -722,6 +751,14 @@ struct ReplayEffectsView: View {
         if !showsTouchTools { value.counter.enabled = false }
         value.graph.enabled = value.graph.enabled && showsTouchTools && look.showGraph
         return value
+    }
+
+    /// Timer looks past the free Pill ask for Pro; placement and show/hide stay free.
+    private var timerBinding: Binding<TimerOverlayItem> {
+        Binding(get: { displayedLook.overlays.timer }, set: { item in
+            guard subscriptions.isPro || !item.style.requiresPro else { unlockTool(.timer); return }
+            overlays.timer = item
+        })
     }
 
     private var counterBinding: Binding<ExportOverlayItem> {

@@ -8,11 +8,14 @@ struct ExportOverlayLayer: View {
     let size: CGSize
 
     var body: some View {
-        if settings.showTimer, let timer = TimerOverlayAppearance.image(time: time) {
-            let rect = TimerOverlayAppearance.rect(in: size)
+        if settings.timer.enabled, let timer = TimerOverlayAppearance.image(style: settings.timer.style, time: time) {
+            let rect = settings.timer.placement.rect(in: size, shape: .timer)
             Image(decorative: timer, scale: 1).resizable()
                 .frame(width: rect.width, height: rect.height)
+                .rotationEffect(.radians(settings.timer.placement.radians))
                 .position(x: rect.midX, y: rect.midY)
+                .transition(.sessionPop(from: UnitPoint(x: rect.midX / max(1, size.width),
+                                                        y: rect.midY / max(1, size.height)), scale: 0.4))
                 .allowsHitTesting(false)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Elapsed time").accessibilityValue(ExportPreviewTime.label(at: time))
