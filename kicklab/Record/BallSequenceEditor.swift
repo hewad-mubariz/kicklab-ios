@@ -90,14 +90,15 @@ struct ToolSwitchRow: View {
 // MARK: - Touch dial
 
 /// Every counted touch on a dial. Swiping snaps touch to touch under the lens, holds the clip on
-/// each one and ticks a haptic; the coloured run under the balls shows which ball plays across
-/// which touches, broken with a white dot wherever the ball changes.
+/// each one and ticks a haptic. Each touch shows its ball with a badge for its effect; the bar
+/// under them is the runs of looks, each in its effect's colour and broken with a white dot where
+/// a new run starts. The run under the lens is lit, because edits apply to all of it.
 struct TouchDial: View {
     let touchTimes: [Double]
     let edit: SessionEditState
     @Binding var selected: Int
-    /// A ball picked for a touch that has not landed on the clip yet; the dial shows it at once.
-    var pending: (touch: Int, skin: BallSkin)? = nil
+    /// A ball picked for the selected run that has not landed on the clip yet; the dial shows it at once.
+    var pending: (run: Range<Int>, ball: BallSkin)? = nil
     let onSettle: (Int) -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var position: Int?
@@ -106,25 +107,31 @@ struct TouchDial: View {
     private static let lens: CGFloat = 46
 
     init(touchTimes: [Double], edit: SessionEditState, selected: Binding<Int>,
-         pending: (touch: Int, skin: BallSkin)? = nil, onSettle: @escaping (Int) -> Void) {
+         pending: (run: Range<Int>, ball: BallSkin)? = nil, onSettle: @escaping (Int) -> Void) {
         self.touchTimes = touchTimes; self.edit = edit; _selected = selected
         self.pending = pending; self.onSettle = onSettle
         _position = State(initialValue: selected.wrappedValue)
     }
 
-    private func ball(_ index: Int) -> BallSkin {
-        if let pending, pending.touch == index { return pending.skin }
-        return edit.ballSkin(forTouch: index)
+    private func look(_ index: Int) -> TouchLook {
+        var look = edit.look(forTouch: index)
+        if let pending, pending.run.contains(index) { look.ball = pending.ball }
+        return look
     }
 
     var body: some View {
+        let selectedRun = edit.run(containing: selected, touchCount: touchTimes.count)
         GeometryReader { geometry in
             let width = geometry.size.width
+            // The lens's centre on screen. Distances are measured in screen space, because the
+            // scroll view's own space leaves out the content margin that centres the first touch.
+            let lensX = geometry.frame(in: .global).midX
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 0) {
                         ForEach(touchTimes.indices, id: \.self) { index in
-                            item(index, width: width).frame(width: Self.itemWidth).id(index)
+                            item(index, width: width, lensX: lensX, inSelectedRun: selectedRun.contains(index))
+                                .frame(width: Self.itemWidth).id(index)
                         }
                     }
                     .scrollTargetLayout()
@@ -141,7 +148,7 @@ struct TouchDial: View {
                                  startPoint: .leading, endPoint: .trailing))
             .overlay(alignment: .top) { lens }
         }
-        .frame(height: 78)
+        .frame(height: 80)
         .onChange(of: position) { _, value in
             guard let value, value != selected else { return }
             selected = value
@@ -170,62 +177,82 @@ struct TouchDial: View {
         .accessibilityHidden(true)
     }
 
-    private func item(_ index: Int, width: CGFloat) -> some View {
-        let skin = ball(index)
-        let previous = index == 0 ? edit.ballSkin : ball(index - 1)
-        let next = index + 1 < touchTimes.count ? ball(index + 1) : nil
-        let startsRun = index == 0 || previous != skin
-        let endsRun = next != skin
+    static func color(for look: TouchLook) -> Color {
+        if look.effect != .none { return look.effect.tint }
+        let accent = look.ball.accent
+        return Color(red: accent.x, green: accent.y, blue: accent.z).opacity(look.ball == .original ? 0.35 : 1)
+    }
+
+    private func item(_ index: Int, width: CGFloat, lensX: CGFloat, inSelectedRun: Bool) -> some View {
+        let look = look(index)
+        let startsRun = index == 0 || edit.lookChanges[index] != nil
+        let endsRun = index + 1 >= touchTimes.count || edit.lookChanges[index + 1] != nil
         let isSelected = index == selected
+        // Changes ripple outward from the lens, so a recipe reads as one wave.
+        let ripple = reduceMotion ? 0 : min(0.3, Double(abs(index - selected)) * 0.035)
         return Button {
             withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) { position = index }
         } label: {
             VStack(spacing: 5) {
                 ZStack {
-                    BallThumbnail(skin: skin, size: 34)
-                        .id(skin)
+                    BallThumbnail(skin: look.ball, size: 34)
+                        .id(look.ball)
                         .transition(.sessionPop(scale: 0.35))
-                    // A ring bursts off the ball whenever its print changes.
-                    Circle().strokeBorder(SessionStyle.mint, lineWidth: 1.5)
-                        .keyframeAnimator(initialValue: 0.0, trigger: reduceMotion ? .original : skin) { ring, wave in
+                    // A ring bursts off the ball whenever its look changes.
+                    Circle().strokeBorder(Self.color(for: look), lineWidth: 1.5)
+                        .keyframeAnimator(initialValue: 0.0, trigger: reduceMotion ? TouchLook(ball: .original, effect: .none) : look) { ring, wave in
                             ring.scaleEffect(1 + 0.7 * wave).opacity(wave > 0 && wave < 1 ? 1 - wave : 0)
                         } keyframes: { _ in
+                            // Hidden while it waits for the ripple to reach it, then it bursts.
+                            LinearKeyframe(0, duration: ripple)
                             LinearKeyframe(0.01, duration: 0.01)
                             CubicKeyframe(1, duration: 0.45)
                         }
                         .frame(width: 34, height: 34)
+                    if look.effect != .none {
+                        Image(systemName: look.effect.symbol)
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundStyle(look.effect.tint)
+                            .frame(width: 15, height: 15)
+                            .background(.black.opacity(0.8), in: .circle)
+                            .overlay { Circle().strokeBorder(look.effect.tint.opacity(0.6), lineWidth: 0.75) }
+                            .offset(x: 14, y: 13)
+                            .id(look.effect)
+                            .transition(.sessionPop(scale: 0.2))
+                    }
                 }
                 .frame(width: Self.lens, height: Self.lens)
                 // Size and brightness fall away from the lens, read from the live scroll position.
                 .visualEffect { content, proxy in
-                    let frame = proxy.frame(in: .scrollView(axis: .horizontal))
-                    let distance = min(1, abs(frame.midX - width / 2) / max(1, width / 2))
+                    let distance = min(1, abs(proxy.frame(in: .global).midX - lensX) / max(1, width / 2))
                     return content.scaleEffect(1 - 0.34 * distance).opacity(1 - 0.5 * distance)
                 }
-                run(skin: skin, startsRun: startsRun, endsRun: endsRun, changes: startsRun && index > 0)
+                run(look: look, startsRun: startsRun, endsRun: endsRun, changes: startsRun && index > 0, lit: inSelectedRun)
                 Text("\(index + 1)")
                     .font(.system(size: 10, weight: isSelected ? .bold : .medium)).monospacedDigit()
-                    .foregroundStyle(isSelected ? SessionStyle.mint : .white.opacity(0.55))
+                    .foregroundStyle(isSelected ? SessionStyle.mint : .white.opacity(inSelectedRun ? 0.8 : 0.45))
             }
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: skin)
+        .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion).delay(ripple), value: look)
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: isSelected)
-        .accessibilityLabel("Touch \(index + 1), \(skin == .original ? "original ball" : skin.title)")
+        .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: inSelectedRun)
+        .accessibilityLabel("Touch \(index + 1), \(look.ball == .original ? "original ball" : look.ball.title), \(look.effect == .none ? "no effect" : look.effect.title)")
         .accessibilityIdentifier("ball-touch-\(index + 1)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    /// One segment of the ball run; neighbouring items join into a continuous bar.
-    private func run(skin: BallSkin, startsRun: Bool, endsRun: Bool, changes: Bool) -> some View {
-        let accent = skin.accent
-        let color = Color(red: accent.x, green: accent.y, blue: accent.z)
-        return UnevenRoundedRectangle(topLeadingRadius: startsRun ? 2 : 0, bottomLeadingRadius: startsRun ? 2 : 0,
-                                      bottomTrailingRadius: endsRun ? 2 : 0, topTrailingRadius: endsRun ? 2 : 0)
-            .fill(color.opacity(skin == .original ? 0.3 : 0.9))
-            .frame(height: 4)
+    /// One segment of a run; neighbouring items join into a continuous bar. The lit run is thicker.
+    private func run(look: TouchLook, startsRun: Bool, endsRun: Bool, changes: Bool, lit: Bool) -> some View {
+        let color = Self.color(for: look)
+        return UnevenRoundedRectangle(topLeadingRadius: startsRun ? 2.5 : 0, bottomLeadingRadius: startsRun ? 2.5 : 0,
+                                      bottomTrailingRadius: endsRun ? 2.5 : 0, topTrailingRadius: endsRun ? 2.5 : 0)
+            .fill(color.opacity(lit ? 1 : 0.45))
+            .frame(height: lit ? 5 : 3.5)
+            .shadow(color: lit ? color.opacity(0.6) : .clear, radius: 4)
             .padding(.leading, startsRun ? 3 : 0).padding(.trailing, endsRun ? 3 : 0)
+            .frame(height: 6)
             .overlay(alignment: .leading) {
                 if changes {
                     Circle().fill(.white).frame(width: 6, height: 6)
@@ -536,14 +563,14 @@ struct ReplaySoundPage: View {
                     }
                 }
             }
-            if edit.hasBallChanges && edit.swapSoundChoice == nil && edit.swapEffect != .none {
+            if edit.hasLookChanges && edit.swapSoundChoice == nil && edit.swapEffect != .none {
                 note("Auto plays \(edit.swapSound.title) with \(edit.swapEffect.title). Pick a sound to use your own.")
                     .accessibilityIdentifier("sound-auto-note")
             }
-            if !edit.hasBallChanges {
+            if !edit.hasLookChanges {
                 HStack(spacing: 8) {
                     Image(systemName: "info.circle").font(.system(size: 12)).foregroundStyle(SessionStyle.mint)
-                    Text("Turn on Ball per touch to hear the change sound.")
+                    Text("Add looks to hear the change sound.")
                         .font(.system(size: 11)).foregroundStyle(.white.opacity(0.7))
                         .fixedSize(horizontal: false, vertical: true)
                 }

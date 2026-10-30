@@ -6,45 +6,71 @@ import Testing
 struct BallSwapTests {
     private let touches: [Double] = [1, 2, 3, 4, 5]
 
-    @Test func perTouchBallResolvesFromTheLatestChange() {
-        var edit = SessionEditState(style: .none, intensity: 0)
-        edit.ballChanges = [1: .lava, 3: .chrome]
-        #expect(edit.ballSkin(forTouch: 0) == .original)
-        #expect(edit.ballSkin(forTouch: 1) == .lava)
-        #expect(edit.ballSkin(forTouch: 2) == .lava)
-        #expect(edit.ballSkin(forTouch: 3) == .chrome)
-        #expect(edit.ballSkin(forTouch: 40) == .chrome)
+    private func look(_ ball: BallSkin, _ effect: BallStyle = .none) -> TouchLook { TouchLook(ball: ball, effect: effect) }
+
+    @Test func runsResolveTheLookFromTheLatestRunStart() {
+        var edit = SessionEditState(style: .glowTrail, intensity: 0.8)
+        edit.lookChanges = [1: look(.lava, .fire), 3: look(.chrome, .neon)]
+        #expect(edit.look(forTouch: 0) == look(.original, .glowTrail), "The first run is the clip's own look")
+        #expect(edit.look(forTouch: 1) == look(.lava, .fire))
+        #expect(edit.look(forTouch: 2) == look(.lava, .fire))
+        #expect(edit.look(forTouch: 3) == look(.chrome, .neon))
+        #expect(edit.look(forTouch: 40) == look(.chrome, .neon))
         #expect(edit.ballSkin(at: 0.5, touchTimes: touches) == .original)
-        #expect(edit.ballSkin(at: 2, touchTimes: touches) == .lava)
-        #expect(edit.ballSkin(at: 2.999, touchTimes: touches) == .lava)
+        #expect(edit.effect(at: 2, touchTimes: touches) == .fire)
+        #expect(edit.effect(at: 2.999, touchTimes: touches) == .fire)
         #expect(edit.ballSkin(at: 3, touchTimes: touches) == .lava, "Touch index 2 is the third touch")
-        #expect(edit.ballSkin(at: 4, touchTimes: touches) == .chrome)
-        #expect(edit.ballSkin(at: 10, touchTimes: touches) == .chrome)
+        #expect(edit.effect(at: 4, touchTimes: touches) == .neon)
         #expect(edit.ballSkin(at: .nan, touchTimes: touches) == .original)
-        // A base print applies before the first change and wherever nothing overrides it.
-        edit.ballSkin = .gold
-        #expect(edit.ballSkin(at: 0.5, touchTimes: touches) == .gold)
-        #expect(edit.ballSkin(forTouch: 0) == .gold)
-        var single = SessionEditState(style: .none, intensity: 0, ballSkin: .volt)
-        single.ballChanges = [:]
-        #expect(single.ballSkin(at: 3, touchTimes: touches) == .volt)
+        #expect(edit.runStarts == [0, 1, 3])
+        #expect(edit.run(containing: 0, touchCount: 5) == 0..<1)
+        #expect(edit.run(containing: 2, touchCount: 5) == 1..<3)
+        #expect(edit.run(containing: 4, touchCount: 5) == 3..<5)
+        // Setting the first run changes the clip's own ball and effect.
+        edit.setLook(look(.gold, .galaxy), forRunStartingAt: 0)
+        #expect(edit.ballSkin == .gold && edit.style == .galaxy && edit.lookChanges.count == 2)
+        edit.setLook(look(.volt, .electric), forRunStartingAt: 3)
+        #expect(edit.look(forTouch: 4) == look(.volt, .electric))
     }
 
-    @Test func swapsListOnlyRealChanges() {
-        var edit = SessionEditState(style: .none, intensity: 0)
-        edit.ballChanges = [0: .original, 1: .lava, 2: .lava, 3: .chrome, 4: .original]
-        let swaps = edit.ballSwaps(touchTimes: touches)
+    @Test func changesListOnlyRealLookChanges() {
+        var edit = SessionEditState(style: .none, intensity: 0.8)
+        // A split that keeps the same look is a run boundary but no visible change.
+        edit.lookChanges = [1: look(.lava), 2: look(.lava), 3: look(.lava, .fire), 4: look(.original)]
+        let swaps = edit.lookSwaps(touchTimes: touches)
         #expect(swaps.map(\.index) == [1, 3, 4])
         #expect(swaps.map(\.time) == [2, 4, 5])
-        #expect(swaps.map(\.from) == [.original, .lava, .chrome])
-        #expect(swaps.map(\.to) == [.lava, .chrome, .original])
-        #expect(SessionEditState(style: .none, intensity: 0, ballSkin: .gold).ballSwaps(touchTimes: touches).isEmpty)
-        #expect(edit.ballsInOrder == [.original, .lava, .chrome])
+        #expect(swaps.map(\.from) == [.original, .lava, .lava])
+        #expect(swaps.map(\.to) == [.lava, .lava, .original])
+        #expect(swaps.map(\.toEffect) == [.none, .fire, .none], "An effect-only change is still a change")
+        #expect(SessionEditState(style: .fire, intensity: 1, ballSkin: .gold).lookSwaps(touchTimes: touches).isEmpty)
+        // Run starts past the clip's touches are ignored.
+        edit.lookChanges[9] = look(.gold)
+        #expect(edit.lookSwaps(touchTimes: touches).count == 3)
+    }
+
+    @Test func effectsFadeAcrossAChangeAndDrawOnlyTheNewPath() {
+        var edit = SessionEditState(style: .fire, intensity: 1)
+        edit.lookChanges = [2: look(.original, .ice), 4: look(.gold, .ice)]
+        // Far from changes: full strength, full trail.
+        #expect(edit.effectBlend(at: 1.5, touchTimes: touches) == (1, 0.84))
+        // Just before the effect change the old effect fades out.
+        let before = edit.effectBlend(at: 2.95, touchTimes: touches)
+        #expect(abs(before.gain - 0.5) < 0.001 && before.trail == 0.84)
+        // Just after, the new one fades in and draws only the path since the change.
+        let after = edit.effectBlend(at: 3.1, touchTimes: touches)
+        #expect(abs(after.gain - 0.5) < 0.001 && abs(after.trail - 0.1) < 0.001)
+        #expect(edit.effectBlend(at: 3.5, touchTimes: touches) == (1, 0.5))
+        // A ball-only change keeps the effect running untouched.
+        #expect(edit.effectBlend(at: 5.05, touchTimes: touches) == (1, 0.84))
+        #expect(edit.usesEffects)
+        edit.intensity = 0
+        #expect(!edit.usesEffects, "Zero intensity draws nothing")
     }
 
     @Test func timelineReportsAgeOnlyInsideTheMoment() {
         var edit = SessionEditState(style: .none, intensity: 0)
-        edit.ballChanges = [1: .lava]
+        edit.lookChanges = [1: look(.lava)]
         edit.swapEffect = .burst
         let timeline = BallSwapTimeline(edit: edit, touchTimes: touches)
         #expect(timeline.events.count == 1)
@@ -61,34 +87,60 @@ struct BallSwapTests {
         #expect(BallSwapTimeline(edit: edit, touchTimes: touches).active(at: 2) == nil)
     }
 
-    @Test func cyclingAssignsBallsEveryNTouches() {
-        var edit = SessionEditState(style: .none, intensity: 0)
-        edit.cycleBalls([.volt, .lava, .chrome], every: 2, touchCount: 7)
-        #expect(edit.ballChanges == [0: .volt, 2: .lava, 4: .chrome, 6: .volt])
-        #expect((0..<7).map { edit.ballSkin(forTouch: $0) } == [.volt, .volt, .lava, .lava, .chrome, .chrome, .volt])
-        edit.cycleBalls([.gold], every: 1, touchCount: 7)
-        #expect(edit.ballChanges.isEmpty, "One ball is no cycle")
-        edit.cycleBalls([.gold, .pearl], every: 0, touchCount: 3)
-        #expect(edit.ballChanges == [0: .gold, 1: .pearl, 2: .gold], "A zero step still advances")
+    @Test func recipesLayRunsThatFitTheClip() {
+        let base = look(.original, .glowTrail)
+        // Power-up levels up on the 10th, 25th, 50th and 100th touch of a long clip.
+        let long = LookRecipes.make(.powerUp, base: base, touchCount: 120)
+        #expect(long.changes.keys.sorted() == [9, 24, 49, 99])
+        #expect(long.changes[9] == LookRecipes.ladder[0] && long.changes[99] == LookRecipes.ladder[3])
+        #expect(long.moment == .burst)
+        // A short clip levels up at quarters instead.
+        let short = LookRecipes.make(.powerUp, base: base, touchCount: 12)
+        #expect(short.changes.count == 3 && short.changes.keys.allSatisfy { $0 > 0 && $0 < 12 })
+        // Finale keeps the clip's look until the last few touches.
+        let finale = LookRecipes.make(.finale, base: base, touchCount: 30)
+        #expect(finale.changes == [24: LookRecipes.finale] && finale.moment == .lightning)
+        // Every 5 rotates looks and comes back to the clip's own.
+        let rotation = LookRecipes.make(.everyFive, base: base, touchCount: 23)
+        #expect(rotation.changes.keys.sorted() == [5, 10, 15, 20])
+        #expect(rotation.changes[20] == base)
+        // Remix is the same for the same seed, different for another, and never repeats a look back to back.
+        let first = LookRecipes.make(.remix, base: base, touchCount: 40, seed: 1)
+        #expect(first == LookRecipes.make(.remix, base: base, touchCount: 40, seed: 1))
+        #expect(first != LookRecipes.make(.remix, base: base, touchCount: 40, seed: 2))
+        var edit = SessionEditState(style: .glowTrail, intensity: 0.8)
+        edit.lookChanges = first.changes
+        let looks = edit.runStarts.map { edit.look(forTouch: $0) }
+        #expect(zip(looks, looks.dropFirst()).allSatisfy { $0 != $1 })
+        #expect(first.changes.keys.allSatisfy { $0 > 0 && $0 < 40 })
+        // Nothing to lay on a clip with one touch.
+        for recipe in LookRecipe.allCases {
+            #expect(LookRecipes.make(recipe, base: base, touchCount: 1).changes.isEmpty)
+            #expect(!LookRecipes.make(recipe, base: base, touchCount: 8).changes.isEmpty, "\(recipe.title) changes a short clip")
+        }
     }
 
-    @Test func materialAndSoundFlagsFollowTheChanges() {
-        var edit = SessionEditState(style: .none, intensity: 0)
-        #expect(!edit.usesBallMaterial && !edit.isEdited && !edit.hasSounds)
-        edit.ballChanges = [2: .original]
+    @Test func materialAndSoundFlagsFollowTheLooks() {
+        var edit = SessionEditState(style: .none, intensity: 0.8)
+        #expect(!edit.usesBallMaterial && !edit.isEdited && !edit.hasSounds && !edit.usesEffects)
+        edit.lookChanges = [2: look(.original)]
         #expect(!edit.usesBallMaterial, "Original on every touch needs no print")
-        #expect(edit.isEdited, "A change list is still an edit")
-        edit.ballChanges = [2: .galaxy]
+        #expect(edit.isEdited, "Runs are still an edit")
+        edit.lookChanges = [2: look(.galaxy)]
         #expect(edit.usesBallMaterial && edit.requiresVisualTrack)
-        #expect(edit.label.contains("Ball per touch"))
-        edit.ballChanges = [:]
+        edit.lookChanges = [2: look(.original, .fire)]
+        #expect(!edit.usesBallMaterial && edit.usesEffects && edit.requiresVisualTrack, "An effect in one run needs the track")
+        #expect(edit.label.contains("Looks on touches"))
+        #expect(edit.withoutBallPrints().lookChanges[2] == look(.original, .fire))
+        edit.lookChanges = [:]
         edit.swapSound = .chime
         #expect(!edit.hasSounds, "A change sound without changes never plays")
         edit.touchSound = .pop
         #expect(edit.hasSounds && edit.isEdited)
         #expect(edit.label.contains("Pop touches"))
+        edit.lookChanges = [2: look(.lava, .fire)]
         let free = JugglingReplayLook(edit: edit, overlays: ExportOverlaySettings(), showGraph: false).allowed(isPro: false)
-        #expect(free.edit.touchSound == .none && free.edit.ballChanges.isEmpty, "Locked choices stay off the clip")
+        #expect(free.edit.touchSound == .none && free.edit.lookChanges.isEmpty, "Locked choices stay off the clip")
     }
 
     private func canvas() -> CGContext {

@@ -58,16 +58,20 @@ extension EffectFrame {
     }
     nonisolated static func video(size: CGSize, sourceSize: CGSize, edit: SessionEditState,
                                  track: BallEffectTrack, time: Double) -> EffectFrame {
+        // Each run of looks can draw its own effect; changes fade across the touch.
+        let style = edit.effect(at: time, touchTimes: track.touches)
+        let blend = edit.effectBlend(at: time, touchTimes: track.touches)
         var frame: EffectFrame
         if let sample = track.sample(at: time) {
-            frame = .tracked(size: size, sourceSize: sourceSize, style: edit.style,
-                intensity: edit.style == .none ? 0 : edit.intensity, sample: sample, trail: track.trail(at: time, duration: 0.84), time: time)
+            frame = .tracked(size: size, sourceSize: sourceSize, style: style,
+                intensity: style == .none ? 0 : edit.intensity * blend.gain, sample: sample,
+                trail: track.trail(at: time, duration: blend.trail), time: time)
         } else {
             frame = EffectFrame(size: size, center: SIMD2(Float(size.width/2), Float(size.height/2)), radius: 1,
-                                time: time, intensity: 0, visibility: 0, style: edit.style.shaderID)
+                                time: time, intensity: 0, visibility: 0, style: style.shaderID)
         }
         frame.environment = edit.environment.shaderAmount
-        if edit.style == .heatPulse, frame.visibility > 0,
+        if style == .heatPulse, frame.visibility > 0,
            let touch = track.latestTouch(at: time), time - touch < 0.60 {
             frame.impact = 1
             frame.impactAge = Float(time - touch)

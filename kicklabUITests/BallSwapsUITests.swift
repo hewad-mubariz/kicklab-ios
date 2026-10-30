@@ -41,136 +41,134 @@ final class BallSwapsUITests: ProReplayUITestCase {
         XCTAssertTrue(target.waitForSelection(), "Touch \(touch) settles under the lens")
     }
 
+    /// The ball and effect named in a dial touch's label, "Lava, Fire".
+    @MainActor private func look(_ app: XCUIApplication, _ touch: Int) -> String {
+        app.buttons["ball-touch-\(touch)"].label.components(separatedBy: ", ").dropFirst().joined(separator: ", ")
+    }
+
     @MainActor
-    func testPerTouchBallsChangeEffectAndSoundsAreSelectable() throws {
+    func testLooksRecipesSplitAndRunPickers() throws {
         continueAfterFailure = false
         #if !targetEnvironment(simulator)
         throw XCTSkip("Requires the local video fixture")
         #endif
         let app = launchEditor()
-        XCTAssertTrue(app.buttons["replay-tool-sound"].waitForExistence(timeout: 5), "Sound is a tool of its own")
+        XCTAssertTrue(app.buttons["replay-tool-looks"].waitForExistence(timeout: 5), "Looks is a tool of its own")
         capture(app, "01 Customize grid")
+        app.buttons["replay-tool-looks"].tap()
+
+        // One look to start: the clip's own ball and effect on every touch.
+        let summary = app.descendants(matching: .any)["looks-summary"]
+        XCTAssertTrue(summary.waitForExistence(timeout: 5))
+        XCTAssertTrue(summary.label.hasPrefix("Look 1 of 1"), summary.label)
+        XCTAssertFalse(app.buttons["looks-clear"].exists)
+
+        // Power-up levels up on the 10th, 25th, 50th and 100th touch.
+        app.buttons["look-recipe-powerUp"].tap()
+        XCTAssertTrue(app.buttons["look-recipe-powerUp"].isSelected)
+        XCTAssertTrue(app.buttons["ball-touch-10"].waitForSelection())
+        XCTAssertTrue(summary.label.hasPrefix("Look 2 of 5"), summary.label)
+        XCTAssertEqual(look(app, 10), "Volt, Electric")
+        XCTAssertEqual(look(app, 9), "original ball, Glow Trail")
+        capture(app, "02 Power-up recipe")
+
+        // Split at touch 15 starts look 3 with the same look until it is changed.
+        select(app, touch: 15)
+        XCTAssertTrue(app.buttons["looks-split"].isEnabled)
+        app.buttons["looks-split"].tap()
+        XCTAssertTrue(summary.label.hasPrefix("Look 3 of 6"), summary.label)
+        XCTAssertTrue(summary.label.contains("Touches 15 to 24"), summary.label)
+        XCTAssertFalse(app.buttons["looks-split"].isEnabled, "The lens is already on a run start")
+        XCTAssertFalse(app.buttons["look-recipe-powerUp"].isSelected, "A manual edit makes it your own")
+
+        // The pickers change the whole run, not one touch.
+        XCTAssertTrue(app.buttons["look-part-ball"].isSelected)
+        app.buttons["look-ball-pearl"].tap()
+        let pearl = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS 'Pearl'"), object: app.buttons["ball-touch-16"])
+        XCTAssertEqual(XCTWaiter.wait(for: [pearl], timeout: 3), .completed)
+        app.buttons["look-part-effect"].tap()
+        XCTAssertTrue(app.buttons["look-effect-ice"].waitForExistence(timeout: 5))
+        app.buttons["look-effect-ice"].tap()
+        XCTAssertTrue(app.buttons["look-effect-ice"].isSelected)
+        XCTAssertEqual(look(app, 16), "Pearl, Ice")
+        XCTAssertEqual(look(app, 15), "Pearl, Ice")
+        XCTAssertEqual(look(app, 14), "Volt, Electric", "The run before keeps its look")
+        capture(app, "03 Look with its own ball and effect")
+
+        // The change moment applies at every change; its sound follows it.
+        app.buttons["look-part-change"].tap()
+        XCTAssertTrue(app.buttons["ball-swap-lightning"].waitForExistence(timeout: 5))
+        app.buttons["ball-swap-lightning"].tap()
+        XCTAssertTrue(app.buttons["ball-swap-lightning"].isSelected)
+        XCTAssertTrue(app.descendants(matching: .any)["ball-swap-sound-summary"].label.contains("Thunder"))
+        capture(app, "04 Change moment")
+
+        // Merge joins the run back into Volt and Electric.
+        app.buttons["looks-merge"].tap()
+        XCTAssertEqual(look(app, 16), "Volt, Electric")
+        XCTAssertTrue(summary.label.hasPrefix("Look 2 of 5"), summary.label)
+
+        // Remix lays a different mix; Clear brings back one look.
+        app.buttons["look-recipe-remix"].tap()
+        XCTAssertTrue(app.buttons["look-recipe-remix"].isSelected)
+        XCTAssertTrue(app.buttons["looks-clear"].waitForExistence(timeout: 3))
+        app.buttons["looks-clear"].tap()
+        XCTAssertTrue(summary.label.hasPrefix("Look 1 of 1"), summary.label)
+
+        // With looks on, the Ball page says it sets the first look and leads back to Looks.
+        app.buttons["look-recipe-finale"].tap()
+        app.buttons["replay-tools-back"].tap()
         app.buttons["replay-tool-ball"].tap()
+        let note = app.buttons["ball-looks-note"]
+        XCTAssertTrue(note.waitForExistence(timeout: 5))
+        note.tap()
+        XCTAssertTrue(summary.waitForExistence(timeout: 5))
+        app.buttons["replay-close-tools"].tap()
+        app.buttons["replay-play"].tap()
+        XCTAssertEqual(app.buttons["replay-play"].label, "Pause video")
+        app.buttons["replay-play"].tap()
+        XCTAssertTrue(app.startReplayDownload(), "Download starts in place with looks on")
+    }
 
-        // One ball is the default; the switch brings in the touch dial.
-        let perTouch = app.switches["ball-per-touch"]
-        XCTAssertTrue(perTouch.waitForExistence(timeout: 5))
-        XCTAssertFalse(isOn(perTouch))
-        XCTAssertFalse(app.buttons["ball-touch-1"].exists)
-        XCTAssertTrue(app.buttons["ball-picker-chrome"].exists, "The full grid shows while it is off")
-        perTouch.tap()
-        XCTAssertTrue(isOn(perTouch))
-        XCTAssertTrue(app.buttons["ball-touches-cycle"].waitForExistence(timeout: 5))
-        capture(app, "02 Per touch dial")
-
-        // Touch 3 takes Lava; touch 6 inherits it until it takes Pearl.
-        select(app, touch: 3)
-        XCTAssertTrue(app.buttons["ball-picker-lava"].waitForExistence(timeout: 5))
-        app.buttons["ball-picker-lava"].tap()
-        XCTAssertTrue(app.buttons["ball-picker-lava"].isSelected)
-        select(app, touch: 6)
-        XCTAssertTrue(app.buttons["ball-picker-lava"].isSelected, "Later touches keep the last ball")
-        app.buttons["ball-picker-pearl"].tap()
-        XCTAssertTrue(app.buttons["ball-picker-pearl"].isSelected)
-
-        // The change moment has its own animated tiles.
-        XCTAssertTrue(app.buttons["ball-swap-burst"].waitForExistence(timeout: 5))
-        app.buttons["ball-swap-burst"].tap()
-        XCTAssertTrue(app.buttons["ball-swap-burst"].isSelected)
-        XCTAssertFalse(app.buttons["ball-swap-pop"].isSelected)
-        let summary = app.descendants(matching: .any)["ball-swap-sound-summary"]
-        XCTAssertTrue(summary.label.contains("Drop"), "Burst plays its own sound: \(summary.label)")
-        capture(app, "03 Ball per touch with burst")
-
-        // Going back to touch 3 lands Pearl on touch 6 and still shows Lava on 3.
-        select(app, touch: 3)
-        XCTAssertTrue(app.buttons["ball-picker-lava"].isSelected)
-        XCTAssertEqual(app.buttons["ball-touch-6"].label, "Touch 6, Pearl")
-        XCTAssertEqual(app.buttons["ball-touch-4"].label, "Touch 4, Lava")
-        XCTAssertEqual(app.buttons["ball-touch-1"].label, "Touch 1, original ball")
-
-        // Sounds: the first touch sound mutes the original, None brings it back.
+    @MainActor
+    func testChangeSoundFollowsTheEffectAndOriginalSoundMutes() throws {
+        continueAfterFailure = false
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Requires the local video fixture")
+        #endif
+        let app = launchEditor()
+        // Without looks there is no change to hear.
+        app.buttons["replay-tool-sound"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["sound-change-note"].waitForExistence(timeout: 5))
+        app.buttons["replay-tools-back"].tap()
+        app.buttons["replay-tool-looks"].tap()
+        XCTAssertTrue(app.buttons["look-recipe-powerUp"].waitForExistence(timeout: 5))
+        app.buttons["look-recipe-powerUp"].tap()
         app.buttons["replay-tools-back"].tap()
         app.buttons["replay-tool-sound"].tap()
-        let original = app.switches["sound-original"]
-        XCTAssertTrue(original.waitForExistence(timeout: 5))
-        XCTAssertTrue(isOn(original), "The original sound plays by default")
-        XCTAssertTrue(app.buttons["touch-sound-none"].isSelected)
-        app.buttons["touch-sound-pop"].tap()
-        XCTAssertTrue(app.buttons["touch-sound-pop"].isSelected)
-        XCTAssertFalse(isOn(original), "A touch sound mutes the original automatically")
+
+        // Power-up's Burst plays Drop on Auto; a picked sound overrides it.
+        XCTAssertTrue(app.buttons["swap-sound-auto"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["swap-sound-auto"].isSelected, "The change sound follows the effect")
         XCTAssertTrue(app.buttons["swap-sound-auto"].label.contains("Drop"))
         XCTAssertTrue(app.descendants(matching: .any)["sound-auto-note"].exists)
         app.buttons["swap-sound-chime"].tap()
         XCTAssertTrue(app.buttons["swap-sound-chime"].isSelected)
         XCTAssertFalse(app.buttons["swap-sound-auto"].isSelected, "A picked sound overrides the effect's")
-        XCTAssertFalse(app.descendants(matching: .any)["sound-change-note"].exists, "Changes exist, so no hint is needed")
-        capture(app, "04 Sound tool")
+
+        // The first touch sound mutes the original, None brings it back, and a manual choice wins.
+        let original = app.switches["sound-original"]
+        XCTAssertTrue(isOn(original), "The original sound plays by default")
+        app.buttons["touch-sound-pop"].tap()
+        XCTAssertTrue(app.buttons["touch-sound-pop"].isSelected)
+        XCTAssertFalse(isOn(original), "A touch sound mutes the original automatically")
+        capture(app, "05 Sound tool")
         app.buttons["touch-sound-none"].tap()
         XCTAssertTrue(isOn(original), "No touch sound restores the original it muted")
         app.buttons["touch-sound-kick"].tap()
         XCTAssertFalse(isOn(original))
         original.tap()
         XCTAssertTrue(isOn(original), "The person can keep both")
-        app.buttons["touch-sound-none"].tap()
-        XCTAssertTrue(isOn(original))
-
-        // Off sets the per-touch balls aside; on again brings them back.
-        app.buttons["replay-tools-back"].tap()
-        app.buttons["replay-tool-ball"].tap()
-        XCTAssertTrue(app.buttons["ball-touch-3"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.descendants(matching: .any)["ball-swap-sound-summary"].label.contains("Chime"),
-                      "The Ball page shows the overriding sound")
-        XCTAssertTrue(isOn(app.switches["ball-per-touch"]))
-        app.switches["ball-per-touch"].tap()
-        XCTAssertFalse(app.buttons["ball-touch-3"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.buttons["ball-picker-chrome"].waitForExistence(timeout: 5), "The full grid is back")
-        app.switches["ball-per-touch"].tap()
-        XCTAssertTrue(app.buttons["ball-touch-6"].waitForExistence(timeout: 5))
-        XCTAssertEqual(app.buttons["ball-touch-6"].label, "Touch 6, Pearl", "Picks come back with the switch")
-
-        app.buttons["replay-close-tools"].tap()
-        app.buttons["replay-play"].tap()
-        XCTAssertEqual(app.buttons["replay-play"].label, "Pause video")
-        app.buttons["replay-play"].tap()
-        XCTAssertTrue(app.startReplayDownload(), "Download starts in place with sounds on")
-    }
-
-    @MainActor
-    func testCyclePresetFillsTheDialAndClearEmptiesIt() throws {
-        continueAfterFailure = false
-        #if !targetEnvironment(simulator)
-        throw XCTSkip("Requires the local video fixture")
-        #endif
-        let app = launchEditor()
-        app.buttons["replay-tool-ball"].tap()
-        XCTAssertTrue(app.switches["ball-per-touch"].waitForExistence(timeout: 5))
-        app.switches["ball-per-touch"].tap()
-        XCTAssertTrue(app.buttons["ball-touches-cycle"].waitForExistence(timeout: 5))
-        select(app, touch: 3)
-        app.buttons["ball-touches-cycle"].tap()
-        let everyTwo = app.buttons["Every 2 touches"]
-        XCTAssertTrue(everyTwo.waitForExistence(timeout: 5))
-        everyTwo.tap()
-        // The real ball leads, then the default set rotates in two touches at a time.
-        func ball(_ touch: Int) -> String {
-            app.buttons["ball-touch-\(touch)"].label.components(separatedBy: ", ").last ?? ""
-        }
-        XCTAssertEqual(ball(1), "original ball")
-        XCTAssertEqual(ball(2), "original ball")
-        XCTAssertEqual(ball(3), "Volt")
-        XCTAssertEqual(ball(4), "Volt")
-        XCTAssertEqual(ball(5), "Lava")
-        capture(app, "05 Cycle every 2 touches")
-        app.buttons["ball-touches-clear"].tap()
-        XCTAssertEqual(ball(3), "original ball")
-        XCTAssertEqual(ball(5), "original ball")
-        // With no changes left, the sound tool explains why the change sound is quiet.
-        app.buttons["replay-tools-back"].tap()
-        app.buttons["replay-tool-sound"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["sound-change-note"].waitForExistence(timeout: 5))
-        capture(app, "06 Sound tool without changes")
         app.buttons["replay-close-tools"].tap()
     }
 }
