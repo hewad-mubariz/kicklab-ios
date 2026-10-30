@@ -98,7 +98,7 @@ final class VideoBackgroundWork: ObservableObject {
     private let journal = VideoJobJournal(defaults: .standard)
     private init() {
         if journal.consumeInterruptedCount() > 0 {
-            interruptedMessage = "A video task was interrupted when the app closed. Check Photos for a saved export. If it is missing, reopen your original video and try again."
+            interruptedMessage = String(localized: "A video task was interrupted when the app closed. Check Photos for a saved export. If it is missing, reopen your original video and try again.")
         }
     }
     private final class PendingLease {
@@ -191,7 +191,7 @@ final class VideoBackgroundWork: ObservableObject {
                 }
             }
             guard registered else { pending.resolve(fallback); return }
-            let request = BGContinuedProcessingTaskRequest(identifier: identifier, title: title, subtitle: "Preparing your video")
+            let request = BGContinuedProcessingTaskRequest(identifier: identifier, title: title, subtitle: String(localized: "Preparing your video"))
             request.strategy = .fail
             if gpu { request.requiredResources = .gpu }
             do { try BGTaskScheduler.shared.submit(request) }

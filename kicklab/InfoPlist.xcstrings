@@ -1,0 +1,124 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "extractionState" : "extracted_with_value",
+      "shouldTranslate" : false
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "shouldTranslate" : false
+    },
+    "NSCameraUsageDescription" : {
+      "comment" : "Privacy - Camera Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude nutzt die Kamera, um deine Trainings aufzunehmen und deine Kontakte zu zählen. Videos werden auf deinem iPhone analysiert und verlassen es nur, wenn du sie exportierst oder teilst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude uses the camera to record your sessions and count your touches. Videos are analysed on your iPhone and only leave it if you export or share them."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude usa la cámara para grabar tus sesiones y contar tus toques. Los videos se analizan en tu iPhone y solo salen de él si los exportas o los compartes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude utilise la caméra pour filmer tes séances et compter tes jongles. Les vidéos sont analysées sur ton iPhone et n’en sortent que si tu les exportes ou les partages."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Juggle Dude usa a câmera para gravar seus treinos e contar seus toques. Os vídeos são analisados no seu iPhone e só saem dele se você exportar ou compartilhar."
+          }
+        }
+      }
+    },
+    "NSMotionUsageDescription" : {
+      "comment" : "Privacy - Motion Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beweg dein iPhone, um dich in der Stadionvorschau umzusehen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move your phone to look around the stadium preview."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mueve el teléfono para mirar alrededor en la vista previa del estadio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bouge ton téléphone pour regarder autour de toi dans l’aperçu du stade."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mova o celular para olhar em volta na prévia do estádio."
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryAddUsageDescription" : {
+      "comment" : "Privacy - Photo Library Additions Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude sichert deine Jonglier-Replays in Fotos, damit du sie teilen kannst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude saves your juggling replays to Photos so you can share them."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude guarda tus repeticiones de toques en Fotos para que puedas compartirlas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude enregistre tes replays de jonglage dans Photos pour que tu puisses les partager."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Juggle Dude salva seus replays de embaixadinhas no Fotos para você compartilhar."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

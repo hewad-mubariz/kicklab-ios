@@ -4,6 +4,13 @@ import simd
 enum ShotTool: String, Identifiable {
     case effects = "Effects", graph = "Graph", camera = "Camera"
     var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .effects: String(localized: "Effects")
+        case .graph: String(localized: "Graph")
+        case .camera: String(localized: "Camera")
+        }
+    }
 }
 
 /// The shot's Customize panel, built like the juggling one: tools open in place, the tray's
@@ -86,7 +93,7 @@ struct ShotToolbox: View {
                 .transition(.sessionPop(scale: 0.4))
             }
             ZStack(alignment: .leading) {
-                Text(page?.rawValue ?? "Customize shot").font(.system(size: 17, weight: .semibold))
+                Text(page?.title ?? String(localized: "Customize shot")).font(.system(size: 17, weight: .semibold))
                     .id(page?.rawValue ?? "tools")
                     .transition(swap)
             }
@@ -130,9 +137,9 @@ struct ShotToolbox: View {
 
     private var cameraSummary: String {
         switch camera.clips.count {
-        case 0: "Add moves"
+        case 0: String(localized: "Add moves")
         case 1: camera.clips[0].move.title
-        default: "\(camera.clips.count) moves"
+        default: String(localized: "\(camera.clips.count) moves")
         }
     }
 
@@ -153,7 +160,7 @@ struct ShotToolbox: View {
                 preview(for: tool).frame(height: 62).accessibilityHidden(true)
                 VStack(spacing: 3) {
                     HStack(spacing: 4) {
-                        Text(tool.rawValue).font(.system(size: 12, weight: .semibold))
+                        Text(tool.title).font(.system(size: 12, weight: .semibold))
                         if !isPro && tool != .effects { ProBadge() }
                     }
                     Text(tool == .effects ? style.title : tool == .graph ? graphStyle.title : cameraSummary)
@@ -170,7 +177,7 @@ struct ShotToolbox: View {
             .contentShape(.rect(cornerRadius: 17))
         }
         .buttonStyle(SessionPressStyle(scale: 0.92))
-        .accessibilityLabel(tool.rawValue + (!isPro && tool != .effects ? ", Pro" : ""))
+        .accessibilityLabel(tool.title + (!isPro && tool != .effects ? ", Pro" : ""))
         .accessibilityIdentifier("shot-tool-\(tool.rawValue.lowercased())")
     }
 
@@ -276,7 +283,7 @@ struct ShotToolbox: View {
             .contentShape(.rect)
         }
         .buttonStyle(SessionPressStyle(scale: 0.92))
-        .accessibilityLabel(option == .none ? "No effect" : option.title)
+        .accessibilityLabel(option == .none ? String(localized: "No effect") : option.title)
         .accessibilityIdentifier("shot-effect-\(option.rawValue)")
         .accessibilityAddTraits(selected ? .isSelected : [])
     }

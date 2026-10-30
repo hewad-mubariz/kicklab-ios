@@ -227,7 +227,7 @@ struct RecordView: View {
             }
             Button("OK", role: .cancel) { importError = nil }
         } message: {
-            Text(importError ?? "Please try another video.")
+            Text(importError ?? String(localized: "Please try another video."))
         }
         .videoSavedConfirmation(isPresented: $recoveredVideoSaved)
         .fullScreenCover(item: $sessionSummary) { summary in
@@ -338,9 +338,9 @@ struct RecordView: View {
 
     private var importProcessingOverlay: some View {
         let cancel: (() -> Void)? = importedURL == nil ? nil : { cancelImport() }
-        let message = importedVideo.isCooling ? "Cooling down. Your video will continue automatically."
+        let message = importedVideo.isCooling ? String(localized: "Cooling down. Your video will continue automatically.")
             : importedVideo.isRunning && !importedVideo.canContinueInBackground
-                ? "Keep Juggle Dude open. Processing resumes when you return." : nil
+                ? String(localized: "Keep Juggle Dude open. Processing resumes when you return.") : nil
         return ProcessingOverlay(progress: processingProgress, stepIndex: processingStep,
                                  statusMessage: message, onCancel: cancel, isPaused: importedVideo.isCooling,
                                  videoInfo: importedURL == nil ? nil : importedVideo.processingInfo)
@@ -373,7 +373,7 @@ struct RecordView: View {
         processingStep = 0
         camera.stop()
         do {
-            try await VideoBackgroundWork.shared.run(title: "Importing video") {
+            try await VideoBackgroundWork.shared.run(title: String(localized: "Importing video")) {
                 try await importSelectedMovie(item)
             }
             ProductAnalytics.shared.track(.importFinished(.completed))
@@ -521,11 +521,11 @@ struct RecordView: View {
 
     /// One capture warning at a time, in the same caption style; a shaking phone matters most.
     private var captureWarning: String? {
-        if camera.tooShaky { return "Hold the camera steadier" }
+        if camera.tooShaky { return String(localized: "Hold the camera steadier") }
         guard camera.tooDark else { return nil }
         return camera.cameraPosition == .front
-            ? "Too dark for sharp ball effects · use the back camera"
-            : "Too dark for sharp ball effects · add more light"
+            ? String(localized: "Too dark for sharp ball effects · use the back camera")
+            : String(localized: "Too dark for sharp ball effects · add more light")
     }
 
     private var cameraStatus: some View {

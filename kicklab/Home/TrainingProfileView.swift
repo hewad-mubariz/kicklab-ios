@@ -17,9 +17,9 @@ struct TrainingProfileView: View {
     @Environment(\.openURL) private var openURL
 
     private var name: String {
-        if account.user != nil { return player.profile?.displayName ?? "Your profile" }
+        if account.user != nil { return player.profile?.displayName ?? String(localized: "Your profile") }
         let trimmed = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? "Your profile" : trimmed
+        return trimmed.isEmpty ? String(localized: "Your profile") : trimmed
     }
 
     private var initials: String {

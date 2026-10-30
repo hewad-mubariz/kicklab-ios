@@ -84,7 +84,7 @@ final class VideoAnalyzer: ObservableObject {
 
         worker = Task { [weak self] in
             do {
-                try await VideoBackgroundWork.shared.run(title: visualOnly ? "Preparing video" : "Importing video") { [weak self] in
+                try await VideoBackgroundWork.shared.run(title: visualOnly ? String(localized: "Preparing video") : String(localized: "Importing video")) { [weak self] in
                     guard let self else { return }
                     let allowed = VideoWorkExecution.canAnalyzeInBackground
                     await MainActor.run { self.canContinueInBackground = allowed }
@@ -449,7 +449,7 @@ final class VideoAnalyzer: ObservableObject {
                     self.progress = min(1.0, Double(snapshot.0) / total)
                     self.status = "analysing…"
                 }
-                VideoWorkExecution.lease?.progress(min(0.95, Double(snapshot.0) / total), subtitle: "Analysing your video")
+                VideoWorkExecution.lease?.progress(min(0.95, Double(snapshot.0) / total), subtitle: String(localized: "Analysing your video"))
                 onProgress?(min(1.0, Double(snapshot.0) / total))
                 publishSeconds += ProcessInfo.processInfo.systemUptime - publishStart
             }

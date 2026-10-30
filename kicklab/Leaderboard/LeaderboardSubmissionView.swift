@@ -111,9 +111,9 @@ private struct LeaderboardRecordingPicker: View {
         }.navigationTitle("Choose a session").navigationBarTitleDisplayMode(.inline)
     }
     private func detail(_ item: HistorySession) -> String {
-        let streak = item.rankedProposal.map { "Best streak \($0.count)" } ?? "\(item.touches) touches"
+        let streak = item.rankedProposal.map { String(localized: "Best streak \($0.count)") } ?? String(localized: "\(item.touches) touches")
         let askable = LeaderboardCorrection(item: item)?.leftOut.count ?? 0
-        return askable == 0 ? "\(item.durationLabel) · \(streak)" : "\(item.durationLabel) · \(streak) · \(askable) to check"
+        return askable == 0 ? "\(item.durationLabel) · \(streak)" : "\(item.durationLabel) · \(streak) · \(String(localized: "\(askable) to check"))"
     }
 }
 
@@ -183,7 +183,7 @@ struct LeaderboardAttemptStatusView: View {
 }
 
 struct LeaderboardFeedbackView: View {
-    let title: String
+    let title: LocalizedStringKey
     @ObservedObject var review: LeaderboardReviewStore
     let send: (String) async -> Bool
     @Environment(\.dismiss) private var dismiss

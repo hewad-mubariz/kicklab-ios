@@ -20,6 +20,12 @@ struct TrainingHomeSettings: View {
                 .accessibilityIdentifier("appearance-picker")
             }
             Section {
+                NavigationLink { AppLanguagePicker() } label: {
+                    LabeledContent("Language", value: AppLanguage.name(AppLanguage.current))
+                }
+                .accessibilityIdentifier("settings-language")
+            }
+            Section {
                 Toggle("Share usage analytics", isOn: Binding(
                     get: { analytics.isEnabled }, set: { analytics.setEnabled($0) }))
                     .accessibilityIdentifier("analytics-sharing")
@@ -30,7 +36,7 @@ struct TrainingHomeSettings: View {
             }
             if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
                 Section("About") {
-                    LabeledContent("Juggle Dude", value: "Version \(version)")
+                    LabeledContent("Juggle Dude", value: String(localized: "Version \(version)"))
                 }
             }
             #if DEBUG
@@ -93,7 +99,7 @@ struct TrainingCameraGuide: View {
         .presentationDragIndicator(.visible)
     }
 
-    private func step(_ icon: String, title: String, detail: String) -> some View {
+    private func step(_ icon: String, title: LocalizedStringKey, detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 25))

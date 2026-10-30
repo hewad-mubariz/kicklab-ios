@@ -93,7 +93,7 @@ struct LeaderboardCorrectionForm: View {
         .accessibilityIdentifier("correction-header")
     }
 
-    private func score(_ value: Int, _ label: String, highlight: Bool = false) -> some View {
+    private func score(_ value: Int, _ label: LocalizedStringKey, highlight: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(value.formatted()).font(LeaderboardStyle.number(56)).monospacedDigit()
                 .foregroundStyle(highlight ? TrainingHomeStyle.accent(scheme) : TrainingHomeStyle.ink(scheme))
@@ -101,14 +101,21 @@ struct LeaderboardCorrectionForm: View {
         }
     }
 
+    /// Whole sentences, so each language can order its own words.
     private var summary: String {
-        let total = "\(item.touches.formatted()) \(item.touches == 1 ? "touch" : "touches") in all, and your longest run without a stop was \(counted). That run is what ranks."
-        guard item.source == .recording else { return "Imported videos stay in your history and never rank." }
-        guard let correction else { return total + " This session was saved before touch checks, so there’s nothing to choose." }
-        let ended = correction.endedBy.map { " It began at your first counted touch and ended at \($0.timestamp): \($0.kind.stopReason)." } ?? ""
+        let total = String(localized: "\(item.touches) touches in all, and your longest run without a stop was \(counted). That run is what ranks.")
+        guard item.source == .recording else { return String(localized: "Imported videos stay in your history and never rank.") }
+        guard let correction else {
+            return [total, String(localized: "This session was saved before touch checks, so there’s nothing to choose.")].joined(separator: " ")
+        }
+        var sentences = [total]
+        if let stop = correction.endedBy {
+            sentences.append(String(localized: "It began at your first counted touch and ended at \(stop.timestamp): \(stop.kind.stopReason)."))
+        }
         let leftOut = correction.leftOut.count
-        guard leftOut > 0 else { return total + ended + " Every touch inside it was counted." }
-        return total + ended + " Inside it, the counter left out \(leftOut) \(leftOut == 1 ? "touch" : "touches") it wasn’t sure of."
+        sentences.append(leftOut > 0 ? String(localized: "Inside it, the counter left out \(leftOut) touches it wasn’t sure of.")
+                                     : String(localized: "Every touch inside it was counted."))
+        return sentences.joined(separator: " ")
     }
 
     // MARK: - Recording
@@ -182,7 +189,7 @@ struct LeaderboardCorrectionForm: View {
         }
     }
 
-    private var waitingReason: String {
+    private var waitingReason: LocalizedStringKey {
         if item.syncState != .synced { return "It sends by itself once this session has synced to your account. You can close this screen." }
         if review.waitingForConnection { return "You’re offline. It sends by itself when you’re back online. You can close this screen." }
         return "Sending shortly."
@@ -190,15 +197,14 @@ struct LeaderboardCorrectionForm: View {
 
     private func status(_ attempt: LeaderboardAttempt) -> some View {
         let asked = attempt.touchReview?.moments.count ?? 0
-        let touches = "\(asked) \(asked == 1 ? "touch" : "touches")"
-        let (title, symbol, detail): (String, String, String) = switch attempt.status {
+        let (title, symbol, detail): (LocalizedStringKey, String, LocalizedStringKey) = switch attempt.status {
         case .approved: ("Confirmed", "checkmark.seal.fill",
                          "A reviewer checked your clips. This session now counts \(attempt.reviewedCount ?? attempt.proposedCount).")
         case .rejected: ("Not confirmed", "xmark.seal",
-                         "A reviewer couldn’t confirm the \(touches) you sent, so your streak stays at \(counted).")
+                         "A reviewer couldn’t confirm the \(asked) touches you sent, so your streak stays at \(counted).")
         case .withdrawn: ("Withdrawn", "arrow.uturn.backward", "You withdrew this check. Your streak stays at \(counted).")
         default: ("Being checked", "clock",
-                  "You asked to count \(touches), for a streak of \(attempt.proposedCount). Your rank changes only if a reviewer confirms them.")
+                  "You asked to count \(asked) touches, for a streak of \(attempt.proposedCount). Your rank changes only if a reviewer confirms them.")
         }
         return panel {
             Label(title, systemImage: symbol).font(.headline)
@@ -231,8 +237,7 @@ struct LeaderboardCorrectionForm: View {
                     .font(.footnote.weight(.semibold))
             }
             Button(action: send) {
-                Text(chosen.isEmpty ? "Choose touches to send"
-                     : "Send \(chosen.count) \(chosen.count == 1 ? "touch" : "touches") for a check")
+                Text(chosen.isEmpty ? "Choose touches to send" : "Send \(chosen.count) touches for a check")
                     .font(.headline).frame(maxWidth: .infinity, minHeight: 52)
                     .foregroundStyle(scheme == .dark ? TrainingHomeStyle.buttonInk : .white)
             }
@@ -246,9 +251,11 @@ struct LeaderboardCorrectionForm: View {
         let request = correction.request(counting: chosen)
         let windows = claim.map { LeaderboardMomentClips.windows(for: request.moments, proposal: $0, durationMS: item.durationMS) } ?? []
         let seconds = Int((Double(windows.reduce(0) { $0 + $1.durationMS }) / 1000).rounded(.up))
-        let size = request.moments.isEmpty ? "Only short clips around the touches you choose are sent"
-            : "Only \(seconds) seconds of clips around the touches you choose are sent"
-        return size + ", never the whole recording. They’re private to you and the review team. If a reviewer confirms the touches, your streak updates by itself."
+        let size = request.moments.isEmpty
+            ? String(localized: "Only short clips around the touches you choose are sent, never the whole recording.")
+            : String(localized: "Only \(seconds) seconds of clips around the touches you choose are sent, never the whole recording.")
+        return [size, String(localized: "They’re private to you and the review team. If a reviewer confirms the touches, your streak updates by itself.")]
+            .joined(separator: " ")
     }
 
     private func send() {
@@ -305,7 +312,7 @@ struct LeaderboardCorrectionForm: View {
         }
     }
 
-    private func panel<Content: View>(_ title: String? = nil, footer: String? = nil,
+    private func panel<Content: View>(_ title: LocalizedStringKey? = nil, footer: LocalizedStringKey? = nil,
                                       @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             if let title {
@@ -374,7 +381,7 @@ struct LeaderboardLastSessionCard: View {
         }
     }
 
-    private struct Line { let title: String; let detail: String; let action: String; var asks = false }
+    private struct Line { let title: LocalizedStringKey; let detail: LocalizedStringKey; let action: LocalizedStringKey; var asks = false }
 
     private func line(for item: HistorySession) -> Line? {
         let streak = item.rankedProposal?.count ?? 0
@@ -399,7 +406,7 @@ struct LeaderboardLastSessionCard: View {
               !correction.leftOut.isEmpty else { return nil }
         let leftOut = correction.leftOut.count
         return Line(title: "Last session · best streak \(streak)",
-                    detail: "\(leftOut) \(leftOut == 1 ? "touch" : "touches") the counter wasn’t sure of inside your streak. If they were valid, send them for a check.",
+                    detail: "\(leftOut) touches the counter wasn’t sure of inside your streak. If they were valid, send them for a check.",
                     action: "Check touches", asks: true)
     }
 }

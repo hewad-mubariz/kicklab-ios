@@ -31,7 +31,9 @@ struct LeaderboardRulesView: View {
                     Label("Duration and rhythm describe your streak. They do not add points.", systemImage: "metronome")
                         .font(.subheadline).foregroundStyle(.secondary)
                     group("WEEKLY & ALL-TIME") {
-                        rule("One best streak per player", "The weekly board resets Monday at 00:00 UTC. A session counts in the week you recorded it\(LeaderboardRules.touchChecks ? ", even if a check finishes later" : ""). Ties go to the earlier session.", "calendar")
+                        rule("One best streak per player", LeaderboardRules.touchChecks
+                             ? "The weekly board resets Monday at 00:00 UTC. A session counts in the week you recorded it, even if a check finishes later. Ties go to the earlier session."
+                             : "The weekly board resets Monday at 00:00 UTC. A session counts in the week you recorded it. Ties go to the earlier session.", "calendar")
                         Text("Next reset: \(LeaderboardRules.nextReset().formatted(date: .abbreviated, time: .shortened)) · your time")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
@@ -75,7 +77,7 @@ struct LeaderboardRulesView: View {
         rule("Still disagree?", "Open the check in Touch checks and ask for one re-review.", "arrow.uturn.backward.circle")
     }
 
-    private func group<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    private func group<Content: View>(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(.caption.weight(.semibold)).tracking(1).foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 16, content: content)
@@ -84,7 +86,7 @@ struct LeaderboardRulesView: View {
                 .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(TrainingHomeStyle.line(scheme)))
         }
     }
-    private func rule(_ title: String, _ text: String, _ symbol: String, warning: Bool = false) -> some View {
+    private func rule(_ title: LocalizedStringKey, _ text: LocalizedStringKey, _ symbol: String, warning: Bool = false) -> some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: symbol).font(.title2).frame(width: 28)
                 .foregroundStyle(warning ? Color(red: 0.65, green: 0.22, blue: 0.12) : TrainingHomeStyle.accent(scheme))

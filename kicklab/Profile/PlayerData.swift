@@ -88,13 +88,13 @@ nonisolated enum PlayerDataError: LocalizedError {
     }
     var errorDescription: String? {
         switch self {
-        case .unavailable: "Account storage is unavailable in this build."
-        case .signIn: "Sign in again to sync your account."
-        case .invalidResult: "This session could not be saved."
-        case .requestFailed: "We couldn’t sync with Juggle Dude. Check your connection and try again."
-        case .invalidProfile: "Choose a name of 1–40 characters and a valid country."
-        case .rejected: "This result could not sync. It is kept on this phone; contact support if you need help."
-        case .rateLimited: "Sync is temporarily busy. Your sessions are saved and will retry later."
+        case .unavailable: String(localized: "Account storage is unavailable in this build.")
+        case .signIn: String(localized: "Sign in again to sync your account.")
+        case .invalidResult: String(localized: "This session could not be saved.")
+        case .requestFailed: String(localized: "We couldn’t sync with Juggle Dude. Check your connection and try again.")
+        case .invalidProfile: String(localized: "Choose a name of 1–40 characters and a valid country.")
+        case .rejected: String(localized: "This result could not sync. It is kept on this phone; contact support if you need help.")
+        case .rateLimited: String(localized: "Sync is temporarily busy. Your sessions are saved and will retry later.")
         }
     }
 }

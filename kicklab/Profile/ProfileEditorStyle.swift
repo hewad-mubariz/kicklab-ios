@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ProfileEditorHeading: View {
     let name: String
-    let subtitle: String
+    let subtitle: LocalizedStringKey
     var photo: Data? = nil
     @Environment(\.colorScheme) private var scheme
 

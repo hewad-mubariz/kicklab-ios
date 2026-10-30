@@ -179,7 +179,7 @@ final class SubscriptionAccountLink: ObservableObject {
                 } else if reply.productID != nil { throw SubscriptionAccountError.unavailable }
                 self.linkedElsewhere = reply.link == "another_account"
                 self.message = reply.link == "another_account"
-                    ? "This Apple purchase is linked to another Juggle Dude account. Sign in to that account for account recovery."
+                    ? String(localized: "This Apple purchase is linked to another Juggle Dude account. Sign in to that account for account recovery.")
                     : nil
             } catch SubscriptionAccountError.localTestingOnly {
                 // Nothing to sync in local StoreKit testing; never show an unfixable error.
@@ -188,7 +188,7 @@ final class SubscriptionAccountLink: ObservableObject {
             } catch {
                 guard let self, !Task.isCancelled, self.generation == current, self.userID == owner else { return }
                 if self.validUntil.map({ $0 <= Date() }) ?? true { self.clearAccess() }
-                self.message = "Couldn’t sync Pro with your account. Please try again."
+                self.message = String(localized: "Couldn’t sync Pro with your account. Please try again.")
             }
         }
         work = task

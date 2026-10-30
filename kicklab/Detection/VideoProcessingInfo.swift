@@ -41,7 +41,7 @@ nonisolated struct VideoProcessingInfo: Sendable {
 
     var processingNote: String? {
         if highResolution || highFrameRate || duration >= 60 {
-            return "May take a little longer"
+            return String(localized: "May take a little longer")
         }
         return nil
     }

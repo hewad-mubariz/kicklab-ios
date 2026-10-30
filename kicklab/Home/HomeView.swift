@@ -146,10 +146,10 @@ struct HomeView: View {
 
 private struct TrainingHomeCard: View {
     let image: String
-    let category: String
-    let title: String
-    let subtitle: String
-    let actionLabel: String
+    let category: LocalizedStringResource
+    let title: LocalizedStringResource
+    let subtitle: LocalizedStringResource
+    let actionLabel: LocalizedStringResource
     let primary: Bool
     let action: () -> Void
     @ScaledMetric(relativeTo: .body) private var imageHeight: CGFloat = 232
@@ -203,8 +203,8 @@ private struct TrainingHomeCard: View {
             .contentShape(RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(title), \(actionLabel)")
-        .accessibilityHint(subtitle.replacingOccurrences(of: "\n", with: " "))
+        .accessibilityLabel("\(String(localized: title)), \(String(localized: actionLabel))")
+        .accessibilityHint(String(localized: subtitle).replacingOccurrences(of: "\n", with: " "))
     }
 }
 

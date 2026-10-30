@@ -40,7 +40,7 @@ struct ProfileCountryPicker: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 if search.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    row(code: "", name: "Not selected", flag: nil)
+                    row(code: "", name: String(localized: "Not selected"), flag: nil)
                         .id("")
                 }
                 ForEach(filtered) { item in
