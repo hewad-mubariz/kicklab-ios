@@ -69,6 +69,13 @@ nonisolated enum BallSurfaceMotion {
         let disagreement: Double
     }
 
+    /// A frame is the current image in one pair and the previous image in the
+    /// next. Keep only those two small pyramids instead of rebuilding both.
+    struct Prepared: Sendable {
+        let levels: [Gray]
+        init(_ image: Gray) { levels = image.pyramid() }
+    }
+
     static func features(_ image: Gray) -> [SIMD2<Double>] {
         var candidates=[(Double,SIMD2<Double>)]()
         for y in stride(from:20,to:108,by:2) { for x in stride(from:20,to:108,by:2) {
@@ -200,9 +207,13 @@ nonisolated enum BallSurfaceMotion {
     }
 
     static func estimate(previous: Gray, current: Gray) -> Fit {
-        let a=previous.pyramid(), b=current.pyramid()
+        estimate(previous: Prepared(previous), current: Prepared(current))
+    }
+
+    static func estimate(previous: Prepared, current: Prepared) -> Fit {
+        let a=previous.levels, b=current.levels
         var from=[SIMD2<Double>](),to=[SIMD2<Double>]()
-        for p in features(previous) {
+        for p in features(a[0]) {
             guard let q=follow(p,from:a,to:b),simd_distance(q,SIMD2(center,center)) < radius*0.90,
                   let back=follow(q,from:b,to:a),simd_distance(p,back)<1.1 else {continue}
             from.append((p-SIMD2(center,center))/radius*SIMD2(1,-1))

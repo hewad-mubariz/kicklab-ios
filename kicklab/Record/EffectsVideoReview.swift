@@ -239,6 +239,11 @@ struct EffectsVideoReview: View {
                 "mask_bytes":ready.renderTrack.reduce(0) { $0+($1.ballMask?.alpha.count ?? 0) }]
             try JSONSerialization.data(withJSONObject:metrics,options:[.sortedKeys,.prettyPrinted])
                 .write(to:folder.appendingPathComponent("preparation.json"))
+            // The cache-bypassing review path needs its own stage report too.
+            if let timing = motion.preparationTiming {
+                try JSONEncoder().encode(timing)
+                    .write(to: folder.appendingPathComponent("surface-motion-timing.json"), options: .atomic)
+            }
             try SessionAnalysisStore.frameData(ready.renderTrack).write(to:folder.appendingPathComponent("visual.plist"))
             try JSONSerialization.data(withJSONObject:poses).write(to:folder.appendingPathComponent("poses.json"))
             summary = ready
@@ -256,6 +261,7 @@ struct EffectsVideoReview: View {
 
     private func exportReview(frames: [RecordedFrame]) async {
         guard ProcessInfo.processInfo.arguments.contains("--effects-export") else { return }
+        PreparationMemoryProbe.stage("export")
         let folderName = SessionDesignReview.argument("--effects-folder") ?? "metal-effects"
         let folder = URL.documentsDirectory.appendingPathComponent(URL(fileURLWithPath: folderName).lastPathComponent)
         do {
@@ -311,11 +317,15 @@ struct EffectsVideoReview: View {
                     "device": UIDevice.current.model, "thermal": ProcessInfo.processInfo.thermalState.rawValue,
                     "mask_frames": frames.filter { $0.ballMask != nil }.count]
                 if skin != .original {
+                    let lookupStart = ProcessInfo.processInfo.systemUptime
                     let motion = try await BallSurfaceTimeline.prepare(source: url, track: BallEffectTrack(frames: frames))
+                    // Export already prepared this timeline. Do not count its
+                    // historical analysis cost again as this cache lookup's wait.
+                    metrics["surface_motion_post_export_lookup_s"] = ProcessInfo.processInfo.systemUptime - lookupStart
                     metrics["surface_motion_frames"] = motion.entries.count
                     metrics["surface_motion_accepted"] = motion.acceptedCount
                     metrics["uses_source_rotation"] = motion.usesSourceRotation
-                    metrics["surface_motion_prepare_s"] = motion.elapsed
+                    metrics["surface_motion_original_compute_s"] = motion.elapsed
                     metrics["photographic_exposure_ms"] = motion.photographicExposure.map { $0 * 1000 } as Any? ?? NSNull()
                     let poses = motion.entries.map { entry in
                         ["time": entry.time, "accepted": entry.accepted,

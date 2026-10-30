@@ -263,6 +263,26 @@ or treated as an on-device football solution.
   implemented. Blur fringes remain. Before integration, resolve retry prioritization,
   shared model errors, and the way resampled masks preserve physical sampling/feather
   information. The experiment and roadmap are saved locally; app behavior is unchanged.
+- **30 October Mac-only preparation investigation:** [measured results](../../benchmarks/rf-ball-replacement/20261030-preparation/report.json)
+  and [reproduction harness](../../scripts/ball-preparation-benchmark/README.md).
+  Two retained in-app recordings and the 4K/120 fps outdoor control preserve all
+  6,988 source-spin frame results exactly: timestamps, measured rotation,
+  acceptance/visibility, lighting and exposure. The first indoor clip also matches
+  the uninstrumented implementation. Reusing each frame's small image pyramid
+  removes duplicate preparation between consecutive rotation checks; only the
+  previous/current pyramids are retained. Source cadence and counting are unchanged.
+  Debug reports now separate decode, outline, patch/pyramid, rotation, exposure,
+  lighting and scheduling time, and distinguish cache-request wait from historical
+  computation cost. Mac timings vary under host load and are not iPhone speed or
+  thermal acceptance. This optimization does not remove the dense RF-DETR pass.
+  Sampled outline reuse is exact on the same-resolution indoor pixels, but the
+  outdoor 720/1080 comparison shifts the radial outline by up to 6.39 pixels in
+  720-equivalent coordinates. A general geometry cache is therefore **not enabled**.
+  Original-ball fringe/compositing remains a separate unresolved quality issue.
+  Simulator validation passed 66 tests; the one physical-camera test was skipped.
+  Next device gate: cold/warm preparation and replay/export on retained in-app
+  footage, with peak memory and thermal sampling, followed by a fresh recording.
+  This investigation did not operate a phone, change a build number or upload.
 - **Completion checks:** fresh indoor/outdoor and fast/occluded recordings, preview
   versus exported placement, multiple skins, unchanged touch events, and measured
   preparation/export time, memory and thermal behavior on older/newer phones.

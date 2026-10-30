@@ -1,0 +1,385 @@
+{
+  "date": "2026-10-30",
+  "base_revision": "4d0c3d1cb2fbcdde6fe9f68ed735e7a5eeeadbce",
+  "scope": "Mac-only investigation. Native timing comparisons use saved appearance masks and exclude model inference; simulator functional tests can run the model but are not device performance evidence. No phone operation, iOS thermal test, device install, version bump, or upload. Saved masks are inputs, not new accuracy labels.",
+  "host": {
+    "platform": "macOS-26.7.2-arm64-arm-64bit-Mach-O",
+    "compiler": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx26.0",
+    "flags": [
+      "-O",
+      "-whole-module-optimization",
+      "-D DEBUG"
+    ]
+  },
+  "changes": [
+    "Collect per-stage source-spin preparation timing in Debug, separating request latency from cached computation cost.",
+    "Reuse the previous/current image pyramids; same full source cadence and unchanged rotation/outline/lighting decisions. Only two 128/64/32 Float pyramids are retained (168 KiB of sample arrays).",
+    "The debug capture review saves uncached spin-stage timing, and export diagnostics distinguish historical spin computation from a post-export cache lookup; memory sampling now labels export explicitly."
+  ],
+  "clips": [
+    {
+      "name": "indoor1",
+      "source": "artifacts/ball-replacement-memory/20261020/source.mov",
+      "source_sha256": "a808ce63454bb11e396ca0a1cde0d54d74279041fd35aebbba76cf6891f32c9b",
+      "appearance_track": "artifacts/ball-replacement-memory/20261020/buffer-ownership-complete/visual.plist",
+      "track_sha256": "1aeaa5f0753f8432b415a4793193676058f439966a47b55074966186bb74910e",
+      "frames_compared": 1373,
+      "accepted_rotation_pairs": 740,
+      "exact_appearance_parity": true,
+      "fields_compared": [
+        "timestamp",
+        "measured_quaternion",
+        "accepted",
+        "visible",
+        "lighting",
+        "photographic_exposure"
+      ],
+      "variants": {
+        "reference": {
+          "wall_seconds": [
+            13.388781499990728,
+            9.237199749972206,
+            8.389129874994978
+          ],
+          "median_wall_seconds": 9.237199749972206,
+          "median_stage_seconds": {
+            "decoding": 0.94559974965523,
+            "exposure": 0.034199375193566084,
+            "guide": 0.0013612498878501356,
+            "lighting": 0.022548874985659495,
+            "outline": 2.95125337515492,
+            "patch": 0.15095374945667572,
+            "rotation": 4.954757833387703,
+            "scheduling": 0.0009644586825743318,
+            "setup": 0.16146149998530746
+          },
+          "stage_calls": {
+            "decoding": 1374,
+            "exposure": 187,
+            "guide": 1373,
+            "lighting": 923,
+            "outline": 944,
+            "patch": 930,
+            "rotation": 918,
+            "scheduling": 1374,
+            "setup": 1
+          }
+        },
+        "candidate": {
+          "wall_seconds": [
+            8.697807833348634,
+            8.469525291671744,
+            8.085753000021214
+          ],
+          "median_wall_seconds": 8.469525291671744,
+          "median_stage_seconds": {
+            "decoding": 0.6775957086065318,
+            "exposure": 0.03402150035253726,
+            "guide": 0.0012055002734996378,
+            "lighting": 0.01950366669916548,
+            "outline": 2.8280863330874126,
+            "patch": 0.13189033314120024,
+            "pyramid": 0.21583975001703948,
+            "rotation": 4.413272666861303,
+            "scheduling": 0.0007145005802158266,
+            "setup": 0.1323802083497867
+          },
+          "stage_calls": {
+            "decoding": 1374,
+            "exposure": 187,
+            "guide": 1373,
+            "lighting": 923,
+            "outline": 944,
+            "patch": 930,
+            "pyramid": 923,
+            "rotation": 918,
+            "scheduling": 1374,
+            "setup": 1
+          }
+        }
+      },
+      "geometry": {
+        "sample_stride": 12,
+        "sampled_frames": 115,
+        "decoded_sizes": [
+          [
+            720,
+            1280
+          ],
+          [
+            720,
+            1280
+          ]
+        ],
+        "exact_timestamps": true,
+        "fit_presence_mismatches": 0,
+        "both_fitted": 77,
+        "center_difference_in_720_pixels": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "max_radial_difference_in_720_pixels": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "texture_measurement_keeps_same_pixel_geometry": true
+      }
+    },
+    {
+      "name": "indoor2",
+      "source": "artifacts/ball-replacement-quality/20261020-next/source-latest.mov",
+      "source_sha256": "71798aa336639d599aed14c3b9f0c6ddd2e0a2b7dfb073cfe157068f2dda5155",
+      "appearance_track": "artifacts/ball-replacement-quality/20261020-next/visual.plist",
+      "track_sha256": "3e893145ce1e261e1822e701b2a9ca08a52bc5fb2187962ec49d0e2f37f1d81c",
+      "frames_compared": 1556,
+      "accepted_rotation_pairs": 997,
+      "exact_appearance_parity": true,
+      "fields_compared": [
+        "timestamp",
+        "measured_quaternion",
+        "accepted",
+        "visible",
+        "lighting",
+        "photographic_exposure"
+      ],
+      "variants": {
+        "reference": {
+          "wall_seconds": [
+            10.761066833307268,
+            10.48831058331416,
+            10.86055404166109
+          ],
+          "median_wall_seconds": 10.761066833307268,
+          "median_stage_seconds": {
+            "decoding": 0.48699166634469293,
+            "exposure": 0.07746829159441404,
+            "guide": 0.0014608333876822144,
+            "lighting": 0.025297749729361385,
+            "outline": 3.6863737087405752,
+            "patch": 0.16866116694291122,
+            "rotation": 6.146765374491224,
+            "scheduling": 0.0009420828719157726,
+            "setup": 0.13639016667730175
+          },
+          "stage_calls": {
+            "decoding": 1557,
+            "exposure": 246,
+            "guide": 1556,
+            "lighting": 1228,
+            "outline": 1249,
+            "patch": 1233,
+            "rotation": 1217,
+            "scheduling": 1557,
+            "setup": 1
+          }
+        },
+        "candidate": {
+          "wall_seconds": [
+            10.369242625019979,
+            10.192441708320985,
+            10.356435458321357
+          ],
+          "median_wall_seconds": 10.356435458321357,
+          "median_stage_seconds": {
+            "decoding": 0.4714377912459895,
+            "exposure": 0.07835637519019656,
+            "guide": 0.0015722927637398243,
+            "lighting": 0.02749366674106568,
+            "outline": 3.643622749921633,
+            "patch": 0.16892841606750153,
+            "pyramid": 0.2852337086223997,
+            "rotation": 5.505297749914462,
+            "scheduling": 0.0008863758121151477,
+            "setup": 0.1422457083244808
+          },
+          "stage_calls": {
+            "decoding": 1557,
+            "exposure": 246,
+            "guide": 1556,
+            "lighting": 1228,
+            "outline": 1249,
+            "patch": 1233,
+            "pyramid": 1228,
+            "rotation": 1217,
+            "scheduling": 1557,
+            "setup": 1
+          }
+        }
+      },
+      "geometry": {
+        "sample_stride": 12,
+        "sampled_frames": 130,
+        "decoded_sizes": [
+          [
+            720,
+            1280
+          ],
+          [
+            720,
+            1280
+          ]
+        ],
+        "exact_timestamps": true,
+        "fit_presence_mismatches": 0,
+        "both_fitted": 103,
+        "center_difference_in_720_pixels": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "max_radial_difference_in_720_pixels": {
+          "median": 0.0,
+          "p95": 0.0,
+          "max": 0.0
+        },
+        "texture_measurement_keeps_same_pixel_geometry": true
+      }
+    },
+    {
+      "name": "outdoor",
+      "source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001/nomral_juggling_6.mov",
+      "source_sha256": "de6af4939c1b4350b5d72123e1ba6b9bd99fa87a0df518538a93765389d3f2cd",
+      "appearance_track": "artifacts/touch-temporal-leg-20261014/fresh/nomral_juggling_6-track.plist",
+      "track_sha256": "efc2fe831e30d4db56109dee93fa7b3cac55872111efed18683f49a72de0e5d5",
+      "frames_compared": 4059,
+      "accepted_rotation_pairs": 2830,
+      "exact_appearance_parity": true,
+      "fields_compared": [
+        "timestamp",
+        "measured_quaternion",
+        "accepted",
+        "visible",
+        "lighting",
+        "photographic_exposure"
+      ],
+      "variants": {
+        "reference": {
+          "wall_seconds": [
+            32.28811195833259,
+            47.36710033332929,
+            37.476534874993376
+          ],
+          "median_wall_seconds": 37.476534874993376,
+          "median_stage_seconds": {
+            "decoding": 8.141257167008007,
+            "exposure": 0.0014587080804631114,
+            "guide": 0.0069647496566176414,
+            "lighting": 0.06625050090951845,
+            "outline": 8.9812660003372,
+            "patch": 0.4283639997302089,
+            "rotation": 17.63522312461282,
+            "scheduling": 0.0027338748332113028,
+            "setup": 0.16969962499570101
+          },
+          "stage_calls": {
+            "decoding": 4060,
+            "exposure": 286,
+            "guide": 4059,
+            "lighting": 2847,
+            "outline": 2876,
+            "patch": 2875,
+            "rotation": 2843,
+            "scheduling": 4060,
+            "setup": 1
+          }
+        },
+        "candidate": {
+          "wall_seconds": [
+            38.37886487500509,
+            32.894269333337434,
+            34.2379601666762
+          ],
+          "median_wall_seconds": 34.2379601666762,
+          "median_stage_seconds": {
+            "decoding": 8.565453583694762,
+            "exposure": 0.001149291667388752,
+            "guide": 0.005619666160782799,
+            "lighting": 0.06441295886179432,
+            "outline": 8.696662540198304,
+            "patch": 0.41985720820957795,
+            "pyramid": 0.683763458771864,
+            "rotation": 15.578676791716134,
+            "scheduling": 0.0027663333457894623,
+            "setup": 0.17050679167732596
+          },
+          "stage_calls": {
+            "decoding": 4060,
+            "exposure": 286,
+            "guide": 4059,
+            "lighting": 2847,
+            "outline": 2876,
+            "patch": 2875,
+            "pyramid": 2847,
+            "rotation": 2843,
+            "scheduling": 4060,
+            "setup": 1
+          }
+        }
+      },
+      "geometry": {
+        "sample_stride": 12,
+        "sampled_frames": 339,
+        "decoded_sizes": [
+          [
+            720,
+            1280
+          ],
+          [
+            1080,
+            1920
+          ]
+        ],
+        "exact_timestamps": true,
+        "fit_presence_mismatches": 0,
+        "both_fitted": 240,
+        "center_difference_in_720_pixels": {
+          "median": 0.5189160986988736,
+          "p95": 2.1744723627742117,
+          "max": 6.002999529838576
+        },
+        "max_radial_difference_in_720_pixels": {
+          "median": 0.9358637752691834,
+          "p95": 2.675531342227977,
+          "max": 6.393319507361404
+        },
+        "texture_measurement_keeps_same_pixel_geometry": true
+      }
+    }
+  ],
+  "unique_source_frames_compared": 6988,
+  "interpretation": [
+    "All appearance result fields matched exactly in every repeated run. The first indoor clip also matched the original uninstrumented implementation.",
+    "Sequential alternating Mac timings vary with host load; one outdoor candidate run was slower than its paired reference. Median differences are observations, not iPhone speed guarantees.",
+    "No shared geometry cache enabled: different decoded resolutions moved a sampled outline by as much as 6.39 pixels at 720-equivalent resolution. Same-resolution sampled indoor fits were identical.",
+    "This change removes duplicated pyramid building, not the full-video model pass or the existing original-ball fringe. No claim that replacement appearance is fixed."
+  ],
+  "pending": [
+    "On-phone cold and warm full preparation, replay/export comparison, peak memory and thermal sampling on retained in-app footage; then one fresh capture.",
+    "Investigate selective dense-model work and source-colour removal separately, with contact/occlusion controls."
+  ],
+  "local_raw_results": "artifacts/ball-preparation-20261030",
+  "validation": {
+    "simulator": "Leaderboard Beta QA, iPhone 17 Pro / iOS 26.5",
+    "selected_tests": 67,
+    "passed": 66,
+    "skipped": 1,
+    "failures": 0,
+    "skipped_reason": "Physical phone camera required for both-lens capture test.",
+    "suites": [
+      "BallMaterialAppearanceTests",
+      "BallReplacementMotionBlurTests",
+      "BallReplacementBackgroundTests",
+      "BallLightMatchTests",
+      "SessionAnalysisTests",
+      "ExportAppearanceParityTests",
+      "ReplayMaterialLifecycleTests",
+      "RFEffectsPreparationTests",
+      "ModernVideoAPITests",
+      "Capture60FPSTests"
+    ],
+    "result_bundle": "artifacts/ball-preparation-20261030/appearance-tests.xcresult",
+    "post_test_debug_report_build": "passed"
+  }
+}

@@ -17,6 +17,7 @@ nonisolated struct BallSurfaceTimeline: Sendable {
     let entries: [Entry]
     let elapsed: Double
     let acceptedCount: Int
+    let preparationTiming: BallPreparationTiming?
     /// Robust source-edge estimate; nil leaves the existing box-based estimate.
     let photographicExposure: Double?
     private let trusted: [Bool]
@@ -24,8 +25,10 @@ nonisolated struct BallSurfaceTimeline: Sendable {
     private let rendered: [simd_quatf]
     /// Longest rejected run, between measured increments, that is bridged.
     static let maximumBridge = 0.3
-    init(entries: [Entry], elapsed: Double, photographicExposure: Double? = nil) {
+    init(entries: [Entry], elapsed: Double, photographicExposure: Double? = nil,
+         preparationTiming: BallPreparationTiming? = nil) {
         self.entries=entries;self.elapsed=elapsed
+        self.preparationTiming = preparationTiming
         self.photographicExposure = photographicExposure
         rendered = Self.bridged(entries)
         acceptedCount=entries.reduce(0) {$0+($1.accepted ? 1:0)}
@@ -208,6 +211,7 @@ nonisolated struct BallSurfaceTimeline: Sendable {
         let scoped=source.startAccessingSecurityScopedResource()
         defer {if scoped {source.stopAccessingSecurityScopedResource()}}
         let start=ProcessInfo.processInfo.systemUptime
+        var timing = BallPreparationTiming(enabled: BallPreparationTiming.enabledForBuild)
         let asset=AVURLAsset(url:source)
         guard let video=try await asset.loadTracks(withMediaType:.video).first else {
             throw NSError(domain:"KickLab.SurfaceMotion",code:1,userInfo:[NSLocalizedDescriptionKey:"No video track."])
@@ -222,46 +226,57 @@ nonisolated struct BallSurfaceTimeline: Sendable {
         output.alwaysCopiesSampleData=false;reader.add(output)
         guard reader.startReading() else {throw reader.error!}
         defer {if reader.status == .reading {reader.cancelReading()}}
-        var entries=[Entry](),pose=initial,previous:BallSurfaceMotion.Gray?,previousTime:Double?
+        var entries=[Entry](),pose=initial,previous:BallSurfaceMotion.Prepared?,previousTime:Double?
         var exposure = BallExposureCalibration(duration: duration.seconds, frameDuration: composition.frameDuration.seconds)
+        timing.record(.setup, since: start)
         while true {
+            let scheduled = timing.enabled ? ProcessInfo.processInfo.systemUptime : 0
             try await VideoWorkExecution.checkpoint(requiresGPU: false)
-            guard let buffer = output.copyNextSampleBuffer() else { break }
+            timing.record(.scheduling, since: scheduled)
+            guard let buffer = timing.measure(.decoding, { output.copyNextSampleBuffer() }) else { break }
+            timing.decodedFrames += 1
             try Task.checkCancellation()
             let time=CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(buffer))
             autoreleasepool {
                 guard time.isFinite,let pixels=CMSampleBufferGetImageBuffer(buffer),
-                      let sample=track.replacementGuide(at:time),sample.confidence>=0.3,
-                      let fitted=BallReplacementFootprint.fit(pixels:pixels,sample:sample),
-                      let current=BallSurfaceMotion.patch(pixels:pixels,center:fitted.center,
-                          radius:fitted.radii.reduce(0,+)/Double(fitted.radii.count)) else {
+                      let sample=timing.measure(.guide, { track.replacementGuide(at:time) }),sample.confidence>=0.3,
+                      let fitted=timing.measure(.outline, { BallReplacementFootprint.fit(pixels:pixels,sample:sample) }),
+                      let patch=timing.measure(.patch, { BallSurfaceMotion.patch(pixels:pixels,center:fitted.center,
+                          radius:fitted.radii.reduce(0,+)/Double(fitted.radii.count)) }) else {
                     previous=nil;previousTime=nil
                     entries.append(Entry(time:time,orientation:pose,accepted:false,visible:false));return
                 }
+                let current = timing.measure(.pyramid, { BallSurfaceMotion.Prepared(patch) })
+                timing.fittedFrames += 1
                 var accepted=false
                 if exposure.shouldMeasure(at: time) {
                     let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
                     if let velocity = track.velocity(at: time, size: size),
-                       let blur = BallReplacementMotionBlur.measured(pixels: pixels, body: fitted,
-                            suggested: track.smear(at: time, size: size)) {
+                       let blur = timing.measure(.exposure, { BallReplacementMotionBlur.measured(pixels: pixels, body: fitted,
+                            suggested: track.smear(at: time, size: size)) }) {
                         exposure.observe(time: time, smear: blur, velocity: velocity)
                     }
                 }
                 if let previous,let previousTime,time>previousTime,time-previousTime<0.06 {
-                    let result=BallSurfaceMotion.estimate(previous:previous,current:current)
+                    timing.rotationPairs += 1
+                    let result=timing.measure(.rotation, { BallSurfaceMotion.estimate(previous:previous,current:current) })
                     if result.accepted {
                         accepted=true
+                        timing.acceptedPairs += 1
                         let vector=SIMD3<Float>(result.rotation),angle=simd_length(vector)
                         if angle>1e-7 {pose=simd_normalize(simd_quatf(angle:angle,axis:vector/angle)*pose)}
                     }
                 }
                 entries.append(Entry(time:time,orientation:pose,accepted:accepted,
-                    white:Self.white(pixels:pixels,center:fitted.center,radius:fitted.radii.reduce(0,+)/Double(fitted.radii.count))))
+                    white:timing.measure(.lighting, { Self.white(pixels:pixels,center:fitted.center,
+                        radius:fitted.radii.reduce(0,+)/Double(fitted.radii.count)) })))
                 previous=current;previousTime=time
             }
         }
         guard reader.status == .completed else {throw reader.error ?? NSError(domain:"KickLab.SurfaceMotion",code:2)}
-        return Self(entries:entries,elapsed:ProcessInfo.processInfo.systemUptime-start,photographicExposure:exposure.estimate)
+        timing.totalSeconds = ProcessInfo.processInfo.systemUptime-start
+        return Self(entries:entries,elapsed:timing.totalSeconds,photographicExposure:exposure.estimate,
+                    preparationTiming: timing.enabled ? timing : nil)
     }
 }
 
@@ -274,6 +289,7 @@ private actor BallSurfaceMotionCache {
     private var tail: Task<BallSurfaceTimeline,Error>?
 
     func prepare(source: URL,track: BallEffectTrack) async throws -> BallSurfaceTimeline {
+        let requestedAt = ProcessInfo.processInfo.systemUptime
         let content = try SessionAnalysisStore.sourceDigest(source)
         let samples = track.samples.map { [$0.time, Double($0.center.x), Double($0.center.y),
             Double($0.boxSize?.width ?? 0), Double($0.boxSize?.height ?? 0), $0.confidence] }
@@ -281,14 +297,19 @@ private actor BallSurfaceMotionCache {
         let requested = SessionAnalysisStore.digest(Data("spin-v4-photo-exposure|\(SessionAnalysisStore.pipelineSignature())|\(content)|".utf8) + signature)
         let folder = URL.cachesDirectory.appendingPathComponent("SessionSpin-v3", isDirectory: true)
         let file = folder.appendingPathComponent(requested + ".json")
-        if let value=completed.first(where:{$0.0==requested})?.1 {return value}
-        if let task=pending[requested] {return try await task.value}
+        func report(_ value: BallSurfaceTimeline, origin: String) -> BallSurfaceTimeline {
+            BallPreparationTiming.writeRequest(origin: origin, key: requested, since: requestedAt,
+                                               computation: value.preparationTiming)
+            return value
+        }
+        if let value=completed.first(where:{$0.0==requested})?.1 {return report(value, origin: "memory_cache")}
+        if let task=pending[requested] {return report(try await task.value, origin: "shared_work")}
         if let size = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize, size < 16*1024*1024,
            let data = try? Data(contentsOf: file),
            let saved = try? JSONDecoder().decode(StoredSurfaceTimeline.self, from: data), saved.isValid {
             let value = saved.timeline
             completed.append((requested,value)); if completed.count > 2 { completed.removeFirst() }
-            return value
+            return report(value, origin: "disk_cache")
         }
         let previous=tail
         let task=VideoWorkExecution.detached {
@@ -311,7 +332,7 @@ private actor BallSurfaceMotionCache {
             }
             if completed.count>2 {completed.removeFirst(completed.count-2)}
             if pending.isEmpty {tail=nil}
-            return value
+            return report(value, origin: "computed")
         } catch {
             pending[requested]=nil
             if pending.isEmpty {tail=nil}
@@ -331,12 +352,14 @@ nonisolated private struct StoredSurfaceTimeline: Codable {
     let rows: [Row]
     let elapsed: Double
     var photographicExposure: Double?
+    var preparationTiming: BallPreparationTiming?
     init(_ value: BallSurfaceTimeline) {
         rows = value.entries.map { Row(time:$0.time,q:[$0.orientation.vector.x,$0.orientation.vector.y,
             $0.orientation.vector.z,$0.orientation.vector.w],accepted:$0.accepted,visible:$0.visible,
             white:$0.white.map { [$0.x,$0.y,$0.z] }) }
         elapsed = value.elapsed
         photographicExposure = value.photographicExposure
+        preparationTiming = value.preparationTiming
     }
     var isValid: Bool {
         elapsed.isFinite && (photographicExposure.map { $0.isFinite && $0 > 0 } ?? true)
@@ -348,6 +371,6 @@ nonisolated private struct StoredSurfaceTimeline: Codable {
             orientation:simd_quatf(vector:SIMD4($0.q[0],$0.q[1],$0.q[2],$0.q[3])),
             accepted:$0.accepted,visible:$0.visible,
             white:$0.white.flatMap { $0.count == 3 && $0.allSatisfy(\.isFinite) ? SIMD3($0[0],$0[1],$0[2]) : nil }) },
-            elapsed:elapsed,photographicExposure:photographicExposure)
+            elapsed:elapsed,photographicExposure:photographicExposure,preparationTiming:preparationTiming)
     }
 }
