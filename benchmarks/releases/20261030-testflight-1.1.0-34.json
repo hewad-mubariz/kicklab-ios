@@ -1,0 +1,68 @@
+{
+  "app": "Juggle Dude",
+  "apple_app_id": "6820780610",
+  "version": "1.1.0",
+  "build": "34",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "source_commit": "203278ac1bd6f23a2a0ea39dd29638470f201adb",
+  "status": "testing_internal",
+  "updated_at_utc": "2026-10-30T17:37:53.677625+00:00",
+  "minimum_ios": "18.0",
+  "archive_verification": {
+    "version": "1.1.0",
+    "build": "34",
+    "source_commit": "203278ac1bd6f23a2a0ea39dd29638470f201adb",
+    "archive": "artifacts/releases/20261030-ios18-1.1.0-34/JuggleDude-1.1.0-34.xcarchive",
+    "signature_verified": true,
+    "source_files_verified": 467,
+    "matches_tested_source": "203278ac1bd6f23a2a0ea39dd29638470f201adb",
+    "counter_profile": "outdoor-balanced-v3-20261029",
+    "compilation": "Release with TOUCH_COUNTER_BETA; DEBUG modes absent",
+    "models": [
+      "RFDETRSmallRecovery040FP16.mlmodelc"
+    ],
+    "languages": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "pt-BR"
+    ],
+    "minimum_ios": "18.0",
+    "iphone_only": true,
+    "privacy_manifest": true,
+    "model_license": true,
+    "client_configurations_verified": true,
+    "deferred_editor_features_absent": true,
+    "touch_review_disabled": true,
+    "mach_o_minimum_ios": "18.0",
+    "sdk": "27.1"
+  },
+  "model_pin_verified": true,
+  "compatibility_report": "benchmarks/releases/20261030-ios18-compatibility.json",
+  "what_to_test_file": "artifacts/releases/20261030-ios18-1.1.0-34/what-to-test.txt",
+  "what_to_test": "Juggle Dude 1.1.0 (34) \u2014 iOS 18 compatibility\n\nThis build lowers the minimum supported version to iOS 18.0. The current counter, longest-streak leaderboard, Apple/email sign-in and five languages remain included.\n\n\u2022 On iOS 18, try a short live recording, replay, effects and Download to Photos. Then try importing a video. Check orientation, counter and timer in the saved result.\n\u2022 Keep the app open during video preparation and export on iOS 18. It keeps the screen awake while working; switching away pauses processing, which resumes when you return. If iOS closes the app, reopen the original recording and retry.\n\u2022 Older systems use native frosted panels and ordinary slow motion. Enhanced smooth slow motion appears only on supported iOS versions and hardware. iOS 26 retains Liquid Glass and background processing when available.\n\u2022 Join the leaderboard and record while signed in. The longest counted streak should rank; total touches stay in session history. Try clear hand stops and ground bounces between runs.\n\u2022 Check Apple/email sign-in, guest mode, Pro purchase/restore and changing language without restarting.\n\nPlease report your iPhone model and iOS version with any issue. Physical iOS 18 camera and thermal testing is still needed; the minimum-OS simulator checks are not a performance benchmark.\n",
+  "what_to_test_sha256": "4298ad4bbd7471eb0a6163ef386bd27ccbbbfcb44b06fcdc24424d27a80b1f49",
+  "upload_log": "artifacts/releases/20261030-ios18-1.1.0-34/upload.log",
+  "submitted_to_app_store_review": false,
+  "submitted_to_external_beta_review": false,
+  "installed_to_device_after_upload": false,
+  "upload_succeeded": true,
+  "processing_confirmed_in_app_store_connect": true,
+  "build_id": "f1b965a2-fe84-48cd-9ce7-6ad8ad13c072",
+  "processing_complete": true,
+  "what_to_test_saved": true,
+  "app_store_connect_minimum_ios": "18.0",
+  "app_store_connect_binary_state": "Validated",
+  "internal_testing": {
+    "group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "existing_testers": 3,
+    "status": "Testing"
+  },
+  "proof": [
+    "artifacts/releases/20261030-ios18-1.1.0-34/testflight-notes-and-group.jpg",
+    "artifacts/releases/20261030-ios18-1.1.0-34/testflight-testing.jpg",
+    "artifacts/releases/20261030-ios18-1.1.0-34/testflight-minimum-ios.jpg"
+  ]
+}
