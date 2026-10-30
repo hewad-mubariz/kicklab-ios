@@ -127,7 +127,8 @@ final class ReplayDownloader: ObservableObject {
                           CaptureMotionPoint(time: $0.time, y: $0.detected ? $0.y : nil, x: $0.detected ? $0.x : nil)
                       }, touchTimes: summary.touchesMarked.map(\.time)) : nil,
                       ballChanges: edit.ballChanges, swapEffect: edit.swapEffect,
-                      soundtrack: ReplaySoundtrack(edit: edit, touchTimes: summary.touchesMarked.map(\.time)))
+                      soundtrack: ReplaySoundtrack(edit: edit, touchTimes: summary.touchesMarked.map(\.time)),
+                      clipAudio: edit.clipAudio)
         while burnIn.isExporting {
             try await VideoWorkExecution.checkpoint()
             VideoWorkExecution.lease?.progress(burnIn.progress * 0.96, subtitle: "Saving your replay")

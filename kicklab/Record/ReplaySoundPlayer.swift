@@ -14,6 +14,7 @@ final class ReplaySoundPlayer: ObservableObject {
     private var format: AVAudioFormat?
     private var cursor: Double?
     private var started = false
+    private var sessionActive = false
     /// Which cue was last previewed from the picker, for the chip's own feedback.
     @Published private(set) var previewed: ReplaySound?
     @Published private(set) var previewCount = 0
@@ -52,6 +53,10 @@ final class ReplaySoundPlayer: ObservableObject {
     func stop() {
         stopEngine()
         cursor = nil
+        if sessionActive {
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            sessionActive = false
+        }
     }
 
     private func play(_ sound: ReplaySound) {
@@ -78,6 +83,15 @@ final class ReplaySoundPlayer: ObservableObject {
 
     private func startEngine() -> Bool {
         if started { return true }
+        // The default session follows the ring switch, which would make every pick sound broken.
+        // Media playback is audible in silent mode, like any video app, and keeps the route.
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
+            try AVAudioSession.sharedInstance().setActive(true)
+            sessionActive = true
+        } catch {
+            NSLog("Replay sounds session: %@", error.localizedDescription)
+        }
         guard let format = AVAudioFormat(standardFormatWithSampleRate: ReplaySoundSynth.sampleRate, channels: 1) else { return false }
         if players.isEmpty {
             players = (0..<4).map { _ in AVAudioPlayerNode() }

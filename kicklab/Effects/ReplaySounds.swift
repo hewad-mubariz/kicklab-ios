@@ -123,6 +123,24 @@ nonisolated enum ReplaySoundSynth {
 
     static func duration(_ sound: ReplaySound) -> Double { Double(samples(sound).count) / sampleRate }
 
+    /// Peak level per slice, 0...1, for drawing a cue's waveform. Short cues fill only the start
+    /// of a quarter-second window, so a click looks short and a bell looks long.
+    static func envelope(_ sound: ReplaySound, bars: Int) -> [Float] {
+        let samples = samples(sound)
+        guard bars > 0, !samples.isEmpty else { return [] }
+        let window = max(samples.count, Int(sampleRate * 0.25))
+        let slice = max(1, window / bars)
+        let peaks: [Float] = (0..<bars).map { bar in
+            let start = bar * slice, end = min(samples.count, start + slice)
+            guard start < end else { return 0 }
+            return samples[start..<end].reduce(Float(0)) { max($0, abs($1)) }
+        }
+        let top = peaks.max() ?? 0
+        guard top > 0 else { return peaks }
+        // Square root lifts quiet tails enough to read at icon size.
+        return peaks.map { $0 > 0 ? max(0.08, ($0 / top).squareRoot()) : 0 }
+    }
+
     // MARK: - Building blocks
 
     /// Phase of a tone whose frequency slides exponentially from `f0` to `f1` over `over` seconds.
@@ -414,9 +432,10 @@ nonisolated struct ReplaySoundtrack: Hashable, Sendable {
     }
 
     /// The clip's own audio with every cue mixed in, as one stereo AAC file covering
-    /// `duration` from zero. Silence stands in where the clip has no sound. Written with
-    /// AVAssetWriter so the track drops straight into the export composition.
-    func mixedAudio(source: AVAsset, duration: CMTime) async throws -> URL {
+    /// `duration` from zero. Silence stands in where the clip has no sound, or everywhere
+    /// when `includeSource` is false. Written with AVAssetWriter so the track drops straight
+    /// into the export composition.
+    func mixedAudio(source: AVAsset, duration: CMTime, includeSource: Bool = true) async throws -> URL {
         let rate = ReplaySoundSynth.sampleRate
         let totalFrames = max(1, Int((CMTimeGetSeconds(duration) * rate).rounded()))
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("juggledude-sounds-\(UUID().uuidString).m4a")
@@ -482,7 +501,7 @@ nonisolated struct ReplaySoundtrack: Hashable, Sendable {
                 try await write({ _, _, _ in }, count: min(frame - written, Int(rate)))
             }
         }
-        let tracks = try await source.loadTracks(withMediaType: .audio)
+        let tracks = includeSource ? try await source.loadTracks(withMediaType: .audio) : []
         if !tracks.isEmpty {
             let reader = try AVAssetReader(asset: source)
             let output = AVAssetReaderAudioMixOutput(audioTracks: tracks, audioSettings: [

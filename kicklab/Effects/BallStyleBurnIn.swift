@@ -24,7 +24,8 @@ final class BallStyleBurnIn: ObservableObject {
                 skin: BallSkin = .original, environment: EffectEnvironment = .original, shortEdge: Int = 1080,
                 counter: ExportCounterTimeline? = nil, overlays: ExportOverlaySettings? = nil,preserveFrameTimes:Bool=false,
                 distanceTimeline: BallDistanceTimeline? = nil, motionTimeline: MotionStyleTimeline? = nil,
-                ballChanges: [Int: BallSkin] = [:], swapEffect: BallSwapEffect = .none, soundtrack: ReplaySoundtrack? = nil) {
+                ballChanges: [Int: BallSkin] = [:], swapEffect: BallSwapEffect = .none, soundtrack: ReplaySoundtrack? = nil,
+                clipAudio: Bool = true) {
         guard !isExporting else { return }
         // Each explicit export renders its current inputs. Reusing by a partial
         // track hash could return an older video after geometry/source changes.
@@ -36,7 +37,8 @@ final class BallStyleBurnIn: ObservableObject {
                     let renderTask = VideoWorkExecution.detached {
                         try await Self.render(source: source, track: track, style: style, skin: skin,
                                               intensity: intensity, environment: environment, shortEdge: shortEdge, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes, distanceTimeline: distanceTimeline, motionTimeline: motionTimeline,
-                                              ballChanges: ballChanges, swapEffect: swapEffect, soundtrack: soundtrack) { p in
+                                              ballChanges: ballChanges, swapEffect: swapEffect, soundtrack: soundtrack,
+                                              clipAudio: clipAudio) { p in
                             VideoWorkExecution.lease?.progress(p, subtitle: p < 0.94 ? "Rendering your video" : "Finishing video")
                             await MainActor.run { self.progress = p; self.status = p < 0.94 ? "Rendering effects…" : "Finishing video…" }
                         }
@@ -114,6 +116,7 @@ final class BallStyleBurnIn: ObservableObject {
                                   ballChanges: [Int: BallSkin] = [:],
                                   swapEffect: BallSwapEffect = .none,
                                   soundtrack: ReplaySoundtrack? = nil,
+                                  clipAudio: Bool = true,
                                   onProgress: @Sendable (Double) async -> Void = { _ in }) async throws -> URL {
         let scoped = source.startAccessingSecurityScopedResource()
         defer { if scoped { source.stopAccessingSecurityScopedResource() } }
@@ -337,12 +340,13 @@ final class BallStyleBurnIn: ObservableObject {
         }
         try await VideoWorkExecution.checkpoint()
         await onProgress(0.95)
-        let audioTracks = try await asset.loadTracks(withMediaType: .audio)
+        // A muted original keeps none of the recorded sound in the saved file.
+        let audioTracks = clipAudio ? try await asset.loadTracks(withMediaType: .audio) : []
         // Replay sounds are mixed with the clip's own audio into one track, so every
         // player hears both; most players ignore a second, parallel audio track.
         var mixedAudio: URL?
         if let soundtrack, !soundtrack.isEmpty {
-            mixedAudio = try await soundtrack.mixedAudio(source: asset, duration: duration)
+            mixedAudio = try await soundtrack.mixedAudio(source: asset, duration: duration, includeSource: clipAudio)
         }
         defer { if let mixedAudio { try? FileManager.default.removeItem(at: mixedAudio) } }
         if audioTracks.isEmpty && mixedAudio == nil {

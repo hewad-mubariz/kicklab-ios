@@ -173,17 +173,20 @@ nonisolated struct SessionEditState: Hashable, Sendable {
     var swapSound: BallSwapSound = .whoosh
     /// Played on every counted touch; none by default.
     var touchSound: TouchSound = .none
+    /// The sound recorded with the video, in the replay and the saved file.
+    var clipAudio = true
     /// Every visible ball-following effect needs the completed source-pixel track.
     /// Counter/timer-only exports can use the saved touch timeline immediately.
     var requiresVisualTrack: Bool { usesBallMaterial || (style != .none && intensity > 0) }
     var isEdited: Bool {
-        scene != nil || environment != .original || usesBallMaterial || hasBallChanges || hasSounds
+        scene != nil || environment != .original || usesBallMaterial || hasBallChanges || hasSounds || !clipAudio
             || (style != .none && intensity > 0.02)
     }
     var label: String {
         [scene?.environment.title,
          hasBallChanges ? "Ball per touch" : ballSkin != .original ? ballSkin.title : nil,
          touchSound != .none ? "\(touchSound.title) touches" : nil,
+         clipAudio ? nil : "Original sound off",
          style != .none && intensity > 0.02 ? "\(style.title) · \(Int((intensity * 100).rounded()))%" : nil,
          environment != .original ? environment.title : nil]
             .compactMap { $0 }.joined(separator: " + ")

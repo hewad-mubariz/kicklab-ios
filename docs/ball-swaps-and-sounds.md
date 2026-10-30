@@ -8,27 +8,37 @@ are Pro tools, like the single-ball picker, and all three export exactly as prev
 
 ## What the user sees
 
-**Ball tool.** A segmented control at the top: *One ball* (the existing 4×4 grid) or
-*Per touch*. Per touch shows:
+**Ball tool.** The 4×4 grid stays the default. A *Ball per touch* switch sits above it; on,
+the page becomes:
 
-- a strip of every counted touch, numbered, each with a thumbnail of the ball on screen
-  from that touch; a mint dot marks the touches where the ball changes;
-- one row of balls, which picks the ball for the selected touch (the existing flight
-  animation plays, and the pick lands on the clip after it);
-- a *Change effect* row of eleven moments (None, Pop, Flash, Burst, Ripple, Sparkle,
-  Shatter, Halo, Pixel, Smoke, Lightning). Tapping one plays a short run through the
-  nearest change so it is seen on the real ball;
-- *Cycle* (every 1, 2, 3, 5 or 10 touches) rotates the balls already in use, topped up
-  with Volt, Lava and Chrome; with nothing picked, the real ball leads the rotation.
-  *Clear* removes every per-touch pick.
+- a **touch dial**: every counted touch on a snapping horizontal dial under a fixed mint
+  lens with a playhead notch. Swiping snaps touch to touch with a haptic tick and holds the
+  clip a quarter second after that touch, when the change moment has cleared. Touches shrink
+  and fade away from the lens. A coloured **run bar** under the balls, in each ball's accent,
+  shows which ball plays across which touches, broken by a white dot at every change;
+- a line naming the touch and its run ("Lava · since touch 3"), with *Cycle* (every 1, 2,
+  3, 5 or 10 touches, rotating the balls in use topped up with Volt, Lava and Chrome; with
+  nothing picked the real ball leads) and *Clear*;
+- one row of balls for the touch under the lens, with the existing flight animation;
+- **change effect tiles** for the eleven moments (None, Pop, Flash, Burst, Ripple, Sparkle,
+  Shatter, Halo, Pixel, Smoke, Lightning). Each tile draws its moment on a small ball with
+  the clip's own renderer; the chosen tile loops it, a tap plays it on the tile and plays a
+  short run through the nearest change on the clip.
 
-Tapping a touch holds the clip paused a quarter second after that touch, when the change
-moment has cleared and the new ball is in flight. Switching back to *One ball* clears the
-per-touch picks.
+Turning the switch off sets the per-touch picks aside and the clip shows one ball again;
+turning it back on in the same session restores them. The dial returns to the last touch
+worked on, and reopening the page holds the clip on it.
 
-**Sound tool** (new tile in the Customize grid). Two rows of chips: a touch sound (ten
-cues plus none) and a ball-change sound (ten cues plus none). Each tap plays the cue once.
-During playback cues fire as the clip passes each touch; scrubbing stays silent.
+**Sound tool** (new tile in the Customize grid, showing the chosen sound's waveform).
+
+- *Original sound* switch, on by default. Picking the first touch sound turns it off and
+  says "Muted for your touch sounds"; choosing no touch sound again restores it. Turning
+  the switch by hand always wins. It applies to the replay and the saved video.
+- Touch sound and ball change sound tiles show each cue's real waveform; a tap plays the
+  cue and sweeps a mint playhead across the waveform in the cue's own time.
+
+During playback cues fire as the clip passes each touch; scrubbing stays silent. The first
+sound puts the editor in media playback, so cues are audible with the ring switch on.
 
 ## Model
 
@@ -40,6 +50,7 @@ During playback cues fire as the clip passes each touch; scrubbing stays silent.
 | `swapEffect: BallSwapEffect` | the moment drawn at every change (`.pop` by default) |
 | `swapSound: BallSwapSound` | the cue at every change (`.whoosh` by default; silent without changes) |
 | `touchSound: TouchSound` | the cue on every touch (`.none` by default) |
+| `clipAudio: Bool` | keep the sound recorded with the video (`true` by default) |
 
 `ballSkin(at:touchTimes:)` resolves the ball for a frame; `ballSwaps(touchTimes:)` lists
 the real changes; `usesBallMaterial` tells the preview and export whether any print is
@@ -62,18 +73,28 @@ each under 0.65 s, normalized and soft-limited. `ReplaySoundtrack` lays cues aga
 touch times. In the editor `ReplaySoundPlayer` plays them through a small pool of
 `AVAudioPlayerNode`s. On export the soundtrack is mixed with the clip's own audio into one
 AAC track (`ReplaySoundtrack.mixedAudio`), because most players ignore a second parallel
-audio track; a silent clip with cues gets that one track.
+audio track; a silent clip with cues gets that one track. With `clipAudio` off the clip's
+audio is left out: cues alone, or no audio track at all when no cue plays.
 
 ## Tests
 
 - `BallSwapTests`: per-touch resolution, change listing, timeline ages, cycling, edit
   flags and Pro gating, and every effect drawing deterministically and fading out.
-- `ReplaySoundTests`: every cue bounded and audible, soundtrack placement, and an export
-  that mixes cues into a saved video with exactly one audio track.
-- `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): the per-touch flow,
-  change effect, sound tool, mode switch, cycle and clear.
+- `ReplaySoundTests`: every cue bounded and audible, waveform shapes, soundtrack placement,
+  an export that mixes cues into a saved video with exactly one audio track, and muted
+  exports (no track without cues; cues only with cues; both when kept).
+- `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): the switch, dial,
+  per-touch picks, change effect tiles, automatic and manual original-sound muting, restoring
+  picks with the switch, cycle and clear.
 
-## Results, 29–30 October 2026 (iPhone 18 Pro Simulator)
+## Results (iPhone 18 Pro Simulator)
+
+Redesign, 30 October: the new suites and the existing export, scene, collection, effect,
+lifecycle and Metal unit tests pass (61 Swift Testing + 12 XCTest cases);
+`BallSwapsUITests` (2), `NewBallEffectsUITests`, `BallCollectionUITests` and
+`ReplaySpinStatusUITests` pass.
+
+First version, 29–30 October:
 
 | Run | Result |
 | --- | --- |
