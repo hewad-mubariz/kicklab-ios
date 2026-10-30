@@ -14,14 +14,30 @@ nonisolated struct CaptureGraphLayout {
     let time: Double
     let status: String
     let currentPoint: CGPoint?
+    /// True when a long session shows a moving window instead of the whole clip.
+    let scrolls: Bool
     var cursor: Double { (time - timeRange.lowerBound) / (timeRange.upperBound - timeRange.lowerBound) }
 
-    init(points: [CaptureMotionPoint], time: Double, duration: Double? = nil) {
+    /// Where the playhead rests while a long session scrolls: most of the window is the past.
+    static let scrollingCursor = 0.8
+
+    /// `window`: seconds shown at once when the clip is longer; nil shows the whole clip.
+    /// `vertical`: a fixed height range, so the scale holds still while the window moves.
+    init(points: [CaptureMotionPoint], time: Double, duration: Double? = nil,
+         window: Double? = nil, vertical fixedVertical: ClosedRange<Double>? = nil) {
         let now = time.isFinite ? max(0, time) : 0
-        if let duration, duration.isFinite, duration > 0 {
+        if let duration, duration.isFinite, duration > 0, let window, window.isFinite, window > 0, duration > window {
+            // The playhead stays at 80 % across; the window starts at zero and stops at the end.
+            let start = min(max(0, now - window * Self.scrollingCursor), duration - window)
+            timeRange = start...(start + window)
+            self.time = min(now, duration)
+            scrolls = true
+        } else if let duration, duration.isFinite, duration > 0 {
             timeRange = 0...duration
             self.time = min(now, duration)
+            scrolls = false
         } else {
+            scrolls = false
             let start = max(0, now - 6)
             timeRange = start...(start + 6)
             self.time = now
@@ -29,7 +45,9 @@ nonisolated struct CaptureGraphLayout {
         let range = timeRange
         let visible = points.filter { $0.time.isFinite && range.contains($0.time) }.sorted { $0.time < $1.time }
         let values = visible.compactMap(\.y).filter(\.isFinite).map { min(1, max(0, $0)) }
-        if let low = values.min(), let high = values.max() {
+        if let fixedVertical {
+            verticalRange = fixedVertical
+        } else if let low = values.min(), let high = values.max() {
             let center = (low + high) / 2
             let halfSpan = max(0.04, (high - low) / 2 + 0.012)
             verticalRange = (center - halfSpan)...(center + halfSpan)
@@ -90,8 +108,12 @@ struct CaptureMotionGraph: View {
                 let y = top + CGFloat(index) / 2 * height
                 grid.move(to: CGPoint(x: 0, y: y)); grid.addLine(to: CGPoint(x: size.width, y: y))
             }
-            for index in 0...8 {
-                let x = CGFloat(index) / 8 * size.width
+            // While scrolling, the vertical grid travels with the line, so the motion reads as movement.
+            let span = layout.timeRange.upperBound - layout.timeRange.lowerBound
+            let step = span / 8
+            let first = layout.scrolls ? (layout.timeRange.lowerBound / step).rounded(.up) * step : layout.timeRange.lowerBound
+            for line in stride(from: first, through: layout.timeRange.upperBound + 0.0001, by: step) {
+                let x = CGFloat((line - layout.timeRange.lowerBound) / span) * size.width
                 grid.move(to: CGPoint(x: x, y: top)); grid.addLine(to: CGPoint(x: x, y: top + height))
             }
             context.stroke(grid, with: .color(.white.opacity(0.11)), lineWidth: 0.5)
@@ -116,6 +138,19 @@ struct CaptureMotionGraph: View {
                 ticks.move(to: CGPoint(x: x, y: size.height - 5)); ticks.addLine(to: CGPoint(x: x, y: size.height - 1))
             }
             context.stroke(ticks, with: .color(Color(cgColor: NormalCounterAppearance.lime).opacity(0.75)), lineWidth: 0.8)
+        }
+        .scrollFade(layout.scrolls)
+    }
+}
+
+extension View {
+    /// The oldest part of a scrolling graph fades out at the left edge.
+    @ViewBuilder func scrollFade(_ scrolling: Bool) -> some View {
+        if scrolling {
+            mask(LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .black, location: 0.14),
+                                        .init(color: .black, location: 1)], startPoint: .leading, endPoint: .trailing))
+        } else {
+            self
         }
     }
 }
