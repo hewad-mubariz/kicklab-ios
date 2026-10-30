@@ -322,6 +322,17 @@ final class SubscriptionStore: ObservableObject {
         return isPro
     }
 
+    /// Modern offer-code sheets return their transaction directly. Reuse the same
+    /// verification, account linking and finishing path as transaction updates.
+    func receiveOfferCode(_ result: VerificationResult<Transaction>) async throws {
+        guard case .verified(let transaction) = result,
+              transaction.productType == .autoRenewable,
+              ProPlan(productID: transaction.productID) != nil else {
+            throw SubscriptionFailure.unverified
+        }
+        await receive(result)
+    }
+
     private func receive(_ result: VerificationResult<Transaction>) async {
         guard case .verified(let transaction) = result,
               ProPlan(productID: transaction.productID) != nil else { return }

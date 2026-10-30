@@ -1,5 +1,30 @@
 # Juggle Dude subscriptions
 
+## Tester invite codes (30 October 2026)
+
+The implementation on `codex/pro-invite-codes` adds **Profile → Redeem invite code**, and the same button above the plans on the Pro screen. These buttons require an app update before public App Store testers can see them. The button opens Apple's native offer-code sheet; it works for guests and does not depend on product prices loading. Apple handles code validation, eligibility and offer confirmation. A verified transaction unlocks the existing Pro features, follows the normal expiry rules and can sync to a signed-in account. Cancelling does not grant access. On replay paywalls, a verified redemption resumes the requested tool after Apple's sheet completes.
+
+On iOS 27 and later, the returned transaction is verified and processed immediately through the same subscription handler as transaction updates. Earlier supported systems use the transaction listener and refresh entitlements when the redemption sheet completes. Redemption URLs and codes redeemed in the App Store are also picked up by the existing launch/foreground checks and transaction listener.
+
+These invites must be **Apple offer codes**, created in App Store Connect; arbitrary app-defined codes cannot be used. Apple supports free subscription offers with auto-renewal disabled, so testers can try Pro without a subsequent charge. See [Apple's offer-code setup guide](https://developer.apple.com/help/app-store-connect/manage-subscriptions/set-up-subscription-offer-codes/) and [StoreKit integration guide](https://developer.apple.com/documentation/storekit/supporting-offer-codes-in-your-app).
+
+Live tester offers created and verified in App Store Connect on 30 October 2026:
+
+| Subscription | Offer reference | Free access | Production batch | Codes | Redemption expiration |
+| --- | --- | --- | --- | --- | --- |
+| Monthly | [Pro Tester Invite Monthly](https://appstoreconnect.apple.com/apps/6820780610/distribution/subscriptions/6820781795/pricing/offer-codes/f0390e46-e8ab-4b72-9b0e-3733421bdc1d) | 1 month | 633763 | 500 | 29 November 2026 |
+| Yearly | [Pro Tester Invite Yearly](https://appstoreconnect.apple.com/apps/6820780610/distribution/subscriptions/6820783070/pricing/offer-codes/bf018d63-a347-45e2-b31e-dd965319c8f8) | 1 year | 633670 | 500 | 29 November 2026 |
+
+Both offers are free, have auto-renewal disabled, include new and expired subscribers (not existing subscribers), and cover all 175 available countries or regions. Both use unique **one-time-use codes**; no shared custom codes were created. Apple's minimum production batch is 500, but only the codes actually distributed can be redeemed by testers. Codes expire at 12:00 a.m. Pacific Time on the expiration date; this redemption deadline is separate from the free access duration, which begins on redemption.
+
+Send each tester one unused code or its individual redemption URL, and record which code was issued. A code can be redeemed once: forwarding it after redemption cannot grant another person access. A recipient can still forward an unused code, and the first eligible redeemer receives the offer; codes are not tied to a nominated email address. Keep the complete downloaded CSV files private and outside Git. Download them again from the corresponding offer page when needed.
+
+The redemption URLs work with the existing public app before the new in-app button ships. These offers were created against already-approved subscriptions; app version 1.0.2 was Ready for Distribution, while 1.0.3 was Waiting for Review. Creating the codes did not require a new review submission. No app review submission or release was performed for this invite-code work. Apple says newly created codes may take up to one hour to become redeemable.
+
+Real offer-code redemption remains unverified. Check a production code with one tester using the public App Store app before wider distribution. Device validation of sandbox redemption, cancellation, invalid/expired-code handling, guest redemption, account sync and Pro expiry remains pending. Local StoreKit tests verify transaction handling but do not establish end-to-end live redemption.
+
+Validation on the iOS 27.0 simulator: all three new transaction tests passed (external purchase delivery, direct redemption result and rejection of an unverified result), as did the three paywall navigation tests and 15 deterministic expiry/account checks. The broader 21-test StoreKit suite passed 18 tests; three tests failed on price decimals, the simulated cancellation error and immediate expiry visibility. These failures are outside the added redemption path and remain unresolved; this is not an all-green subscription-suite result. Evidence: `/tmp/juggledude-invite-final.log` and `/tmp/juggledude-invite-codes-build.log`; Xcode stalled finalizing the broader run’s result bundle after all tests finished. The earlier focused run completed successfully in `/tmp/juggledude-invite-storekit.xcresult`. The new tests exercise verified StoreKit transactions, not a real configured offer code.
+
 ## App Store configuration
 
 - App: **Juggle Dude**, Apple app ID **6820780610**.
