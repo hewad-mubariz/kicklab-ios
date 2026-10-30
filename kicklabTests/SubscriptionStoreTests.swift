@@ -67,6 +67,42 @@ final class SubscriptionStoreTests: XCTestCase {
         XCTAssertTrue(restored)
     }
 
+    func testPurchaseCompletedOutsidePaywallActivatesThroughTransactionListener() async throws {
+        // Offer-code redemption and App Store redemption complete outside purchase(_:).
+        // They must use the same verified update path without requiring a restore.
+        XCTAssertFalse(store.isPro)
+        _ = try await session.buyProduct(identifier: ProPlan.monthly.productID)
+        try await eventually { self.store.isPro }
+        XCTAssertEqual(store.activePlan, .monthly)
+        XCTAssertNotNil(store.localAccessUntil)
+        XCTAssertFalse(store.busy)
+    }
+
+    func testOfferCodeResultActivatesWithoutWaitingForTransactionListener() async throws {
+        let redeeming = SubscriptionStore(observeTransactions: false)
+        _ = try await session.buyProduct(identifier: ProPlan.monthly.productID)
+        let latest = await Transaction.latest(for: ProPlan.monthly.productID)
+        try await redeeming.receiveOfferCode(XCTUnwrap(latest))
+        XCTAssertTrue(redeeming.isPro)
+        XCTAssertEqual(redeeming.activePlan, .monthly)
+        XCTAssertNotNil(redeeming.localAccessUntil)
+    }
+
+    func testUnverifiedOfferCodeResultCannotActivatePro() async throws {
+        let redeeming = SubscriptionStore(observeTransactions: false)
+        _ = try await session.buyProduct(identifier: ProPlan.monthly.productID)
+        guard case .verified(let transaction) = await Transaction.latest(for: ProPlan.monthly.productID) else {
+            return XCTFail("Expected a local StoreKit transaction")
+        }
+        do {
+            try await redeeming.receiveOfferCode(.unverified(transaction, .invalidSignature))
+            XCTFail("An unverified redemption must fail before processing access")
+        } catch {
+            guard case SubscriptionFailure.unverified = error else { return XCTFail("Unexpected error: \(error)") }
+        }
+        XCTAssertFalse(redeeming.isPro)
+    }
+
     func testRestoreSkipsAppleSyncWhenAlreadyActive() async throws {
         _ = try await store.purchase(.monthly, accountID: nil)
         try await waitForStoreKitHistory(.monthly)

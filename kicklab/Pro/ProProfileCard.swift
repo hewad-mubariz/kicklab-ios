@@ -5,6 +5,7 @@ struct ProProfileCard: View {
     @Environment(\.colorScheme) private var scheme
     @EnvironmentObject private var subscriptions: SubscriptionStore
     @State private var showsPaywall = false
+    @State private var redeemingInvite = false
 
     var body: some View {
         VStack(spacing: 8) {
@@ -35,10 +36,13 @@ struct ProProfileCard: View {
             .contentShape(.rect(cornerRadius: 22))
         }
         .buttonStyle(SessionPressStyle(scale: 0.97))
+        .disabled(redeemingInvite)
         .accessibilityIdentifier("profile-pro")
         .fullScreenCover(isPresented: $showsPaywall) {
             ProPaywallView { showsPaywall = false }
         }
+        ProInviteCodeButton(isRedeeming: $redeemingInvite, accessibilityID: "profile-pro-redeem-invite")
+            .foregroundStyle(TrainingHomeStyle.muted(scheme))
         if subscriptions.checkingAccountAccess || subscriptions.accountLinkMessage != nil {
             VStack(spacing: 6) {
                 if let message = subscriptions.accountLinkMessage {

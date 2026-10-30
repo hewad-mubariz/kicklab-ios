@@ -14,10 +14,13 @@ final class ProPaywallNavigationUITests: XCTestCase {
         profile.tap()
         let pro = app.buttons["profile-pro"]
         XCTAssertTrue(pro.waitForExistence(timeout: 5))
+        let invite = app.buttons["profile-pro-redeem-invite"]
+        XCTAssertTrue(invite.exists, "Guests and signed-in users can redeem an invite from Profile")
         for scroll in [false, true] {
             pro.tap()
             let close = app.buttons["pro-close"]
             XCTAssertTrue(close.waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["pro-redeem-invite"].exists, "Invite redemption remains available on the paywall")
             if scroll { app.swipeUp() }
             XCTAssertTrue(close.isHittable)
             if scroll {

@@ -20,7 +20,8 @@ struct ProPaywallView: View {
     @EnvironmentObject private var account: AccountStore
     @Environment(\.openURL) private var openURL
     @State private var managing = false
-    private var working: Bool { subscriptions.busy }
+    @State private var redeemingInvite = false
+    private var working: Bool { subscriptions.busy || redeemingInvite }
     private var offer: ProOffer? { subscriptions.offer(for: plan) }
     @State private var notice: ProNotice?
 
@@ -38,6 +39,11 @@ struct ProPaywallView: View {
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityIdentifier("pro-free-features")
+                        ProInviteCodeButton(isRedeeming: $redeemingInvite) {
+                            if onUnlocked != nil { deliverUnlock() }
+                            else { close() }
+                        }
+                        .foregroundStyle(ProPass.lime)
                         plans.padding(.top, 2)
                         if subscriptions.isPro {
                             Text("To change plans, tap Monthly or Yearly and choose your plan in Apple’s subscription settings.")
@@ -109,7 +115,9 @@ struct ProPaywallView: View {
         }
         .manageSubscriptionsSheet(isPresented: $managing)
         .onChange(of: subscriptions.isPro) { _, active in
-            if active { deliverUnlock() }
+            // Keep the paywall's presenting view alive until Apple's redemption
+            // sheet has completed, then resume the requested replay tool.
+            if active && !redeemingInvite { deliverUnlock() }
         }
         .onChange(of: managing) { _, value in
             if !value { Task { await subscriptions.refreshEntitlements() } }
@@ -127,7 +135,7 @@ struct ProPaywallView: View {
     /// and small ones scroll.
     private func heroHeight(_ proxy: GeometryProxy) -> CGFloat {
         let screen = proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
-        return max(400, screen - 418)
+        return max(400, screen - 474)
     }
 
     private var closeButton: some View {
