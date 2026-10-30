@@ -4,7 +4,8 @@ The [four-week post-launch plan](docs/post-launch/README.md) records the agreed
 priority order, weekly shipping scope, leaderboard rules and release checks.
 
 [Ball per touch, change moments and replay sounds](docs/ball-swaps-and-sounds.md) describes the
-per-touch ball picker, the eleven change moments and the synthesized touch and change cues.
+per-touch ball picker, the eleven change moments, the synthesized touch and change cues, and the
+seven timer looks with counter-style placement.
 
 Open `kicklab.xcodeproj` and use the `JuggleDude` scheme. The current target is iOS 26.5;
 use Xcode with that SDK. Core ML packages in `kicklab/Models` and local account/analytics

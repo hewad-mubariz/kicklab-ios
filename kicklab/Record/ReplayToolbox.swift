@@ -12,7 +12,7 @@ enum ReplayTool: String, Identifiable {
 struct ReplayToolbox: View {
     @Binding var counter: ExportOverlayItem
     @Binding var edit: SessionEditState
-    @Binding var showTime: Bool
+    @Binding var timer: TimerOverlayItem
     @Binding var showGraph: Bool
     @Binding var includeGraph: Bool
     @Binding var motionStyle: MotionStyle
@@ -226,7 +226,10 @@ struct ReplayToolbox: View {
                 Text("05").font(.system(size: 32, weight: .bold, design: .rounded)).monospacedDigit()
             }
         case .timer:
-            TimerPreview()
+            // Shows the timer look in use, so the tile doubles as the current setting.
+            TimerStyleThumbnail(style: timer.style)
+                .padding(.horizontal, 2)
+                .opacity(timer.enabled ? 1 : 0.35)
         case .ball:
             // Shows the ball you picked, so the tile doubles as the current setting.
             BallSkinPreview(skin: edit.ballSkin == .original ? .chrome : edit.ballSkin)
@@ -282,15 +285,31 @@ struct ReplayToolbox: View {
         switch tool {
         case .ball: ballPage
         case .effects: effectsPage
-        case .timer:
-            togglePage(title: "Show elapsed time", note: "Include the timer in your replay and saved video.", isOn: $showTime) {
-                TimerPreview()
-            }
+        case .timer: timerPage
         case .graph:
             ReplayMotionPicker(style: $motionStyle, showGraph: $showGraph, includeGraph: $includeGraph, snapshot: motionSnapshot,
                                sourceAspect: sourceAspect, isPlaying: isPlaying, onTogglePlayback: onTogglePlayback, showsProBadges: !isPro)
         case .counter: counterPage
         case .sound: ReplaySoundPage(edit: $edit, autoMuted: $autoMuted, onPreview: onPreviewSound)
+        }
+    }
+
+    /// Timer looks apply live; placement is direct, by tapping the timer on the video.
+    private var timerPage: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            TimerStyleGrid(item: $timer, showsProBadges: !isPro, onUnlock: { onUnlockTool(.timer) })
+                .padding(.horizontal, 16)
+            HStack(spacing: 10) {
+                Image(systemName: "hand.draw").font(.system(size: 15)).foregroundStyle(SessionStyle.mint)
+                Text("Tap the timer on the video to move, pinch or twist it.")
+                    .font(.system(size: 11)).foregroundStyle(.white.opacity(0.72))
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 6)
+                Text("Show").font(.system(size: 12, weight: .semibold)).accessibilityHidden(true)
+                Toggle("Show elapsed time", isOn: $timer.enabled.animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)))
+                    .labelsHidden().tint(SessionStyle.mint)
+            }
+            .padding(.horizontal, 16)
         }
     }
 
@@ -621,45 +640,20 @@ struct ReplayToolbox: View {
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
-    private func togglePage<Preview: View>(title: String, note: String, isOn: Binding<Bool>,
-                                          @ViewBuilder preview: () -> Preview) -> some View {
-        HStack(spacing: 14) {
-            preview()
-                .frame(width: 92, height: 52)
-                .opacity(isOn.wrappedValue ? 1 : 0.25)
-                .scaleEffect(isOn.wrappedValue || reduceMotion ? 1 : 0.92)
-            VStack(alignment: .leading, spacing: 6) {
-                Toggle(title, isOn: isOn.animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)))
-                    .font(.system(size: 14, weight: .semibold)).tint(SessionStyle.mint)
-                Text(note).font(.system(size: 11)).foregroundStyle(.white.opacity(0.7))
-            }
-        }
-        .padding(.horizontal, 16).padding(.vertical, 4)
-    }
-}
-
-private struct TimerPreview: View {
-    var body: some View {
-        HStack(spacing: 7) {
-            Circle().fill(SessionStyle.mint).frame(width: 5, height: 5)
-            Text("00:12").font(.system(size: 20, weight: .medium, design: .rounded)).monospacedDigit()
-                .lineLimit(1).minimumScaleFactor(0.75)
-        }
-        .padding(.horizontal, 8).padding(.vertical, 9)
-        .background(.black.opacity(0.24), in: .capsule)
-        .overlay { Capsule().strokeBorder(.white.opacity(0.12), lineWidth: 0.75) }
-    }
 }
 
 /// Visible selection handles share the export transform; the video and output stay aligned.
 struct CounterSelectionFrame: View {
     @Binding var placement: ExportOverlayPlacement
     let size: CGSize
+    var shape: StickerShape = .counter
+    /// "counter" or "timer", for labels and identifiers.
+    var name = "counter"
     let onRemove: () -> Void
     @State private var initialScale: Double?
 
     var body: some View {
-        let rect = placement.rect(in: size)
+        let rect = placement.rect(in: size, shape: shape)
         ZStack {
             Rectangle().strokeBorder(.white.opacity(0.9), lineWidth: 1).allowsHitTesting(false)
             ForEach(0..<4) { index in
@@ -672,7 +666,7 @@ struct CounterSelectionFrame: View {
                     .foregroundStyle(.black).frame(width: 25, height: 25).background(.white, in: .circle)
                     .frame(width: 44, height: 44)
             }.buttonStyle(.plain).position(x: 0, y: 0)
-                .accessibilityLabel("Remove counter").accessibilityIdentifier("replay-remove-counter")
+                .accessibilityLabel("Remove \(name)").accessibilityIdentifier("replay-remove-\(name)")
             Image(systemName: "arrow.up.left.and.arrow.down.right")
                 .font(.system(size: 11, weight: .semibold)).foregroundStyle(.black)
                 .frame(width: 25, height: 25).background(.white, in: .circle)
@@ -680,10 +674,10 @@ struct CounterSelectionFrame: View {
                 .gesture(DragGesture().onChanged { value in
                     if initialScale == nil { initialScale = placement.scale }
                     let delta = Double(value.translation.width + value.translation.height) / 240
-                    placement = placement.transformed(scale: (initialScale ?? placement.scale) + delta, in: size)
+                    placement = placement.transformed(scale: (initialScale ?? placement.scale) + delta, in: size, shape: shape)
                 }.onEnded { _ in initialScale = nil })
                 .position(x: rect.width, y: rect.height)
-                .accessibilityLabel("Resize counter").accessibilityAddTraits(.allowsDirectInteraction)
+                .accessibilityLabel("Resize \(name)").accessibilityAddTraits(.allowsDirectInteraction)
         }
         .frame(width: rect.width, height: rect.height)
         .rotationEffect(.radians(placement.radians))

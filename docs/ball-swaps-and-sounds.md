@@ -40,6 +40,34 @@ worked on, and reopening the page holds the clip on it.
 During playback cues fire as the clip passes each touch; scrubbing stays silent. The first
 sound puts the editor in media playback, so cues are audible with the ring switch on.
 
+## Timer styles and placement
+
+The elapsed-time sticker replaces the single grey box with a "TIME" caption. It has seven
+looks, all drawn by `TimerOverlayAppearance` into one 240×120 canvas, so the replay, the
+style thumbnails and the saved video show the same pixels. No look uses a caption; each says
+"time" with an icon, a pulse or a moving dial. Every motion is a function of video time, so
+seeking and export agree.
+
+| Look | What it is |
+| --- | --- |
+| Pill (free, default) | dark glass capsule, mint live dot that breathes once a second |
+| Clean | no box: lime stopwatch and big condensed digits like the Normal counter, with a shadow |
+| Broadcast | match-clock bar: slanted lime tab with a stopwatch, time on ink, a lime line filling each minute |
+| Stopwatch | analogue dial with a sweeping hand and a mint ring filling each minute, beside the time |
+| Digital | lime seven-segment clock with ghost segments and a blinking colon |
+| Flip | split-flap cards that fold over when a digit changes |
+| Neon | pink tube digits in a cyan neon frame, with a rare flicker |
+
+Digits sit in fixed-width cells so the time never jitters, and every look fits hour-long
+times. The Timer page shows the looks three to a row; the chosen tile runs live.
+
+The timer is a sticker like the counter: tap it on the video to drag, pinch and twist it, with
+the same handles, remove button, reset and "Timer style" pill. Its placement uses the
+counter's model with a wider `StickerShape` (2:1). Settings save under `clock`, because
+`timer` belonged to a retired counter-style timer that migration still drops; `showTimer`
+remains as the on/off switch for every existing caller and older builds. Looks past Pill are
+Pro; placement and show/hide stay free.
+
 ## Model
 
 `SessionEditState` gains:
@@ -83,11 +111,23 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
 - `ReplaySoundTests`: every cue bounded and audible, waveform shapes, soundtrack placement,
   an export that mixes cues into a saved video with exactly one audio track, and muted
   exports (no track without cues; cues only with cues; both when kept).
+- `TimerStyleTests`: every look distinct, reproducible after seeking and visible; motion within
+  a second; settings migration; Pro rules; placement shape; export placement.
+- `TimerStickerUITests`: every look selectable, tap to select, drag, pinch, reset, style pill,
+  done and remove.
 - `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): the switch, dial,
   per-touch picks, change effect tiles, automatic and manual original-sound muting, restoring
   picks with the switch, cycle and clear.
 
 ## Results (iPhone 18 Pro Simulator)
+
+Timer, 30 October: the timer, export, overlay, persistence, access and ball suites pass
+(58 Swift Testing + 18 XCTest cases), including the free export whose timer text is read
+back by text recognition. `TimerStickerUITests`, `BallSwapsUITests` (2),
+`NewBallEffectsUITests`, `BallCollectionUITests`, `ReplaySpinStatusUITests` and the free
+`FreeCounterUITests` case pass. `CaptureFlowUITests.testStoppedFlowOpensEditorAndToolboxThenExport`
+passes its counter steps and then fails on a "Backgrounds, coming soon" tile that was
+already hidden at the starting commit.
 
 Redesign, 30 October: the new suites and the existing export, scene, collection, effect,
 lifecycle and Metal unit tests pass (61 Swift Testing + 12 XCTest cases);
