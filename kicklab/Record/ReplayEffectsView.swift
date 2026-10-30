@@ -118,6 +118,7 @@ struct ReplayEffectsView: View {
                         } else {
                             if showsTouchTools, let historySessionID {
                                 LeaderboardReplayReviewCard(sessionID: historySessionID, history: accountPlayer.history) {
+                                    guard LeaderboardRules.touchChecks else { return }
                                     pause(); showsLeaderboardSubmission = true
                                 }.padding(.horizontal, 24).padding(.bottom, 8)
                             }
@@ -232,7 +233,7 @@ struct ReplayEffectsView: View {
             ReplayShareSheet(url: item.url).presentationDetents([.medium, .large])
         }
         .sheet(isPresented: $showsLeaderboardSubmission) {
-            if let historySessionID {
+            if LeaderboardRules.touchChecks, let historySessionID {
                 NavigationStack {
                     LeaderboardCorrectionView(sessionID: historySessionID,
                         review: accountPlayer.leaderboardReview, history: accountPlayer.history)
@@ -293,7 +294,7 @@ struct ReplayEffectsView: View {
             }
             Spacer(minLength: 0)
             // Saves what you see in one tap; the button itself shows the progress.
-            if showsTouchTools && historySessionID != nil {
+            if LeaderboardRules.touchChecks && showsTouchTools && historySessionID != nil {
                 roundButton("trophy", label: "Submit a leaderboard streak") {
                     pause(); showsLeaderboardSubmission = true
                 }.accessibilityIdentifier("replay-leaderboard-submit")

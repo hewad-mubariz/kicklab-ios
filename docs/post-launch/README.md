@@ -1014,6 +1014,15 @@ apply, `restore` to undo; every change goes to a private log in `config/local`).
 `supabase/tests/streak_leaderboard.sql` covers ranking, immutability, corrections,
 periods, moderation and visibility (`scripts/test-account-backend.sh`).
 
+**Saved-replay entry point — 31 October:** TestFlight 1.1.0 (35) still exposed the
+old submission screen through the replay toolbar's trophy button whenever a saved
+session ID was present. The button, sheet content and streak-card action now honor
+`touchChecks`; the automatic best-streak strip remains read-only. Four focused iOS
+18 UI checks passed, covering saved replay, the informational strip, pending-check
+data and legacy review details. The new saved-replay fixture supplies the session
+ID that earlier editor fixtures omitted. Counter rules and server behavior are
+unchanged. This source fix needs a later TestFlight build; build 35 is unchanged.
+
 **Automatic-only consistency — 26 October:**
 `202610260001_automatic_leaderboard_beta.sql` removes approved-review overrides
 from ranking, including the winning session and duration. The existing RPC name,

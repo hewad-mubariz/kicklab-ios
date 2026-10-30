@@ -4,6 +4,46 @@ import Vision
 final class LeaderboardUITests: XCTestCase {
     override func setUpWithError() throws { continueAfterFailure = false }
 
+    /// A persisted session ID used to expose a second, unguarded review entry point.
+    @MainActor
+    func testAutomaticBetaSavedReplayDoesNotOfferSubmission() throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("This fixture path is only available in the simulator")
+        #endif
+        let fixture = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("kicklabTests/Fixtures/juggling-eighteen.mov").path
+        let app = XCUIApplication()
+        app.launchArguments = ["--session-design", "saved-replay", "--session-video", fixture]
+        app.launch()
+        XCTAssertTrue(app.buttons["replay-export"].waitForExistence(timeout: 15))
+        XCTAssertFalse(app.buttons["replay-leaderboard-submit"].exists)
+        XCTAssertFalse(app.buttons["correction-send"].exists)
+        app.buttons["replay-customize"].tap()
+        XCTAssertTrue(app.buttons["replay-close-tools"].waitForExistence(timeout: 5))
+        app.buttons["replay-close-tools"].tap()
+        XCTAssertTrue(app.buttons["replay-play"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["replay-leaderboard-submit"].exists)
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = "Saved replay without manual leaderboard submission"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    @MainActor
+    func testAutomaticBetaReplayStreakIsInformational() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--session-design", "leaderboard-replay-card"]
+        app.launch()
+        let card = app.descendants(matching: .any)["replay-leaderboard-review-card"].firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 10))
+        XCTAssertTrue(card.label.contains("Best streak 27"), card.label)
+        XCTAssertTrue(card.label.contains("Counts on the leaderboard by itself"), card.label)
+        XCTAssertFalse(app.buttons["replay-leaderboard-review-card"].exists)
+        card.tap()
+        XCTAssertFalse(app.buttons["correction-send"].exists)
+        XCTAssertTrue(card.exists)
+    }
+
     @MainActor
     func testEmptyResponseShowsAnHonestEmptyState() {
         let app = XCUIApplication()

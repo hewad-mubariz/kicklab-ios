@@ -97,6 +97,11 @@ struct SessionDesignReview: View {
             case "effects": ReplayEffectsView(summary: Self.summary, edit: $edit, stadiumPreview: sceneModel, overlays: $overlays, onBack: {})
             case "rf-post-session": PostSessionFlowView(summary: Self.summary,
                 onFinished: {}, onRecordAnother: {}, recordsPersonalBest: false)
+            case "saved-replay":
+                // Saved sessions pass an ID; the ordinary capture-flow fixture does not.
+                PostSessionFlowView(summary: Self.summary, onFinished: {}, onRecordAnother: {},
+                    recordsPersonalBest: false,
+                    historySessionID: UUID(uuidString: "00000000-0000-0000-0000-00000000C0DE")!)
             case "stats": DetailedStatsView(summary: Self.summary, onSaveShare: {}, onBack: {})
             case "share": SaveShareView(summary: Self.summary, edit: edit, sceneModel: sceneModel, overlays: $overlays, onRecordAnother: {}, onDone: {}, onBack: {})
             case "processing": ProcessingOverlay(progress: 0.65, stepIndex: 2)
