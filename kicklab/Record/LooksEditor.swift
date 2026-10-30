@@ -21,9 +21,10 @@ struct LooksPage: View {
     @State private var pendingRun: Range<Int>?
     @State private var applyBall: Task<Void, Never>?
     @State private var cuts = 0
-    /// Every's Custom… box: open, and the number being typed.
-    @State private var showsCustomStep = false
-    @State private var customStep = ""
+    /// Every's Custom… slider: open, the interval under the thumb, and the pending re-layout.
+    @State private var showsStepSlider = false
+    @State private var sliderStep = Double(LookRecipes.defaultStep)
+    @State private var applyStep: Task<Void, Never>?
 
     enum LookPart: String, CaseIterable, Identifiable {
         case ball = "Ball", effect = "Effect", change = "Change"
@@ -60,6 +61,9 @@ struct LooksPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
             recipeRow
+            if showsStepSlider && edit.recipe == .every && longestStep > 1 {
+                stepSlider.transition(partSwap)
+            }
             TouchDial(touchTimes: touchTimes, edit: edit, selected: $selectedTouch,
                       pending: pendingRun.flatMap { range in pendingBall.map { (range, $0) } }) { index in
                 commitBall()
@@ -76,18 +80,11 @@ struct LooksPage: View {
             }
         }
         .onAppear { onSeek(holdTime(forTouch: selectedTouch)) }
-        .onDisappear { commitBall(); applyBall?.cancel() }
+        .onDisappear { commitBall(); applyBall?.cancel(); applyStep?.cancel() }
         .sensoryFeedback(.impact(weight: .medium), trigger: cuts)
         .sensoryFeedback(.impact(flexibility: .rigid, intensity: 0.7), trigger: pendingBall)
         .sensoryFeedback(.selection, trigger: part)
-        .alert("New look every…", isPresented: $showsCustomStep) {
-            TextField("Touches", text: $customStep).keyboardType(.numberPad)
-            Button("Cancel", role: .cancel) {}
-            Button("Apply") { if let step = typedStep { applyEvery(step) } }
-                .disabled(typedStep == nil)
-        } message: {
-            Text("This clip has \(touchTimes.count) touches, so each look can last 1 to \(longestStep).")
-        }
+        .sensoryFeedback(.selection, trigger: sliderValue)
     }
 
     private var partSwap: AnyTransition {
@@ -137,9 +134,14 @@ struct LooksPage: View {
                         }
                     }
                     .pickerStyle(.inline)
-                    Button("Custom…", systemImage: "number") {
-                        customStep = ""
-                        showsCustomStep = true
+                    if longestStep > 1 {
+                        Button("Custom…", systemImage: "slider.horizontal.3") {
+                            if edit.recipe != .every || !edit.hasLookChanges { applyEvery(shownStep) }
+                            sliderStep = Double(shownStep)
+                            withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
+                                showsStepSlider = true
+                            }
+                        }
                     }
                 } label: {
                     recipeLabel(item, on: on, menu: true)
@@ -178,8 +180,54 @@ struct LooksPage: View {
     /// The menu's tick: Every's interval while Every is laid out, else none, so any pick applies it.
     private var everyStep: Binding<Int?> {
         Binding(get: { edit.recipe == .every && edit.hasLookChanges ? shownStep : nil },
-                set: { if let step = $0 { applyEvery(step) } })
+                set: { step in
+                    guard let step else { return }
+                    withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) { showsStepSlider = false }
+                    applyEvery(step)
+                })
     }
+
+    /// Custom…: any interval from every touch to the longest that repeats on this clip. The looks
+    /// are laid again a moment after the thumb rests, so a drag never re-lays them on every step.
+    private var stepSlider: some View {
+        HStack(spacing: 10) {
+            Text(sliderValue == 1 ? "Every touch" : "Every \(sliderValue)")
+                .font(.system(size: 12, weight: .semibold)).monospacedDigit()
+                .frame(width: 76, alignment: .leading)
+                .contentTransition(.numericText(value: Double(sliderValue)))
+                .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: sliderValue)
+            // Continuous and rounded: a stepped slider draws a tick per step, a dotted line on long clips.
+            Slider(value: $sliderStep, in: 1...Double(longestStep)) {
+                Text("Touches per look")
+            } minimumValueLabel: {
+                Text("1").font(.system(size: 10, weight: .medium)).foregroundStyle(.white.opacity(0.5))
+            } maximumValueLabel: {
+                Text("\(longestStep)").font(.system(size: 10, weight: .medium)).foregroundStyle(.white.opacity(0.5))
+            }
+            .tint(SessionStyle.mint)
+            .accessibilityValue(sliderValue == 1 ? "Every touch" : "Every \(sliderValue) touches")
+            .accessibilityIdentifier("look-every-slider")
+            Button {
+                withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) { showsStepSlider = false }
+            } label: {
+                Image(systemName: "checkmark").font(.system(size: 12, weight: .bold))
+            }
+            .buttonStyle(.glass).controlSize(.small)
+            .accessibilityLabel("Done")
+            .accessibilityIdentifier("look-every-done")
+        }
+        .padding(.horizontal, 16)
+        .onChange(of: sliderValue) { _, value in
+            applyStep?.cancel()
+            applyStep = Task {
+                try? await Task.sleep(for: .seconds(0.3))
+                guard !Task.isCancelled, value != edit.recipeStep else { return }
+                applyEvery(value)
+            }
+        }
+    }
+
+    private var sliderValue: Int { Int(sliderStep.rounded()) }
 
     /// The presets that still change the look on this clip, plus a custom interval in use.
     private var stepChoices: [Int] {
@@ -192,10 +240,6 @@ struct LooksPage: View {
     private var longestStep: Int { LookRecipes.longestStep(touchCount: touchTimes.count) }
     /// The interval Every lays on this clip: a saved style's may be too long for a short one.
     private var shownStep: Int { min(edit.recipeStep, longestStep) }
-    /// The Custom… number, when it is one this clip can use.
-    private var typedStep: Int? {
-        Int(customStep.trimmingCharacters(in: .whitespaces)).flatMap { (1...longestStep).contains($0) ? $0 : nil }
-    }
 
     private func applyEvery(_ step: Int) {
         edit.recipeStep = step

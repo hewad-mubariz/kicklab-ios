@@ -21,9 +21,11 @@ with looks on, those pages say so and link to Looks. The Looks page has:
   lays a seeded random mix with Sparkle, and tapping it again shuffles. *Clear* returns to
   one look.
 - **Every's interval**: the chip opens a native menu (every touch, 2, 3, 4, 5, 10 touches,
-  and *Custom…*, a number box). Only intervals that repeat at least twice on the clip are
-  offered, so a 10-touch clip goes up to every 4; Custom states the clip's range and keeps
-  Apply off until the number fits. My style keeps the interval; on a session too short for
+  and *Custom…*). Only intervals that repeat at least twice on the clip are offered, so a
+  10-touch clip goes up to every 4. Custom opens a slider under the recipes, in the panel and
+  without a keyboard, from 1 to that longest interval (shown at its end); the looks are laid
+  again 0.3 s after the thumb rests, and ✓ closes it. It is continuous and rounded, because a
+  stepped slider draws a tick per step, a dotted line on long clips. My style keeps the interval; on a session too short for
   it, Every uses the longest that fits and the chip shows that number. The chip reads
   "Every 7" with a down arrow.
 - the **touch dial**: every touch snaps under the lens with a haptic tick and holds the clip
@@ -238,8 +240,8 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
 - `TimerStickerUITests`: every look selectable, tap to select, drag, pinch, reset, style pill,
   done and remove.
 - `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): Power-up, New look here, a
-  run's ball and effect, change moment, Remove look, Every's menu (every 3) and Custom (99
-  refused, 7 applied), remix, clear, the Ball page's link to Looks, the
+  run's ball and effect, change moment, Remove look, Every's menu (every 3) and Custom's
+  slider (ends at 65 on 132 touches, no keyboard, the runs follow it), remix, clear, the Ball page's link to Looks, the
   Auto change sound and its override, original-sound muting, the Milestones switch and
   fanfare, the row following the counter (Comic, Gold Coin) and its preview, and My style
   save and stop from the saved-replay panel.

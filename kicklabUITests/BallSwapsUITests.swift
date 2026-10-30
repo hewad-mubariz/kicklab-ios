@@ -122,26 +122,28 @@ final class BallSwapsUITests: ProReplayUITestCase {
         XCTAssertEqual(look(app, 4), "Volt, Neon")
         XCTAssertEqual(look(app, 7), "Arctic Ice, Ice")
 
-        // Custom… takes any number: every 7 changes on touch 8.
+        // Custom… opens a slider up to the longest interval that repeats on this clip (132 touches: 65).
         every.tap()
         XCTAssertTrue(app.buttons["Custom…"].waitForExistence(timeout: 3))
         app.buttons["Custom…"].tap()
-        let field = app.alerts.textFields.firstMatch
-        XCTAssertTrue(field.waitForExistence(timeout: 3), "Custom asks for a number")
-        XCTAssertFalse(app.alerts.buttons["Apply"].isEnabled, "Nothing typed yet")
-        field.typeText("99")
-        XCTAssertFalse(app.alerts.buttons["Apply"].isEnabled, "Longer than the clip can repeat")
-        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "7")
-        let enabled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == true"), object: app.alerts.buttons["Apply"])
-        XCTAssertEqual(XCTWaiter.wait(for: [enabled], timeout: 3), .completed, "A number that fits turns Apply on")
-        capture(app, "04c Every custom")
-        app.alerts.buttons["Apply"].tap()
-        // The box and keyboard close before the dial glides to the first change.
-        XCTAssertTrue(app.buttons["ball-touch-8"].waitForSelection(timeout: 8))
-        XCTAssertTrue(every.label.contains("Every 7"), every.label)
-        XCTAssertEqual(look(app, 7), "original ball, Glow Trail")
-        XCTAssertEqual(look(app, 8), "Volt, Neon")
-        capture(app, "04d Every 7")
+        let slider = app.sliders["look-every-slider"]
+        XCTAssertTrue(slider.waitForExistence(timeout: 3), "Custom opens a slider, not a keyboard")
+        XCTAssertFalse(app.keyboards.firstMatch.exists)
+        XCTAssertTrue(app.staticTexts["65"].exists, "The slider ends at the longest interval that fits")
+        slider.adjust(toNormalizedSliderPosition: 1)
+        let longest = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS 'Every 65'"), object: every)
+        XCTAssertEqual(XCTWaiter.wait(for: [longest], timeout: 4), .completed, every.label)
+        slider.adjust(toNormalizedSliderPosition: 0.1)
+        let settled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "NOT (label CONTAINS 'Every 65')"), object: every)
+        XCTAssertEqual(XCTWaiter.wait(for: [settled], timeout: 4), .completed, every.label)
+        let step = try XCTUnwrap(Int(every.label.components(separatedBy: " ").last ?? ""), every.label)
+        XCTAssertTrue((2...20).contains(step), every.label)
+        XCTAssertTrue(app.buttons["ball-touch-\(step + 1)"].waitForSelection(timeout: 8))
+        XCTAssertEqual(look(app, step), "original ball, Glow Trail")
+        XCTAssertEqual(look(app, step + 1), "Volt, Neon")
+        capture(app, "04c Every custom slider")
+        app.buttons["look-every-done"].tap()
+        XCTAssertTrue(slider.waitForNonExistence(timeout: 3))
         capture(app, "04d Every 7")
 
         // Remix lays a different mix; Clear brings back one look.
