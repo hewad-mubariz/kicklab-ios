@@ -312,7 +312,7 @@ struct LeaderboardView: View {
             pennants([])
             VStack(spacing: 6) {
                 Text("Be the first on the board").font(.title3.bold())
-                Text("Record a session while signed in. Your best continuous streak shows up here by itself.")
+                Text("Join the leaderboard and record while signed in. Your best streak appears after syncing.")
                     .font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))
                     .multilineTextAlignment(.center)
             }

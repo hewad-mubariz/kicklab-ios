@@ -20,12 +20,14 @@ struct LeaderboardRulesView: View {
                         Divider()
                         rule("What ends a streak", "The ground, a hand or arm, a catch or a held stall. Touches after a stop start a new streak, and only your longest one ranks, never your session total.", "nosign", warning: true)
                         Divider()
-                        rule("For example", "You make 30 touches and the counter isn’t sure of 3 of them, so that run counts 27. Then you stop the ball with your hand and juggle 20 more. Your score is 27, your longest run, not the 50 in all.", "number")
+                        rule("For example", "The app counts runs of 10, 50 and 30 touches, separated by detected stops. Your session total is 90, and your leaderboard score is 50: your longest streak.", "number")
                     }
                     group("HOW IT’S COUNTED") {
-                        rule("Automatic", "Each session recorded in the app while signed in ranks by its longest streak as soon as it syncs. There is nothing to submit.", "bolt")
+                        rule("Automatic", "After you join the leaderboard, sessions recorded in the app while signed in rank by their longest counted streak once synced. There is nothing to submit.", "bolt")
                         Divider()
-                        rule("Touches the counter isn’t sure of", "When hands are hidden, the body is unclear or the ball is lost for a moment, the counter leaves that touch out. It doesn’t count, and it doesn’t end your streak either.", "questionmark.circle")
+                        rule("Touches the counter isn’t sure of", "A possible touch that the counter cannot confirm is left out. Uncertain visibility alone does not end your streak.", "questionmark.circle")
+                        Text("Automatic counts can miss touches or interruptions. Keep the ball and your body clearly visible.")
+                            .font(.footnote).foregroundStyle(.secondary)
                         if LeaderboardRules.touchChecks { checkRules }
                     }
                     Label("Duration and rhythm describe your streak. They do not add points.", systemImage: "metronome")
@@ -40,7 +42,7 @@ struct LeaderboardRulesView: View {
                     group("RECORDING & PRIVACY") {
                         rule("Keep it visible", "Use one size-5 football. Keep yourself, the ball and the ground near you in frame. An initial hand release earns no points.", "video")
                         Divider()
-                        rule("You choose to appear", "You’re asked once before you join. Other players see your profile name, photo and best streak, and you can hide them any time in Profile. Gallery imports and guest sessions never rank.", "person.crop.circle.badge.checkmark")
+                        rule("You choose to appear", "Joining is optional. Other players see your name, country, photo and best streak with its duration and rhythm. You can hide your entry any time in Profile. Gallery imports and guest sessions never rank.", "person.crop.circle.badge.checkmark")
                         if LeaderboardRules.touchChecks {
                             Divider()
                             Text(LeaderboardRules.privacy).font(.subheadline).foregroundStyle(.secondary)
@@ -48,7 +50,7 @@ struct LeaderboardRulesView: View {
                                 .font(.footnote).foregroundStyle(.secondary)
                         } else {
                             Divider()
-                            Text("Your recordings stay on your phone. Only each session’s touch count, best streak, length and date reach your account.")
+                            Text("Your recordings stay on your phone. Session results and basic session details sync to your account.")
                                 .font(.subheadline).foregroundStyle(.secondary)
                         }
                     }
@@ -56,10 +58,9 @@ struct LeaderboardRulesView: View {
                         Text(LeaderboardRules.touchChecks ? "A reviewer can correct or remove any score. Duplicate recordings and edited clips cannot qualify."
                              : "Scores that break these rules or look impossible can be removed from the board.")
                             .font(.subheadline)
-                        Text("No prizes, paid score advantages or trick bonuses in this beta. Training remains available without joining.")
+                        Text("There are no prizes, paid score advantages or trick bonuses. You can train without joining.")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
-                    Text("Rules \(LeaderboardRules.version)").font(.caption).foregroundStyle(.secondary)
                 }.padding(20).frame(maxWidth: 560).frame(maxWidth: .infinity)
             }
             .background(TrainingHomeStyle.background(scheme))

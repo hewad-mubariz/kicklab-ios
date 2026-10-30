@@ -48,8 +48,10 @@ private struct HomeReviewedLeaderboardCard: View {
                     HStack(spacing: 10) {
                         Image(systemName: "flag.fill").foregroundStyle(TrainingHomeStyle.lime)
                         Text("Leaderboard").font(.title3.bold())
-                        Text(usesPreview ? "PREVIEW" : "BETA").font(.caption2.bold()).padding(.horizontal, 7).padding(.vertical, 4)
-                            .background(.white.opacity(0.12), in: .capsule)
+                        if usesPreview {
+                            Text("PREVIEW").font(.caption2.bold()).padding(.horizontal, 7).padding(.vertical, 4)
+                                .background(.white.opacity(0.12), in: .capsule)
+                        }
                         Spacer(minLength: 0)
                         Image(systemName: "chevron.right").font(.subheadline)
                     }
@@ -62,10 +64,10 @@ private struct HomeReviewedLeaderboardCard: View {
                     } else {
                         VStack(alignment: .leading, spacing: 5) {
                             Text(state.error != nil ? "Rankings unavailable" : waiting ? "Your touch check is waiting to send"
-                                 : pending ? "Your touches are being checked" : "Your first place starts here")
+                                 : pending ? "Your touches are being checked" : "Your place starts here")
                                 .font(.headline)
                             Text(state.error != nil ? "Open the board to try again."
-                                 : waiting ? "It sends by itself once you’re online." : "Record a session. Your best streak ranks by itself.")
+                                 : waiting ? "It sends by itself once you’re online." : "Join the leaderboard and record while signed in. Your best streak appears after syncing.")
                                 .font(.subheadline).foregroundStyle(.white.opacity(0.8))
                         }
                     }

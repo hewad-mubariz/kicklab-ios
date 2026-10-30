@@ -75,8 +75,10 @@ entries in each language.
 
 The language work is integrated into `codex/post-launch-signin-leaderboard-ball-edges`.
 The translations originate from uploaded 1.0.4 (31). This branch adds immediate language
-switching on top; it has not been uploaded. Leaderboard-specific view helpers and messages
-are localized as well.
+switching on top, uploaded as TestFlight 1.1.0 (32). Leaderboard-specific view helpers and
+messages are localized as well. The subsequent release-wording cleanup also translates
+the opt-in, automatic-streak, local-video and Apple/email messages in all five languages;
+that cleanup is not part of build 32.
 `LeaderboardLocalizationUITests` exercises Apple/email choices, email entry,
 weekly/all-time tabs, rules and automatic-score details in all five languages,
 alternating light and dark appearances. Google and postponed touch-check actions
@@ -93,7 +95,9 @@ Profile presentation's retained locale/navigation titles. Both in-process switch
 launch-time localization cover all five languages. See the
 [live-language validation report](../benchmarks/releases/20261030-live-language-switch.json)
 for the initial failure, corrected rerun and the separately interrupted StoreKit test.
-No physical-device build or App Store upload was made for this change.
+The owner subsequently confirmed immediate switching on iPhone 11; the same source was
+packaged as 1.1.0 (32), available to internal testers. It was not submitted to App Store
+review. See [TestFlight record](../benchmarks/releases/20261030-testflight-1.1.0-32.json).
 
 The replay-editor upgrade is deferred to a later release. Its new Looks, Sound,
 My style and milestone controls are not included in this candidate; their text

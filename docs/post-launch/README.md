@@ -1175,6 +1175,33 @@ TestFlight build was installed on a device automatically. See
 The device gates below remain release checks; uploading this testing candidate
 does not mark them passed.
 
+**Release wording cleanup — 30 October:** after build 32, the owner prioritized
+accurate wording and testing while keeping custom profile names/photos unchanged.
+The visible BETA badge and internal rules identifier are removed. Edit Profile
+now describes automatic streaks and local recordings, not reviewed scores,
+submissions or a video review team. Home/rules explain the opt-in and sync step;
+the scoring example is 10 + 50 + 30 total / 50 longest streak. Rules acknowledge
+that automatic counting can miss contacts or interruptions and no longer imply
+that hidden hands always reject a contact. Profile lists Apple or email sign-in.
+The wording is translated into all five supported languages. Counting, ranking,
+sign-in, storage and moderation behavior are unchanged. These source changes
+require a later build; uploaded TestFlight 1.1.0 (32) is unchanged.
+Validation passed: the five-language leaderboard/sign-in walkthrough, retained
+review-response regression and signed-in profile-editor UI check (3 tests, zero
+failures or skips). Profile and German rules screenshots were visually inspected;
+all new translations and interpolation placeholders were checked, including
+compiled resources. See
+[`20261030-leaderboard-release-wording.json`](../../benchmarks/releases/20261030-leaderboard-release-wording.json).
+
+**Unresolved public-content review risk:** the automatic leaderboard publishes
+custom names/photos without profile reporting, user blocking or prepublication
+content filtering. The old report action is only for postponed reviewed touch
+attempts and does not provide those safeguards. The owner postponed this work;
+no approval workflow, moderation service or server migration was implemented.
+Occasional manual inspection does not fully implement
+[Apple guideline 1.2](https://developer.apple.com/app-store/review/guidelines/#user-generated-content).
+Do not claim that the wording cleanup resolves this issue or guarantees approval.
+
 Use the leaderboard branch, two dedicated test accounts and the current Supabase
 project. Keep fictional UI fixtures in the simulator; do not seed fake public
 scores. Record device/build, account, session ID, visible total, saved streak,

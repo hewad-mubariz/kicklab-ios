@@ -183,8 +183,7 @@ struct TrainingProfileView: View {
                 ProfileMonolineMark().frame(width: 27, height: 27)
                 VStack(alignment: .leading, spacing: 5) {
                     Text("Sign in to Juggle Dude").font(.body.weight(.semibold))
-                    // Text("Apple, Google or email") // Restore with the deferred providers.
-                    Text("Continue with Apple")
+                    Text("Apple or email")
                         .font(.caption).foregroundStyle(TrainingHomeStyle.muted(scheme))
                 }
                 Spacer(minLength: 4)

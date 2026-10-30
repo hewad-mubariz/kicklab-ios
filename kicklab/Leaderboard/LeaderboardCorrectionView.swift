@@ -428,7 +428,7 @@ struct LeaderboardJoinCard: View {
                     LeaderboardBall(size: 30)
                     Text("Join the leaderboard?").font(.headline)
                 }
-                Text("Your best streak ranks by itself after each recorded session. Other players see your name, \(profile.displayName), with your photo and best streak. You can hide them any time in Profile.")
+                Text("Your best recorded streak appears after syncing. Other players see your name, \(profile.displayName), country, photo and streak stats. You can hide your entry any time in Profile.")
                     .font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 10) {

@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-30",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "base_commit": "1cc5ece10b751ebbaaf4d0c369099c972dae7d26",
+  "scope": "Correct release-visible leaderboard/profile wording in all five supported languages; preserve custom profile behavior.",
+  "changes": [
+    "Remove the live BETA badge and internal rules-version footer; keep debug sample labels.",
+    "Replace reviewed-score/submission/review-team claims in Edit Profile with automatic-streak visibility and local-recording wording.",
+    "Explain optional leaderboard joining and syncing before ranking; disclose public country and streak statistics.",
+    "Use 10 + 50 + 30 = 90 total / 50 best example; acknowledge counting uncertainty without claiming hidden hands always reject a touch.",
+    "Profile sign-in entry lists Apple or email."
+  ],
+  "validation": {
+    "simulator": "Leaderboard Beta QA / iPhone 17 Pro / iOS 26.5",
+    "result": "Passed",
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "tests": [
+      "LeaderboardLocalizationUITests/testSignInBoardRulesAndDetailsInEveryLanguage (en, de, es, fr, pt-BR)",
+      "LeaderboardUITests/testAutomaticBetaHidesLegacyReviewDetailsAndReporting",
+      "ProfileEditorUITests/testCountryCancelAndNameValidationInLightMode"
+    ],
+    "catalog": "14 new English phrases with de/es/fr/pt-BR translations; interpolation placeholders verified; compiled translated resources checked.",
+    "visually_inspected": [
+      "profile-editor-light",
+      "leaderboard-localization-de-rules"
+    ],
+    "result_bundle": "/tmp/juggledude-leaderboard-wording-20261030.xcresult",
+    "artifacts": "artifacts/leaderboard-wording-20261030/",
+    "diff_check": "passed"
+  },
+  "unchanged": [
+    "Counter/detection/ranking algorithms",
+    "Sign-in implementation",
+    "Custom profile names/photos",
+    "Backend and schema",
+    "Version/build number"
+  ],
+  "deferred_by_owner": "Public-profile filtering, reporting and blocking. No manual approval workflow implemented. Apple guideline 1.2 review risk remains unresolved; occasional inspection is not a substitute for the safeguards.",
+  "release_actions": {
+    "archived": false,
+    "uploaded": false,
+    "submitted_to_review": false,
+    "physical_device_installed": false,
+    "existing_testflight": "1.1.0 (32) unchanged; new wording requires a later build"
+  },
+  "source_sha256": {
+    "kicklab/Home/TrainingProfileView.swift": "f5d60e32e5eecea02b400ab6c583887f00b69c3b80674aa19549c4553501de4a",
+    "kicklab/Leaderboard/HomeLeaderboardPreview.swift": "690e15a110285ca6c94a9a914ce5a02e300883630803bb1a5aa6fad4b11722dc",
+    "kicklab/Leaderboard/LeaderboardCorrectionView.swift": "6aa153639243d8ed242b93d07801705c770d6ddfbc25899cd2063a2287246d5c",
+    "kicklab/Leaderboard/LeaderboardRulesView.swift": "6f8e7108b6b2271cdaea38efee29979ed61a055ea367b0ae5a5ebbf970322e2a",
+    "kicklab/Leaderboard/LeaderboardView.swift": "7a2ccaf4c4ea53f7a78429d26a9419e3c879768a805f7f1957371c44ccfef520",
+    "kicklab/Localizable.xcstrings": "219a51596f8d00514da4922c7bb1700ae8feaf3f63b0bebf6c982f1a85e3cc21",
+    "kicklab/Profile/CloudProfileEditor.swift": "3a29243a2ab58b67d017e499acd9782d72e03fd47b328d9ec8a3739aee14d2b6"
+  }
+}

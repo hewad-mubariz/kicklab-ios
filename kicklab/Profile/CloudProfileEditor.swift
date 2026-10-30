@@ -151,16 +151,16 @@ struct CloudProfileEditor: View {
     private var leaderboardCard: some View {
         VStack(alignment: .leading, spacing: 14) {
             Toggle(isOn: $visible) {
-                Label("Show reviewed scores", systemImage: "trophy")
+                Label("Show on leaderboard", systemImage: "trophy")
                     .font(.body.weight(.semibold))
             }
             .tint(TrainingHomeStyle.accent(scheme))
             .accessibilityIdentifier("profile-leaderboard-visible")
-            Text("Show your name, country, photo and best reviewed streak to other players. Turning this off hides your scores without deleting your submissions.")
+            Text("Show your name, country, photo and best streak with its duration and rhythm to other players. Turning this off hides your leaderboard entry and keeps your session history.")
                 .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
                 .fixedSize(horizontal: false, vertical: true)
             Divider().overlay(TrainingHomeStyle.line(scheme))
-            Label("Original videos stay private to you and the review team.", systemImage: "lock")
+            Label("Your recordings stay on your phone.", systemImage: "lock")
                 .font(.caption).foregroundStyle(TrainingHomeStyle.muted(scheme))
         }
         .padding(20)

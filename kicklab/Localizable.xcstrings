@@ -2169,6 +2169,34 @@
         }
       }
     },
+    "A possible touch that the counter cannot confirm is left out. Uncertain visibility alone does not end your streak." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein möglicher Kontakt, den der Zähler nicht bestätigen kann, wird ausgelassen. Unsichere Sicht allein beendet deine Serie nicht."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un posible toque que el contador no puede confirmar queda fuera. La visibilidad incierta por sí sola no termina tu racha."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un contact possible que le compteur ne peut pas confirmer n’est pas compté. Une visibilité incertaine ne suffit pas à interrompre ta série."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um possível toque que o contador não consegue confirmar fica de fora. A visibilidade incerta, sozinha, não encerra sua sequência."
+          }
+        }
+      }
+    },
     "A purchase or restore is already in progress." : {
       "localizations" : {
         "de" : {
@@ -2714,6 +2742,34 @@
     "After landing" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "After you join the leaderboard, sessions recorded in the app while signed in rank by their longest counted streak once synced. There is nothing to submit." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach deinem Beitritt zur Rangliste zählen die längsten gezählten Serien deiner angemeldet aufgenommenen Trainings, sobald sie synchronisiert sind. Du musst nichts einreichen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando te unes al ranking, las sesiones grabadas en la app con la sesión iniciada se clasifican por su racha más larga contada al sincronizarse. No tienes que enviar nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Après ton inscription au classement, les séances enregistrées dans l’app en étant connecté sont classées selon leur plus longue série comptée, une fois synchronisées. Tu n’as rien à envoyer."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Depois de entrar no ranking, os treinos gravados no app com sua conta conectada entram pela maior sequência contada após a sincronização. Você não precisa enviar nada."
+          }
+        }
+      }
     },
     "Aim for %lld touches in a single juggle. All you need is a ball and a little determination." : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
@@ -3320,6 +3376,34 @@
         }
       }
     },
+    "Apple or email" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple oder E-Mail"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple o correo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple ou e-mail"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple ou e-mail"
+          }
+        }
+      }
+    },
     "Ask for a check" : {
       "localizations" : {
         "de" : {
@@ -3456,6 +3540,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Automático"
+          }
+        }
+      }
+    },
+    "Automatic counts can miss touches or interruptions. Keep the ball and your body clearly visible." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die automatische Zählung kann Kontakte oder Unterbrechungen übersehen. Halte den Ball und deinen Körper gut sichtbar im Bild."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El conteo automático puede pasar por alto toques o interrupciones. Mantén el balón y tu cuerpo claramente visibles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le comptage automatique peut manquer des contacts ou des interruptions. Garde le ballon et ton corps bien visibles."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A contagem automática pode deixar passar toques ou interrupções. Mantenha a bola e seu corpo bem visíveis."
           }
         }
       }
@@ -10008,6 +10120,34 @@
         }
       }
     },
+    "Join the leaderboard and record while signed in. Your best streak appears after syncing." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tritt der Rangliste bei und nimm angemeldet ein Training auf. Deine beste Serie erscheint nach der Synchronisierung."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Únete al ranking y graba con la sesión iniciada. Tu mejor racha aparece al sincronizar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rejoins le classement et enregistre une séance en étant connecté. Ta meilleure série apparaît après la synchronisation."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre no ranking e grave com sua conta conectada. Sua melhor sequência aparece após a sincronização."
+          }
+        }
+      }
+    },
     "Join the leaderboard?" : {
       "localizations" : {
         "de" : {
@@ -10032,6 +10172,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entrar no ranking?"
+          }
+        }
+      }
+    },
+    "Joining is optional. Other players see your name, country, photo and best streak with its duration and rhythm. You can hide your entry any time in Profile. Gallery imports and guest sessions never rank." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Teilnahme ist freiwillig. Andere Spieler sehen deinen Namen, dein Land, dein Foto und deine beste Serie mit Dauer und Rhythmus. Du kannst deinen Eintrag jederzeit im Profil ausblenden. Importierte Videos und Gasttrainings zählen nie für die Rangliste."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unirte es opcional. Otros jugadores ven tu nombre, país, foto y mejor racha con su duración y ritmo. Puedes ocultar tu entrada cuando quieras en Perfil. Los videos importados y las sesiones de invitado nunca entran en el ranking."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La participation est facultative. Les autres joueurs voient ton nom, ton pays, ta photo et ta meilleure série avec sa durée et son rythme. Tu peux masquer ton entrée à tout moment dans Profil. Les vidéos importées et les séances sans compte ne sont jamais classées."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Participar é opcional. Outros jogadores veem seu nome, país, foto e melhor sequência com duração e ritmo. Você pode ocultar sua posição a qualquer momento em Perfil. Vídeos importados e treinos como visitante nunca entram no ranking."
           }
         }
       }
@@ -18656,6 +18824,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Show on leaderboard" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In der Rangliste anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar en el ranking"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apparaître dans le classement"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar no ranking"
+          }
+        }
+      }
+    },
     "Show reviewed scores" : {
       "localizations" : {
         "de" : {
@@ -18740,6 +18936,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostre seu nome, país, foto e melhor sequência revisada para outros jogadores. Se desativar, suas pontuações ficam ocultas sem apagar seus envios."
+          }
+        }
+      }
+    },
+    "Show your name, country, photo and best streak with its duration and rhythm to other players. Turning this off hides your leaderboard entry and keeps your session history." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeig anderen Spielern deinen Namen, dein Land, dein Foto und deine beste Serie mit Dauer und Rhythmus. Schaltest du das aus, wird dein Ranglisteneintrag ausgeblendet. Dein Trainingsverlauf bleibt erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra a otros jugadores tu nombre, país, foto y mejor racha con su duración y ritmo. Si lo desactivas, se oculta tu entrada del ranking y se conserva tu historial de sesiones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Montre aux autres joueurs ton nom, ton pays, ta photo et ta meilleure série avec sa durée et son rythme. Si tu désactives cette option, ton entrée est masquée dans le classement et ton historique est conservé."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostre aos outros jogadores seu nome, país, foto e melhor sequência com duração e ritmo. Ao desativar, sua posição fica oculta no ranking e seu histórico de treinos é mantido."
           }
         }
       }
@@ -20525,6 +20749,34 @@
         }
       }
     },
+    "The app counts runs of 10, 50 and 30 touches, separated by detected stops. Your session total is 90, and your leaderboard score is 50: your longest streak." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App zählt Serien mit 10, 50 und 30 Kontakten, getrennt durch erkannte Unterbrechungen. Dein Training hat insgesamt 90 Kontakte. Für die Rangliste zählen 50: deine längste Serie."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app cuenta rachas de 10, 50 y 30 toques, separadas por interrupciones detectadas. El total de la sesión es 90 y tu puntuación en el ranking es 50: tu racha más larga."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app compte des séries de 10, 50 et 30 jongles, séparées par des arrêts détectés. Le total de ta séance est de 90 et ton score au classement est de 50 : ta plus longue série."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O app conta sequências de 10, 50 e 30 toques, separadas por interrupções detectadas. O total do treino é 90 e sua pontuação no ranking é 50: sua maior sequência."
+          }
+        }
+      }
+    },
     "The ball" : {
       "localizations" : {
         "de" : {
@@ -21197,6 +21449,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O ranking semanal reinicia na segunda-feira às 00:00 UTC. Um treino conta na semana em que foi gravado. Em caso de empate, vence o treino mais antigo."
+          }
+        }
+      }
+    },
+    "There are no prizes, paid score advantages or trick bonuses. You can train without joining." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es gibt keine Preise, bezahlten Punktevorteile oder Trickboni. Du kannst auch ohne Teilnahme trainieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay premios, ventajas de puntuación de pago ni puntos extra por trucos. Puedes entrenar sin unirte."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il n’y a ni prix, ni avantages de score payants, ni bonus pour les figures. Tu peux t’entraîner sans participer."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não há prêmios, vantagens pagas na pontuação nem bônus por truques. Você pode treinar sem participar."
           }
         }
       }
@@ -24243,6 +24523,34 @@
         }
       }
     },
+    "Your best recorded streak appears after syncing. Other players see your name, %@, country, photo and streak stats. You can hide your entry any time in Profile." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine beste aufgenommene Serie erscheint nach der Synchronisierung. Andere Spieler sehen deinen Namen, %@, dein Land, dein Foto und deine Serienstatistik. Du kannst deinen Eintrag jederzeit im Profil ausblenden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu mejor racha grabada aparece al sincronizar. Otros jugadores ven tu nombre, %@, país, foto y estadísticas de la racha. Puedes ocultar tu entrada cuando quieras en Perfil."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta meilleure série enregistrée apparaît après la synchronisation. Les autres joueurs voient ton nom, %@, ton pays, ta photo et les statistiques de ta série. Tu peux masquer ton entrée à tout moment dans Profil."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sua melhor sequência gravada aparece após a sincronização. Outros jogadores veem seu nome, %@, país, foto e estatísticas da sequência. Você pode ocultar sua posição a qualquer momento em Perfil."
+          }
+        }
+      }
+    },
     "Your best streak" : {
       "localizations" : {
         "de" : {
@@ -24675,6 +24983,34 @@
         }
       }
     },
+    "Your place starts here" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Platz beginnt hier"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu lugar empieza aquí"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta place commence ici"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seu lugar começa aqui"
+          }
+        }
+      }
+    },
     "Your profile" : {
       "localizations" : {
         "de" : {
@@ -24731,6 +25067,34 @@
         }
       }
     },
+    "Your recordings stay on your phone." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Aufnahmen bleiben auf deinem iPhone."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus grabaciones se quedan en tu iPhone."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tes enregistrements restent sur ton iPhone."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suas gravações ficam no seu iPhone."
+          }
+        }
+      }
+    },
     "Your recordings stay on your phone. Only each session’s touch count, best streak, length and date reach your account." : {
       "localizations" : {
         "de" : {
@@ -24755,6 +25119,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suas gravações ficam no seu celular. Só o número de toques, a melhor sequência, a duração e a data de cada treino vão para sua conta."
+          }
+        }
+      }
+    },
+    "Your recordings stay on your phone. Session results and basic session details sync to your account." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Aufnahmen bleiben auf deinem iPhone. Trainingsergebnisse und grundlegende Trainingsdaten werden mit deinem Konto synchronisiert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus grabaciones se quedan en tu iPhone. Los resultados y los datos básicos de las sesiones se sincronizan con tu cuenta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tes enregistrements restent sur ton iPhone. Les résultats et les informations de base des séances sont synchronisés avec ton compte."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suas gravações ficam no seu iPhone. Os resultados e os dados básicos dos treinos são sincronizados com sua conta."
           }
         }
       }
