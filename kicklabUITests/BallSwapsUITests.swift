@@ -78,6 +78,8 @@ final class BallSwapsUITests: ProReplayUITestCase {
         app.buttons["ball-swap-burst"].tap()
         XCTAssertTrue(app.buttons["ball-swap-burst"].isSelected)
         XCTAssertFalse(app.buttons["ball-swap-pop"].isSelected)
+        let summary = app.descendants(matching: .any)["ball-swap-sound-summary"]
+        XCTAssertTrue(summary.label.contains("Drop"), "Burst plays its own sound: \(summary.label)")
         capture(app, "03 Ball per touch with burst")
 
         // Going back to touch 3 lands Pearl on touch 6 and still shows Lava on 3.
@@ -97,8 +99,12 @@ final class BallSwapsUITests: ProReplayUITestCase {
         app.buttons["touch-sound-pop"].tap()
         XCTAssertTrue(app.buttons["touch-sound-pop"].isSelected)
         XCTAssertFalse(isOn(original), "A touch sound mutes the original automatically")
+        XCTAssertTrue(app.buttons["swap-sound-auto"].isSelected, "The change sound follows the effect")
+        XCTAssertTrue(app.buttons["swap-sound-auto"].label.contains("Drop"))
+        XCTAssertTrue(app.descendants(matching: .any)["sound-auto-note"].exists)
         app.buttons["swap-sound-chime"].tap()
         XCTAssertTrue(app.buttons["swap-sound-chime"].isSelected)
+        XCTAssertFalse(app.buttons["swap-sound-auto"].isSelected, "A picked sound overrides the effect's")
         XCTAssertFalse(app.descendants(matching: .any)["sound-change-note"].exists, "Changes exist, so no hint is needed")
         capture(app, "04 Sound tool")
         app.buttons["touch-sound-none"].tap()
@@ -114,6 +120,8 @@ final class BallSwapsUITests: ProReplayUITestCase {
         app.buttons["replay-tools-back"].tap()
         app.buttons["replay-tool-ball"].tap()
         XCTAssertTrue(app.buttons["ball-touch-3"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["ball-swap-sound-summary"].label.contains("Chime"),
+                      "The Ball page shows the overriding sound")
         XCTAssertTrue(isOn(app.switches["ball-per-touch"]))
         app.switches["ball-per-touch"].tap()
         XCTAssertFalse(app.buttons["ball-touch-3"].waitForExistence(timeout: 2))

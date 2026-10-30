@@ -170,7 +170,13 @@ nonisolated struct SessionEditState: Hashable, Sendable {
     var ballChanges: [Int: BallSkin] = [:]
     /// Drawn on the ball at every change, and the sound that plays with it.
     var swapEffect: BallSwapEffect = .pop
-    var swapSound: BallSwapSound = .whoosh
+    /// A change sound the person picked; nil plays the change effect's own sound.
+    var swapSoundChoice: BallSwapSound? = nil
+    /// The sound heard at every change: the person's pick, else the effect's own sound.
+    var swapSound: BallSwapSound {
+        get { swapSoundChoice ?? swapEffect.defaultSound }
+        set { swapSoundChoice = newValue }
+    }
     /// Played on every counted touch; none by default.
     var touchSound: TouchSound = .none
     /// The sound recorded with the video, in the replay and the saved file.

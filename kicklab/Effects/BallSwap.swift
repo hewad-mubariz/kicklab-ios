@@ -66,6 +66,23 @@ nonisolated enum BallSwapEffect: String, CaseIterable, Identifiable, Hashable, S
     /// Seconds the moment stays on screen after the touch.
     static let duration = 0.5
 
+    /// The sound each moment makes unless the person picks another. Every effect has its own.
+    var defaultSound: BallSwapSound {
+        switch self {
+        case .none: .none
+        case .pop: .flip
+        case .flash: .shimmer
+        case .burst: .drop
+        case .ripple: .warp
+        case .sparkle: .sparkle
+        case .shatter: .zap
+        case .halo: .chime
+        case .pixel: .glitch
+        case .smoke: .whoosh
+        case .lightning: .thunder
+        }
+    }
+
     /// How much larger the incoming ball is drawn through the moment; 1 at rest.
     func ballScale(age: Double) -> Double {
         let a = min(1, max(0, age))
