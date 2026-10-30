@@ -1,6 +1,6 @@
 # Looks, change moments, replay sounds and timer looks
 
-Branch `feature/leaderboard-editor-upgrade`, built on the leaderboard branch
+Branch `feature/ball-swaps-and-sounds`, built on the leaderboard branch
 (`codex/post-launch-signin-leaderboard-ball-edges` at 4d0c3d1), 29–30 October 2026.
 
 The replay editor can now put a different ball on any touch, play a visible moment
