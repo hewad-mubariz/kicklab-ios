@@ -119,13 +119,15 @@ extension BallSkin {
     }
 }
 
-/// One ball change: at this touch the ball on screen becomes `to`.
+/// One look change: at this touch the ball on screen becomes `to`, and the effect `toEffect`.
 nonisolated struct BallSwapEvent: Hashable, Sendable {
     /// Position in the sorted touch list.
     let index: Int
     let time: Double
     let from: BallSkin
     let to: BallSkin
+    var fromEffect: BallStyle = .none
+    var toEffect: BallStyle = .none
 }
 
 /// The ball changes of one edit laid against the clip's touches. Built once per edit,
@@ -140,7 +142,7 @@ nonisolated struct BallSwapTimeline: Hashable, Sendable {
     }
 
     init(edit: SessionEditState, touchTimes: [Double]) {
-        self.init(events: edit.ballSwaps(touchTimes: touchTimes), effect: edit.swapEffect)
+        self.init(events: edit.lookSwaps(touchTimes: touchTimes), effect: edit.swapEffect)
     }
 
     var isEmpty: Bool { events.isEmpty || effect == .none }
@@ -161,25 +163,65 @@ nonisolated struct BallSwapTimeline: Hashable, Sendable {
     }
 }
 
+/// A ball and the effect around it: what one run of touches looks like.
+nonisolated struct TouchLook: Hashable, Sendable {
+    var ball: BallSkin
+    var effect: BallStyle
+}
+
 extension SessionEditState {
-    /// Any frame may need the material canvas: the base ball or any touch's ball is a print.
+    /// The first run's look: the clip's own ball and effect, as the Ball and Effects pages set them.
+    nonisolated var baseLook: TouchLook { TouchLook(ball: ballSkin, effect: style) }
+
+    nonisolated var hasLookChanges: Bool { !lookChanges.isEmpty }
+
+    /// Any frame may need the material canvas: the base ball or any run's ball is a print.
     nonisolated var usesBallMaterial: Bool {
-        ballSkin != .original || ballChanges.values.contains { $0 != .original }
+        ballSkin != .original || lookChanges.values.contains { $0.ball != .original }
     }
 
-    nonisolated var hasBallChanges: Bool { !ballChanges.isEmpty }
+    /// Any run draws an effect.
+    nonisolated var usesEffects: Bool {
+        intensity > 0 && (style != .none || lookChanges.values.contains { $0.effect != .none })
+    }
+
+    /// Balls drawn as prints only where the source spin is ready; effects stay.
+    nonisolated func withoutBallPrints() -> Self {
+        var value = self
+        value.ballSkin = .original
+        value.lookChanges = lookChanges.mapValues { TouchLook(ball: .original, effect: $0.effect) }
+        return value
+    }
 
     /// Sounds that would actually play on this clip.
-    nonisolated var hasSounds: Bool { touchSound != .none || (swapSound != .none && hasBallChanges) }
+    nonisolated var hasSounds: Bool { touchSound != .none || (swapSound != .none && hasLookChanges) }
 
-    /// The ball on screen from touch `index` until the next change; the base ball before any change.
-    nonisolated func ballSkin(forTouch index: Int) -> BallSkin {
-        var best: (index: Int, skin: BallSkin)?
-        for (at, skin) in ballChanges where at <= index {
-            if best == nil || at > best!.index { best = (at, skin) }
-        }
-        return best?.skin ?? ballSkin
+    /// Touches where a run of looks begins, sorted; the first run always starts at 0.
+    nonisolated var runStarts: [Int] { [0] + lookChanges.keys.filter { $0 > 0 }.sorted() }
+
+    /// The touches sharing the look of touch `index`.
+    nonisolated func run(containing index: Int, touchCount: Int) -> Range<Int> {
+        let starts = runStarts
+        let start = starts.last { $0 <= index } ?? 0
+        let end = starts.first { $0 > index } ?? touchCount
+        return start..<max(start + 1, end)
     }
+
+    /// The look from touch `index` until the next run; the base look before any change.
+    nonisolated func look(forTouch index: Int) -> TouchLook {
+        var best: (index: Int, look: TouchLook)?
+        for (at, look) in lookChanges where at > 0 && at <= index {
+            if best == nil || at > best!.index { best = (at, look) }
+        }
+        return best?.look ?? baseLook
+    }
+
+    /// Sets a whole run at once. The first run is the clip's own ball and effect.
+    nonisolated mutating func setLook(_ look: TouchLook, forRunStartingAt start: Int) {
+        if start <= 0 { ballSkin = look.ball; style = look.effect } else { lookChanges[start] = look }
+    }
+
+    nonisolated func ballSkin(forTouch index: Int) -> BallSkin { look(forTouch: index).ball }
 
     /// Position of the latest touch at or before `time` in a sorted list.
     nonisolated static func touchIndex(at time: Double, touchTimes: [Double]) -> Int? {
@@ -192,45 +234,43 @@ extension SessionEditState {
         return lo > 0 ? lo - 1 : nil
     }
 
-    /// The ball on screen at `time`. `touchTimes` must be sorted ascending.
-    nonisolated func ballSkin(at time: Double, touchTimes: [Double]) -> BallSkin {
-        guard !ballChanges.isEmpty, let index = Self.touchIndex(at: time, touchTimes: touchTimes) else { return ballSkin }
-        return ballSkin(forTouch: index)
+    /// The look on screen at `time`. `touchTimes` must be sorted ascending.
+    nonisolated func look(at time: Double, touchTimes: [Double]) -> TouchLook {
+        guard !lookChanges.isEmpty, let index = Self.touchIndex(at: time, touchTimes: touchTimes) else { return baseLook }
+        return look(forTouch: index)
     }
 
-    /// Every touch where the ball on screen differs from the touch before it.
-    nonisolated func ballSwaps(touchTimes: [Double]) -> [BallSwapEvent] {
-        guard !ballChanges.isEmpty else { return [] }
-        var previous = ballSkin, events: [BallSwapEvent] = []
-        for (index, time) in touchTimes.enumerated() where time.isFinite {
-            let next = ballSkin(forTouch: index)
-            if next != previous { events.append(BallSwapEvent(index: index, time: time, from: previous, to: next)) }
+    nonisolated func ballSkin(at time: Double, touchTimes: [Double]) -> BallSkin { look(at: time, touchTimes: touchTimes).ball }
+    nonisolated func effect(at time: Double, touchTimes: [Double]) -> BallStyle { look(at: time, touchTimes: touchTimes).effect }
+
+    /// Every run start where the look differs from the run before it.
+    nonisolated func lookSwaps(touchTimes: [Double]) -> [BallSwapEvent] {
+        guard !lookChanges.isEmpty else { return [] }
+        var previous = baseLook, events: [BallSwapEvent] = []
+        for start in runStarts where start > 0 && start < touchTimes.count && touchTimes[start].isFinite {
+            let next = look(forTouch: start)
+            if next != previous {
+                events.append(BallSwapEvent(index: start, time: touchTimes[start], from: previous.ball, to: next.ball,
+                                            fromEffect: previous.effect, toEffect: next.effect))
+            }
             previous = next
         }
         return events
     }
 
-    /// The prints in use, in the order they first appear.
-    nonisolated var ballsInOrder: [BallSkin] {
-        var seen: [BallSkin] = [ballSkin]
-        for index in ballChanges.keys.sorted() {
-            let skin = ballChanges[index]!
-            if !seen.contains(skin) { seen.append(skin) }
+    /// How strongly the effect draws at `time` and how many seconds of trail it may show. The old
+    /// effect fades out just before a change and the new one fades in after it, drawing only the
+    /// path since the change, so an old fire trail never repaints itself as ice.
+    nonisolated func effectBlend(at time: Double, touchTimes: [Double]) -> (gain: Double, trail: Double) {
+        var gain = 1.0, trail = 0.84
+        guard !lookChanges.isEmpty, time.isFinite else { return (gain, trail) }
+        for event in lookSwaps(touchTimes: touchTimes) where event.fromEffect != event.toEffect {
+            let since = time - event.time
+            if since >= 0 && since < 0.84 { trail = min(trail, max(0.02, since)) }
+            if since >= 0 && since < 0.2 { gain = min(gain, since / 0.2) }
+            if since < 0 && since > -0.1 { gain = min(gain, -since / 0.1) }
         }
-        return seen
-    }
-
-    /// Rotate through `skins`, changing every `every` touches, across `touchCount` touches.
-    nonisolated mutating func cycleBalls(_ skins: [BallSkin], every: Int, touchCount: Int) {
-        let step = max(1, every)
-        let order = skins.isEmpty ? [ballSkin] : skins
-        ballChanges = [:]
-        guard order.count > 1, touchCount > 0 else { return }
-        var slot = 0
-        for index in stride(from: 0, to: touchCount, by: step) {
-            ballChanges[index] = order[slot % order.count]
-            slot += 1
-        }
+        return (gain, trail)
     }
 }
 

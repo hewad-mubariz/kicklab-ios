@@ -73,7 +73,7 @@ final class ReplayDownloader: ObservableObject {
         }
         do {
             try await VideoBackgroundWork.shared.run(title: "Saving your replay",
-                requiresGPU: (edit.style != .none && edit.intensity > 0) || edit.environment != .original || edit.scene != nil
+                requiresGPU: edit.usesEffects || edit.environment != .original || edit.scene != nil
                     || (edit.usesBallMaterial && summary.needsVisualPreparation && preparation.prepared == nil)) {
                 try await self.performDownload(summary: summary, edit: edit, overlays: overlays,
                     sceneModel: sceneModel, preparation: preparation, distanceTimeline: distanceTimeline)
@@ -126,7 +126,7 @@ final class ReplayDownloader: ObservableObject {
                       motionTimeline: overlays.graph.enabled ? MotionStyleTimeline(points: summary.track.map {
                           CaptureMotionPoint(time: $0.time, y: $0.detected ? $0.y : nil, x: $0.detected ? $0.x : nil)
                       }, touchTimes: summary.touchesMarked.map(\.time)) : nil,
-                      ballChanges: edit.ballChanges, swapEffect: edit.swapEffect,
+                      lookChanges: edit.lookChanges, swapEffect: edit.swapEffect,
                       soundtrack: ReplaySoundtrack(edit: edit, touchTimes: summary.touchesMarked.map(\.time)),
                       clipAudio: edit.clipAudio)
         while burnIn.isExporting {

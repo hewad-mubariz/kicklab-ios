@@ -368,7 +368,7 @@ nonisolated struct ReplaySoundtrack: Hashable, Sendable {
     /// Touch cues on every touch; where the ball changes, the change cue plays instead of the
     /// touch cue, so a change is never two sounds at once. `touchTimes` sorted.
     init(edit: SessionEditState, touchTimes: [Double]) {
-        let swaps = edit.swapSound == .none ? [] : edit.ballSwaps(touchTimes: touchTimes)
+        let swaps = edit.swapSound == .none ? [] : edit.lookSwaps(touchTimes: touchTimes)
         let changed = Set(swaps.map(\.index))
         var events: [Event] = []
         if edit.touchSound != .none {

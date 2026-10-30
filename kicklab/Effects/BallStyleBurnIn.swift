@@ -24,7 +24,7 @@ final class BallStyleBurnIn: ObservableObject {
                 skin: BallSkin = .original, environment: EffectEnvironment = .original, shortEdge: Int = 1080,
                 counter: ExportCounterTimeline? = nil, overlays: ExportOverlaySettings? = nil,preserveFrameTimes:Bool=false,
                 distanceTimeline: BallDistanceTimeline? = nil, motionTimeline: MotionStyleTimeline? = nil,
-                ballChanges: [Int: BallSkin] = [:], swapEffect: BallSwapEffect = .none, soundtrack: ReplaySoundtrack? = nil,
+                lookChanges: [Int: TouchLook] = [:], swapEffect: BallSwapEffect = .none, soundtrack: ReplaySoundtrack? = nil,
                 clipAudio: Bool = true) {
         guard !isExporting else { return }
         // Each explicit export renders its current inputs. Reusing by a partial
@@ -33,11 +33,11 @@ final class BallStyleBurnIn: ObservableObject {
         worker = Task {
             do {
                 let url = try await VideoBackgroundWork.shared.run(title: "Exporting video",
-                    requiresGPU: (style != .none && intensity > 0) || environment != .original) {
+                    requiresGPU: Self.drawsEffects(style: style, intensity: intensity, looks: lookChanges) || environment != .original) {
                     let renderTask = VideoWorkExecution.detached {
                         try await Self.render(source: source, track: track, style: style, skin: skin,
                                               intensity: intensity, environment: environment, shortEdge: shortEdge, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes, distanceTimeline: distanceTimeline, motionTimeline: motionTimeline,
-                                              ballChanges: ballChanges, swapEffect: swapEffect, soundtrack: soundtrack,
+                                              lookChanges: lookChanges, swapEffect: swapEffect, soundtrack: soundtrack,
                                               clipAudio: clipAudio) { p in
                             VideoWorkExecution.lease?.progress(p, subtitle: p < 0.94 ? "Rendering your video" : "Finishing video")
                             await MainActor.run { self.progress = p; self.status = p < 0.94 ? "Rendering effects…" : "Finishing video…" }
@@ -61,6 +61,11 @@ final class BallStyleBurnIn: ObservableObject {
 
     private nonisolated static func failure(_ message: String) -> NSError {
         NSError(domain: "KickLab.Export", code: 50, userInfo: [NSLocalizedDescriptionKey: message])
+    }
+
+    /// Any run of looks draws an effect, so the GPU renderer is needed.
+    nonisolated static func drawsEffects(style: BallStyle, intensity: Double, looks: [Int: TouchLook]) -> Bool {
+        intensity > 0 && (style != .none || looks.values.contains { $0.effect != .none })
     }
 
     nonisolated static func bitrate(for outputSize: CGSize) -> Int {
@@ -113,7 +118,7 @@ final class BallStyleBurnIn: ObservableObject {
                                   preserveFrameTimes:Bool=false,
                                   distanceTimeline: BallDistanceTimeline? = nil,
                                   motionTimeline: MotionStyleTimeline? = nil,
-                                  ballChanges: [Int: BallSkin] = [:],
+                                  lookChanges: [Int: TouchLook] = [:],
                                   swapEffect: BallSwapEffect = .none,
                                   soundtrack: ReplaySoundtrack? = nil,
                                   clipAudio: Bool = true,
@@ -129,7 +134,7 @@ final class BallStyleBurnIn: ObservableObject {
         let size = composition.renderSize
         var effects = BallEffectTrack(frames: track, touchTimes: touchTimes ?? counter?.times ?? [])
         // Any print, on the whole clip or from one touch on, needs the source spin.
-        let usesMaterial = skin != .original || ballChanges.values.contains { $0 != .original }
+        let usesMaterial = skin != .original || lookChanges.values.contains { $0.ball != .original }
         if usesMaterial {
             effects.surfaceMotion = try await BallSurfaceTimeline.prepare(source: source, track: effects)
         }
@@ -139,7 +144,7 @@ final class BallStyleBurnIn: ObservableObject {
             }, touchTimes: touchTimes ?? counter?.times ?? []) : nil
         let reader = try AVAssetReader(asset: asset)
         let output: AVAssetReaderOutput
-        let basic = style == .none && !usesMaterial && environment == .original
+        let basic = !Self.drawsEffects(style: style, intensity: intensity, looks: lookChanges) && !usesMaterial && environment == .original
         let directSource = basic && !preserveFrameTimes
             ? try await canReadDirectly(naturalSize: videoTrack.load(.naturalSize), outputSize: size,
                 transform: videoTrack.load(.preferredTransform), formats: videoTrack.load(.formatDescriptions)) : false
@@ -193,9 +198,9 @@ final class BallStyleBurnIn: ObservableObject {
         try FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication], ofItemAtPath: silentURL.path)
         writer.startSession(atSourceTime: .zero)
         var edit = SessionEditState(style: style, intensity: intensity, ballSkin: skin, environment: environment)
-        edit.ballChanges = ballChanges; edit.swapEffect = swapEffect
+        edit.lookChanges = lookChanges; edit.swapEffect = swapEffect
         let swaps = BallSwapTimeline(edit: edit, touchTimes: effects.touches)
-        let needsGPU = (style != .none && intensity > 0) || environment != .original
+        let needsGPU = Self.drawsEffects(style: style, intensity: intensity, looks: lookChanges) || environment != .original
         try await VideoWorkExecution.checkpoint(requiresGPU: needsGPU)
         let engine = needsGPU ? try MetalEffectEngine() : nil
         var ci = engine.map { CIContext(mtlDevice: $0.device, options: [.cacheIntermediates: false]) }

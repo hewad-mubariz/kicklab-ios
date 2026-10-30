@@ -739,8 +739,9 @@ struct ReplayEffectsView: View {
         if summary.needsVisualPreparation && preparation.prepared == nil {
             value.style = .none
             value.ballSkin = .original
+            value.lookChanges = [:]
         }
-        if effectTrack.surfaceMotion == nil { value.ballSkin = .original; value.ballChanges = [:] }
+        if effectTrack.surfaceMotion == nil { value = value.withoutBallPrints() }
         return value
     }
 

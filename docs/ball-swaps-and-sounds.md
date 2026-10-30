@@ -1,4 +1,4 @@
-# Ball per touch, change moments and replay sounds
+# Looks, change moments, replay sounds and timer looks
 
 Branch `feature/ball-swaps-and-sounds`, 29 October 2026.
 
@@ -8,26 +8,30 @@ are Pro tools, like the single-ball picker, and all three export exactly as prev
 
 ## What the user sees
 
-**Ball tool.** The 4×4 grid stays the default. A *Ball per touch* switch sits above it; on,
-the page becomes:
+**Looks tool.** A wide tile under the Customize grid shows the clip's looks in order. A
+look is a ball plus an effect; the clip is a sequence of runs of touches, each with one
+look. The first run is the clip's own ball and effect, which the Ball and Effects pages set;
+with looks on, those pages say so and link to Looks. The Looks page has:
 
-- a **touch dial**: every counted touch on a snapping horizontal dial under a fixed mint
-  lens with a playhead notch. Swiping snaps touch to touch with a haptic tick and holds the
-  clip a quarter second after that touch, when the change moment has cleared. Touches shrink
-  and fade away from the lens. A coloured **run bar** under the balls, in each ball's accent,
-  shows which ball plays across which touches, broken by a white dot at every change;
-- a line naming the touch and its run ("Lava · since touch 3"), with *Cycle* (every 1, 2,
-  3, 5 or 10 touches, rotating the balls in use topped up with Volt, Lava and Chrome; with
-  nothing picked the real ball leads) and *Clear*;
-- one row of balls for the touch under the lens, with the existing flight animation;
-- **change effect tiles** for the eleven moments (None, Pop, Flash, Burst, Ripple, Sparkle,
-  Shatter, Halo, Pixel, Smoke, Lightning). Each tile draws its moment on a small ball with
-  the clip's own renderer; the chosen tile loops it, a tap plays it on the tile and plays a
-  short run through the nearest change on the clip.
+- **Recipes**, one tap each: *Power-up* levels up on the 10th, 25th, 50th and 100th touch
+  (Volt + Electric, Lava + Fire, Gold + Galaxy, Chrome + Rainbow), or at quarters on short
+  clips, with Burst; *Finale* keeps the clip's look until the last few touches, then Gold +
+  Fire with Lightning; *Every 5* rotates three looks and the clip's own every 5 touches,
+  with Pop; *Remix* lays a seeded random mix with Sparkle, and tapping it again shuffles.
+  *Clear* returns to one look.
+- the **touch dial**: every touch snaps under the lens with a haptic tick and holds the clip
+  just after that touch. Each touch shows its ball with a badge for its effect; the bar
+  under them is the runs, in each look's effect colour, with a white dot where a run starts.
+  The run under the lens is lit, because edits apply to all of it. Changes ripple outward
+  from the lens.
+- the **run line**: "Look 3 of 6 · Touches 15 to 24 · Pearl + Ice", with *Split* (start a
+  new run at the lens, same look until changed) and *Merge* (join the run to the one before).
+- three chips, *Ball*, *Effect* and *Change*, switching one picker row: the balls with the
+  pick flight, the effects drawn on the run's ball, and the change-moment tiles with the
+  change sound beside them.
 
-Turning the switch off sets the per-touch picks aside and the clip shows one ball again;
-turning it back on in the same session restores them. The dial returns to the last touch
-worked on, and reopening the page holds the clip on it.
+Every change of look plays the change moment and its sound. Picking a ball or effect plays a
+short run through that run's start on the clip.
 
 **Sound tool** (new tile in the Customize grid, showing the chosen sound's waveform).
 
@@ -81,18 +85,23 @@ Pro; placement and show/hide stay free.
 
 | Field | Meaning |
 | --- | --- |
-| `ballChanges: [Int: BallSkin]` | sorted-touch position → the ball shown from that touch until the next change; `ballSkin` stays the base ball |
+| `lookChanges: [Int: TouchLook]` | run start (sorted-touch position) to the ball and effect shown until the next run; the first run is `ballSkin` and `style` |
 | `swapEffect: BallSwapEffect` | the moment drawn at every change (`.pop` by default) |
 | `swapSoundChoice: BallSwapSound?` | a change cue the person picked; nil follows the effect (`swapSound` resolves the cue heard) |
 | `touchSound: TouchSound` | the cue on every touch (`.none` by default) |
 | `clipAudio: Bool` | keep the sound recorded with the video (`true` by default) |
 
-`ballSkin(at:touchTimes:)` resolves the ball for a frame; `ballSwaps(touchTimes:)` lists
-the real changes; `usesBallMaterial` tells the preview and export whether any print is
-ever on screen. The touch index space is the sorted touch time list, the same one the
+`look(at:touchTimes:)` resolves the ball and effect for a frame; `lookSwaps(touchTimes:)`
+lists the run starts where the look really changes; `effectBlend` fades the effect across a
+change and limits the new effect's trail to the path since the change; `usesBallMaterial`
+and `usesEffects` tell the preview and export whether prints or effects are ever drawn.
+`LookRecipes` builds the recipes deterministically from the touch count. The touch index space is the sorted touch time list, the same one the
 counter timeline and `BallEffectTrack` use.
 
 ## Rendering
+
+`EffectFrame.video` resolves the effect per frame from the runs, so the replay and the saved
+video draw each run's own effect; the export enables the GPU whenever any run has one.
 
 The change moment is drawn with Core Graphics into the same material canvas as the ball
 (`BallSwapRenderer`), in output pixels around the tracked ball, for half a second after the
@@ -113,8 +122,11 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
 
 ## Tests
 
-- `BallSwapTests`: per-touch resolution, change listing, timeline ages, cycling, edit
-  flags and Pro gating, and every effect drawing deterministically and fading out.
+- `BallSwapTests`: run resolution, real look changes, the effect fade and trail cut,
+  timeline ages, all four recipes on short and long clips, edit flags and Pro gating, and
+  every change moment drawing deterministically and fading out.
+- `LookExportTests`: a saved video draws fire for the first run and nothing after the
+  change, and the reverse.
 - `ReplaySoundTests`: every cue bounded and audible, waveform shapes, soundtrack placement,
   an export that mixes cues into a saved video with exactly one audio track, and muted
   exports (no track without cues; cues only with cues; both when kept).
@@ -122,9 +134,9 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
   a second; settings migration; Pro rules; placement shape; export placement.
 - `TimerStickerUITests`: every look selectable, tap to select, drag, pinch, reset, style pill,
   done and remove.
-- `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): the switch, dial,
-  per-touch picks, change effect tiles, automatic and manual original-sound muting, restoring
-  picks with the switch, cycle and clear.
+- `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): Power-up, split, a run's
+  ball and effect, change moment, merge, remix, clear, the Ball page's link to Looks, the
+  Auto change sound and its override, and original-sound muting.
 
 ## Results (iPhone 18 Pro Simulator)
 
@@ -158,7 +170,7 @@ moments need a device or an exported file.
 
 ## Not done
 
-- No new analytics events for the sound and per-touch choices.
+- No new analytics events for the sound, looks and timer choices.
 - Ball Distance videos (no touches) keep the single-ball picker and have no Sound tile.
 - The two detection files `NativeBallPixelTrack.swift` and `RFBufferedPixelTrack.swift`
   carry a three-line split of one expression that the current compiler could not type-check

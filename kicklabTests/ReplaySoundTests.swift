@@ -30,7 +30,7 @@ struct ReplaySoundTests {
         var edit = SessionEditState(style: .none, intensity: 0)
         edit.touchSound = .pop
         edit.swapSound = .chime
-        edit.ballChanges = [1: .lava]
+        edit.lookChanges = [1: TouchLook(ball: .lava, effect: .none)]
         let soundtrack = ReplaySoundtrack(edit: edit, touchTimes: [0.5, 1.0, 1.5])
         #expect(soundtrack.events.map(\.time) == [0.5, 1.0, 1.5], "One cue per touch")
         #expect(soundtrack.events.map(\.sound) == [.touch(.pop), .swap(.chime), .touch(.pop)],
@@ -50,7 +50,7 @@ struct ReplaySoundTests {
         #expect(ReplaySoundtrack(edit: edit, touchTimes: [0.5, 1.0, 1.5]).events.map(\.sound) == Array(repeating: .touch(.pop), count: 3))
         // Nothing to play without touches, or with every sound off.
         #expect(ReplaySoundtrack(edit: edit, touchTimes: []).isEmpty)
-        edit.touchSound = .none; edit.ballChanges = [:]; edit.swapSoundChoice = nil
+        edit.touchSound = .none; edit.lookChanges = [:]; edit.swapSoundChoice = nil
         #expect(ReplaySoundtrack(edit: edit, touchTimes: [0.5, 1.0]).isEmpty, "A change sound needs a change")
     }
 
@@ -61,7 +61,7 @@ struct ReplaySoundTests {
         #expect(BallSwapEffect.none.defaultSound == .none)
         #expect(BallSwapEffect.lightning.defaultSound == .thunder)
         var edit = SessionEditState(style: .none, intensity: 0)
-        edit.ballChanges = [1: .volt]
+        edit.lookChanges = [1: TouchLook(ball: .volt, effect: .none)]
         #expect(edit.swapSoundChoice == nil && edit.swapSound == edit.swapEffect.defaultSound, "Auto by default")
         edit.swapEffect = .lightning
         #expect(edit.swapSound == .thunder, "Auto follows the effect")

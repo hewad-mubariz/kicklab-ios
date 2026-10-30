@@ -165,9 +165,9 @@ nonisolated struct SessionEditState: Hashable, Sendable {
     var ballSkin: BallSkin = .original
     var environment: EffectEnvironment = .original
     var scene: SceneSelection? = nil
-    /// A different ball from a touch on: sorted-touch position to the ball shown from that touch
-    /// until the next change. Empty keeps `ballSkin` for the whole clip.
-    var ballChanges: [Int: BallSkin] = [:]
+    /// Runs of looks: sorted-touch position where a run starts, to the ball and effect shown from
+    /// that touch until the next run. The first run is `ballSkin` and `style`; empty keeps one look.
+    var lookChanges: [Int: TouchLook] = [:]
     /// Drawn on the ball at every change, and the sound that plays with it.
     var swapEffect: BallSwapEffect = .pop
     /// A change sound the person picked; nil plays the change effect's own sound.
@@ -183,14 +183,14 @@ nonisolated struct SessionEditState: Hashable, Sendable {
     var clipAudio = true
     /// Every visible ball-following effect needs the completed source-pixel track.
     /// Counter/timer-only exports can use the saved touch timeline immediately.
-    var requiresVisualTrack: Bool { usesBallMaterial || (style != .none && intensity > 0) }
+    var requiresVisualTrack: Bool { usesBallMaterial || usesEffects }
     var isEdited: Bool {
-        scene != nil || environment != .original || usesBallMaterial || hasBallChanges || hasSounds || !clipAudio
+        scene != nil || environment != .original || usesBallMaterial || hasLookChanges || hasSounds || !clipAudio
             || (style != .none && intensity > 0.02)
     }
     var label: String {
         [scene?.environment.title,
-         hasBallChanges ? "Ball per touch" : ballSkin != .original ? ballSkin.title : nil,
+         hasLookChanges ? "Looks on touches" : ballSkin != .original ? ballSkin.title : nil,
          touchSound != .none ? "\(touchSound.title) touches" : nil,
          clipAudio ? nil : "Original sound off",
          style != .none && intensity > 0.02 ? "\(style.title) · \(Int((intensity * 100).rounded()))%" : nil,
