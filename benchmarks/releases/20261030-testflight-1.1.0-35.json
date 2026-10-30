@@ -1,0 +1,93 @@
+{
+  "app": "Juggle Dude",
+  "apple_app_id": "6820780610",
+  "version": "1.1.0",
+  "build": "35",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "source_commit": "2bed35d63cac6dfd9caec0f7ae190062bc7b94a2",
+  "status": "testing_internal",
+  "minimum_ios": "18.0",
+  "updated_at_utc": "2026-10-30T22:32:34.821454+00:00",
+  "includes": [
+    "Existing leaderboard and approved counter profile",
+    "Apple/email sign-in",
+    "iOS 18 compatibility",
+    "Native Apple offer-code redemption from Profile and the Pro paywall"
+  ],
+  "validation": {
+    "ios18_subscription_tests": {
+      "passed": 21,
+      "failed": 0,
+      "result_bundle": "/tmp/juggledude-invite-build35-ios18-r2.xcresult",
+      "log": "artifacts/releases/20261030-invites-1.1.0-35/subscription-tests-r2.log"
+    },
+    "ios18_paywall_navigation_tests": {
+      "passed": 2,
+      "failed": 0,
+      "result_bundle": "/tmp/juggledude-invite-build35-ios18.xcresult",
+      "log": "artifacts/releases/20261030-invites-1.1.0-35/subscription-tests.log"
+    },
+    "initial_run": "18 of 21 subscription tests passed; test-fixture transaction publication caused three failures. Added bounded history waits, then all 21 passed. Both navigation tests passed on the initial run.",
+    "pinned_model_verified": true
+  },
+  "known_testing_gaps": [
+    "Real Apple offer-code redemption, cancellation and invalid/expired-code UI still need physical-device validation.",
+    "Physical iOS 18 camera, memory and thermal validation remains pending.",
+    "New invite-code UI strings currently use English."
+  ],
+  "what_to_test_file": "artifacts/releases/20261030-invites-1.1.0-35/what-to-test.txt",
+  "what_to_test": "Juggle Dude 1.1.0 (35) \u2014 Pro invite codes and iOS 18 support\n\n\u2022 Open Profile \u2192 Redeem invite code, or use the same button on the Pro screen. Check that Apple\u2019s redemption sheet opens and that cancelling lets you continue using the app.\n\u2022 Use an Apple sandbox offer code supplied for testing. Pro should unlock only after Apple verifies the transaction. Check Pro tools, relaunch and Restore purchases. Production offer codes are intended for the public App Store app, not TestFlight.\n\u2022 Check leaderboard participation and longest counted streaks, Apple/email sign-in and changing app language without restarting.\n\u2022 On iOS 18 or later, try recording, replay, ball replacement, effects, importing a video and saving to Photos. On iOS 18, keep the app open during video preparation/export; processing pauses when you leave and resumes when you return.\n\nKnown checks still needed: real offer-code redemption on a physical device, including cancellation and invalid/expired codes; physical iOS 18 camera, memory and thermal testing. The new invite-code text currently uses English.\n",
+  "what_to_test_sha256": "f68de5d4082827ac9af8defaf3b1cc1095d75bf8c7ee9bad4f4aa6b70b093c16",
+  "submitted_to_app_store_review": false,
+  "submitted_to_external_beta_review": false,
+  "installed_to_device_after_upload": false,
+  "archive_verification": {
+    "version": "1.1.0",
+    "build": "35",
+    "source_commit": "2bed35d63cac6dfd9caec0f7ae190062bc7b94a2",
+    "archive": "artifacts/releases/20261030-invites-1.1.0-35/JuggleDude-1.1.0-35.xcarchive",
+    "signature_verified": true,
+    "source_files_verified": 899,
+    "matches_tested_source": "2bed35d63cac6dfd9caec0f7ae190062bc7b94a2",
+    "counter_profile": "outdoor-balanced-v3-20261029",
+    "compilation": "Release with TOUCH_COUNTER_BETA; DEBUG modes absent",
+    "models": [
+      "RFDETRSmallRecovery040FP16.mlmodelc"
+    ],
+    "languages": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "pt-BR"
+    ],
+    "minimum_ios": "18.0",
+    "iphone_only": true,
+    "privacy_manifest": true,
+    "model_license": true,
+    "client_configurations_verified": true,
+    "deferred_editor_features_absent": true,
+    "touch_review_disabled": true,
+    "invite_redemption_string_present": true,
+    "mach_o_minimum_ios": "18.0"
+  },
+  "upload_succeeded": true,
+  "processing_confirmed_in_app_store_connect": true,
+  "build_id": "cbac1438-e746-4f27-87c8-9d4634329f0c",
+  "upload_log": "artifacts/releases/20261030-invites-1.1.0-35/upload.log",
+  "processing_complete": true,
+  "what_to_test_saved": true,
+  "app_store_connect_minimum_ios": "18.0",
+  "app_store_connect_binary_state": "Validated",
+  "internal_testing": {
+    "group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "existing_testers": 3,
+    "status": "Testing"
+  },
+  "proof": [
+    "artifacts/releases/20261030-invites-1.1.0-35/testflight-notes-and-group.jpg",
+    "artifacts/releases/20261030-invites-1.1.0-35/testflight-testing.jpg",
+    "artifacts/releases/20261030-invites-1.1.0-35/testflight-metadata.jpg"
+  ]
+}
