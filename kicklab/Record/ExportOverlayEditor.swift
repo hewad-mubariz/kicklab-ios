@@ -25,8 +25,17 @@ struct ExportOverlayLayer: View {
            let badge = ExportOverlayRenderer.image(style: settings.counter.style,
                 time: time, counter: timeline.state(at: time)) {
             let rect = settings.counter.placement.rect(in: size)
+            let milestone = settings.milestones ? Milestones.active(timeline.state(at: time)) : nil
+            if let milestone, let burst = MilestoneAppearance.image(count: milestone.count, progress: milestone.progress) {
+                Image(decorative: burst, scale: 1).resizable()
+                    .frame(width: rect.width * 2, height: rect.height * 2)
+                    .rotationEffect(.radians(settings.counter.placement.radians))
+                    .position(x: rect.midX, y: rect.midY)
+                    .allowsHitTesting(false).accessibilityHidden(true)
+            }
             Image(decorative: badge, scale: 1).resizable()
                 .frame(width: rect.width, height: rect.height)
+                .scaleEffect(milestone.map { Milestones.pulse($0.progress) } ?? 1)
                 .rotationEffect(.radians(settings.counter.placement.radians))
                 .position(x: rect.midX, y: rect.midY)
                 // Pops in and out around the sticker's own center, not the canvas center.

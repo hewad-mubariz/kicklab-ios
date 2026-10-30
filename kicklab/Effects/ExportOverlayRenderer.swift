@@ -39,6 +39,14 @@ nonisolated enum ExportOverlayRenderer {
         ctx.rotate(by: item.placement.radians)
         ctx.scaleBy(x: rect.width / badgeSize.width, y: rect.height / badgeSize.height)
         ctx.translateBy(x: -badgeSize.width / 2, y: -badgeSize.height / 2)
+        // A milestone bursts behind the count and pops the badge about its centre.
+        if settings.milestones, let milestone = Milestones.active(counter) {
+            MilestoneAppearance.draw(in: ctx, count: milestone.count, progress: milestone.progress)
+            let pulse = Milestones.pulse(milestone.progress)
+            ctx.translateBy(x: badgeSize.width / 2, y: badgeSize.height / 2)
+            ctx.scaleBy(x: pulse, y: pulse)
+            ctx.translateBy(x: -badgeSize.width / 2, y: -badgeSize.height / 2)
+        }
         drawBadge(in: ctx, style: item.style, time: time, counter: counter)
         ctx.restoreGState()
     }

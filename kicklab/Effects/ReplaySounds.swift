@@ -89,11 +89,14 @@ nonisolated enum BallSwapSound: String, CaseIterable, Identifiable, Hashable, Se
 nonisolated enum ReplaySound: Hashable, Sendable {
     case touch(TouchSound)
     case swap(BallSwapSound)
+    /// The fanfare with a streak milestone.
+    case milestone
 
     var isSilent: Bool {
         switch self {
         case .touch(let sound): sound == .none
         case .swap(let sound): sound == .none
+        case .milestone: false
         }
     }
 }
@@ -174,6 +177,7 @@ nonisolated enum ReplaySoundSynth {
         switch sound {
         case .touch(let touch): (duration, gain, voice) = touchVoice(touch)
         case .swap(let swap): (duration, gain, voice) = swapVoice(swap)
+        case .milestone: (duration, gain, voice) = fanfareVoice()
         }
         let count = Int(duration * sampleRate)
         var noise = Noise(seed: seed(sound))
@@ -198,6 +202,7 @@ nonisolated enum ReplaySoundSynth {
         switch sound {
         case .touch(let touch): name = "touch:" + touch.rawValue
         case .swap(let swap): name = "swap:" + swap.rawValue
+        case .milestone: name = "milestone"
         }
         var hash: UInt32 = 2_166_136_261
         for byte in name.utf8 { hash = (hash ^ UInt32(byte)) &* 16_777_619 }
@@ -274,6 +279,29 @@ nonisolated enum ReplaySoundSynth {
                 return sin(2 * .pi * 1760 * vibrato * t) * envelope(t, attack: 0.02, decay: 0.09)
             })
         }
+    }
+
+    // MARK: - Milestone fanfare
+
+    /// Four bright rising notes and a shimmering tail: a quick fanfare, not a jingle.
+    private static func fanfareVoice() -> (Double, Double, (Double, inout Noise, inout Double) -> Double) {
+        (0.78, 0.8, { t, _, _ in
+            let notes: [(Double, Double)] = [(1046.5, 0), (1318.5, 0.07), (1568, 0.14), (2093, 0.21)]
+            var value = 0.0
+            for (index, note) in notes.enumerated() {
+                let age = t - note.1
+                guard age >= 0 else { continue }
+                let decay = index == notes.count - 1 ? 0.32 : 0.12
+                value += (sin(2 * .pi * note.0 * age) + 0.3 * sin(2 * .pi * note.0 * 2 * age)
+                          + 0.12 * sin(2 * .pi * note.0 * 3 * age)) * exp(-age / decay) * min(1, age / 0.003)
+            }
+            let tail = t - 0.21
+            if tail > 0 {
+                let tremolo = 0.6 + 0.4 * sin(2 * .pi * 11 * tail)
+                value += 0.25 * sin(2 * .pi * 4186 * tail) * tremolo * exp(-tail / 0.25)
+            }
+            return value
+        })
     }
 
     // MARK: - Swap cues
@@ -365,17 +393,21 @@ nonisolated struct ReplaySoundtrack: Hashable, Sendable {
         self.events = events.filter { $0.time.isFinite && $0.time >= 0 && !$0.sound.isSilent }.sorted { $0.time < $1.time }
     }
 
-    /// Touch cues on every touch; where the ball changes, the change cue plays instead of the
-    /// touch cue, so a change is never two sounds at once. `touchTimes` sorted.
-    init(edit: SessionEditState, touchTimes: [Double]) {
-        let swaps = edit.swapSound == .none ? [] : edit.lookSwaps(touchTimes: touchTimes)
+    /// Touch cues on every touch; where the look changes, the change cue plays instead; on a
+    /// milestone, the fanfare plays instead of both. Every touch is one sound at most.
+    /// `touchTimes` sorted.
+    init(edit: SessionEditState, touchTimes: [Double], milestones: Bool = false) {
+        let celebrated = milestones ? Set(Milestones.touchIndices(touchCount: touchTimes.count)) : []
+        let swaps = (edit.swapSound == .none ? [] : edit.lookSwaps(touchTimes: touchTimes))
+            .filter { !celebrated.contains($0.index) }
         let changed = Set(swaps.map(\.index))
         var events: [Event] = []
         if edit.touchSound != .none {
-            events += touchTimes.enumerated().filter { !changed.contains($0.offset) }
+            events += touchTimes.enumerated().filter { !changed.contains($0.offset) && !celebrated.contains($0.offset) }
                 .map { Event(time: $0.element, sound: .touch(edit.touchSound)) }
         }
         events += swaps.map { Event(time: $0.time, sound: .swap(edit.swapSound)) }
+        events += celebrated.sorted().map { Event(time: touchTimes[$0], sound: .milestone) }
         self.init(events: events)
     }
 

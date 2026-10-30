@@ -166,6 +166,10 @@ nonisolated struct ExportOverlaySettings: Codable, Equatable, Sendable {
     var counter = ExportOverlayItem(enabled: true, style: .normal, placement: .init(x: 0.04, y: 0.08, scale: 0.65))
     var graph = ExportGraphSettings()
     var timer = TimerOverlayItem()
+    /// The counter celebrates the 10th, 25th, 50th, 75th and 100th touch, then every 50th.
+    var milestones = true
+    /// A short fanfare plays with each celebration.
+    var milestoneSound = true
     /// The original on/off switch, kept for every existing caller and saved file.
     var showTimer: Bool {
         get { timer.enabled }
@@ -176,7 +180,7 @@ nonisolated struct ExportOverlaySettings: Codable, Equatable, Sendable {
     init() {}
 
     // "timer" belonged to a retired counter-style timer and is ignored; the new sticker is "clock".
-    private enum CodingKeys: String, CodingKey { case counter, graph, showTimer, timer = "clock" }
+    private enum CodingKeys: String, CodingKey { case counter, graph, showTimer, timer = "clock", milestones, milestoneSound }
     init(from decoder: any Decoder) throws {
         self.init()
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -187,13 +191,20 @@ nonisolated struct ExportOverlaySettings: Codable, Equatable, Sendable {
         } else {
             timer.enabled = try values.decodeIfPresent(Bool.self, forKey: .showTimer) ?? true
         }
+        milestones = try values.decodeIfPresent(Bool.self, forKey: .milestones) ?? true
+        milestoneSound = try values.decodeIfPresent(Bool.self, forKey: .milestoneSound) ?? true
     }
+
+    /// Whether milestone fanfares play on this clip.
+    var playsMilestoneSound: Bool { counter.enabled && milestones && milestoneSound }
 
     func encode(to encoder: any Encoder) throws {
         var values = encoder.container(keyedBy: CodingKeys.self)
         try values.encode(counter, forKey: .counter)
         try values.encode(graph, forKey: .graph)
         try values.encode(timer, forKey: .timer)
+        try values.encode(milestones, forKey: .milestones)
+        try values.encode(milestoneSound, forKey: .milestoneSound)
         // Older builds read only this flag.
         try values.encode(timer.enabled, forKey: .showTimer)
     }

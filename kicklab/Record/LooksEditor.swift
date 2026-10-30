@@ -13,8 +13,6 @@ struct LooksPage: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var selectedTouch: Int
     @State private var part: LookPart = .ball
-    @State private var recipe: LookRecipe?
-    @State private var remixSeed = 1
     @State private var recipeKicks: [LookRecipe: Int] = [:]
     @State private var ballKicks: [BallSkin: Int] = [:]
     @State private var effectKicks: [BallStyle: Int] = [:]
@@ -94,7 +92,7 @@ struct LooksPage: View {
                     Button {
                         commitBall()
                         withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
-                            edit.lookChanges = [:]; recipe = nil
+                            edit.lookChanges = [:]; edit.recipe = nil
                         }
                         cuts += 1
                     } label: {
@@ -114,7 +112,7 @@ struct LooksPage: View {
     }
 
     private func recipeChip(_ item: LookRecipe) -> some View {
-        let on = recipe == item && edit.hasLookChanges
+        let on = edit.recipe == item && edit.hasLookChanges
         return Button { apply(item) } label: {
             HStack(spacing: 6) {
                 Image(systemName: item.symbol)
@@ -141,13 +139,14 @@ struct LooksPage: View {
         commitBall()
         recipeKicks[item, default: 0] += 1
         // Remix again rolls a new mix; every other recipe gives the same runs each time.
-        if item == .remix && recipe == .remix && edit.hasLookChanges { remixSeed += 1 }
-        let result = LookRecipes.make(item, base: edit.baseLook, touchCount: touchTimes.count, seed: remixSeed)
+        if item == .remix && edit.recipe == .remix && edit.hasLookChanges { edit.recipeSeed += 1 }
+        let result = LookRecipes.make(item, base: edit.baseLook, touchCount: touchTimes.count, seed: edit.recipeSeed,
+                                      lightweight: LookRecipes.prefersLightEffects)
         withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
             edit.lookChanges = result.changes
             edit.swapEffect = result.moment
             if edit.intensity < 0.1 { edit.intensity = 0.85 }
-            recipe = item
+            edit.recipe = item
         }
         cuts += 1
         if let first = result.changes.keys.min(), touchTimes.indices.contains(first) {
@@ -209,7 +208,7 @@ struct LooksPage: View {
         commitBall()
         withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
             edit.lookChanges[selectedTouch] = edit.look(forTouch: selectedTouch)
-            recipe = nil
+            edit.recipe = nil
         }
         cuts += 1
     }
@@ -220,7 +219,7 @@ struct LooksPage: View {
         commitBall()
         withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
             edit.lookChanges[start] = nil
-            recipe = nil
+            edit.recipe = nil
         }
         cuts += 1
     }
@@ -342,7 +341,7 @@ struct LooksPage: View {
         var look = edit.look(forTouch: pendingRun.lowerBound)
         look.ball = pendingBall
         edit.setLook(look, forRunStartingAt: pendingRun.lowerBound)
-        if pendingRun.lowerBound > 0 { recipe = nil }
+        if pendingRun.lowerBound > 0 { edit.recipe = nil }
         self.pendingBall = nil; self.pendingRun = nil
         if preview, touchTimes.indices.contains(pendingRun.lowerBound) { onPreviewMoment(touchTimes[pendingRun.lowerBound]) }
     }
@@ -372,7 +371,7 @@ struct LooksPage: View {
             withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) {
                 edit.setLook(look, forRunStartingAt: run.lowerBound)
                 if style != .none && edit.intensity < 0.1 { edit.intensity = 0.85 }
-                if run.lowerBound > 0 { recipe = nil }
+                if run.lowerBound > 0 { edit.recipe = nil }
             }
             if touchTimes.indices.contains(run.lowerBound) { onPreviewMoment(touchTimes[run.lowerBound]) }
         } label: {

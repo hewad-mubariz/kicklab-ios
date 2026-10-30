@@ -53,6 +53,29 @@ nonisolated enum LookRecipes {
     ]
     static let finale = TouchLook(ball: .gold, effect: .fire)
 
+    /// Older phones (iPhone 13 and earlier, SE): effects measured smooth on an iPhone 11, at most
+    /// about 23 ms of GPU time per frame. Electric, Galaxy, Rainbow and Neon reach 31 to 46 ms there.
+    static let lightLadder: [TouchLook] = [
+        TouchLook(ball: .volt, effect: .glowTrail), TouchLook(ball: .lava, effect: .emberWake),
+        TouchLook(ball: .gold, effect: .labFlame), TouchLook(ball: .crimson, effect: .fire),
+        TouchLook(ball: .aurora, effect: .nature)
+    ]
+    static let lightRotation: [TouchLook] = [
+        TouchLook(ball: .volt, effect: .emberWake), TouchLook(ball: .arctic, effect: .glowTrail),
+        TouchLook(ball: .crimson, effect: .labFlame)
+    ]
+    static let lightMix: [TouchLook] = [
+        TouchLook(ball: .volt, effect: .glowTrail), TouchLook(ball: .lava, effect: .fire),
+        TouchLook(ball: .gold, effect: .labFlame), TouchLook(ball: .arctic, effect: .nature),
+        TouchLook(ball: .chrome, effect: .heatPulse), TouchLook(ball: .crimson, effect: .emberWake),
+        TouchLook(ball: .pearl, effect: .glowTrail), TouchLook(ball: .matrix, effect: .nature)
+    ]
+
+    /// Whether this phone should get the lighter recipes; the same split as the detector's.
+    static var prefersLightEffects: Bool { RFDeviceProfile.current == .compact }
+
+    static func ladder(lightweight: Bool) -> [TouchLook] { lightweight ? lightLadder : ladder }
+
     struct Result: Equatable, Sendable {
         /// Run starts (touch positions, never 0) to looks; the first run keeps the clip's own look.
         let changes: [Int: TouchLook]
@@ -60,7 +83,11 @@ nonisolated enum LookRecipes {
         let moment: BallSwapEffect
     }
 
-    static func make(_ recipe: LookRecipe, base: TouchLook, touchCount n: Int, seed: Int = 1) -> Result {
+    static func make(_ recipe: LookRecipe, base: TouchLook, touchCount n: Int, seed: Int = 1,
+                     lightweight: Bool = false) -> Result {
+        let ladder = lightweight ? lightLadder : ladder
+        let rotation = lightweight ? lightRotation : rotation
+        let mix = lightweight ? lightMix : mix
         let moment: BallSwapEffect = switch recipe {
         case .powerUp: .burst
         case .finale: .lightning

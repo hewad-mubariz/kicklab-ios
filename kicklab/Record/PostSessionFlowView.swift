@@ -29,7 +29,17 @@ struct PostSessionFlowView: View {
     @StateObject private var ballPreparation = SessionEffectsPreparation()
     @StateObject private var sceneModel = StadiumPreviewModel()
     @State private var overlays = ExportOverlaySettings.load()
-    @State private var edit = SessionEditState(style: .glowTrail, intensity: 0.85)
+    /// New sessions start from My style when there is one.
+    @State private var edit: SessionEditState
+
+    init(summary: SessionSummary, onFinished: @escaping () -> Void, onRecordAnother: @escaping () -> Void,
+         recordsPersonalBest: Bool = true, historySessionID: UUID? = nil, ownerID: UUID? = nil,
+         onClose: (() -> Void)? = nil, notice: String? = nil) {
+        self.summary = summary; self.onFinished = onFinished; self.onRecordAnother = onRecordAnother
+        self.recordsPersonalBest = recordsPersonalBest; self.historySessionID = historySessionID
+        self.ownerID = ownerID; self.onClose = onClose; self.notice = notice
+        _edit = State(initialValue: MyStyleStore.shared.startingEdit(touchCount: summary.touchesMarked.count))
+    }
     @Namespace private var exportZoom
 
     private var activeSummary: SessionSummary { ballPreparation.prepared ?? summary }

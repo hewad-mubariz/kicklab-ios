@@ -104,7 +104,8 @@ struct ReplayEffectsView: View {
                     VStack(spacing: 0) {
                         if showToolbox {
                             ReplayToolbox(counter: counterBinding, edit: lookBinding(\.edit),
-                                          timer: timerBinding, showGraph: lookBinding(\.showGraph),
+                                          timer: timerBinding, milestones: $overlays.milestones,
+                                          milestoneSound: $overlays.milestoneSound, showGraph: lookBinding(\.showGraph),
                                           includeGraph: lookBinding(\.overlays.graph.enabled), motionStyle: lookBinding(\.overlays.graph.style),
                                           motionSnapshot: motionTimeline.snapshot(at: currentTime, duration: duration),
                                           sourceAspect: sourceSize.width / max(1, sourceSize.height),
@@ -206,6 +207,7 @@ struct ReplayEffectsView: View {
                 ProductAnalytics.shared.track(.graphToggled(value.graph.enabled))
             }
             if showsTouchTools { value.save() }
+            updateSounds()
             downloadOutdated()
         }
         .onChange(of: edit) { old, next in
@@ -563,7 +565,8 @@ struct ReplayEffectsView: View {
     private func pause() { player?.pause(); isPlaying = false }
 
     private func updateSounds() {
-        sounds.update(ReplaySoundtrack(edit: displayedLook.edit, touchTimes: showsTouchTools ? sortedTouchTimes : []))
+        sounds.update(ReplaySoundtrack(edit: displayedLook.edit, touchTimes: showsTouchTools ? sortedTouchTimes : [],
+                                       milestones: showsTouchTools && effectiveOverlays.playsMilestoneSound))
     }
 
     /// Holds the clip at `time`, paused, so a per-touch pick is seen on that frame.

@@ -113,6 +113,14 @@ struct BallSwapTests {
         let looks = edit.runStarts.map { edit.look(forTouch: $0) }
         #expect(zip(looks, looks.dropFirst()).allSatisfy { $0 != $1 })
         #expect(first.changes.keys.allSatisfy { $0 > 0 && $0 < 40 })
+        // Older phones get effects that stay smooth on an iPhone 11.
+        let light = LookRecipes.make(.powerUp, base: base, touchCount: 120, lightweight: true)
+        #expect(light.changes.keys.sorted() == long.changes.keys.sorted(), "Same milestones, lighter effects")
+        let heavy: Set<BallStyle> = [.neon, .electric, .galaxy, .rainbow, .aura, .ice, .blueFlame, .flameRibbon]
+        for recipe in LookRecipe.allCases {
+            let looks = LookRecipes.make(recipe, base: base, touchCount: 60, seed: 3, lightweight: true).changes.values
+            #expect(!looks.contains { heavy.contains($0.effect) }, "\(recipe.title) stays light")
+        }
         // Nothing to lay on a clip with one touch.
         for recipe in LookRecipe.allCases {
             #expect(LookRecipes.make(recipe, base: base, touchCount: 1).changes.isEmpty)

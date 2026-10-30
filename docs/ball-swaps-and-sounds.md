@@ -80,6 +80,46 @@ counter's model with a wider `StickerShape` (2:1). Settings save under `clock`, 
 remains as the on/off switch for every existing caller and older builds. Looks past Pill are
 Pro; placement and show/hide stay free.
 
+## Milestones
+
+The counter celebrates the 10th, 25th, 50th, 75th and 100th touch, then every 50th: the
+badge swells and springs back, a flash, two rings and rays burst behind it, confetti is
+thrown up and falls, and a lime "★ 25 TOUCHES" tag rises under the count, all within
+1.3 s (`MilestoneAppearance`, drawn by the export renderer and the replay overlay alike).
+A short four-note fanfare plays on the milestone touch, replacing that touch's touch or
+change sound. The Counter page has a *Milestones* switch and a fanfare button; both default
+on, are free, and are remembered with the counter settings (`milestones`, `milestoneSound`).
+
+## My style
+
+A Pro row under the Looks tile saves the replay's ball, effect and intensity, the recipe
+behind its looks, the change moment, and the sounds and original-sound setting. Every new
+session (`PostSessionFlowView`) starts from it; the recipe is laid again for that session's
+touch count, so Power-up still lands on its 10th and 25th touch. Custom runs stay with their
+replay. The row shows *Save*, *Saved* or *Update*, with a menu for *Use My style on this
+replay* and *Stop using My style*. Counter, timer and graph settings already persist on
+their own. Design reviews and UI tests keep My style in memory only.
+
+## Phone check (iPhone 11 Pro Max, 30 October 2026)
+
+`EditorPhoneCheckTests` runs on the phone with the juggling fixture (18.6 s, 18 touches),
+the current detector for the ball track, a Broadcast or Pill timer and the counter.
+
+| Case | Export | Preview frames over 33 ms |
+| --- | --- | --- |
+| One look, glow trail, no ball print | 9.2 s | 0 of 558 |
+| One look, Lava + Fire (possible before this branch) | 22.1 s | 240 |
+| Power-up looks with Electric and Galaxy | 20.4 s | 243 |
+| Power-up looks, lighter effects (now used on older phones) | 13.7 s | 102 |
+
+Per-frame GPU cost of each effect there, slowest 5 %: Heat Pulse 7 ms, Nature 11, Ember
+Wake 14, Glow Trail 15, Lab Flame 20, Fire 23, Galaxy, Electric, Ice, Aura, Rainbow, Blue
+Flame and Flame Ribbon 30 to 32, Neon 46. The change moment, timer and counter cost 3 ms or
+less. Recipes on phones the app treats as older (iPhone 13 and earlier, SE) use the effects
+up to Fire. The remaining slow frames come from the ball print raster, up to about 24 ms of
+CPU on frames with a print; that cost predates this branch and is the next thing to move off
+the main thread.
+
 ## Model
 
 `SessionEditState` gains:
@@ -128,6 +168,12 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
   every change moment drawing deterministically and fading out.
 - `LookExportTests`: a saved video draws fire for the first run and nothing after the
   change, and the reverse.
+- `MilestoneTests`: milestone touches, the celebration window and pulse, deterministic
+  drawing, the export overlay, settings defaults and the fanfare's priority.
+- `MyStyleTests`: saving the recipe and refitting it, custom runs, unknown saved values,
+  persistence and memory-only stores.
+- `EditorPhoneCheckTests`: export time and per-frame preview cost, and per-effect GPU cost,
+  on the phone it runs on.
 - `ReplaySoundTests`: every cue bounded and audible, waveform shapes, soundtrack placement,
   an export that mixes cues into a saved video with exactly one audio track, and muted
   exports (no track without cues; cues only with cues; both when kept).
@@ -137,7 +183,8 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
   done and remove.
 - `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): Power-up, split, a run's
   ball and effect, change moment, merge, remix, clear, the Ball page's link to Looks, the
-  Auto change sound and its override, and original-sound muting.
+  Auto change sound and its override, original-sound muting, the Milestones switch and
+  fanfare, and My style save, update and stop.
 
 ## Results (iPhone 18 Pro Simulator)
 
