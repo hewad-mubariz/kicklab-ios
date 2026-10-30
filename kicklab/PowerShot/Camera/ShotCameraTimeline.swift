@@ -229,7 +229,7 @@ struct ShotCameraTimeline: View {
     private func badge(_ clip: ShotCameraClip) -> String? {
         switch clip.move {
         case .ramp: String(format: "×%.2g", clip.settings.rate)
-        case .freeze: String(localized: "\(clip.settings.hold.formatted(.number.precision(.fractionLength(1)))) s hold")
+        case .freeze: String(localized: "\(clip.settings.hold.formatted(.number.precision(.fractionLength(1)))) s hold", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .replay: String(format: "↺ ×%.2g", clip.settings.rate)
         default: nil
         }
@@ -309,8 +309,8 @@ struct ShotCameraTimeline: View {
                 onEditEnded()
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(auto ? String(localized: "Strike at \(ShotSourceFrames.label(strike)), found automatically")
-                                     : String(localized: "Strike at \(ShotSourceFrames.label(strike))"))
+            .accessibilityLabel(auto ? String(localized: "Strike at \(ShotSourceFrames.label(strike)), found automatically", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                                     : String(localized: "Strike at \(ShotSourceFrames.label(strike))", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
             .accessibilityHint("Drag to move the strike; the moves on it come along. Double-tap to go back to the found strike.")
             .accessibilityIdentifier("shot-camera-strike")
         }

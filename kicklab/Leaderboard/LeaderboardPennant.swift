@@ -29,6 +29,7 @@ enum LeaderboardStyle {
     /// The place as the app's language writes it: 1st, 1., 1.º, 1er.
     static func ordinalPlace(_ place: Int) -> String {
         let formatter = NumberFormatter()
+        formatter.locale = AppLanguage.locale
         formatter.numberStyle = .ordinal
         formatter.usesGroupingSeparator = false
         return formatter.string(from: place as NSNumber) ?? "\(place)"
@@ -269,7 +270,7 @@ private struct PennantSlot: View {
                 } label: { hanging(entry) }
                 .buttonStyle(.plain)
                 .sensoryFeedback(.impact(weight: .light), trigger: pushes)
-                .accessibilityLabel("Rank \(entry.rank), \(entry.isYou ? String(localized: "you") : entry.name), \(entry.touches) touches")
+                .accessibilityLabel("Rank \(entry.rank), \(entry.isYou ? String(localized: "you", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : entry.name), \(entry.touches) touches")
                 .accessibilityIdentifier("leaderboard-pennant-\(entry.rank)")
             } else {
                 hanging(nil)
@@ -506,7 +507,7 @@ private struct PennantCloth: View {
             .frame(height: first ? 58 : 50)
             // A lit lower edge, as if embroidered.
             .shadow(color: .white.opacity(0.35), radius: 0, y: 1)
-            Text(entry.isYou ? String(localized: "You") : entry.name)
+            Text(entry.isYou ? String(localized: "You", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : entry.name)
                 .font(.system(size: first ? 15 : 14, weight: .semibold))
                 .lineLimit(1).minimumScaleFactor(0.7)
                 .padding(.horizontal, 10)

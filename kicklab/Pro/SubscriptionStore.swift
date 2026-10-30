@@ -180,10 +180,10 @@ final class SubscriptionStore: ObservableObject {
             }
             products = available
             if available.count != ProPlan.allCases.count {
-                catalogError = String(localized: "Some plans aren’t available right now. Please try again.")
+                catalogError = String(localized: "Some plans aren’t available right now. Please try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
             }
         } catch {
-            catalogError = String(localized: "Plans couldn’t load. Check your connection and try again.")
+            catalogError = String(localized: "Plans couldn’t load. Check your connection and try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 
@@ -369,10 +369,10 @@ nonisolated enum SubscriptionFailure: LocalizedError {
     case unavailable, unverified, busy, activation
     var errorDescription: String? {
         switch self {
-        case .unavailable: String(localized: "This plan isn’t available right now. Please try again.")
-        case .unverified: String(localized: "Apple couldn’t verify this purchase. Try Restore purchases, or contact Apple Support if the charge appears in your purchase history.")
-        case .activation: String(localized: "Apple confirmed the transaction, but an active subscription isn’t available yet. Please try Restore purchases.")
-        case .busy: String(localized: "A purchase or restore is already in progress.")
+        case .unavailable: String(localized: "This plan isn’t available right now. Please try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .unverified: String(localized: "Apple couldn’t verify this purchase. Try Restore purchases, or contact Apple Support if the charge appears in your purchase history.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .activation: String(localized: "Apple confirmed the transaction, but an active subscription isn’t available yet. Please try Restore purchases.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .busy: String(localized: "A purchase or restore is already in progress.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }

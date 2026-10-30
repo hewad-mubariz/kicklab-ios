@@ -19,7 +19,7 @@ nonisolated struct LeaderboardTouchReview: Codable, Equatable, Sendable {
     let complete: Bool
     let moments: [LeaderboardReviewMoment]
 
-    var summary: String { moments.isEmpty ? String(localized: "No flagged moments") : String(localized: "\(moments.count) moments to review") }
+    var summary: String { moments.isEmpty ? String(localized: "No flagged moments", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "\(moments.count) moments to review", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
 
     static func make(evidence: TouchReviewEvidence, touchTimes: [Double], duration: Double,
                      timeOrigin: Double = 0) -> Self? {
@@ -74,35 +74,35 @@ nonisolated extension ContactReviewReason {
     /// Why a streak ended, inside a sentence.
     var stopReason: String {
         switch self {
-        case .heldBall: String(localized: "the ball was held")
-        case .groundContact: String(localized: "the ball touched the ground")
-        default: String(localized: "a hand or arm touched the ball")
+        case .heldBall: String(localized: "the ball was held", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .groundContact: String(localized: "the ball touched the ground", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        default: String(localized: "a hand or arm touched the ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
     var title: String {
         switch self {
-        case .handContact: String(localized: "Hand or arm contact detected")
-        case .heldBall: String(localized: "Ball hold detected")
-        case .groundContact: String(localized: "Ground contact detected")
-        case .lowContactUncertain: String(localized: "Foot contact unclear")
-        case .handsUncertain: String(localized: "Hand position unclear")
-        case .bodyUncertain: String(localized: "Contact area unclear")
-        case .playerUncertain: String(localized: "Player visibility unclear")
-        case .ballUncertain: String(localized: "Ball tracking interrupted")
-        case .continuityGap: String(localized: "Gap between counted touches")
+        case .handContact: String(localized: "Hand or arm contact detected", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .heldBall: String(localized: "Ball hold detected", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .groundContact: String(localized: "Ground contact detected", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .lowContactUncertain: String(localized: "Foot contact unclear", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .handsUncertain: String(localized: "Hand position unclear", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .bodyUncertain: String(localized: "Contact area unclear", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .playerUncertain: String(localized: "Player visibility unclear", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .ballUncertain: String(localized: "Ball tracking interrupted", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .continuityGap: String(localized: "Gap between counted touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
     var explanation: String {
         switch self {
-        case .handContact: String(localized: "The counter found hand or arm contact. This splits the suggested streak. If it was a valid touch, the original can be checked.")
-        case .heldBall: String(localized: "The counter found a sustained hold. A catch or hold ends a streak. Review the footage if that looks wrong.")
-        case .groundContact: String(localized: "The counter found evidence of a ground bounce. This splits the suggested streak; a reviewer can correct a mistaken detection.")
-        case .lowContactUncertain: String(localized: "The ball was low, but the view did not clearly distinguish a foot touch from a ground bounce.")
-        case .handsUncertain: String(localized: "The hands or arms were hidden or too close to the ball to verify the contact. This is not proof of a hand touch.")
-        case .bodyUncertain: String(localized: "The counter could not confidently locate the body part making contact. The original may show a valid touch.")
-        case .playerUncertain: String(localized: "The active player or contact area was not clear enough to verify this moment.")
-        case .ballUncertain: String(localized: "The ball was missing or tracking was interrupted around this moment.")
-        case .continuityGap: String(localized: "No touch was counted for more than two seconds. That alone does not prove a drop; the original needs checking.")
+        case .handContact: String(localized: "The counter found hand or arm contact. This splits the suggested streak. If it was a valid touch, the original can be checked.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .heldBall: String(localized: "The counter found a sustained hold. A catch or hold ends a streak. Review the footage if that looks wrong.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .groundContact: String(localized: "The counter found evidence of a ground bounce. This splits the suggested streak; a reviewer can correct a mistaken detection.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .lowContactUncertain: String(localized: "The ball was low, but the view did not clearly distinguish a foot touch from a ground bounce.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .handsUncertain: String(localized: "The hands or arms were hidden or too close to the ball to verify the contact. This is not proof of a hand touch.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .bodyUncertain: String(localized: "The counter could not confidently locate the body part making contact. The original may show a valid touch.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .playerUncertain: String(localized: "The active player or contact area was not clear enough to verify this moment.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .ballUncertain: String(localized: "The ball was missing or tracking was interrupted around this moment.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .continuityGap: String(localized: "No touch was counted for more than two seconds. That alone does not prove a drop; the original needs checking.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }

@@ -28,7 +28,7 @@ enum JugglingSessionIdentity {
         let number = next(in: defaults); defaults.set(number, forKey: key); return number
     }
     static func label(_ number: Int) -> String {
-        String(localized: "SESSION \(String(format: "%02d", max(1, number)))")
+        String(localized: "SESSION \(String(format: "%02d", max(1, number)))", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
 }
 

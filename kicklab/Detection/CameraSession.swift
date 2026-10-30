@@ -80,8 +80,8 @@ final class CameraSession: NSObject, ObservableObject {
 
         var notice: String {
             switch self {
-            case .heat: String(localized: "Your phone got too hot, so recording stopped early. Your touches up to then are saved.")
-            case .tracking: String(localized: "Ball tracking stopped before the end, so the count may be short. Your session is saved.")
+            case .heat: String(localized: "Your phone got too hot, so recording stopped early. Your touches up to then are saved.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            case .tracking: String(localized: "Ball tracking stopped before the end, so the count may be short. Your session is saved.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
             }
         }
     }
@@ -647,7 +647,7 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
                 request.cancel()
                 Task { @MainActor in
                     guard self.recordingRequest === request else { return }
-                    self.recordingError = String(localized: "Couldn’t start recording: \(error.localizedDescription)")
+                    self.recordingError = String(localized: "Couldn’t start recording: \(error.localizedDescription)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
                     self.stopRecording()
                 }
                 return

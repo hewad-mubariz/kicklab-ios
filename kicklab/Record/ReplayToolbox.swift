@@ -6,11 +6,11 @@ enum ReplayTool: String, Identifiable {
     var requiresPro: Bool { self != .counter && self != .timer }
     var title: String {
         switch self {
-        case .counter: String(localized: "Counter")
-        case .timer: String(localized: "Timer")
-        case .ball: String(localized: "Ball")
-        case .effects: String(localized: "Effects")
-        case .graph: String(localized: "Graph")
+        case .counter: String(localized: "Counter", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .timer: String(localized: "Timer", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .ball: String(localized: "Ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .effects: String(localized: "Effects", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .graph: String(localized: "Graph", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }
@@ -100,7 +100,7 @@ struct ReplayToolbox: View {
             }
             // The title swaps with the content, so the old and new words never blend letter by letter.
             ZStack(alignment: .leading) {
-                Text(page?.title ?? String(localized: "Customize replay")).font(.system(size: 17, weight: .semibold))
+                Text(page?.title ?? String(localized: "Customize replay", bundle: AppLanguage.bundle, locale: AppLanguage.locale)).font(.system(size: 17, weight: .semibold))
                     .id(page?.rawValue ?? "tools")
                     .transition(swap)
             }
@@ -313,7 +313,7 @@ struct ReplayToolbox: View {
                     .overlay(alignment: .topTrailing) {
                         if !isPro && skin != .original { ProBadge().offset(x: 5, y: -4) }
                     }
-                Text(skin == .original ? String(localized: "Original") : skin.title)
+                Text(skin == .original ? String(localized: "Original", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : skin.title)
                     .font(.system(size: 10, weight: selected ? .semibold : .medium))
                     .foregroundStyle(selected ? SessionStyle.mint : .white.opacity(0.8))
                     .lineLimit(1).minimumScaleFactor(0.7)
@@ -322,7 +322,7 @@ struct ReplayToolbox: View {
             .contentShape(.rect)
         }
         .buttonStyle(SessionPressStyle(scale: 0.9))
-        .accessibilityLabel(skin == .original ? String(localized: "Original ball") : skin.title)
+        .accessibilityLabel(skin == .original ? String(localized: "Original ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : skin.title)
         .accessibilityIdentifier("ball-picker-\(skin.rawValue)")
         .accessibilityAddTraits(selected ? .isSelected : [])
         .zIndex(selected ? 1 : 0)
@@ -384,7 +384,7 @@ struct ReplayToolbox: View {
             .contentShape(.rect)
         }
         .buttonStyle(SessionPressStyle(scale: 0.92))
-        .accessibilityLabel(style == .none ? String(localized: "No effect") : style.title)
+        .accessibilityLabel(style == .none ? String(localized: "No effect", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : style.title)
         .accessibilityIdentifier("effect-picker-\(style.rawValue)")
         .accessibilityAddTraits(selected ? .isSelected : [])
     }

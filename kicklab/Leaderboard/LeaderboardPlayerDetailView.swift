@@ -60,7 +60,7 @@ struct LeaderboardPlayerDetailView: View {
                 }.padding(24).frame(maxWidth: 560).frame(maxWidth: .infinity)
             }
             .background(TrainingHomeStyle.background(scheme))
-            .navigationTitle(entry.isYou ? (entry.isPreview ? String(localized: "Your sample attempt") : String(localized: "Your best streak")) : entry.name).navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(entry.isYou ? (entry.isPreview ? String(localized: "Your sample attempt", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Your best streak", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) : entry.name).navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) {
                 Button("Done") { dismiss() }.accessibilityIdentifier("leaderboard-player-close")
             } }

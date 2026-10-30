@@ -67,12 +67,12 @@ enum AccountFailure: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .configuration: String(localized: "Sign-in is unavailable in this build. You can still train as a guest.")
-        case .invalidEmail: String(localized: "Enter a valid email address.")
-        case .invalidCallback: String(localized: "This sign-in link is invalid. Request a new link and open it on this device.")
-        case .missingAppleToken: String(localized: "Apple could not complete sign-in. Please try again.")
-        case .unavailableWindow: String(localized: "Please reopen the sign-in screen and try again.")
-        case .nonce: String(localized: "Unable to start secure sign-in. Please try again.")
+        case .configuration: String(localized: "Sign-in is unavailable in this build. You can still train as a guest.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .invalidEmail: String(localized: "Enter a valid email address.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .invalidCallback: String(localized: "This sign-in link is invalid. Request a new link and open it on this device.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .missingAppleToken: String(localized: "Apple could not complete sign-in. Please try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .unavailableWindow: String(localized: "Please reopen the sign-in screen and try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .nonce: String(localized: "Unable to start secure sign-in. Please try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }

@@ -65,7 +65,7 @@ struct ProcessingOverlay: View {
     }
 
     private var percent: Int { Int((min(1, max(0, stepIndex >= 4 ? 1 : progress)) * 100).rounded()) }
-    private var title: String { statusMessage ?? (model.finishedAt != nil ? String(localized: "Ready!") : labels.steps[min(3, max(0, stepIndex))]) }
+    private var title: String { statusMessage ?? (model.finishedAt != nil ? String(localized: "Ready!", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : labels.steps[min(3, max(0, stepIndex))]) }
 
     private var header: some View {
         VStack(spacing: 2) {
@@ -443,7 +443,7 @@ struct BallPathMap: View {
     private func checkpointLabel(_ index: Int, layout: BallPathLayout, size: CGSize, t: Double) -> some View {
         let c = layout.points[index + 1], onLeft = c.x < size.width / 2
         let done = model.reached[index] != nil, active = !done && model.activeCheckpoint == index
-        let status = done ? (index == 3 ? String(localized: "Ready") : String(localized: "Done")) : active ? String(localized: "In progress") : String(localized: "Up next")
+        let status = done ? (index == 3 ? String(localized: "Ready", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Done", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) : active ? String(localized: "In progress", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Up next", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         let appear = min(1, max(0, (t - arrival(index) - 0.05) / 0.3))
         let statusColor: Color = active ? mint : done ? mint.opacity(0.8) : SessionStyle.secondary.opacity(0.6)
         return VStack(alignment: onLeft ? .leading : .trailing, spacing: 3) {
@@ -594,26 +594,26 @@ struct ProcessingTips: View {
 
 /// What the processing screen says for each kind of session. Four steps, any number of tips.
 struct ProcessingLabels: Equatable {
-    var heading = String(localized: "Processing your session")
+    var heading = String(localized: "Processing your session", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     var steps: [String]
     var tips: [String]
 
-    static let juggling = ProcessingLabels(
-        steps: [String(localized: "Saving your video"), String(localized: "Tracking the ball"), String(localized: "Counting touches"), String(localized: "Building your replay")],
-        tips: [String(localized: "Lock your ankle and point your toes."),
-               String(localized: "Small touches keep the ball close."),
-               String(localized: "Stay light on the balls of your feet."),
-               String(localized: "Watch the ball, not your feet."),
-               String(localized: "Aim for waist height, no higher."),
-               String(localized: "Use both feet to build balance.")])
+    static var juggling: ProcessingLabels { ProcessingLabels(
+        steps: [String(localized: "Saving your video", bundle: AppLanguage.bundle, locale: AppLanguage.locale), String(localized: "Tracking the ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale), String(localized: "Counting touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale), String(localized: "Building your replay", bundle: AppLanguage.bundle, locale: AppLanguage.locale)],
+        tips: [String(localized: "Lock your ankle and point your toes.", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+               String(localized: "Small touches keep the ball close.", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+               String(localized: "Stay light on the balls of your feet.", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+               String(localized: "Watch the ball, not your feet.", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+               String(localized: "Aim for waist height, no higher.", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+               String(localized: "Use both feet to build balance.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)]) }
 
-    static let powerShot = ProcessingLabels(
-        heading: String(localized: "Processing your shot"),
-        steps: [String(localized: "Saving your shot"), String(localized: "Finding the ball"), String(localized: "Tracing the flight"), String(localized: "Building your replay")],
-        tips: [String(localized: "Plant your standing foot beside the ball."),
-               String(localized: "Strike through the middle of the ball."),
-               String(localized: "Lock your ankle as you make contact."),
-               String(localized: "Follow through toward your target."),
-               String(localized: "Film from behind, with the goal in view."),
-               String(localized: "Keep the whole flight in the frame.")])
+    static var powerShot: ProcessingLabels { ProcessingLabels(
+        heading: String(localized: "Processing your shot", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+        steps: [String(localized: "Saving your shot", bundle: AppLanguage.bundle, locale: AppLanguage.locale), String(localized: "Finding the ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale), String(localized: "Tracing the flight", bundle: AppLanguage.bundle, locale: AppLanguage.locale), String(localized: "Building your replay", bundle: AppLanguage.bundle, locale: AppLanguage.locale)],
+        tips: [String(localized: "Plant your standing foot beside the ball.", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+               String(localized: "Strike through the middle of the ball.", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+               String(localized: "Lock your ankle as you make contact.", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+               String(localized: "Follow through toward your target.", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+               String(localized: "Film from behind, with the goal in view.", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+               String(localized: "Keep the whole flight in the frame.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)]) }
 }

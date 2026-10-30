@@ -40,7 +40,7 @@ struct ShotMoveCarousel: View {
 
     private var familyBar: some View {
         HStack(spacing: 6) {
-            chip(nil, title: String(localized: "All"))
+            chip(nil, title: String(localized: "All", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
             ForEach(ShotCameraMove.Family.allCases) { chip($0, title: $0.rawValue) }
         }
     }
@@ -91,8 +91,8 @@ struct ShotMoveCarousel: View {
         }
         .buttonStyle(SessionPressStyle(scale: 0.93))
         .disabled(unavailable)
-        .accessibilityLabel(move.title + (unavailable ? ", " + (move.needsPerson ? String(localized: "needs the kicker in view")
-                                                                                  : String(localized: "needs a tracked ball")) : ""))
+        .accessibilityLabel(move.title + (unavailable ? ", " + (move.needsPerson ? String(localized: "needs the kicker in view", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                                                                                  : String(localized: "needs a tracked ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) : ""))
         .accessibilityHint(move.detail)
         .accessibilityIdentifier("shot-camera-move-\(move.rawValue)")
     }

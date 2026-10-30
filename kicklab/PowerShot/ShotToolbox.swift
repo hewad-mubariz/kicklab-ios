@@ -6,9 +6,9 @@ enum ShotTool: String, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .effects: String(localized: "Effects")
-        case .graph: String(localized: "Graph")
-        case .camera: String(localized: "Camera")
+        case .effects: String(localized: "Effects", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .graph: String(localized: "Graph", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .camera: String(localized: "Camera", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }
@@ -93,7 +93,7 @@ struct ShotToolbox: View {
                 .transition(.sessionPop(scale: 0.4))
             }
             ZStack(alignment: .leading) {
-                Text(page?.title ?? String(localized: "Customize shot")).font(.system(size: 17, weight: .semibold))
+                Text(page?.title ?? String(localized: "Customize shot", bundle: AppLanguage.bundle, locale: AppLanguage.locale)).font(.system(size: 17, weight: .semibold))
                     .id(page?.rawValue ?? "tools")
                     .transition(swap)
             }
@@ -137,9 +137,9 @@ struct ShotToolbox: View {
 
     private var cameraSummary: String {
         switch camera.clips.count {
-        case 0: String(localized: "Add moves")
+        case 0: String(localized: "Add moves", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case 1: camera.clips[0].move.title
-        default: String(localized: "\(camera.clips.count) moves")
+        default: String(localized: "\(camera.clips.count) moves", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 
@@ -283,7 +283,7 @@ struct ShotToolbox: View {
             .contentShape(.rect)
         }
         .buttonStyle(SessionPressStyle(scale: 0.92))
-        .accessibilityLabel(option == .none ? String(localized: "No effect") : option.title)
+        .accessibilityLabel(option == .none ? String(localized: "No effect", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : option.title)
         .accessibilityIdentifier("shot-effect-\(option.rawValue)")
         .accessibilityAddTraits(selected ? .isSelected : [])
     }

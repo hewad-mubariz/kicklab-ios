@@ -10,9 +10,9 @@ nonisolated enum VideoSafetyPolicy {
         case storage, invalidVideo, analysis
         var errorDescription: String? {
             switch self {
-            case .storage: String(localized: "There isn’t enough free storage to safely save this video. Free some space and try again.")
-            case .invalidVideo: String(localized: "This video has no usable duration or video track. Choose another video.")
-            case .analysis: String(localized: "Ball tracking was interrupted. Please try processing the video again. No score was submitted.")
+            case .storage: String(localized: "There isn’t enough free storage to safely save this video. Free some space and try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            case .invalidVideo: String(localized: "This video has no usable duration or video track. Choose another video.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            case .analysis: String(localized: "Ball tracking was interrupted. Please try processing the video again. No score was submitted.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
             }
         }
     }

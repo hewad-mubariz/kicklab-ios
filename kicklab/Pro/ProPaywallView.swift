@@ -57,8 +57,8 @@ struct ProPaywallView: View {
                             }
                         }
                         Text(subscriptions.isPro ? (subscriptions.isAccountOnlyPro
-                            ? String(localized: "Pro is active through your Juggle Dude account. Manage billing with the Apple Account used to subscribe.")
-                            : String(localized: "Your Pro subscription is active on this Apple Account. Manage your plan or cancel through Apple.")) : offer?.renewalTerms ?? String(localized: "Choose a plan once App Store prices have loaded. Payment is confirmed with Apple."))
+                            ? String(localized: "Pro is active through your Juggle Dude account. Manage billing with the Apple Account used to subscribe.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                            : String(localized: "Your Pro subscription is active on this Apple Account. Manage your plan or cancel through Apple.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) : offer?.renewalTerms ?? String(localized: "Choose a plan once App Store prices have loaded. Payment is confirmed with Apple.", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                             .font(.caption)
                             .foregroundStyle(.white.opacity(0.75))
                             .multilineTextAlignment(.center)
@@ -185,7 +185,7 @@ struct ProPaywallView: View {
                 if working || (!subscriptions.isPro && subscriptions.checkingAccountAccess) || subscriptions.loading && offer == nil {
                     ProgressView().tint(ProPass.ink).transition(.sessionPop(scale: 0.4))
                 } else {
-                    Text(subscriptions.isPro ? String(localized: "Manage Pro subscription") : offer.map { plan.buyLabel(price: $0.price) } ?? String(localized: "Plans unavailable"))
+                    Text(subscriptions.isPro ? String(localized: "Manage Pro subscription", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : offer.map { plan.buyLabel(price: $0.price) } ?? String(localized: "Plans unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                         .contentTransition(.numericText())
                         .transition(.sessionPop(scale: 0.9))
                 }
@@ -253,7 +253,7 @@ struct ProPaywallView: View {
                     ProductAnalytics.shared.track(.purchaseFinished(purchasedPlan, .cancelled))
                 case .pending:
                     ProductAnalytics.shared.track(.purchaseFinished(purchasedPlan, .pending))
-                    notice = .init(title: String(localized: "Waiting for approval"), message: String(localized: "Apple is processing this purchase. Pro will activate automatically when it’s approved. You can keep using the app."))
+                    notice = .init(title: String(localized: "Waiting for approval", bundle: AppLanguage.bundle, locale: AppLanguage.locale), message: String(localized: "Apple is processing this purchase. Pro will activate automatically when it’s approved. You can keep using the app.", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                 }
             } catch {
                 if let storeError = error as? StoreKitError, case .userCancelled = storeError {
@@ -261,7 +261,7 @@ struct ProPaywallView: View {
                     return
                 }
                 ProductAnalytics.shared.track(.purchaseFinished(purchasedPlan, .failed))
-                notice = .init(title: String(localized: "Purchase couldn’t complete"), message: (error as? SubscriptionFailure)?.errorDescription ?? String(localized: "Please try again. If you already purchased Pro, use Restore purchases."))
+                notice = .init(title: String(localized: "Purchase couldn’t complete", bundle: AppLanguage.bundle, locale: AppLanguage.locale), message: (error as? SubscriptionFailure)?.errorDescription ?? String(localized: "Please try again. If you already purchased Pro, use Restore purchases.", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
             }
         }
     }
@@ -277,14 +277,14 @@ struct ProPaywallView: View {
             do {
                 let restored = try await subscriptions.restore()
                 if restored && onUnlocked != nil { deliverUnlock(); return }
-                notice = .init(title: restored ? String(localized: "Pro restored") : String(localized: "No active subscription"),
-                               message: restored ? String(localized: "Your Juggle Dude Pro subscription is active.") : String(localized: "No active Pro subscription was found for this Apple Account."))
+                notice = .init(title: restored ? String(localized: "Pro restored", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "No active subscription", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+                               message: restored ? String(localized: "Your Juggle Dude Pro subscription is active.", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "No active Pro subscription was found for this Apple Account.", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
             } catch {
                 if let storeError = error as? StoreKitError, case .userCancelled = storeError { return }
-                notice = .init(title: String(localized: "Restore couldn’t complete"), message:
+                notice = .init(title: String(localized: "Restore couldn’t complete", bundle: AppLanguage.bundle, locale: AppLanguage.locale), message:
                     (error as? SubscriptionFailure)?.errorDescription ?? (subscriptions.isPro
-                        ? String(localized: "Your Pro access is still active. Apple couldn’t refresh your purchase history. You can keep using Pro and try Restore again later.")
-                        : String(localized: "Apple couldn’t refresh your purchase history. Check your connection and the Apple Account used to subscribe, then try again.")))
+                        ? String(localized: "Your Pro access is still active. Apple couldn’t refresh your purchase history. You can keep using Pro and try Restore again later.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                        : String(localized: "Apple couldn’t refresh your purchase history. Check your connection and the Apple Account used to subscribe, then try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)))
             }
         }
     }
@@ -530,7 +530,7 @@ private struct ProPlanCard: View {
     let selected: Bool
     let active: Bool
     let action: () -> Void
-    private var badge: String? { active ? String(localized: "Current plan") : offer?.badge }
+    private var badge: String? { active ? String(localized: "Current plan", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : offer?.badge }
 
     var body: some View {
         Button(action: action) {
@@ -572,7 +572,7 @@ private struct ProPlanCard: View {
         }
         .buttonStyle(SessionPressStyle(scale: 0.97))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel([plan.title, offer.map { plan.spokenPrice($0.price) } ?? String(localized: "Price unavailable"), badge]
+        .accessibilityLabel([plan.title, offer.map { plan.spokenPrice($0.price) } ?? String(localized: "Price unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale), badge]
             .compactMap { $0 }.joined(separator: ", "))
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
         .accessibilityIdentifier("pro-plan-\(plan.rawValue)")

@@ -7,11 +7,11 @@ nonisolated enum CaptureControlState: Equatable {
     var isBusy: Bool { self == .preparing || self == .recording || self == .finishing }
     var title: String {
         switch self {
-        case .ready: String(localized: "Record")
-        case .warming: String(localized: "Getting ready")
-        case .preparing: String(localized: "Starting…")
-        case .recording: String(localized: "Stop")
-        case .finishing: String(localized: "Finishing…")
+        case .ready: String(localized: "Record", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .warming: String(localized: "Getting ready", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .preparing: String(localized: "Starting…", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .recording: String(localized: "Stop", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .finishing: String(localized: "Finishing…", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }

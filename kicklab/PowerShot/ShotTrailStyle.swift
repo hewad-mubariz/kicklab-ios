@@ -11,7 +11,7 @@ nonisolated enum ShotTrailStyle: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .none: String(localized: "None")
+        case .none: String(localized: "None", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .juggleFlame: "Juggle Flame"
         case .blueJet: "Blue Jet"
         case .voltStrike: "Volt Strike"

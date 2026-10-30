@@ -33,7 +33,7 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
 
     var title: String {
         switch self {
-        case .none: return String(localized: "None")
+        case .none: return String(localized: "None", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .fire: return "Fire"
         case .ice: return "Ice"
         case .neon: return "Neon"
@@ -202,7 +202,7 @@ extension BallStyle {
     }
     var caption: String {
         switch self {
-        case .none: String(localized: "Your original touch.")
+        case .none: String(localized: "Your original touch.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .fire: "Bring the heat."
         case .ice: "Stay cool."
         case .neon: "Bright trails. Bold energy."

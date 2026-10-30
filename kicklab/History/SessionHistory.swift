@@ -31,14 +31,14 @@ nonisolated struct HistorySession: Codable, Equatable, Identifiable, Sendable {
         let seconds = Int((Double(durationMS) / 1000).rounded())
         return String(format: "%d:%02d", seconds / 60, seconds % 60)
     }
-    var sourceLabel: String { source == .recording ? String(localized: "Recorded") : String(localized: "Imported") }
+    var sourceLabel: String { source == .recording ? String(localized: "Recorded", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Imported", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
     var syncLabel: String {
         switch syncState {
-        case .saving: String(localized: "Session ready")
-        case .deviceOnly: String(localized: "On this device")
-        case .pending: String(localized: "Saved on this phone")
-        case .synced: String(localized: "Saved to account")
-        case .syncFailed: String(localized: "Kept on this phone · sync failed")
+        case .saving: String(localized: "Session ready", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .deviceOnly: String(localized: "On this device", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .pending: String(localized: "Saved on this phone", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .synced: String(localized: "Saved to account", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .syncFailed: String(localized: "Kept on this phone · sync failed", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
     var syncIcon: String {

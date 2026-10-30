@@ -17,9 +17,9 @@ struct TrainingProfileView: View {
     @Environment(\.openURL) private var openURL
 
     private var name: String {
-        if account.user != nil { return player.profile?.displayName ?? String(localized: "Your profile") }
+        if account.user != nil { return player.profile?.displayName ?? String(localized: "Your profile", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
         let trimmed = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? String(localized: "Your profile") : trimmed
+        return trimmed.isEmpty ? String(localized: "Your profile", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : trimmed
     }
 
     private var initials: String {
@@ -112,7 +112,7 @@ struct TrainingProfileView: View {
             }
             .background(TrainingHomeStyle.background(scheme))
             .foregroundStyle(TrainingHomeStyle.ink(scheme))
-            .navigationTitle("Profile")
+            .navigationTitle(String(localized: "Profile", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -151,6 +151,9 @@ struct TrainingProfileView: View {
         .presentationDragIndicator(.visible)
         .interactiveDismissDisabled(account.isDeleting)
         .id(account.user?.id)
+        // A presented sheet retains its presenting environment. Keep this stack
+        // subscribed locally so the open language page and back titles update too.
+        .modifier(AppLanguageEnvironment())
     }
 
     private var deleteAccountSection: some View {

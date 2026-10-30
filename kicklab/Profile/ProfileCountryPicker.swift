@@ -8,14 +8,22 @@ struct ProfileCountry: Identifiable {
         String(String.UnicodeScalarView(id.unicodeScalars.compactMap { UnicodeScalar(127397 + $0.value) }))
     }
 
-    // Build the localized, stably identified choices once, rather than rebuilding
-    // a large system Picker menu whenever account sync publishes a change.
-    static let all: [ProfileCountry] = Locale.Region.isoRegions.compactMap { region in
-        let code = region.identifier
-        guard code.utf8.count == 2, code.utf8.allSatisfy({ (65...90).contains($0) }),
-              let name = Locale.current.localizedString(forRegionCode: code) else { return nil }
-        return ProfileCountry(id: code, name: name)
-    }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    // Cache by language so returning to Profile after a switch keeps the stable
+    // country IDs, but refreshes names and ordering without rebuilding on every sync.
+    private static var countriesByLanguage: [String: [ProfileCountry]] = [:]
+    static var all: [ProfileCountry] {
+        let language = AppLanguage.current
+        if let cached = countriesByLanguage[language] { return cached }
+        let locale = AppLanguage.locale
+        let countries: [ProfileCountry] = Locale.Region.isoRegions.compactMap { region in
+            let code = region.identifier
+            guard code.utf8.count == 2, code.utf8.allSatisfy({ (65...90).contains($0) }),
+                  let name = locale.localizedString(forRegionCode: code) else { return nil }
+            return ProfileCountry(id: code, name: name)
+        }.sorted { $0.name.compare($1.name, options: [.numeric, .caseInsensitive], locale: locale) == .orderedAscending }
+        countriesByLanguage[language] = countries
+        return countries
+    }
 
     static func named(_ code: String) -> ProfileCountry? { all.first { $0.id == code } }
 }
@@ -40,7 +48,7 @@ struct ProfileCountryPicker: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 if search.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    row(code: "", name: String(localized: "Not selected"), flag: nil)
+                    row(code: "", name: String(localized: "Not selected", bundle: AppLanguage.bundle, locale: AppLanguage.locale), flag: nil)
                         .id("")
                 }
                 ForEach(filtered) { item in

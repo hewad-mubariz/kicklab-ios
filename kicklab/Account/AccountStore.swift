@@ -131,14 +131,14 @@ final class AccountStore: ObservableObject {
             user = nil; pendingEmail = nil; resendAfter = .distantPast
             completedCallbacks.removeAll()
             if !(await cleanup(id)) {
-                errorMessage = String(localized: "Your account was deleted. Some local replays couldn’t be removed. Reopen the app to retry; if they remain, remove the app to clear its local data.")
+                errorMessage = String(localized: "Your account was deleted. Some local replays couldn’t be removed. Reopen the app to retry; if they remain, remove the app to clear its local data.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
             }
             return true
         } catch {
             if error is CancellationError { return false }
             if let error = error as? ASAuthorizationError, error.code == .canceled { return false }
             if let error = error as? URLError, error.code == .notConnectedToInternet {
-                errorMessage = String(localized: "You’re offline. Connect to the internet to delete your account.")
+                errorMessage = String(localized: "You’re offline. Connect to the internet to delete your account.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
             } else {
                 errorMessage = (error as? AccountDeletionFailure)?.localizedDescription
                     ?? AccountDeletionFailure.failed.localizedDescription
@@ -170,22 +170,22 @@ final class AccountStore: ObservableObject {
         if let failure = error as? AccountFailure { errorMessage = failure.localizedDescription; return }
         if let network = error as? URLError {
             errorMessage = network.code == .notConnectedToInternet
-                ? String(localized: "You’re offline. Connect to the internet and try again.")
-                : String(localized: "We couldn’t reach sign-in. Please try again.")
+                ? String(localized: "You’re offline. Connect to the internet and try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                : String(localized: "We couldn’t reach sign-in. Please try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
             return
         }
         if callback {
-            errorMessage = String(localized: "This link has expired or was opened on a different device. Request a new link here and open it on this device.")
+            errorMessage = String(localized: "This link has expired or was opened on a different device. Request a new link here and open it on this device.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         } else if let auth = error as? AuthError, auth.errorCode.rawValue == "over_email_send_rate_limit" || auth.errorCode.rawValue == "over_request_rate_limit" {
             resendAfter = now().addingTimeInterval(60)
-            errorMessage = String(localized: "Too many attempts. Wait a minute, then try again.")
+            errorMessage = String(localized: "Too many attempts. Wait a minute, then try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         } else if let auth = error as? AuthError, auth.errorCode == .emailAddressNotAuthorized {
-            errorMessage = String(localized: "Email sign-in isn’t available for this address yet. Please use Sign in with Apple for now.")
+            errorMessage = String(localized: "Email sign-in isn’t available for this address yet. Please use Sign in with Apple for now.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         } else if let auth = error as? AuthError, auth.errorCode == .providerDisabled {
-            errorMessage = String(localized: "This sign-in option is temporarily unavailable. Please choose another option.")
+            errorMessage = String(localized: "This sign-in option is temporarily unavailable. Please choose another option.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         } else {
             // SDK errors can include callback URLs and tokens. Never display or log raw errors.
-            errorMessage = String(localized: "Sign-in couldn’t be completed. Please try again.")
+            errorMessage = String(localized: "Sign-in couldn’t be completed. Please try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }

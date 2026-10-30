@@ -1,50 +1,112 @@
 import SwiftUI
+import Observation
+import os
 
-/// The interface language. Juggle Dude follows the iPhone's language list unless a language is
-/// picked here or in Settings › Apps › Juggle Dude › Language. Both store the same
-/// `AppleLanguages` preference in the app's own defaults, and iOS applies it at the next launch.
-enum AppLanguage {
+/// Both the picker and iOS Settings use AppleLanguages. Resolve the app's copy ourselves
+/// so changing it also takes effect during this process, without replacing the view tree.
+nonisolated enum AppLanguage {
     static let supported = ["en", "de", "es", "fr", "pt-BR"]
-    private static let key = "AppleLanguages"
+    fileprivate static let key = "AppleLanguages"
+    private static let preferences = LanguagePreferences(defaults: .standard)
 
-    /// The language this launch runs in.
-    static var current: String { Bundle.main.preferredLocalizations.first ?? "en" }
+    static var current: String { preferences.selection.code }
+    static var chosen: String? { preferences.selection.chosen }
+    static var locale: Locale { Locale(identifier: current) }
 
-    /// The language picked for this app, or nil to follow the iPhone.
-    static var chosen: String? {
-        guard let id = Bundle.main.bundleIdentifier,
-              let preferences = UserDefaults.standard.persistentDomain(forName: id)?[key] as? [String] else { return nil }
-        return match(preferences)
+    /// String(localized:) outside SwiftUI must look up this bundle. Its locale argument
+    /// alone only formats substitutions; it doesn't select the translated string.
+    static var bundle: Bundle { bundles[current] ?? .main }
+    private static let bundles: [String: Bundle] = Dictionary(uniqueKeysWithValues: supported.compactMap { code in
+        guard let path = Bundle.main.path(forResource: code, ofType: "lproj"),
+              let bundle = Bundle(path: path) else { return nil }
+        return (code, bundle)
+    })
+
+    static func resource(_ resource: LocalizedStringResource) -> LocalizedStringResource {
+        var resource = resource
+        resource.locale = locale
+        return resource
     }
 
-    /// The language the next launch will use.
-    static var next: String { match(UserDefaults.standard.stringArray(forKey: key) ?? []) ?? "en" }
+    @MainActor static func choose(_ code: String?) { preferences.choose(code) }
+    @MainActor static func refresh() { preferences.refresh() }
 
-    static func choose(_ code: String?) {
-        if let code { UserDefaults.standard.set([code], forKey: key) }
-        else { UserDefaults.standard.removeObject(forKey: key) }
-    }
 
     /// What its own speakers call it: Deutsch, Español, Português. The region is left out;
     /// each language ships one variant.
     static func name(_ code: String) -> String { name(code, in: Locale(identifier: code)) }
 
     /// The same language named in the interface's language, shown beneath.
-    static func localName(_ code: String) -> String { name(code, in: .current) }
+    static func localName(_ code: String) -> String { name(code, in: locale) }
 
     private static func name(_ code: String, in locale: Locale) -> String {
         let language = Locale(identifier: code).language.languageCode?.identifier ?? code
         return locale.localizedString(forLanguageCode: language)?.capitalized(with: locale) ?? code
     }
 
-    private static func match(_ preferences: [String]) -> String? {
+    fileprivate static func match(_ preferences: [String]) -> String? {
         Bundle.preferredLocalizations(from: supported, forPreferences: preferences).first
+    }
+}
+
+/// Observation keeps already-open views that render plain Strings up to date too.
+/// A locked snapshot makes the same selection safe to read from video/export workers.
+/// Preference writes and observation notifications always happen on the main actor.
+nonisolated final class LanguagePreferences: Observable, @unchecked Sendable {
+    struct Selection: Equatable, Sendable {
+        let chosen: String?
+        let code: String
+    }
+
+    private let defaults: UserDefaults
+    private let domain: String
+    private let registrar = ObservationRegistrar()
+    private let snapshot: OSAllocatedUnfairLock<Selection>
+
+    init(defaults: UserDefaults, domain: String = Bundle.main.bundleIdentifier ?? "") {
+        self.defaults = defaults
+        self.domain = domain
+        snapshot = OSAllocatedUnfairLock(initialState: Self.read(defaults, domain: domain))
+    }
+
+    var selection: Selection {
+        registrar.access(self, keyPath: \.selection)
+        return snapshot.withLock { $0 }
+    }
+
+    @MainActor func choose(_ code: String?) {
+        if let code, !AppLanguage.supported.contains(code) { return }
+        if let code { defaults.set([code], forKey: AppLanguage.key) }
+        else { defaults.removeObject(forKey: AppLanguage.key) }
+        refresh()
+    }
+
+    @MainActor func refresh() {
+        let updated = Self.read(defaults, domain: domain)
+        guard updated != selection else { return }
+        registrar.withMutation(of: self, keyPath: \.selection) {
+            snapshot.withLock { $0 = updated }
+        }
+    }
+
+    private static func read(_ defaults: UserDefaults, domain: String) -> Selection {
+        let own = defaults.persistentDomain(forName: domain)?[AppLanguage.key] as? [String]
+        // Removing the app override exposes the iPhone's languages from the defaults
+        // search list. Don't use Bundle.preferredLocalizations, which caches at launch.
+        return Selection(chosen: own.flatMap(AppLanguage.match),
+                         code: AppLanguage.match(defaults.stringArray(forKey: AppLanguage.key) ?? []) ?? "en")
+    }
+}
+
+struct AppLanguageEnvironment: ViewModifier {
+    func body(content: Content) -> some View {
+        content.environment(\.locale, AppLanguage.locale)
     }
 }
 
 struct AppLanguagePicker: View {
     @Environment(\.colorScheme) private var scheme
-    @State private var chosen = AppLanguage.chosen
+    private var chosen: String? { AppLanguage.chosen }
 
     var body: some View {
         Form {
@@ -60,19 +122,12 @@ struct AppLanguagePicker: View {
                     }
                 }
             } footer: {
-                // iOS reads the choice at launch, so a change waits for the next one.
-                if AppLanguage.next != AppLanguage.current {
-                    Text("Close Juggle Dude and open it again to switch to \(AppLanguage.name(AppLanguage.next)).")
-                        .foregroundStyle(TrainingHomeStyle.accent(scheme))
-                        .accessibilityIdentifier("language-reopen")
-                } else {
-                    Text("Juggle Dude follows your iPhone’s language unless you pick one here.")
-                }
+                Text("Juggle Dude follows your iPhone’s language unless you pick one here.")
             }
         }
         .scrollContentBackground(.hidden)
         .background(TrainingHomeStyle.background(scheme))
-        .navigationTitle("Language")
+        .navigationTitle(String(localized: "Language", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
         .navigationBarTitleDisplayMode(.inline)
         .sensoryFeedback(.selection, trigger: chosen)
     }
@@ -80,7 +135,6 @@ struct AppLanguagePicker: View {
     private func option<Label: View>(_ code: String?, @ViewBuilder label: () -> Label) -> some View {
         Button {
             AppLanguage.choose(code)
-            chosen = code
         } label: {
             HStack {
                 label()

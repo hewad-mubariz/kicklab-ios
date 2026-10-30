@@ -627,7 +627,7 @@ struct ReplayEffectsView: View {
                 }
             } catch is CancellationError { }
             catch {
-                playbackError = String(localized: "Couldn’t open this video. \(error.localizedDescription)")
+                playbackError = String(localized: "Couldn’t open this video. \(error.localizedDescription)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
                 #if DEBUG
                 FinalTestCoordinator.shared.replayFailed(summary.videoURL, message: error.localizedDescription)
                 #endif
@@ -638,13 +638,13 @@ struct ReplayEffectsView: View {
     private var effectsStatus: String? {
         guard displayedLook.edit.requiresVisualTrack else { return nil }
         if preparation.isPreparing || (summary.needsVisualPreparation && preparation.prepared == nil) {
-            if preparation.error != nil || surfaceMotionError != nil { return String(localized: "Effects unavailable — tap to retry") }
-            return String(localized: "Preparing effects · \(Int(preparation.progress * 100))%")
+            if preparation.error != nil || surfaceMotionError != nil { return String(localized: "Effects unavailable — tap to retry", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+            return String(localized: "Preparing effects · \(Int(preparation.progress * 100))%", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
-        guard displayedLook.edit.ballSkin != .original else { return String(localized: "Effects ready") }
-        if surfaceMotionError != nil { return String(localized: "Ball effects unavailable — tap to retry") }
-        if surfaceMotionTask != nil { return String(localized: "Preparing source spin…") }
-        return effectTrack.surfaceMotion?.status(at: currentTime).label ?? String(localized: "Spin uncertain")
+        guard displayedLook.edit.ballSkin != .original else { return String(localized: "Effects ready", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        if surfaceMotionError != nil { return String(localized: "Ball effects unavailable — tap to retry", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        if surfaceMotionTask != nil { return String(localized: "Preparing source spin…", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        return effectTrack.surfaceMotion?.status(at: currentTime).label ?? String(localized: "Spin uncertain", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
 
     private var renderedEdit: SessionEditState {

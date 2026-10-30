@@ -13,7 +13,7 @@ final class VideoSaveCompletion: NSObject, UNUserNotificationCenterDelegate {
         let center = UNUserNotificationCenter.current()
         center.delegate = self
         center.setNotificationCategories([UNNotificationCategory(identifier: Self.category,
-            actions: [UNNotificationAction(identifier: "open-photos", title: String(localized: "Open Photos"), options: .foreground)],
+            actions: [UNNotificationAction(identifier: "open-photos", title: String(localized: "Open Photos", bundle: AppLanguage.bundle, locale: AppLanguage.locale), options: .foreground)],
             intentIdentifiers: [])])
     }
 
@@ -24,8 +24,8 @@ final class VideoSaveCompletion: NSObject, UNUserNotificationCenterDelegate {
         let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
         guard [.authorized, .provisional, .ephemeral].contains(status) else { return }
         let content = UNMutableNotificationContent()
-        content.title = String(localized: "Video saved to Photos")
-        content.body = String(localized: "Tap to open your video library.")
+        content.title = String(localized: "Video saved to Photos", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        content.body = String(localized: "Tap to open your video library.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         content.sound = .default
         content.categoryIdentifier = Self.category
         try? await UNUserNotificationCenter.current().add(UNNotificationRequest(

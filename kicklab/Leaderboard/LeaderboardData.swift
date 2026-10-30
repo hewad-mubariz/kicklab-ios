@@ -22,10 +22,10 @@ struct LeaderboardEntry: Identifiable, Equatable {
     var backspinRPM: Int? = nil
     var typicalHeight: LeaderboardJugglingHeight? = nil
     var isPreview = false
-    var backspinLabel: String { backspinRPM.map { "\($0) rpm" } ?? String(localized: "Unavailable") }
-    var heightLabel: String { typicalHeight?.rawValue ?? String(localized: "Unavailable") }
+    var backspinLabel: String { backspinRPM.map { "\($0) rpm" } ?? String(localized: "Unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+    var heightLabel: String { typicalHeight?.rawValue ?? String(localized: "Unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
     var streakDurationLabel: String {
-        guard let duration = streakDurationMS, duration > 0 else { return String(localized: "Unavailable") }
+        guard let duration = streakDurationMS, duration > 0 else { return String(localized: "Unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
         if duration < 1000 { return "<1s" }
         return String(format: "%d:%02d", duration / 60000, duration / 1000 % 60)
     }
@@ -36,7 +36,7 @@ struct LeaderboardEntry: Identifiable, Equatable {
         return Int((Double(touches) * 60000 / Double(duration)).rounded())
     }
     var averageRhythmLabel: String {
-        averageRhythmPerMinute.map { String(localized: "\($0.formatted()) touches/min") } ?? String(localized: "Unavailable")
+        averageRhythmPerMinute.map { String(localized: "\($0.formatted()) touches/min", bundle: AppLanguage.bundle, locale: AppLanguage.locale) } ?? String(localized: "Unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
     var id: Int { rank }
 }
@@ -51,8 +51,8 @@ enum LeaderboardPeriod: String, CaseIterable, Identifiable {
     /// The raw value keys cached boards; this is what the switch shows.
     var title: String {
         switch self {
-        case .week: String(localized: "This week")
-        case .allTime: String(localized: "All time")
+        case .week: String(localized: "This week", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .allTime: String(localized: "All time", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }

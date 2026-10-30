@@ -88,13 +88,13 @@ nonisolated enum PlayerDataError: LocalizedError {
     }
     var errorDescription: String? {
         switch self {
-        case .unavailable: String(localized: "Account storage is unavailable in this build.")
-        case .signIn: String(localized: "Sign in again to sync your account.")
-        case .invalidResult: String(localized: "This session could not be saved.")
-        case .requestFailed: String(localized: "We couldn’t sync with Juggle Dude. Check your connection and try again.")
-        case .invalidProfile: String(localized: "Choose a name of 1–40 characters and a valid country.")
-        case .rejected: String(localized: "This result could not sync. It is kept on this phone; contact support if you need help.")
-        case .rateLimited: String(localized: "Sync is temporarily busy. Your sessions are saved and will retry later.")
+        case .unavailable: String(localized: "Account storage is unavailable in this build.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .signIn: String(localized: "Sign in again to sync your account.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .invalidResult: String(localized: "This session could not be saved.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .requestFailed: String(localized: "We couldn’t sync with Juggle Dude. Check your connection and try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .invalidProfile: String(localized: "Choose a name of 1–40 characters and a valid country.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .rejected: String(localized: "This result could not sync. It is kept on this phone; contact support if you need help.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .rateLimited: String(localized: "Sync is temporarily busy. Your sessions are saved and will retry later.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }

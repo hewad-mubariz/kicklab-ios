@@ -99,7 +99,7 @@ nonisolated struct QueuedLeaderboardSubmission: Codable, Equatable, Sendable {
         retryTask?.cancel(); retryTask = nil
         let current = generation
         let entry = ready.entry, item = ready.item, video = ready.video
-        uploadingSession = item.id; progress = 0; phase = String(localized: "Checking submission…"); errorMessage = nil
+        uploadingSession = item.id; progress = 0; phase = String(localized: "Checking submission…", bundle: AppLanguage.bundle, locale: AppLanguage.locale); errorMessage = nil
         uploadTask = Task { [weak self] in
             guard let self else { return }
             defer {
@@ -112,7 +112,7 @@ nonisolated struct QueuedLeaderboardSubmission: Codable, Equatable, Sendable {
                 guard generation == current, !Task.isCancelled else { return }
                 if latest.allSatisfy({ $0.userID == owner }) { attempts = latest; revision += 1 }
                 // For now only short clips of the flagged moments are sent, never the whole recording.
-                phase = String(localized: "Preparing clips…")
+                phase = String(localized: "Preparing clips…", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
                 let prepared = try await LeaderboardMomentClips.prepare(source: video, review: entry.request ?? item.touchReview,
                     proposal: entry.proposal, durationMS: item.durationMS, folder: clipFolder(owner),
                     session: item.id, limit: LeaderboardRules.maximumVideoBytes)
@@ -145,12 +145,12 @@ nonisolated struct QueuedLeaderboardSubmission: Codable, Equatable, Sendable {
                     else {
                         try Task.checkCancellation()
                         guard generation == current else { return }
-                        phase = String(localized: "Uploading clips…")
+                        phase = String(localized: "Uploading clips…", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
                         try await service.upload(file: clips, attempt: attempt, checkpoint: checkpoint, accountRoot: root) { [weak self] value in
                             guard self?.generation == current else { return }; self?.progress = value
                         }
                         try Task.checkCancellation()
-                        phase = String(localized: "Sending for review…")
+                        phase = String(localized: "Sending for review…", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
                         attempt = try await service.finish(id: attempt.id, owner: owner)
                     }
                 }
@@ -237,7 +237,7 @@ nonisolated struct QueuedLeaderboardSubmission: Codable, Equatable, Sendable {
             }
         } catch is CancellationError {
         } catch {
-            errorMessage = String(localized: "This submission couldn’t be saved on your phone. Keep the app open until it sends.")
+            errorMessage = String(localized: "This submission couldn’t be saved on your phone. Keep the app open until it sends.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
     func withdraw(_ attempt: LeaderboardAttempt) async {

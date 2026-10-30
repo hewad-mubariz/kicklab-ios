@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-30",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "base_commit": "30a9da15ece443191a092d74567d3eab8f6f4b23",
+  "scope": "Apply interface language immediately on the leaderboard/sign-in candidate without replacing application state.",
+  "behavior": [
+    "No loader or relaunch: a synchronous preference snapshot updates SwiftUI locale and explicit localized string lookups.",
+    "The open Profile navigation stack updates its own locale and titles; navigation remains on the language picker.",
+    "English, German, Spanish, French and Brazilian Portuguese, persistence and Same as iPhone are covered.",
+    "Country labels cache by language; processing labels and privacy wording no longer cache their first translation.",
+    "StoreKit supplies price/currency unchanged. Apple-owned system interfaces retain the iOS localization lifecycle."
+  ],
+  "validation": {
+    "simulator": "Leaderboard Beta QA / iPhone 17 Pro / iOS 26.5 / 99B8EBCF-D217-4C6A-B40F-1D5B227C17F7",
+    "build_for_testing": "passed",
+    "passed_distinct_tests": 29,
+    "unit_suites": {
+      "AppLanguageTests": 3,
+      "AccountStoreTests": 18,
+      "LeaderboardBoardStoreTests": 5,
+      "TouchCountingBetaProfileTests": 1
+    },
+    "ui_tests": [
+      "LeaderboardLocalizationUITests/testSignInBoardRulesAndDetailsInEveryLanguage",
+      "LeaderboardLocalizationUITests/testLanguageSwitchUpdatesOpenScreensWithoutRestartAndPersists"
+    ],
+    "initial_ui_failure": "The open Profile presentation retained an old language/navigation title; fixed with an observed locale on the presented stack and resolved navigation titles.",
+    "focused_result": "/tmp/juggledude-live-language-focused-20261030.xcresult",
+    "focused_summary": {
+      "passed": 28,
+      "failed": 1,
+      "skipped": 0
+    },
+    "corrected_live_switch_result": "/tmp/juggledude-live-language-final-20261030.xcresult",
+    "corrected_live_switch_summary": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0
+    },
+    "broader_purchase_suite": "Interrupted when StoreKitTest returned SKInternalErrorDomain Code=3 and stalled at Ask to Buy. The price/catalog and account-recovery cases had passed, but the full purchase suite is not claimed as validated.",
+    "screenshots": "artifacts/language-switch-20261030/screenshots/manifest.json",
+    "visually_inspected": [
+      "live-de-language",
+      "live-pt-BR-detail"
+    ],
+    "logs": "artifacts/language-switch-20261030/",
+    "diff_check": "passed"
+  },
+  "unchanged": [
+    "Counting algorithms and submitted counter profile",
+    "Scoring/streak rules and backend",
+    "Subscription access rules and price sources",
+    "Model and video pipeline behavior",
+    "Version/build number"
+  ],
+  "release_actions": {
+    "physical_device_installed": false,
+    "archived": false,
+    "uploaded": false,
+    "submitted_to_review": false
+  },
+  "remaining": [
+    "Physical-device language/sign-in/leaderboard smoke check before packaging the next release",
+    "Existing signed-in recording-to-server ranking and account/offline/deletion release gates"
+  ],
+  "source_sha256": {
+    "kicklab/Account/AccountConfiguration.swift": "216f87aacfe792c81b7a0f3685a3e0aded87e14579480a44968189bd76cf8e3b",
+    "kicklab/Account/AccountDeletion.swift": "af927d93c4f01375274f57f5612ce72d4dca26940a8dd2a9f0586b956be42db5",
+    "kicklab/Account/AccountStore.swift": "2ca6577a296ee9bb986e53a0fe63e2bc52a64635c6220111a57040b00fb44d20",
+    "kicklab/Detection/CameraSession.swift": "63d838722b9db8e08b5cf7d430c8206b400a589afecdfa7e78be57a7c8bbac66",
+    "kicklab/Detection/VideoAnalyzer.swift": "a29a8084448beb7d9fb5f802c85eb0008cac8368dd71f5d785574fa7e07a85a0",
+    "kicklab/Detection/VideoBackgroundWork.swift": "d213aa427e4e595bf8d8dc85faa24319a63733d65a9860a324374f0dfcab3f02",
+    "kicklab/Detection/VideoProcessingInfo.swift": "8ced4510342c586991a8779accaac7aa37d45d87cafa148479b98cdf8f1f1692",
+    "kicklab/Detection/VideoSafetyPolicy.swift": "9e1ad423414f5a7a86ea5c6b239807af005e10de2f06a923ceaf48b8b70295c5",
+    "kicklab/Effects/BallStyle.swift": "93e001ceb1711ee463c686567700c0ff5859c843967c67faa3b83d1b8630d8d0",
+    "kicklab/Effects/BallStyleBurnIn.swift": "c6d17895aaa43968f4abe263f8c59806a84f6845d5ec63adce90e42a7d936bc9",
+    "kicklab/Effects/BallSurfaceTimeline.swift": "1e05e2ab574c3a3047efa3b61de7836d179fba39fa3261a7b6ceed5daa74973a",
+    "kicklab/Effects/ExportMotionGraph.swift": "b127820709845cb8bf9e93108ab64cb4acb6dca3a1e922e2355b73d7836f5849",
+    "kicklab/Effects/SessionAnalysisStore.swift": "4a6996749316377c40d846aae20ce52217633d72fe4f92c5a11992d579ef95d9",
+    "kicklab/History/SessionHistory.swift": "8a8ac5b56648c5abb6b5aeabac818ba461854ffce7f2d68d69c4305515019c6c",
+    "kicklab/History/SessionHistoryStore.swift": "aa7ea2874c160d0bf710ac6891fff34338a5fad1b0639a8bfac832428398920b",
+    "kicklab/History/SessionHistoryView.swift": "bb32eb616d8fe01cf586f7071f0ce5956b654d50a00946074ee8c27e196ba0cc",
+    "kicklab/Home/AppLanguage.swift": "fb44a3a54bf2080de456102c13df3d27b05df69773403d94c6a0a446d8408bec",
+    "kicklab/Home/HomeView.swift": "f4cdf4e8314fcefa6fab48cc954206862752d102b8e076fe139db86b361d5b0b",
+    "kicklab/Home/TrainingHomeSheets.swift": "b63bd033a06064afe471c31721eee503c3c779c81c1627ac32a8020b22c3b376",
+    "kicklab/Home/TrainingProfileView.swift": "8657a34b9e2320f8ff45eac5c45811d2292ee5bb44b305d61c6a6f523be0f7de",
+    "kicklab/Leaderboard/HomeLeaderboardPreview.swift": "7ddf9041b129d5135eeb6fc8724f625d58dedf122b95020f5b29fe4f97091164",
+    "kicklab/Leaderboard/LeaderboardAttempt.swift": "c3d3e8316d752dafa65f858c5be79f155d4961b6a8ed2851df1c9c2d6957847c",
+    "kicklab/Leaderboard/LeaderboardCorrection.swift": "7b2ec618ff0cc4ba7d1e8c62567dcc33f72c7e081aa11170315f1a2489979798",
+    "kicklab/Leaderboard/LeaderboardCorrectionView.swift": "69b24afcb4a44fe914d8b41674cbf332be4475d9bc07083592582d41e1a13653",
+    "kicklab/Leaderboard/LeaderboardData.swift": "bcccf48a6266f95d8d567787fba5d95b4b79a915c55874e83eaf7ef112d7b220",
+    "kicklab/Leaderboard/LeaderboardMomentReviewView.swift": "25d5a5f42b19615b47c33bf60097492478472065cee52e3e2ff4caa2c61504e0",
+    "kicklab/Leaderboard/LeaderboardPennant.swift": "d199477b459ba564959e9e7b715f7e8065107f673c760672c246d4ae8adc7c64",
+    "kicklab/Leaderboard/LeaderboardPlayerDetailView.swift": "32da3ba0b786e892de22b842700c89da988f95db3d82857dd0d6d77dcc8e00b4",
+    "kicklab/Leaderboard/LeaderboardReviewStore.swift": "db0aa321137b9ad05307774fcb82c90601d2962c9bb717de7c2f214fad0f748a",
+    "kicklab/Leaderboard/LeaderboardSubmissionView.swift": "f555e2739375cd3ab1ea02ca4e7bd434ed3e3b0be21a230d5ac4d6e7be80eb02",
+    "kicklab/Leaderboard/LeaderboardTouchReview.swift": "4eb1e2c6544ce82ebdd97d69759d2bb9d602b1a0d2f813b248631ff6b46ae12d",
+    "kicklab/Leaderboard/LeaderboardView.swift": "91a08d8c7ff0a516568d67ab88b0590c46d2abfeba845c14395df37f28a50ec0",
+    "kicklab/PowerShot/Camera/ShotCameraEditor.swift": "c89a31d51c2d466a35aa3568ae06c2b9912e624a107e596570c24c22155632bc",
+    "kicklab/PowerShot/Camera/ShotCameraTimeline.swift": "11015fca63f4a33543922e241c769f5c280cfdade96a8c5649beca1374af083a",
+    "kicklab/PowerShot/Camera/ShotEditTimeline.swift": "d700133feacf0b9bb50be6b99b2fa8a482715ffddb55b30474b0c8293c66d766",
+    "kicklab/PowerShot/Camera/ShotMoveCarousel.swift": "c8ffb6bafd96512c51d44ea95ef42268295b4138410fdf0d46fb7e79baa0d69f",
+    "kicklab/PowerShot/ShotEffectExporter.swift": "5f0ec1d4bd30e09b285395cb86c4f9230098fa5b24118214b464c1ee920c185e",
+    "kicklab/PowerShot/ShotEffectsReplayView.swift": "2ca7850e0395e56b690baf2179986a9c88006eaa10efd647092798fa733ea8a4",
+    "kicklab/PowerShot/ShotGraph.swift": "da18ce0c1b0b9d61854e6503c1e5433750ca87e7a24006234d755ee5aa435ac2",
+    "kicklab/PowerShot/ShotRecordingEffects.swift": "2ce3111a457e100982b5eaa446fcbf2af5833fda89222eccd26c2155e23c5f50",
+    "kicklab/PowerShot/ShotToolbox.swift": "c5f5710a128981d3454e39fcafb62a8e4d20219dd4a5755a8781ab6a229f36bf",
+    "kicklab/PowerShot/ShotTrailStyle.swift": "c8cf8601470883c201c07e65dd1be3f6f84472a6e237ef443eada1e96de9e02c",
+    "kicklab/Pro/ProOffer.swift": "353f422186327bab81cdebc3ec04a4c3bb064672961a58b40ee89a6b9cb378af",
+    "kicklab/Pro/ProPaywallView.swift": "485f0cae019407e49a07fefeb327351aafba7d8f08421f2d118fbf185a5f5588",
+    "kicklab/Pro/SubscriptionAccountLink.swift": "9262b77f69076cf0a2a65436aac047f6d0b3e6854dc3b4022266457032c209b6",
+    "kicklab/Pro/SubscriptionStore.swift": "a17e0e8692f684a724cf5ddac6c5244cd719d500123c877c2a4a4bb3ae6a3857",
+    "kicklab/Profile/CloudProfileEditor.swift": "8f67e6a827a97143ae31605abacdc9dbff25f81a9aa6d4822f0a4e2362091842",
+    "kicklab/Profile/PlayerData.swift": "22ffc3c0498c85b8e0cd0e7faffd1faee35608528f9bf542b36c8a53ce6b17e9",
+    "kicklab/Profile/PlayerStore.swift": "304c94bb0039e53d4931e97e1bd0732db4f7dd6fff60edf652ae9f03673a1f39",
+    "kicklab/Profile/ProfileCountryPicker.swift": "b09d3c4a6dacd5835430f1b4167578c2d71a3a151c4778156dc02786e2d17629",
+    "kicklab/Record/CaptureControls.swift": "f248d8eec931961bddcc70c92f704b5a1014ba69d306fa45be113b9f876681f2",
+    "kicklab/Record/CaptureHUD.swift": "524e816b2b883b88e137f3c1bfb649a5af9c0dc78dc93c5d9e325d040dcd20f5",
+    "kicklab/Record/ExportOverlayEditor.swift": "7f404300ba5962ebee13e4565685b4e038608089126b780dbf2c1788884a97e5",
+    "kicklab/Record/MediaReadiness.swift": "04445e742db8b614203d456ca3f6d35fd74b7f6042ac9155d111f927895edffa",
+    "kicklab/Record/ProcessingOverlay.swift": "3503e6d353e56a52b882109417d343214ef26195d77d01967d8158fee1c8f5b4",
+    "kicklab/Record/RecordView.swift": "910bde4da2216693695fef93ae472139aaf1774144b7ed8df55c06be0094dca3",
+    "kicklab/Record/ReplayDownloader.swift": "b7f9c11b2505b1a7ad589fa162b2aff33d1dba3a3a1248392d0244f1996a52b7",
+    "kicklab/Record/ReplayEffectsView.swift": "f7864294698208105a73324ac6faf230e515f356d30ee118e3aa5fc7d2f5b488",
+    "kicklab/Record/ReplayMotionPicker.swift": "d44ee6957b8b9856e99de68a3987db1043bc06d3939a43253414aa6c8bc30e89",
+    "kicklab/Record/ReplayToolbox.swift": "0a0e9d7b3438d2d0c88bd3fd17d3a2a7339d35d609acf09463ae73709c6205a9",
+    "kicklab/Record/SessionStyle.swift": "a2b0f8d7a831aa63814dc5816beaeb536604cf7b893cf206c41af199d743262c",
+    "kicklab/Record/VideoSaveCompletion.swift": "cf5bdcbfee6230845e83255500047ba624cdcfbaf0879ff19c498df522b0fb9e",
+    "kicklab/kicklabApp.swift": "bd2a5c99250f517724365bba798a6506953b327f66ae594051981fcc9639a7b3"
+  }
+}

@@ -52,10 +52,10 @@ nonisolated struct BallSurfaceTimeline: Sendable {
         case measured, littleMotion, uncertain, notVisible
         var label: String {
             switch self {
-            case .measured: return String(localized: "Source spin")
-            case .littleMotion: return String(localized: "Little visible spin")
-            case .uncertain: return String(localized: "Spin uncertain")
-            case .notVisible: return String(localized: "Ball not tracked")
+            case .measured: return String(localized: "Source spin", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            case .littleMotion: return String(localized: "Little visible spin", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            case .uncertain: return String(localized: "Spin uncertain", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            case .notVisible: return String(localized: "Ball not tracked", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
             }
         }
     }

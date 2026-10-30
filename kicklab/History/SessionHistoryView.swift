@@ -68,7 +68,7 @@ struct SessionHistoryContent: View {
                 }
 
                 Picker("Session source", selection: $filter) {
-                    ForEach(HistoryFilter.allCases) { Text($0.title).tag($0) }
+                    ForEach(HistoryFilter.allCases) { Text(AppLanguage.resource($0.title)).tag($0) }
                 }
                 .pickerStyle(.segmented).accessibilityIdentifier("history-filter")
 
@@ -134,9 +134,10 @@ struct SessionHistoryContent: View {
     }
 
     private func dayLabel(_ day: Date) -> String {
-        if Calendar.current.isDateInToday(day) { return String(localized: "TODAY") }
-        if Calendar.current.isDateInYesterday(day) { return String(localized: "YESTERDAY") }
-        return day.formatted(date: .abbreviated, time: .omitted).uppercased()
+        if Calendar.current.isDateInToday(day) { return String(localized: "TODAY", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        if Calendar.current.isDateInYesterday(day) { return String(localized: "YESTERDAY", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        return day.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(AppLanguage.locale))
+            .uppercased(with: AppLanguage.locale)
     }
     private func notice(_ text: String, symbol: String, retry: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -249,8 +250,8 @@ private struct SessionHistoryDetail: View {
                         } label: { Label("Leaderboard streak", systemImage: "trophy") }
                         .accessibilityIdentifier("history-leaderboard-submit")
                     } else if item.ownerID != nil && item.source == .recording {
-                        Label(item.rankedProposal.map { String(localized: "Best streak \($0.count) · counts on the leaderboard") }
-                              ?? String(localized: "Counts on the leaderboard by its best streak"), systemImage: "trophy")
+                        Label(item.rankedProposal.map { String(localized: "Best streak \($0.count) · counts on the leaderboard", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+                              ?? String(localized: "Counts on the leaderboard by its best streak", bundle: AppLanguage.bundle, locale: AppLanguage.locale), systemImage: "trophy")
                             .font(.subheadline.weight(.semibold))
                             .accessibilityIdentifier("history-leaderboard-streak")
                     } else {

@@ -103,18 +103,18 @@ struct LeaderboardCorrectionForm: View {
 
     /// Whole sentences, so each language can order its own words.
     private var summary: String {
-        let total = String(localized: "\(item.touches) touches in all, and your longest run without a stop was \(counted). That run is what ranks.")
-        guard item.source == .recording else { return String(localized: "Imported videos stay in your history and never rank.") }
+        let total = String(localized: "\(item.touches) touches in all, and your longest run without a stop was \(counted). That run is what ranks.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        guard item.source == .recording else { return String(localized: "Imported videos stay in your history and never rank.", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
         guard let correction else {
-            return [total, String(localized: "This session was saved before touch checks, so there’s nothing to choose.")].joined(separator: " ")
+            return [total, String(localized: "This session was saved before touch checks, so there’s nothing to choose.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)].joined(separator: " ")
         }
         var sentences = [total]
         if let stop = correction.endedBy {
-            sentences.append(String(localized: "It began at your first counted touch and ended at \(stop.timestamp): \(stop.kind.stopReason)."))
+            sentences.append(String(localized: "It began at your first counted touch and ended at \(stop.timestamp): \(stop.kind.stopReason).", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
         }
         let leftOut = correction.leftOut.count
-        sentences.append(leftOut > 0 ? String(localized: "Inside it, the counter left out \(leftOut) touches it wasn’t sure of.")
-                                     : String(localized: "Every touch inside it was counted."))
+        sentences.append(leftOut > 0 ? String(localized: "Inside it, the counter left out \(leftOut) touches it wasn’t sure of.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                                     : String(localized: "Every touch inside it was counted.", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
         return sentences.joined(separator: " ")
     }
 
@@ -252,9 +252,9 @@ struct LeaderboardCorrectionForm: View {
         let windows = claim.map { LeaderboardMomentClips.windows(for: request.moments, proposal: $0, durationMS: item.durationMS) } ?? []
         let seconds = Int((Double(windows.reduce(0) { $0 + $1.durationMS }) / 1000).rounded(.up))
         let size = request.moments.isEmpty
-            ? String(localized: "Only short clips around the touches you choose are sent, never the whole recording.")
-            : String(localized: "Only \(seconds) seconds of clips around the touches you choose are sent, never the whole recording.")
-        return [size, String(localized: "They’re private to you and the review team. If a reviewer confirms the touches, your streak updates by itself.")]
+            ? String(localized: "Only short clips around the touches you choose are sent, never the whole recording.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            : String(localized: "Only \(seconds) seconds of clips around the touches you choose are sent, never the whole recording.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        return [size, String(localized: "They’re private to you and the review team. If a reviewer confirms the touches, your streak updates by itself.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)]
             .joined(separator: " ")
     }
 

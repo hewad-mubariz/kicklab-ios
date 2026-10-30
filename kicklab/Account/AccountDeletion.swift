@@ -82,11 +82,11 @@ enum AccountDeletionFailure: LocalizedError {
     case failed, appleUnavailable, appleMismatch, appleConfirmation, signIn
     var errorDescription: String? {
         switch self {
-        case .failed: String(localized: "Account deletion couldn’t be confirmed. Please try again.")
-        case .appleUnavailable: String(localized: "Apple account deletion is temporarily unavailable. Your account has not been deleted. Please try again later.")
-        case .appleMismatch: String(localized: "Use the Apple Account linked to this Juggle Dude account, then try again.")
-        case .appleConfirmation: String(localized: "Apple confirmation couldn’t be completed. Please try deleting your account again.")
-        case .signIn: String(localized: "Sign in again before deleting your account.")
+        case .failed: String(localized: "Account deletion couldn’t be confirmed. Please try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .appleUnavailable: String(localized: "Apple account deletion is temporarily unavailable. Your account has not been deleted. Please try again later.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .appleMismatch: String(localized: "Use the Apple Account linked to this Juggle Dude account, then try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .appleConfirmation: String(localized: "Apple confirmation couldn’t be completed. Please try deleting your account again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .signIn: String(localized: "Sign in again before deleting your account.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }

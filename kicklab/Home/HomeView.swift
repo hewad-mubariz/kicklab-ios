@@ -170,16 +170,16 @@ private struct TrainingHomeCard: View {
                                    startPoint: .top, endPoint: .bottom)
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .top) {
-                            Text(category).font(.caption2.weight(.semibold)).tracking(0.6)
+                            Text(AppLanguage.resource(category)).font(.caption2.weight(.semibold)).tracking(0.6)
                             Spacer(minLength: 4)
                             Image(systemName: "arrow.up.right").font(.system(size: 11, weight: .medium))
                         }
                         Spacer(minLength: 16)
-                        Text(title)
+                        Text(AppLanguage.resource(title))
                             .font(TrainingHomeStyle.display(30, relativeTo: .title))
                             .lineLimit(1).minimumScaleFactor(0.7)
                             .padding(.bottom, 4)
-                        Text(subtitle).font(.caption).lineSpacing(3)
+                        Text(AppLanguage.resource(subtitle)).font(.caption).lineSpacing(3)
                             .foregroundStyle(.white.opacity(0.75))
                     }
                     .padding(14)
@@ -187,7 +187,7 @@ private struct TrainingHomeCard: View {
                 .frame(height: imageHeight)
                 .foregroundStyle(.white)
                 HStack(spacing: 6) {
-                    Text(actionLabel).font(.caption.weight(.bold))
+                    Text(AppLanguage.resource(actionLabel)).font(.caption.weight(.bold))
                     Spacer(minLength: 0)
                     Image(systemName: "arrow.right").font(.system(size: 12, weight: .semibold))
                 }
@@ -203,8 +203,8 @@ private struct TrainingHomeCard: View {
             .contentShape(RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(String(localized: title)), \(String(localized: actionLabel))")
-        .accessibilityHint(String(localized: subtitle).replacingOccurrences(of: "\n", with: " "))
+        .accessibilityLabel("\(String(localized: AppLanguage.resource(title))), \(String(localized: AppLanguage.resource(actionLabel)))")
+        .accessibilityHint(String(localized: AppLanguage.resource(subtitle)).replacingOccurrences(of: "\n", with: " "))
     }
 }
 

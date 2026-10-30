@@ -154,7 +154,7 @@ nonisolated struct ShotEditTimeline: Equatable, Sendable {
         let audioRange = try await audio?.load(.timeRange) ?? .zero
         let composition = AVMutableComposition()
         guard let picture = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
-            throw ShotEffectExporter.Failure.writer(String(localized: "Couldn’t prepare the replay."))
+            throw ShotEffectExporter.Failure.writer(String(localized: "Couldn’t prepare the replay.", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
         }
         picture.preferredTransform = try await video.load(.preferredTransform)
         let sound = audio.flatMap { _ in composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) }

@@ -110,10 +110,10 @@ struct ShotCameraEditor: View {
     }
 
     private var timeDetail: String {
-        let frame = frames.isEmpty ? "" : String(localized: "Frame \(frames.index(at: time) + 1)") + " · "
+        let frame = frames.isEmpty ? "" : String(localized: "Frame \(frames.index(at: time) + 1)", bundle: AppLanguage.bundle, locale: AppLanguage.locale) + " · "
         let offset = time - strike
         let half = frames.isEmpty ? 0.004 : frames.frameDuration(at: strike) / 2
-        if abs(offset) < half { return frame + String(localized: "⚑ Strike") }
+        if abs(offset) < half { return frame + String(localized: "⚑ Strike", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
         return frame + String(format: "⚑ %@%.2f s", offset > 0 ? "+" : "−", abs(offset))
     }
 
@@ -274,11 +274,11 @@ struct ShotCameraEditor: View {
         case .zoom(let range, let label):
             slider(label, value: binding(clip, \.zoom), range: range) { String(format: "%.1f×", $0) }
         case .strength(let label):
-            slider(label, value: binding(clip, \.strength), range: 0.5...1.5) { String(localized: "\(Int(($0 * 100).rounded()))%") }
+            slider(label, value: binding(clip, \.strength), range: 0.5...1.5) { String(localized: "\(Int(($0 * 100).rounded()))%", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
         case .hold(let range):
-            slider(String(localized: "Hold"), value: binding(clip, \.hold), range: range) { String(format: "%.1f s", $0) }
+            slider(String(localized: "Hold", bundle: AppLanguage.bundle, locale: AppLanguage.locale), value: binding(clip, \.hold), range: range) { String(format: "%.1f s", $0) }
         case .angle(let range):
-            slider(String(localized: "Angle"), value: binding(clip, \.angle), range: range) { String(format: "%.1f°", $0) }
+            slider(String(localized: "Angle", bundle: AppLanguage.bundle, locale: AppLanguage.locale), value: binding(clip, \.angle), range: range) { String(format: "%.1f°", $0) }
         case .rate(let options):
             HStack(spacing: 6) {
                 Text("Speed").font(.system(size: 12, weight: .medium))
@@ -323,8 +323,8 @@ struct ShotCameraEditor: View {
             HStack(spacing: 6) {
                 Text("Ending").font(.system(size: 12, weight: .medium))
                 Spacer()
-                chip(String(localized: "Ease out"), selected: clip.settings.ending == .ease) { began(); track.update(clip.id) { $0.ending = .ease }; ended() }
-                chip(String(localized: "Cut"), selected: clip.settings.ending == .cut) { began(); track.update(clip.id) { $0.ending = .cut }; ended() }
+                chip(String(localized: "Ease out", bundle: AppLanguage.bundle, locale: AppLanguage.locale), selected: clip.settings.ending == .ease) { began(); track.update(clip.id) { $0.ending = .ease }; ended() }
+                chip(String(localized: "Cut", bundle: AppLanguage.bundle, locale: AppLanguage.locale), selected: clip.settings.ending == .cut) { began(); track.update(clip.id) { $0.ending = .cut }; ended() }
             }
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("shot-camera-ending")
@@ -332,8 +332,8 @@ struct ShotCameraEditor: View {
             HStack(spacing: 6) {
                 Text("Look at").font(.system(size: 12, weight: .medium))
                 Spacer()
-                chip(String(localized: "The ball"), selected: clip.settings.target == nil) { began(); track.update(clip.id) { $0.target = nil }; ended() }
-                chip(targetEdit == clip.id ? String(localized: "Tap the video") : String(localized: "A point"), selected: clip.settings.target != nil || targetEdit == clip.id) {
+                chip(String(localized: "The ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale), selected: clip.settings.target == nil) { began(); track.update(clip.id) { $0.target = nil }; ended() }
+                chip(targetEdit == clip.id ? String(localized: "Tap the video", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "A point", bundle: AppLanguage.bundle, locale: AppLanguage.locale), selected: clip.settings.target != nil || targetEdit == clip.id) {
                     withAnimation(motion(SessionMotion.snap)) { targetEdit = targetEdit == clip.id ? nil : clip.id }
                 }
             }

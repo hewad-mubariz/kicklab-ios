@@ -47,7 +47,7 @@ struct CloudProfilePhotoPicker: View {
         }
         .alert("Photo unavailable", isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) {
             Button("OK") { error = nil }
-        } message: { Text(error ?? String(localized: "Please try again.")) }
+        } message: { Text(error ?? String(localized: "Please try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) }
     }
 }
 
@@ -130,7 +130,7 @@ struct CloudProfileEditor: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("COUNTRY").font(.caption2.weight(.semibold)).tracking(1.4)
                         .foregroundStyle(TrainingHomeStyle.muted(scheme))
-                    Text(ProfileCountry.named(country)?.name ?? String(localized: "Choose your country"))
+                    Text(ProfileCountry.named(country)?.name ?? String(localized: "Choose your country", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                         .font(.body.weight(.semibold)).multilineTextAlignment(.leading)
                 }
                 Spacer(minLength: 8)
@@ -144,7 +144,7 @@ struct CloudProfileEditor: View {
         .background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 22))
         .overlay { RoundedRectangle(cornerRadius: 22).strokeBorder(TrainingHomeStyle.line(scheme)) }
         .accessibilityLabel("Country")
-        .accessibilityValue(ProfileCountry.named(country)?.name ?? String(localized: "Not selected"))
+        .accessibilityValue(ProfileCountry.named(country)?.name ?? String(localized: "Not selected", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
         .accessibilityIdentifier("profile-country")
     }
 

@@ -36,7 +36,7 @@ struct TrainingHomeSettings: View {
             }
             if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
                 Section("About") {
-                    LabeledContent("Juggle Dude", value: String(localized: "Version \(version)"))
+                    LabeledContent("Juggle Dude", value: String(localized: "Version \(version)", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                 }
             }
             #if DEBUG
@@ -52,7 +52,7 @@ struct TrainingHomeSettings: View {
         }
         .scrollContentBackground(.hidden)
         .background(TrainingHomeStyle.background(scheme))
-        .navigationTitle("Settings")
+        .navigationTitle(String(localized: "Settings", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
         .navigationBarTitleDisplayMode(.inline)
     }
 }

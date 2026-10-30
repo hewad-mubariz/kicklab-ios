@@ -209,7 +209,7 @@ struct SessionIntensitySlider: UIViewRepresentable {
         }
         slider.setThumbImage(thumb, for: .normal)
         slider.setThumbImage(thumb, for: .highlighted)
-        slider.accessibilityLabel = String(localized: "Effect intensity")
+        slider.accessibilityLabel = String(localized: "Effect intensity", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         slider.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .valueChanged)
         return slider
     }
@@ -217,7 +217,7 @@ struct SessionIntensitySlider: UIViewRepresentable {
     func updateUIView(_ slider: UISlider, context: Context) {
         context.coordinator.value = $value
         slider.value = Float(value)
-        slider.accessibilityValue = String(localized: "\(Int((value * 100).rounded())) percent")
+        slider.accessibilityValue = String(localized: "\(Int((value * 100).rounded())) percent", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(value: $value) }

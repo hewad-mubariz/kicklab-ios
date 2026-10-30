@@ -227,7 +227,7 @@ struct RecordView: View {
             }
             Button("OK", role: .cancel) { importError = nil }
         } message: {
-            Text(importError ?? String(localized: "Please try another video."))
+            Text(importError ?? String(localized: "Please try another video.", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
         }
         .videoSavedConfirmation(isPresented: $recoveredVideoSaved)
         .fullScreenCover(item: $sessionSummary) { summary in
@@ -338,9 +338,9 @@ struct RecordView: View {
 
     private var importProcessingOverlay: some View {
         let cancel: (() -> Void)? = importedURL == nil ? nil : { cancelImport() }
-        let message = importedVideo.isCooling ? String(localized: "Cooling down. Your video will continue automatically.")
+        let message = importedVideo.isCooling ? String(localized: "Cooling down. Your video will continue automatically.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
             : importedVideo.isRunning && !importedVideo.canContinueInBackground
-                ? String(localized: "Keep Juggle Dude open. Processing resumes when you return.") : nil
+                ? String(localized: "Keep Juggle Dude open. Processing resumes when you return.", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : nil
         return ProcessingOverlay(progress: processingProgress, stepIndex: processingStep,
                                  statusMessage: message, onCancel: cancel, isPaused: importedVideo.isCooling,
                                  videoInfo: importedURL == nil ? nil : importedVideo.processingInfo)
@@ -373,7 +373,7 @@ struct RecordView: View {
         processingStep = 0
         camera.stop()
         do {
-            try await VideoBackgroundWork.shared.run(title: String(localized: "Importing video")) {
+            try await VideoBackgroundWork.shared.run(title: String(localized: "Importing video", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) {
                 try await importSelectedMovie(item)
             }
             ProductAnalytics.shared.track(.importFinished(.completed))
@@ -521,11 +521,11 @@ struct RecordView: View {
 
     /// One capture warning at a time, in the same caption style; a shaking phone matters most.
     private var captureWarning: String? {
-        if camera.tooShaky { return String(localized: "Hold the camera steadier") }
+        if camera.tooShaky { return String(localized: "Hold the camera steadier", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
         guard camera.tooDark else { return nil }
         return camera.cameraPosition == .front
-            ? String(localized: "Too dark for sharp ball effects · use the back camera")
-            : String(localized: "Too dark for sharp ball effects · add more light")
+            ? String(localized: "Too dark for sharp ball effects · use the back camera", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            : String(localized: "Too dark for sharp ball effects · add more light", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
 
     private var cameraStatus: some View {

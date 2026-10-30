@@ -142,7 +142,10 @@ struct kicklabApp: App {
                 Task { await account.handleCallback(url) }
             }
             .onChange(of: scenePhase, initial: true) { _, phase in
-                if phase == .active { ProductAnalytics.shared.track(.appOpened) }
+                if phase == .active {
+                    AppLanguage.refresh()
+                    ProductAnalytics.shared.track(.appOpened)
+                }
             }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active {
@@ -154,6 +157,7 @@ struct kicklabApp: App {
                     if phase == .active { await player.refresh() }
                 }
             }
+            .modifier(AppLanguageEnvironment())
         }
     }
 }

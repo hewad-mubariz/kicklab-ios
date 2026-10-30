@@ -337,7 +337,7 @@ struct LeaderboardView: View {
         let check = openCheck(for: entry)
         return Button { selectedEntry = entry } label: {
             LeaderboardRow(entry: entry, best: best,
-                           chase: ahead.map { String(localized: "\($0.touches - entry.touches + 1) to pass \($0.name)") },
+                           chase: ahead.map { String(localized: "\($0.touches - entry.touches + 1) to pass \($0.name)", bundle: AppLanguage.bundle, locale: AppLanguage.locale) },
                            target: ahead?.touches,
                            review: check?.label(beside: entry.touches, ranked: entry.sessionID),
                            pending: check.flatMap { $0.count > entry.touches ? $0.count : nil },
@@ -479,8 +479,8 @@ struct LeaderboardView: View {
             .glassEffect(.regular.interactive(), in: .capsule)
             .padding(.bottom, 6)
             .transition(.sessionRise)
-            .accessibilityLabel([String(localized: "Jump to your place, rank \(you.rank), \(you.touches) touches"),
-                                 pillReview(you).map { String(localized: "\($0) more in review") }].compactMap { $0 }.joined(separator: ", "))
+            .accessibilityLabel([String(localized: "Jump to your place, rank \(you.rank), \(you.touches) touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+                                 pillReview(you).map { String(localized: "\($0) more in review", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }].compactMap { $0 }.joined(separator: ", "))
             .accessibilityIdentifier("leaderboard-you-pill")
         }
     }
@@ -578,9 +578,9 @@ struct LeaderboardRow: View {
 
     /// Whole phrases joined by full stops, so each language keeps its own word order.
     private var spokenRow: String {
-        var rank = String(localized: "Rank \(entry.rank), \(lit ? String(localized: "you") : entry.name), \(entry.touches) touches")
-        if entry.hasConfirmedTouchCheck { rank += ", " + String(localized: "confirmed by a reviewer") }
-        let stats = String(localized: "Streak duration \(entry.streakDurationLabel), average rhythm \(entry.averageRhythmLabel)")
+        var rank = String(localized: "Rank \(entry.rank), \(lit ? String(localized: "you") : entry.name), \(entry.touches) touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        if entry.hasConfirmedTouchCheck { rank += ", " + String(localized: "confirmed by a reviewer", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        let stats = String(localized: "Streak duration \(entry.streakDurationLabel), average rhythm \(entry.averageRhythmLabel)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         return [rank, review, stats, chase].compactMap { $0 }.joined(separator: ". ")
     }
 
@@ -601,7 +601,7 @@ struct LeaderboardRow: View {
                                  ringWidth: lit ? 2.5 : 1.5)
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    Text(lit ? String(localized: "You") : entry.name).font(.body.weight(.semibold)).lineLimit(1)
+                    Text(lit ? String(localized: "You", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : entry.name).font(.body.weight(.semibold)).lineLimit(1)
                     if entry.hasConfirmedTouchCheck {
                         // Only a score a reviewer confirmed carries the seal.
                         Image(systemName: "checkmark.seal.fill").font(.caption)

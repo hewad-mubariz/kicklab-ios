@@ -1097,8 +1097,9 @@ values are not measurements from real accounts.
 
 **30 October release scope:** the owner selected leaderboard and new sign-in for
 the next release. `codex/post-launch-signin-leaderboard-ball-edges` now also includes
-the English/German/Spanish/French/Brazilian-Portuguese language work. Its string
-catalogs and language picker match the uploaded 1.0.4 (31) source manifest.
+the English/German/Spanish/French/Brazilian-Portuguese language work from uploaded
+1.0.4 (31). The language picker now applies changes immediately without restarting
+the app; that follow-up is local to this candidate. See [localization notes](../localization.md).
 Apple and email sign-in are available; Google stays hidden. Leaderboard touch-review
 submission, video uploads and corrections remain disabled for this automatic beta.
 

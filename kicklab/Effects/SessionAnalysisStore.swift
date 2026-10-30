@@ -270,7 +270,7 @@ actor SessionAnalysisStore {
 
     enum PreparationError: LocalizedError {
         case busy
-        var errorDescription: String? { String(localized: "Another video is finishing its ball effects. Please try again shortly.") }
+        var errorDescription: String? { String(localized: "Another video is finishing its ball effects. Please try again shortly.", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
     }
 }
 

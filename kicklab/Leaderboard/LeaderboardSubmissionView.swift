@@ -111,9 +111,9 @@ private struct LeaderboardRecordingPicker: View {
         }.navigationTitle("Choose a session").navigationBarTitleDisplayMode(.inline)
     }
     private func detail(_ item: HistorySession) -> String {
-        let streak = item.rankedProposal.map { String(localized: "Best streak \($0.count)") } ?? String(localized: "\(item.touches) touches")
+        let streak = item.rankedProposal.map { String(localized: "Best streak \($0.count)", bundle: AppLanguage.bundle, locale: AppLanguage.locale) } ?? String(localized: "\(item.touches) touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         let askable = LeaderboardCorrection(item: item)?.leftOut.count ?? 0
-        return askable == 0 ? "\(item.durationLabel) · \(streak)" : "\(item.durationLabel) · \(streak) · \(String(localized: "\(askable) to check"))"
+        return askable == 0 ? "\(item.durationLabel) · \(streak)" : "\(item.durationLabel) · \(streak) · \(String(localized: "\(askable) to check", bundle: AppLanguage.bundle, locale: AppLanguage.locale))"
     }
 }
 

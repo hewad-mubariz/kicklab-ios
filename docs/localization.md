@@ -13,10 +13,20 @@ the app falls back to English.
 
 Profile → Settings → Language lists "Same as iPhone" and the five languages, each written
 in its own name. A choice writes the app's `AppleLanguages` default, the same value iOS
-writes from Settings › Apps › Juggle Dude › Language, so both places stay in step. iOS reads
-it at launch: the list tells the player to close and reopen the app, and the change applies
-then. `UIApplication.openSettingsURLString` was not used because on iOS 26.5 it opened the
-Settings root rather than the app's page.
+writes from Settings › Apps › Juggle Dude › Language, so both places stay in step. The app
+now applies this choice immediately, including on the language page itself, with no loader
+or restart. Navigation, account, purchases, recording and replay objects are not recreated.
+Choosing "Same as iPhone" removes the app override and resolves the defaults search list
+again. Returning to the foreground also refreshes externally changed language preferences.
+Apple-owned interfaces and permission prompts follow iOS's own localization lifecycle.
+
+`AppLanguageEnvironment` supplies the selected locale to SwiftUI. Plain strings use the
+selected `.lproj` bundle and locale explicitly; changing only the locale argument of
+`String(localized:)` would format substitutions but leave the actual wording in the launch
+language. `LanguagePreferences` publishes one observed, locked snapshot so existing views
+invalidate when they read localized model labels, and background video work can read it
+safely. Country choices are cached per language, and processing tips are computed instead
+of caching the first language forever. Prices still come unchanged from StoreKit.
 
 ## What stays in English
 
@@ -50,7 +60,11 @@ você. Keep these terms consistent:
 SwiftUI literals (`Text("…")`, `Button("…")`, `Label("…")`) are extracted automatically.
 A helper that takes a title should accept `LocalizedStringKey` (or `LocalizedStringResource`
 when it also needs a plain string), not `String`. Messages built outside views use
-`String(localized:)`. Write whole sentences rather than joining fragments, and let counts
+`String(localized: "…", bundle: AppLanguage.bundle, locale: AppLanguage.locale)` so they
+follow live changes while remaining extractable by Xcode. For an existing
+`LocalizedStringResource`, pass it through `AppLanguage.resource(_:)` before displaying or
+resolving it. Don't store a resolved translation in a static constant. Write whole sentences
+rather than joining fragments, and let counts
 go through the catalog's plural rules instead of choosing "touch"/"touches" in code. Keep
 identifiers, raw values that are stored or sent, and status codes out of localization.
 
@@ -60,12 +74,26 @@ entries in each language.
 ## Leaderboard candidate — 30 October 2026
 
 The language work is integrated into `codex/post-launch-signin-leaderboard-ball-edges`.
-The two catalogs and `AppLanguage.swift` match the source manifest of uploaded
-1.0.4 (31). Leaderboard-specific view helpers and messages are localized as well.
+The translations originate from uploaded 1.0.4 (31). This branch adds immediate language
+switching on top; it has not been uploaded. Leaderboard-specific view helpers and messages
+are localized as well.
 `LeaderboardLocalizationUITests` exercises Apple/email choices, email entry,
 weekly/all-time tabs, rules and automatic-score details in all five languages,
 alternating light and dark appearances. Google and postponed touch-check actions
 remain hidden. This test sends no sign-in email and writes no public score.
+
+`testLanguageSwitchUpdatesOpenScreensWithoutRestartAndPersists` changes all five languages
+in one app process, checks the open picker/settings, home, sign-in and leaderboard, then
+checks persistence on relaunch and switching back to the iPhone language. `AppLanguageTests`
+covers preference reset, observation, externally changed preferences, resolved resources,
+cached labels and preserving StoreKit's price in translated purchase wording.
+
+30 October validation: 29 distinct focused simulator checks pass after fixing the open
+Profile presentation's retained locale/navigation titles. Both in-process switching and
+launch-time localization cover all five languages. See the
+[live-language validation report](../benchmarks/releases/20261030-live-language-switch.json)
+for the initial failure, corrected rerun and the separately interrupted StoreKit test.
+No physical-device build or App Store upload was made for this change.
 
 The replay-editor upgrade is deferred to a later release. Its new Looks, Sound,
 My style and milestone controls are not included in this candidate; their text
