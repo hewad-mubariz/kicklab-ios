@@ -156,7 +156,8 @@ became a solid block. Up to 30 touches the whole session still shows. Longer ses
 scroll: the graph shows about the last 30 touches (30 typical touch gaps, at least 8 s),
 with the playhead resting 80 % across, the oldest part fading out at the left edge, and
 the grid and touch ticks travelling with the line. The window starts at zero and stops at
-the end of the clip. The height scale comes from the whole session, so it never jumps
+the end of the clip. The left-edge fade only comes in once earlier motion has scrolled off
+(fully after 14 % of the window), so the first touches of a long clip stay full colour. The height scale comes from the whole session, so it never jumps
 while scrolling. The other eight styles already scrolled. Drawing only the window is about
 eight times cheaper per frame on a 433-touch session (0.36 ms against 3.0 ms in the
 Simulator), so the saved video is not slower.
@@ -219,7 +220,8 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
 - `EditorPhoneCheckTests`: export time and per-frame preview cost, per-effect GPU cost, and
   each counter's milestone cost in replay and export, on the phone it runs on.
 - `GraphWindowTests`: the scrolling window at the start, middle and end, the 30-touch size,
-  the fixed scale, and the drawing cost against the whole clip.
+  the fixed scale, the left-edge fade only after the window moves, and the drawing cost
+  against the whole clip.
 - `ReplaySoundTests`: every cue bounded and audible, waveform shapes, soundtrack placement,
   an export that mixes cues into a saved video with exactly one audio track, and muted
   exports (no track without cues; cues only with cues; both when kept).

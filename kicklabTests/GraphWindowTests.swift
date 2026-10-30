@@ -39,6 +39,19 @@ struct GraphWindowTests {
         #expect(!CaptureGraphLayout(points: points, time: 5, duration: duration).scrolls)
     }
 
+    /// The left edge only fades once earlier motion has scrolled off, so the first touches stay bright.
+    @Test func theEdgeFadesOnlyAfterTheWindowMoves() {
+        let (points, _, duration) = session(touches: 433)
+        let window = 20.0
+        func fade(at time: Double) -> Double {
+            CaptureGraphLayout(points: points, time: time, duration: duration, window: window, vertical: 0.4...0.9).edgeFade
+        }
+        #expect(fade(at: 1.5) == 0 && fade(at: 16) == 0, "The clip's start is on screen")
+        #expect(abs(fade(at: 16 + 1.4) - 0.5) < 0.0001, "Half a fade's width has scrolled off")
+        #expect(fade(at: 16 + 2.8) == 1 && fade(at: 120) == 1)
+        #expect(CaptureGraphLayout(points: points, time: 5, duration: 18, window: window).edgeFade == 0)
+    }
+
     @Test func theWindowHoldsAboutThirtyTouches() {
         let thirty = session(touches: 30)
         #expect(MotionStyleTimeline(points: thirty.points, touchTimes: thirty.touches).graphWindow == nil,
@@ -82,7 +95,7 @@ struct GraphWindowTests {
         let long = session(touches: 433)
         let timeline = MotionStyleTimeline(points: long.points, touchTimes: long.touches)
         for style in [MotionStyle.ballMotion, .comet] {
-            for (index, time) in [6.0, 120, long.duration - 1].enumerated() {
+            for (index, time) in [1.5, 6, 120, long.duration - 1].enumerated() {
                 let image = try #require(ExportMotionGraphRenderer.image(style: style,
                     snapshot: timeline.snapshot(at: time, duration: long.duration), size: CGSize(width: 1080, height: 1920)))
                 let url = URL(fileURLWithPath: folder).appendingPathComponent("\(style.rawValue)-\(index).png")

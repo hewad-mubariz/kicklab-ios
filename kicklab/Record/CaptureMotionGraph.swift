@@ -20,6 +20,15 @@ nonisolated struct CaptureGraphLayout {
 
     /// Where the playhead rests while a long session scrolls: most of the window is the past.
     static let scrollingCursor = 0.8
+    /// Share of the width at the left edge where older motion fades out.
+    static let fadeWidth = 0.14
+
+    /// How strongly the left edge fades: not at all while the clip's start is still on screen,
+    /// fully once a fade's width of earlier motion has scrolled off.
+    var edgeFade: Double {
+        guard scrolls else { return 0 }
+        return min(1, timeRange.lowerBound / ((timeRange.upperBound - timeRange.lowerBound) * Self.fadeWidth))
+    }
 
     /// `window`: seconds shown at once when the clip is longer; nil shows the whole clip.
     /// `vertical`: a fixed height range, so the scale holds still while the window moves.
@@ -139,15 +148,16 @@ struct CaptureMotionGraph: View {
             }
             context.stroke(ticks, with: .color(Color(cgColor: NormalCounterAppearance.lime).opacity(0.75)), lineWidth: 0.8)
         }
-        .scrollFade(layout.scrolls)
+        .scrollFade(layout.edgeFade)
     }
 }
 
 extension View {
-    /// The oldest part of a scrolling graph fades out at the left edge.
-    @ViewBuilder func scrollFade(_ scrolling: Bool) -> some View {
-        if scrolling {
-            mask(LinearGradient(stops: [.init(color: .clear, location: 0), .init(color: .black, location: 0.14),
+    /// The oldest part of a scrolling graph fades out at the left edge, once there is older motion to hide.
+    @ViewBuilder func scrollFade(_ amount: Double) -> some View {
+        if amount > 0 {
+            mask(LinearGradient(stops: [.init(color: .black.opacity(1 - amount), location: 0),
+                                        .init(color: .black, location: CaptureGraphLayout.fadeWidth),
                                         .init(color: .black, location: 1)], startPoint: .leading, endPoint: .trailing))
         } else {
             self
