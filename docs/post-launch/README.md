@@ -1095,6 +1095,38 @@ values are not measurements from real accounts.
 
 ### Automatic beta testing checklist — 26 October
 
+**30 October release scope:** the owner selected leaderboard and new sign-in for
+the next release. `codex/post-launch-signin-leaderboard-ball-edges` now also includes
+the English/German/Spanish/French/Brazilian-Portuguese language work. Its string
+catalogs and language picker match the uploaded 1.0.4 (31) source manifest.
+Apple and email sign-in are available; Google stays hidden. Leaderboard touch-review
+submission, video uploads and corrections remain disabled for this automatic beta.
+
+The replay-editor upgrade was merged locally, then explicitly deferred at the
+owner's request in `2ace72e`. Looks, per-touch ball changes, replay sounds, extra
+timer styles, milestone celebrations and My style are absent from this candidate.
+They remain preserved on `feature/leaderboard-editor-upgrade` at `16d2614`.
+For a later authorized integration, reapply the deferral revert and reconcile new
+editor commits: merging the same old editor head alone will not restore reverted
+changes. No branch was deleted or rewritten.
+
+All counting sources and the submitted profile remain unchanged. Eighty-eight
+counting/detection/config files match the previously validated leaderboard base;
+five detection-related files only localize user-facing messages. Simulator checks
+passed 56 distinct tests, with one physical-device saved-pixel test skipped.
+The five-language UI walkthrough covers email entry, periods, rules and player
+details in light/dark mode; screenshots were inspected. The initial language
+assertion was corrected to account for uppercase period tabs, without changing
+app code. The disposable database suite passes. Anonymous reads of both live
+leaderboard RPCs succeed for weekly/all-time boards, return null review IDs and
+hide private session IDs; Apple/email providers are enabled. These reads do not
+validate a fresh signed-in recording or email delivery.
+
+See [candidate audit](../../benchmarks/releases/20261030-leaderboard-signin-localization.json).
+The remaining device gates below still apply: real sign-in, a fresh recording
+through sync/ranking, account switching/offline retry and privacy/deletion. No
+version bump, phone install, App Store upload or review submission was made here.
+
 **Counter alignment — 29 October:** the leaderboard branch now includes the exact
 counter source snapshot `3c8826b` used for submitted **1.0.3 (30)**, including the
 outdoor-contact changes after build 29. Its normal Debug and Release configurations

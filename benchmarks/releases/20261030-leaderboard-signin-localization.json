@@ -1,0 +1,135 @@
+{
+  "date": "2026-10-30",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "counter_baseline": "fac819a",
+  "candidate_before_validation_docs": "2ace72e58a182756890607bfd91f80e66c51d189",
+  "source_scope": "Leaderboard and sign-in, existing ball masking/spin improvements, localization. Replay-editor upgrades reverted before final verification.",
+  "counter_files_unchanged": 88,
+  "localized_message_only_detection_files": [
+    "kicklab/Detection/CameraSession.swift",
+    "kicklab/Detection/VideoAnalyzer.swift",
+    "kicklab/Detection/VideoBackgroundWork.swift",
+    "kicklab/Detection/VideoProcessingInfo.swift",
+    "kicklab/Detection/VideoSafetyPolicy.swift"
+  ],
+  "all_counting_rules_unchanged": true,
+  "counter_profile": "outdoor-balanced-v3-20261029 (same submitted build 30 / language build 31 rules); leaderboard streak-v2 metadata preserved",
+  "experimental_counter_branch_merged": false,
+  "vision_revision2_included": false,
+  "translation_commit": "7053198b9a35058e9835111d79a181c20446bd10",
+  "build31_language_resource_parity": {
+    "kicklab/Localizable.xcstrings": true,
+    "kicklab/InfoPlist.xcstrings": true,
+    "kicklab/Home/AppLanguage.swift": true
+  },
+  "deferred_editor": {
+    "preserved_branch": "feature/leaderboard-editor-upgrade",
+    "head": "16d26142ab586ebb546b88f4ddd742c3dfcd9f35",
+    "revert_commit": "2ace72e",
+    "absent_files": [
+      "kicklab/Effects/BallSwap.swift",
+      "kicklab/Effects/LookRecipes.swift",
+      "kicklab/Effects/ReplaySounds.swift",
+      "kicklab/Effects/MilestoneMoments.swift",
+      "kicklab/Record/MyStyle.swift",
+      "kicklab/Record/LooksEditor.swift",
+      "kicklab/Record/TimerStyleGrid.swift"
+    ],
+    "future_integration": "The merge is recorded in history but its changes are reverted. When authorized for a later release, reapply the revert and reconcile any subsequent editor commits; a plain merge of the same old head would not restore them."
+  },
+  "live_backend": {
+    "checked_at": "2026-10-30T13:06:40.014727+00:00",
+    "scope": "Anonymous read-only RPCs; no accounts, sessions, settings or scores changed. Public player data excluded from report.",
+    "checks": [
+      {
+        "rpc": "reviewed_juggling_leaderboard",
+        "period": "week",
+        "success": true,
+        "returned_rows": 1,
+        "legacy_review_ids_null": true,
+        "duration_field_present": true,
+        "anonymous_session_ids_hidden": true
+      },
+      {
+        "rpc": "reviewed_juggling_leaderboard",
+        "period": "all_time",
+        "success": true,
+        "returned_rows": 1,
+        "legacy_review_ids_null": true,
+        "duration_field_present": true,
+        "anonymous_session_ids_hidden": true
+      },
+      {
+        "rpc": "juggling_leaderboard",
+        "period": "week",
+        "success": true,
+        "returned_rows": 1,
+        "legacy_review_ids_null": true,
+        "duration_field_present": true,
+        "anonymous_session_ids_hidden": true
+      },
+      {
+        "rpc": "juggling_leaderboard",
+        "period": "all_time",
+        "success": true,
+        "returned_rows": 1,
+        "legacy_review_ids_null": true,
+        "duration_field_present": true,
+        "anonymous_session_ids_hidden": true
+      }
+    ],
+    "auth_configuration": {
+      "email_provider_enabled": true,
+      "apple_provider_enabled": true,
+      "mailer_autoconfirm": false,
+      "scope": "Configuration read only; delivery and successful real sign-in still require device walkthrough."
+    }
+  },
+  "backend_tests": "Disposable local PostgreSQL suite passed, including automatic scores, periods/ties, imports/guests, privacy, opt-out, review independence, moderation and account deletion.",
+  "remaining_manual_gates": [
+    "Real Apple and email link sign-in on device, including return to app and session persistence.",
+    "Fresh signed-in recording: total touches vs longest streak, saved history, server row and visible rank; use the already accepted counting rules.",
+    "Second test account, offline/retry sync, account switch, opt-out and disposable-account deletion.",
+    "Set next release version/build, archive and inspect release package only when authorized."
+  ],
+  "release_actions": {
+    "main_changed": false,
+    "app_store_upload": false,
+    "app_store_submission": false,
+    "version_bumped": false,
+    "physical_devices_operated": false
+  },
+  "validation": {
+    "distinct_passed_tests": 56,
+    "skipped_tests": 1,
+    "skip_reason": "Saved-pixel Vision regression requires a physical device.",
+    "initial_run": {
+      "passed": 55,
+      "failed": 1,
+      "skipped": 1,
+      "failure": "New localization test expected title case in uppercase period tabs; corrected test only."
+    },
+    "language_rerun": {
+      "passed": 1,
+      "failed": 0,
+      "languages": [
+        "en",
+        "de",
+        "es",
+        "fr",
+        "pt-BR"
+      ],
+      "scope": "Email entry, guest navigation, weekly/all-time labels, rules and automatic player details; alternating light/dark; hidden Google and touch checks."
+    },
+    "screenshots_inspected": [
+      "de-rules dark",
+      "fr-detail dark",
+      "pt-BR-email light"
+    ],
+    "build": "Debug app and test targets succeeded after removing deferred editor upgrades.",
+    "result_bundles": [
+      "/tmp/juggledude-leaderboard-only-20261030.xcresult",
+      "/tmp/juggledude-leaderboard-languages-20261030.xcresult"
+    ]
+  }
+}

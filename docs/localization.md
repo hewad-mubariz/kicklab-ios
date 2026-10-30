@@ -56,3 +56,17 @@ identifiers, raw values that are stored or sent, and status codes out of localiz
 
 After adding strings, build in Xcode so the catalog picks them up, then translate the new
 entries in each language.
+
+## Leaderboard candidate — 30 October 2026
+
+The language work is integrated into `codex/post-launch-signin-leaderboard-ball-edges`.
+The two catalogs and `AppLanguage.swift` match the source manifest of uploaded
+1.0.4 (31). Leaderboard-specific view helpers and messages are localized as well.
+`LeaderboardLocalizationUITests` exercises Apple/email choices, email entry,
+weekly/all-time tabs, rules and automatic-score details in all five languages,
+alternating light and dark appearances. Google and postponed touch-check actions
+remain hidden. This test sends no sign-in email and writes no public score.
+
+The replay-editor upgrade is deferred to a later release. Its new Looks, Sound,
+My style and milestone controls are not included in this candidate; their text
+will need a separate translation pass when that work is brought back.
