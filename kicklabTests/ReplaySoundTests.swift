@@ -32,8 +32,9 @@ struct ReplaySoundTests {
         edit.swapSound = .chime
         edit.ballChanges = [1: .lava]
         let soundtrack = ReplaySoundtrack(edit: edit, touchTimes: [0.5, 1.0, 1.5])
-        #expect(soundtrack.events.map(\.time) == [0.5, 1.0, 1.0, 1.5])
-        #expect(soundtrack.events.filter { $0.sound == .swap(.chime) }.map(\.time) == [1.0])
+        #expect(soundtrack.events.map(\.time) == [0.5, 1.0, 1.5], "One cue per touch")
+        #expect(soundtrack.events.map(\.sound) == [.touch(.pop), .swap(.chime), .touch(.pop)],
+                "The change sound replaces the touch sound where the ball changes")
         let audio = soundtrack.render(duration: 2)
         #expect(audio.count == 88_200)
         func rms(_ from: Double, _ to: Double) -> Float {
@@ -42,12 +43,35 @@ struct ReplaySoundTests {
         }
         #expect(rms(0.1, 0.45) == 0, "Nothing plays before the first touch")
         #expect(rms(0.5, 0.56) > 0.1, "The touch cue starts on the touch")
-        #expect(rms(1.0, 1.08) > rms(0.5, 0.58), "Touch and change cues stack at the change")
+        #expect(rms(1.0, 1.08) > 0.03, "The change cue plays at the change")
         #expect(audio.allSatisfy { abs($0) <= 1 })
+        // A silenced change sound leaves the touch sound on that touch.
+        edit.swapSound = .none
+        #expect(ReplaySoundtrack(edit: edit, touchTimes: [0.5, 1.0, 1.5]).events.map(\.sound) == Array(repeating: .touch(.pop), count: 3))
         // Nothing to play without touches, or with every sound off.
         #expect(ReplaySoundtrack(edit: edit, touchTimes: []).isEmpty)
-        edit.touchSound = .none; edit.ballChanges = [:]
+        edit.touchSound = .none; edit.ballChanges = [:]; edit.swapSoundChoice = nil
         #expect(ReplaySoundtrack(edit: edit, touchTimes: [0.5, 1.0]).isEmpty, "A change sound needs a change")
+    }
+
+    @Test func eachChangeEffectHasItsOwnSoundUntilThePersonPicksOne() {
+        let paired = BallSwapEffect.allCases.filter { $0 != .none }.map(\.defaultSound)
+        #expect(Set(paired).count == paired.count, "Every effect sounds different")
+        #expect(!paired.contains(.none))
+        #expect(BallSwapEffect.none.defaultSound == .none)
+        #expect(BallSwapEffect.lightning.defaultSound == .thunder)
+        var edit = SessionEditState(style: .none, intensity: 0)
+        edit.ballChanges = [1: .volt]
+        #expect(edit.swapSoundChoice == nil && edit.swapSound == edit.swapEffect.defaultSound, "Auto by default")
+        edit.swapEffect = .lightning
+        #expect(edit.swapSound == .thunder, "Auto follows the effect")
+        edit.swapSound = .chime
+        edit.swapEffect = .smoke
+        #expect(edit.swapSound == .chime, "A picked sound overrides every effect")
+        edit.swapSoundChoice = nil
+        #expect(edit.swapSound == .whoosh, "Auto again follows Smoke")
+        let soundtrack = ReplaySoundtrack(edit: edit, touchTimes: [0.4, 0.9])
+        #expect(soundtrack.events.map(\.sound) == [.swap(.whoosh)])
     }
 
     @Test func eventsAfterThroughSelectsAHalfOpenRange() {

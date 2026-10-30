@@ -355,10 +355,17 @@ struct ReplayToolbox: View {
                 dialFooter.transition(entrance(1))
                 ballRow.transition(entrance(2))
                 VStack(alignment: .leading, spacing: 8) {
-                    caption("Change effect", symbol: "sparkle").padding(.horizontal, 16)
+                    HStack(spacing: 6) {
+                        caption("Change effect", symbol: "sparkle")
+                        Spacer(minLength: 8)
+                        changeSoundSummary
+                    }
+                    .padding(.horizontal, 16)
                     SwapMomentPicker(selection: edit.swapEffect, from: momentPair.from, to: momentPair.to) { effect in
                         withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { edit.swapEffect = effect }
-                        onPreviewMoment(momentTime)
+                        // The moment preview plays the change sound with the picture. Without a change on
+                        // the clip there is nothing to preview, so play the sound alone, once.
+                        if edit.hasBallChanges { onPreviewMoment(momentTime) } else { onPreviewSound(.swap(edit.swapSound)) }
                     }
                 }
                 .transition(entrance(3))
@@ -383,6 +390,26 @@ struct ReplayToolbox: View {
         guard !reduceMotion else { return .opacity }
         return .asymmetric(insertion: AnyTransition.sessionRise.animation(SessionMotion.pop.delay(Double(order) * SessionMotion.stagger)),
                            removal: .opacity.animation(.easeOut(duration: 0.12)))
+    }
+
+    /// The sound the change effect plays: its own, or the one picked on the Sound page.
+    private var changeSoundSummary: some View {
+        let sound = edit.swapSound, auto = edit.swapSoundChoice == nil
+        return HStack(spacing: 4) {
+            Image(systemName: sound == .none ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                .font(.system(size: 10, weight: .semibold))
+                .contentTransition(.symbolEffect(.replace))
+            Text(sound == .none ? "No sound" : sound.title)
+                .contentTransition(.interpolate)
+            if auto && sound != .none {
+                Text("auto").foregroundStyle(SessionStyle.mint)
+            }
+        }
+        .font(.system(size: 11, weight: .medium))
+        .foregroundStyle(.white.opacity(0.75))
+        .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: sound)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("ball-swap-sound-summary")
     }
 
     /// One row of balls for the touch under the lens.

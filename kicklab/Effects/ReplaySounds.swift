@@ -365,15 +365,17 @@ nonisolated struct ReplaySoundtrack: Hashable, Sendable {
         self.events = events.filter { $0.time.isFinite && $0.time >= 0 && !$0.sound.isSilent }.sorted { $0.time < $1.time }
     }
 
-    /// Touch cues on every touch; swap cues where the ball changes. `touchTimes` sorted.
+    /// Touch cues on every touch; where the ball changes, the change cue plays instead of the
+    /// touch cue, so a change is never two sounds at once. `touchTimes` sorted.
     init(edit: SessionEditState, touchTimes: [Double]) {
+        let swaps = edit.swapSound == .none ? [] : edit.ballSwaps(touchTimes: touchTimes)
+        let changed = Set(swaps.map(\.index))
         var events: [Event] = []
         if edit.touchSound != .none {
-            events += touchTimes.map { Event(time: $0, sound: .touch(edit.touchSound)) }
+            events += touchTimes.enumerated().filter { !changed.contains($0.offset) }
+                .map { Event(time: $0.element, sound: .touch(edit.touchSound)) }
         }
-        if edit.swapSound != .none {
-            events += edit.ballSwaps(touchTimes: touchTimes).map { Event(time: $0.time, sound: .swap(edit.swapSound)) }
-        }
+        events += swaps.map { Event(time: $0.time, sound: .swap(edit.swapSound)) }
         self.init(events: events)
     }
 

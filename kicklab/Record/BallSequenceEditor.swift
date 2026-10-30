@@ -513,13 +513,32 @@ struct ReplaySoundPage: View {
                 }
             }
             label("Ball change sound", symbol: "arrow.triangle.2.circlepath")
-            row(BallSwapSound.allCases, selection: edit.swapSound) { sound in
-                SoundTile(sound: .swap(sound), title: sound.title, selected: sound == edit.swapSound,
-                          identifier: "swap-sound-\(sound.rawValue)",
-                          accessibility: sound == .none ? "No ball change sound" : "\(sound.title) ball change sound") {
-                    withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { edit.swapSound = sound }
+            // Auto follows the change effect; any other tile overrides it until Auto is picked again.
+            row([nil] + BallSwapSound.allCases.map { Optional($0) }, selection: edit.swapSoundChoice) { choice in
+                let sound = choice ?? edit.swapEffect.defaultSound
+                SoundTile(sound: .swap(sound), title: choice?.title ?? "Auto", selected: choice == edit.swapSoundChoice,
+                          identifier: "swap-sound-\(choice?.rawValue ?? "auto")",
+                          accessibility: choice == nil ? "Auto ball change sound, \(sound.title), matches the change effect"
+                              : choice == BallSwapSound.none ? "No ball change sound" : "\(sound.title) ball change sound") {
+                    withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { edit.swapSoundChoice = choice }
                     onPreview(.swap(sound))
                 }
+                .overlay(alignment: .top) {
+                    // Auto names the sound it is playing, so the pairing is never a guess.
+                    if choice == nil, sound != .none {
+                        Text(sound.title)
+                            .font(.system(size: 8, weight: .bold)).foregroundStyle(SessionStyle.background)
+                            .padding(.horizontal, 5).padding(.vertical, 2)
+                            .background(SessionStyle.mint, in: .capsule)
+                            .offset(y: -5)
+                            .contentTransition(.interpolate)
+                            .accessibilityHidden(true)
+                    }
+                }
+            }
+            if edit.hasBallChanges && edit.swapSoundChoice == nil && edit.swapEffect != .none {
+                note("Auto plays \(edit.swapSound.title) with \(edit.swapEffect.title). Pick a sound to use your own.")
+                    .accessibilityIdentifier("sound-auto-note")
             }
             if !edit.hasBallChanges {
                 HStack(spacing: 8) {
@@ -535,6 +554,18 @@ struct ReplaySoundPage: View {
             }
         }
         .padding(.top, 2)
+    }
+
+    private func note(_ text: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "link").font(.system(size: 12)).foregroundStyle(SessionStyle.mint)
+            Text(text).font(.system(size: 11)).foregroundStyle(.white.opacity(0.7))
+                .contentTransition(.interpolate)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 16)
+        .transition(.sessionRise)
+        .accessibilityElement(children: .combine)
     }
 
     private var originalDetail: String {

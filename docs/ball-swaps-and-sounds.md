@@ -36,6 +36,13 @@ worked on, and reopening the page holds the clip on it.
   the switch by hand always wins. It applies to the replay and the saved video.
 - Touch sound and ball change sound tiles show each cue's real waveform; a tap plays the
   cue and sweeps a mint playhead across the waveform in the cue's own time.
+- Every change effect has its own sound: Pop→Flip, Flash→Shimmer, Burst→Drop,
+  Ripple→Warp, Sparkle→Sparkle, Shatter→Zap, Halo→Chime, Pixel→Glitch, Smoke→Whoosh,
+  Lightning→Thunder; None is silent. The change sound row starts on *Auto*, which follows
+  the effect and names its sound in a badge; picking any other tile overrides it until Auto
+  is picked again. The Ball page shows the sound beside *Change effect* ("Drop · auto").
+- A change touch plays one sound: the change sound replaces the touch sound there. With the
+  change sound set to None, that touch keeps its touch sound.
 
 During playback cues fire as the clip passes each touch; scrubbing stays silent. The first
 sound puts the editor in media playback, so cues are audible with the ring switch on.
@@ -76,7 +83,7 @@ Pro; placement and show/hide stay free.
 | --- | --- |
 | `ballChanges: [Int: BallSkin]` | sorted-touch position → the ball shown from that touch until the next change; `ballSkin` stays the base ball |
 | `swapEffect: BallSwapEffect` | the moment drawn at every change (`.pop` by default) |
-| `swapSound: BallSwapSound` | the cue at every change (`.whoosh` by default; silent without changes) |
+| `swapSoundChoice: BallSwapSound?` | a change cue the person picked; nil follows the effect (`swapSound` resolves the cue heard) |
 | `touchSound: TouchSound` | the cue on every touch (`.none` by default) |
 | `clipAudio: Bool` | keep the sound recorded with the video (`true` by default) |
 
