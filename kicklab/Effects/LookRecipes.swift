@@ -2,23 +2,30 @@ import Foundation
 
 /// One-tap ways to lay runs of looks across a clip, so nobody sets touches by hand.
 nonisolated enum LookRecipe: String, CaseIterable, Identifiable, Sendable {
-    case powerUp, finale, everyFive, remix
+    /// Every keeps its first name, so a saved My style still finds it.
+    case powerUp, finale, every = "everyFive", remix
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .powerUp: "Power-up"
         case .finale: "Finale"
-        case .everyFive: "Every 5"
+        case .every: "Every 5"
         case .remix: "Remix"
         }
+    }
+
+    /// The name on the chip, with Every's interval.
+    func title(step: Int) -> String {
+        guard self == .every else { return title }
+        return step == 1 ? "Every touch" : "Every \(step)"
     }
 
     var symbol: String {
         switch self {
         case .powerUp: "chart.line.uptrend.xyaxis"
         case .finale: "flag.checkered"
-        case .everyFive: "repeat"
+        case .every: "repeat"
         case .remix: "shuffle"
         }
     }
@@ -27,13 +34,21 @@ nonisolated enum LookRecipe: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .powerUp: "Levels up at 10, 25, 50 and 100 touches"
         case .finale: "Saves the big look for the last touches"
-        case .everyFive: "A new look every 5 touches"
+        case .every: "A new look every few touches; pick how many"
         case .remix: "A fresh mix; tap again to shuffle"
         }
     }
 }
 
 nonisolated enum LookRecipes {
+    /// The touch intervals Every offers, and the one it starts with.
+    static let steps = [1, 2, 3, 4, 5, 10]
+    static let defaultStep = 5
+
+    /// The longest Every interval that still changes the look twice on the clip, so it repeats:
+    /// a 10-touch clip goes up to every 4.
+    static func longestStep(touchCount n: Int) -> Int { max(1, (n - 1) / 2) }
+
     /// Each Power-up tier is louder than the one before.
     static let ladder: [TouchLook] = [
         TouchLook(ball: .volt, effect: .electric), TouchLook(ball: .lava, effect: .fire),
@@ -83,15 +98,16 @@ nonisolated enum LookRecipes {
         let moment: BallSwapEffect
     }
 
+    /// `step`: touches between Every's changes.
     static func make(_ recipe: LookRecipe, base: TouchLook, touchCount n: Int, seed: Int = 1,
-                     lightweight: Bool = false) -> Result {
+                     step: Int = defaultStep, lightweight: Bool = false) -> Result {
         let ladder = lightweight ? lightLadder : ladder
         let rotation = lightweight ? lightRotation : rotation
         let mix = lightweight ? lightMix : mix
         let moment: BallSwapEffect = switch recipe {
         case .powerUp: .burst
         case .finale: .lightning
-        case .everyFive: .pop
+        case .every: .pop
         case .remix: .sparkle
         }
         guard n >= 2 else { return Result(changes: [:], moment: moment) }
@@ -108,10 +124,11 @@ nonisolated enum LookRecipes {
         case .finale:
             let last = min(10, max(3, n / 5))
             changes[max(1, n - last)] = finale
-        case .everyFive:
-            let step = n >= 10 ? 5 : 2
+        case .every:
+            // The chosen interval, shortened when the clip is too short for it to repeat.
+            let every = min(max(1, step), longestStep(touchCount: n))
             let cycle = rotation + [base]
-            for (slot, index) in stride(from: step, to: n, by: step).enumerated() {
+            for (slot, index) in stride(from: every, to: n, by: every).enumerated() {
                 changes[index] = cycle[slot % cycle.count]
             }
         case .remix:

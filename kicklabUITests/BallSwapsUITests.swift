@@ -72,13 +72,13 @@ final class BallSwapsUITests: ProReplayUITestCase {
         XCTAssertEqual(look(app, 9), "original ball, Glow Trail")
         capture(app, "02 Power-up recipe")
 
-        // Split at touch 15 starts look 3 with the same look until it is changed.
+        // New look here at touch 15 starts look 3 with the same look until it is changed.
         select(app, touch: 15)
-        XCTAssertTrue(app.buttons["looks-split"].isEnabled)
-        app.buttons["looks-split"].tap()
+        XCTAssertTrue(app.buttons["looks-new"].isEnabled)
+        app.buttons["looks-new"].tap()
         XCTAssertTrue(summary.label.hasPrefix("Look 3 of 6"), summary.label)
         XCTAssertTrue(summary.label.contains("Touches 15 to 24"), summary.label)
-        XCTAssertFalse(app.buttons["looks-split"].isEnabled, "The lens is already on a run start")
+        XCTAssertTrue(app.buttons["looks-remove"].waitForExistence(timeout: 3), "On a look's first touch the button removes it")
         XCTAssertFalse(app.buttons["look-recipe-powerUp"].isSelected, "A manual edit makes it your own")
 
         // The pickers change the whole run, not one touch.
@@ -103,10 +103,46 @@ final class BallSwapsUITests: ProReplayUITestCase {
         XCTAssertTrue(app.descendants(matching: .any)["ball-swap-sound-summary"].label.contains("Thunder"))
         capture(app, "04 Change moment")
 
-        // Merge joins the run back into Volt and Electric.
-        app.buttons["looks-merge"].tap()
+        // Remove look hands its touches back to Volt and Electric.
+        app.buttons["looks-remove"].tap()
         XCTAssertEqual(look(app, 16), "Volt, Electric")
         XCTAssertTrue(summary.label.hasPrefix("Look 2 of 5"), summary.label)
+        XCTAssertTrue(app.buttons["looks-new"].waitForExistence(timeout: 3))
+
+        // Every opens a menu of intervals: every 3 changes on touches 4, 7, 10…
+        let every = app.buttons["look-recipe-everyFive"]
+        every.tap()
+        XCTAssertTrue(app.buttons["Every 3 touches"].waitForExistence(timeout: 3), "Every opens its menu")
+        capture(app, "04b Every menu")
+        app.buttons["Every 3 touches"].tap()
+        XCTAssertTrue(every.waitForSelection())
+        XCTAssertTrue(every.label.contains("Every 3"), every.label)
+        XCTAssertTrue(app.buttons["ball-touch-4"].waitForSelection())
+        XCTAssertEqual(look(app, 3), "original ball, Glow Trail")
+        XCTAssertEqual(look(app, 4), "Volt, Neon")
+        XCTAssertEqual(look(app, 7), "Arctic Ice, Ice")
+
+        // Custom… takes any number: every 7 changes on touch 8.
+        every.tap()
+        XCTAssertTrue(app.buttons["Custom…"].waitForExistence(timeout: 3))
+        app.buttons["Custom…"].tap()
+        let field = app.alerts.textFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 3), "Custom asks for a number")
+        XCTAssertFalse(app.alerts.buttons["Apply"].isEnabled, "Nothing typed yet")
+        field.typeText("99")
+        XCTAssertFalse(app.alerts.buttons["Apply"].isEnabled, "Longer than the clip can repeat")
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 2) + "7")
+        let enabled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isEnabled == true"), object: app.alerts.buttons["Apply"])
+        XCTAssertEqual(XCTWaiter.wait(for: [enabled], timeout: 3), .completed, "A number that fits turns Apply on")
+        capture(app, "04c Every custom")
+        app.alerts.buttons["Apply"].tap()
+        // The box and keyboard close before the dial glides to the first change.
+        XCTAssertTrue(app.buttons["ball-touch-8"].waitForSelection(timeout: 8))
+        XCTAssertTrue(every.label.contains("Every 7"), every.label)
+        XCTAssertEqual(look(app, 7), "original ball, Glow Trail")
+        XCTAssertEqual(look(app, 8), "Volt, Neon")
+        capture(app, "04d Every 7")
+        capture(app, "04d Every 7")
 
         // Remix lays a different mix; Clear brings back one look.
         app.buttons["look-recipe-remix"].tap()

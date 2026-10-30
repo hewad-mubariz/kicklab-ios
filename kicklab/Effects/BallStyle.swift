@@ -168,9 +168,11 @@ nonisolated struct SessionEditState: Hashable, Sendable {
     /// Runs of looks: sorted-touch position where a run starts, to the ball and effect shown from
     /// that touch until the next run. The first run is `ballSkin` and `style`; empty keeps one look.
     var lookChanges: [Int: TouchLook] = [:]
-    /// The recipe the runs came from, until a run is edited by hand; with its seed, for Remix.
+    /// The recipe the runs came from, until a run is edited by hand; with its seed, for Remix,
+    /// and its interval, for Every.
     var recipe: LookRecipe? = nil
     var recipeSeed = 1
+    var recipeStep = LookRecipes.defaultStep
     /// Drawn on the ball at every change, and the sound that plays with it.
     var swapEffect: BallSwapEffect = .pop
     /// A change sound the person picked; nil plays the change effect's own sound.

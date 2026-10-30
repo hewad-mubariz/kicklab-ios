@@ -11,6 +11,8 @@ nonisolated struct MyStyle: Codable, Equatable, Sendable {
     var intensity: Double
     var recipe: String?
     var recipeSeed: Int
+    /// Every's interval; nil for the other recipes and for styles saved before it could change.
+    var recipeStep: Int?
     var swapEffect: String
     var swapSound: String?
     var touchSound: String
@@ -23,6 +25,7 @@ nonisolated struct MyStyle: Codable, Equatable, Sendable {
         // Custom runs belong to one clip's touches; only a recipe carries over.
         recipe = edit.hasLookChanges ? edit.recipe?.rawValue : nil
         recipeSeed = recipe == nil ? 1 : edit.recipeSeed
+        recipeStep = recipe == LookRecipe.every.rawValue ? edit.recipeStep : nil
         swapEffect = edit.swapEffect.rawValue
         swapSound = edit.swapSoundChoice?.rawValue
         touchSound = edit.touchSound.rawValue
@@ -37,11 +40,13 @@ nonisolated struct MyStyle: Codable, Equatable, Sendable {
         edit.swapSoundChoice = swapSound.flatMap(BallSwapSound.init(rawValue:))
         edit.clipAudio = clipAudio
         if let recipe = recipe.flatMap(LookRecipe.init(rawValue:)) {
+            let step = recipeStep ?? LookRecipes.defaultStep
             let result = LookRecipes.make(recipe, base: edit.baseLook, touchCount: touchCount, seed: recipeSeed,
-                                          lightweight: lightweight)
+                                          step: step, lightweight: lightweight)
             edit.lookChanges = result.changes
             edit.recipe = recipe
             edit.recipeSeed = recipeSeed
+            edit.recipeStep = step
         }
         edit.swapEffect = BallSwapEffect(rawValue: swapEffect) ?? .pop
         return edit

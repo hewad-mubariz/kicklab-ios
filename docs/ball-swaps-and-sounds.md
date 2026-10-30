@@ -17,16 +17,24 @@ with looks on, those pages say so and link to Looks. The Looks page has:
 - **Recipes**, one tap each: *Power-up* levels up on the 10th, 25th, 50th and 100th touch
   (Volt + Electric, Lava + Fire, Gold + Galaxy, Chrome + Rainbow), or at quarters on short
   clips, with Burst; *Finale* keeps the clip's look until the last few touches, then Gold +
-  Fire with Lightning; *Every 5* rotates three looks and the clip's own every 5 touches,
-  with Pop; *Remix* lays a seeded random mix with Sparkle, and tapping it again shuffles.
-  *Clear* returns to one look.
+  Fire with Lightning; *Every* rotates three looks and the clip's own, with Pop; *Remix*
+  lays a seeded random mix with Sparkle, and tapping it again shuffles. *Clear* returns to
+  one look.
+- **Every's interval**: the chip opens a native menu (every touch, 2, 3, 4, 5, 10 touches,
+  and *Custom…*, a number box). Only intervals that repeat at least twice on the clip are
+  offered, so a 10-touch clip goes up to every 4; Custom states the clip's range and keeps
+  Apply off until the number fits. My style keeps the interval; on a session too short for
+  it, Every uses the longest that fits and the chip shows that number. The chip reads
+  "Every 7" with a down arrow.
 - the **touch dial**: every touch snaps under the lens with a haptic tick and holds the clip
   just after that touch. Each touch shows its ball with a badge for its effect; the bar
   under them is the runs, in each look's effect colour, with a white dot where a run starts.
   The run under the lens is lit, because edits apply to all of it. Changes ripple outward
   from the lens.
-- the **run line**: "Look 3 of 6 · Touches 15 to 24 · Pearl + Ice", with *Split* (start a
-  new run at the lens, same look until changed) and *Merge* (join the run to the one before).
+- the **run line**: "Look 3 of 6 · Touches 15 to 24 · Pearl + Ice", with one button that
+  says what it does at the lens: *New look here* starts a look at that touch (the same look
+  until changed; the pickers switch to Ball), and on the first touch of a look it becomes
+  *Remove look*, handing those touches back to the look before.
 - three chips, *Ball*, *Effect* and *Change*, switching one picker row: the balls with the
   pick flight, the effects drawn on the run's ball, and the change-moment tiles with the
   change sound beside them.
@@ -229,8 +237,9 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
   a second; settings migration; Pro rules; placement shape; export placement.
 - `TimerStickerUITests`: every look selectable, tap to select, drag, pinch, reset, style pill,
   done and remove.
-- `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): Power-up, split, a run's
-  ball and effect, change moment, merge, remix, clear, the Ball page's link to Looks, the
+- `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): Power-up, New look here, a
+  run's ball and effect, change moment, Remove look, Every's menu (every 3) and Custom (99
+  refused, 7 applied), remix, clear, the Ball page's link to Looks, the
   Auto change sound and its override, original-sound muting, the Milestones switch and
   fanfare, the row following the counter (Comic, Gold Coin) and its preview, and My style
   save and stop from the saved-replay panel.

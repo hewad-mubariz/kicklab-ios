@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// Runs of looks across the clip's touches. A recipe lays them out in one tap; the dial picks a
-/// run, Split starts a new run at the lens and Merge joins it to the run before; the pickers
-/// change a whole run at once, so nobody edits touches one by one.
+/// run, New look starts one at the lens and Remove look hands its touches back to the look
+/// before; the pickers change a whole run at once, so nobody edits touches one by one.
 struct LooksPage: View {
     @Binding var edit: SessionEditState
     let touchTimes: [Double]
@@ -21,6 +21,9 @@ struct LooksPage: View {
     @State private var pendingRun: Range<Int>?
     @State private var applyBall: Task<Void, Never>?
     @State private var cuts = 0
+    /// Every's Custom… box: open, and the number being typed.
+    @State private var showsCustomStep = false
+    @State private var customStep = ""
 
     enum LookPart: String, CaseIterable, Identifiable {
         case ball = "Ball", effect = "Effect", change = "Change"
@@ -51,6 +54,8 @@ struct LooksPage: View {
     private var runStarts: [Int] { edit.runStarts.filter { $0 < touchTimes.count } }
     private var runNumber: Int { (runStarts.firstIndex(of: run.lowerBound) ?? 0) + 1 }
     private var canSplit: Bool { selectedTouch > run.lowerBound }
+    /// The lens is on the touch where a look of its own begins, so that look can be removed.
+    private var onLookStart: Bool { selectedTouch > 0 && selectedTouch == run.lowerBound }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 11) {
@@ -75,6 +80,14 @@ struct LooksPage: View {
         .sensoryFeedback(.impact(weight: .medium), trigger: cuts)
         .sensoryFeedback(.impact(flexibility: .rigid, intensity: 0.7), trigger: pendingBall)
         .sensoryFeedback(.selection, trigger: part)
+        .alert("New look every…", isPresented: $showsCustomStep) {
+            TextField("Touches", text: $customStep).keyboardType(.numberPad)
+            Button("Cancel", role: .cancel) {}
+            Button("Apply") { if let step = typedStep { applyEvery(step) } }
+                .disabled(typedStep == nil)
+        } message: {
+            Text("This clip has \(touchTimes.count) touches, so each look can last 1 to \(longestStep).")
+        }
     }
 
     private var partSwap: AnyTransition {
@@ -111,27 +124,82 @@ struct LooksPage: View {
         .scrollClipDisabled()
     }
 
+    @ViewBuilder
     private func recipeChip(_ item: LookRecipe) -> some View {
         let on = edit.recipe == item && edit.hasLookChanges
-        return Button { apply(item) } label: {
-            HStack(spacing: 6) {
-                Image(systemName: item.symbol)
-                    .font(.system(size: 12, weight: .semibold))
-                    .symbolEffect(.bounce, value: recipeKicks[item, default: 0])
-                Text(item.title).font(.system(size: 12, weight: .semibold))
+        Group {
+            if item == .every {
+                // Every asks how often first, in a plain menu; Custom… takes any number.
+                Menu {
+                    Picker("Every", selection: everyStep) {
+                        ForEach(stepChoices, id: \.self) { step in
+                            Text(step == 1 ? "Every touch" : "Every \(step) touches").tag(Optional(step))
+                        }
+                    }
+                    .pickerStyle(.inline)
+                    Button("Custom…", systemImage: "number") {
+                        customStep = ""
+                        showsCustomStep = true
+                    }
+                } label: {
+                    recipeLabel(item, on: on, menu: true)
+                }
+                .menuStyle(.button)
+            } else {
+                Button { apply(item) } label: { recipeLabel(item, on: on, menu: false) }
             }
-            .foregroundStyle(on ? SessionStyle.background : .white)
-            .padding(.horizontal, 12).frame(height: 34)
-            .background(on ? AnyShapeStyle(SessionStyle.mint) : AnyShapeStyle(.white.opacity(0.08)), in: .capsule)
-            .overlay { Capsule().strokeBorder(.white.opacity(on ? 0 : 0.1), lineWidth: 0.75) }
-            .shadow(color: on ? SessionStyle.mint.opacity(0.45) : .clear, radius: 8)
         }
         .buttonStyle(SessionPressStyle(scale: 0.92))
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: on)
-        .accessibilityLabel(item.title)
+        .accessibilityLabel(item.title(step: shownStep))
         .accessibilityHint(item.caption)
         .accessibilityIdentifier("look-recipe-\(item.rawValue)")
         .accessibilityAddTraits(on ? .isSelected : [])
+    }
+
+    private func recipeLabel(_ item: LookRecipe, on: Bool, menu: Bool) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: item.symbol)
+                .font(.system(size: 12, weight: .semibold))
+                .symbolEffect(.bounce, value: recipeKicks[item, default: 0])
+            Text(item.title(step: shownStep)).font(.system(size: 12, weight: .semibold))
+                .contentTransition(.numericText(value: Double(shownStep)))
+            if menu {
+                Image(systemName: "chevron.down").font(.system(size: 9, weight: .bold)).opacity(0.7)
+            }
+        }
+        .foregroundStyle(on ? SessionStyle.background : .white)
+        .padding(.horizontal, 12).frame(height: 34)
+        .background(on ? AnyShapeStyle(SessionStyle.mint) : AnyShapeStyle(.white.opacity(0.08)), in: .capsule)
+        .overlay { Capsule().strokeBorder(.white.opacity(on ? 0 : 0.1), lineWidth: 0.75) }
+        .shadow(color: on ? SessionStyle.mint.opacity(0.45) : .clear, radius: 8)
+    }
+
+    /// The menu's tick: Every's interval while Every is laid out, else none, so any pick applies it.
+    private var everyStep: Binding<Int?> {
+        Binding(get: { edit.recipe == .every && edit.hasLookChanges ? shownStep : nil },
+                set: { if let step = $0 { applyEvery(step) } })
+    }
+
+    /// The presets that still change the look on this clip, plus a custom interval in use.
+    private var stepChoices: [Int] {
+        var steps = LookRecipes.steps.filter { $0 <= longestStep }
+        if edit.recipe == .every, !steps.contains(shownStep) { steps.append(shownStep) }
+        return steps.sorted()
+    }
+
+    /// The longest interval that still repeats on this clip; longer ones are never offered.
+    private var longestStep: Int { LookRecipes.longestStep(touchCount: touchTimes.count) }
+    /// The interval Every lays on this clip: a saved style's may be too long for a short one.
+    private var shownStep: Int { min(edit.recipeStep, longestStep) }
+    /// The Custom… number, when it is one this clip can use.
+    private var typedStep: Int? {
+        Int(customStep.trimmingCharacters(in: .whitespaces)).flatMap { (1...longestStep).contains($0) ? $0 : nil }
+    }
+
+    private func applyEvery(_ step: Int) {
+        edit.recipeStep = step
+        apply(.every)
     }
 
     /// Lays the recipe's runs across the clip, then plays its first change on the clip.
@@ -141,7 +209,7 @@ struct LooksPage: View {
         // Remix again rolls a new mix; every other recipe gives the same runs each time.
         if item == .remix && edit.recipe == .remix && edit.hasLookChanges { edit.recipeSeed += 1 }
         let result = LookRecipes.make(item, base: edit.baseLook, touchCount: touchTimes.count, seed: edit.recipeSeed,
-                                      lightweight: LookRecipes.prefersLightEffects)
+                                      step: edit.recipeStep, lightweight: LookRecipes.prefersLightEffects)
         withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
             edit.lookChanges = result.changes
             edit.swapEffect = result.moment
@@ -173,20 +241,19 @@ struct LooksPage: View {
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("looks-summary")
             Spacer(minLength: 6)
-            Button(action: split) {
-                Label("Split", systemImage: "scissors").font(.system(size: 12, weight: .semibold))
+            // One button that says what it does at the lens: start a look here, or remove the one starting here.
+            Button(action: onLookStart ? merge : split) {
+                Label(onLookStart ? "Remove look" : "New look here",
+                      systemImage: onLookStart ? "minus.circle" : "plus.circle")
+                    .font(.system(size: 12, weight: .semibold))
+                    .contentTransition(.interpolate)
             }
             .buttonStyle(.glass).controlSize(.small)
-            .disabled(!canSplit)
-            .accessibilityHint("Starts a new look at this touch")
-            .accessibilityIdentifier("looks-split")
-            Button(action: merge) {
-                Label("Merge", systemImage: "arrow.triangle.merge").font(.system(size: 12, weight: .semibold))
-            }
-            .buttonStyle(.glass).controlSize(.small)
-            .disabled(run.lowerBound == 0)
-            .accessibilityHint("Joins this look to the one before")
-            .accessibilityIdentifier("looks-merge")
+            .disabled(!onLookStart && !canSplit)
+            .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: onLookStart)
+            .accessibilityHint(onLookStart ? "Touch \(selectedTouch + 1) and the touches after it go back to the look before"
+                                           : "Gives touch \(selectedTouch + 1) and the touches after it a look of their own")
+            .accessibilityIdentifier(onLookStart ? "looks-remove" : "looks-new")
         }
         .padding(.horizontal, 16)
     }
@@ -209,6 +276,8 @@ struct LooksPage: View {
         withAnimation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion)) {
             edit.lookChanges[selectedTouch] = edit.look(forTouch: selectedTouch)
             edit.recipe = nil
+            // The change moment belongs to every look; a new look is given its ball next.
+            if part == .change { part = .ball }
         }
         cuts += 1
     }
