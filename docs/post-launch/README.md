@@ -283,6 +283,20 @@ or treated as an on-device football solution.
   Next device gate: cold/warm preparation and replay/export on retained in-app
   footage, with peak memory and thermal sampling, followed by a fresh recording.
   This investigation did not operate a phone, change a build number or upload.
+- **30 October iPhone 11 follow-up:** [device report](../../benchmarks/rf-ball-replacement/20261030-iphone11/report.json).
+  The committed `f3f933f` build completed the retained 25.99-second in-app clip
+  on iPhone 11 Pro Max / iOS 27.2: masks 193.68 seconds, source spin 13.98 seconds,
+  export 39.88 seconds. The model ran on CPU, consistent with the compatibility
+  fallback recorded on 18 October; the accelerated-load error itself was not
+  captured in this run. Thermal state reached serious during dense detection,
+  before source spin. The larger sampled peak was 108.81 MiB; this isolated test
+  did not reproduce the earlier 600 MB warm-editor report. Reopening in a new
+  process took 0.403 seconds for cached preparation with identical masks/poses.
+  Export preserved all 1,556 source timestamps and the saved 20-touch markers.
+  This is not fresh-camera accuracy validation or an old/new spin timing A/B.
+  Next priority is the CPU compatibility path and repeated dense model work;
+  edge compositing still needs its separate quality fix. The iPhone 17 was not
+  operated, and no App Store upload was made.
 - **Completion checks:** fresh indoor/outdoor and fast/occluded recordings, preview
   versus exported placement, multiple skins, unchanged touch events, and measured
   preparation/export time, memory and thermal behavior on older/newer phones.

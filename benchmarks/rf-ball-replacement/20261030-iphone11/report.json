@@ -1,0 +1,356 @@
+{
+  "date": "2026-10-30",
+  "status": "Completed physical iPhone 11 performance/caching/export check; replacement not release-qualified.",
+  "tested_revision": "f3f933f04ef463a98a946775f66238539c5a9e7b",
+  "isolation": "Built the committed snapshot in a managed worktree; shared subscription edits were not included. All device commands targeted only iPhone 11; no iPhone 17 operation.",
+  "device": {
+    "model": "iPhone 11 Pro Max",
+    "hardware": "iPhone12,5",
+    "os": "27.2",
+    "os_build": "24B119",
+    "connection": "USB; ambient temperature and charging power not measured"
+  },
+  "app": {
+    "bundle": "com.juggledude",
+    "version": "1.0.1",
+    "build": "27",
+    "configuration": "Debug with existing device -O setting",
+    "model_package_check": "Manifest-pinned shared RF package verified",
+    "selected_function": "rf288 (fixed hardware policy)",
+    "observed_model_backend": "CPU-only; cpu_only=0, model_cpu_only=1, switches=0. Consistent with the existing compatibility fallback documented on 18 October; exact accelerated-load error not captured in this run.",
+    "build_upload": false,
+    "installed_on_iphone11": true
+  },
+  "input": {
+    "path": "artifacts/ball-preparation-iphone11-20261030/input/source.mov",
+    "sha256": "71798aa336639d599aed14c3b9f0c6ddd2e0a2b7dfb073cfe157068f2dda5155",
+    "capture_path": "artifacts/ball-preparation-iphone11-20261030/input/capture.plist",
+    "capture_sha256": "de006843e81343b8395f9d5fa6248676c7adfff352a727c18dfeb3a2e71adfa5",
+    "capture_source_digest_matches": true,
+    "source_seconds": 25.993333333333332,
+    "source_frames": 1556,
+    "size": [
+      720,
+      1280
+    ],
+    "cadence": "60 fps with original source gaps",
+    "saved_live_count": 20,
+    "origin": "Retained in-app recording made earlier on iPhone 17; not a fresh iPhone 11 camera capture."
+  },
+  "cold": {
+    "scope": "Fresh preparation in newly installed binary, starting nominal after a 10-second nominal gate; Stealth material, no added trail, 720p export. Inference metrics confirm cache_hit=0.",
+    "preparation": {
+      "cooling_s": 10.144322083331645,
+      "live_count": 20,
+      "markers_preserved": true,
+      "mask_bytes": 17556847,
+      "prepared_count": 20,
+      "source_duration": 25.993333333333332,
+      "spin_accepted": 992,
+      "spin_frames": 1556,
+      "spin_s": 13.981374916664208,
+      "thermal": 2,
+      "thermal_start": 0,
+      "total_s": 207.66604095832736,
+      "visual_batch_requested": false,
+      "visual_frames": 1242,
+      "visual_preparation_s": 193.68466604166315
+    },
+    "visual_analysis": {
+      "all_mask_storage_bytes": 17532824,
+      "async_batch_requested": 0,
+      "background_gpu": 0,
+      "baseline_app_mib": 11.079765319824219,
+      "batch_fallbacks": 0,
+      "batch_requested": 0,
+      "batched_frames": 0,
+      "cache_hit": 0,
+      "contact_buffer_s": 0.0007316249975701794,
+      "contact_check_ms": 0,
+      "contact_checks": 0,
+      "contact_error": 0,
+      "contact_peak_frames": 0,
+      "contact_rejections": 0,
+      "contact_warmup_ms": 0,
+      "counter_s": 0.0750736667541787,
+      "cpu_only": 0,
+      "crop_calls": 0,
+      "decode_wait_s": 0.7297049583139597,
+      "detection_errors": 0,
+      "detector_median_ms": 71.9331250002142,
+      "detector_p95_ms": 78.20854167221114,
+      "detector_s": 111.8809990001173,
+      "elapsed_s": 151.30340366666496,
+      "foot_check_s": 0,
+      "foot_checks": 0,
+      "foot_recoveries": 0,
+      "hand_pose_requests": 0,
+      "inference_median_ms": 66.01370833232068,
+      "inference_p95_ms": 71.47020833508577,
+      "inference_s": 103.65798795846058,
+      "load_ms": 2926.749958336586,
+      "mask_frames": 1227,
+      "mask_storage_bytes": 17532824,
+      "model_calls": 1556,
+      "model_cpu_only": 1,
+      "model_reload_s": 0,
+      "model_switches": 0,
+      "motion_compensation_s": 5.266690166667104,
+      "peak_sampled_app_mib": 37.29862976074219,
+      "pose_cache_hits": 0,
+      "pose_requests": 0,
+      "preprocess_s": 4.408537750394316,
+      "progress_publish_s": 0.009714875050121918,
+      "thermal_peak_state": 2,
+      "thermal_policy_version": 2,
+      "thermal_sleep_events": 400,
+      "thermal_wait_s": 29.944695874975878,
+      "visual_only": 1,
+      "visual_recovered_frames": 0,
+      "visual_recovery_calls": 0,
+      "visual_recovery_errors": 0,
+      "visual_recovery_s": 0
+    },
+    "spin_stage_timing": {
+      "decodedFrames": 1556,
+      "rotationPairs": 1219,
+      "fittedFrames": 1228,
+      "enabled": true,
+      "acceptedPairs": 992,
+      "totalSeconds": 13.949246041665901,
+      "stages": {
+        "outline": {
+          "seconds": 5.0161256664432585,
+          "calls": 1252
+        },
+        "exposure": {
+          "seconds": 0.09962366662512068,
+          "calls": 245
+        },
+        "scheduling": {
+          "seconds": 0.052241582903661765,
+          "calls": 1557
+        },
+        "lighting": {
+          "seconds": 0.02838691665965598,
+          "calls": 1228
+        },
+        "guide": {
+          "seconds": 0.0008023334085009992,
+          "calls": 1556
+        },
+        "patch": {
+          "seconds": 0.2421056664752541,
+          "calls": 1230
+        },
+        "setup": {
+          "seconds": 0.020538666663924232,
+          "calls": 1
+        },
+        "pyramid": {
+          "seconds": 0.3997447500296403,
+          "calls": 1228
+        },
+        "rotation": {
+          "seconds": 7.314770000171848,
+          "calls": 1219
+        },
+        "decoding": {
+          "seconds": 0.7435598333104281,
+          "calls": 1557
+        }
+      }
+    },
+    "export": {
+      "after_export_app_mib": 73.79869842529297,
+      "baseline_app_mib": 68.26742553710938,
+      "device": "iPhone",
+      "elapsed_s": 39.878642082214355,
+      "mask_frames": 1242,
+      "model": "",
+      "peak_sampled_app_mib": 108.81432342529297,
+      "photographic_exposure_ms": 16.666666666666668,
+      "scope": "Whole app; native decode/render/encode plus visible editor, 50ms samples; optimized Debug",
+      "surface_motion_accepted": 992,
+      "surface_motion_frames": 1556,
+      "surface_motion_original_compute_s": 13.949246041665901,
+      "surface_motion_post_export_lookup_s": 0.019134791669785045,
+      "thermal": 2,
+      "uses_source_rotation": true
+    },
+    "memory": {
+      "sample_interval_ms": 100,
+      "peak_app_mib": 106.48619842529297,
+      "peak_metal_mib": 35.140625,
+      "final_app_mib": 73.82994842529297,
+      "final_thermal_state": 2,
+      "phase_transitions": [
+        {
+          "seconds_from_probe_start": 0.0012896249972982332,
+          "phase": "baseline"
+        },
+        {
+          "seconds_from_probe_start": 10.304524583334569,
+          "phase": "dense_detection"
+        },
+        {
+          "seconds_from_probe_start": 10.368699583326816,
+          "phase": "dense_model_loading"
+        },
+        {
+          "seconds_from_probe_start": 13.295336416660575,
+          "phase": "dense_inference"
+        },
+        {
+          "seconds_from_probe_start": 162.05891541666642,
+          "phase": "gap_repair"
+        },
+        {
+          "seconds_from_probe_start": 164.74593274999643,
+          "phase": "crop_repair"
+        },
+        {
+          "seconds_from_probe_start": 203.9369052083348,
+          "phase": "source_spin"
+        },
+        {
+          "seconds_from_probe_start": 217.91827712500526,
+          "phase": "prepared"
+        },
+        {
+          "seconds_from_probe_start": 218.03679699999338,
+          "phase": "replay"
+        },
+        {
+          "seconds_from_probe_start": 223.1258160416619,
+          "phase": "export"
+        },
+        {
+          "seconds_from_probe_start": 263.04186545833363,
+          "phase": "finished"
+        }
+      ],
+      "thermal_transitions": [
+        {
+          "seconds_from_probe_start": 0.0012896249972982332,
+          "state": 0
+        },
+        {
+          "seconds_from_probe_start": 94.25223841666593,
+          "state": 1
+        },
+        {
+          "seconds_from_probe_start": 109.20536062499741,
+          "state": 2
+        }
+      ]
+    },
+    "prepare_plus_export_seconds": 247.5446830405417
+  },
+  "warm": {
+    "scope": "New app process reopens identical source/capture; no second export. Starts serious from earlier work; validates caching, not a controlled cool-device speed comparison.",
+    "preparation": {
+      "cooling_s": 2.833330654539168e-06,
+      "live_count": 20,
+      "markers_preserved": true,
+      "mask_bytes": 17556847,
+      "prepared_count": 20,
+      "source_duration": 25.993333333333332,
+      "spin_accepted": 992,
+      "spin_frames": 1556,
+      "spin_s": 0.026020000004791655,
+      "thermal": 2,
+      "thermal_start": 2,
+      "total_s": 0.4029818333365256,
+      "visual_batch_requested": false,
+      "visual_frames": 1242,
+      "visual_preparation_s": 0.37696183333173394
+    },
+    "memory": {
+      "sample_interval_ms": 100,
+      "peak_app_mib": 74.1423568725586,
+      "peak_metal_mib": 41.5625,
+      "final_app_mib": 69.0954818725586,
+      "final_thermal_state": 0,
+      "phase_transitions": [
+        {
+          "seconds_from_probe_start": 0.001274791662581265,
+          "phase": "baseline"
+        },
+        {
+          "seconds_from_probe_start": 0.48781929166580085,
+          "phase": "source_spin"
+        },
+        {
+          "seconds_from_probe_start": 0.5138394583336776,
+          "phase": "prepared"
+        },
+        {
+          "seconds_from_probe_start": 0.6434270833415212,
+          "phase": "replay"
+        },
+        {
+          "seconds_from_probe_start": 5.674979583331151,
+          "phase": "finished"
+        }
+      ],
+      "thermal_transitions": [
+        {
+          "seconds_from_probe_start": 0.001274791662581265,
+          "state": 2
+        },
+        {
+          "seconds_from_probe_start": 0.7450731249991804,
+          "state": 1
+        },
+        {
+          "seconds_from_probe_start": 5.674979583331151,
+          "state": 0
+        }
+      ]
+    },
+    "masks_identical_to_cold": true,
+    "poses_identical_to_cold": true,
+    "latest_request_origin": "memory_cache",
+    "latest_request_note": "UI can issue another prepare call after the capture-review lookup. The final request file is a memory hit; the fresh-process capture report took 0.403 seconds total."
+  },
+  "export_validation": {
+    "frames": 1556,
+    "source_timestamps_identical": true,
+    "max_timestamp_delta_seconds": 0,
+    "size": [
+      720,
+      1280
+    ],
+    "duration_seconds": 25.993333333333332,
+    "saved_count_and_markers_preserved": true,
+    "video_path": "artifacts/ball-preparation-iphone11-20261030/cold/none.mp4",
+    "spot_checked_source_indices": [
+      477,
+      1077,
+      1316
+    ],
+    "spot_checked_source_times": [
+      8.003333,
+      18.006667,
+      21.991667
+    ],
+    "visual_notes": "Replacement present and broadly aligned in three inspected frames. Blur/edge rendering remains approximate; these spot checks do not qualify all contacts, occlusions, skins or live capture."
+  },
+  "conclusions": [
+    "Full-video mask preparation dominates this run: 193.685 seconds versus 13.981 seconds for source spin.",
+    "The model made 1556 full-frame calls on CPU; median model inference 66.014 ms. Thermal pacing added 29.945 seconds to the 151.303-second dense pass; subsequent repairs account for most remaining visual preparation.",
+    "Reported thermal state became fair at 94.252 seconds and serious at 109.205 seconds from probe start, during dense inference and well before source-spin preparation.",
+    "The larger sampled memory peak is 108.814 MiB (50ms export sampler); the 100ms overall sampler saw 106.486 MiB. The old 600 MB report was not reproduced by this controlled workflow.",
+    "Cached reopening is working: 0.403 seconds for preparation with identical masks/poses; saved count remains 20.",
+    "No on-device old/new spin A/B was run; this establishes current cost and correctness, not an iPhone speedup attributable to pyramid reuse."
+  ],
+  "next": [
+    "Investigate the iPhone 11 accelerated-model compatibility failure and export options before assuming CPU-only cost is unavoidable. Do not remove working fallback without a validated replacement.",
+    "Design a reduction in repeated full-video model calls with current-frame silhouette/occlusion validation; retain full source timestamps and unchanged counter inputs.",
+    "Keep original-ball fringe removal as its own visual-quality task.",
+    "Repeat normal warm-editor/onboarding/effects navigation to reproduce the earlier 600 MB peak; one isolated run does not prove that issue fixed."
+  ],
+  "finish": "Returned Juggle Dude to normal launch on iPhone 11 after both runs; no additional heavy pass left running.",
+  "raw_evidence_root": "artifacts/ball-preparation-iphone11-20261030"
+}
