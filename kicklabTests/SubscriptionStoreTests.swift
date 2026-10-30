@@ -81,6 +81,7 @@ final class SubscriptionStoreTests: XCTestCase {
     func testOfferCodeResultActivatesWithoutWaitingForTransactionListener() async throws {
         let redeeming = SubscriptionStore(observeTransactions: false)
         _ = try await session.buyProduct(identifier: ProPlan.monthly.productID)
+        try await waitForStoreKitHistory(.monthly)
         let latest = await Transaction.latest(for: ProPlan.monthly.productID)
         try await redeeming.receiveOfferCode(XCTUnwrap(latest))
         XCTAssertTrue(redeeming.isPro)
@@ -91,6 +92,7 @@ final class SubscriptionStoreTests: XCTestCase {
     func testUnverifiedOfferCodeResultCannotActivatePro() async throws {
         let redeeming = SubscriptionStore(observeTransactions: false)
         _ = try await session.buyProduct(identifier: ProPlan.monthly.productID)
+        try await waitForStoreKitHistory(.monthly)
         guard case .verified(let transaction) = await Transaction.latest(for: ProPlan.monthly.productID) else {
             return XCTFail("Expected a local StoreKit transaction")
         }
@@ -189,7 +191,9 @@ final class SubscriptionStoreTests: XCTestCase {
 
     func testExpirationRemovesAccessOnForegroundRefresh() async throws {
         _ = try await store.purchase(.monthly, accountID: nil)
+        try await waitForStoreKitHistory(.monthly)
         try session.expireSubscription(productIdentifier: ProPlan.monthly.productID)
+        try await waitForStoreKitExpiration(.monthly)
         await store.refreshEntitlements()
         XCTAssertFalse(store.isPro)
     }
@@ -268,6 +272,25 @@ final class SubscriptionStoreTests: XCTestCase {
             try await Task.sleep(for: .milliseconds(50))
         }
         XCTFail("StoreKit did not publish the verified subscription in its history")
+    }
+
+    /// Expiring the test subscription also publishes asynchronously. Wait for the
+    /// fixture before testing what a foreground entitlement refresh does with it.
+    private func waitForStoreKitExpiration(_ plan: ProPlan) async throws {
+        let deadline = Date().addingTimeInterval(5)
+        while Date() < deadline {
+            if case .verified(let transaction) = await Transaction.latest(for: plan.productID),
+               let expiry = transaction.expirationDate, expiry <= Date() {
+                var stillActive = false
+                for await result in Transaction.currentEntitlements {
+                    if case .verified(let current) = result, current.productID == plan.productID,
+                       let end = current.expirationDate, end > Date() { stillActive = true }
+                }
+                if !stillActive { return }
+            }
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        XCTFail("StoreKit did not publish the expired subscription in its history")
     }
 
     private func eventually(_ predicate: () -> Bool) async throws {

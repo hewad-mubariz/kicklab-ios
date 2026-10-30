@@ -27,6 +27,8 @@ Device preview on 30 October 2026: merge `729c259` retains the leaderboard branc
 
 Validation on the iOS 27.0 simulator: all three new transaction tests passed (external purchase delivery, direct redemption result and rejection of an unverified result), as did the three paywall navigation tests and 15 deterministic expiry/account checks. The broader 21-test StoreKit suite passed 18 tests; three tests failed on price decimals, the simulated cancellation error and immediate expiry visibility. These failures are outside the added redemption path and remain unresolved; this is not an all-green subscription-suite result. Evidence: `/tmp/juggledude-invite-final.log` and `/tmp/juggledude-invite-codes-build.log`; Xcode stalled finalizing the broader run’s result bundle after all tests finished. The earlier focused run completed successfully in `/tmp/juggledude-invite-storekit.xcresult`. The new tests exercise verified StoreKit transactions, not a real configured offer code.
 
+Build 35 validation on 30 October 2026: the merged branch passed all 21 subscription tests and both selected paywall/navigation tests on iOS 18.0. The initial run exposed asynchronous StoreKit fixture publication in the two direct-result tests and the expiry test; those tests now wait for the verified or expired history before asserting app behavior. No production subscription logic changed for this correction. Evidence: `artifacts/releases/20261030-invites-1.1.0-35/subscription-tests-r2.log` and `subscription-tests.log`. Real offer-code redemption remains a physical-device testing task.
+
 ## App Store configuration
 
 - App: **Juggle Dude**, Apple app ID **6820780610**.
