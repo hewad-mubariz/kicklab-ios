@@ -30,6 +30,22 @@ struct MyStyleTests {
         #expect(style.matches(long))
     }
 
+    @Test func everyKeepsItsInterval() throws {
+        var edit = SessionEditState(style: .fire, intensity: 0.8)
+        edit.recipeStep = 3
+        edit.lookChanges = LookRecipes.make(.every, base: edit.baseLook, touchCount: 40, step: 3).changes
+        edit.recipe = .every
+        let style = MyStyle(edit: edit)
+        #expect(style.recipe == "everyFive" && style.recipeStep == 3)
+        let next = style.edit(touchCount: 20, lightweight: false)
+        #expect(next.recipeStep == 3 && next.lookChanges.keys.sorted() == [3, 6, 9, 12, 15, 18])
+        #expect(MyStyle(edit: styled()).recipeStep == nil, "Only Every has an interval")
+        // A style saved before the interval could change keeps every 5.
+        let old = #"{"ball":"gold","effect":"fire","intensity":0.8,"recipe":"everyFive","recipeSeed":1,"swapEffect":"pop","touchSound":"none","clipAudio":true}"#
+        let saved = try JSONDecoder().decode(MyStyle.self, from: Data(old.utf8)).edit(touchCount: 23, lightweight: false)
+        #expect(saved.recipe == .every && saved.recipeStep == 5 && saved.lookChanges.keys.sorted() == [5, 10, 15, 20])
+    }
+
     @Test func customRunsStayWithTheirReplay() {
         var edit = styled()
         edit.recipe = nil

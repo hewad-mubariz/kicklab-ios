@@ -65,6 +65,13 @@ nonisolated enum MotionStyle: String, CaseIterable, Identifiable, Codable, Senda
         }
     }
 
+    /// The word in the card's corner. Ball Motion and Comet plot height, so it says which way the
+    /// ball is moving, blank while the ball is out of sight. The other styles read touches and show
+    /// their own reading inside the graph, so they have no corner word.
+    func status(_ graph: CaptureGraphLayout) -> String? {
+        self == .ballMotion || self == .comet ? graph.status : nil
+    }
+
     var height: CGFloat {
         switch self {
         case .ballMotion: 62

@@ -1,6 +1,6 @@
 # Looks, change moments, replay sounds and timer looks
 
-Branch `feature/leaderboard-editor-upgrade`, built on the leaderboard branch
+Branch `feature/ball-swaps-and-sounds`, built on the leaderboard branch
 (`codex/post-launch-signin-leaderboard-ball-edges` at 4d0c3d1), 29–30 October 2026.
 
 The replay editor can now put a different ball on any touch, play a visible moment
@@ -17,16 +17,26 @@ with looks on, those pages say so and link to Looks. The Looks page has:
 - **Recipes**, one tap each: *Power-up* levels up on the 10th, 25th, 50th and 100th touch
   (Volt + Electric, Lava + Fire, Gold + Galaxy, Chrome + Rainbow), or at quarters on short
   clips, with Burst; *Finale* keeps the clip's look until the last few touches, then Gold +
-  Fire with Lightning; *Every 5* rotates three looks and the clip's own every 5 touches,
-  with Pop; *Remix* lays a seeded random mix with Sparkle, and tapping it again shuffles.
-  *Clear* returns to one look.
+  Fire with Lightning; *Every* rotates three looks and the clip's own, with Pop; *Remix*
+  lays a seeded random mix with Sparkle, and tapping it again shuffles. *Clear* returns to
+  one look.
+- **Every's interval**: the chip opens a native menu (every touch, 2, 3, 4, 5, 10 touches,
+  and *Custom…*). Only intervals that repeat at least twice on the clip are offered, so a
+  10-touch clip goes up to every 4. Custom opens a slider under the recipes, in the panel and
+  without a keyboard, from 1 to that longest interval (shown at its end); the looks are laid
+  again 0.3 s after the thumb rests, and ✓ closes it. It is continuous and rounded, because a
+  stepped slider draws a tick per step, a dotted line on long clips. My style keeps the interval; on a session too short for
+  it, Every uses the longest that fits and the chip shows that number. The chip reads
+  "Every 7" with a down arrow.
 - the **touch dial**: every touch snaps under the lens with a haptic tick and holds the clip
   just after that touch. Each touch shows its ball with a badge for its effect; the bar
   under them is the runs, in each look's effect colour, with a white dot where a run starts.
   The run under the lens is lit, because edits apply to all of it. Changes ripple outward
   from the lens.
-- the **run line**: "Look 3 of 6 · Touches 15 to 24 · Pearl + Ice", with *Split* (start a
-  new run at the lens, same look until changed) and *Merge* (join the run to the one before).
+- the **run line**: "Look 3 of 6 · Touches 15 to 24 · Pearl + Ice", with one button that
+  says what it does at the lens: *New look here* starts a look at that touch (the same look
+  until changed; the pickers switch to Ball), and on the first touch of a look it becomes
+  *Remove look*, handing those touches back to the look before.
 - three chips, *Ball*, *Effect* and *Change*, switching one picker row: the balls with the
   pick flight, the effects drawn on the run's ball, and the change-moment tiles with the
   change sound beside them.
@@ -82,23 +92,52 @@ Pro; placement and show/hide stay free.
 
 ## Milestones
 
-The counter celebrates the 10th, 25th, 50th, 75th and 100th touch, then every 50th: the
-badge swells and springs back, a flash, two rings and rays burst behind it, confetti is
-thrown up and falls, and a lime "★ 25 TOUCHES" tag rises under the count, all within
-1.3 s (`MilestoneAppearance`, drawn by the export renderer and the replay overlay alike).
-A short four-note fanfare plays on the milestone touch, replacing that touch's touch or
-change sound. The Counter page has a *Milestones* switch and a fanfare button; both default
-on, are free, and are remembered with the counter settings (`milestones`, `milestoneSound`).
+The counter celebrates the 10th, 25th, 50th, 75th and 100th touch, then every 50th, in its
+own style: picking a counter picks its milestone, with no separate picker. Each one lasts
+1.3 s and is drawn by the export renderer and the replay overlay alike (`MilestoneAppearance`
+in `MilestoneMoments.swift`, the showpiece counters in `MilestoneArt.swift`).
+
+| Counter | Celebration | Badge moves | Fanfare |
+| --- | --- | --- | --- |
+| Normal | Flash, rings, rays, confetti, lime "★ 25 TOUCHES" tag | Swell | Four rising notes |
+| Classic | Mint ripples and sparkles, glints on the number, mint tag | Swell | Four rising notes |
+| Odometer | Arcade marquee chasing round the drums, a prize ticket feeds out | Drops and bounces | Arcade bells, ticket ratchet |
+| Broadcast | Flares along the scorebug, stripes, a *MILESTONE 25* banner wipe | Swell | Whoosh into two brass stabs |
+| Comic | Red blast behind the starburst, speed lines, a speech bubble ("GREAT!") | Slam and wobble | Punch and boing |
+| Neon Sign | The sign's frame strikes up, a chase of lights, "great!" in neon script | Flicker | Clicks, then a hum |
+| Molten | Heat bloom, shock ring, ember fountain, lava blobs, glowing tag | Rumble | Whump, rush and crackle |
+| Glitch | RGB slices, dead pixels, brackets blowing out, "LEVEL UP", "LV 3" | Skips sideways | Bit-crushed 8-bit level-up |
+| Graffiti | Paint splats with runs, a sprayed crown with drips | Tilt | Can rattle, then spray |
+| Jelly | A wobbling ring, glossy bubbles that rise and pop, candy tag | Squash and stretch | Rising bloops |
+| Gold Coin | A turning sunburst, a shower of spinning coins, a shine across the medal | Hop | Ka-ching |
+| Chalkboard | The number circled in chalk, a gold star sticker, dust, "Great!" above | Knock | Chalk taps, a bell |
+
+The word grows with the streak (NICE, GREAT, WOW, HUGE, LEGEND, then UNREAL, ON FIRE, BOOM,
+INSANE) and Glitch's level counts the milestones reached. Most of each celebration sits
+behind the counter; Classic, Comic, Glitch, Gold Coin and Chalkboard also draw a layer over
+it that moves with the badge. Everything is clipped to the celebration canvas (twice the
+badge), so the replay's images and the export agree. The fanfare plays on the milestone
+touch in place of that touch's touch or change sound. The Counter page has a *Milestones*
+switch and a fanfare button, both on by default, free and remembered with the counter
+settings (`milestones`, `milestoneSound`). The row names the counter's celebration, and
+tapping it plays the first milestone on the clip, the whole 1.3 s.
+
+On the iPhone 11 Pro Max a celebration costs at most 6.7 ms per replay frame (Comic, p95;
+most are under 4 ms) and 9.5 ms per exported 1080 × 1920 frame, counter included, only
+during its 1.3 s (`EditorPhoneCheckTests.testMilestoneCostOnThisPhone`).
 
 ## My style
 
-A Pro row under the Looks tile saves the replay's ball, effect and intensity, the recipe
-behind its looks, the change moment, and the sounds and original-sound setting. Every new
-session (`PostSessionFlowView`) starts from it; the recipe is laid again for that session's
-touch count, so Power-up still lands on its 10th and 25th touch. Custom runs stay with their
-replay. The row shows *Save*, *Saved* or *Update*, with a menu for *Use My style on this
-replay* and *Stop using My style*. Counter, timer and graph settings already persist on
-their own. Design reviews and UI tests keep My style in memory only.
+Once a Pro replay with edits is saved, the *Your replay is ready* panel offers a row under
+*Share video*: the moment the person has decided they like the result. It saves the replay's
+ball, effect and intensity, the recipe behind its looks, the change moment, and the sounds
+and original-sound setting. Every new session (`PostSessionFlowView`), including *Record
+another*, starts from it; the recipe is laid again for that session's touch count, so
+Power-up still lands on its 10th and 25th touch. Custom runs stay with their replay. The row
+reads *Start every session with this look* (Save), *Make this my new style* (Update) or
+*This is your style* with a check, and its menu has *Stop using My style*. The Customize
+grid stays as it was. Counter, timer and graph settings already persist on their own. Design
+reviews and UI tests keep My style in memory only.
 
 ## Phone check (iPhone 11 Pro Max, 30 October 2026)
 
@@ -119,6 +158,26 @@ less. Recipes on phones the app treats as older (iPhone 13 and earlier, SE) use 
 up to Fire. The remaining slow frames come from the ball print raster, up to about 24 ms of
 CPU on frames with a print; that cost predates this branch and is the next thing to move off
 the main thread.
+
+## Graphs on long sessions
+
+Ball Motion and Comet used to fit the whole clip into the graph, so a 433-touch session
+became a solid block. Up to 30 touches the whole session still shows. Longer sessions now
+scroll: the graph shows about the last 30 touches (30 typical touch gaps, at least 8 s),
+with the playhead resting 80 % across, the oldest part fading out at the left edge, and
+the grid and touch ticks travelling with the line. The window starts at zero and stops at
+the end of the clip. The left-edge fade only comes in once earlier motion has scrolled off
+(fully after 14 % of the window), so the first touches of a long clip stay full colour. The height scale comes from the whole session, so it never jumps
+while scrolling. The other eight styles already scrolled. Drawing only the window is about
+eight times cheaper per frame on a 433-touch session (0.36 ms against 3.0 ms in the
+Simulator), so the saved video is not slower.
+
+The word in the card's corner used to be the ball's direction for every style, so Heartbeat
+or Combo said "FALLING ↓" or "TRACK LOST" beside a pulse or a streak. Now only Ball Motion
+and Comet keep it (rising, falling, at the turn). The other styles show their own reading
+inside the graph and have no corner word. "TRACK LOST" and "ACQUIRING" are gone everywhere,
+the live recording screen included: while the ball is out of sight the word is blank, and the
+gap in the line already shows it.
 
 ## Model
 
@@ -149,7 +208,14 @@ The change moment is drawn with Core Graphics into the same material canvas as t
 contact. Replay (`EffectVideoView.materialTexture`) and export (`BallStyleBurnIn.render`)
 resolve the ball per frame, draw the print, scale it by the effect's `ballScale(age:)`, then
 draw the moment. Everything is a deterministic function of the event and its age, so seeks,
-loops and the export agree. No shader changed.
+loops and the export agree.
+
+A look change restarts the new effect's trail, so for a frame or two it has one recorded
+point. Lab Flame, Blue Flame and Flame Ribbon measure their wake with `studyPathFX`, whose
+signed distance started at 0 when there was no segment: every pixel sat on the wake and the
+whole effect tile (16 ball radii, centred on the ball) flashed orange or cyan. The same
+happened on a clip's first frame and when tracking found the ball again. The signed
+distance now starts far away, like the unsigned one, which is how Rainbow already handled it.
 
 ## Sounds
 
@@ -168,12 +234,22 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
   every change moment drawing deterministically and fading out.
 - `LookExportTests`: a saved video draws fire for the first run and nothing after the
   change, and the reverse.
-- `MilestoneTests`: milestone touches, the celebration window and pulse, deterministic
-  drawing, the export overlay, settings defaults and the fanfare's priority.
+- `NewBallEffectsTests.aTrailOfOnePointDrawsNoWake`: each of the six study effects with a
+  one-point trail leaves the tile clear away from the ball.
+- `MotionStyleTests.testMissingTrackingDoesNotInventPeaksOrContinueTheBall`: a lost track
+  leaves Ball Motion's corner blank, and only Ball Motion and Comet have a corner word.
+- `MilestoneTests`: milestone touches, the celebration window and pulse; for every counter
+  its own deterministic celebration that fades out cleanly, its front layer, a badge motion
+  that comes to rest and its own fanfare; the words and levels; the export overlay; settings
+  defaults and the fanfare's priority. Serialized, like `BallSwapTests`, because Core
+  Graphics very rarely rasterizes a few pixels differently when many frames render at once.
 - `MyStyleTests`: saving the recipe and refitting it, custom runs, unknown saved values,
   persistence and memory-only stores.
-- `EditorPhoneCheckTests`: export time and per-frame preview cost, and per-effect GPU cost,
-  on the phone it runs on.
+- `EditorPhoneCheckTests`: export time and per-frame preview cost, per-effect GPU cost, and
+  each counter's milestone cost in replay and export, on the phone it runs on.
+- `GraphWindowTests`: the scrolling window at the start, middle and end, the 30-touch size,
+  the fixed scale, the left-edge fade only after the window moves, and the drawing cost
+  against the whole clip.
 - `ReplaySoundTests`: every cue bounded and audible, waveform shapes, soundtrack placement,
   an export that mixes cues into a saved video with exactly one audio track, and muted
   exports (no track without cues; cues only with cues; both when kept).
@@ -181,10 +257,12 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
   a second; settings migration; Pro rules; placement shape; export placement.
 - `TimerStickerUITests`: every look selectable, tap to select, drag, pinch, reset, style pill,
   done and remove.
-- `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): Power-up, split, a run's
-  ball and effect, change moment, merge, remix, clear, the Ball page's link to Looks, the
+- `BallSwapsUITests` (JuggleDude-StoreKit scheme, Pro purchased): Power-up, New look here, a
+  run's ball and effect, change moment, Remove look, Every's menu (every 3) and Custom's
+  slider (ends at 65 on 132 touches, no keyboard, the runs follow it), remix, clear, the Ball page's link to Looks, the
   Auto change sound and its override, original-sound muting, the Milestones switch and
-  fanfare, and My style save, update and stop.
+  fanfare, the row following the counter (Comic, Gold Coin) and its preview, and My style
+  save and stop from the saved-replay panel.
 
 ## Results (iPhone 18 Pro Simulator)
 
@@ -220,3 +298,7 @@ moments need a device or an exported file.
 
 - No new analytics events for the sound, looks and timer choices.
 - Ball Distance videos (no touches) keep the single-ball picker and have no Sound tile.
+- The Simulator does not advance playback after a preview seek, so milestone previews are
+  checked on the phone; the review frames come from `MilestoneTests` (`MILESTONE_SHOTS`).
+- `JugglingReplayMemoryTests` hosts `ReplayEffectsView` without a `SubscriptionStore` and
+  crashes the test host; this is already so on the leaderboard base.

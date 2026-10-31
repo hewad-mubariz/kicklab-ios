@@ -130,6 +130,40 @@ final class EditorPhoneCheckTests: XCTestCase {
         note("thermal_end", ProcessInfo.processInfo.thermalState.rawValue)
     }
 
+    /// Per-frame cost of each counter's milestone: the replay's layers (behind, and over the badge
+    /// where a style has one) and the export's draw onto a 1080 × 1920 frame.
+    @MainActor
+    func testMilestoneCostOnThisPhone() throws {
+        let size = CGSize(width: 1080, height: 1920)
+        let ctx = try XCTUnwrap(CGContext(data: nil, width: 1080, height: 1920, bitsPerComponent: 8, bytesPerRow: 1080 * 4,
+            space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+        ctx.translateBy(x: 0, y: size.height); ctx.scaleBy(x: 1, y: -1)
+        var settings = ExportOverlaySettings()
+        let frames = (0..<39).map { Double($0) / 39 }
+        func spread(_ values: [Double]) -> String {
+            let sorted = values.sorted()
+            return String(format: "%.2f / %.2f", sorted[sorted.count / 2], sorted[Int(Double(sorted.count) * 0.95)])
+        }
+        for style in ExportBadgeStyle.allCases {
+            settings.counter.style = style
+            var replay: [Double] = [], export: [Double] = []
+            for _ in 0..<3 {
+                for progress in frames {
+                    var start = ProcessInfo.processInfo.systemUptime
+                    _ = MilestoneAppearance.image(style: style, count: 50, progress: progress)
+                    _ = MilestoneAppearance.image(style: style, count: 50, progress: progress, front: true)
+                    replay.append((ProcessInfo.processInfo.systemUptime - start) * 1000)
+                    start = ProcessInfo.processInfo.systemUptime
+                    ExportOverlayRenderer.draw(in: ctx, size: size, settings: settings, time: 30,
+                                               counter: .init(count: 50, isTotal: false, age: progress * Milestones.duration))
+                    export.append((ProcessInfo.processInfo.systemUptime - start) * 1000)
+                }
+            }
+            note("milestone_\(style.rawValue)_replay_ms_p50_p95", spread(replay))
+            note("milestone_\(style.rawValue)_export_ms_p50_p95", spread(export))
+        }
+    }
+
     // MARK: - Ball track
 
     @MainActor

@@ -10,7 +10,9 @@ struct StudyPath {
 
 StudyPath studyPathFX(float2 pixel, constant FXUniforms &u, constant float4 *emitters,
                       float lifetime, float lane, float curl) {
-    float R=max(1.0,u.ball.z),best=1e6,sd=0,ageAt=0;
+    // With fewer than two emitters there is no segment: the signed distance must
+    // stay far too, or every pixel sits on the wake and the whole tile fills.
+    float R=max(1.0,u.ball.z),best=1e6,sd=1e6,ageAt=0;
     float2 tangent=float2(1,0),previous=0;bool have=false;
     for(uint i=0;i<=32;i++) {
         float age=float(i)*0.025;

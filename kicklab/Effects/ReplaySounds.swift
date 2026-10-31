@@ -89,8 +89,8 @@ nonisolated enum BallSwapSound: String, CaseIterable, Identifiable, Hashable, Se
 nonisolated enum ReplaySound: Hashable, Sendable {
     case touch(TouchSound)
     case swap(BallSwapSound)
-    /// The fanfare with a streak milestone.
-    case milestone
+    /// The fanfare with a streak milestone, in the counter style's own voice.
+    case milestone(ExportBadgeStyle)
 
     var isSilent: Bool {
         switch self {
@@ -177,7 +177,7 @@ nonisolated enum ReplaySoundSynth {
         switch sound {
         case .touch(let touch): (duration, gain, voice) = touchVoice(touch)
         case .swap(let swap): (duration, gain, voice) = swapVoice(swap)
-        case .milestone: (duration, gain, voice) = fanfareVoice()
+        case .milestone(let style): (duration, gain, voice) = milestoneVoice(style)
         }
         let count = Int(duration * sampleRate)
         var noise = Noise(seed: seed(sound))
@@ -202,7 +202,7 @@ nonisolated enum ReplaySoundSynth {
         switch sound {
         case .touch(let touch): name = "touch:" + touch.rawValue
         case .swap(let swap): name = "swap:" + swap.rawValue
-        case .milestone: name = "milestone"
+        case .milestone(let style): name = "milestone:" + style.rawValue
         }
         var hash: UInt32 = 2_166_136_261
         for byte in name.utf8 { hash = (hash ^ UInt32(byte)) &* 16_777_619 }
@@ -281,7 +281,143 @@ nonisolated enum ReplaySoundSynth {
         }
     }
 
-    // MARK: - Milestone fanfare
+    // MARK: - Milestone fanfares
+
+    /// Each counter's celebration has its own sound, matched to what it shows.
+    private static func milestoneVoice(_ style: ExportBadgeStyle) -> (Double, Double, (Double, inout Noise, inout Double) -> Double) {
+        switch style {
+        case .normal, .classic:
+            return fanfareVoice()
+        case .odometer:
+            // Arcade bells ring out while the prize ticket ratchets.
+            return (0.8, 0.75, { t, n, _ in
+                var value = 0.0
+                for k in 0..<6 {
+                    let age = t - Double(k) * 0.065
+                    guard age >= 0 else { continue }
+                    let f = k % 2 == 0 ? 1568.0 : 2093.0
+                    let ring = sin(2 * .pi * f * age) + 0.4 * sin(2 * .pi * f * 2.76 * age) * exp(-age / 0.03)
+                    value += ring * exp(-age / (k == 5 ? 0.25 : 0.08)) * min(1, age / 0.002)
+                }
+                let tick = (t - 0.15).truncatingRemainder(dividingBy: 0.032)
+                if t > 0.15, t < 0.7, tick < 0.004 { value += 0.5 * n.next() * (1 - tick / 0.004) }
+                return value
+            })
+        case .broadcast:
+            // A TV sting: a whoosh into two brass stabs.
+            return (0.75, 0.8, { t, n, s in
+                var value = 0.0
+                if t < 0.2 { value += 0.7 * lowpass(n.next(), &s, cutoff: 800 + 3000 * t / 0.2) * sin(t / 0.2 * .pi) }
+                let stabs: [([Double], Double, Double)] = [([392, 493.9, 587.3], 0.16, 0.12), ([523.3, 659.3, 784], 0.3, 0.4)]
+                for (chord, start, length) in stabs {
+                    let age = t - start
+                    guard age >= 0 else { continue }
+                    let envelope = min(1, age / 0.01) * (age < length ? 1 : exp(-(age - length) / 0.06))
+                    for f in chord {
+                        for h in 1...5 { value += 0.22 * sin(2 * .pi * f * Double(h) * age) / Double(h) * envelope }
+                    }
+                }
+                return value
+            })
+        case .comic:
+            // A cartoon punch, then a boing.
+            return (0.6, 0.9, { t, n, phase in
+                phase += 2 * .pi * (55 + 170 * exp(-t / 0.035)) / sampleRate
+                var value = tanh(2.2 * (sin(phase) * exp(-t / 0.16) + 0.7 * n.next() * exp(-t / 0.025)))
+                let age = t - 0.12
+                if age > 0 { value += 0.45 * sin(2 * .pi * 300 * age + 3 * sin(2 * .pi * 11 * age)) * exp(-age / 0.18) }
+                return value
+            })
+        case .neon:
+            // The tube strikes with clicks, then hums.
+            return (0.8, 0.7, { t, n, _ in
+                var value = 0.0
+                for click in [0.0, 0.075, 0.13] where t >= click && t < click + 0.012 { value += n.next() * (1 - (t - click) / 0.012) }
+                let lit = Milestones.neonPower(t) * (t > 0.3 ? exp(-(t - 0.3) / 0.25) : 1)
+                var buzz = 0.0
+                for h in 1...8 { buzz += sin(2 * .pi * 120 * Double(h) * t) / Double(h) }
+                value += 0.4 * buzz * lit
+                let a = t - 0.19
+                if a > 0, a < 0.25 { value += 0.2 * sin(2 * .pi * (2800 * a - 3000 * a * a)) * exp(-a / 0.08) }
+                return value
+            })
+        case .molten:
+            // A deep whump, a rush of air and crackling embers.
+            return (0.9, 0.8, { t, n, s in
+                var value = 0.9 * sin(2 * .pi * (48 * t + 3 * (1 - exp(-t / 0.05)))) * exp(-t / 0.22)
+                value += 0.8 * lowpass(n.next(), &s, cutoff: 600 + 2500 * exp(-t / 0.15)) * exp(-t / 0.3)
+                let pop = n.next()
+                if t > 0.08, abs(pop) > 0.985 { value += pop * 1.6 * exp(-(t - 0.08) / 0.35) }
+                return value
+            })
+        case .glitch:
+            // An 8-bit level-up, bit-crushed.
+            return (0.7, 0.65, { t, _, _ in
+                let held = (t * 11_025).rounded(.down) / 11_025
+                let notes = [523.25, 659.25, 783.99, 1046.5, 1318.5]
+                let index = min(notes.count - 1, Int(held / 0.055))
+                let age = held - Double(index) * 0.055
+                let square: Double = sin(2 * .pi * notes[index] * age) >= 0 ? 1 : -1
+                let envelope = index == notes.count - 1 ? exp(-max(0, age - 0.1) / 0.15) : 1
+                return (square * 0.5 * envelope * 8).rounded() / 8
+            })
+        case .graffiti:
+            // A rattle of the can, then a long spray.
+            return (0.75, 0.7, { t, n, s in
+                var value = 0.0
+                for click in [0.0, 0.07] {
+                    let age = t - click
+                    if age >= 0, age < 0.03 { value += 0.9 * sin(2 * .pi * 3200 * age) * exp(-age / 0.006) }
+                }
+                let spray = t - 0.12
+                if spray > 0 {
+                    let x = n.next()
+                    value += 1.4 * (x - lowpass(x, &s, cutoff: 3500)) * min(1, spray / 0.05) * exp(-max(0, spray - 0.3) / 0.12)
+                }
+                return value
+            })
+        case .jelly:
+            // Bubbles: quick rising bloops.
+            return (0.6, 0.75, { t, _, _ in
+                var value = 0.0
+                for (k, start) in [0.0, 0.09, 0.17, 0.26].enumerated() {
+                    let age = t - start
+                    guard age >= 0, age < 0.12 else { continue }
+                    let f = 380 + 140 * Double(k)
+                    value += sin(2 * .pi * f * (age + 1.5 * age * age / 0.12)) * sin(age / 0.12 * .pi)
+                }
+                return value
+            })
+        case .goldCoin:
+            // Ka-ching: a metallic tick and two coin rings.
+            return (0.85, 0.75, { t, n, _ in
+                var value = t < 0.03 ? 0.6 * n.next() * (1 - t / 0.03) : 0
+                for (f, start) in [(1975.5, 0.0), (2637.0, 0.09)] {
+                    let age = t - start
+                    guard age >= 0 else { continue }
+                    let ring = sin(2 * .pi * f * age) + 0.5 * sin(2 * .pi * f * 2.76 * age) * exp(-age / 0.08)
+                        + 0.25 * sin(2 * .pi * f * 5.4 * age) * exp(-age / 0.05)
+                    value += ring * exp(-age / 0.3) * min(1, age / 0.002)
+                }
+                return value + 0.12 * sin(2 * .pi * 5274 * t) * (0.5 + 0.5 * sin(2 * .pi * 14 * t)) * exp(-t / 0.4)
+            })
+        case .chalk:
+            // Chalk taps on the board, then a bright bell for the gold star.
+            return (0.85, 0.7, { t, n, s in
+                var value = 0.0
+                for tap in [0.0, 0.11, 0.2] {
+                    let age = t - tap
+                    if age >= 0, age < 0.03 { value += 2.5 * lowpass(n.next(), &s, cutoff: 1800) * exp(-age / 0.008) }
+                }
+                let age = t - 0.4
+                if age > 0 {
+                    let bell = sin(2 * .pi * 1760 * age) + 0.3 * sin(2 * .pi * 4400 * age) * exp(-age / 0.05)
+                    value += 0.8 * bell * exp(-age / 0.28) * min(1, age / 0.002)
+                }
+                return value
+            })
+        }
+    }
 
     /// Four bright rising notes and a shimmering tail: a quick fanfare, not a jingle.
     private static func fanfareVoice() -> (Double, Double, (Double, inout Noise, inout Double) -> Double) {
@@ -396,8 +532,8 @@ nonisolated struct ReplaySoundtrack: Hashable, Sendable {
     /// Touch cues on every touch; where the look changes, the change cue plays instead; on a
     /// milestone, the fanfare plays instead of both. Every touch is one sound at most.
     /// `touchTimes` sorted.
-    init(edit: SessionEditState, touchTimes: [Double], milestones: Bool = false) {
-        let celebrated = milestones ? Set(Milestones.touchIndices(touchCount: touchTimes.count)) : []
+    init(edit: SessionEditState, touchTimes: [Double], milestones: ExportBadgeStyle? = nil) {
+        let celebrated = milestones == nil ? [] : Set(Milestones.touchIndices(touchCount: touchTimes.count))
         let swaps = (edit.swapSound == .none ? [] : edit.lookSwaps(touchTimes: touchTimes))
             .filter { !celebrated.contains($0.index) }
         let changed = Set(swaps.map(\.index))
@@ -407,7 +543,7 @@ nonisolated struct ReplaySoundtrack: Hashable, Sendable {
                 .map { Event(time: $0.element, sound: .touch(edit.touchSound)) }
         }
         events += swaps.map { Event(time: $0.time, sound: .swap(edit.swapSound)) }
-        events += celebrated.sorted().map { Event(time: touchTimes[$0], sound: .milestone) }
+        if let milestones { events += celebrated.sorted().map { Event(time: touchTimes[$0], sound: .milestone(milestones)) } }
         self.init(events: events)
     }
 

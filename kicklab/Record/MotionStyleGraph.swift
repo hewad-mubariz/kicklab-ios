@@ -17,6 +17,10 @@ struct MotionStyleGraph: View {
     var body: some View {
         if style == .ballMotion {
             CaptureMotionGraph(layout: snapshot.graph, touchTimes: snapshot.touchTimes)
+        } else if style == .comet {
+            // Comet follows the same scrolling window as Ball Motion on long sessions.
+            Canvas { context, size in comet(&context, size) }
+                .scrollFade(snapshot.graph.edgeFade)
         } else {
             Canvas { context, size in
                 switch style {

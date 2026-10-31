@@ -3,6 +3,9 @@ import Foundation
 import Testing
 @testable import kicklab
 
+/// Serialized: the frame checks compare bytes, and Core Graphics very rarely rasterizes a few
+/// pixels differently when many frames render at once.
+@Suite(.serialized)
 struct BallSwapTests {
     private let touches: [Double] = [1, 2, 3, 4, 5]
 
@@ -101,9 +104,19 @@ struct BallSwapTests {
         let finale = LookRecipes.make(.finale, base: base, touchCount: 30)
         #expect(finale.changes == [24: LookRecipes.finale] && finale.moment == .lightning)
         // Every 5 rotates looks and comes back to the clip's own.
-        let rotation = LookRecipes.make(.everyFive, base: base, touchCount: 23)
+        let rotation = LookRecipes.make(.every, base: base, touchCount: 23)
         #expect(rotation.changes.keys.sorted() == [5, 10, 15, 20])
         #expect(rotation.changes[20] == base)
+        // Any interval that repeats: every 3, every touch; a clip too short for every 10 gets the longest that fits.
+        #expect(LookRecipes.make(.every, base: base, touchCount: 23, step: 3).changes.keys.sorted() == Array(stride(from: 3, to: 23, by: 3)))
+        let everyTouch = LookRecipes.make(.every, base: base, touchCount: 9, step: 1)
+        #expect(everyTouch.changes.keys.sorted() == Array(1..<9))
+        let ladder = (0..<9).map { index in everyTouch.changes.filter { $0.key <= index }.max { $0.key < $1.key }?.value ?? base }
+        #expect(zip(ladder, ladder.dropFirst()).allSatisfy { $0 != $1 }, "Every touch a new look")
+        #expect(LookRecipes.longestStep(touchCount: 10) == 4 && LookRecipes.longestStep(touchCount: 23) == 11)
+        #expect(LookRecipes.longestStep(touchCount: 2) == 1)
+        #expect(LookRecipes.make(.every, base: base, touchCount: 10, step: 10).changes.keys.sorted() == [4, 8])
+        #expect(LookRecipe.every.title(step: 3) == "Every 3" && LookRecipe.every.title(step: 1) == "Every touch")
         // Remix is the same for the same seed, different for another, and never repeats a look back to back.
         let first = LookRecipes.make(.remix, base: base, touchCount: 40, seed: 1)
         #expect(first == LookRecipes.make(.remix, base: base, touchCount: 40, seed: 1))

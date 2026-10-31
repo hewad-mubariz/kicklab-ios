@@ -20,6 +20,13 @@ nonisolated struct MotionStyleTimeline: Equatable, Sendable {
     /// The lowest and highest the ball went this session, in image coordinates (y grows down).
     let floorY: Double
     let ceilingY: Double
+    /// Seconds of graph on screen for a long session: about the last 30 touches, scrolling.
+    /// Nil up to 30 touches, where the whole session fits.
+    let graphWindow: Double?
+    /// The session's whole height range, so a scrolling graph never changes scale.
+    let graphVertical: ClosedRange<Double>
+
+    static let touchesOnGraph = 30
 
     init(points: [CaptureMotionPoint], touchTimes: [Double]) {
         self.points = points.filter { $0.time.isFinite && $0.time >= 0 }.sorted { $0.time < $1.time }
@@ -27,6 +34,15 @@ nonisolated struct MotionStyleTimeline: Equatable, Sendable {
         let heights = self.points.compactMap(\.validY)
         floorY = heights.max() ?? 1
         ceilingY = heights.min() ?? 0
+        let center = (floorY + ceilingY) / 2, halfSpan = max(0.04, (floorY - ceilingY) / 2 + 0.012)
+        graphVertical = heights.isEmpty ? 0...1 : (center - halfSpan)...(center + halfSpan)
+        if touches.count > Self.touchesOnGraph {
+            let gaps = zip(touches, touches.dropFirst()).map { $1 - $0 }.filter { $0 > 0.05 }.sorted()
+            let typical = gaps.isEmpty ? 0.6 : gaps[gaps.count / 2]
+            graphWindow = max(8, typical * Double(Self.touchesOnGraph))
+        } else {
+            graphWindow = nil
+        }
         var result: [Peak] = [], cursor = 0
         for index in 0..<max(0, touches.count - 1) {
             let start = touches[index], end = touches[index + 1]
@@ -137,7 +153,8 @@ nonisolated struct MotionStyleSnapshot {
     let bounce: Bounce?
 
     init(timeline: MotionStyleTimeline, time: Double, duration: Double?) {
-        graph = CaptureGraphLayout(points: timeline.points, time: time, duration: duration)
+        graph = CaptureGraphLayout(points: timeline.points, time: time, duration: duration,
+                                   window: timeline.graphWindow, vertical: timeline.graphWindow == nil ? nil : timeline.graphVertical)
         let now = graph.time
         touchTimes = timeline.touches
         played = timeline.touches.filter { $0 <= now }

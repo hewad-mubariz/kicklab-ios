@@ -11,8 +11,10 @@ struct ExportMotionGraphCard: View {
             HStack {
                 Text(style.title.uppercased()).font(.system(size: 10, weight: .semibold)).tracking(1)
                 Spacer()
-                Text(snapshot.graph.status).font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(Color(cgColor: NormalCounterAppearance.lime))
+                if let status = style.status(snapshot.graph) {
+                    Text(status).font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(Color(cgColor: NormalCounterAppearance.lime))
+                }
             }
             MotionStyleGraph(style: style, snapshot: snapshot, sourceAspect: sourceAspect)
                 .frame(height: style.height)

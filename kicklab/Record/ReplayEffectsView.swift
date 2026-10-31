@@ -123,7 +123,9 @@ struct ReplayEffectsView: View {
                             .padding(.horizontal, 20).padding(.bottom, 18)
                         } else if showSharePanel {
                             ReplaySharePanel(onShare: share, onClose: { showSharePanel = false },
-                                             onRecordAnother: onRecordAnother, onDone: onDone)
+                                             onRecordAnother: onRecordAnother, onDone: onDone,
+                                             myStyleEdit: subscriptions.isPro && showsTouchTools && committedLook.edit.isEdited
+                                                 ? committedLook.edit : nil)
                                 .padding(.horizontal, 16).padding(.bottom, 10)
                                 .transition(.sessionRise)
                         } else {
@@ -567,7 +569,7 @@ struct ReplayEffectsView: View {
 
     private func updateSounds() {
         sounds.update(ReplaySoundtrack(edit: displayedLook.edit, touchTimes: showsTouchTools ? sortedTouchTimes : [],
-                                       milestones: showsTouchTools && effectiveOverlays.playsMilestoneSound))
+                                       milestones: showsTouchTools ? effectiveOverlays.milestoneFanfare : nil))
     }
 
     /// Holds the clip at `time`, paused, so a per-touch pick is seen on that frame.
@@ -581,11 +583,14 @@ struct ReplayEffectsView: View {
         player?.seek(to: CMTime(seconds: clamped, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
-    /// Plays a short run through a ball change, then holds just after it.
+    /// Plays a short run through a ball change, then holds just after it. A milestone touch
+    /// plays its whole celebration.
     private func previewMoment(at time: Double) {
         guard let player else { return }
         momentTask?.cancel()
-        let start = min(max(0, time - 0.1), duration), end = min(duration, time + 0.8)
+        let celebrates = effectiveOverlays.milestones && effectiveOverlays.counter.enabled
+            && Milestones.touchIndices(touchCount: sortedTouchTimes.count).contains { sortedTouchTimes[$0] == time }
+        let start = min(max(0, time - 0.1), duration), end = min(duration, time + (celebrates ? Milestones.duration + 0.1 : 0.8))
         if positionBeforePreview == nil { positionBeforePreview = currentTime }
         currentTime = start
         sounds.seek(to: start)

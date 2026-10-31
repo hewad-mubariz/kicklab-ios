@@ -358,7 +358,7 @@ struct SaveShareView: View {
             lookChanges: edited ? edit.lookChanges : [:], swapEffect: edited ? edit.swapEffect : .none,
             soundtrack: ReplaySoundtrack(edit: edited ? edit : SessionEditState(style: .none, intensity: 0),
                                          touchTimes: summary.touchesMarked.map(\.time),
-                                         milestones: allowedLook.overlays.playsMilestoneSound),
+                                         milestones: allowedLook.overlays.milestoneFanfare),
             clipAudio: edited ? edit.clipAudio : true)
         // Wait until burn-in finishes.
         do {

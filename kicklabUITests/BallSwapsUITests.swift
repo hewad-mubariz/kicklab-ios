@@ -72,13 +72,13 @@ final class BallSwapsUITests: ProReplayUITestCase {
         XCTAssertEqual(look(app, 9), "original ball, Glow Trail")
         capture(app, "02 Power-up recipe")
 
-        // Split at touch 15 starts look 3 with the same look until it is changed.
+        // New look here at touch 15 starts look 3 with the same look until it is changed.
         select(app, touch: 15)
-        XCTAssertTrue(app.buttons["looks-split"].isEnabled)
-        app.buttons["looks-split"].tap()
+        XCTAssertTrue(app.buttons["looks-new"].isEnabled)
+        app.buttons["looks-new"].tap()
         XCTAssertTrue(summary.label.hasPrefix("Look 3 of 6"), summary.label)
         XCTAssertTrue(summary.label.contains("Touches 15 to 24"), summary.label)
-        XCTAssertFalse(app.buttons["looks-split"].isEnabled, "The lens is already on a run start")
+        XCTAssertTrue(app.buttons["looks-remove"].waitForExistence(timeout: 3), "On a look's first touch the button removes it")
         XCTAssertFalse(app.buttons["look-recipe-powerUp"].isSelected, "A manual edit makes it your own")
 
         // The pickers change the whole run, not one touch.
@@ -103,10 +103,48 @@ final class BallSwapsUITests: ProReplayUITestCase {
         XCTAssertTrue(app.descendants(matching: .any)["ball-swap-sound-summary"].label.contains("Thunder"))
         capture(app, "04 Change moment")
 
-        // Merge joins the run back into Volt and Electric.
-        app.buttons["looks-merge"].tap()
+        // Remove look hands its touches back to Volt and Electric.
+        app.buttons["looks-remove"].tap()
         XCTAssertEqual(look(app, 16), "Volt, Electric")
         XCTAssertTrue(summary.label.hasPrefix("Look 2 of 5"), summary.label)
+        XCTAssertTrue(app.buttons["looks-new"].waitForExistence(timeout: 3))
+
+        // Every opens a menu of intervals: every 3 changes on touches 4, 7, 10…
+        let every = app.buttons["look-recipe-everyFive"]
+        every.tap()
+        XCTAssertTrue(app.buttons["Every 3 touches"].waitForExistence(timeout: 3), "Every opens its menu")
+        capture(app, "04b Every menu")
+        app.buttons["Every 3 touches"].tap()
+        XCTAssertTrue(every.waitForSelection())
+        XCTAssertTrue(every.label.contains("Every 3"), every.label)
+        XCTAssertTrue(app.buttons["ball-touch-4"].waitForSelection())
+        XCTAssertEqual(look(app, 3), "original ball, Glow Trail")
+        XCTAssertEqual(look(app, 4), "Volt, Neon")
+        XCTAssertEqual(look(app, 7), "Arctic Ice, Ice")
+
+        // Custom… opens a slider up to the longest interval that repeats on this clip (132 touches: 65).
+        every.tap()
+        XCTAssertTrue(app.buttons["Custom…"].waitForExistence(timeout: 3))
+        app.buttons["Custom…"].tap()
+        let slider = app.sliders["look-every-slider"]
+        XCTAssertTrue(slider.waitForExistence(timeout: 3), "Custom opens a slider, not a keyboard")
+        XCTAssertFalse(app.keyboards.firstMatch.exists)
+        XCTAssertTrue(app.staticTexts["65"].exists, "The slider ends at the longest interval that fits")
+        slider.adjust(toNormalizedSliderPosition: 1)
+        let longest = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS 'Every 65'"), object: every)
+        XCTAssertEqual(XCTWaiter.wait(for: [longest], timeout: 4), .completed, every.label)
+        slider.adjust(toNormalizedSliderPosition: 0.1)
+        let settled = XCTNSPredicateExpectation(predicate: NSPredicate(format: "NOT (label CONTAINS 'Every 65')"), object: every)
+        XCTAssertEqual(XCTWaiter.wait(for: [settled], timeout: 4), .completed, every.label)
+        let step = try XCTUnwrap(Int(every.label.components(separatedBy: " ").last ?? ""), every.label)
+        XCTAssertTrue((2...20).contains(step), every.label)
+        XCTAssertTrue(app.buttons["ball-touch-\(step + 1)"].waitForSelection(timeout: 8))
+        XCTAssertEqual(look(app, step), "original ball, Glow Trail")
+        XCTAssertEqual(look(app, step + 1), "Volt, Neon")
+        capture(app, "04c Every custom slider")
+        app.buttons["look-every-done"].tap()
+        XCTAssertTrue(slider.waitForNonExistence(timeout: 3))
+        capture(app, "04d Every 7")
 
         // Remix lays a different mix; Clear brings back one look.
         app.buttons["look-recipe-remix"].tap()
@@ -198,32 +236,38 @@ final class BallSwapsUITests: ProReplayUITestCase {
         XCTAssertTrue(isOn(milestones))
         Thread.sleep(forTimeInterval: 0.35)
         capture(app, "06 Milestones")
+
+        // Each counter celebrates its own way: picking a counter picks its milestone, and the row
+        // plays it on the clip.
+        let preview = app.buttons["milestone-preview"]
+        XCTAssertEqual(preview.label, "Milestones, Normal style")
+        for (style, title, shot) in [("comic", "Comic", "06b Comic milestone"), ("goldCoin", "Gold Coin", "06c Gold Coin milestone")] {
+            app.buttons["counter-style-\(style)"].tap()
+            XCTAssertEqual(preview.label, "Milestones, \(title) style")
+            preview.tap()
+            Thread.sleep(forTimeInterval: 0.6)
+            capture(app, shot)
+        }
+        app.buttons["counter-style-normal"].tap()
         app.buttons["replay-tools-back"].tap()
 
-        // My style: save, then a recipe makes this replay differ until it is updated.
+        // My style is offered once the replay is saved, and can be stopped from the same row.
+        app.buttons["replay-close-tools"].tap()
+        XCTAssertFalse(app.buttons["my-style-save"].exists, "My style is not part of the Customize grid")
+        XCTAssertTrue(app.startReplayDownload(), "Download starts in place")
+        XCTAssertTrue(app.waitForReplaySaved(timeout: 240), "The replay is saved to Photos")
         let save = app.buttons["my-style-save"]
         XCTAssertTrue(save.waitForExistence(timeout: 5))
         XCTAssertEqual(save.label, "Save")
         save.tap()
         XCTAssertTrue(app.descendants(matching: .any)["my-style-saved"].waitForExistence(timeout: 3))
-        capture(app, "07 My style saved")
-        app.buttons["replay-tool-looks"].tap()
-        XCTAssertTrue(app.buttons["look-recipe-finale"].waitForExistence(timeout: 5))
-        app.buttons["look-recipe-finale"].tap()
-        app.buttons["replay-tools-back"].tap()
-        XCTAssertTrue(save.waitForExistence(timeout: 3))
-        XCTAssertEqual(save.label, "Update", "The replay now differs from My style")
-        save.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["my-style-saved"].waitForExistence(timeout: 3))
-
-        // Stop using it.
+        capture(app, "07 My style after download")
         app.buttons["my-style-menu"].tap()
         let stop = app.buttons["Stop using My style"]
         XCTAssertTrue(stop.waitForExistence(timeout: 3))
         stop.tap()
         XCTAssertTrue(save.waitForExistence(timeout: 3))
         XCTAssertEqual(save.label, "Save")
-        app.buttons["replay-close-tools"].tap()
     }
 }
 

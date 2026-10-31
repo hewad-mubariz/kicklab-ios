@@ -921,32 +921,32 @@ nonisolated enum CounterArt {
     /// Core Graphics applies shadows in device pixels, ignoring the transform. Converting them
     /// keeps glows and drop shadows turning and scaling with a rotated or resized sticker, so
     /// the export matches the editor preview, which rotates a finished image.
-    private static func shadow(_ ctx: CGContext, offset: CGSize, blur: CGFloat, color: CGColor?) {
+    static func shadow(_ ctx: CGContext, offset: CGSize, blur: CGFloat, color: CGColor?) {
         let m = ctx.ctm
         let device = CGSize(width: offset.width * m.a + offset.height * m.c, height: offset.width * m.b + offset.height * m.d)
         ctx.setShadow(offset: device, blur: blur * sqrt(abs(m.a * m.d - m.b * m.c)), color: color)
     }
 
-    private static func fill(_ ctx: CGContext, _ path: CGPath, _ color: CGColor) {
+    static func fill(_ ctx: CGContext, _ path: CGPath, _ color: CGColor) {
         ctx.addPath(path); ctx.setFillColor(color); ctx.fillPath()
     }
 
-    private static func stroke(_ ctx: CGContext, _ path: CGPath, _ color: CGColor, _ width: CGFloat) {
+    static func stroke(_ ctx: CGContext, _ path: CGPath, _ color: CGColor, _ width: CGFloat) {
         ctx.addPath(path); ctx.setStrokeColor(color); ctx.setLineWidth(width); ctx.strokePath()
     }
 
-    private static func fillGradient(_ ctx: CGContext, _ path: CGPath, _ colors: [CGColor], from: CGPoint, to: CGPoint) {
+    static func fillGradient(_ ctx: CGContext, _ path: CGPath, _ colors: [CGColor], from: CGPoint, to: CGPoint) {
         ctx.saveGState(); ctx.addPath(path); ctx.clip()
         gradient(ctx, colors, from: from, to: to)
         ctx.restoreGState()
     }
 
-    private static func gradient(_ ctx: CGContext, _ colors: [CGColor], from: CGPoint, to: CGPoint) {
+    static func gradient(_ ctx: CGContext, _ colors: [CGColor], from: CGPoint, to: CGPoint) {
         guard let g = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors as CFArray, locations: nil) else { return }
         ctx.drawLinearGradient(g, start: from, end: to, options: [.drawsBeforeStartLocation, .drawsAfterEndLocation])
     }
 
-    private static func starShape(_ ctx: CGContext, at p: CGPoint, radius: CGFloat, scaleX: CGFloat) {
+    static func starShape(_ ctx: CGContext, at p: CGPoint, radius: CGFloat, scaleX: CGFloat) {
         for i in 0..<10 {
             let a = Double(i) * .pi / 5 - .pi / 2, r = i.isMultiple(of: 2) ? radius : radius * 0.42
             let v = CGPoint(x: p.x + CGFloat(cos(a)) * r * scaleX, y: p.y + CGFloat(sin(a)) * r)
@@ -955,7 +955,7 @@ nonisolated enum CounterArt {
         ctx.closePath(); ctx.fillPath()
     }
 
-    private static func sparkle(_ ctx: CGContext, at p: CGPoint, size: CGFloat) {
+    static func sparkle(_ ctx: CGContext, at p: CGPoint, size: CGFloat) {
         let w = size * 0.22
         ctx.move(to: CGPoint(x: p.x, y: p.y - size))
         ctx.addQuadCurve(to: CGPoint(x: p.x + size, y: p.y), control: CGPoint(x: p.x + w, y: p.y - w))
@@ -965,20 +965,20 @@ nonisolated enum CounterArt {
         ctx.fillPath()
     }
 
-    private static func hash(_ i: Int, _ seed: Int) -> Double {
+    static func hash(_ i: Int, _ seed: Int) -> Double {
         let n = sin(Double(i &* 71 &+ seed &* 97) * 12.9898) * 43758.5453
         return n - floor(n)
     }
 
-    private static func easeOut(_ x: Double) -> Double { 1 - pow(1 - min(1, max(0, x)), 3) }
-    private static func easeInOut(_ x: Double) -> Double {
+    static func easeOut(_ x: Double) -> Double { 1 - pow(1 - min(1, max(0, x)), 3) }
+    static func easeInOut(_ x: Double) -> Double {
         let t = min(1, max(0, x))
         return t < 0.5 ? 4 * t * t * t : 1 - pow(-2 * t + 2, 3) / 2
     }
 
-    private static func rgb(_ r: Double, _ g: Double, _ b: Double, _ a: Double = 1) -> CGColor {
+    static func rgb(_ r: Double, _ g: Double, _ b: Double, _ a: Double = 1) -> CGColor {
         CGColor(red: r, green: g, blue: b, alpha: a)
     }
-    private static let lime = CGColor(red: 0.83, green: 1, blue: 0.25, alpha: 1)
-    private static let gold = CGColor(red: 1, green: 0.78, blue: 0.2, alpha: 1)
+    static let lime = CGColor(red: 0.83, green: 1, blue: 0.25, alpha: 1)
+    static let gold = CGColor(red: 1, green: 0.78, blue: 0.2, alpha: 1)
 }

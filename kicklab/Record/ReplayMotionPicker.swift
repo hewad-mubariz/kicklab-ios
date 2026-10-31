@@ -48,8 +48,10 @@ struct ReplayMotionPicker: View {
                             .accessibilityIdentifier("motion-preview-time")
                     }
                     Spacer()
-                    Text(snapshot.graph.status).font(.system(size: 9, weight: .medium))
-                        .foregroundStyle(SessionStyle.mint)
+                    if let status = style.status(snapshot.graph) {
+                        Text(status).font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(SessionStyle.mint)
+                    }
                     Button(action: onTogglePlayback) {
                         Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: 13, weight: .semibold)).frame(width: 30, height: 30)
