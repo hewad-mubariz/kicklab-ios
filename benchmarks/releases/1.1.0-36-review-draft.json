@@ -1,0 +1,52 @@
+{
+  "app": "Juggle Dude",
+  "version": "1.1.0",
+  "build": "36",
+  "status": "Prepare for Submission",
+  "url": "https://appstoreconnect.apple.com/apps/6820780610/distribution/ios/version/inflight",
+  "release_mode": "manual",
+  "submitted_to_review": false,
+  "added_for_review": false,
+  "public_whats_new": {
+    "en-US": "Added leaderboards and support for more languages.",
+    "en-AU": "Added leaderboards and support for more languages.",
+    "en-CA": "Added leaderboards and support for more languages.",
+    "en-GB": "Added leaderboards and support for more languages.",
+    "de-DE": "Neu: Bestenlisten und Unterst\u00fctzung f\u00fcr weitere Sprachen."
+  },
+  "review_notes_file": "benchmarks/releases/1.1.0-36-review-notes.txt",
+  "review_notes_sha256": "d3647efa5e9684884966b1360ba13e2071067c123b3e7bb1ec698d9eeb741413",
+  "review_notes_characters": 3920,
+  "retained": [
+    "Existing screenshots and app preview",
+    "Existing description, keywords, support/marketing URLs",
+    "Existing review contact information",
+    "Existing rating"
+  ],
+  "attachment": "None; inherited approved version also had no attachment. Existing public sample clip is linked.",
+  "links_checked": [
+    {
+      "url": "https://juggledude.com/terms/",
+      "status": 200,
+      "final_url": "https://juggledude.com/terms/",
+      "title": "Terms of use | Juggle Dude"
+    },
+    {
+      "url": "https://juggledude.com/privacy/",
+      "status": 200,
+      "final_url": "https://juggledude.com/privacy/",
+      "title": "Privacy policy | Juggle Dude"
+    },
+    {
+      "url": "https://drive.google.com/file/d/1E5P2OyqE0h4ok44QDoOuYmd7jQw-Uud-/view?usp=sharing",
+      "status": 200,
+      "final_url": "https://drive.google.com/file/d/1E5P2OyqE0h4ok44QDoOuYmd7jQw-Uud-/view?usp=sharing",
+      "title": "Juggle-Dude-Review-Sample-15s.mp4 - Google Drive"
+    }
+  ],
+  "pending_before_submission": [
+    "Owner tests TestFlight build 36 and approves submission.",
+    "Known unresolved guideline 1.2 risk: custom public names/photos lack content filtering, reporting and blocking; owner previously deferred safeguards."
+  ],
+  "proof": "artifacts/releases/20261031-leaderboard-replay-1.1.0-36/review-draft.jpg"
+}

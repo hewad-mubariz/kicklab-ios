@@ -1,0 +1,86 @@
+{
+  "app": "Juggle Dude",
+  "apple_app_id": "6820780610",
+  "version": "1.1.0",
+  "build": "36",
+  "branch": "codex/post-launch-signin-leaderboard-ball-edges",
+  "source_commit": "6273288157ced464df3d8075df5e38e3c1fd4382",
+  "status": "testing_internal",
+  "minimum_ios": "18.0",
+  "changes_from_build_35": [
+    "Hide the postponed manual leaderboard submission route in saved replay; keep automatic streak display."
+  ],
+  "validation": {
+    "ios18_leaderboard_ui_tests": {
+      "passed": 4,
+      "failed": 0,
+      "result_bundle": "/tmp/juggledude-leaderboard-replay-guard-20261031.xcresult"
+    },
+    "pinned_model_verified": true,
+    "counting_rules_unchanged": true
+  },
+  "what_to_test_file": "artifacts/releases/20261031-leaderboard-replay-1.1.0-36/what-to-test.txt",
+  "what_to_test": "Juggle Dude 1.1.0 (36) \u2014 automatic leaderboard replay fix\n\n\u2022 Record and stop a juggling session, then open it again from Session history. Replay should no longer show a trophy button that opens \u201csend touches\u201d or a manual submission screen.\n\u2022 For a signed-in player who joined the leaderboard, check that the longest counted streak updates automatically. The best-streak strip is informational; no video or touch-review submission is required.\n\u2022 Check Customize, replay playback and saving to Photos still work normally. Counting rules are unchanged from build 35.\n\nThis build retains leaderboard, Apple/email sign-in, instant language switching, invite-code redemption and iOS 18 compatibility from build 35. Real offer-code redemption and physical iOS 18 camera/thermal testing remain to be checked. On iOS 18, keep the app open during video preparation/export.\n",
+  "submitted_to_app_store_review": false,
+  "submitted_to_external_beta_review": false,
+  "installed_to_device_after_upload": false,
+  "updated_at_utc": "2026-10-31T00:03:43.929891+00:00",
+  "archive_verification": {
+    "version": "1.1.0",
+    "build": "36",
+    "source_commit": "6273288157ced464df3d8075df5e38e3c1fd4382",
+    "archive": "/Users/hewadmubariz/.codex/worktrees/ball-preparation-iphone11/kicklab/artifacts/releases/20261031-leaderboard-replay-1.1.0-36/JuggleDude-1.1.0-36.xcarchive",
+    "signature_verified": true,
+    "source_files_verified": 553,
+    "matches_tested_source": "6273288157ced464df3d8075df5e38e3c1fd4382",
+    "counter_profile": "outdoor-balanced-v3-20261029",
+    "compilation": "Release with TOUCH_COUNTER_BETA; DEBUG modes absent",
+    "models": [
+      "RFDETRSmallRecovery040FP16.mlmodelc"
+    ],
+    "languages": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "pt-BR"
+    ],
+    "minimum_ios": "18.0",
+    "iphone_only": true,
+    "privacy_manifest": true,
+    "model_license": true,
+    "client_configurations_verified": true,
+    "deferred_editor_features_absent": true,
+    "touch_review_disabled": true,
+    "mach_o_minimum_ios": "18.0"
+  },
+  "upload_log": "artifacts/releases/20261031-leaderboard-replay-1.1.0-36/upload.log",
+  "upload_succeeded": true,
+  "review_flow_audit": {
+    "source_checked": [
+      "Replay toolbar and streak card",
+      "Profile touch-check button",
+      "History detail navigation",
+      "Leaderboard last-session card and submissions button",
+      "Pending-check pills and legacy checked-score details",
+      "Leaderboard rules and privacy wording",
+      "Review service initialization and queue sending"
+    ],
+    "result": "All production entry points are gated off. The review store has no service, so refresh/upload are inactive. Deferred source and translations are retained.",
+    "ui_checks": "Four targeted iOS 18 tests passed; no additional app edits after archive."
+  },
+  "processing_confirmed_in_app_store_connect": true,
+  "build_id": "57803f0f-cc56-4028-abf5-c9f2ba8f1bf1",
+  "processing_complete": true,
+  "what_to_test_saved": true,
+  "internal_testing": {
+    "group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "existing_testers": 3,
+    "status": "Testing"
+  },
+  "proof": [
+    "artifacts/releases/20261031-leaderboard-replay-1.1.0-36/testflight-testing.jpg",
+    "artifacts/releases/20261031-leaderboard-replay-1.1.0-36/testflight-notes-and-group.jpg"
+  ]
+}

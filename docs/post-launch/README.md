@@ -1021,7 +1021,10 @@ session ID was present. The button, sheet content and streak-card action now hon
 18 UI checks passed, covering saved replay, the informational strip, pending-check
 data and legacy review details. The new saved-replay fixture supplies the session
 ID that earlier editor fixtures omitted. Counter rules and server behavior are
-unchanged. This source fix needs a later TestFlight build; build 35 is unchanged.
+unchanged. The fix is available to Early testers in TestFlight 1.1.0 (36); build
+35 is unchanged. The 1.1.0 App Store draft selects build 36 with manual release,
+short public update text and detailed private review notes. It has not been
+submitted. Public-profile moderation safeguards remain deferred as noted below.
 
 **Automatic-only consistency — 26 October:**
 `202610260001_automatic_leaderboard_beta.sql` removes approved-review overrides

@@ -1,0 +1,29 @@
+Juggle Dude 1.1.0 (36) - App Review Notes
+
+CHANGES
+Adds weekly/all-time leaderboards, email sign-in alongside Apple, and English, German, Spanish, French and Brazilian Portuguese support. Profile > Settings > Language applies changes without restarting. Minimum iOS version is now 18.0. Profile and the Pro screen also offer Apple subscription offer-code redemption.
+
+LEADERBOARD
+Open Leaderboard from Home. Viewing is free; participation is optional and requires sign-in. Choose Show me on the join card, or enable Show on leaderboard in Profile. Public entries show name, country, profile photo, best streak, duration and rhythm. Players can hide their entry in Profile. Pro is not required and gives no scoring advantage. There are no prizes or trick bonuses.
+Only sessions recorded in the app while signed in qualify. Gallery imports and guest sessions do not rank. Results sync automatically; there is nothing to submit and no video upload or human touch-review flow in this version. Rankings use the longest counted uninterrupted streak, not the session total: runs of 10, 50 and 30 rank as 50. Detected hands/arms, catches, held stalls and ground contacts end a streak; an initial hand release earns no points. Uncertain touches are omitted without automatically ending the streak. Counts are automated estimates, not verified scores. Weekly ranking resets Monday at 00:00 UTC; ties favor the earlier session. Rules are linked on the leaderboard.
+
+ACCESS AND TESTING
+Choose Try it first for guest use. Recording/import, analysis, replay/export, local history, purchase and restore do not require an app account.
+Sample juggling clip:
+https://drive.google.com/file/d/1E5P2OyqE0h4ok44QDoOuYmd7jQw-Uud-/view?usp=sharing
+Save to Photos > Home > Import a juggling video. Keep the app open during analysis; the replay Download arrow saves to Photos. This tests analysis/effects/export without performing the exercise; imports do not affect rankings.
+Home > Juggling opens live recording. Home > Ball Distance opens shot recording/Power Shot. No verified shot speed or travel-distance measurements are provided. On iOS 18, keep the app open for video preparation/export; work pauses when leaving and resumes on return.
+
+SIGN-IN AND DELETION
+Profile > Sign in offers Apple or email. Email sends a secure sign-in link: use an inbox you can access and open the link on the same iPhone. No app password is used. Profiles/results sync; recordings remain local, and guest history is separate.
+Profile > Delete account removes the account, profile/photo, server results and account-local history/replays, then signs out. Apple-linked accounts ask for Apple verification. Guest history and Photos exports remain. Account deletion does not cancel Apple subscriptions; subscription management is linked in the app.
+
+FREE AND PRO
+Free juggling: recording/import, analysis/history, basic live counter/timer and Normal counter/timer in replay/export. Pro: decorative counters, ball replacement, additional juggling effects and graphs.
+Free Power Shot: recording, original video, basic export and Glow Trail. Other shot effects, camera tools and graphs require Pro.
+Profile > Juggle Dude Pro or a locked replay option opens the paywall. Monthly/yearly auto-renewing plans have identical benefits. Standard plans have no free trial; an eligible Apple offer code may provide a promotional offer. StoreKit shows localized prices and offer terms. Restore Purchases is available. Redeem invite code uses Apple's native redemption sheet and verified StoreKit transactions. Pro is separate from app sign-in.
+
+ANALYSIS AND PRIVACY
+RF-DETR Seg Small runs through Apple Core ML; Apple Vision supplies pose. Video/frame analysis stays on-device. Model licence/attribution notices are bundled. Optional usage analytics is off by default; no videos or frames are sent.
+Terms: https://juggledude.com/terms/
+Privacy: https://juggledude.com/privacy/
