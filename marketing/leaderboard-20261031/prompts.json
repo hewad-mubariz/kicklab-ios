@@ -1,0 +1,35 @@
+{
+  "generator": "built-in image_gen",
+  "people": [
+    {
+      "id": "maja-lind",
+      "prompt": "Use case: photorealistic-natural\nAsset type: one square player avatar for a football training app marketing screenshot.\nSubject: A fictional Swedish woman aged 28, pale freckled skin, medium brown hair tied back, green unbranded football training shirt, relaxed confident smile.\nComposition: a single person, centered face and shoulders, head fully in frame with ample margin for circular avatar cropping; face large and clearly readable as a small app avatar.\nStyle: believable casual outdoor sports portrait, realistic skin texture, soft daylight, blurred green practice field background, natural eyes, no glamour retouching.\nConstraints: fictional adult, no celebrity resemblance, no text, no logo, no watermark, no circle border, no collage. Square image.",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a12c6a-acab-7a80-aa44-f62f5149f88e/exec-cc1474c8-9448-473f-9aee-d548fd365d3e.png"
+    },
+    {
+      "id": "ren-takahashi",
+      "prompt": "Use case: photorealistic-natural\nAsset type: one square player avatar for a football training app marketing screenshot.\nSubject: A fictional Japanese man aged 26, short dark slightly tousled hair, navy unbranded football training shirt, friendly relaxed smile.\nComposition: a single person, centered face and shoulders, head fully in frame with ample margin for circular avatar cropping; face large and clearly readable as a small app avatar.\nStyle: believable casual outdoor sports portrait, realistic skin texture, soft daylight, blurred green practice field background, natural eyes, no glamour retouching.\nConstraints: fictional adult, no celebrity resemblance, no text, no logo, no watermark, no circle border, no collage. Square image.",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a12c6a-acab-7a80-aa44-f62f5149f88e/exec-6255a424-bfeb-4057-8428-b32b9ee612a2.png"
+    },
+    {
+      "id": "arjun-mehta",
+      "prompt": "Use case: photorealistic-natural\nAsset type: one square player avatar for a football training app marketing screenshot.\nSubject: A fictional Indian man aged 29, warm brown skin, short black hair and neatly trimmed short beard, burgundy unbranded football training shirt, easy smile.\nComposition: a single person, centered face and shoulders, head fully in frame with ample margin for circular avatar cropping; face large and clearly readable as a small app avatar.\nStyle: believable casual outdoor sports portrait, realistic skin texture, soft daylight, blurred green practice field background, natural eyes, no glamour retouching.\nConstraints: fictional adult, no celebrity resemblance, no text, no logo, no watermark, no circle border, no collage. Square image.",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a12c6a-acab-7a80-aa44-f62f5149f88e/exec-7f8e5dca-c02e-4ccf-97a2-592b0ebeb30e.png"
+    },
+    {
+      "id": "luca-moretti",
+      "prompt": "Use case: photorealistic-natural\nAsset type: one square player avatar for a football training app marketing screenshot.\nSubject: A fictional Italian man aged 25, olive skin, short curly dark hair, white unbranded football training shirt, warm relaxed smile.\nComposition: a single person, centered face and shoulders, head fully in frame with ample margin for circular avatar cropping; face large and clearly readable as a small app avatar.\nStyle: believable casual outdoor sports portrait, realistic skin texture, soft daylight, blurred green practice field background, natural eyes, no glamour retouching.\nConstraints: fictional adult, no celebrity resemblance, no text, no logo, no watermark, no circle border, no collage. Square image.",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a12c6a-acab-7a80-aa44-f62f5149f88e/exec-6eebcb23-7244-4192-a505-7218aa2e2a7e.png"
+    },
+    {
+      "id": "jiwoo-park",
+      "prompt": "Use case: photorealistic-natural\nAsset type: one square player avatar for a football training app marketing screenshot.\nSubject: A fictional Korean woman aged 27, shoulder length dark hair tied back, cobalt unbranded football training shirt, cheerful natural smile.\nComposition: a single person, centered face and shoulders, head fully in frame with ample margin for circular avatar cropping; face large and clearly readable as a small app avatar.\nStyle: believable casual outdoor sports portrait, realistic skin texture, soft daylight, blurred green practice field background, natural eyes, no glamour retouching.\nConstraints: fictional adult, no celebrity resemblance, no text, no logo, no watermark, no circle border, no collage. Square image.",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a12c6a-acab-7a80-aa44-f62f5149f88e/exec-5458c274-8c54-4fdf-82db-a9cf8c771a13.png"
+    },
+    {
+      "id": "lea-martin",
+      "prompt": "Use case: photorealistic-natural\nAsset type: one square player avatar for a football training app marketing screenshot.\nSubject: A fictional French woman aged 30, light skin, dark blonde wavy hair, charcoal unbranded football training shirt, friendly confident smile.\nComposition: a single person, centered face and shoulders, head fully in frame with ample margin for circular avatar cropping; face large and clearly readable as a small app avatar.\nStyle: believable casual outdoor sports portrait, realistic skin texture, soft daylight, blurred green practice field background, natural eyes, no glamour retouching.\nConstraints: fictional adult, no celebrity resemblance, no text, no logo, no watermark, no circle border, no collage. Square image.",
+      "source": "/Users/hewadmubariz/.codex/generated_images/01a12c6a-acab-7a80-aa44-f62f5149f88e/exec-27c8f7bc-7884-461e-9393-0f307efbc63c.png"
+    }
+  ]
+}

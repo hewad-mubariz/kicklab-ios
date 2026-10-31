@@ -1,0 +1,90 @@
+{
+  "sourceBaseCommit": "34a919f",
+  "appVersion": "1.1.0",
+  "intendedUse": "next-release media, not uploaded",
+  "uniqueLanguages": 5,
+  "storefrontExports": 10,
+  "fictionalProfiles": true,
+  "files": [
+    {
+      "file": "screenshots/de-DE/04-leaderboard-1320x2868.png",
+      "width": 1320,
+      "height": 2868,
+      "color": "RGB, no alpha",
+      "bytes": 2682860,
+      "sha256": "99c48d58629b6a726a7f7bb9a67900126482245bea956ec15e92ce08151b13c7"
+    },
+    {
+      "file": "screenshots/en-AU/04-leaderboard-1320x2868.png",
+      "width": 1320,
+      "height": 2868,
+      "color": "RGB, no alpha",
+      "bytes": 2676840,
+      "sha256": "59e1cc78471d150efa33ab268f1eec82330ecabb6a32e70ef95a239ddd3164f8"
+    },
+    {
+      "file": "screenshots/en-CA/04-leaderboard-1320x2868.png",
+      "width": 1320,
+      "height": 2868,
+      "color": "RGB, no alpha",
+      "bytes": 2676840,
+      "sha256": "59e1cc78471d150efa33ab268f1eec82330ecabb6a32e70ef95a239ddd3164f8"
+    },
+    {
+      "file": "screenshots/en-GB/04-leaderboard-1320x2868.png",
+      "width": 1320,
+      "height": 2868,
+      "color": "RGB, no alpha",
+      "bytes": 2676840,
+      "sha256": "59e1cc78471d150efa33ab268f1eec82330ecabb6a32e70ef95a239ddd3164f8"
+    },
+    {
+      "file": "screenshots/en-US/04-leaderboard-1320x2868.png",
+      "width": 1320,
+      "height": 2868,
+      "color": "RGB, no alpha",
+      "bytes": 2676840,
+      "sha256": "59e1cc78471d150efa33ab268f1eec82330ecabb6a32e70ef95a239ddd3164f8"
+    },
+    {
+      "file": "screenshots/es-ES/04-leaderboard-1320x2868.png",
+      "width": 1320,
+      "height": 2868,
+      "color": "RGB, no alpha",
+      "bytes": 2676901,
+      "sha256": "2fbbdb3bd57a25c3c2c4e7e9aa22b0e8b24bc2082923fb37ab42d3bfa1e5f8d8"
+    },
+    {
+      "file": "screenshots/es-MX/04-leaderboard-1320x2868.png",
+      "width": 1320,
+      "height": 2868,
+      "color": "RGB, no alpha",
+      "bytes": 2676901,
+      "sha256": "2fbbdb3bd57a25c3c2c4e7e9aa22b0e8b24bc2082923fb37ab42d3bfa1e5f8d8"
+    },
+    {
+      "file": "screenshots/fr-CA/04-leaderboard-1320x2868.png",
+      "width": 1320,
+      "height": 2868,
+      "color": "RGB, no alpha",
+      "bytes": 2706270,
+      "sha256": "ec0c0ac5948c776bf3145188ed83f117067c4f3e92d3bbb6743dc71e31c6a824"
+    },
+    {
+      "file": "screenshots/fr-FR/04-leaderboard-1320x2868.png",
+      "width": 1320,
+      "height": 2868,
+      "color": "RGB, no alpha",
+      "bytes": 2706270,
+      "sha256": "ec0c0ac5948c776bf3145188ed83f117067c4f3e92d3bbb6743dc71e31c6a824"
+    },
+    {
+      "file": "screenshots/pt-BR/04-leaderboard-1320x2868.png",
+      "width": 1320,
+      "height": 2868,
+      "color": "RGB, no alpha",
+      "bytes": 2687717,
+      "sha256": "3a78783caafb0ef3c7a46fc7058774efdc416f4758fac00d7b7e11021140c598"
+    }
+  ]
+}

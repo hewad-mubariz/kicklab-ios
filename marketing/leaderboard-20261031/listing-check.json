@@ -1,0 +1,34 @@
+{
+  "checkedAt": "2026-10-31T00:19:54.764Z",
+  "version": "1.1.0",
+  "build": 36,
+  "status": "Waiting for Review",
+  "release": "Manual",
+  "changedStoreMetadata": false,
+  "locales": [
+    {
+      "locale": "en-US",
+      "keywords": "football,freestyle,ball,skills,video,effects,touch,keepy,uppy,glow,trail,fire,ice,share,camera"
+    },
+    {
+      "locale": "de-DE",
+      "keywords": "fussball,jonglieren,ballkontrolle,freestyle,video,effekte,soccer,football,tricks,kamera,replay"
+    },
+    {
+      "locale": "en-AU",
+      "keywordLine": "\t\t\t\t292 text field (settable) Keywords, Value: football,freestyle,ball,skills,video,effects,touch,keepy,uppy,glow,trail,fire,ice,share,camera, ID: keywords",
+      "whatsNewLine": "\t\t\t\t287 text entry area (settable) What's New in This Version, ID: whatsNew, Value: Added leaderboards and support for more languages."
+    },
+    {
+      "locale": "en-CA",
+      "keywordLine": "\t\t\t\t292 text field (settable) Keywords, Value: football,freestyle,ball,skills,video,effects,touch,keepy,uppy,glow,trail,fire,ice,share,camera, ID: keywords",
+      "whatsNewLine": "\t\t\t\t287 text entry area (settable) What's New in This Version, ID: whatsNew, Value: Added leaderboards and support for more languages."
+    },
+    {
+      "locale": "en-GB",
+      "keywordLine": "\t\t\t\t292 text field (settable) Keywords, Value: soccer,freestyle,ball,skills,video,effects,touch,keepy,uppy,glow,trail,fire,ice,share,camera, ID: keywords",
+      "whatsNewLine": "\t\t\t\t287 text entry area (settable) What's New in This Version, ID: whatsNew, Value: Added leaderboards and support for more languages."
+    }
+  ],
+  "deferredRisk": "Custom public names/photos still lack reporting, blocking and filtering safeguards."
+}

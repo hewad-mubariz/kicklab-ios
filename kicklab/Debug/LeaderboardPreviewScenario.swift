@@ -4,7 +4,7 @@ import Foundation
 /// Fictional, in-memory boards. Never write these to accounts, history or the
 /// review service. The setting and its controls are absent from Release builds.
 enum LeaderboardPreviewScenario: String, CaseIterable, Identifiable {
-    case live, mixed, first, podium, nearby, unranked, single, empty, inReview
+    case live, mixed, first, podium, nearby, unranked, single, empty, inReview, storefront
 
     /// Set only for one launch, by `--leaderboard-preview <scenario>`.
     static let defaultsKey = "kicklab.leaderboard.previewScenario"
@@ -20,11 +20,13 @@ enum LeaderboardPreviewScenario: String, CaseIterable, Identifiable {
         case .single: "Only one player"
         case .empty: "Empty board"
         case .inReview: "Touches in review"
+        case .storefront: "Store screenshots (fictional)"
         }
     }
 
     func board(period: LeaderboardPeriod) -> LeaderboardBoard {
         guard self != .live, self != .empty else { return .init(entries: [], around: []) }
+        if self == .storefront { return Self.storefrontBoard }
         if self == .single {
             return .init(entries: [entry(rank: 1, name: "Alex", touches: period == .week ? 24 : 78,
                                         you: true, country: "DE", duration: period == .week ? 22 : 61)], around: [])
@@ -63,6 +65,24 @@ enum LeaderboardPreviewScenario: String, CaseIterable, Identifiable {
             entry(rank: rank, name: "Alex", touches: score, you: true, country: "DE", duration: score + 1, spin: 92, height: .normal),
             entry(rank: rank + 1, name: "Ben", touches: score - 1, country: nil, duration: nil)
         ])
+    }
+
+    /// Marketing-only fixture: portraits are copied into the simulator's Documents
+    /// folder, never bundled, fetched from Supabase or written to a real profile.
+    private static var storefrontBoard: LeaderboardBoard {
+        let players = [
+            ("Maja Lind", "SE", "maja-lind", 842, 468),
+            ("Ren Takahashi", "JP", "ren-takahashi", 736, 409),
+            ("Arjun Mehta", "IN", "arjun-mehta", 615, 369),
+            ("Luca Moretti", "IT", "luca-moretti", 458, 286),
+            ("Jiwoo Park", "KR", "jiwoo-park", 392, 245),
+            ("Léa Martin", "FR", "lea-martin", 287, 191)
+        ]
+        return .init(entries: players.enumerated().map { index, p in
+            .init(rank: index + 1, name: p.0, touches: p.3, isYou: index == 3,
+                  photo: URL.documentsDirectory.appending(path: "StorefrontPortraits/\(p.2).png"),
+                  streakDurationMS: p.4 * 1000, countryCode: p.1, isPreview: true)
+        }, around: [])
     }
 
     private func entry(rank: Int, name: String, touches: Int, you: Bool = false,

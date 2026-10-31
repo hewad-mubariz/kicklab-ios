@@ -1,0 +1,7 @@
+[
+  {"language":"en","storefronts":["en-US","en-GB","en-AU","en-CA"],"headline":["YOUR STREAK.","YOUR RANK."],"subtitle":"Weekly and all-time leaderboards.","disclosure":"Illustrative profiles and scores."},
+  {"language":"de","storefronts":["de-DE"],"headline":["DEINE SERIE.","DEIN PLATZ."],"subtitle":"Wochen- und Allzeit-Ranglisten.","disclosure":"Beispielprofile und Beispielwerte."},
+  {"language":"fr","storefronts":["fr-FR","fr-CA"],"headline":["TA SÉRIE.","TON CLASSEMENT."],"subtitle":"Classements de la semaine et de tous les temps.","disclosure":"Profils et scores fictifs."},
+  {"language":"es","storefronts":["es-ES","es-MX"],"headline":["TU RACHA.","TU PUESTO."],"subtitle":"Rankings semanales e históricos.","disclosure":"Perfiles y puntuaciones de ejemplo."},
+  {"language":"pt-BR","storefronts":["pt-BR"],"headline":["SUA SEQUÊNCIA.","SUA POSIÇÃO."],"subtitle":"Rankings da semana e de todos os tempos.","disclosure":"Perfis e pontuações fictícios."}
+]

@@ -266,12 +266,20 @@ struct LeaderboardView: View {
                     }
                     .padding(.bottom, 9)
             }
-            if usesSamples {
+            if usesSamples && !isStorefrontPreview {
                 Text("SAMPLE DATA · DESIGN PREVIEW")
                     .font(.caption2.weight(.bold)).foregroundStyle(LeaderboardStyle.olive(scheme))
             }
             resetChip.padding(.top, 6)
         }
+    }
+
+    private var isStorefrontPreview: Bool {
+        #if DEBUG
+        previewScenario == .storefront
+        #else
+        false
+        #endif
     }
 
     /// This week counts down to the reset; all time has no end.

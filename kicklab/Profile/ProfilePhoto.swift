@@ -55,6 +55,24 @@ struct PlayerAvatar: View {
     var remoteURL: URL? = nil
 
     var body: some View {
+        Group {
+            #if DEBUG
+            if let remoteURL, remoteURL.isFileURL,
+               let image = UIImage(contentsOfFile: remoteURL.path) {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else {
+                remoteAvatar
+            }
+            #else
+            remoteAvatar
+            #endif
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+        .accessibilityHidden(true)
+    }
+
+    private var remoteAvatar: some View {
         AsyncImage(url: remoteURL) { phase in
             if let image = phase.image {
                 image.resizable().scaledToFill()
@@ -62,9 +80,6 @@ struct PlayerAvatar: View {
                 PlayerPlaceholder(name: name, size: size)
             }
         }
-        .frame(width: size, height: size)
-        .clipShape(Circle())
-        .accessibilityHidden(true)
     }
 }
 
