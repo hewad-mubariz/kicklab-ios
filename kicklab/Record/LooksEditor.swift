@@ -316,9 +316,14 @@ struct LooksPage: View {
             : String(localized: "Touches \(run.lowerBound + 1) to \(last)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
 
+    /// The clip's own ball goes unnamed, so the line names what the look changes and fits.
     private func name(_ look: TouchLook) -> String {
-        let ball = look.ball == .original ? String(localized: "Original ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : look.ball.title
-        return look.effect == .none ? String(localized: "\(ball), no effect", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : "\(ball) + \(look.effect.title)"
+        switch (look.ball == .original, look.effect == .none) {
+        case (true, true): String(localized: "Original", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case (true, false): look.effect.title
+        case (false, true): String(localized: "\(look.ball.title), no effect", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case (false, false): "\(look.ball.title) + \(look.effect.title)"
+        }
     }
 
     /// A new run from the touch under the lens, starting with the same look until it is changed.
