@@ -19,7 +19,7 @@ not resolve that review risk.
 - `sources/iphone-17-pro-max-blue.png`: the same frame used by the current store
   screenshots. The device continues below the artwork's bottom edge, as before.
 
-The fixture mixes European and Asian names: Maja Lind, Ren Takahashi, Arjun Mehta,
+The fixture mixes European and Asian names: Mika Lind, Ren Takahashi, Lukas Weber,
 Luca Moretti, Jiwoo Park and Léa Martin. The current player's row reads the app's
 localized “You”. Scores, durations and profiles are illustrative. The artwork
 states this explicitly. Spin/height data and any verified-score claim are absent.

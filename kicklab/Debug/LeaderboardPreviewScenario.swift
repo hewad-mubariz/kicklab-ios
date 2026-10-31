@@ -71,9 +71,9 @@ enum LeaderboardPreviewScenario: String, CaseIterable, Identifiable {
     /// folder, never bundled, fetched from Supabase or written to a real profile.
     private static var storefrontBoard: LeaderboardBoard {
         let players = [
-            ("Maja Lind", "SE", "maja-lind", 842, 468),
+            ("Mika Lind", "SE", "mika-lind", 842, 468),
             ("Ren Takahashi", "JP", "ren-takahashi", 736, 409),
-            ("Arjun Mehta", "IN", "arjun-mehta", 615, 369),
+            ("Lukas Weber", "DE", "lukas-weber", 615, 369),
             ("Luca Moretti", "IT", "luca-moretti", 458, 286),
             ("Jiwoo Park", "KR", "jiwoo-park", 392, 245),
             ("Léa Martin", "FR", "lea-martin", 287, 191)

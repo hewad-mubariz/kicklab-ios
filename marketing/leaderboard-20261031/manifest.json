@@ -1,5 +1,5 @@
 {
-  "sourceBaseCommit": "34a919f",
+  "sourceBaseCommit": "7676752",
   "appVersion": "1.1.0",
   "intendedUse": "next-release media, not uploaded",
   "uniqueLanguages": 5,
@@ -11,80 +11,81 @@
       "width": 1320,
       "height": 2868,
       "color": "RGB, no alpha",
-      "bytes": 2682860,
-      "sha256": "99c48d58629b6a726a7f7bb9a67900126482245bea956ec15e92ce08151b13c7"
+      "bytes": 2683355,
+      "sha256": "af9ad2e0c4eeed478ccccd9ec4c322cd776043af11168ca274247bf35cdd0fb1"
     },
     {
       "file": "screenshots/en-AU/04-leaderboard-1320x2868.png",
       "width": 1320,
       "height": 2868,
       "color": "RGB, no alpha",
-      "bytes": 2676840,
-      "sha256": "59e1cc78471d150efa33ab268f1eec82330ecabb6a32e70ef95a239ddd3164f8"
+      "bytes": 2677273,
+      "sha256": "e6a7e0f59efad867f506f23b2b6ab93cc5cdc94735f035f12b3a6226f58d8d84"
     },
     {
       "file": "screenshots/en-CA/04-leaderboard-1320x2868.png",
       "width": 1320,
       "height": 2868,
       "color": "RGB, no alpha",
-      "bytes": 2676840,
-      "sha256": "59e1cc78471d150efa33ab268f1eec82330ecabb6a32e70ef95a239ddd3164f8"
+      "bytes": 2677273,
+      "sha256": "e6a7e0f59efad867f506f23b2b6ab93cc5cdc94735f035f12b3a6226f58d8d84"
     },
     {
       "file": "screenshots/en-GB/04-leaderboard-1320x2868.png",
       "width": 1320,
       "height": 2868,
       "color": "RGB, no alpha",
-      "bytes": 2676840,
-      "sha256": "59e1cc78471d150efa33ab268f1eec82330ecabb6a32e70ef95a239ddd3164f8"
+      "bytes": 2677273,
+      "sha256": "e6a7e0f59efad867f506f23b2b6ab93cc5cdc94735f035f12b3a6226f58d8d84"
     },
     {
       "file": "screenshots/en-US/04-leaderboard-1320x2868.png",
       "width": 1320,
       "height": 2868,
       "color": "RGB, no alpha",
-      "bytes": 2676840,
-      "sha256": "59e1cc78471d150efa33ab268f1eec82330ecabb6a32e70ef95a239ddd3164f8"
+      "bytes": 2677273,
+      "sha256": "e6a7e0f59efad867f506f23b2b6ab93cc5cdc94735f035f12b3a6226f58d8d84"
     },
     {
       "file": "screenshots/es-ES/04-leaderboard-1320x2868.png",
       "width": 1320,
       "height": 2868,
       "color": "RGB, no alpha",
-      "bytes": 2676901,
-      "sha256": "2fbbdb3bd57a25c3c2c4e7e9aa22b0e8b24bc2082923fb37ab42d3bfa1e5f8d8"
+      "bytes": 2677286,
+      "sha256": "004a758cbecfdf8d0e8c037b7ab0f920e084e6e76989ba362f8e076fbe630c3b"
     },
     {
       "file": "screenshots/es-MX/04-leaderboard-1320x2868.png",
       "width": 1320,
       "height": 2868,
       "color": "RGB, no alpha",
-      "bytes": 2676901,
-      "sha256": "2fbbdb3bd57a25c3c2c4e7e9aa22b0e8b24bc2082923fb37ab42d3bfa1e5f8d8"
+      "bytes": 2677286,
+      "sha256": "004a758cbecfdf8d0e8c037b7ab0f920e084e6e76989ba362f8e076fbe630c3b"
     },
     {
       "file": "screenshots/fr-CA/04-leaderboard-1320x2868.png",
       "width": 1320,
       "height": 2868,
       "color": "RGB, no alpha",
-      "bytes": 2706270,
-      "sha256": "ec0c0ac5948c776bf3145188ed83f117067c4f3e92d3bbb6743dc71e31c6a824"
+      "bytes": 2706875,
+      "sha256": "b4eea60e91346e7a4f059726e95771e90fc65408d966cef6452ffcb1968ec40a"
     },
     {
       "file": "screenshots/fr-FR/04-leaderboard-1320x2868.png",
       "width": 1320,
       "height": 2868,
       "color": "RGB, no alpha",
-      "bytes": 2706270,
-      "sha256": "ec0c0ac5948c776bf3145188ed83f117067c4f3e92d3bbb6743dc71e31c6a824"
+      "bytes": 2706875,
+      "sha256": "b4eea60e91346e7a4f059726e95771e90fc65408d966cef6452ffcb1968ec40a"
     },
     {
       "file": "screenshots/pt-BR/04-leaderboard-1320x2868.png",
       "width": 1320,
       "height": 2868,
       "color": "RGB, no alpha",
-      "bytes": 2687717,
-      "sha256": "3a78783caafb0ef3c7a46fc7058774efdc416f4758fac00d7b7e11021140c598"
+      "bytes": 2687670,
+      "sha256": "adb3295e63c7724b90df6ad6015f7fee950514dc8fac089b90c4ab6cb740ca3a"
     }
-  ]
+  ],
+  "revision": "First-place sample changed to Mika Lind with a male portrait; third place renamed Lukas Weber."
 }
