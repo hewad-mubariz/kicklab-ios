@@ -29,6 +29,13 @@ struct LooksPage: View {
     enum LookPart: String, CaseIterable, Identifiable {
         case ball = "Ball", effect = "Effect", change = "Change"
         var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .ball: String(localized: "Ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            case .effect: String(localized: "Effect", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            case .change: String(localized: "Change", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            }
+        }
     }
 
     private let skins: [BallSkin] = [.original, .metal, .lava, .pearl, .volt,
@@ -303,14 +310,15 @@ struct LooksPage: View {
     }
 
     private var rangeText: String {
-        if run.count >= touchTimes.count { return "All \(touchTimes.count) touches" }
+        if run.count >= touchTimes.count { return String(localized: "All \(touchTimes.count) touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
         let last = min(run.upperBound, touchTimes.count)
-        return run.count == 1 ? "Touch \(run.lowerBound + 1)" : "Touches \(run.lowerBound + 1) to \(last)"
+        return run.count == 1 ? String(localized: "Touch \(run.lowerBound + 1)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            : String(localized: "Touches \(run.lowerBound + 1) to \(last)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
 
     private func name(_ look: TouchLook) -> String {
-        let ball = look.ball == .original ? "Original ball" : look.ball.title
-        return look.effect == .none ? "\(ball), no effect" : "\(ball) + \(look.effect.title)"
+        let ball = look.ball == .original ? String(localized: "Original ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : look.ball.title
+        return look.effect == .none ? String(localized: "\(ball), no effect", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : "\(ball) + \(look.effect.title)"
     }
 
     /// A new run from the touch under the lens, starting with the same look until it is changed.
@@ -350,8 +358,9 @@ struct LooksPage: View {
                     HStack(spacing: 6) {
                         partIcon(item)
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(item.rawValue.uppercased())
+                            Text(item.title.uppercased())
                                 .font(.system(size: 8, weight: .bold)).tracking(0.8)
+                                .lineLimit(1).minimumScaleFactor(0.7)
                                 .foregroundStyle(selected ? SessionStyle.mint : .white.opacity(0.5))
                             Text(partValue(item))
                                 .font(.system(size: 11, weight: .semibold))
@@ -371,7 +380,7 @@ struct LooksPage: View {
                 }
                 .buttonStyle(SessionPressStyle(scale: 0.94))
                 .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: selected)
-                .accessibilityLabel("\(item.rawValue), \(partValue(item))")
+                .accessibilityLabel(item.title + ", " + partValue(item))
                 .accessibilityIdentifier("look-part-\(item.rawValue.lowercased())")
                 .accessibilityAddTraits(selected ? .isSelected : [])
             }
@@ -396,8 +405,8 @@ struct LooksPage: View {
 
     private func partValue(_ item: LookPart) -> String {
         switch item {
-        case .ball: runLook.ball == .original ? "Original" : runLook.ball.title
-        case .effect: runLook.effect == .none ? "None" : runLook.effect.title
+        case .ball: runLook.ball == .original ? String(localized: "Original", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : runLook.ball.title
+        case .effect: runLook.effect == .none ? String(localized: "None", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : runLook.effect.title
         case .change: edit.swapEffect.title
         }
     }
@@ -525,7 +534,7 @@ struct LooksPage: View {
                 Image(systemName: edit.swapSound == .none ? "speaker.slash.fill" : "speaker.wave.2.fill")
                     .font(.system(size: 10, weight: .semibold))
                     .contentTransition(.symbolEffect(.replace))
-                Text(edit.swapSound == .none ? "No sound" : edit.swapSound.title).contentTransition(.interpolate)
+                Text(edit.swapSound == .none ? String(localized: "No sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : edit.swapSound.title).contentTransition(.interpolate)
                 if edit.swapSoundChoice == nil && edit.swapSound != .none {
                     Text("auto").foregroundStyle(SessionStyle.mint)
                 }

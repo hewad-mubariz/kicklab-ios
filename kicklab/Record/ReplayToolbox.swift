@@ -227,7 +227,7 @@ struct ReplayToolbox: View {
             .contentShape(.rect(cornerRadius: 17))
         }
         .buttonStyle(SessionPressStyle(scale: 0.96))
-        .accessibilityLabel("Looks" + (!isPro ? ", Pro" : ""))
+        .accessibilityLabel(ReplayTool.looks.title + (!isPro ? ", Pro" : ""))
         .accessibilityIdentifier("replay-tool-looks")
     }
 
@@ -295,7 +295,7 @@ struct ReplayToolbox: View {
                         .frame(height: 26)
                 }
                 Text(shown.map { _ in edit.touchSound != .none ? edit.touchSound.title : edit.swapSound.title }
-                     ?? (edit.clipAudio ? "Original" : "Muted"))
+                     ?? (edit.clipAudio ? String(localized: "Original", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Muted", bundle: AppLanguage.bundle, locale: AppLanguage.locale)))
                     .font(.system(size: 9, weight: .medium)).foregroundStyle(.white.opacity(0.7))
                     .contentTransition(.interpolate)
             }
@@ -461,7 +461,7 @@ struct ReplayToolbox: View {
     }
 
     /// With looks on, Ball and Effects set the first look; this says so and leads to the rest.
-    private func looksNote(_ text: String, id: String) -> some View {
+    private func looksNote(_ text: LocalizedStringKey, id: String) -> some View {
         Button { commitBall(); go(.looks) } label: {
             HStack(spacing: 8) {
                 Image(systemName: "square.stack.3d.up.fill").font(.system(size: 12)).foregroundStyle(SessionStyle.mint)
@@ -608,7 +608,7 @@ struct CounterSelectionFrame: View {
                     .foregroundStyle(.black).frame(width: 25, height: 25).background(.white, in: .circle)
                     .frame(width: 44, height: 44)
             }.buttonStyle(.plain).position(x: 0, y: 0)
-                .accessibilityLabel("Remove \(name)").accessibilityIdentifier("replay-remove-\(name)")
+                .accessibilityLabel(name == "timer" ? "Remove timer" : "Remove counter").accessibilityIdentifier("replay-remove-\(name)")
             Image(systemName: "arrow.up.left.and.arrow.down.right")
                 .font(.system(size: 11, weight: .semibold)).foregroundStyle(.black)
                 .frame(width: 25, height: 25).background(.white, in: .circle)
@@ -619,7 +619,7 @@ struct CounterSelectionFrame: View {
                     placement = placement.transformed(scale: (initialScale ?? placement.scale) + delta, in: size, shape: shape)
                 }.onEnded { _ in initialScale = nil })
                 .position(x: rect.width, y: rect.height)
-                .accessibilityLabel("Resize \(name)").accessibilityAddTraits(.allowsDirectInteraction)
+                .accessibilityLabel(name == "timer" ? "Resize timer" : "Resize counter").accessibilityAddTraits(.allowsDirectInteraction)
         }
         .frame(width: rect.width, height: rect.height)
         .rotationEffect(.radians(placement.radians))

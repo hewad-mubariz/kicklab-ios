@@ -112,7 +112,7 @@ struct MyStyleShareRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(matches ? "This is your style" : saved == nil ? "Start every session with this look" : "Make this my new style")
                     .font(.system(size: 14, weight: .semibold))
-                    .lineLimit(1).minimumScaleFactor(0.8)
+                    .lineLimit(2).minimumScaleFactor(0.8)
                     .contentTransition(.interpolate)
                 Text(matches ? "New sessions open with it" : "Ball, effects, looks and sounds")
                     .font(.system(size: 11)).foregroundStyle(.white.opacity(0.66))

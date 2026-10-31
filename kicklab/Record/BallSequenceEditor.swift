@@ -238,9 +238,15 @@ struct TouchDial: View {
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion).delay(ripple), value: look)
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: isSelected)
         .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: inSelectedRun)
-        .accessibilityLabel("Touch \(index + 1), \(look.ball == .original ? "original ball" : look.ball.title), \(look.effect == .none ? "no effect" : look.effect.title)")
+        .accessibilityLabel(touchLabel(index, look))
         .accessibilityIdentifier("ball-touch-\(index + 1)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func touchLabel(_ index: Int, _ look: TouchLook) -> String {
+        let ball = look.ball == .original ? String(localized: "original ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : look.ball.title
+        let effect = look.effect == .none ? String(localized: "no effect", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : look.effect.title
+        return String(localized: "Touch \(index + 1), \(ball), \(effect)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
 
     /// One segment of a run; neighbouring items join into a continuous bar. The lit run is thicker.
@@ -529,13 +535,13 @@ struct ReplaySoundPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             ToolSwitchRow(symbol: edit.clipAudio ? "speaker.wave.2.fill" : "speaker.slash.fill",
-                          title: "Original sound", detail: originalDetail, isOn: originalBinding,
+                          title: String(localized: "Original sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale), detail: originalDetail, isOn: originalBinding,
                           identifier: "sound-original", nudge: nudge)
             label("Touch sound", symbol: "hand.tap.fill")
             row(TouchSound.allCases, selection: edit.touchSound) { sound in
                 SoundTile(sound: .touch(sound), title: sound.title, selected: sound == edit.touchSound,
                           identifier: "touch-sound-\(sound.rawValue)",
-                          accessibility: sound == .none ? "No touch sound" : "\(sound.title) touch sound") {
+                          accessibility: sound == .none ? String(localized: "No touch sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "\(sound.title) touch sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) {
                     pickTouch(sound)
                 }
             }
@@ -543,10 +549,11 @@ struct ReplaySoundPage: View {
             // Auto follows the change effect; any other tile overrides it until Auto is picked again.
             row([nil] + BallSwapSound.allCases.map { Optional($0) }, selection: edit.swapSoundChoice) { choice in
                 let sound = choice ?? edit.swapEffect.defaultSound
-                SoundTile(sound: .swap(sound), title: choice?.title ?? "Auto", selected: choice == edit.swapSoundChoice,
+                SoundTile(sound: .swap(sound), title: choice?.title ?? String(localized: "Auto", bundle: AppLanguage.bundle, locale: AppLanguage.locale), selected: choice == edit.swapSoundChoice,
                           identifier: "swap-sound-\(choice?.rawValue ?? "auto")",
-                          accessibility: choice == nil ? "Auto ball change sound, \(sound.title), matches the change effect"
-                              : choice == BallSwapSound.none ? "No ball change sound" : "\(sound.title) ball change sound") {
+                          accessibility: choice == nil ? String(localized: "Auto ball change sound, \(sound.title), matches the change effect", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                              : choice == BallSwapSound.none ? String(localized: "No ball change sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                              : String(localized: "\(sound.title) ball change sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) {
                     withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { edit.swapSoundChoice = choice }
                     onPreview(.swap(sound))
                 }
@@ -583,7 +590,7 @@ struct ReplaySoundPage: View {
         .padding(.top, 2)
     }
 
-    private func note(_ text: String) -> some View {
+    private func note(_ text: LocalizedStringKey) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "link").font(.system(size: 12)).foregroundStyle(SessionStyle.mint)
             Text(text).font(.system(size: 11)).foregroundStyle(.white.opacity(0.7))
@@ -596,8 +603,8 @@ struct ReplaySoundPage: View {
     }
 
     private var originalDetail: String {
-        if edit.clipAudio { return "Plays under your touch sounds" }
-        return autoMuted ? "Muted for your touch sounds" : "Muted in replay and video"
+        if edit.clipAudio { return String(localized: "Plays under your touch sounds", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        return autoMuted ? String(localized: "Muted for your touch sounds", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Muted in replay and video", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
 
     private var originalBinding: Binding<Bool> {
@@ -621,7 +628,7 @@ struct ReplaySoundPage: View {
         onPreview(.touch(sound))
     }
 
-    private func label(_ text: String, symbol: String) -> some View {
+    private func label(_ text: LocalizedStringKey, symbol: String) -> some View {
         HStack(spacing: 6) {
             Image(systemName: symbol).font(.system(size: 11, weight: .semibold)).foregroundStyle(SessionStyle.mint)
             Text(text).font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.8))

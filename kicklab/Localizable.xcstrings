@@ -41,6 +41,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "%@ ball change sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balltausch-Ton %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido de cambio de balón %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son de changement de ballon %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som de troca de bola %@"
+          }
+        }
+      }
+    },
     "%@ billed monthly to your Apple Account. Renews automatically unless cancelled at least 24 hours before the end of the current period. Manage or cancel any time in Settings." : {
       "localizations" : {
         "de" : {
@@ -93,6 +121,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ cobrado anualmente na sua Conta Apple. A renovação é automática, a menos que seja cancelada pelo menos 24 horas antes do fim do período atual. Gerencie ou cancele quando quiser nos Ajustes."
+          }
+        }
+      }
+    },
+    "%@ change effect" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wechseleffekt %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efecto de cambio %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effet de changement %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efeito de troca %@"
           }
         }
       }
@@ -213,6 +269,62 @@
         }
       }
     },
+    "%@ timer style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timerstil %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estilo de cronómetro %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Style de chrono %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estilo de cronômetro %@"
+          }
+        }
+      }
+    },
+    "%@ touch sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontaktton %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido de toque %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son de jongle %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som de toque %@"
+          }
+        }
+      }
+    },
     "%@ touches/min" : {
       "localizations" : {
         "de" : {
@@ -306,6 +418,34 @@
         }
       }
     },
+    "%@, no effect" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, ohne Effekt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, sin efecto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, sans effet"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, sem efeito"
+          }
+        }
+      }
+    },
     "%@. %@. Progress %@" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -366,6 +506,34 @@
     "%lld km/h" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "%lld looks · %lld touches" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld Looks · %2$lld Kontakte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld looks · %2$lld toques"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld looks · %2$lld jongles"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld looks · %2$lld toques"
+          }
+        }
+      }
     },
     "%lld m" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
@@ -2081,6 +2249,34 @@
         }
       }
     },
+    "A fresh mix; tap again to shuffle" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein neuer Mix – tippe erneut zum Mischen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una mezcla nueva; toca otra vez para barajar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un nouveau mélange ; touche encore pour mélanger"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma mistura nova; toque de novo para embaralhar"
+          }
+        }
+      }
+    },
     "A little better, every session." : {
       "localizations" : {
         "de" : {
@@ -2140,6 +2336,34 @@
     "A local diagnostic copy is saved after each attempt. No account identifiers or receipts are included." : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "A new look every few touches; pick how many" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle paar Kontakte ein neuer Look – du wählst, wie oft"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un look nuevo cada pocos toques; elige cada cuántos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un nouveau look tous les quelques jongles ; choisis combien"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um look novo a cada poucos toques; escolha quantos"
+          }
+        }
+      }
     },
     "A point" : {
       "localizations" : {
@@ -2627,6 +2851,34 @@
         }
       }
     },
+    "Add looks to hear the change sound." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Füge Looks hinzu, um den Wechselton zu hören."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añade looks para oír el sonido del cambio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoute des looks pour entendre le son du changement."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicione looks para ouvir o som da troca."
+          }
+        }
+      }
+    },
     "Add moves" : {
       "localizations" : {
         "de" : {
@@ -2679,6 +2931,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Adicionar foto de perfil"
+          }
+        }
+      }
+    },
+    "Adjust timer" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer anpassen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar cronómetro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajuster le chrono"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustar cronômetro"
           }
         }
       }
@@ -2828,6 +3108,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Todos"
+          }
+        }
+      }
+    },
+    "All %lld touches" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle %lld Kontakte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los %lld toques"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les %lld jongles"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos os %lld toques"
           }
         }
       }
@@ -3516,6 +3824,90 @@
         }
       }
     },
+    "Auto" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        }
+      }
+    },
+    "Auto ball change sound, %@, matches the change effect" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatischer Balltausch-Ton, %@, passend zum Wechseleffekt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido de cambio de balón automático, %@, a juego con el efecto de cambio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son de changement de ballon automatique, %@, assorti à l’effet de changement"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som de troca de bola automático, %@, combinando com o efeito de troca"
+          }
+        }
+      }
+    },
+    "Auto plays %@ with %@. Pick a sound to use your own." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto spielt %1$@ zu %2$@. Wähle einen Ton, um deinen eigenen zu nutzen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto reproduce %1$@ con %2$@. Elige un sonido para usar el tuyo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto joue %1$@ avec %2$@. Choisis un son pour utiliser le tien."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto toca %1$@ com %2$@. Escolha um som para usar o seu."
+          }
+        }
+      }
+    },
     "Automatic" : {
       "localizations" : {
         "de" : {
@@ -3843,6 +4235,62 @@
         }
       }
     },
+    "Ball and effect by touch" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ball und Effekt je Kontakt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balón y efecto por toque"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ballon et effet par jongle"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bola e efeito por toque"
+          }
+        }
+      }
+    },
+    "Ball change sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ton beim Balltausch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido del cambio de balón"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son du changement de ballon"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som da troca de bola"
+          }
+        }
+      }
+    },
     "Ball effects unavailable — tap to retry" : {
       "localizations" : {
         "de" : {
@@ -4063,6 +4511,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "O rastreamento da bola foi interrompido. Processe o vídeo de novo. Nenhuma pontuação foi enviada."
+          }
+        }
+      }
+    },
+    "Ball, effects, looks and sounds" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ball, Effekte, Looks und Töne"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balón, efectos, looks y sonidos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ballon, effets, looks et sons"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bola, efeitos, looks e sons"
           }
         }
       }
@@ -4806,6 +5282,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Change" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wechsel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Changement"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Troca"
+          }
+        }
+      }
+    },
     "Change email" : {
       "localizations" : {
         "de" : {
@@ -5046,6 +5550,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sequência verificada"
+          }
+        }
+      }
+    },
+    "Checking invite…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einladung wird geprüft…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprobando la invitación…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérification de l’invitation…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificando o convite…"
           }
         }
       }
@@ -6830,6 +7362,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Custom…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eigene…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizado…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personnalisé…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizado…"
+          }
+        }
+      }
+    },
     "Cut" : {
       "localizations" : {
         "de" : {
@@ -7306,6 +7866,34 @@
         }
       }
     },
+    "Done adjusting timer" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer fertig anpassen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminar de ajustar el cronómetro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminer l’ajustement du chrono"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concluir ajuste do cronômetro"
+          }
+        }
+      }
+    },
     "Download" : {
       "localizations" : {
         "de" : {
@@ -7400,6 +7988,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ziehen zum Verschieben · Mit zwei Fingern skalieren und drehen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra para mover · Pellizca para cambiar el tamaño · Gira para rotar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fais glisser pour déplacer · Pince pour redimensionner · Tourne pour faire pivoter"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste para mover · Pince para redimensionar · Gire para rotacionar"
+          }
+        }
+      }
+    },
+    "Drag to move · Pinch to resize · Twist to turn" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ziehen zum Verschieben · Mit zwei Fingern skalieren · Mit zwei Fingern drehen"
           }
         },
         "es" : {
@@ -7670,6 +8286,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar perfil"
+          }
+        }
+      }
+    },
+    "Effect" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effekt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efecto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effet"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Efeito"
           }
         }
       }
@@ -8077,6 +8721,118 @@
     "Estimated metres • rolling ball only • scale unverified" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Every" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous les"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cada"
+          }
+        }
+      }
+    },
+    "Every %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous les %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cada %lld"
+          }
+        }
+      }
+    },
+    "Every %lld touches" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle %lld Kontakte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada %lld toques"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tous les %lld jongles"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cada %lld toques"
+          }
+        }
+      }
+    },
+    "Every touch" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeder Kontakt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada toque"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque jongle"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada toque"
+          }
+        }
+      }
     },
     "Every touch inside it was counted." : {
       "localizations" : {
@@ -8886,6 +9642,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abra espaço"
+          }
+        }
+      }
+    },
+    "Gives touch %lld and the touches after it a look of their own" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gibt Kontakt %lld und den folgenden Kontakten einen eigenen Look"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Da al toque %lld y a los siguientes un look propio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donne au jongle %lld et aux suivants leur propre look"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dá ao toque %lld e aos seguintes um look próprio"
           }
         }
       }
@@ -11222,6 +12006,34 @@
         }
       }
     },
+    "Levels up at 10, 25, 50 and 100 touches" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Steigert sich bei 10, 25, 50 und 100 Kontakten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sube de nivel a los 10, 25, 50 y 100 toques"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monte en puissance à 10, 25, 50 et 100 jongles"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobe de nível aos 10, 25, 50 e 100 toques"
+          }
+        }
+      }
+    },
     "Light" : {
       "localizations" : {
         "de" : {
@@ -11578,6 +12390,34 @@
         }
       }
     },
+    "Look %lld of %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Look %1$lld von %2$lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Look %1$lld de %2$lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Look %1$lld sur %2$lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Look %1$lld de %2$lld"
+          }
+        }
+      }
+    },
     "Look around with phone" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -11617,6 +12457,62 @@
     "Look right" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Looks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looks"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looks"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looks"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looks"
+          }
+        }
+      }
+    },
+    "Looks on touches" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looks je Kontakt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looks por toque"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looks par jongle"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looks por toque"
+          }
+        }
+      }
     },
     "Looks right" : {
       "localizations" : {
@@ -11739,6 +12635,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Do seu jeito"
+          }
+        }
+      }
+    },
+    "Make this my new style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als neuen Stil übernehmen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar como mi nuevo estilo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En faire mon nouveau style"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar como meu novo estilo"
           }
         }
       }
@@ -11911,9 +12835,149 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Milestone fanfare off" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meilenstein-Fanfare aus"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fanfarria de hitos desactivada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fanfare des paliers désactivée"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fanfarra dos marcos desativada"
+          }
+        }
+      }
+    },
+    "Milestone fanfare on" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meilenstein-Fanfare an"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fanfarria de hitos activada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fanfare des paliers activée"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fanfarra dos marcos ativada"
+          }
+        }
+      }
+    },
+    "Milestones" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meilensteine"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hitos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paliers"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcos"
+          }
+        }
+      }
+    },
     "Milestones Reached" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Milestones off" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meilensteine aus"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hitos desactivados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paliers désactivés"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcos desativados"
+          }
+        }
+      }
+    },
+    "Milestones, %@ style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meilensteine, Stil %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hitos, estilo %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paliers, style %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marcos, estilo %@"
+          }
+        }
+      }
     },
     "Missed / false touch timestamps, playback or heat issues" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
@@ -12107,6 +13171,118 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Muted" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stumm"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muet"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem som"
+          }
+        }
+      }
+    },
+    "Muted for your touch sounds" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stumm wegen deiner Kontakttöne"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciado por tus sonidos de toque"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coupé pour tes sons de jongle"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem som por causa dos seus sons de toque"
+          }
+        }
+      }
+    },
+    "Muted in replay and video" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stumm im Replay und Video"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciado en la repetición y el video"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coupé dans le replay et la vidéo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem som no replay e no vídeo"
+          }
+        }
+      }
+    },
+    "My style options" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionen für Mein Stil"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones de Mi estilo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options de Mon style"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opções de Meu estilo"
+          }
+        }
+      }
+    },
     "NEW BEST" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -12175,6 +13351,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quadros intermediários novos, como num replay de TV"
+          }
+        }
+      }
+    },
+    "New look here" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neuer Look ab hier"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo look aquí"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveau look ici"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novo look aqui"
+          }
+        }
+      }
+    },
+    "New sessions open with it" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Trainings starten damit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las sesiones nuevas empiezan con él"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les nouvelles séances s’ouvrent avec"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novos treinos começam com ele"
           }
         }
       }
@@ -12291,6 +13523,90 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nenhuma assinatura ativa"
+          }
+        }
+      }
+    },
+    "No ball change sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Balltausch-Ton"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin sonido de cambio de balón"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun son de changement de ballon"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem som de troca de bola"
+          }
+        }
+      }
+    },
+    "No celebration" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Jubel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin celebración"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de célébration"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem comemoração"
+          }
+        }
+      }
+    },
+    "No change effect" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Wechseleffekt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin efecto de cambio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun effet de changement"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem efeito de troca"
           }
         }
       }
@@ -12471,6 +13787,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "No sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Ton"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin sonido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun son"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem som"
+          }
+        }
+      }
+    },
     "No touch checks yet." : {
       "localizations" : {
         "de" : {
@@ -12495,6 +13839,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nenhuma verificação ainda."
+          }
+        }
+      }
+    },
+    "No touch sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Kontaktton"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin sonido de toque"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun son de jongle"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem som de toque"
           }
         }
       }
@@ -13002,6 +14374,34 @@
         }
       }
     },
+    "Open Looks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looks öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Looks"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Looks"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Looks"
+          }
+        }
+      }
+    },
     "Open Photos" : {
       "localizations" : {
         "de" : {
@@ -13294,6 +14694,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Opens Apple’s code redemption sheet to review and redeem your Pro offer." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnet Apples Fenster zum Einlösen von Codes, um dein Pro-Angebot zu prüfen und einzulösen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la hoja de canje de códigos de Apple para revisar y canjear tu oferta de Pro."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre la fenêtre d’Apple pour vérifier et utiliser ton offre Pro."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre a tela de resgate de códigos da Apple para revisar e resgatar sua oferta Pro."
+          }
+        }
+      }
+    },
     "Opens Apple’s subscription settings to change your plan." : {
       "localizations" : {
         "de" : {
@@ -13438,6 +14866,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Replay original"
+          }
+        }
+      }
+    },
+    "Original sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Originalton"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido original"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son d’origine"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som original"
+          }
+        }
+      }
+    },
+    "Original sound off" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Originalton aus"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido original desactivado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son d’origine coupé"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som original desativado"
           }
         }
       }
@@ -14108,6 +15592,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jogador pouco visível"
+          }
+        }
+      }
+    },
+    "Plays the first milestone on the clip" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spielt den ersten Meilenstein im Clip ab"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reproduce el primer hito en el clip"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joue le premier palier sur le clip"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reproduz o primeiro marco no clipe"
+          }
+        }
+      }
+    },
+    "Plays under your touch sounds" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Läuft unter deinen Kontakttönen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suena bajo tus sonidos de toque"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joue sous tes sons de jongle"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca por baixo dos seus sons de toque"
           }
         }
       }
@@ -15918,6 +17458,34 @@
         }
       }
     },
+    "Redeem invite code" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einladungscode einlösen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Canjear código de invitación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser un code d’invitation"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resgatar código de convite"
+          }
+        }
+      }
+    },
     "Refresh reports" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -15953,6 +17521,34 @@
     "Remove gap check" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Remove look" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Look entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar look"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer le look"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover look"
+          }
+        }
+      }
     },
     "Remove photo" : {
       "localizations" : {
@@ -16062,6 +17658,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remover este replay?"
+          }
+        }
+      }
+    },
+    "Remove timer" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quitar cronómetro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer le chrono"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover cronômetro"
           }
         }
       }
@@ -16394,6 +18018,34 @@
         }
       }
     },
+    "Reset timer position" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timerposition zurücksetzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer la posición del cronómetro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser la position du chrono"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redefinir a posição do cronômetro"
+          }
+        }
+      }
+    },
     "Reset view" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -16478,6 +18130,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Redimensionar contador"
+          }
+        }
+      }
+    },
+    "Resize timer" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timergröße ändern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar tamaño del cronómetro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redimensionner le chrono"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redimensionar cronômetro"
           }
         }
       }
@@ -17314,6 +18994,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Save" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speichern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar"
+          }
+        }
+      }
+    },
     "Save %@" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -17445,6 +19153,34 @@
     "Saved %.1f / target %lld fps" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Saved as My style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als Mein Stil gespeichert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardado como Mi estilo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistré comme Mon style"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvo como Meu estilo"
+          }
+        }
+      }
     },
     "Saved on this iPhone" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
@@ -17601,6 +19337,34 @@
     "Saved video" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Saves the big look for the last touches" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hebt den großen Look für die letzten Kontakte auf"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda el gran look para los últimos toques"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Garde le grand look pour les derniers jongles"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda o grande look para os últimos toques"
+          }
+        }
+      }
     },
     "Saving" : {
       "localizations" : {
@@ -19537,6 +21301,34 @@
         }
       }
     },
+    "Sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ton"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som"
+          }
+        }
+      }
+    },
     "Source spin" : {
       "localizations" : {
         "de" : {
@@ -19649,6 +21441,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Começar a gravar"
+          }
+        }
+      }
+    },
+    "Start every session with this look" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immer mit diesem Look"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siempre con este look"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toujours avec ce look"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sempre com este look"
           }
         }
       }
@@ -19996,6 +21816,34 @@
     "Stop recording roll" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Stop using My style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mein Stil nicht mehr verwenden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar de usar Mi estilo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne plus utiliser Mon style"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parar de usar Meu estilo"
+          }
+        }
+      }
     },
     "Streak duration %@, average rhythm %@" : {
       "localizations" : {
@@ -20568,6 +22416,34 @@
     "Tap the first paper centre for your check." : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Tap the timer on the video to move, pinch or twist it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipp im Video auf den Timer, um ihn zu verschieben, zu skalieren oder zu drehen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca el cronómetro en el video para moverlo, cambiar su tamaño o girarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touche le chrono dans la vidéo pour le déplacer, le redimensionner ou le faire pivoter."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque no cronômetro no vídeo para mover, redimensionar ou girar."
+          }
+        }
+      }
     },
     "Tap the video" : {
       "localizations" : {
@@ -21629,13 +23505,97 @@
         }
       }
     },
+    "This ball starts the clip. Looks changes the rest." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Ball startet den Clip. Looks ändert den Rest."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este balón abre el clip. Looks cambia el resto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce ballon ouvre le clip. Looks change le reste."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta bola abre o clipe. Looks muda o resto."
+          }
+        }
+      }
+    },
     "This calibration misses the measured gap. Retap the centres or scan the floor again." : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "This effect starts the clip. Looks changes the rest." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Effekt startet den Clip. Looks ändert den Rest."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este efecto abre el clip. Looks cambia el resto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet effet ouvre le clip. Looks change le reste."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este efeito abre o clipe. Looks muda o resto."
+          }
+        }
+      }
+    },
     "This frame couldn’t be displayed. Choose a nearby frame." : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "This is your style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das ist dein Stil"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este es tu estilo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "C’est ton style"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este é o seu estilo"
+          }
+        }
+      }
     },
     "This link has expired or was opened on a different device. Request a new link here and open it on this device." : {
       "localizations" : {
@@ -22185,6 +24145,34 @@
         }
       }
     },
+    "Timer style" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timerstil"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estilo del cronómetro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Style du chrono"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estilo do cronômetro"
+          }
+        }
+      }
+    },
     "To change plans, tap Monthly or Yearly and choose your plan in Apple’s subscription settings." : {
       "localizations" : {
         "de" : {
@@ -22301,6 +24289,90 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Touch %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakt %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jongle %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque %lld"
+          }
+        }
+      }
+    },
+    "Touch %lld and the touches after it go back to the look before" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakt %lld und die folgenden Kontakte bekommen wieder den vorherigen Look"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El toque %lld y los siguientes vuelven al look anterior"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le jongle %lld et les suivants reprennent le look précédent"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O toque %lld e os seguintes voltam ao look anterior"
+          }
+        }
+      }
+    },
+    "Touch %lld, %@, %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakt %1$lld, %2$@, %3$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque %1$lld, %2$@, %3$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jongle %1$lld, %2$@, %3$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque %1$lld, %2$@, %3$@"
+          }
+        }
+      }
+    },
     "Touch Log" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -22393,6 +24465,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Touch sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontaktton"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido de toque"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son de jongle"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som de toque"
+          }
+        }
+      }
+    },
     "Touch the video where the camera should look" : {
       "localizations" : {
         "de" : {
@@ -22449,6 +24549,34 @@
         }
       }
     },
+    "Touches %lld to %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakte %1$lld bis %2$lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toques %1$lld a %2$lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jongles %1$lld à %2$lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toques %1$lld a %2$lld"
+          }
+        }
+      }
+    },
     "Touches Over Time" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -22488,6 +24616,34 @@
     "Touches over time. %@. Duration %lld seconds." : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Touches per look" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakte pro Look"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toques por look"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jongles par look"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toques por look"
+          }
+        }
+      }
     },
     "Touches the counter isn’t sure of" : {
       "localizations" : {
@@ -22773,6 +24929,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Em seguida"
+          }
+        }
+      }
+    },
+    "Update" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mettre à jour"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizar"
           }
         }
       }
@@ -25779,6 +27963,34 @@
         }
       }
     },
+    "auto" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "auto"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "auto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "auto"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "auto"
+          }
+        }
+      }
+    },
     "best streak" : {
       "localizations" : {
         "de" : {
@@ -26079,6 +28291,34 @@
         }
       }
     },
+    "no effect" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "kein Effekt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sin efecto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aucun effet"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sem efeito"
+          }
+        }
+      }
+    },
     "now" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -26090,6 +28330,34 @@
     "or" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "original ball" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Originalball"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "balón original"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ballon d’origine"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "bola original"
+          }
+        }
+      }
     },
     "sample touches" : {
       "localizations" : {
@@ -26115,6 +28383,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "toques de exemplo"
+          }
+        }
+      }
+    },
+    "sound.none" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ohne"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguno"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum"
           }
         }
       }
@@ -26272,6 +28568,34 @@
     },
     "·" : {
       "shouldTranslate" : false
+    },
+    "· change it on the Sound page" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· ändern unter Ton"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· cámbialo en Sonido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· modifie-le dans Son"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· altere em Som"
+          }
+        }
+      }
     },
     "¼×" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",

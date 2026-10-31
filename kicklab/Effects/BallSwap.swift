@@ -17,7 +17,7 @@ nonisolated enum BallSwapEffect: String, CaseIterable, Identifiable, Hashable, S
 
     var title: String {
         switch self {
-        case .none: "None"
+        case .none: String(localized: "None", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .pop: "Pop"
         case .flash: "Flash"
         case .burst: "Burst"

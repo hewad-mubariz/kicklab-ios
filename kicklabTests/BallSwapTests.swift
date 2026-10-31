@@ -158,7 +158,7 @@ struct BallSwapTests {
         #expect(!edit.hasSounds, "A change sound without changes never plays")
         edit.touchSound = .pop
         #expect(edit.hasSounds && edit.isEdited)
-        #expect(edit.label.contains("Pop touches"))
+        #expect(edit.label.contains("Pop touch sound"))
         edit.lookChanges = [2: look(.lava, .fire)]
         let free = JugglingReplayLook(edit: edit, overlays: ExportOverlaySettings(), showGraph: false).allowed(isPro: false)
         #expect(free.edit.touchSound == .none && free.edit.lookChanges.isEmpty, "Locked choices stay off the clip")

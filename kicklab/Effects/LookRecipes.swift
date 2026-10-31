@@ -18,7 +18,7 @@ nonisolated enum LookRecipe: String, CaseIterable, Identifiable, Sendable {
     /// The name on the chip, with Every's interval.
     func title(step: Int) -> String {
         guard self == .every else { return title }
-        return step == 1 ? "Every touch" : "Every \(step)"
+        return step == 1 ? String(localized: "Every touch", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Every \(step)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
 
     var symbol: String {
@@ -32,10 +32,10 @@ nonisolated enum LookRecipe: String, CaseIterable, Identifiable, Sendable {
 
     var caption: String {
         switch self {
-        case .powerUp: "Levels up at 10, 25, 50 and 100 touches"
-        case .finale: "Saves the big look for the last touches"
-        case .every: "A new look every few touches; pick how many"
-        case .remix: "A fresh mix; tap again to shuffle"
+        case .powerUp: String(localized: "Levels up at 10, 25, 50 and 100 touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .finale: String(localized: "Saves the big look for the last touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .every: String(localized: "A new look every few touches; pick how many", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .remix: String(localized: "A fresh mix; tap again to shuffle", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }

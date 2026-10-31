@@ -17,7 +17,7 @@ nonisolated enum TouchSound: String, CaseIterable, Identifiable, Hashable, Senda
 
     var title: String {
         switch self {
-        case .none: "None"
+        case .none: String(localized: "sound.none", defaultValue: "None", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .thud: "Thud"
         case .pop: "Pop"
         case .click: "Click"
@@ -55,7 +55,7 @@ nonisolated enum BallSwapSound: String, CaseIterable, Identifiable, Hashable, Se
 
     var title: String {
         switch self {
-        case .none: "None"
+        case .none: String(localized: "sound.none", defaultValue: "None", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .whoosh: "Whoosh"
         case .chime: "Chime"
         case .zap: "Zap"

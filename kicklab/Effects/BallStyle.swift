@@ -195,9 +195,9 @@ nonisolated struct SessionEditState: Hashable, Sendable {
     }
     var label: String {
         [scene?.environment.title,
-         hasLookChanges ? "Looks on touches" : ballSkin != .original ? ballSkin.title : nil,
-         touchSound != .none ? "\(touchSound.title) touches" : nil,
-         clipAudio ? nil : "Original sound off",
+         hasLookChanges ? String(localized: "Looks on touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : ballSkin != .original ? ballSkin.title : nil,
+         touchSound != .none ? String(localized: "\(touchSound.title) touch sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : nil,
+         clipAudio ? nil : String(localized: "Original sound off", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
          style != .none && intensity > 0.02 ? "\(style.title) · \(Int((intensity * 100).rounded()))%" : nil,
          environment != .original ? environment.title : nil]
             .compactMap { $0 }.joined(separator: " + ")

@@ -32,7 +32,8 @@ of caching the first language forever. Prices still come unchanged from StoreKit
 
 - The brand and product names: Juggle Dude, Pro, Power Shot.
 - Effect, ball, trail, graph-style, counter-style and camera-move names, their descriptions
-  and each move's own tuning labels (for example "Whip blur").
+  and each move's own tuning labels (for example "Whip blur"). The same goes for the replay
+  editor's change moments, sounds, timer looks and look recipes (Power-up, Finale, Remix).
 - Text drawn into exported videos and motion-graph overlays.
 - Debug, lab and design-review screens. Their catalog entries are marked "Don't translate".
 
@@ -102,3 +103,26 @@ review. See [TestFlight record](../benchmarks/releases/20261030-testflight-1.1.0
 The replay-editor upgrade is deferred to a later release. Its new Looks, Sound,
 My style and milestone controls are not included in this candidate; their text
 will need a separate translation pass when that work is brought back.
+
+## Replay editor upgrade — 31 October 2026
+
+The editor's controls are translated in all four languages: Looks (run line, New look /
+Remove look, Every and Custom…, the Ball / Effect / Change chips), the Sound page,
+Milestones, My style, the timer sticker and the summary on the save screen. "Looks" stays
+as the tool's name; a look is "Look" / "look" in every language. My style is Mein Stil,
+Mi estilo, Mon style and Meu estilo; milestones are Meilensteine, hitos, paliers and marcos.
+German calls sound "Ton" (Originalton, Kontaktton, Ton beim Balltausch). The Pro invite-code
+button, which shipped without translations, is translated too. Names, descriptions and the
+milestone words drawn into the video stay English.
+
+Model labels that reach the screen as plain strings (recipe captions, run ranges, sound
+choices, accessibility labels) use `String(localized:…, bundle: AppLanguage.bundle, …)`.
+The timer and counter stickers keep whole-sentence labels ("Resize timer",
+"Remove counter") instead of filling a name into one sentence, so the counter keeps its
+existing translations. A sound's "None" has its own key, `sound.none`, because the shared
+"None" belongs to effects and reads "Sin efecto" in Spanish. My style's one-line title
+uses shorter wording in every language ("Immer mit diesem Look") and may wrap to a second line.
+
+Don't let `xcodebuild -exportLocalizations` write its catalog back: on this project it
+also drops about 190 existing entries it doesn't extract. Use its output to find missing
+keys, then restore the catalog and add those keys only.
