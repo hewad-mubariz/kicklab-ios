@@ -212,7 +212,7 @@ struct LooksPage: View {
             } label: {
                 Image(systemName: "checkmark").font(.system(size: 12, weight: .bold))
             }
-            .buttonStyle(.glass).controlSize(.small)
+            .appGlassButtonStyle().controlSize(.small)
             .accessibilityLabel("Done")
             .accessibilityIdentifier("look-every-done")
         }
@@ -292,7 +292,7 @@ struct LooksPage: View {
                     .font(.system(size: 12, weight: .semibold))
                     .contentTransition(.interpolate)
             }
-            .buttonStyle(.glass).controlSize(.small)
+            .appGlassButtonStyle().controlSize(.small)
             .disabled(!onLookStart && !canSplit)
             .animation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion), value: onLookStart)
             .accessibilityHint(onLookStart ? "Touch \(selectedTouch + 1) and the touches after it go back to the look before"

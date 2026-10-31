@@ -133,7 +133,7 @@ struct MyStyleShareRow: View {
                     saves += 1
                 }
                 .font(.system(size: 13, weight: .semibold))
-                .buttonStyle(.glass).controlSize(.small)
+                .appGlassButtonStyle().controlSize(.small)
                 .transition(.sessionPop(scale: 0.4))
                 .accessibilityIdentifier("my-style-save")
             }
