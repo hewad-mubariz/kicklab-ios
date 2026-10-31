@@ -1,0 +1,10 @@
+Juggle Dude 1.2.0 (37) - What's New (draft, not uploaded)
+
+en: New in the replay editor: Looks change the ball and effect as you juggle, plus touch and change sounds, timer styles, milestone celebrations and My style. Smoother playback on older iPhones.
+de: Neu im Replay-Editor: Looks wechseln Ball und Effekt beim Jonglieren, dazu Kontakt- und Wechseltöne, Timerstile, Meilensteine und Mein Stil. Flüssigere Wiedergabe auf älteren iPhones.
+es: Novedades en el editor de repeticiones: los Looks cambian el balón y el efecto mientras haces toques, además de sonidos, estilos de cronómetro, celebraciones de hitos y Mi estilo. Reproducción más fluida en iPhone anteriores.
+fr: Nouveau dans l’éditeur de replay : les Looks changent le ballon et l’effet pendant que tu jongles, avec des sons, des styles de chrono, des paliers à célébrer et Mon style. Lecture plus fluide sur les anciens iPhone.
+pt-BR: Novidades no editor de replay: os Looks trocam a bola e o efeito enquanto você faz embaixadinhas, além de sons, estilos de cronômetro, comemorações de marcos e Meu estilo. Reprodução mais suave em iPhones mais antigos.
+
+App Store Connect currently lists en-US, en-AU, en-CA, en-GB and de-DE; the other three
+are ready if those locales are added.

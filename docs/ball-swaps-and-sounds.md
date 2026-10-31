@@ -318,6 +318,20 @@ In the Simulator the editor's Metal video area renders black in screenshots and 
 recordings; the unchanged starting commit shows the same, so on-video checks of the change
 moments need a device or an exported file.
 
+## Release 1.2.0 (37) — prepared 31 October 2026
+
+`feature/leaderboard-editor-upgrade` is the live 1.1.0 release with this editor upgrade on
+top: the release's removal of the editor (2ace72e) is undone, the editor work merged, and the
+Looks and My style buttons use the iOS 18 glass fallback. Before release the editor was
+translated into German, Spanish, French and Portuguese, the status line under the session
+badge shows only progress or a retry, Sky Meter's NEW BEST! stays inside the graph, the Looks
+run line leaves out the clip's own ball, and replay ball prints are built off the main thread.
+The version is 1.2.0 (37); the What's New drafts are in
+[1.2.0-37-whats-new.txt](../benchmarks/releases/1.2.0-37-whats-new.txt). Nothing has been
+uploaded to TestFlight or App Store Connect, and the App Review notes are still to write.
+Decided to keep: "TOUCHES" stays English in videos, the tool stays "Milestones", Lab Flame
+stays in this release.
+
 ## Not done
 
 - No new analytics events for the sound, looks and timer choices.
