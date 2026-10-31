@@ -173,11 +173,11 @@ eight times cheaper per frame on a 433-touch session (0.36 ms against 3.0 ms in 
 Simulator), so the saved video is not slower.
 
 The word in the card's corner used to be the ball's direction for every style, so Heartbeat
-or Combo said "FALLING ↓" or "TRACK LOST" beside a pulse or a streak. In replays and saved
-videos only Ball Motion and Comet keep it (rising, falling, at the turn), and it goes blank
-while the ball is out of sight. The other styles show their own reading inside the graph and
-have no corner word. The live recording screen still says "ACQUIRING" and "TRACK LOST",
-because there it tells whoever set up the phone that the ball isn't seen.
+or Combo said "FALLING ↓" or "TRACK LOST" beside a pulse or a streak. Now only Ball Motion
+and Comet keep it (rising, falling, at the turn). The other styles show their own reading
+inside the graph and have no corner word. "TRACK LOST" and "ACQUIRING" are gone everywhere,
+the live recording screen included: while the ball is out of sight the word is blank, and the
+gap in the line already shows it.
 
 ## Model
 

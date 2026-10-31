@@ -21,7 +21,7 @@ final class CaptureHUDTests: XCTestCase {
         XCTAssertEqual(graph.cursor, 0.01, accuracy: 0.0001)
         XCTAssertEqual(graph.samples.last?.point?.x ?? 0, 0.8, accuracy: 0.0001)
         XCTAssertEqual(graph.status, "RISING ↑")
-        XCTAssertEqual(CaptureGraphLayout(points: points, time: 0.2, duration: 10).status, "TRACK LOST")
+        XCTAssertEqual(CaptureGraphLayout(points: points, time: 0.2, duration: 10).status, "")
         XCTAssertNil(CaptureGraphLayout(points: points, time: 5, duration: 10).currentPoint)
     }
 
@@ -34,7 +34,7 @@ final class CaptureHUDTests: XCTestCase {
         XCTAssertNil(graph.samples[0].point)
         XCTAssertEqual(graph.status, "FALLING ↓")
         XCTAssertEqual(graph.cursor, 1)
-        XCTAssertEqual(CaptureGraphLayout(points: [], time: 0).status, "ACQUIRING")
+        XCTAssertEqual(CaptureGraphLayout(points: [], time: 0).status, "", "No ball yet: no word, not \"acquiring\"")
         XCTAssertNil(CaptureGraphLayout(points: [], time: .nan).currentPoint)
     }
 

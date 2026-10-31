@@ -84,9 +84,9 @@ nonisolated struct CaptureGraphLayout {
                 status = velocity < -0.06 ? "RISING ↑" : velocity > 0.06 ? "FALLING ↓" : "AT THE TURN"
             } else { status = "AT THE TURN" }
         } else {
+            // The line's gap already shows the ball is out of sight; the word stays blank.
             currentPoint = nil
-            let hasTrackedBall = played.contains { $0.point != nil }
-            status = !hasTrackedBall && self.time < 0.3 ? "ACQUIRING" : "TRACK LOST"
+            status = ""
         }
     }
 }

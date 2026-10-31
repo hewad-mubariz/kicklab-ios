@@ -25,7 +25,7 @@ final class MotionStyleTests: XCTestCase {
         XCTAssertNil(missing.currentPosition)
         XCTAssertNil(missing.bounce)
         XCTAssertNil(missing.flight, "No bounce in flight without tracking")
-        XCTAssertEqual(missing.graph.status, "TRACK LOST")
+        XCTAssertEqual(missing.graph.status, "")
         XCTAssertEqual(MotionStyle.ballMotion.status(missing.graph), "", "A saved video never says the track was lost")
         XCTAssertEqual(MotionStyle.comet.status(timeline.snapshot(at: 0.2, duration: 4).graph), "RISING ↑")
         for style in MotionStyle.allCases where style != .ballMotion && style != .comet {
