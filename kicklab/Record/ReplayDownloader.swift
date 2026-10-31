@@ -73,8 +73,8 @@ final class ReplayDownloader: ObservableObject {
         }
         do {
             try await VideoBackgroundWork.shared.run(title: String(localized: "Saving your replay", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
-                requiresGPU: (edit.style != .none && edit.intensity > 0) || edit.environment != .original || edit.scene != nil
-                    || (edit.ballSkin != .original && summary.needsVisualPreparation && preparation.prepared == nil)) {
+                requiresGPU: edit.usesEffects || edit.environment != .original || edit.scene != nil
+                    || (edit.usesBallMaterial && summary.needsVisualPreparation && preparation.prepared == nil)) {
                 try await self.performDownload(summary: summary, edit: edit, overlays: overlays,
                     sceneModel: sceneModel, preparation: preparation, distanceTimeline: distanceTimeline)
             }
@@ -125,7 +125,11 @@ final class ReplayDownloader: ObservableObject {
                       overlays: overlays, preserveFrameTimes: edit.scene != nil, distanceTimeline: distanceTimeline,
                       motionTimeline: overlays.graph.enabled ? MotionStyleTimeline(points: summary.track.map {
                           CaptureMotionPoint(time: $0.time, y: $0.detected ? $0.y : nil, x: $0.detected ? $0.x : nil)
-                      }, touchTimes: summary.touchesMarked.map(\.time)) : nil)
+                      }, touchTimes: summary.touchesMarked.map(\.time)) : nil,
+                      lookChanges: edit.lookChanges, swapEffect: edit.swapEffect,
+                      soundtrack: ReplaySoundtrack(edit: edit, touchTimes: summary.touchesMarked.map(\.time),
+                                                   milestones: overlays.playsMilestoneSound),
+                      clipAudio: edit.clipAudio)
         while burnIn.isExporting {
             try await VideoWorkExecution.checkpoint()
             VideoWorkExecution.lease?.progress(burnIn.progress * 0.96, subtitle: String(localized: "Saving your replay", bundle: AppLanguage.bundle, locale: AppLanguage.locale))

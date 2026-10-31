@@ -9,6 +9,8 @@ nonisolated struct BallEffectTrack: Sendable {
     private var masks: [BallMask?]
     private var maskTimes: [Double]
     private let touchTimes: [Double]
+    /// Sorted touch times, the index space of per-touch ball changes.
+    var touches: [Double] { touchTimes }
     /// Unsmoothed detector boxes of `samples`, normalized. Their stretch along the
     /// motion measures the camera's exposure; smoothing would hide it.
     private var rawBoxes: [CGSize] = []
