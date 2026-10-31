@@ -1,0 +1,1199 @@
+--- a/kicklab/Counting/TouchCountingDebugProfile.swift
++++ b/kicklab/Counting/TouchCountingDebugProfile.swift
+@@ -58,6 +58,7 @@
+                 "explicitLaunchFlags": raw.filter { $0.hasPrefix("--") },
+                 "effectiveFlags": effective.filter { $0.hasPrefix("--") },
+                 "bodyPolicy": policy.body.rawValue,
++                "visionRevisions": VisionRevisionExperiment.report,
+                 "handChecks": policy.verifiesContacts,
+                 "handlingPolicy": policy.handling.rawValue,
+                 "counterConfig": config ?? NSNull(),
+--- a/kicklab/Effects/SessionAnalysisStore.swift
++++ b/kicklab/Effects/SessionAnalysisStore.swift
+@@ -124,6 +124,7 @@
+                         + (ContactRecheckPolicy.usesLateApproach(arguments: arguments) ? "|late-impact-evidence-v2" : "")
+                         + (ContactRecheckPolicy.usesEarlyRelease(arguments: arguments) ? "|early-impact-evidence-v1" : ""),
+                     "hands=\(CountingPolicy.configured(arguments: arguments).verifiesContacts)"].joined(separator: "|")
++                + VisionRevisionExperiment.signature(arguments: arguments)
+         }
+         let guarded=resource == "KickLabYOLO26MotionSegmentation" &&
+             (arguments.contains("--yolo26-motion-segmentation") ||
+--- a/kicklab/Detection/ContactObservationStore.swift
++++ b/kicklab/Detection/ContactObservationStore.swift
+@@ -45,6 +45,9 @@
+     private var warmed = false
+     private let request = VNDetectHumanBodyPoseRequest()
+     private let handRequest = VNDetectHumanHandPoseRequest()
++    #if DEBUG
++    private lazy var modernPoseSession = VisionBodyPoseRevision2.Session()
++    #endif
+ 
+     init() {
+         do {
+@@ -94,7 +97,16 @@
+               let pixels else { return }
+         context.render(CIImage(color: .black).cropped(to: CGRect(x: 0, y: 0, width: 288, height: 512)), to: pixels)
+         do {
++            #if DEBUG
++            if VisionRevisionExperiment.bodyPose2() {
++                _ = try VisionBodyPoseRevision2.poses(in: pixels, session: modernPoseSession)
++                try VNImageRequestHandler(cvPixelBuffer: pixels).perform([handRequest])
++            } else {
++                try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request, handRequest])
++            }
++            #else
+             try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request, handRequest])
++            #endif
+             warmed = true
+         } catch {
+             lastError = error.localizedDescription
+@@ -184,47 +196,72 @@
+         }
+     }
+ 
++    private func legacyPoses(in pixels: CVPixelBuffer) throws -> [Pose] {
++        try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request])
++        let rawPoses = request.results ?? []
++        let names: [(BodyJoint, VNHumanBodyPoseObservation.JointName)] = [
++            (.nose, .nose), (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
++            (.leftElbow, .leftElbow), (.rightElbow, .rightElbow),
++            (.leftWrist, .leftWrist), (.rightWrist, .rightWrist),
++            (.leftHip, .leftHip), (.rightHip, .rightHip),
++            (.leftKnee, .leftKnee), (.rightKnee, .rightKnee),
++            (.leftAnkle, .leftAnkle), (.rightAnkle, .rightAnkle)]
++        return try rawPoses.prefix(8).map { observation in
++            let recognized = try observation.recognizedPoints(.all)
++            var result = Pose()
++            for (name,joint) in names {
++                guard let point = recognized[joint] else { continue }
++                if point.confidence >= 0.3 { result.joints[name] = .init(x: point.location.x, y: 1-point.location.y) }
++                let landmark = PoseLandmark(x: point.location.x, y: 1-point.location.y,
++                                            confidence: Double(point.confidence))
++                result.landmarks[name] = landmark
++                switch name {
++                case .leftWrist: result.wrists[.left] = landmark
++                case .rightWrist: result.wrists[.right] = landmark
++                case .leftHip: result.hips[.left] = landmark
++                case .rightHip: result.hips[.right] = landmark
++                case .leftAnkle: result.ankles[.left] = landmark
++                case .rightAnkle: result.ankles[.right] = landmark
++                default: break
++                }
++            }
++            return result
++        }
++    }
++
+     func pose(for frame: Frame, recordErrors: Bool = true) -> Pose? {
+         if let cached = poseCache[frame.index] { poseCacheHits += 1; return cached }
+         return autoreleasepool {
++            #if DEBUG
++            let started = ProcessInfo.processInfo.systemUptime
++            var observed = 0, failed = false
++            defer {
++                VisionRevisionExperiment.recordPose(milliseconds:(ProcessInfo.processInfo.systemUptime-started)*1000,
++                    poses:observed,failed:failed)
++            }
++            #endif
+             do {
+                 poseRequests += 1
+-                try VNImageRequestHandler(cvPixelBuffer: frame.pixels).perform([request])
+-                let rawPoses = request.results ?? []
+-                let names: [(BodyJoint, VNHumanBodyPoseObservation.JointName)] = [
+-                    (.nose, .nose), (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
+-                    (.leftElbow, .leftElbow), (.rightElbow, .rightElbow),
+-                    (.leftWrist, .leftWrist), (.rightWrist, .rightWrist),
+-                    (.leftHip, .leftHip), (.rightHip, .rightHip),
+-                    (.leftKnee, .leftKnee), (.rightKnee, .rightKnee),
+-                    (.leftAnkle, .leftAnkle), (.rightAnkle, .rightAnkle)]
+-                let poses: [Pose] = try rawPoses.prefix(8).map { observation in
+-                    let recognized = try observation.recognizedPoints(.all)
+-                    var result = Pose()
+-                    for (name,joint) in names {
+-                        guard let point = recognized[joint] else { continue }
+-                        if point.confidence >= 0.3 { result.joints[name] = .init(x: point.location.x, y: 1-point.location.y) }
+-                        let landmark = PoseLandmark(x: point.location.x, y: 1-point.location.y,
+-                                                    confidence: Double(point.confidence))
+-                        result.landmarks[name] = landmark
+-                        switch name {
+-                        case .leftWrist: result.wrists[.left] = landmark
+-                        case .rightWrist: result.wrists[.right] = landmark
+-                        case .leftHip: result.hips[.left] = landmark
+-                        case .rightHip: result.hips[.right] = landmark
+-                        case .leftAnkle: result.ankles[.left] = landmark
+-                        case .rightAnkle: result.ankles[.right] = landmark
+-                        default: break
+-                        }
+-                    }
+-                    return result
+-                }
++                let poses: [Pose]
++                #if DEBUG
++                if VisionRevisionExperiment.bodyPose2() {
++                    poses = try VisionBodyPoseRevision2.poses(in: frame.pixels, session: modernPoseSession)
++                } else { poses = try legacyPoses(in: frame.pixels) }
++                #else
++                poses = try legacyPoses(in: frame.pixels)
++                #endif
++                #if DEBUG
++                observed = poses.count
++                #endif
+                 let selected = ActivePlayerPoseMatcher.index(in: poses, selection: frame.player)
+                 let result = selected.map { poses[$0] } ?? Pose()
+                 otherPoseCache[frame.index] = poses.enumerated().filter { $0.offset != selected }.map(\.element)
+                 poseCache[frame.index] = result
+                 return result
+             } catch {
++                #if DEBUG
++                failed = true
++                #endif
+                 if recordErrors {
+                     lastError = error.localizedDescription
+                     discardFrames()
+--- a/kicklab/Detection/RFBufferedPixelTrack.swift
++++ b/kicklab/Detection/RFBufferedPixelTrack.swift
+@@ -63,7 +63,7 @@
+         // Revision 2 reached >500 MiB on the small airborne-ball replay.
+         // Keep revision 1 for this opt-in mobile experiment; revision 2 remains
+         // available only as an explicit developer comparison.
+-        request?.revision = ProcessInfo.processInfo.arguments.contains("--follow-vision-revision2")
++        request?.revision = VisionRevisionExperiment.trackingRevision() == 2
+             ? VNTrackObjectRequestRevision2 : VNTrackObjectRequestRevision1
+         request?.trackingLevel = .accurate
+         // Feed the seed frame so the next update really compares two frames.
+--- a/kicklab/Detection/NativeBallPixelTrack.swift
++++ b/kicklab/Detection/NativeBallPixelTrack.swift
+@@ -55,7 +55,7 @@
+         // Revision 2 reached >500 MiB on the small airborne-ball replay.
+         // Keep revision 1 for this opt-in mobile experiment; revision 2 remains
+         // available only as an explicit developer comparison.
+-        request?.revision = ProcessInfo.processInfo.arguments.contains("--follow-vision-revision2")
++        request?.revision = VisionRevisionExperiment.trackingRevision() == 2
+             ? VNTrackObjectRequestRevision2 : VNTrackObjectRequestRevision1
+         request?.trackingLevel = .accurate
+         // Feed the seed frame so the next update really compares two frames.
+--- a/kicklab/Debug/RFAppValidation.swift
++++ b/kicklab/Debug/RFAppValidation.swift
+@@ -14,6 +14,8 @@
+             var row = extra; row["state"] = state; row["updated"] = ISO8601DateFormatter().string(from: Date())
+             row["thermal"] = ProcessInfo.processInfo.thermalState.rawValue
+             row["memory_mib"] = DetectorPerformance.memoryMB()
++            row["visionRevisions"] = VisionRevisionExperiment.report
++            row["poseTiming"] = VisionRevisionExperiment.poseTiming
+             if let data = try? JSONSerialization.data(withJSONObject: row, options: [.prettyPrinted, .sortedKeys]) { try? data.write(to: status, options: .atomic) }
+         }
+         let oldIdle = UIApplication.shared.isIdleTimerDisabled
+--- /dev/null
++++ b/kicklab/Detection/VisionRevisionExperiment.swift
+@@ -0,0 +1,147 @@
++import Foundation
++import Vision
++
++/// Independent, explicitly selected lab arms. Normal builds keep their measured
++/// implementation; body pose and ball tracking are never switched together.
++nonisolated enum VisionRevisionExperiment {
++    private final class Timing: @unchecked Sendable {
++        let lock = NSLock()
++        var calls = 0, failures = 0, empty = 0
++        var milliseconds = 0.0, maximumMilliseconds = 0.0
++    }
++    private static let timing = Timing()
++    static func recordPose(milliseconds: Double, poses: Int, failed: Bool) {
++        #if DEBUG
++        timing.lock.withLock {
++            timing.calls += 1; timing.milliseconds += milliseconds
++            timing.maximumMilliseconds = max(timing.maximumMilliseconds,milliseconds)
++            if failed { timing.failures += 1 }
++            if poses == 0 { timing.empty += 1 }
++        }
++        #endif
++    }
++    static var poseTiming: [String: Any] {
++        timing.lock.withLock { ["calls":timing.calls,"errors":timing.failures,
++            "empty":timing.empty,"totalMS":timing.milliseconds,"maximumMS":timing.maximumMilliseconds] }
++    }
++    static func bodyPose2(arguments: [String] = ProcessInfo.processInfo.arguments) -> Bool {
++        #if DEBUG
++        arguments.contains("--vision-body-pose-revision2")
++        #else
++        false
++        #endif
++    }
++    static func trackingRevision(arguments: [String] = ProcessInfo.processInfo.arguments) -> Int {
++        #if DEBUG
++        arguments.contains("--follow-vision-revision2") ? 2 : 1
++        #else
++        1
++        #endif
++    }
++    static func signature(arguments: [String]) -> String {
++        (trackingRevision(arguments: arguments) == 2 ? "|vision-track-r2" : "")
++        + (bodyPose2(arguments: arguments) ? "|vision-body-pose-swift-r2" : "")
++    }
++    static var report: [String: Any] {
++        var value: [String: Any] = [
++            "objectTrackingSelected": trackingRevision(),
++            "objectTrackingSupported": Array(VNTrackObjectRequest.supportedRevisions),
++            "legacyBodyDefault": VNDetectHumanBodyPoseRequest.defaultRevision,
++            "legacyBodySelected": VNDetectHumanBodyPoseRequest().revision,
++            "legacyBodySupported": Array(VNDetectHumanBodyPoseRequest.supportedRevisions),
++            "legacyHandSelected": VNDetectHumanHandPoseRequest().revision,
++            "legacyHandSupported": Array(VNDetectHumanHandPoseRequest.supportedRevisions),
++            "bodyPoseImplementation": bodyPose2() ? "Swift revision2" : "VN legacy",
++            "integratedHandDetection": false
++        ]
++        if #available(iOS 18.0, *) {
++            value["swiftBodySupported"] = DetectHumanBodyPoseRequest.supportedRevisions.map { String(describing: $0) }
++            value["swiftHandSupported"] = DetectHumanHandPoseRequest.supportedRevisions.map { String(describing: $0) }
++            value["swiftTrackerSupported"] = TrackObjectRequest.supportedRevisions.map { String(describing: $0) }
++            value["swiftBody3DSupported"] = DetectHumanBodyPose3DRequest.supportedRevisions.map { String(describing: $0) }
++        }
++        return value
++    }
++}
++
++#if DEBUG
++/// The counter currently owns synchronous, lazy pose requests on its serial
++/// analysis queue. Bridge only this lab API, with one in-flight request and the
++/// same pixels, confidence threshold, person matching and bounded cache.
++/// Never fall back silently: an unavailable/timed-out arm is an invalid run.
++nonisolated enum VisionBodyPoseRevision2 {
++    enum Failure: Error { case requiresIOS18, requiresForeground, timeout, missingResult }
++    /// Match the legacy request's lifetime: one request per serial observation
++    /// store, retained across warm-up and contact frames. Do not reload a request
++    /// for every cached contact frame in the async bridge.
++    @available(iOS 18.0, *)
++    final class Session: @unchecked Sendable {
++        let request: DetectHumanBodyPoseRequest
++        init() {
++            var request = DetectHumanBodyPoseRequest(.revision2)
++            request.detectsHands = false
++            self.request = request
++        }
++    }
++    private final class Exchange: @unchecked Sendable {
++        let pixels: CVPixelBuffer
++        private let lock = NSLock()
++        private var result: Result<[BodyPose], Error>?
++        init(_ pixels: CVPixelBuffer) { self.pixels = pixels }
++        func store(_ result: Result<[BodyPose], Error>) { lock.withLock { self.result = result } }
++        func take() throws -> [BodyPose] {
++            let value = lock.withLock { result }
++            return try value?.get() ?? { throw Failure.missingResult }()
++        }
++    }
++    @available(iOS 18.0, *)
++    static func poses(in pixels: CVPixelBuffer, session: Session = Session()) throws -> [BodyPose] {
++        guard #available(iOS 18.0, *) else { throw Failure.requiresIOS18 }
++        guard !VideoWorkExecution.cpuOnly else { throw Failure.requiresForeground }
++        let exchange = Exchange(pixels), finished = DispatchSemaphore(value: 0)
++        let task = Task.detached(priority: .userInitiated) {
++            do {
++                let observations = try await session.request.perform(on: exchange.pixels, orientation: .up)
++                exchange.store(.success(observations.prefix(8).map(convert)))
++            } catch { exchange.store(.failure(error)) }
++            finished.signal()
++        }
++        guard finished.wait(timeout: .now() + 60) == .success else {
++            task.cancel(); throw Failure.timeout
++        }
++        return try exchange.take()
++    }
++    @available(iOS 18.0, *)
++    private static func convert(_ observation: HumanBodyPoseObservation) -> BodyPose {
++        let names: [(BodyJoint, HumanBodyPoseObservation.JointName)] = [
++            (.nose, .nose), (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
++            (.leftElbow, .leftElbow), (.rightElbow, .rightElbow),
++            (.leftWrist, .leftWrist), (.rightWrist, .rightWrist),
++            (.leftHip, .leftHip), (.rightHip, .rightHip),
++            (.leftKnee, .leftKnee), (.rightKnee, .rightKnee),
++            (.leftAnkle, .leftAnkle), (.rightAnkle, .rightAnkle)]
++        var result = BodyPose()
++        for (name, joint) in names {
++            guard let point = observation.joint(for: joint) else { continue }
++            append(name, x: point.location.x, visionY: point.location.y,
++                   confidence: Double(point.confidence), to: &result)
++        }
++        return result
++    }
++    static func append(_ name: BodyJoint, x: Double, visionY: Double,
++                       confidence: Double, to result: inout BodyPose) {
++        if confidence >= 0.3 { result.joints[name] = .init(x: x, y: 1-visionY) }
++        let point = PoseLandmark(x: x, y: 1-visionY, confidence: confidence)
++        result.landmarks[name] = point
++        switch name {
++        case .leftWrist: result.wrists[.left] = point
++        case .rightWrist: result.wrists[.right] = point
++        case .leftHip: result.hips[.left] = point
++        case .rightHip: result.hips[.right] = point
++        case .leftAnkle: result.ankles[.left] = point
++        case .rightAnkle: result.ankles[.right] = point
++        default: break
++        }
++    }
++}
++#endif
+--- /dev/null
++++ b/kicklabTests/VisionRevisionExperimentTests.swift
+@@ -0,0 +1,37 @@
++import Testing
++@testable import kicklab
++
++struct VisionRevisionExperimentTests {
++    @Test func revisionsAreIndependentAndNormalCacheIdentityIsPreserved() {
++        #expect(VisionRevisionExperiment.signature(arguments: []) == "")
++        #expect(!VisionRevisionExperiment.bodyPose2(arguments: []))
++        #expect(VisionRevisionExperiment.trackingRevision(arguments: []) == 1)
++        #if DEBUG
++        let pose = ["--vision-body-pose-revision2"]
++        let track = ["--follow-vision-revision2"]
++        #expect(VisionRevisionExperiment.bodyPose2(arguments: pose))
++        #expect(VisionRevisionExperiment.trackingRevision(arguments: pose) == 1)
++        #expect(!VisionRevisionExperiment.bodyPose2(arguments: track))
++        #expect(VisionRevisionExperiment.trackingRevision(arguments: track) == 2)
++        #expect(VisionRevisionExperiment.signature(arguments: pose) == "|vision-body-pose-swift-r2")
++        #expect(VisionRevisionExperiment.signature(arguments: track) == "|vision-track-r2")
++        #else
++        #expect(VisionRevisionExperiment.signature(arguments: ["--vision-body-pose-revision2", "--follow-vision-revision2"]) == "")
++        #endif
++    }
++    #if DEBUG
++    @Test func modernAdapterKeepsLegacyCoordinatesConfidenceAndEvidence() {
++        var pose = BodyPose()
++        VisionBodyPoseRevision2.append(.leftAnkle, x: 0.25, visionY: 0.125, confidence: 0.8, to: &pose)
++        #expect(pose.joints[.leftAnkle] == .init(x: 0.25, y: 0.875))
++        #expect(pose.ankles[.left] == PoseLandmark(x: 0.25, y: 0.875, confidence: 0.8))
++        VisionBodyPoseRevision2.append(.rightWrist, x: 0.5, visionY: 0.75, confidence: 0.2, to: &pose)
++        #expect(pose.joints[.rightWrist] == nil)
++        #expect(pose.wrists[.right] == PoseLandmark(x: 0.5, y: 0.25, confidence: 0.2))
++        #expect(pose.landmarks[.rightWrist] == pose.wrists[.right])
++        VisionBodyPoseRevision2.append(.leftHip, x: 0.375, visionY: 0.5, confidence: 0.3, to: &pose)
++        #expect(pose.joints[.leftHip] != nil)
++        #expect(pose.hips[.left]?.confidence == 0.3)
++    }
++    #endif
++}
+--- /dev/null
++++ b/scripts/inventory-juggling-revision-study.py
+@@ -0,0 +1,65 @@
++#!/usr/bin/env python3
++"""Inventory existing raw juggling sources by content, retaining every alias."""
++import concurrent.futures,hashlib,json,os,subprocess
++from pathlib import Path
++ROOT=Path(__file__).resolve().parents[1]
++OUT=ROOT/'artifacts/vision-revisions-20261029'
++RELEASE=Path('/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab')
++PRIMARY=Path('/Users/hewadmubariz/Desktop/projects/kicklab')
++CORPUS=Path('/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/rfdetr-juggling-corpus-001')
++roots=[RELEASE/'artifacts',PRIMARY/'artifacts',CORPUS]
++if (OUT/'phone-backups').exists():roots.append(OUT/'phone-backups')
++paths=[]; excluded=[]
++for root in roots:
++ r=subprocess.run(['rg','--files','--hidden','--no-ignore','-g','*.mov','-g','*.MOV','-g','*.mp4','-g','!**/*.xcarchive/**',str(root)],capture_output=True,text=True,check=True)
++ for p in map(Path,r.stdout.splitlines()):
++  rel=str(p.relative_to(root))
++  include=(root==CORPUS or (root==RELEASE/'artifacts' and not p.name.startswith('export-'))
++    or p.name in ['source.mov','source.mp4','input.mov'] or '/inputs/' in rel)
++  if p.suffix.lower()=='.mp4' and root!=CORPUS and p.name not in ['source.mp4']:include=False
++  if '/launch-demo-20261018/' in str(p) and 'shot' in str(p):include=False
++  if include:paths.append(p)
++  else:excluded.append({'path':str(p),'reason':'Rendered/effects output or non-source artifact; retained in inventory, excluded from raw-source comparison.'})
++for name in ['IMG_8606 3.MOV','IMG_8878.MOV','IMG_8880 3.MOV']:
++ p=Path('/Users/hewadmubariz/Downloads')/name
++ if p.exists():paths.append(p)
++inodes={};missing=[]
++for p in dict.fromkeys(paths):
++ try:s=p.stat()
++ except OSError:missing.append(str(p));continue
++ key=(s.st_dev,s.st_ino)
++ inodes.setdefault(key,{'paths':[],'bytes':s.st_size})['paths'].append(str(p))
++def digest(row):
++ h=hashlib.sha256()
++ with open(row['paths'][0],'rb') as f:
++  for b in iter(lambda:f.read(8*1024*1024),b''):h.update(b)
++ return h.hexdigest(),row
++by_hash={}
++with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
++ for sha,row in pool.map(digest,inodes.values()):
++  group=by_hash.setdefault(sha,{'sha256':sha,'bytes':row['bytes'],'aliases':[]})
++  group['aliases']+=row['paths']
++manifest=json.loads((ROOT/'benchmarks/touch-counting/corpus-20261014/manifest.json').read_text())
++labels={c['sha256']:c for c in manifest['clips']}
++rows=[]
++for sha,row in by_hash.items():
++ aliases=sorted(row['aliases'],key=lambda p:(0 if '/FinalValidation/' in p else 1 if str(CORPUS) in p else 2,len(p)))
++ row['aliases']=aliases;row['source']=aliases[0]
++ probe=subprocess.run(['ffprobe','-v','error','-select_streams','v:0','-show_entries','format=duration:stream=width,height,avg_frame_rate','-of','json',row['source']],capture_output=True,text=True)
++ if probe.returncode:row['probeError']=probe.stderr
++ else:
++  meta=json.loads(probe.stdout);row['duration']=float(meta['format']['duration']);row['video']=meta.get('streams',[{}])[0]
++ old=labels.get(sha)
++ row['id']=old['id'] if old else 'clip-'+sha[:12]
++ row['labelFile']=str(ROOT/'benchmarks/touch-counting/corpus-20261014/labels'/f"{old['id']}.json") if old else None
++ row['referenceCoverage']='reviewed_with_uncertainty' if old else 'partial_or_unreviewed'
++ row['state']='ready' if 'duration' in row else 'unreadable'
++ rows.append(row)
++rows.sort(key=lambda r:(r['duration'],r['id']))
++missing_expected=[{'id':c['id'],'source':c['source'],'sha256':c['sha256']} for c in manifest['clips'] if c['sha256'] not in by_hash]
++result={'scope':'All locally backed-up source videos from release/primary artifacts, original 23-file juggling corpus including intake recordings, and the three user-named clips. Content-identical copies deduplicated. Phone-only and external-drive footage require separate reconciliation.','clips':rows,'totals':{'uniqueSources':len(rows),'aliases':sum(len(r['aliases']) for r in rows),'sourceMinutes':round(sum(r.get('duration',0) for r in rows)/60,2),'labelledOriginalCorpusSources':sum(r['labelFile'] is not None for r in rows)},'missingExpectedOriginalCorpus':missing_expected,'missingPaths':missing,'excludedRenderedArtifacts':excluded}
++OUT.mkdir(parents=True,exist_ok=True)
++(OUT/'corpus-inventory.json').write_text(json.dumps(result,indent=2)+'\n')
++(ROOT/'benchmarks/touch-counting/vision-revisions-20261029/corpus-inventory.json').write_text(json.dumps(result,indent=2)+'\n')
++print(json.dumps(result['totals'],indent=2));print('Missing known original corpus:',len(missing_expected))
++for r in rows:print(r['id'],round(r.get('duration',0),3),Path(r['source']).name,len(r['aliases']),flush=True)
+--- /dev/null
++++ b/scripts/prepare-vision-pose-plan.py
+@@ -0,0 +1,33 @@
++#!/usr/bin/env python3
++"""Freeze sources, sampled times and adapter hashes before the Mac pose sweep."""
++import hashlib,json
++from pathlib import Path
++ROOT=Path(__file__).resolve().parents[1]
++OUT=ROOT/'artifacts/vision-revisions-20261029'
++inventory=json.loads((OUT/'corpus-inventory.json').read_text())
++clips=[]
++for clip in inventory['clips']:
++    samples={}
++    def add(t,reason):
++        t=round(t,4)
++        if 0<=t<=clip['duration']-.05:samples.setdefault(t,[]).append(reason)
++    t=0.
++    while t<clip['duration']-.05:add(t,'uniform-2s');t+=2
++    if clip['labelFile']:
++        label=json.loads(Path(clip['labelFile']).read_text())
++        assert label['source_sha256']==clip['sha256']
++        for event in label['events']:
++            for delta in [-.067,0,.067]:add(event['time_s']+delta,f"label:{event['id']}:{event['label']}:{event['contact']}")
++    if clip['id']=='clip-a16380ba4a5b':
++        for t in [.217,1.533,15.867,18.25,19.65,20.21]:
++            for delta in [-.133,-.067,0,.067,.133]:add(t+delta,f'reviewed-contact:{t}')
++    clips.append({k:clip[k] for k in ['id','sha256','source','duration']}|
++        {'samples':[{'time':t,'reasons':r} for t,r in sorted(samples.items())]})
++paths=['scripts/vision-pose-offline-audit.swift','kicklab/Counting/ContactPose.swift','kicklab/Detection/VisionRevisionExperiment.swift']
++hashes={p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in paths}
++protocol=hashlib.sha256(json.dumps({'clips':clips,'sources':hashes},sort_keys=True).encode()).hexdigest()
++plan={'protocolID':protocol,'sources':hashes,
++    'sampling':'Every 2 seconds plus three samples around every original corpus event and six recent IMG8606 windows. Same oriented 512-long-edge pixels; alternating arm order; persistent requests. No touch counter or active-player selection.',
++    'clips':clips}
++(OUT/'mac-pose-retained-plan.json').write_text(json.dumps(plan,indent=2)+'\n')
++print(len(clips),'clips;',sum(len(c['samples']) for c in clips),'requested frame pairs;',protocol)
+--- /dev/null
++++ b/scripts/run-vision-revision-study.py
+@@ -0,0 +1,188 @@
++#!/usr/bin/env python3
++"""Resumable fresh-Vision phone comparisons; never changes the ordinary launch default.
++
++Pass --execute to run. Without it, print the exact planned runs. Source videos
++are staged once per clip. Results are immutable per build, source hash and arm.
++"""
++import argparse, hashlib, importlib.util, json, os, plistlib, re, subprocess, time, uuid
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++OUT = ROOT/'artifacts/vision-revisions-20261029'
++BUNDLE = 'com.juggledude.touchcounting.debug'
++BUILD = '2026102911'
++DEVICES = {'iphone11':'00008030-000A58D41AA1802E','iphone17':'00008150-00063D221A87401C'}
++ARMS = {'control':[], 'pose2':['--vision-body-pose-revision2'], 'tracking2':['--follow-vision-revision2']}
++FLAGS = re.findall(r'"(--[a-z0-9-]+)"', (ROOT/'kicklab/Counting/TouchCountingBetaProfile.swift').read_text())
++assert len(FLAGS) == 24 and len(set(FLAGS)) == 24
++
++def dump(path, value):
++    path.parent.mkdir(parents=True, exist_ok=True)
++    temp=path.with_suffix(path.suffix+'.tmp');temp.write_text(json.dumps(value,indent=2)+'\n');temp.replace(path)
++
++class Device:
++    def __init__(self, name): self.name=name;self.id=DEVICES[name]
++    def command(self, args, timeout=40):
++        r=subprocess.run(['xcrun','devicectl','device']+args,capture_output=True,text=True,timeout=timeout)
++        if r.returncode: raise RuntimeError(r.stdout[-2000:]+'\n'+r.stderr[-2000:])
++        return r
++    def copy(self, direction, source, destination, timeout=30):
++        return self.command(['copy',direction,'--device',self.id,'--domain-type','appDataContainer',
++            '--domain-identifier',BUNDLE,'--source',str(source),'--destination',str(destination),
++            '--timeout',str(timeout),'--quiet'],timeout+5)
++    def launch(self, folder, flags=()):
++        self.command(['process','launch','--device',self.id,'--terminate-existing','--timeout','20','--',
++            BUNDLE,*flags,'--rf-full-app-check',folder],30)
++    def poll(self, folder, target, timeout):
++        start=time.monotonic();last_progress=0
++        while True:
++            time.sleep(5)
++            self.copy('from',f'Documents/{folder}/status.json',target,15)
++            status=json.loads(target.read_text())
++            if status['state']=='completed': return status
++            if status['state']=='failed': raise RuntimeError(str(status))
++            elapsed=time.monotonic()-start
++            if elapsed>timeout: raise TimeoutError(f'{folder}: no completed result after {elapsed:.0f}s; {status}')
++            if elapsed-last_progress>30:
++                print('PROGRESS',folder,round(elapsed),'seconds',status['state'],flush=True);last_progress=elapsed
++    def cool(self):
++        local=OUT/self.name/'cooldown';local.mkdir(parents=True,exist_ok=True)
++        name='RFValidation-vision-study-cooldown'
++        dump(local/'config.json',{'mode':'cooldown','seconds':300})
++        dump(local/'status.json',{'state':'prepared'})
++        self.copy('to',local,'Documents/'+name)
++        self.launch(name)
++        status=self.poll(name,local/'status.json',330)
++        if status['thermal']>1: raise RuntimeError('Phone remains above fair thermal state; pause study.')
++        return status
++
++def validate_revision(value, arm):
++    assert value['objectTrackingSelected']==(2 if arm=='tracking2' else 1),value
++    assert value['bodyPoseImplementation']==('Swift revision2' if arm=='pose2' else 'VN legacy'),value
++    assert value['integratedHandDetection'] is False,value
++
++def percentile(xs, p):
++    return sorted(xs)[round((len(xs)-1)*p)] if xs else None
++
++def summarize(folder,clip,arm):
++    status=json.loads((folder/'status.json').read_text())
++    report=json.loads((folder/'report.json').read_text())
++    trace=plistlib.load((folder/'counter.plist').open('rb'))
++    # Codable omits the optional diagnostic array when no candidate was emitted.
++    trace.setdefault('diagnostics',[])
++    exported=json.loads((folder/'touches.json').read_text())
++    assert status['trace_replay_exact'] and trace['complete']
++    assert status['count']==report['count']==len(trace['touches'])==len(exported)
++    assert not report['quality_failed'],report.get('errors')
++    assert status['last_source_seconds'] >= clip['duration']-.1
++    validate_revision(status['visionRevisions'],arm)
++    samples=report.get('samples',[])
++    thermal=[s['thermal'] for s in samples if 'thermal' in s]+[status['thermal']]
++    memory=[s['memory_mib'] for s in samples if 'memory_mib' in s]+[status['memory_mib']]
++    latency=[s['latency_ms'] for s in samples if 'latency_ms' in s]
++    summary={'clip':clip['id'],'sourceSHA256':clip['sha256'],'build':BUILD,'arm':arm,
++        'count':status['count'],'countTimes':[t['timestampMs']/1000 for t in trace['touches']],
++        'sourceSeconds':status['last_source_seconds'],'lateSourceSkips':status['late_source_skips'],
++        'worstThermal':max(thermal),'peakSampledMemoryMiB':max(memory),
++        'latencyMedianMs':percentile(latency,.5),'latencyP95Ms':percentile(latency,.95),
++        'errors':report.get('errors'),'pipeline':report['pipeline'],'worker':report['worker'],
++        'referenceCoverage':clip['referenceCoverage'],
++        'hardwareModel':report.get('hardware_model'),'modelFunction':report.get('function'),
++        'resolution':report.get('resolution'),
++        'runtimeVersion':next((p for p in report['pipeline'].split('|') if p.startswith('Version ')),None),
++        'admittedFrames':status['admitted_frames'],'poseTiming':status.get('poseTiming'),
++        'validForAccuracy':status['admitted_frames']>0}
++    if not summary['validForAccuracy']:
++        summary['invalidReason']='Every source frame was late; no frames reached the counter. Zero count is not an accuracy result.'
++    label_file=Path(clip['labelFile']) if clip['labelFile'] else OUT/'supplemental-labels'/(clip['id']+'.json')
++    if label_file.exists() and summary['validForAccuracy']:
++        spec=importlib.util.spec_from_file_location('corpus_score',ROOT/'benchmarks/touch-counting/corpus-20261014/score.py')
++        score=importlib.util.module_from_spec(spec);spec.loader.exec_module(score)
++        label=json.loads(label_file.read_text());assert label['source_sha256']==clip['sha256']
++        scored=score.score(label,trace);dump(folder/'label-score.json',scored)
++        summary['labelledValid']=scored['labelled_valid'];summary['acceptedValid']=scored['accepted_valid']
++        summary['missedValid']=len(scored['missed_valid']);summary['knownFalse']=len(scored['false_accepted'])
++        summary['unmatchedNeedingReview']=len(scored['unmatched_needing_review'])
++        summary['referenceFile']=str(label_file)
++        summary['missedLegalSeconds']=[e['time_s'] for e in scored['missed_valid']]
++        summary['knownFalseSeconds']=[e['counter_time_s'] for e in scored['false_accepted']]
++    dump(folder/'summary.json',summary)
++    return summary
++
++def main():
++    p=argparse.ArgumentParser(description=__doc__)
++    p.add_argument('--device',choices=DEVICES,default='iphone11')
++    p.add_argument('--arms',nargs='+',choices=ARMS,default=list(ARMS))
++    p.add_argument('--clips',nargs='+',help='Exact inventory IDs. Omit for all inventoried sources.')
++    p.add_argument('--repeat',type=int,default=1)
++    p.add_argument('--execute',action='store_true')
++    args=p.parse_args();device=Device(args.device)
++    inventory=json.loads((OUT/'corpus-inventory.json').read_text())
++    by_id={c['id']:c for c in inventory['clips']}
++    clips=[by_id[c] for c in args.clips] if args.clips else inventory['clips']
++    total=sum(c['duration'] for c in clips)*len(args.arms)
++    print(f'{len(clips)} clips x {len(args.arms)} arms, {total/60:.1f} minutes of paced footage, plus staging/cooldown.',flush=True)
++    if not args.execute:
++        print(json.dumps({'device':args.device,'clips':[c['id'] for c in clips],'arms':args.arms,'fixedFlags':FLAGS},indent=2));return
++    for clip in clips:
++        pending=[]
++        # Rotate arm order across the corpus to limit systematic warm/late order effects.
++        offset=(inventory['clips'].index(clip)+args.repeat-1)%len(args.arms)
++        arms=args.arms[offset:]+args.arms[:offset]
++        for arm in arms:
++            folder=OUT/f'{args.device}-build{BUILD}'/f"{clip['id']}-{arm}-r{args.repeat}"
++            if not (folder/'complete.json').exists() and all((folder/f).exists() for f in ['run.json','profile.json','status.json','report.json','counter.plist','touches.json','track.plist','report-id.txt']):
++                metadata=json.loads((folder/'run.json').read_text())
++                assert metadata['build']==BUILD and metadata['sourceSHA256']==clip['sha256']
++                summary=summarize(folder,clip,arm)
++                dump(folder/'complete.json',metadata|{'reportID':(folder/'report-id.txt').read_text().strip()})
++                print('RECOVERED_SAVED_RESULT',json.dumps(summary),flush=True)
++            if (folder/'complete.json').exists():
++                completed=json.loads((folder/'complete.json').read_text())
++                assert completed['build']==BUILD and completed['sourceSHA256']==clip['sha256']
++                print('RESUME_SKIP',folder.name,flush=True)
++            else:pending.append((arm,folder))
++        if not pending:continue
++        source=Path(clip['source']);h=hashlib.sha256()
++        with source.open('rb') as f:
++            for b in iter(lambda:f.read(8*1024*1024),b''):h.update(b)
++        assert h.hexdigest()==clip['sha256'],f'Source changed: {source}'
++        staging=OUT/'staging'/clip['id'];staging.mkdir(parents=True,exist_ok=True)
++        staged=staging/'source.mov'
++        if not staged.exists():os.link(source,staged)
++        name='RFValidation-vision-study-'+clip['id']
++        print('STAGING',clip['id'],flush=True)
++        device.copy('to',staging,'Documents/'+name,240)
++        for arm,folder in pending:
++            folder.mkdir(parents=True,exist_ok=True)
++            dump(folder/'cooldown-status.json',device.cool())
++            token='--vision-study-run-'+uuid.uuid4().hex
++            metadata={'clip':clip['id'],'sourceSHA256':clip['sha256'],'build':BUILD,'arm':arm,
++                'device':args.device,'token':token,'flags':FLAGS+ARMS[arm]}
++            dump(folder/'run.json',metadata)
++            dump(folder/'config.json',{'mode':'paced','source':'source.mov','seconds':clip['duration']})
++            dump(folder/'status.json',{'state':'prepared','token':token})
++            for f in ['config.json','status.json']:device.copy('to',folder/f,'Documents/'+name+'/'+f)
++            device.launch(name,FLAGS+ARMS[arm]+[token])
++            # Foreground launch can return before SwiftUI writes the profile.
++            for _ in range(10):
++                time.sleep(1);device.copy('from','Documents/touch-counter-profile.json',folder/'profile.json')
++                profile=json.loads((folder/'profile.json').read_text())
++                if token in profile['explicitLaunchFlags']:break
++            assert token in profile['explicitLaunchFlags'],'Stale launch profile'
++            assert profile['build']==BUILD,profile
++            assert set(FLAGS).issubset(profile['effectiveFlags']),profile
++            validate_revision(profile['visionRevisions'],arm)
++            print('START',folder.name,flush=True)
++            device.poll(name,folder/'status.json',clip['duration']+120)
++            for f in ['counter.plist','touches.json','track.plist']:device.copy('from','Documents/'+name+'/'+f,folder/f,60)
++            device.copy('from','Documents/RFFullApp/latest.txt',folder/'report-id.txt')
++            report_id=(folder/'report-id.txt').read_text().strip();assert str(uuid.UUID(report_id))==report_id.lower()
++            device.copy('from','Documents/RFFullApp/'+report_id+'/report.json',folder/'report.json',60)
++            result=summarize(folder,clip,arm)
++            dump(folder/'complete.json',metadata|{'reportID':report_id})
++            print('DONE',json.dumps(result),flush=True)
++            if result['worstThermal']>1:raise RuntimeError('Run exceeded nominal/fair; preserve evidence and pause for cooling/review.')
++    print('ALL_REQUESTED_RUNS_COMPLETE',flush=True)
++
++if __name__=='__main__': main()
+--- /dev/null
++++ b/scripts/report-vision-revision-study.py
+@@ -0,0 +1,97 @@
++#!/usr/bin/env python3
++"""Summarize measured pose evidence and full phone replays without conflating them."""
++import json,statistics
++from pathlib import Path
++
++ROOT=Path(__file__).resolve().parents[1]
++OUT=ROOT/'artifacts/vision-revisions-20261029'
++SWEEP=OUT/'mac-pose-retained-sweep'
++def q(xs,p):return sorted(xs)[round((len(xs)-1)*p)] if xs else None
++def arm_stats(rows,arm):
++    return {'anyPoseFrames':sum(bool(r[arm]['poses']) for r in rows),
++        'multiplePeopleFrames':sum(len(r[arm]['poses'])>1 for r in rows),
++        'errorFrames':sum(r[arm].get('error') is not None for r in rows),
++        'latencyMedianMS':q([r[arm]['milliseconds'] for r in rows[3:]],.5),
++        'latencyP95MS':q([r[arm]['milliseconds'] for r in rows[3:]],.95),
++        'jointPresentFrames':{j:sum(any(p['landmarks'].get(j,{}).get('confidence',0)>=.3 for p in r[arm]['poses']) for r in rows)
++            for j in ['left_ankle','right_ankle','left_knee','right_knee','left_wrist','right_wrist']}}
++
++inventory=json.loads((OUT/'corpus-inventory.json').read_text())
++rows=[]
++for clip in inventory['clips']:
++    row={k:clip[k] for k in ['id','source','sha256','duration','referenceCoverage']}
++    aliases=[Path(s).stem for s in clip['aliases'] if Path(s).stem not in ['source','input']]
++    row['name']=next((s for s in aliases if s.startswith('IMG_')),clip['id'])
++    known_names={'clip-52b45d65595b':'Outdoor round 1 · 30 seconds','clip-47a5b3932618':'Outdoor round 2 · 30 seconds',
++        'clip-500795cfb1cc':'Outdoor round 1 · 1 minute','clip-c5791fd43ce9':'Outdoor round 2 · 1 minute',
++        'clip-e244c39eb9e2':'Outdoor round 1 · 2 minutes','clip-ea80013b6647':'Outdoor round 2 · 2 minutes',
++        'clip-89b81fd8bd37':'Outdoor round 1 · 3 minutes','clip-6e62a80a9286':'Outdoor round 2 · 3 minutes',
++        'clip-d361f82b2958':'Outdoor round 1 · 5 minutes','clip-8efd824f68dc':'Outdoor round 2 · 5 minutes',
++        'clip-1258a3313c6c':'Outdoor round 2 · 10 minutes','clip-eb10c984049b':'Outdoor round 2 · 15 minutes'}
++    row['name']=known_names.get(clip['id'],row['name'])
++    row['macState']='pending'
++    completed=SWEEP/(clip['id']+'.complete.json')
++    if completed.exists():
++        done=json.loads(completed.read_text());assert done['sha256']==clip['sha256']
++        frames=[json.loads(l) for l in (SWEEP/(clip['id']+'.jsonl')).read_text().splitlines()]
++        row['macState']='completed';row['sampledFrames']=len(frames)
++        row['legacy']=arm_stats(frames,'legacy');row['modern']=arm_stats(frames,'modern')
++        row['legacyOnlyPoseTimes']=[r['sourceSeconds'] for r in frames if r['legacy']['poses'] and not r['modern']['poses']]
++        row['modernOnlyPoseTimes']=[r['sourceSeconds'] for r in frames if r['modern']['poses'] and not r['legacy']['poses']]
++    row['devices']={}
++    for device in ['iphone11','iphone17']:
++        runs={}
++        for folder in sorted((OUT/(device+'-build2026102911')).glob(clip['id']+'-*-r*')):
++            if not(folder/'run.json').exists():continue
++            run=json.loads((folder/'run.json').read_text());key=run['arm']+'-r'+folder.name.rsplit('-r',1)[1]
++            if (folder/'complete.json').exists():
++                runs[key]=json.loads((folder/'summary.json').read_text())|{'state':'completed'}
++                if (folder/'label-score.json').exists():
++                    score=json.loads((folder/'label-score.json').read_text())
++                    runs[key]['uncertainAccepted']=len(score['uncertain_accepted'])
++            elif (folder/'status.json').exists():runs[key]=json.loads((folder/'status.json').read_text())
++        row['devices'][device]=runs
++    row['phone']=row['devices']['iphone11'] # Preserve the initial report's JSON field.
++    rows.append(row)
++done=[r for r in rows if r['macState']=='completed']
++summary={'scope':'Paired sampled pose evidence on Mac; fresh paced full-pipeline comparisons on the selected iPhone where shown. Neither pose coverage nor total counts alone establish accuracy.',
++    'phoneScope':'Fresh phone comparisons are listed below. The complete 58-clip phone comparison is not finished; unrun cells are explicit. Device results are kept separate.',
++    'sampling':'Every 2s plus 3 samples around each original corpus event; extra IMG8606 review windows. Joint presence threshold0.3, any observed person, no active-player selection. These are development clips, not a held-out test.',
++    'inventory':inventory['totals'],'macCompletedClips':len(done),'macTotalFrames':sum(r['sampledFrames'] for r in done),
++    'macLegacyOnlyPoseFrames':sum(len(r['legacyOnlyPoseTimes']) for r in done),'macModernOnlyPoseFrames':sum(len(r['modernOnlyPoseTimes']) for r in done),
++    'clips':rows}
++cohort_file=OUT/'iphone17-reviewed-corpus-summary.json'
++if cohort_file.exists():
++    summary['reviewedCohort']={k:v for k,v in json.loads(cohort_file.read_text()).items()
++        if k not in ['clips','pairedComparisons']}
++(OUT/'study-summary.json').write_text(json.dumps(summary,indent=2)+'\n')
++(ROOT/'benchmarks/touch-counting/vision-revisions-20261029/study-summary.json').write_text(json.dumps(summary,indent=2)+'\n')
++media=OUT/'media';media.mkdir(exist_ok=True)
++for clip in inventory['clips']:
++    p=media/(clip['id']+'.mov')
++    if not p.exists():p.symlink_to(clip['source'])
++html=r'''<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Vision revision study</title>
++<style>body{font:16px system-ui;margin:0;background:#111821;color:#ecf0f4}main{max-width:1200px;margin:auto;padding:24px}h1{font-size:28px;margin-bottom:8px}p{line-height:1.55;color:#becbd7}select,button{font:inherit;padding:8px;background:#233445;color:white;border:1px solid #526272;border-radius:7px}input{width:100%}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}canvas{width:100%;max-height:640px;object-fit:contain;background:#0a1017}article{background:#1a2633;padding:16px;border-radius:12px;margin:18px 0}.blue{color:#65b6ff}.green{color:#6ae49e}table{border-collapse:collapse;width:100%;font-size:13px}td,th{text-align:left;border-bottom:1px solid #354352;padding:9px}td:first-child{cursor:pointer;color:#8ac8ff}.bad{color:#ffb188}small{color:#acbac8}.scroll{overflow:auto}#stamp{padding:8px 0}a{color:#9dceff}video{display:none}</style>
++<main><h1>Does Apple's newer Vision model help our juggling counter?</h1><p id="scope"></p><p id="totals"></p>
++<article id="reviewed-cohort" hidden><h2>Broader iPhone 17 check: 20 reviewed clips</h2><p id="cohort-progress"></p><div class="scroll"><table><thead><tr><th>Vision setting</th><th>Reviewed legal touches counted</th><th>Recall of reviewed legal touches</th><th>Known false counts</th><th>Uncertain counts</th><th>Needs review</th></tr></thead><tbody id="cohort-rows"></tbody></table></div><p>Totals use only clips completed in all three settings, one run per setting. The earlier pilot repeats remain separate. Uncertain contacts are excluded from definite errors. These development labels were reviewed by one assistant; they are not an independent release accuracy estimate.</p><p id="cohort-confirmation"></p><p id="cohort-attempts"></p><a href="iphone17-reviewed-corpus-summary.json">Full cohort scoring and selected repeats</a></article>
++<article><label for="clip">Inspect the same Mac test frame with both pose models</label><p><select id="clip"></select> <button id="loss">Next frame where only the old model finds a pose</button></p>
++<input id="frame" type="range" min="0" value="0"><div id="stamp"></div><div class="grid"><div><h3 class="blue">Current body pose · legacy revision 1</h3><canvas id="legacy"></canvas></div><div><h3 class="green">Swift body pose · revision 2</h3><canvas id="modern"></canvas></div></div>
++<p id="detail"></p><small>Dots show joints with confidence ≥0.3. This is sampled Mac evidence, not proof of contact or a count. Every visible detected person is drawn. Phone results below use the full counter.</small></article>
++<article id="phone-results"><h2>Per-clip evidence and phone results</h2><p><label for="device">Phone:</label> <select id="device"><option value="iphone17">iPhone 17 Pro Max</option><option value="iphone11">iPhone 11 Pro Max</option></select> <label><input style="width:auto" id="testedOnly" type="checkbox" checked> Show clips tested on this phone</label></p><p>Pose columns show Mac sampled frames with any detected pose / sampled frames. Phone cells separate reviewed legal touches from known false counts. References are development labels from one reviewer, not independently measured release accuracy. Repeats remain separate.</p><div class="scroll"><table><thead><tr><th>Clip</th><th>Seconds</th><th>Mac current pose</th><th>Mac new pose</th><th>Phone control</th><th>Phone pose2</th><th>Phone tracker2</th></tr></thead><tbody id="rows"></tbody></table></div></article>
++<p><a href="apple-api-findings.json">Apple API findings and primary sources</a> · <a href="study-summary.json">Measured results</a> · <a href="corpus-inventory.json">Full source inventory</a></p></main><video id="video" muted playsinline preload="metadata"></video>
++<script>
++const $=id=>document.getElementById(id);let study,frames=[],selected,index=0,loadID=0;
++const links=[['left_shoulder','right_shoulder'],['left_shoulder','left_elbow'],['left_elbow','left_wrist'],['right_shoulder','right_elbow'],['right_elbow','right_wrist'],['left_shoulder','left_hip'],['right_shoulder','right_hip'],['left_hip','right_hip'],['left_hip','left_knee'],['left_knee','left_ankle'],['right_hip','right_knee'],['right_knee','right_ankle']];
++function draw(){if(!frames.length)return;const row=frames[index],v=$('video');for(const arm of ['legacy','modern']){const c=$(arm);c.width=row.width;c.height=row.height;const x=c.getContext('2d');x.drawImage(v,0,0,c.width,c.height);x.strokeStyle=x.fillStyle=arm==='legacy'?'#65b6ff':'#6ae49e';x.lineWidth=2;for(const pose of row[arm].poses){const p=pose.landmarks;for(const[a,b]of links){if(p[a]?.confidence>=.3&&p[b]?.confidence>=.3){x.beginPath();x.moveTo(p[a].x*c.width,p[a].y*c.height);x.lineTo(p[b].x*c.width,p[b].y*c.height);x.stroke()}}for(const p of Object.values(pose.landmarks)){if(p.confidence>=.3){x.beginPath();x.arc(p.x*c.width,p.y*c.height,3,0,Math.PI*2);x.fill()}}}if(!row[arm].poses.length){x.fillStyle='#080f18cc';x.fillRect(8,8,c.width-16,34);x.fillStyle='#ffb188';x.font='16px system-ui';x.fillText('No body pose returned',16,31)}}$('stamp').textContent=`Frame ${index+1}/${frames.length} · ${row.sourceSeconds.toFixed(3)} s`;$('detail').textContent=`Mac request time: old ${row.legacy.milliseconds.toFixed(1)} ms; new ${row.modern.milliseconds.toFixed(1)} ms. ${row.requested.flatMap(s=>s.reasons).join(', ')}`}
++function seek(i){index=Math.max(0,Math.min(frames.length-1,i));$('frame').value=index;const v=$('video');if(Math.abs(v.currentTime-frames[index].sourceSeconds)<.001)draw();else v.currentTime=frames[index].sourceSeconds}
++async function choose(id){selected=study.clips.find(c=>c.id===id);$('clip').value=id;let token=++loadID;frames=(await(await fetch('mac-pose-retained-sweep/'+id+'.jsonl')).text()).trim().split('\n').map(JSON.parse);if(token!==loadID)return;$('frame').max=frames.length-1;index=0;const v=$('video');v.onloadedmetadata=()=>seek(0);v.src='media/'+id+'.mov';v.load()}
++$('video').onseeked=draw;$('video').onloadeddata=draw;$('clip').onchange=()=>choose($('clip').value);$('frame').oninput=()=>seek(+$('frame').value);$('loss').onclick=()=>{let n=frames.findIndex((r,i)=>i>index&&r.legacy.poses.length&&!r.modern.poses.length);if(n<0)n=frames.findIndex(r=>r.legacy.poses.length&&!r.modern.poses.length);if(n>=0)seek(n)};
++function phone(c,arm){let entries=Object.entries(c.devices[$('device').value]||{}).filter(([key])=>key.startsWith(arm+'-r'));if(!entries.length)return'Not run';return entries.map(([key,r])=>{let prefix=key.split('-').at(-1)+': ';if(r.state==='failed')return prefix+'FAILED: '+(r.error?.includes('RFContactQueue')?'counting queue overflow':r.error);if(r.state!=='completed')return prefix+r.state;if(!r.validForAccuracy)return prefix+'Invalid: no frames processed';let result=r.acceptedValid===undefined?`${r.count} counted (unscored)`:`${r.acceptedValid}/${r.labelledValid} legal · ${r.knownFalse} known false · ${r.missedValid} missed${r.uncertainAccepted?` · ${r.uncertainAccepted} uncertain`:''}${r.unmatchedNeedingReview?` · ${r.unmatchedNeedingReview} unreviewed`:''}`;return prefix+result+` · ${r.lateSourceSkips} frame skips · ${['nominal','fair','serious','critical'][r.worstThermal]}`}).join(' / ')}
++function renderRows(){$('rows').replaceChildren();for(const c of study.clips){if($('testedOnly').checked&&!Object.keys(c.devices[$('device').value]||{}).length)continue;let tr=document.createElement('tr');let values=[c.name,c.duration.toFixed(1),c.legacy?`${c.legacy.anyPoseFrames}/${c.sampledFrames}`:'Pending',c.modern?`${c.modern.anyPoseFrames}/${c.sampledFrames}`:'Pending',phone(c,'control'),phone(c,'pose2'),phone(c,'tracking2')];for(const v of values){let td=document.createElement('td');td.textContent=v;tr.append(td)}tr.firstChild.onclick=()=>{if(c.macState==='completed'){choose(c.id);window.scrollTo({top:0,behavior:'smooth'})}};$('rows').append(tr)}}
++$('device').onchange=renderRows;$('testedOnly').onchange=renderRows;
++fetch('study-summary.json').then(r=>r.json()).then(s=>{study=s;$('scope').textContent=s.scope+' '+s.phoneScope;$('totals').textContent=`${s.inventory.uniqueSources} distinct sources · ${s.inventory.sourceMinutes} minutes · Mac sweep complete for ${s.macCompletedClips} clips (${s.macTotalFrames} paired frames).`;
++if(s.reviewedCohort){const c=s.reviewedCohort;$('reviewed-cohort').hidden=false;$('cohort-progress').textContent=`${c.complete?'Completed':'In progress'}: ${c.completedTriplets}/${c.plannedClips} clips have all three results (${c.completedRuns}/60 valid runs). The full cohort contains ${c.cohortLabelledValid} reviewed legal touches.`;for(const [arm,name]of [['control','Current Vision'],['pose2','Body pose revision 2'],['tracking2','Object tracker revision 2']]){const t=c.totals[arm],tr=document.createElement('tr');for(const value of [name,`${t.legal}/${t.labelledValid}`,t.legalRecallPercent===null?'—':t.legalRecallPercent.toFixed(1)+'%',t.knownFalse,t.uncertain,t.unreviewed]){const td=document.createElement('td');td.textContent=value;tr.append(td)}$('cohort-rows').append(tr)}$('cohort-attempts').textContent=`${c.preservedFailedAttempts?.length||0} incomplete attempts preserved separately; they do not receive an accuracy score. ${c.completedConfirmationRuns||0} selected confirmation runs are excluded from these totals.`;let notes=[];for(const v of c.selectedConfirmations||[]){if(v.secondRun.control&&v.secondRun.pose2){notes.push(`${v.clip}: pose2 versus current legal-count difference was ${v.firstRun.pose2.legal-v.firstRun.control.legal}, then ${v.secondRun.pose2.acceptedValid-v.secondRun.control.acceptedValid} on repeat.`)}if(v.secondRun.tracking2&&v.firstRun.tracking2.knownFalse!==v.secondRun.tracking2.knownFalse){notes.push(`Tracker2 known false counts in ${v.clip}: ${v.firstRun.tracking2.knownFalse} initially, ${v.secondRun.tracking2.knownFalse} on repeat.`)}}$('cohort-confirmation').textContent=notes.join(' ')}
++for(const c of s.clips){if(c.macState==='completed'){let o=document.createElement('option');o.value=c.id;o.textContent=c.name+' · '+c.duration.toFixed(1)+'s';$('clip').append(o)}}renderRows();choose(s.clips.find(c=>c.id==='clip-a16380ba4a5b'&&c.macState==='completed')?.id||s.clips.find(c=>c.macState==='completed').id)});
++</script>'''
++(OUT/'review.html').write_text(html)
++print(json.dumps({k:v for k,v in summary.items() if k not in ['clips','reviewedCohort']},indent=2))
+--- /dev/null
++++ b/scripts/vision-pose-offline-audit.swift
+@@ -0,0 +1,142 @@
++// Build with ContactPose.swift and VisionRevisionExperiment.swift, -D DEBUG.
++// Pose evidence only: this deliberately does not produce touch accuracy claims.
++import AVFoundation
++import CoreImage
++import Foundation
++import Vision
++
++nonisolated enum VideoWorkExecution { static var cpuOnly: Bool { false } }
++
++struct Sample: Codable { let time: Double; let reasons: [String] }
++struct Clip: Codable { let id, source, sha256: String; let duration: Double; let samples: [Sample] }
++struct Plan: Codable { let protocolID: String; let clips: [Clip] }
++struct PoseOutput: Codable { let landmarks: [String: PoseLandmark] }
++struct Arm: Codable { let poses: [PoseOutput]; let milliseconds: Double; let error: String? }
++struct Row: Codable {
++    let sourceSeconds: Double
++    let requested: [Sample]
++    let width, height: Int
++    let legacy, modern: Arm
++}
++
++@main struct Audit {
++    static let names: [(BodyJoint, VNHumanBodyPoseObservation.JointName)] = [
++        (.nose,.nose),(.leftShoulder,.leftShoulder),(.rightShoulder,.rightShoulder),
++        (.leftElbow,.leftElbow),(.rightElbow,.rightElbow),(.leftWrist,.leftWrist),(.rightWrist,.rightWrist),
++        (.leftHip,.leftHip),(.rightHip,.rightHip),(.leftKnee,.leftKnee),(.rightKnee,.rightKnee),
++        (.leftAnkle,.leftAnkle),(.rightAnkle,.rightAnkle)]
++    static let context = CIContext(options: [.useSoftwareRenderer: false])
++    static let encoder: JSONEncoder = { let e = JSONEncoder(); e.outputFormatting = [.sortedKeys]; return e }()
++
++    static func legacy(_ pixels: CVPixelBuffer, _ request: VNDetectHumanBodyPoseRequest) throws -> [PoseOutput] {
++        try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request])
++        return try (request.results ?? []).prefix(8).map { observation in
++            let recognized = try observation.recognizedPoints(.all)
++            var points: [String: PoseLandmark] = [:]
++            for (name,joint) in names {
++                if let p = recognized[joint] {
++                    points[name.rawValue] = .init(x:p.location.x,y:1-p.location.y,confidence:Double(p.confidence))
++                }
++            }
++            return PoseOutput(landmarks: points)
++        }
++    }
++    static func modern(_ pixels: CVPixelBuffer, _ session: VisionBodyPoseRevision2.Session) throws -> [PoseOutput] {
++        try VisionBodyPoseRevision2.poses(in: pixels, session: session).map {
++            PoseOutput(landmarks: Dictionary(uniqueKeysWithValues: $0.landmarks.map { ($0.key.rawValue,$0.value) }))
++        }
++    }
++    static func measured(_ work: () throws -> [PoseOutput]) -> Arm {
++        let t = ProcessInfo.processInfo.systemUptime
++        do { let poses = try work(); return Arm(poses: poses,milliseconds:(ProcessInfo.processInfo.systemUptime-t)*1000,error:nil) }
++        catch { return Arm(poses:[],milliseconds:(ProcessInfo.processInfo.systemUptime-t)*1000,error:String(describing:error)) }
++    }
++    static func scaled(_ raw: CVPixelBuffer) throws -> CVPixelBuffer {
++        // Identical orientation and scale to ContactObservationStore.append.
++        var image = CIImage(cvPixelBuffer:raw)
++        if image.extent.width > image.extent.height { image = image.oriented(.right) }
++        image = image.transformed(by:CGAffineTransform(translationX:-image.extent.minX,y:-image.extent.minY))
++        let scale = min(1,512/max(image.extent.width,image.extent.height))
++        image = image.transformed(by:CGAffineTransform(scaleX:scale,y:scale))
++        var pixels: CVPixelBuffer?
++        let status = CVPixelBufferCreate(kCFAllocatorDefault,Int(image.extent.width),Int(image.extent.height),
++            kCVPixelFormatType_32BGRA,[kCVPixelBufferIOSurfacePropertiesKey:[:]] as CFDictionary,&pixels)
++        guard status == kCVReturnSuccess, let pixels else { throw NSError(domain:"PixelBuffer",code:Int(status)) }
++        context.render(image,to:pixels)
++        return pixels
++    }
++    static func run(_ clip: Clip, protocolID: String, output: URL) async throws {
++        let done = output.appendingPathComponent(clip.id+".complete.json")
++        if let data = try? Data(contentsOf:done),
++           let json = try? JSONSerialization.jsonObject(with:data) as? [String:Any],
++           json["protocolID"] as? String == protocolID,
++           json["sha256"] as? String == clip.sha256 {
++            print("RESUME_SKIP \(clip.id)"); fflush(stdout); return
++        }
++        let asset = AVURLAsset(url:URL(fileURLWithPath:clip.source))
++        guard let track = try await asset.loadTracks(withMediaType:.video).first else { throw NSError(domain:"NoVideo",code:1) }
++        let reader = try AVAssetReader(asset:asset)
++        let frames = AVAssetReaderTrackOutput(track:track,outputSettings:[kCVPixelBufferPixelFormatTypeKey as String:kCVPixelFormatType_32BGRA])
++        frames.alwaysCopiesSampleData = false
++        reader.add(frames)
++        guard reader.startReading() else { throw reader.error ?? NSError(domain:"Reader",code:1) }
++        let target = output.appendingPathComponent(clip.id+".jsonl")
++        let temp = output.appendingPathComponent(clip.id+".partial.jsonl")
++        FileManager.default.createFile(atPath:temp.path,contents:nil)
++        let file = try FileHandle(forWritingTo:temp); defer { try? file.close() }
++        let request = VNDetectHumanBodyPoseRequest()
++        let modernSession = VisionBodyPoseRevision2.Session()
++        request.revision = VNDetectHumanBodyPoseRequestRevision1
++        var next = 0, count = 0, failures = 0, decoded = 0
++        let start = ProcessInfo.processInfo.systemUptime
++        print("START \(clip.id) requested=\(clip.samples.count)"); fflush(stdout)
++        while next < clip.samples.count {
++            var ended = false
++            try autoreleasepool {
++                guard let frame = frames.copyNextSampleBuffer() else { ended = true; return }
++                decoded += 1
++                let time = CMSampleBufferGetPresentationTimeStamp(frame).seconds
++                guard time+0.00001 >= clip.samples[next].time else { return }
++                var samples: [Sample] = []
++                while next < clip.samples.count && clip.samples[next].time <= time+0.00001 {
++                    samples.append(clip.samples[next]); next += 1
++                }
++                guard let raw = CMSampleBufferGetImageBuffer(frame) else { throw NSError(domain:"MissingPixels",code:1) }
++                let pixels = try scaled(raw)
++                var a: Arm, b: Arm
++                // Alternate ordering to avoid a fixed first-request scheduling bias.
++                if count % 2 == 0 { a=measured { try legacy(pixels,request) }; b=measured { try modern(pixels,modernSession) } }
++                else { b=measured { try modern(pixels,modernSession) }; a=measured { try legacy(pixels,request) } }
++                if a.error != nil || b.error != nil { failures += 1 }
++                let row = Row(sourceSeconds:time,requested:samples,width:CVPixelBufferGetWidth(pixels),height:CVPixelBufferGetHeight(pixels),legacy:a,modern:b)
++                try file.write(contentsOf:encoder.encode(row)); try file.write(contentsOf:Data([10]))
++                count += 1
++                if count % 100 == 0 { print("PROGRESS \(clip.id) frames=\(count) time=\(String(format:"%.2f",time))"); fflush(stdout) }
++            }
++            if ended { break }
++        }
++        if reader.status == .failed { throw reader.error ?? NSError(domain:"ReaderFailed",code:1) }
++        reader.cancelReading()
++        guard next == clip.samples.count else { throw NSError(domain:"UnreachedSamples",code:clip.samples.count-next) }
++        try file.synchronize()
++        if FileManager.default.fileExists(atPath:target.path) { try FileManager.default.removeItem(at:target) }
++        try FileManager.default.moveItem(at:temp,to:target)
++        let report: [String:Any] = ["protocolID":protocolID,"id":clip.id,"sha256":clip.sha256,
++            "source":clip.source,"requestedSamples":clip.samples.count,"evaluatedFrames":count,
++            "decodedFrames":decoded,"errorFrames":failures,"elapsedSeconds":ProcessInfo.processInfo.systemUptime-start,
++            "os":ProcessInfo.processInfo.operatingSystemVersionString,"vision":VisionRevisionExperiment.report,
++            "scope":"Mac sampled pose evidence only; no ball tracking, hand detection, person selection or touch counter. Not phone throughput or touch accuracy."]
++        try JSONSerialization.data(withJSONObject:report,options:[.prettyPrinted,.sortedKeys]).write(to:done,options:.atomic)
++        print("DONE \(clip.id) frames=\(count) errors=\(failures)"); fflush(stdout)
++    }
++    static func main() async throws {
++        guard CommandLine.arguments.count >= 3 else { fatalError("Usage: pose-audit plan.json output-directory [clip IDs...]") }
++        let plan = try JSONDecoder().decode(Plan.self,from:Data(contentsOf:URL(fileURLWithPath:CommandLine.arguments[1])))
++        let output = URL(fileURLWithPath:CommandLine.arguments[2],isDirectory:true)
++        try FileManager.default.createDirectory(at:output,withIntermediateDirectories:true)
++        let ids = Set(CommandLine.arguments.dropFirst(3))
++        for clip in plan.clips where ids.isEmpty || ids.contains(clip.id) {
++            try await run(clip,protocolID:plan.protocolID,output:output)
++        }
++    }
++}
+--- /dev/null
++++ b/scripts/compare-vision-revision-phone.py
+@@ -0,0 +1,78 @@
++#!/usr/bin/env python3
++"""Compare paired phone replays using existing event labels and measured runtime data."""
++import argparse,json,plistlib
++from pathlib import Path
++
++ROOT=Path(__file__).resolve().parents[1]
++OUT=ROOT/'artifacts/vision-revisions-20261029'
++p=argparse.ArgumentParser(description=__doc__)
++p.add_argument('--device',choices=['iphone11','iphone17'],required=True)
++args=p.parse_args()
++base=OUT/(args.device+'-build2026102911')
++clips={c['id']:c for c in json.loads((OUT/'corpus-inventory.json').read_text())['clips']}
++runs=[];by_case={}
++for complete in sorted(base.glob('*/complete.json')):
++    f=complete.parent;meta=json.loads(complete.read_text());s=json.loads((f/'summary.json').read_text())
++    repeat=int(f.name.rsplit('-r',1)[1]);status=json.loads((f/'status.json').read_text());report=json.loads((f/'report.json').read_text())
++    timing=s.get('poseTiming') or {}
++    row={k:s.get(k) for k in ['clip','arm','count','acceptedValid','labelledValid','missedValid','knownFalse',
++        'unmatchedNeedingReview','missedLegalSeconds','knownFalseSeconds','lateSourceSkips','worstThermal',
++        'peakSampledMemoryMiB','latencyMedianMs','latencyP95Ms','validForAccuracy','sourceSHA256']}
++    row.update({'repeat':repeat,'folder':str(f),'hardwareModel':report.get('hardware_model'),
++        'modelFunction':report.get('function'),'sourceSeconds':s['sourceSeconds'],
++        'runtimeVersion':next((x for x in report['pipeline'].split('|') if x.startswith('Version ')),None),
++        'poseCalls':timing.get('calls'),'emptyPoseCalls':timing.get('empty'),
++        'poseMeanMS':timing['totalMS']/timing['calls'] if timing.get('calls') else None,
++        'poseMaximumMS':timing.get('maximumMS'),'exactTraceReplay':status['trace_replay_exact'],
++        'withinNominalOrFair':s['worstThermal']<=1,'errors':report['errors']})
++    if (f/'label-score.json').exists():
++        score=json.loads((f/'label-score.json').read_text())
++        row['matchedLegalByID']={m['label_id']:m['label_time_s'] for m in score['matched']}
++        row['missedDetails']=score['missed_valid']
++        row['uncertainAccepted']=len(score['uncertain_accepted'])
++        row['uncertainSeconds']=[e['counter_time_s'] for e in score['uncertain_accepted']]
++    runs.append(row);by_case[(row['clip'],row['arm'],repeat)]=row
++
++pairs=[]
++for r in runs:
++    if r['arm']=='control':continue
++    c=by_case.get((r['clip'],'control',r['repeat']))
++    if not c:continue
++    old,new=c.get('matchedLegalByID',{}),r.get('matchedLegalByID',{})
++    pairs.append({'clip':r['clip'],'arm':r['arm'],'repeat':r['repeat'],
++        'sameSource':c['sourceSHA256']==r['sourceSHA256'],'countDelta':r['count']-c['count'],
++        'legalCountDelta':r['acceptedValid']-c['acceptedValid'] if r['acceptedValid'] is not None and c['acceptedValid'] is not None else None,
++        'gainedLegalSeconds':sorted(new[k] for k in new.keys()-old.keys()),
++        'lostLegalSeconds':sorted(old[k] for k in old.keys()-new.keys()),
++        'controlFalseSeconds':c['knownFalseSeconds'],'candidateFalseSeconds':r['knownFalseSeconds'],
++        'controlSkips':c['lateSourceSkips'],'candidateSkips':r['lateSourceSkips'],
++        'bothNominal':c['worstThermal']==r['worstThermal']==0,
++        'bothWithinNominalOrFair':c['withinNominalOrFair'] and r['withinNominalOrFair']})
++
++groups=[]
++for clip in sorted({r['clip'] for r in runs}):
++    for arm in ['control','pose2','tracking2']:
++        rr=[r for r in runs if r['clip']==clip and r['arm']==arm]
++        if not rr:continue
++        def extent(key):
++            values=[r[key] for r in rr if r[key] is not None]
++            return [min(values),max(values)] if values else None
++        consistent_misses=set(rr[0].get('missedLegalSeconds') or [])
++        for r in rr[1:]:consistent_misses&=set(r.get('missedLegalSeconds') or [])
++        groups.append({'clip':clip,'arm':arm,'repeats':[r['repeat'] for r in rr],
++            'countRange':extent('count'),'acceptedLegalRange':extent('acceptedValid'),'knownFalseRange':extent('knownFalse'),
++            'poseMeanMSRange':extent('poseMeanMS'),'sourceSkipRange':extent('lateSourceSkips'),
++            'worstThermal':max(r['worstThermal'] for r in rr),'missedInEveryRepeat':sorted(consistent_misses)})
++
++result={'device':args.device,'build':'2026102911',
++    'scope':'Paced full-pipeline replays of saved development clips, including qualification repeats. Existing single-reviewer labels; not a held-out release accuracy benchmark. Same fixed24 counting flags in every arm. The separate reviewed-corpus summary uses a fixed cohort and one run per arm so pilot repeats do not inflate totals.',
++    'completedRuns':len(runs),'uniqueClips':len({r['clip'] for r in runs}),
++    'allCompletedNominal':all(r['worstThermal']==0 for r in runs),
++    'allTraceReplaysExact':all(r['exactTraceReplay'] for r in runs),
++    'allCompletedErrorFree':all(not r['errors'] for r in runs),
++    'runs':runs,'pairedComparisons':pairs,'groups':groups}
++for dest in [OUT/(args.device+'-comparison.json'),ROOT/'benchmarks/touch-counting/vision-revisions-20261029'/(args.device+'-comparison.json')]:
++    dest.write_text(json.dumps(result,indent=2)+'\n')
++for g in groups:
++    print(g['clip'],g['arm'],'repeats',g['repeats'],'legal',g['acceptedLegalRange'],'false',g['knownFalseRange'],'thermal',g['worstThermal'])
++print('Completed:',len(runs),'All nominal:',result['allCompletedNominal'])
+--- /dev/null
++++ b/scripts/summarize-reviewed-vision-corpus.py
+@@ -0,0 +1,200 @@
++#!/usr/bin/env python3
++"""Score the fixed reviewed corpus once per arm, keeping uncertainty explicit."""
++import argparse
++from collections import Counter
++import json
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++OUT = ROOT / 'artifacts/vision-revisions-20261029'
++COMPACT = ROOT / 'benchmarks/touch-counting/vision-revisions-20261029'
++ARMS = ['control', 'pose2', 'tracking2']
++BUILD = '2026102911'
++
++
++def write_json(path, value):
++    temp = path.with_suffix('.json.tmp')
++    temp.write_text(json.dumps(value, indent=2) + '\n')
++    temp.replace(path)
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--device', choices=['iphone11', 'iphone17'], required=True)
++    args = parser.parse_args()
++    inventory = json.loads((OUT / 'corpus-inventory.json').read_text())
++    clips = [c for c in inventory['clips'] if c['labelFile']]
++    assert len(clips) == 20, 'The reviewed cohort must remain fixed.'
++    labels = {c['id']: json.loads(Path(c['labelFile']).read_text()) for c in clips}
++    rows = []
++    for clip in clips:
++        label = labels[clip['id']]
++        assert label['source_sha256'] == clip['sha256']
++        runs = {}
++        for arm in ARMS:
++            folder = OUT / f'{args.device}-build{BUILD}' / f"{clip['id']}-{arm}-r1"
++            if not (folder / 'complete.json').exists():
++                runs[arm] = {'state': 'pending'}
++                status_path = folder / 'status.json'
++                if status_path.exists():
++                    status = json.loads(status_path.read_text())
++                    if status.get('state') == 'failed':
++                        runs[arm] = {'state': 'failed', 'error': status.get('error')}
++                continue
++            summary = json.loads((folder / 'summary.json').read_text())
++            status = json.loads((folder / 'status.json').read_text())
++            meta = json.loads((folder / 'run.json').read_text())
++            assert meta['sourceSHA256'] == clip['sha256'] and meta['build'] == BUILD
++            assert status['trace_replay_exact']
++            if not summary['validForAccuracy']:
++                runs[arm] = {'state': 'invalid', 'reason': summary.get('invalidReason')}
++                continue
++            score = json.loads((folder / 'label-score.json').read_text())
++            assert score['source_sha256'] == clip['sha256']
++            assert score['total_count'] == sum(len(score[k]) for k in [
++                'matched', 'false_accepted', 'uncertain_accepted', 'unmatched_needing_review'])
++            runs[arm] = {
++                'state': 'completed', 'count': score['total_count'],
++                'legal': score['accepted_valid'], 'knownFalse': len(score['false_accepted']),
++                'uncertain': len(score['uncertain_accepted']),
++                'unreviewed': len(score['unmatched_needing_review']),
++                'missed': len(score['missed_valid']),
++                'matchedLegalByID': {m['label_id']: m['label_time_s'] for m in score['matched']},
++                'missedEvents': score['missed_valid'], 'falseEvents': score['false_accepted'],
++                'uncertainEvents': score['uncertain_accepted'],
++                'unreviewedEvents': score['unmatched_needing_review'],
++                'sourceSkips': summary['lateSourceSkips'],
++                'worstThermal': summary['worstThermal'],
++                'poseTiming': summary.get('poseTiming'),
++                'medianPipelineLatencyMS': summary['latencyMedianMs'],
++                'peakSampledMemoryMiB': summary['peakSampledMemoryMiB'],
++                'pipeline': summary['pipeline'], 'countingFlags': [f for f in meta['flags']
++                    if f not in ['--vision-body-pose-revision2', '--follow-vision-revision2']],
++            }
++        complete = all(runs[a]['state'] == 'completed' for a in ARMS)
++        if complete:
++            assert all(set(runs[a]['countingFlags']) == set(runs['control']['countingFlags']) for a in ARMS)
++            # Only the named revision switch may differ within a clip's pipeline.
++            def baseline_pipeline(s):
++                return s.replace('|vision-body-pose-swift-r2', '').replace('|vision-track-r2', '')
++            assert len({baseline_pipeline(runs[a]['pipeline']) for a in ARMS}) == 1
++        rows.append({'clip': clip['id'], 'duration': clip['duration'],
++            'sourceSHA256': clip['sha256'], 'reviewStatus': label['review_status'],
++            'labelledValid': sum(e['label'] == 'valid' for e in label['events']),
++            'labelledUncertain': sum(e['label'] == 'uncertain' for e in label['events']),
++            'completeTriplet': complete, 'runs': runs})
++
++    matched_rows = [r for r in rows if r['completeTriplet']]
++    denominator = sum(r['labelledValid'] for r in matched_rows)
++    totals = {}
++    for arm in ARMS:
++        rr = [r['runs'][arm] for r in matched_rows]
++        total = {key: sum(r[key] for r in rr) for key in [
++            'count', 'legal', 'missed', 'knownFalse', 'uncertain', 'unreviewed', 'sourceSkips']}
++        total['labelledValid'] = denominator
++        total['legalRecallPercent'] = 100 * total['legal'] / denominator if denominator else None
++        positive_rows = [r for r in matched_rows if r['labelledValid']]
++        total['meanClipRecallPercent'] = (sum(100 * r['runs'][arm]['legal'] / r['labelledValid']
++            for r in positive_rows) / len(positive_rows)) if positive_rows else None
++        other_rows = [r for r in matched_rows if r['clip'] != 'low']
++        other_labels = sum(r['labelledValid'] for r in other_rows)
++        total['excludingFastLowClip'] = {
++            'legal': sum(r['runs'][arm]['legal'] for r in other_rows),
++            'labelledValid': other_labels,
++            'knownFalse': sum(r['runs'][arm]['knownFalse'] for r in other_rows),
++        }
++        total['thermalRunCounts'] = dict(Counter(['nominal', 'fair', 'serious', 'critical'][r['worstThermal']] for r in rr))
++        timings = [r['poseTiming'] for r in rr if r['poseTiming']]
++        calls = sum(t['calls'] for t in timings)
++        total['poseMeanMS'] = sum(t['totalMS'] for t in timings) / calls if calls else None
++        total['poseCalls'] = calls
++        total['missStages'] = dict(Counter(e['stage'] for r in rr for e in r['missedEvents']))
++        total['missReasons'] = dict(Counter(
++            (e.get('decision') or {}).get('rejection', 'no_nearby_candidate')
++            for r in rr for e in r['missedEvents']))
++        totals[arm] = total
++
++    paired = {}
++    for arm in ARMS[1:]:
++        changes = []
++        for row in matched_rows:
++            current, candidate = row['runs']['control'], row['runs'][arm]
++            old, new = current['matchedLegalByID'], candidate['matchedLegalByID']
++            changes.append({'clip': row['clip'],
++                'legalDelta': candidate['legal'] - current['legal'],
++                'falseDelta': candidate['knownFalse'] - current['knownFalse'],
++                'gainedLegalSeconds': sorted(new[k] for k in new.keys() - old.keys()),
++                'lostLegalSeconds': sorted(old[k] for k in old.keys() - new.keys()),
++                'bothNominalOrFair': max(current['worstThermal'], candidate['worstThermal']) <= 1})
++        paired[arm] = {'legalGains': sum(len(c['gainedLegalSeconds']) for c in changes),
++            'legalLosses': sum(len(c['lostLegalSeconds']) for c in changes),
++            'clipsWithMoreLegal': sum(c['legalDelta'] > 0 for c in changes),
++            'clipsWithFewerLegal': sum(c['legalDelta'] < 0 for c in changes),
++            'clipsWithSameLegalCount': sum(c['legalDelta'] == 0 for c in changes),
++            'clips': changes}
++
++    common_misses = []
++    for row in matched_rows:
++        valid = {e['id']: e['time_s'] for e in labels[row['clip']]['events'] if e['label'] == 'valid'}
++        accepted_any = set().union(*(set(row['runs'][a]['matchedLegalByID']) for a in ARMS))
++        missing = sorted(valid[k] for k in valid.keys() - accepted_any)
++        if missing:
++            common_misses.append({'clip': row['clip'], 'legalSeconds': missing})
++
++    result = {'device': args.device, 'build': BUILD,
++        'scope': 'The fixed 20 original reviewed clips, first completed run per arm (r1). '
++            'Existing pilot repeats and supplemental clips are excluded from cohort totals. '
++            'Totals use only clips with all three valid arms; uncertainty and unreviewed '
++            'counts remain separate. Labels were visually reviewed by one assistant, '
++            'with human confirmation pending; this is development recall, not held-out release accuracy. '
++            'Miss-reason summaries describe diagnostics near the reference time; they are hints, '
++            'not independently verified causes for every missed contact.',
++        'plannedClips': len(rows), 'completedTriplets': len(matched_rows),
++        'completedRuns': sum(r['runs'][a]['state'] == 'completed' for r in rows for a in ARMS),
++        'complete': len(matched_rows) == len(rows),
++        'cohortLabelledValid': sum(r['labelledValid'] for r in rows),
++        'cohortLabelledUncertain': sum(r['labelledUncertain'] for r in rows),
++        'denominatorCompletedTriplets': denominator,
++        'totals': totals, 'pairedComparisons': paired,
++        'missedByAllThreeCount': sum(len(r['legalSeconds']) for r in common_misses),
++        'missedByAllThree': common_misses, 'clips': rows}
++    failed_attempts = []
++    for path in sorted((OUT / 'failed-attempts' / args.device).glob('*/*/status.json')):
++        meta = json.loads((path.parent / 'run.json').read_text())
++        if meta['clip'] not in labels:
++            continue
++        status = json.loads(path.read_text())
++        failure_path = path.parent / 'failure.json'
++        failure = json.loads(failure_path.read_text()) if failure_path.exists() else {}
++        failed_attempts.append({'clip': meta['clip'], 'arm': meta['arm'],
++            'path': str(path.parent), 'error': status.get('error') or failure.get('error'),
++            'thermal': status.get('thermal')})
++    result['preservedFailedAttempts'] = failed_attempts
++    plan_path = OUT / 'broad-study-plan.json'
++    plan = json.loads(plan_path.read_text()) if plan_path.exists() else {}
++    confirmations = []
++    for clip_id in plan.get('confirmationClips', []):
++        first = next(row for row in rows if row['clip'] == clip_id)
++        second = {}
++        for arm in ARMS:
++            folder = OUT / f'{args.device}-build{BUILD}' / f'{clip_id}-{arm}-r2'
++            if not (folder / 'complete.json').exists():
++                continue
++            s = json.loads((folder / 'summary.json').read_text())
++            if not s['validForAccuracy']:
++                continue
++            second[arm] = {k: s[k] for k in ['count', 'acceptedValid', 'knownFalse',
++                'missedLegalSeconds', 'knownFalseSeconds', 'worstThermal']}
++        confirmations.append({'clip': clip_id,
++            'firstRun': {a: {k: first['runs'][a].get(k) for k in ['legal', 'knownFalse']} for a in ARMS},
++            'secondRun': second})
++    result['selectedConfirmations'] = confirmations
++    result['completedConfirmationRuns'] = sum(len(c['secondRun']) for c in confirmations)
++    for dest in [OUT, COMPACT]:
++        write_json(dest / f'{args.device}-reviewed-corpus-summary.json', result)
++    print(json.dumps({k: result[k] for k in [
++        'completedTriplets', 'completedRuns', 'complete', 'denominatorCompletedTriplets', 'totals']}, indent=2))
++
++
++if __name__ == '__main__':
++    main()

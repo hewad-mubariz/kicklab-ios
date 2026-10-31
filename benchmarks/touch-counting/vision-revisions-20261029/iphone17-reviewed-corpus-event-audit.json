@@ -1,0 +1,127 @@
+{
+  "clip": "nomral_juggling_6",
+  "sourceSHA256": "de6af4939c1b4350b5d72123e1ba6b9bd99fa87a0df518538a93765389d3f2cd",
+  "review": "Existing invalid interval10.15\u201311.05s confirmed in an additional visual sequence review. First ground rebound near the attempted foot contact, then hand pushes the ball down and a second ground rebound precedes the catch. Both counts occur in all3 arms; not a newly introduced revision2 error. Labels were unchanged.",
+  "visualEvidence": "broad-event-review/normal6-9.95-to-11.10.png",
+  "frameLayout": "6 columns x4 rows, left to right then top to bottom; start approximately9.95s, interval0.05s.",
+  "phoneDecisions": [
+    {
+      "arm": "control",
+      "timeSeconds": 10.304,
+      "referenceReason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch",
+      "decisionScalars": {
+        "frameIndex": 309,
+        "timestampMs": 10304,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.510818894704183,
+        "requiredFall": 0.017602539062500002,
+        "rise": 0.0661617155691877,
+        "impulse": 3.9083942175630395,
+        "ground": 0.720458984375,
+        "observedBallBottom": 0.76226806640625,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    },
+    {
+      "arm": "control",
+      "timeSeconds": 10.705,
+      "referenceReason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch",
+      "decisionScalars": {
+        "frameIndex": 321,
+        "timestampMs": 10705,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.28178524017333983,
+        "requiredFall": 0.017822265625,
+        "rise": 0.028936785797574638,
+        "impulse": 3.35401011416849,
+        "ground": 0.766845703125,
+        "observedBallBottom": 0.8004150390625,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    },
+    {
+      "arm": "pose2",
+      "timeSeconds": 10.304,
+      "referenceReason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch",
+      "decisionScalars": {
+        "frameIndex": 309,
+        "timestampMs": 10304,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.510818894704183,
+        "requiredFall": 0.017602539062500002,
+        "rise": 0.0661617155691877,
+        "impulse": 3.9083942175630395,
+        "ground": 0.720458984375,
+        "observedBallBottom": 0.76226806640625,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    },
+    {
+      "arm": "pose2",
+      "timeSeconds": 10.705,
+      "referenceReason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch",
+      "decisionScalars": {
+        "frameIndex": 321,
+        "timestampMs": 10705,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.28178524017333983,
+        "requiredFall": 0.017822265625,
+        "rise": 0.028936785797574638,
+        "impulse": 3.35401011416849,
+        "ground": 0.766845703125,
+        "observedBallBottom": 0.8004150390625,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    },
+    {
+      "arm": "tracking2",
+      "timeSeconds": 10.271,
+      "referenceReason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch",
+      "decisionScalars": {
+        "frameIndex": 307,
+        "timestampMs": 10271,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.5019803796241533,
+        "requiredFall": 0.017602539062500002,
+        "rise": 0.011251371298263368,
+        "impulse": 3.4417526502120044,
+        "ground": 0.720458984375,
+        "observedBallBottom": 0.76226806640625,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    },
+    {
+      "arm": "tracking2",
+      "timeSeconds": 10.738,
+      "referenceReason": "Missed foot attempt, ground bounce, hand pushes ball down, second ground bounce before catch",
+      "decisionScalars": {
+        "frameIndex": 321,
+        "timestampMs": 10738,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "fall": 0.1873881706272263,
+        "requiredFall": 0.01707763671875,
+        "rise": 0.022251927632404633,
+        "impulse": 2.0417141104061765,
+        "ground": 0.765869140625,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    }
+  ]
+}

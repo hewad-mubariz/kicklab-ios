@@ -1,0 +1,96 @@
+FAILED-RETRY CLOCK — IPHONE17 — 30 OCTOBER 2026
+
+Only --rf-failed-retry-clock-v1 differs between arms. Counter config is identical.
+Both use revision2, precise replay timing and the same prior low-contact/ground opt-ins.
+No source-grid/reservation prototype or new threshold is enabled. Production default remains off.
+
+ball_in_hand r1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gains []; losses [].
+  Regular RF 10.21 -> 10.21/s; all RF 10.21 -> 10.21/s; pose work 0.0 -> 0.0ms/s; frame p95 224.9 -> 224.5ms; clock adjustments 0.
+  No scheduling adjustment executed in the experimental arm; score changes cannot be credited to this mechanism.
+IMG8874 r1: total 24 -> 24; legal 24 -> 24; known false 0 -> 0.
+  Gains []; losses [].
+  Regular RF 9.79 -> 9.79/s; all RF 10.27 -> 10.27/s; pose work 229.1 -> 226.6ms/s; frame p95 220.6 -> 219.7ms; clock adjustments 0.
+  No scheduling adjustment executed in the experimental arm; score changes cannot be credited to this mechanism.
+old three-minute clip r1: total 156 -> 157; legal unlabelled -> unlabelled; known false unlabelled -> unlabelled.
+  Regular RF 9.34 -> 9.39/s; all RF 11.15 -> 11.11/s; pose work 126.4 -> 138.3ms/s; frame p95 225.4 -> 224.1ms; clock adjustments 2.
+  Delivered source frames differ (skips 2 -> 0); this is not an identical-input comparison.
+  Selected three-minute targets {"before": {"8016": [8.016], "42013": [], "107910": [107.91], "125525": [125.491], "145458": [145.458], "153773": [], "154206": [], "157807": []}, "after": {"8016": [8.016], "42013": [42.046], "107910": [107.91], "125525": [125.458], "145458": [145.458], "153773": [], "154206": [], "157807": []}}
+IMG8606 r1: total 35 -> 33; legal 34 -> 32; known false 1 -> 1.
+  Gains []; losses [18.25, 18.875].
+  Regular RF 9.53 -> 9.48/s; all RF 11.29 -> 11.14/s; pose work 250.8 -> 250.7ms/s; frame p95 226.3 -> 228.5ms; clock adjustments 0.
+  No scheduling adjustment executed in the experimental arm; score changes cannot be credited to this mechanism.
+IMG8606 r2: total 33 -> 35; legal 32 -> 34; known false 1 -> 1.
+  Gains [18.25, 18.875]; losses [].
+  Regular RF 9.48 -> 9.53/s; all RF 11.14 -> 11.34/s; pose work 248.1 -> 242.3ms/s; frame p95 227.5 -> 224.5ms; clock adjustments 0.
+  No scheduling adjustment executed in the experimental arm; score changes cannot be credited to this mechanism.
+dribbling_with_ball_1 r1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gains []; losses [].
+  Regular RF 9.79 -> 9.88/s; all RF 10.14 -> 10.27/s; pose work 0.0 -> 0.0ms/s; frame p95 226.4 -> 225.7ms; clock adjustments 4.
+dribbling_with_ball_2 r1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gains []; losses [].
+  Regular RF 10.11 -> 10.11/s; all RF 10.28 -> 10.44/s; pose work 0.0 -> 0.0ms/s; frame p95 226.5 -> 225.6ms; clock adjustments 2.
+dribbling_with_ball_3 r1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gains []; losses [].
+  Regular RF 9.63 -> 9.85/s; all RF 10.29 -> 10.51/s; pose work 0.0 -> 0.0ms/s; frame p95 230.7 -> 227.8ms; clock adjustments 1.
+dribbling_with_the_ball_1 r1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gains []; losses [].
+  Regular RF 9.60 -> 9.49/s; all RF 10.23 -> 10.34/s; pose work 16.4 -> 15.5ms/s; frame p95 229.1 -> 231.4ms; clock adjustments 3.
+low.mov r1: total 171 -> 171; legal 171 -> 171; known false 0 -> 0.
+  Gains []; losses [].
+  Regular RF 9.91 -> 9.91/s; all RF 10.13 -> 10.13/s; pose work 305.4 -> 305.5ms/s; frame p95 223.7 -> 223.3ms; clock adjustments 0.
+  No scheduling adjustment executed in the experimental arm; score changes cannot be credited to this mechanism.
+  Low targets {"before": {"4633": [4.633], "54033": [54.033], "58000": [58.0]}, "after": {"4633": [4.633], "54033": [54.033], "58000": [58.0]}}
+low.mov r2: total 171 -> 171; legal 171 -> 171; known false 0 -> 0.
+  Gains []; losses [].
+  Regular RF 9.91 -> 9.93/s; all RF 10.13 -> 10.13/s; pose work 300.8 -> 305.8ms/s; frame p95 223.4 -> 223.2ms; clock adjustments 0.
+  No scheduling adjustment executed in the experimental arm; score changes cannot be credited to this mechanism.
+  Low targets {"before": {"4633": [4.633], "54033": [54.033], "58000": [58.0]}, "after": {"4633": [4.633], "54033": [54.033], "58000": [58.0]}}
+raw-juggling r1: total 7 -> 6; legal 7 -> 6; known false 0 -> 0.
+  Gains [3.84, 8.1]; losses [4.43, 4.98, 6.62].
+  Regular RF 8.34 -> 8.57/s; all RF 9.40 -> 9.55/s; pose work 70.0 -> 47.1ms/s; frame p95 224.5 -> 224.3ms; clock adjustments 3.
+raw-juggling r2: total 7 -> 6; legal 7 -> 6; known false 0 -> 0.
+  Gains [3.84, 8.1]; losses [4.43, 4.98, 6.62].
+  Regular RF 8.34 -> 8.64/s; all RF 9.47 -> 9.77/s; pose work 67.4 -> 44.8ms/s; frame p95 224.4 -> 224.5ms; clock adjustments 6.
+
+26 completed runs; thermal states [0]; overflow 0; source skips 2; late RF replies 1.
+One RF model and at most one active RF inference in every run; regular submissions retain the full wall-rate interval.
+
+Same-setting repeat event changes:
+{"clip": "clip-a16380ba4a5b", "arm": "control", "repeats": [1, 2], "changedLegal": [18.25, 18.875]}
+{"clip": "low", "arm": "control", "repeats": [1, 2], "changedLegal": []}
+{"clip": "raw-juggling", "arm": "control", "repeats": [1, 2], "changedLegal": []}
+{"clip": "clip-a16380ba4a5b", "arm": "failed", "repeats": [1, 2], "changedLegal": [18.25, 18.875]}
+{"clip": "low", "arm": "failed", "repeats": [1, 2], "changedLegal": []}
+{"clip": "raw-juggling", "arm": "failed", "repeats": [1, 2], "changedLegal": []}
+
+Old three-minute footage has selected reviewed events only; its total is not a full legal-touch score.
+Phone left in the subsequent user-requested replay; see phone-handoff.json.
+
+DO NOT PROMOTE EITHER RETRY-CLOCK CHANGE. 30 OCTOBER 2026.
+
+The broad clock prototype lost reviewed low kicks (171 to 167 in the first pair).
+The narrower failed-retry-only prototype counted 6 rather than 7 legal contacts in both raw-clip repeats.
+Each repeat gained 3.84 and 8.10 s but lost 4.43, 4.98 and 6.62 s to trackLost. Counter rules were identical.
+Low.mov remained 171 in both paired repeats, with the 4.633, 54.033 and 58.000 s targets preserved.
+IMG8606 varied between 32 and 34 legal counts in both settings, with zero clock restorations in all four runs.
+Do not attribute that variability to the inactive clock mechanism. Its one known false count remained.
+IMG8874 stayed at 24. All five holding/dribbling controls stayed at zero in both arms.
+In the old three-minute clip, reviewed ground events at 153.773, 154.206 and 157.807 s remained uncounted.
+The 42.013 s legal target was missed in the control and counted in the experiment. The suspected false
+at 145.458 s persisted in both. These are selected reviewed events, not a full accuracy score.
+The control skipped source frames at 28.265 and 95.843 s; the experiment skipped none, so this pair
+cannot support an identical-input causal claim.
+
+12 broad-clock runs plus 26 failed-retry-clock runs completed. One extra dribbling attempt was invalid
+because iOS blocked GPU execution in the background; its evidence is preserved separately and a fresh
+retry completed. All completed runs were nominal; no RF reply was late and no pipeline buffer overflowed.
+The same RF model, single-active-inference bound and regular-rate cap held. There is no useful latency
+improvement that compensates for losing legal contacts. Neither production default was enabled.
+
+Keep regular scheduling unchanged. Further recovery work should isolate contact-window evidence with
+fixed inputs, then validate fresh paced runs; a global shift of sampled frames trades one miss for another.
+
+Phone handoff: the user then requested IMG_9029.MOV. The phone now displays that completed 24-count
+control run on build2026103020, with both retry-clock experiments disabled. This supersedes the planned
+restoration of the previous 24-touch IMG8874 preview. See ../img9029-iphone17/review/verified.json.

@@ -1,0 +1,90 @@
+[
+  {
+    "arm": "control",
+    "repeat": 1,
+    "decisions": [
+      {
+        "frameIndex": 240,
+        "timestampMs": 8003,
+        "rejection": "groundBounce",
+        "footConfirmed": false,
+        "fall": 0.07520619630813596,
+        "requiredFall": 0.011785888671875001,
+        "rise": 0.027159357070922874,
+        "impulse": 1.4158237336286845,
+        "ground": 0.8232421875,
+        "observedBallBottom": 0.82373046875,
+        "plantedFeetConfirmed": true
+      }
+    ]
+  },
+  {
+    "arm": "control",
+    "repeat": 2,
+    "decisions": [
+      {
+        "frameIndex": 240,
+        "timestampMs": 8003,
+        "rejection": "groundBounce",
+        "footConfirmed": false,
+        "fall": 0.07520619630813596,
+        "requiredFall": 0.011785888671875001,
+        "rise": 0.027159357070922874,
+        "impulse": 1.4158237336286845,
+        "ground": 0.8232421875,
+        "observedBallBottom": 0.82373046875,
+        "plantedFeetConfirmed": true
+      }
+    ]
+  },
+  {
+    "arm": "supported",
+    "repeat": 1,
+    "decisions": [
+      {
+        "frameIndex": 240,
+        "timestampMs": 8003,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.07520619630813596,
+        "requiredFall": 0.011785888671875001,
+        "rise": 0.027159357070922874,
+        "impulse": 1.4158237336286845,
+        "ground": 0.8232421875,
+        "observedBallBottom": 0.82373046875,
+        "plantedFeetConfirmed": true,
+        "handlingChecked": true
+      }
+    ],
+    "added": [
+      8003
+    ],
+    "lost": []
+  },
+  {
+    "arm": "supported",
+    "repeat": 2,
+    "decisions": [
+      {
+        "frameIndex": 240,
+        "timestampMs": 8003,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.07520619630813596,
+        "requiredFall": 0.011785888671875001,
+        "rise": 0.027159357070922874,
+        "impulse": 1.4158237336286845,
+        "ground": 0.8232421875,
+        "observedBallBottom": 0.82373046875,
+        "plantedFeetConfirmed": true,
+        "handlingChecked": true
+      }
+    ],
+    "added": [
+      8003
+    ],
+    "lost": []
+  }
+]

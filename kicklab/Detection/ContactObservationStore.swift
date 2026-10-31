@@ -45,11 +45,22 @@ nonisolated final class ContactObservationStore {
     private var warmed = false
     private let request = VNDetectHumanBodyPoseRequest()
     private let handRequest = VNDetectHumanHandPoseRequest()
+    #if DEBUG
+    private lazy var modernPoseSession = VisionBodyPoseRevision2.Session()
+    private(set) var auditScope = [String]()
+    func beginAuditScope(_ name: String) { if PoseWorkloadAudit.enabled { auditScope.append(name) } }
+    func endAuditScope() { if PoseWorkloadAudit.enabled { _ = auditScope.popLast() } }
+    #endif
 
     init() {
         do {
             try VisionComputePolicy.configure(request)
             try VisionComputePolicy.configure(handRequest)
+            #if DEBUG
+            if !VisionRevisionExperiment.bodyPose2() {
+                try VisionPoseComputeProbe.configure(request, device: VisionPoseComputeProbe.requested)
+            }
+            #endif
         }
         catch { lastError = error.localizedDescription }
     }
@@ -94,7 +105,39 @@ nonisolated final class ContactObservationStore {
               let pixels else { return }
         context.render(CIImage(color: .black).cropped(to: CGRect(x: 0, y: 0, width: 288, height: 512)), to: pixels)
         do {
+            #if DEBUG
+            if VisionRevisionExperiment.bodyPose2() {
+                _ = try VisionBodyPoseRevision2.poses(in: pixels, session: modernPoseSession)
+                if PoseEmptyFallbackPolicy.enabled() { _ = try legacyPoses(in: pixels) }
+                try VNImageRequestHandler(cvPixelBuffer: pixels).perform([handRequest])
+            } else {
+                try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request, handRequest])
+            }
+            #else
             try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request, handRequest])
+            #endif
+            #if DEBUG
+            let blackMS = (ProcessInfo.processInfo.systemUptime-start)*1000
+            var realPoseCounts = [Int](), realTimes = [Double]()
+            // Explicit lab ablation only. Prime the retained request with a
+            // staged person image before the replay clock starts. Nothing from
+            // this image enters observations, the pose cache or the counter.
+            if let real = try VisionPoseComputeProbe.warmupPixels() {
+                for _ in 0..<2 {
+                    let realStart = ProcessInfo.processInfo.systemUptime
+                    let poses = VisionRevisionExperiment.bodyPose2()
+                        ? try VisionBodyPoseRevision2.poses(in: real, session: modernPoseSession)
+                        : try legacyPoses(in: real)
+                    realTimes.append((ProcessInfo.processInfo.systemUptime-realStart)*1000)
+                    realPoseCounts.append(poses.count)
+                }
+                guard realPoseCounts.allSatisfy({ $0 > 0 }) else {
+                    throw NSError(domain: "PersonWarmupDidNotDetectBody", code: 1)
+                }
+            }
+            VisionRevisionExperiment.recordWarmup(["blackMilliseconds": blackMS,
+                "personPoseCounts": realPoseCounts, "personMilliseconds": realTimes])
+            #endif
             warmed = true
         } catch {
             lastError = error.localizedDescription
@@ -162,6 +205,16 @@ nonisolated final class ContactObservationStore {
     }
 
     func hands(for frame: Frame, recordErrors: Bool = true) -> [[HandLandmark]]? {
+        #if DEBUG
+        let auditStarted = PoseWorkloadAudit.enabled ? ProcessInfo.processInfo.systemUptime : 0
+        defer {
+            if PoseWorkloadAudit.enabled {
+                PoseWorkloadAudit.record(frame: frame.index, milliseconds: frame.timestampMs,
+                    scope: auditScope, cached: false,
+                    elapsedMS: (ProcessInfo.processInfo.systemUptime-auditStarted)*1000, kind: "hand")
+            }
+        }
+        #endif
         do {
             handPoseRequests += 1
             try VNImageRequestHandler(cvPixelBuffer: frame.pixels).perform([handRequest])
@@ -184,47 +237,97 @@ nonisolated final class ContactObservationStore {
         }
     }
 
+    private func legacyPoses(in pixels: CVPixelBuffer) throws -> [Pose] {
+        try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request])
+        let rawPoses = request.results ?? []
+        let names: [(BodyJoint, VNHumanBodyPoseObservation.JointName)] = [
+            (.nose, .nose), (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
+            (.leftElbow, .leftElbow), (.rightElbow, .rightElbow),
+            (.leftWrist, .leftWrist), (.rightWrist, .rightWrist),
+            (.leftHip, .leftHip), (.rightHip, .rightHip),
+            (.leftKnee, .leftKnee), (.rightKnee, .rightKnee),
+            (.leftAnkle, .leftAnkle), (.rightAnkle, .rightAnkle)]
+        return try rawPoses.prefix(8).map { observation in
+            let recognized = try observation.recognizedPoints(.all)
+            var result = Pose()
+            for (name,joint) in names {
+                guard let point = recognized[joint] else { continue }
+                if point.confidence >= 0.3 { result.joints[name] = .init(x: point.location.x, y: 1-point.location.y) }
+                let landmark = PoseLandmark(x: point.location.x, y: 1-point.location.y,
+                                            confidence: Double(point.confidence))
+                result.landmarks[name] = landmark
+                switch name {
+                case .leftWrist: result.wrists[.left] = landmark
+                case .rightWrist: result.wrists[.right] = landmark
+                case .leftHip: result.hips[.left] = landmark
+                case .rightHip: result.hips[.right] = landmark
+                case .leftAnkle: result.ankles[.left] = landmark
+                case .rightAnkle: result.ankles[.right] = landmark
+                default: break
+                }
+            }
+            return result
+        }
+    }
+
     func pose(for frame: Frame, recordErrors: Bool = true) -> Pose? {
-        if let cached = poseCache[frame.index] { poseCacheHits += 1; return cached }
+        if let cached = poseCache[frame.index] {
+            poseCacheHits += 1
+            #if DEBUG
+            PoseWorkloadAudit.record(frame: frame.index, milliseconds: frame.timestampMs,
+                scope: auditScope, cached: true, elapsedMS: 0)
+            #endif
+            return cached
+        }
         return autoreleasepool {
+            #if DEBUG
+            let started = ProcessInfo.processInfo.systemUptime
+            var observed = 0, failed = false
+            defer {
+                let elapsed = (ProcessInfo.processInfo.systemUptime-started)*1000
+                VisionRevisionExperiment.recordPose(milliseconds:elapsed,
+                    poses:observed,failed:failed)
+                PoseWorkloadAudit.record(frame: frame.index, milliseconds: frame.timestampMs,
+                    scope: auditScope, cached: false, elapsedMS: elapsed)
+            }
+            #endif
             do {
                 poseRequests += 1
-                try VNImageRequestHandler(cvPixelBuffer: frame.pixels).perform([request])
-                let rawPoses = request.results ?? []
-                let names: [(BodyJoint, VNHumanBodyPoseObservation.JointName)] = [
-                    (.nose, .nose), (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
-                    (.leftElbow, .leftElbow), (.rightElbow, .rightElbow),
-                    (.leftWrist, .leftWrist), (.rightWrist, .rightWrist),
-                    (.leftHip, .leftHip), (.rightHip, .rightHip),
-                    (.leftKnee, .leftKnee), (.rightKnee, .rightKnee),
-                    (.leftAnkle, .leftAnkle), (.rightAnkle, .rightAnkle)]
-                let poses: [Pose] = try rawPoses.prefix(8).map { observation in
-                    let recognized = try observation.recognizedPoints(.all)
-                    var result = Pose()
-                    for (name,joint) in names {
-                        guard let point = recognized[joint] else { continue }
-                        if point.confidence >= 0.3 { result.joints[name] = .init(x: point.location.x, y: 1-point.location.y) }
-                        let landmark = PoseLandmark(x: point.location.x, y: 1-point.location.y,
-                                                    confidence: Double(point.confidence))
-                        result.landmarks[name] = landmark
-                        switch name {
-                        case .leftWrist: result.wrists[.left] = landmark
-                        case .rightWrist: result.wrists[.right] = landmark
-                        case .leftHip: result.hips[.left] = landmark
-                        case .rightHip: result.hips[.right] = landmark
-                        case .leftAnkle: result.ankles[.left] = landmark
-                        case .rightAnkle: result.ankles[.right] = landmark
-                        default: break
-                        }
-                    }
-                    return result
+                var poses: [Pose]
+                #if DEBUG
+                let inputAudit = PoseInputAudit.begin(pixels: frame.pixels, frame: frame.index,
+                    milliseconds: frame.timestampMs, rechecked: frame.isContactRecheck,
+                    scope: auditScope, selection: frame.player)
+                if VisionRevisionExperiment.bodyPose2() {
+                    poses = try VisionBodyPoseRevision2.poses(in: frame.pixels, session: modernPoseSession)
+                } else { poses = try legacyPoses(in: frame.pixels) }
+                #else
+                poses = try legacyPoses(in: frame.pixels)
+                #endif
+                #if DEBUG
+                observed = poses.count
+                if inputAudit != nil {
+                    PoseInputAudit.finish(inputAudit, pixels: frame.pixels, poses: poses,
+                        selected: ActivePlayerPoseMatcher.index(in: poses, selection: frame.player))
                 }
+                if PoseEmptyFallbackPolicy.permits(enabled: PoseEmptyFallbackPolicy.enabled(),
+                    revision2: VisionRevisionExperiment.bodyPose2(), rawPoseCount: poses.count, player: frame.player) {
+                    let fallbackStarted = ProcessInfo.processInfo.systemUptime
+                    poses = try legacyPoses(in: frame.pixels)
+                    PoseFallbackAudit.record(frame: frame.index, milliseconds: frame.timestampMs,
+                        poses: poses.count, selected: ActivePlayerPoseMatcher.index(in: poses, selection: frame.player),
+                        elapsedMS: (ProcessInfo.processInfo.systemUptime-fallbackStarted)*1000)
+                }
+                #endif
                 let selected = ActivePlayerPoseMatcher.index(in: poses, selection: frame.player)
                 let result = selected.map { poses[$0] } ?? Pose()
                 otherPoseCache[frame.index] = poses.enumerated().filter { $0.offset != selected }.map(\.element)
                 poseCache[frame.index] = result
                 return result
             } catch {
+                #if DEBUG
+                failed = true
+                #endif
                 if recordErrors {
                     lastError = error.localizedDescription
                     discardFrames()

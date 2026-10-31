@@ -1,0 +1,4176 @@
+{
+  "build": "2026102914",
+  "scope": "Selected fixed-image compute test and two-clip live-pipeline diagnostic. No counter-rule change; not release qualification. Devices use their own RF profiles and different OS versions.",
+  "compute": [
+    {
+      "device": "iphone11",
+      "hardware": "iPhone12,5",
+      "os": "Version 27.2 (Build 24B119)",
+      "devices": {
+        "legacy-automatic": [
+          {
+            "assigned": "automatic-unspecified",
+            "stage": "VNComputeStageMain",
+            "supported": [
+              "neuralEngine",
+              "gpu",
+              "cpu"
+            ]
+          }
+        ],
+        "legacy-cpu": [
+          {
+            "assigned": "cpu",
+            "stage": "VNComputeStageMain",
+            "supported": [
+              "neuralEngine",
+              "gpu",
+              "cpu"
+            ]
+          }
+        ],
+        "legacy-gpu": [
+          {
+            "assigned": "gpu",
+            "stage": "VNComputeStageMain",
+            "supported": [
+              "neuralEngine",
+              "gpu",
+              "cpu"
+            ]
+          }
+        ],
+        "legacy-neuralEngine": [
+          {
+            "assigned": "neuralEngine",
+            "stage": "VNComputeStageMain",
+            "supported": [
+              "neuralEngine",
+              "gpu",
+              "cpu"
+            ]
+          }
+        ],
+        "revision2-automatic": [
+          {
+            "assigned": "automatic-unspecified",
+            "stage": "main",
+            "supported": [
+              "neuralEngine"
+            ]
+          }
+        ],
+        "revision2-neuralEngine": [
+          {
+            "assigned": "neuralEngine",
+            "stage": "main",
+            "supported": [
+              "neuralEngine"
+            ]
+          }
+        ]
+      },
+      "timings": [
+        {
+          "arm": "legacy-automatic",
+          "n": 27,
+          "meanMS": 15.98798456796902,
+          "medianMS": 14.934124999854248,
+          "p95MS": 20.987791667721467,
+          "maximumMS": 30.07070833336911,
+          "empty": 0,
+          "thermalStates": [
+            0
+          ]
+        },
+        {
+          "arm": "legacy-cpu",
+          "n": 27,
+          "meanMS": 99.85391820993283,
+          "medianMS": 98.76762500061886,
+          "p95MS": 104.89716666779714,
+          "maximumMS": 112.65699999785284,
+          "empty": 0,
+          "thermalStates": [
+            0
+          ]
+        },
+        {
+          "arm": "legacy-gpu",
+          "n": 27,
+          "meanMS": 16.746569444674403,
+          "medianMS": 16.24154166711378,
+          "p95MS": 20.1942500025325,
+          "maximumMS": 23.859000000811648,
+          "empty": 0,
+          "thermalStates": [
+            0
+          ]
+        },
+        {
+          "arm": "legacy-neuralEngine",
+          "n": 27,
+          "meanMS": 15.471993827506797,
+          "medianMS": 15.102708333870396,
+          "p95MS": 17.674583334155614,
+          "maximumMS": 19.302916665765224,
+          "empty": 0,
+          "thermalStates": [
+            0
+          ]
+        },
+        {
+          "arm": "revision2-automatic",
+          "n": 27,
+          "meanMS": 40.465341049302545,
+          "medianMS": 40.275208331877366,
+          "p95MS": 48.44466666327207,
+          "maximumMS": 52.62800000127754,
+          "empty": 6,
+          "thermalStates": [
+            0
+          ]
+        },
+        {
+          "arm": "revision2-neuralEngine",
+          "n": 27,
+          "meanMS": 39.55149845690661,
+          "medianMS": 40.18099999666447,
+          "p95MS": 43.86470833196654,
+          "maximumMS": 46.80016666679876,
+          "empty": 6,
+          "thermalStates": [
+            0
+          ]
+        }
+      ],
+      "exactAutomaticVsForcedBodyOutputs": 27,
+      "pairedBodyOutputs": 27,
+      "failures": []
+    },
+    {
+      "device": "iphone17",
+      "hardware": "iPhone18,2",
+      "os": "Version 27.0.1 (Build 24A446)",
+      "devices": {
+        "legacy-automatic": [
+          {
+            "assigned": "automatic-unspecified",
+            "stage": "VNComputeStageMain",
+            "supported": [
+              "neuralEngine",
+              "gpu",
+              "cpu"
+            ]
+          }
+        ],
+        "legacy-cpu": [
+          {
+            "assigned": "cpu",
+            "stage": "VNComputeStageMain",
+            "supported": [
+              "neuralEngine",
+              "gpu",
+              "cpu"
+            ]
+          }
+        ],
+        "legacy-gpu": [
+          {
+            "assigned": "gpu",
+            "stage": "VNComputeStageMain",
+            "supported": [
+              "neuralEngine",
+              "gpu",
+              "cpu"
+            ]
+          }
+        ],
+        "legacy-neuralEngine": [
+          {
+            "assigned": "neuralEngine",
+            "stage": "VNComputeStageMain",
+            "supported": [
+              "neuralEngine",
+              "gpu",
+              "cpu"
+            ]
+          }
+        ],
+        "revision2-automatic": [
+          {
+            "assigned": "automatic-unspecified",
+            "stage": "main",
+            "supported": [
+              "neuralEngine"
+            ]
+          }
+        ],
+        "revision2-neuralEngine": [
+          {
+            "assigned": "neuralEngine",
+            "stage": "main",
+            "supported": [
+              "neuralEngine"
+            ]
+          }
+        ]
+      },
+      "timings": [
+        {
+          "arm": "legacy-automatic",
+          "n": 27,
+          "meanMS": 4.519449074534889,
+          "medianMS": 4.434750000655185,
+          "p95MS": 5.546958331251517,
+          "maximumMS": 5.629125000268687,
+          "empty": 0,
+          "thermalStates": [
+            1
+          ]
+        },
+        {
+          "arm": "legacy-cpu",
+          "n": 27,
+          "meanMS": 35.66519290123122,
+          "medianMS": 34.18637499999022,
+          "p95MS": 41.515583336149575,
+          "maximumMS": 59.995291667291895,
+          "empty": 0,
+          "thermalStates": [
+            1
+          ]
+        },
+        {
+          "arm": "legacy-gpu",
+          "n": 27,
+          "meanMS": 4.509020061959745,
+          "medianMS": 4.293583333492279,
+          "p95MS": 5.579166663665092,
+          "maximumMS": 6.559916666446952,
+          "empty": 0,
+          "thermalStates": [
+            1
+          ]
+        },
+        {
+          "arm": "legacy-neuralEngine",
+          "n": 27,
+          "meanMS": 4.400995370411288,
+          "medianMS": 4.240458332787966,
+          "p95MS": 5.48608333338052,
+          "maximumMS": 6.399833331670379,
+          "empty": 0,
+          "thermalStates": [
+            1
+          ]
+        },
+        {
+          "arm": "revision2-automatic",
+          "n": 27,
+          "meanMS": 4.196706790632258,
+          "medianMS": 4.541583333775634,
+          "p95MS": 5.352791667974088,
+          "maximumMS": 5.733166664867895,
+          "empty": 9,
+          "thermalStates": [
+            1
+          ]
+        },
+        {
+          "arm": "revision2-neuralEngine",
+          "n": 27,
+          "meanMS": 4.541766975173097,
+          "medianMS": 4.918916663882555,
+          "p95MS": 5.999416665872559,
+          "maximumMS": 6.090625000069849,
+          "empty": 9,
+          "thermalStates": [
+            1
+          ]
+        }
+      ],
+      "exactAutomaticVsForcedBodyOutputs": 27,
+      "pairedBodyOutputs": 27,
+      "failures": []
+    }
+  ],
+  "live": [
+    {
+      "device": "iphone11",
+      "run": "clip-618a1688fcc6-control-r2",
+      "arm": "control",
+      "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 332,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 33.99041666489211,
+        "totalMS": 7780.058583353821
+      },
+      "modelBody": "VN legacy",
+      "requestedDevice": "automatic",
+      "count": 21,
+      "acceptedValid": 21,
+      "labelledValid": 24,
+      "knownFalse": 0,
+      "missedLegalSeconds": [
+        5.72,
+        7.39,
+        7.93
+      ],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 1,
+      "latencyMedianMs": 214.33695833547972,
+      "latencyP95Ms": 229.18683333409717,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 14,
+        "outstanding": 0,
+        "processed": 435,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf288",
+      "ballBackend": "CPU (compatibility)",
+      "sourceSeconds": 14.506666666666666,
+      "poseCallsPerSourceSecond": 22.886029411764707,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 83
+      },
+      "workload": {
+        "bodyLookups": 1752,
+        "bodyCalls": 332,
+        "bodyCacheHits": 1420,
+        "bodyCacheHitFraction": 0.8105022831050228,
+        "uniqueInferredFrames": 332,
+        "bodyLatency": {
+          "n": 332,
+          "meanMS": 23.43391139564404,
+          "medianMS": 23.370250000880333,
+          "p95MS": 30.72579166837386,
+          "maximumMS": 33.99041666489211
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 21,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 44,
+            "bodyCacheHits": 189,
+            "bodyMilliseconds": 987.0251249849389,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 51,
+            "bodyCacheHits": 423,
+            "bodyMilliseconds": 1177.6771249933518,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 10,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 29,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 237,
+            "bodyCacheHits": 441,
+            "bodyMilliseconds": 5615.35633337553,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 20,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 69,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 200,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-618a1688fcc6-pose2-neuralEngine-r2",
+      "arm": "pose2-neuralEngine",
+      "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+      "state": "failed",
+      "thermal": 0,
+      "error": "Error Domain=RFContactQueue Code=1 \"The phone could not keep up with counting. The video has been saved.\" UserInfo={NSLocalizedDescription=The phone could not keep up with counting. The video has been saved.}",
+      "poseTiming": {
+        "calls": 56,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 346.95858333361684,
+        "totalMS": 3417.928208320518
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "neuralEngine",
+      "exclusiveFrameDemandByCheck": {
+        "ground": 15
+      },
+      "workload": {
+        "bodyLookups": 303,
+        "bodyCalls": 56,
+        "bodyCacheHits": 247,
+        "bodyCacheHitFraction": 0.8151815181518152,
+        "uniqueInferredFrames": 56,
+        "bodyLatency": {
+          "n": 56,
+          "meanMS": 61.034432291437824,
+          "medianMS": 57.2666666648729,
+          "p95MS": 67.56462500197813,
+          "maximumMS": 346.95858333361684
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 4,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 9,
+            "bodyCacheHits": 60,
+            "bodyMilliseconds": 738.7009583326289,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 19,
+            "bodyCacheHits": 58,
+            "bodyMilliseconds": 953.6514583342068,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 28,
+            "bodyCacheHits": 77,
+            "bodyMilliseconds": 1725.5757916536822,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 36,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-618a1688fcc6-pose2-r2",
+      "arm": "pose2",
+      "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+      "state": "failed",
+      "thermal": 0,
+      "error": "Error Domain=RFContactQueue Code=1 \"The phone could not keep up with counting. The video has been saved.\" UserInfo={NSLocalizedDescription=The phone could not keep up with counting. The video has been saved.}",
+      "poseTiming": {
+        "calls": 62,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 325.8874166676833,
+        "totalMS": 3532.689500018023
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "automatic",
+      "exclusiveFrameDemandByCheck": {
+        "ground": 14
+      },
+      "workload": {
+        "bodyLookups": 256,
+        "bodyCalls": 62,
+        "bodyCacheHits": 194,
+        "bodyCacheHitFraction": 0.7578125,
+        "uniqueInferredFrames": 62,
+        "bodyLatency": {
+          "n": 62,
+          "meanMS": 56.9788629035165,
+          "medianMS": 52.50535416598723,
+          "p95MS": 65.29262500043842,
+          "maximumMS": 325.8874166676833
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 2,
+            "bodyCacheHits": 4,
+            "bodyMilliseconds": 104.04133333213395,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/ground",
+            "bodyNewCalls": 12,
+            "bodyCacheHits": 34,
+            "bodyMilliseconds": 578.3172500086948,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 16,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 48,
+            "bodyCacheHits": 50,
+            "bodyMilliseconds": 2850.330916677194,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 20,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 18,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 35,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 8,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-a16380ba4a5b-control-r1",
+      "arm": "control",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 455,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 30.323750001116423,
+        "totalMS": 8733.40583330355
+      },
+      "modelBody": "VN legacy",
+      "requestedDevice": "automatic",
+      "count": 34,
+      "acceptedValid": 34,
+      "labelledValid": 39,
+      "knownFalse": 0,
+      "missedLegalSeconds": [
+        0.217,
+        0.566,
+        12.505,
+        13.84,
+        15.867
+      ],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 4,
+      "latencyMedianMs": 212.09450000242214,
+      "latencyP95Ms": 223.34987500289571,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 10,
+        "outstanding": 0,
+        "processed": 610,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf288",
+      "ballBackend": "CPU (compatibility)",
+      "sourceSeconds": 20.46,
+      "poseCallsPerSourceSecond": 22.238514173998045,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 101,
+        "foot": 1,
+        "holding": 3
+      },
+      "workload": {
+        "bodyLookups": 2848,
+        "bodyCalls": 455,
+        "bodyCacheHits": 2393,
+        "bodyCacheHitFraction": 0.8402387640449438,
+        "uniqueInferredFrames": 455,
+        "bodyLatency": {
+          "n": 455,
+          "meanMS": 19.194298534733075,
+          "medianMS": 17.531083332869457,
+          "p95MS": 26.574541665468132,
+          "maximumMS": 30.323750001116423
+        },
+        "handLatency": {
+          "n": 1,
+          "meanMS": 26.062625001941342,
+          "medianMS": 26.062625001941342,
+          "p95MS": 26.062625001941342,
+          "maximumMS": 26.062625001941342
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 1,
+            "bodyCacheHits": 86,
+            "bodyMilliseconds": 26.0975833334669,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 22,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot/ground",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 24,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/ground",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 38,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 1,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 86,
+            "bodyCacheHits": 339,
+            "bodyMilliseconds": 1702.2074999949837,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 104,
+            "bodyCacheHits": 642,
+            "bodyMilliseconds": 1967.1777083494817,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 20,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 29,
+            "bodyMilliseconds": 0,
+            "handCalls": 1,
+            "handMilliseconds": 26.062625001941342
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 81,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 261,
+            "bodyCacheHits": 661,
+            "bodyMilliseconds": 4980.975333292008,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 19,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 110,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 3,
+            "bodyCacheHits": 306,
+            "bodyMilliseconds": 56.947708333609626,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-a16380ba4a5b-control-r2",
+      "arm": "control",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 485,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 30.303749997983687,
+        "totalMS": 9349.779124971974
+      },
+      "modelBody": "VN legacy",
+      "requestedDevice": "automatic",
+      "count": 36,
+      "acceptedValid": 36,
+      "labelledValid": 39,
+      "knownFalse": 0,
+      "missedLegalSeconds": [
+        0.217,
+        3.368,
+        18.25
+      ],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 212.00075000160723,
+      "latencyP95Ms": 223.38854166810052,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 10,
+        "outstanding": 0,
+        "processed": 614,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf288",
+      "ballBackend": "CPU (compatibility)",
+      "sourceSeconds": 20.46,
+      "poseCallsPerSourceSecond": 23.70478983382209,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 104
+      },
+      "workload": {
+        "bodyLookups": 3301,
+        "bodyCalls": 485,
+        "bodyCacheHits": 2816,
+        "bodyCacheHitFraction": 0.8530748258103605,
+        "uniqueInferredFrames": 485,
+        "bodyLatency": {
+          "n": 485,
+          "meanMS": 19.277895103034997,
+          "medianMS": 17.84741666415357,
+          "p95MS": 25.906166665663477,
+          "maximumMS": 30.303749997983687
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 5,
+            "bodyCacheHits": 105,
+            "bodyMilliseconds": 97.97516666367301,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 38,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot/ground",
+            "bodyNewCalls": 1,
+            "bodyCacheHits": 57,
+            "bodyMilliseconds": 17.09429166658083,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 10,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/ground",
+            "bodyNewCalls": 2,
+            "bodyCacheHits": 58,
+            "bodyMilliseconds": 33.17691666597966,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 1,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 82,
+            "bodyCacheHits": 333,
+            "bodyMilliseconds": 1633.9241666755697,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 115,
+            "bodyCacheHits": 779,
+            "bodyMilliseconds": 2191.0059999936493,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 29,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 33,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 111,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 280,
+            "bodyCacheHits": 762,
+            "bodyMilliseconds": 5376.602583306521,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 19,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 126,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 331,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-a16380ba4a5b-control-r3",
+      "arm": "control",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 486,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 31.665416667237878,
+        "totalMS": 9299.738166690076
+      },
+      "modelBody": "VN legacy",
+      "requestedDevice": "automatic",
+      "count": 37,
+      "acceptedValid": 37,
+      "labelledValid": 39,
+      "knownFalse": 0,
+      "missedLegalSeconds": [
+        0.217,
+        3.368
+      ],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 211.93404166479013,
+      "latencyP95Ms": 222.98245833371766,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 10,
+        "outstanding": 0,
+        "processed": 614,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf288",
+      "ballBackend": "CPU (compatibility)",
+      "sourceSeconds": 20.46,
+      "poseCallsPerSourceSecond": 23.75366568914956,
+      "exactTraceReplay": true
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-a16380ba4a5b-pose2-neuralEngine-r1",
+      "arm": "pose2-neuralEngine",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "failed",
+      "thermal": 0,
+      "error": "Error Domain=RFContactQueue Code=1 \"The phone could not keep up with counting. The video has been saved.\" UserInfo={NSLocalizedDescription=The phone could not keep up with counting. The video has been saved.}",
+      "poseTiming": {
+        "calls": 110,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 285.4659583317698,
+        "totalMS": 5490.67325001306
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "neuralEngine",
+      "exclusiveFrameDemandByCheck": {
+        "ground": 26
+      },
+      "workload": {
+        "bodyLookups": 642,
+        "bodyCalls": 110,
+        "bodyCacheHits": 532,
+        "bodyCacheHitFraction": 0.8286604361370716,
+        "uniqueInferredFrames": 110,
+        "bodyLatency": {
+          "n": 110,
+          "meanMS": 49.91521136375509,
+          "medianMS": 45.42945833054546,
+          "p95MS": 62.41625000257045,
+          "maximumMS": 285.4659583317698
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 8,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 26,
+            "bodyCacheHits": 58,
+            "bodyMilliseconds": 1449.8925000007148,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 27,
+            "bodyCacheHits": 156,
+            "bodyMilliseconds": 1276.4359166685608,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 36,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 57,
+            "bodyCacheHits": 163,
+            "bodyMilliseconds": 2764.3448333437846,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 24,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 78,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-a16380ba4a5b-pose2-neuralEngine-r2",
+      "arm": "pose2-neuralEngine",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "failed",
+      "thermal": 0,
+      "error": "Error Domain=RFContactQueue Code=1 \"The phone could not keep up with counting. The video has been saved.\" UserInfo={NSLocalizedDescription=The phone could not keep up with counting. The video has been saved.}",
+      "poseTiming": {
+        "calls": 65,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 290.0809583334194,
+        "totalMS": 3358.1797083388665
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "neuralEngine",
+      "exclusiveFrameDemandByCheck": {
+        "ground": 14
+      },
+      "workload": {
+        "bodyLookups": 510,
+        "bodyCalls": 65,
+        "bodyCacheHits": 445,
+        "bodyCacheHitFraction": 0.8725490196078431,
+        "uniqueInferredFrames": 65,
+        "bodyLatency": {
+          "n": 65,
+          "meanMS": 51.66430320521333,
+          "medianMS": 44.85608333197888,
+          "p95MS": 61.757416668115184,
+          "maximumMS": 290.0809583334194
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 5,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 17,
+            "bodyCacheHits": 38,
+            "bodyMilliseconds": 1056.0597500007134,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 28,
+            "bodyCacheHits": 155,
+            "bodyMilliseconds": 1304.6608333352196,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 36,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 20,
+            "bodyCacheHits": 114,
+            "bodyMilliseconds": 997.4591250029334,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 18,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 46,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-a16380ba4a5b-pose2-r1",
+      "arm": "pose2",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "failed",
+      "thermal": 0,
+      "error": "Error Domain=RFContactQueue Code=1 \"The phone could not keep up with counting. The video has been saved.\" UserInfo={NSLocalizedDescription=The phone could not keep up with counting. The video has been saved.}",
+      "poseTiming": {
+        "calls": 66,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 301.93766666707234,
+        "totalMS": 3534.588916671055
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "automatic",
+      "exclusiveFrameDemandByCheck": {
+        "ground": 16
+      },
+      "workload": {
+        "bodyLookups": 316,
+        "bodyCalls": 66,
+        "bodyCacheHits": 250,
+        "bodyCacheHitFraction": 0.7911392405063291,
+        "uniqueInferredFrames": 66,
+        "bodyLatency": {
+          "n": 66,
+          "meanMS": 53.55437752531901,
+          "medianMS": 46.34125000120548,
+          "p95MS": 65.66737499815645,
+          "maximumMS": 301.93766666707234
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 5,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 16,
+            "bodyCacheHits": 18,
+            "bodyMilliseconds": 1028.2463333314809,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 19,
+            "bodyCacheHits": 33,
+            "bodyMilliseconds": 824.9824166778126,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 31,
+            "bodyCacheHits": 105,
+            "bodyMilliseconds": 1681.3601666617615,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 18,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 47,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-a16380ba4a5b-pose2-r2",
+      "arm": "pose2",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "failed",
+      "thermal": 0,
+      "error": "Error Domain=RFContactQueue Code=1 \"The phone could not keep up with counting. The video has been saved.\" UserInfo={NSLocalizedDescription=The phone could not keep up with counting. The video has been saved.}",
+      "poseTiming": {
+        "calls": 65,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 290.82987499714363,
+        "totalMS": 3386.8359583284473
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "automatic",
+      "exclusiveFrameDemandByCheck": {
+        "ground": 14
+      },
+      "workload": {
+        "bodyLookups": 510,
+        "bodyCalls": 65,
+        "bodyCacheHits": 445,
+        "bodyCacheHitFraction": 0.8725490196078431,
+        "uniqueInferredFrames": 65,
+        "bodyLatency": {
+          "n": 65,
+          "meanMS": 52.10516858966842,
+          "medianMS": 45.44187500141561,
+          "p95MS": 63.35608333392884,
+          "maximumMS": 290.82987499714363
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 5,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 17,
+            "bodyCacheHits": 38,
+            "bodyMilliseconds": 1041.3028749972,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 28,
+            "bodyCacheHits": 155,
+            "bodyMilliseconds": 1336.5542916653794,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 36,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 20,
+            "bodyCacheHits": 114,
+            "bodyMilliseconds": 1008.9787916658679,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 18,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 46,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-618a1688fcc6-control-r1",
+      "arm": "control",
+      "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 336,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 15.284666664229007,
+        "totalMS": 2542.2480833440204
+      },
+      "modelBody": "VN legacy",
+      "requestedDevice": "automatic",
+      "count": 19,
+      "acceptedValid": 19,
+      "labelledValid": 24,
+      "knownFalse": 0,
+      "missedLegalSeconds": [
+        2.71,
+        5.72,
+        7.39,
+        7.93,
+        13.47
+      ],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 210.431666666409,
+      "latencyP95Ms": 227.8683333315712,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 5,
+        "outstanding": 0,
+        "processed": 436,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 14.506666666666666,
+      "poseCallsPerSourceSecond": 23.161764705882355,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 76
+      },
+      "workload": {
+        "bodyLookups": 2061,
+        "bodyCalls": 336,
+        "bodyCacheHits": 1725,
+        "bodyCacheHitFraction": 0.8369723435225619,
+        "uniqueInferredFrames": 336,
+        "bodyLatency": {
+          "n": 336,
+          "meanMS": 7.566214533761966,
+          "medianMS": 6.830145832282142,
+          "p95MS": 11.64170833362732,
+          "maximumMS": 15.284666664229007
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 19,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 51,
+            "bodyCacheHits": 302,
+            "bodyMilliseconds": 478.8055000062741,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 64,
+            "bodyCacheHits": 560,
+            "bodyMilliseconds": 435.20850000641076,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 10,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 40,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 221,
+            "bodyCacheHits": 489,
+            "bodyMilliseconds": 1628.2340833313356,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 30,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 66,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 185,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-618a1688fcc6-control-r2",
+      "arm": "control",
+      "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 338,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 16.06874999924912,
+        "totalMS": 2484.7162083278818
+      },
+      "modelBody": "VN legacy",
+      "requestedDevice": "automatic",
+      "count": 21,
+      "acceptedValid": 21,
+      "labelledValid": 24,
+      "knownFalse": 0,
+      "missedLegalSeconds": [
+        5.72,
+        7.39,
+        7.93
+      ],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 209.95545833284268,
+      "latencyP95Ms": 225.82841666735476,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 5,
+        "outstanding": 0,
+        "processed": 436,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 14.506666666666666,
+      "poseCallsPerSourceSecond": 23.299632352941178,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 83
+      },
+      "workload": {
+        "bodyLookups": 1993,
+        "bodyCalls": 338,
+        "bodyCacheHits": 1655,
+        "bodyCacheHitFraction": 0.8304064224786754,
+        "uniqueInferredFrames": 338,
+        "bodyLatency": {
+          "n": 338,
+          "meanMS": 7.351231385585449,
+          "medianMS": 6.492187500043656,
+          "p95MS": 12.153583331382833,
+          "maximumMS": 16.06874999924912
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 21,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 51,
+            "bodyCacheHits": 242,
+            "bodyMilliseconds": 499.9186666609603,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 64,
+            "bodyCacheHits": 503,
+            "bodyMilliseconds": 399.57124998181826,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 10,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 40,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 223,
+            "bodyCacheHits": 510,
+            "bodyMilliseconds": 1585.2262916851032,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 30,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 72,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 203,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-618a1688fcc6-pose2-neuralEngine-r1",
+      "arm": "pose2-neuralEngine",
+      "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 334,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 69.91045833274256,
+        "totalMS": 3287.253583301208
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "neuralEngine",
+      "count": 24,
+      "acceptedValid": 24,
+      "labelledValid": 24,
+      "knownFalse": 0,
+      "missedLegalSeconds": [],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 208.78412499951082,
+      "latencyP95Ms": 221.50858333407086,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 6,
+        "outstanding": 0,
+        "processed": 436,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 14.506666666666666,
+      "poseCallsPerSourceSecond": 23.02389705882353,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 88
+      },
+      "workload": {
+        "bodyLookups": 1475,
+        "bodyCalls": 334,
+        "bodyCacheHits": 1141,
+        "bodyCacheHitFraction": 0.7735593220338983,
+        "uniqueInferredFrames": 334,
+        "bodyLatency": {
+          "n": 334,
+          "meanMS": 9.842076596710204,
+          "medianMS": 9.943104167177808,
+          "p95MS": 13.454541665851139,
+          "maximumMS": 69.91045833274256
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 24,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 47,
+            "bodyCacheHits": 96,
+            "bodyMilliseconds": 549.0821666680858,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 33,
+            "bodyCacheHits": 186,
+            "bodyMilliseconds": 306.53774999518646,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 31,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 254,
+            "bodyCacheHits": 419,
+            "bodyMilliseconds": 2431.6336666379357,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 40,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 90,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 231,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-618a1688fcc6-pose2-neuralEngine-r2",
+      "arm": "pose2-neuralEngine",
+      "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 333,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 73.24091666669119,
+        "totalMS": 3346.1079166663694
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "neuralEngine",
+      "count": 23,
+      "acceptedValid": 23,
+      "labelledValid": 24,
+      "knownFalse": 0,
+      "missedLegalSeconds": [
+        7.39
+      ],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 208.88229167030659,
+      "latencyP95Ms": 223.22666666877922,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 6,
+        "outstanding": 0,
+        "processed": 436,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 14.506666666666666,
+      "poseCallsPerSourceSecond": 22.95496323529412,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 86
+      },
+      "workload": {
+        "bodyLookups": 1541,
+        "bodyCalls": 333,
+        "bodyCacheHits": 1208,
+        "bodyCacheHitFraction": 0.7839065541855937,
+        "uniqueInferredFrames": 333,
+        "bodyLatency": {
+          "n": 333,
+          "meanMS": 10.04837212212123,
+          "medianMS": 10.22654166445136,
+          "p95MS": 13.619708333862945,
+          "maximumMS": 73.24091666669119
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 23,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 50,
+            "bodyCacheHits": 120,
+            "bodyMilliseconds": 599.2501666551107,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 33,
+            "bodyCacheHits": 242,
+            "bodyMilliseconds": 303.4356249954726,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 31,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 250,
+            "bodyCacheHits": 421,
+            "bodyMilliseconds": 2443.422125015786,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 40,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 87,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 220,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-618a1688fcc6-pose2-r1",
+      "arm": "pose2",
+      "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 334,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 73.63112500024727,
+        "totalMS": 3277.3677083168877
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "automatic",
+      "count": 24,
+      "acceptedValid": 24,
+      "labelledValid": 24,
+      "knownFalse": 0,
+      "missedLegalSeconds": [],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 208.91987499999232,
+      "latencyP95Ms": 220.02237500055344,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 6,
+        "outstanding": 0,
+        "processed": 436,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 14.506666666666666,
+      "poseCallsPerSourceSecond": 23.02389705882353,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 88
+      },
+      "workload": {
+        "bodyLookups": 1475,
+        "bodyCalls": 334,
+        "bodyCacheHits": 1141,
+        "bodyCacheHitFraction": 0.7735593220338983,
+        "uniqueInferredFrames": 334,
+        "bodyLatency": {
+          "n": 334,
+          "meanMS": 9.812478168613437,
+          "medianMS": 9.93479166754696,
+          "p95MS": 13.383041667111684,
+          "maximumMS": 73.63112500024727
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 24,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 47,
+            "bodyCacheHits": 96,
+            "bodyMilliseconds": 568.5482916560431,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 33,
+            "bodyCacheHits": 186,
+            "bodyMilliseconds": 299.2029583256226,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 31,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 254,
+            "bodyCacheHits": 419,
+            "bodyMilliseconds": 2409.616458335222,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 40,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 90,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 231,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-618a1688fcc6-pose2-r2",
+      "arm": "pose2",
+      "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 334,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 73.32166666674311,
+        "totalMS": 3326.961583330558
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "automatic",
+      "count": 24,
+      "acceptedValid": 24,
+      "labelledValid": 24,
+      "knownFalse": 0,
+      "missedLegalSeconds": [],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 209.06170833404758,
+      "latencyP95Ms": 221.03591667109868,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 6,
+        "outstanding": 0,
+        "processed": 436,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 14.506666666666666,
+      "poseCallsPerSourceSecond": 23.02389705882353,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 88
+      },
+      "workload": {
+        "bodyLookups": 1475,
+        "bodyCalls": 334,
+        "bodyCacheHits": 1141,
+        "bodyCacheHitFraction": 0.7735593220338983,
+        "uniqueInferredFrames": 334,
+        "bodyLatency": {
+          "n": 334,
+          "meanMS": 9.960962824342987,
+          "medianMS": 10.113270833244314,
+          "p95MS": 13.853041666152421,
+          "maximumMS": 73.32166666674311
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 24,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 47,
+            "bodyCacheHits": 96,
+            "bodyMilliseconds": 566.455208339903,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 33,
+            "bodyCacheHits": 186,
+            "bodyMilliseconds": 304.0356666679145,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 31,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 254,
+            "bodyCacheHits": 419,
+            "bodyMilliseconds": 2456.4707083227404,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 12,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 40,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 90,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 231,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-a16380ba4a5b-control-r1",
+      "arm": "control",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 499,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 15.00550000127987,
+        "totalMS": 3550.783583345037
+      },
+      "modelBody": "VN legacy",
+      "requestedDevice": "automatic",
+      "count": 35,
+      "acceptedValid": 35,
+      "labelledValid": 39,
+      "knownFalse": 0,
+      "missedLegalSeconds": [
+        0.217,
+        1.533,
+        15.867,
+        18.25
+      ],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 212.5066250009695,
+      "latencyP95Ms": 237.7553333353717,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 13,
+        "outstanding": 0,
+        "processed": 614,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 20.46,
+      "poseCallsPerSourceSecond": 24.389051808406645,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 98,
+        "holding": 1
+      },
+      "workload": {
+        "bodyLookups": 3189,
+        "bodyCalls": 499,
+        "bodyCacheHits": 2690,
+        "bodyCacheHitFraction": 0.843524615867043,
+        "uniqueInferredFrames": 499,
+        "bodyLatency": {
+          "n": 499,
+          "meanMS": 7.115798764218511,
+          "medianMS": 6.3030833334778436,
+          "p95MS": 11.589208334044088,
+          "maximumMS": 15.00550000127987
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 13,
+            "bodyCacheHits": 108,
+            "bodyMilliseconds": 120.62662499738508,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 46,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot/ground",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 49,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/ground",
+            "bodyNewCalls": 6,
+            "bodyCacheHits": 43,
+            "bodyMilliseconds": 37.44474999984959,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 2,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 86,
+            "bodyCacheHits": 326,
+            "bodyMilliseconds": 808.0192500019621,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 114,
+            "bodyCacheHits": 731,
+            "bodyMilliseconds": 702.7991249997285,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 20,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 33,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 106,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 279,
+            "bodyCacheHits": 731,
+            "bodyMilliseconds": 1875.7060000098136,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 20,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 120,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 1,
+            "bodyCacheHits": 337,
+            "bodyMilliseconds": 6.187833336298354,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-a16380ba4a5b-control-r2",
+      "arm": "control",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 491,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 15.221208333969116,
+        "totalMS": 3549.9409999902127
+      },
+      "modelBody": "VN legacy",
+      "requestedDevice": "automatic",
+      "count": 36,
+      "acceptedValid": 36,
+      "labelledValid": 39,
+      "knownFalse": 0,
+      "missedLegalSeconds": [
+        0.217,
+        1.533,
+        15.867
+      ],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 1,
+      "latencyMedianMs": 212.57070833235048,
+      "latencyP95Ms": 243.81758333765902,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 12,
+        "outstanding": 0,
+        "processed": 613,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 20.46,
+      "poseCallsPerSourceSecond": 23.9980449657869,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 96,
+        "holding": 1
+      },
+      "workload": {
+        "bodyLookups": 3237,
+        "bodyCalls": 491,
+        "bodyCacheHits": 2746,
+        "bodyCacheHitFraction": 0.848316342292246,
+        "uniqueInferredFrames": 491,
+        "bodyLatency": {
+          "n": 491,
+          "meanMS": 7.230022403238722,
+          "medianMS": 6.408958335669013,
+          "p95MS": 11.757791664422257,
+          "maximumMS": 15.221208333969116
+        },
+        "handLatency": {
+          "n": 1,
+          "meanMS": 17.696541668556165,
+          "medianMS": 17.696541668556165,
+          "p95MS": 17.696541668556165,
+          "maximumMS": 17.696541668556165
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 5,
+            "bodyCacheHits": 94,
+            "bodyMilliseconds": 36.30449999764096,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 18,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot/ground",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 19,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/ground",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 39,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 1,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 91,
+            "bodyCacheHits": 335,
+            "bodyMilliseconds": 880.5642916522629,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 128,
+            "bodyCacheHits": 799,
+            "bodyMilliseconds": 818.8549583428539,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 30,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 39,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 126,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 266,
+            "bodyCacheHits": 734,
+            "bodyMilliseconds": 1806.8629999979748,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 20,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 131,
+            "bodyMilliseconds": 0,
+            "handCalls": 1,
+            "handMilliseconds": 17.696541668556165
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 1,
+            "bodyCacheHits": 343,
+            "bodyMilliseconds": 7.354249999480089,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-a16380ba4a5b-pose2-neuralEngine-r1",
+      "arm": "pose2-neuralEngine",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 490,
+        "empty": 5,
+        "errors": 0,
+        "maximumMS": 86.9082499993965,
+        "totalMS": 4968.577875020856
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "neuralEngine",
+      "count": 33,
+      "acceptedValid": 32,
+      "labelledValid": 39,
+      "knownFalse": 1,
+      "missedLegalSeconds": [
+        0.217,
+        3.368,
+        10.371,
+        12.505,
+        15.867,
+        16.808,
+        18.25
+      ],
+      "knownFalseSeconds": [
+        20.176
+      ],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 210.92804166619317,
+      "latencyP95Ms": 226.35887499927776,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 15,
+        "outstanding": 0,
+        "processed": 614,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 20.46,
+      "poseCallsPerSourceSecond": 23.949169110459433,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 101
+      },
+      "workload": {
+        "bodyLookups": 3074,
+        "bodyCalls": 490,
+        "bodyCacheHits": 2584,
+        "bodyCacheHitFraction": 0.8405985686402082,
+        "uniqueInferredFrames": 490,
+        "bodyLatency": {
+          "n": 490,
+          "meanMS": 10.139954846981338,
+          "medianMS": 9.684624999863445,
+          "p95MS": 14.783083333895775,
+          "maximumMS": 86.9082499993965
+        },
+        "handLatency": {
+          "n": 2,
+          "meanMS": 17.56687500164844,
+          "medianMS": 17.56687500164844,
+          "p95MS": 21.880333333683666,
+          "maximumMS": 21.880333333683666
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 12,
+            "bodyCacheHits": 104,
+            "bodyMilliseconds": 119.74725000982289,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 37,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot/ground",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 41,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/ground",
+            "bodyNewCalls": 10,
+            "bodyCacheHits": 31,
+            "bodyMilliseconds": 116.6801666659012,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 2,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 8,
+            "bodyMilliseconds": 0,
+            "handCalls": 2,
+            "handMilliseconds": 35.13375000329688
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 84,
+            "bodyCacheHits": 341,
+            "bodyMilliseconds": 941.9300000117801,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 121,
+            "bodyCacheHits": 687,
+            "bodyMilliseconds": 1118.303916653531,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 36,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 118,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 263,
+            "bodyCacheHits": 709,
+            "bodyMilliseconds": 2671.9165416798205,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 19,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 114,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 319,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-a16380ba4a5b-pose2-neuralEngine-r2",
+      "arm": "pose2-neuralEngine",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 496,
+        "empty": 1,
+        "errors": 0,
+        "maximumMS": 86.88558333233232,
+        "totalMS": 5088.889999984531
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "neuralEngine",
+      "count": 37,
+      "acceptedValid": 36,
+      "labelledValid": 39,
+      "knownFalse": 1,
+      "missedLegalSeconds": [
+        0.217,
+        10.371,
+        15.867
+      ],
+      "knownFalseSeconds": [
+        20.176
+      ],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 210.99654166391701,
+      "latencyP95Ms": 226.3479583307344,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 13,
+        "outstanding": 0,
+        "processed": 614,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 20.46,
+      "poseCallsPerSourceSecond": 24.242424242424242,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 93,
+        "holding": 5,
+        "body": 1
+      },
+      "workload": {
+        "bodyLookups": 3339,
+        "bodyCalls": 496,
+        "bodyCacheHits": 2843,
+        "bodyCacheHitFraction": 0.8514525306978137,
+        "uniqueInferredFrames": 496,
+        "bodyLatency": {
+          "n": 496,
+          "meanMS": 10.259858870936554,
+          "medianMS": 9.952833333954914,
+          "p95MS": 14.84787499794038,
+          "maximumMS": 86.88558333233232
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 2,
+            "bodyCacheHits": 80,
+            "bodyMilliseconds": 16.559708332351875,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/ground",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 40,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 7,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 95,
+            "bodyCacheHits": 411,
+            "bodyMilliseconds": 1094.6348749894241,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 133,
+            "bodyCacheHits": 877,
+            "bodyMilliseconds": 1252.7592916485446,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 45,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 150,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 261,
+            "bodyCacheHits": 745,
+            "bodyMilliseconds": 2685.4689583487925,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 10,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 126,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 5,
+            "bodyCacheHits": 349,
+            "bodyMilliseconds": 39.46716666541761,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-a16380ba4a5b-pose2-r1",
+      "arm": "pose2",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 496,
+        "empty": 1,
+        "errors": 0,
+        "maximumMS": 87.53062500181841,
+        "totalMS": 4872.170874979929
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "automatic",
+      "count": 36,
+      "acceptedValid": 35,
+      "labelledValid": 39,
+      "knownFalse": 1,
+      "missedLegalSeconds": [
+        0.217,
+        3.368,
+        10.371,
+        15.867
+      ],
+      "knownFalseSeconds": [
+        20.176
+      ],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 210.5649999975867,
+      "latencyP95Ms": 226.42416666349163,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 13,
+        "outstanding": 0,
+        "processed": 614,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 20.46,
+      "poseCallsPerSourceSecond": 24.242424242424242,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 91,
+        "holding": 5,
+        "body": 1
+      },
+      "workload": {
+        "bodyLookups": 3448,
+        "bodyCalls": 496,
+        "bodyCacheHits": 2952,
+        "bodyCacheHitFraction": 0.8561484918793504,
+        "uniqueInferredFrames": 496,
+        "bodyLatency": {
+          "n": 496,
+          "meanMS": 9.822925151169212,
+          "medianMS": 9.377958333061542,
+          "p95MS": 15.189249999821186,
+          "maximumMS": 87.53062500181841
+        },
+        "handLatency": {
+          "n": 0,
+          "meanMS": null,
+          "medianMS": null,
+          "p95MS": null,
+          "maximumMS": null
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 2,
+            "bodyCacheHits": 79,
+            "bodyMilliseconds": 16.736666668293765,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/ground",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 40,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 7,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 96,
+            "bodyCacheHits": 410,
+            "bodyMilliseconds": 1059.5678749850777,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 140,
+            "bodyCacheHits": 937,
+            "bodyMilliseconds": 1251.8022083386313,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 9,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 51,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 168,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 253,
+            "bodyCacheHits": 755,
+            "bodyMilliseconds": 2508.6206249870884,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 6,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 19,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 129,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 5,
+            "bodyCacheHits": 339,
+            "bodyMilliseconds": 35.44350000083796,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-a16380ba4a5b-pose2-r2",
+      "arm": "pose2",
+      "sourceSHA256": "a16380ba4a5bc1a419b38ec8bd05697d5826bc3f3eb97411252dee226afa5365",
+      "state": "completed",
+      "thermal": 0,
+      "error": null,
+      "poseTiming": {
+        "calls": 492,
+        "empty": 5,
+        "errors": 0,
+        "maximumMS": 86.08658333469066,
+        "totalMS": 5136.035500025173
+      },
+      "modelBody": "Swift revision2",
+      "requestedDevice": "automatic",
+      "count": 34,
+      "acceptedValid": 33,
+      "labelledValid": 39,
+      "knownFalse": 1,
+      "missedLegalSeconds": [
+        0.217,
+        10.371,
+        12.505,
+        15.867,
+        16.808,
+        18.25
+      ],
+      "knownFalseSeconds": [
+        20.176
+      ],
+      "lateSourceSkips": 0,
+      "latencyMedianMs": 211.13887500177952,
+      "latencyP95Ms": 226.59620833292138,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 16,
+        "outstanding": 0,
+        "processed": 614,
+        "queue_capacity": 32
+      },
+      "modelFunction": "rf384",
+      "ballBackend": "CPU + GPU",
+      "sourceSeconds": 20.46,
+      "poseCallsPerSourceSecond": 24.04692082111437,
+      "exactTraceReplay": true,
+      "exclusiveFrameDemandByCheck": {
+        "ground": 101
+      },
+      "workload": {
+        "bodyLookups": 3108,
+        "bodyCalls": 492,
+        "bodyCacheHits": 2616,
+        "bodyCacheHitFraction": 0.8416988416988417,
+        "uniqueInferredFrames": 492,
+        "bodyLatency": {
+          "n": 492,
+          "meanMS": 10.439096544766612,
+          "medianMS": 9.910979168125778,
+          "p95MS": 16.027166668209247,
+          "maximumMS": 86.08658333469066
+        },
+        "handLatency": {
+          "n": 2,
+          "meanMS": 12.424104168530903,
+          "medianMS": 12.424104168530903,
+          "p95MS": 16.053833336627577,
+          "maximumMS": 16.053833336627577
+        },
+        "droppedAuditRows": 0,
+        "byScope": [
+          {
+            "scope": "body",
+            "bodyNewCalls": 12,
+            "bodyCacheHits": 105,
+            "bodyMilliseconds": 137.52629166992847,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 37,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/foot/ground",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 41,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "body/ground",
+            "bodyNewCalls": 10,
+            "bodyCacheHits": 31,
+            "bodyMilliseconds": 124.73041667544749,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 2,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "diagnostic/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 8,
+            "bodyMilliseconds": 0,
+            "handCalls": 2,
+            "handMilliseconds": 24.848208337061806
+          },
+          {
+            "scope": "foot",
+            "bodyNewCalls": 84,
+            "bodyCacheHits": 362,
+            "bodyMilliseconds": 988.5606666721287,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/ground",
+            "bodyNewCalls": 122,
+            "bodyCacheHits": 702,
+            "bodyMilliseconds": 1219.2646250150574,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 36,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "foot/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 120,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground",
+            "bodyNewCalls": 264,
+            "bodyCacheHits": 714,
+            "bodyMilliseconds": 2665.953499992611,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 3,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "ground/holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 10,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "hand-veto",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 114,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          },
+          {
+            "scope": "holding",
+            "bodyNewCalls": 0,
+            "bodyCacheHits": 331,
+            "bodyMilliseconds": 0,
+            "handCalls": 0,
+            "handMilliseconds": 0
+          }
+        ]
+      }
+    }
+  ],
+  "warmup": [
+    {
+      "device": "iphone11",
+      "run": "clip-618a1688fcc6-pose2-r1",
+      "build": "2026102915",
+      "clip": "clip-618a1688fcc6",
+      "personWarmup": false,
+      "state": "failed",
+      "error": "Error Domain=RFContactQueue Code=1 \"The phone could not keep up with counting. The video has been saved.\" UserInfo={NSLocalizedDescription=The phone could not keep up with counting. The video has been saved.}",
+      "warmup": {
+        "blackMilliseconds": 403.31129166588653,
+        "personMilliseconds": [],
+        "personPoseCounts": []
+      },
+      "poseTiming": {
+        "calls": 62,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 349.3043333328387,
+        "totalMS": 3664.0359583470854
+      },
+      "thermal": 0,
+      "bodyLatency": {
+        "n": 62,
+        "meanMS": 59.09735416688847,
+        "medianMS": 54.94466666641529,
+        "p95MS": 67.20391666749492,
+        "maximumMS": 349.3043333328387
+      },
+      "firstRequestMS": 349.3043333328387,
+      "afterFirstLatency": {
+        "n": 61,
+        "meanMS": 54.33986270515158,
+        "medianMS": 54.88033333313069,
+        "p95MS": 65.91433333232999,
+        "maximumMS": 67.74374999804422
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-618a1688fcc6-pose2-r1-person-warm",
+      "build": "2026102915",
+      "clip": "clip-618a1688fcc6",
+      "personWarmup": true,
+      "state": "failed",
+      "error": "Error Domain=RFContactQueue Code=1 \"The phone could not keep up with counting. The video has been saved.\" UserInfo={NSLocalizedDescription=The phone could not keep up with counting. The video has been saved.}",
+      "warmup": {
+        "blackMilliseconds": 396.39004166747327,
+        "personMilliseconds": [
+          292.14454166867654,
+          60.50154166587163
+        ],
+        "personPoseCounts": [
+          1,
+          1
+        ]
+      },
+      "poseTiming": {
+        "calls": 73,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 78.72029166537686,
+        "totalMS": 3853.925541665376
+      },
+      "thermal": 0,
+      "bodyLatency": {
+        "n": 73,
+        "meanMS": 52.793500570758574,
+        "medianMS": 51.739791666477686,
+        "p95MS": 63.246791669371305,
+        "maximumMS": 78.72029166537686
+      },
+      "firstRequestMS": 78.72029166537686,
+      "afterFirstLatency": {
+        "n": 72,
+        "meanMS": 52.43340624999999,
+        "medianMS": 51.72912500165694,
+        "p95MS": 62.7098750010191,
+        "maximumMS": 63.718958335812204
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-a16380ba4a5b-pose2-r1",
+      "build": "2026102915",
+      "clip": "clip-a16380ba4a5b",
+      "personWarmup": false,
+      "state": "failed",
+      "error": "Error Domain=RFContactQueue Code=1 \"The phone could not keep up with counting. The video has been saved.\" UserInfo={NSLocalizedDescription=The phone could not keep up with counting. The video has been saved.}",
+      "warmup": {
+        "blackMilliseconds": 462.77154166818946,
+        "personMilliseconds": [],
+        "personPoseCounts": []
+      },
+      "poseTiming": {
+        "calls": 64,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 322.94370833187713,
+        "totalMS": 3461.7846666733385
+      },
+      "thermal": 0,
+      "bodyLatency": {
+        "n": 64,
+        "meanMS": 54.090385416770914,
+        "medianMS": 46.28589583444409,
+        "p95MS": 65.25470833003055,
+        "maximumMS": 322.94370833187713
+      },
+      "firstRequestMS": 322.94370833187713,
+      "afterFirstLatency": {
+        "n": 63,
+        "meanMS": 49.82287235462637,
+        "medianMS": 46.271499999420485,
+        "p95MS": 64.05245833229856,
+        "maximumMS": 66.22933333346737
+      }
+    },
+    {
+      "device": "iphone11",
+      "run": "clip-a16380ba4a5b-pose2-r1-person-warm",
+      "build": "2026102915",
+      "clip": "clip-a16380ba4a5b",
+      "personWarmup": true,
+      "state": "failed",
+      "error": "Error Domain=RFContactQueue Code=1 \"The phone could not keep up with counting. The video has been saved.\" UserInfo={NSLocalizedDescription=The phone could not keep up with counting. The video has been saved.}",
+      "warmup": {
+        "blackMilliseconds": 386.8069583331817,
+        "personMilliseconds": [
+          289.76487500040093,
+          55.8347500009404
+        ],
+        "personPoseCounts": [
+          1,
+          1
+        ]
+      },
+      "poseTiming": {
+        "calls": 89,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 77.78412500192644,
+        "totalMS": 4281.05462502208
+      },
+      "thermal": 0,
+      "bodyLatency": {
+        "n": 89,
+        "meanMS": 48.10173735979865,
+        "medianMS": 44.37195833452279,
+        "p95MS": 65.96583333521266,
+        "maximumMS": 77.78412500192644
+      },
+      "firstRequestMS": 77.78412500192644,
+      "afterFirstLatency": {
+        "n": 88,
+        "meanMS": 47.764437500229015,
+        "medianMS": 44.35910416759725,
+        "p95MS": 64.63020833325572,
+        "maximumMS": 68.8630833356001
+      }
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-618a1688fcc6-pose2-r1",
+      "build": "2026102915",
+      "clip": "clip-618a1688fcc6",
+      "personWarmup": false,
+      "state": "completed",
+      "error": null,
+      "warmup": {
+        "blackMilliseconds": 116.94237499978044,
+        "personMilliseconds": [],
+        "personPoseCounts": []
+      },
+      "poseTiming": {
+        "calls": 334,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 70.6116250003106,
+        "totalMS": 3356.9472916533414
+      },
+      "thermal": 0,
+      "bodyLatency": {
+        "n": 334,
+        "meanMS": 10.050740394171681,
+        "medianMS": 10.156291667954065,
+        "p95MS": 15.919416666292818,
+        "maximumMS": 70.6116250003106
+      },
+      "firstRequestMS": 70.6116250003106,
+      "afterFirstLatency": {
+        "n": 333,
+        "meanMS": 9.868875875834927,
+        "medianMS": 10.13750000129221,
+        "p95MS": 15.732833333458984,
+        "maximumMS": 19.45595833240077
+      },
+      "count": 24,
+      "acceptedValid": 24,
+      "knownFalse": 0,
+      "missedLegalSeconds": [],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 6,
+        "outstanding": 0,
+        "processed": 436,
+        "queue_capacity": 32
+      },
+      "exactTraceReplay": true
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-618a1688fcc6-pose2-r1-person-warm",
+      "build": "2026102915",
+      "clip": "clip-618a1688fcc6",
+      "personWarmup": true,
+      "state": "completed",
+      "error": null,
+      "warmup": {
+        "blackMilliseconds": 115.99329166710959,
+        "personMilliseconds": [
+          55.233458333532326,
+          4.581166667776415
+        ],
+        "personPoseCounts": [
+          1,
+          1
+        ]
+      },
+      "poseTiming": {
+        "calls": 334,
+        "empty": 0,
+        "errors": 0,
+        "maximumMS": 20.789791666175006,
+        "totalMS": 3338.7325833209616
+      },
+      "thermal": 0,
+      "bodyLatency": {
+        "n": 334,
+        "meanMS": 9.996205339284316,
+        "medianMS": 10.106583335073083,
+        "p95MS": 15.99937499850057,
+        "maximumMS": 20.789791666175006
+      },
+      "firstRequestMS": 17.40379166585626,
+      "afterFirstLatency": {
+        "n": 333,
+        "meanMS": 9.973960335300616,
+        "medianMS": 10.102958334755385,
+        "p95MS": 15.838833332963986,
+        "maximumMS": 20.789791666175006
+      },
+      "count": 24,
+      "acceptedValid": 24,
+      "knownFalse": 0,
+      "missedLegalSeconds": [],
+      "knownFalseSeconds": [],
+      "lateSourceSkips": 0,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 6,
+        "outstanding": 0,
+        "processed": 436,
+        "queue_capacity": 32
+      },
+      "exactTraceReplay": true
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-a16380ba4a5b-pose2-r1",
+      "build": "2026102915",
+      "clip": "clip-a16380ba4a5b",
+      "personWarmup": false,
+      "state": "completed",
+      "error": null,
+      "warmup": {
+        "blackMilliseconds": 95.949541668233,
+        "personMilliseconds": [],
+        "personPoseCounts": []
+      },
+      "poseTiming": {
+        "calls": 508,
+        "empty": 35,
+        "errors": 0,
+        "maximumMS": 87.11524999671383,
+        "totalMS": 4985.328958289756
+      },
+      "thermal": 0,
+      "bodyLatency": {
+        "n": 508,
+        "meanMS": 9.813639681672749,
+        "medianMS": 9.522312500848784,
+        "p95MS": 14.15337499929592,
+        "maximumMS": 87.11524999671383
+      },
+      "firstRequestMS": 87.11524999671383,
+      "afterFirstLatency": {
+        "n": 507,
+        "meanMS": 9.661171022274244,
+        "medianMS": 9.516750000329921,
+        "p95MS": 14.010166665684665,
+        "maximumMS": 18.122708333976334
+      },
+      "count": 34,
+      "acceptedValid": 33,
+      "knownFalse": 1,
+      "missedLegalSeconds": [
+        0.217,
+        3.368,
+        10.371,
+        15.867,
+        18.25,
+        18.875
+      ],
+      "knownFalseSeconds": [
+        20.176
+      ],
+      "lateSourceSkips": 0,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 13,
+        "outstanding": 0,
+        "processed": 614,
+        "queue_capacity": 32
+      },
+      "exactTraceReplay": true
+    },
+    {
+      "device": "iphone17",
+      "run": "clip-a16380ba4a5b-pose2-r1-person-warm",
+      "build": "2026102915",
+      "clip": "clip-a16380ba4a5b",
+      "personWarmup": true,
+      "state": "completed",
+      "error": null,
+      "warmup": {
+        "blackMilliseconds": 115.80583333125105,
+        "personMilliseconds": [
+          55.28208333271323,
+          4.583416666719131
+        ],
+        "personPoseCounts": [
+          1,
+          1
+        ]
+      },
+      "poseTiming": {
+        "calls": 492,
+        "empty": 31,
+        "errors": 0,
+        "maximumMS": 23.293041667784564,
+        "totalMS": 5112.806958317378
+      },
+      "thermal": 0,
+      "bodyLatency": {
+        "n": 492,
+        "meanMS": 10.391884061620688,
+        "medianMS": 10.203270832789713,
+        "p95MS": 15.299666665669065,
+        "maximumMS": 23.293041667784564
+      },
+      "firstRequestMS": 14.126999998552492,
+      "afterFirstLatency": {
+        "n": 491,
+        "meanMS": 10.384276900853006,
+        "medianMS": 10.200958331552101,
+        "p95MS": 15.299666665669065,
+        "maximumMS": 23.293041667784564
+      },
+      "count": 33,
+      "acceptedValid": 32,
+      "knownFalse": 1,
+      "missedLegalSeconds": [
+        0.217,
+        3.368,
+        10.371,
+        12.505,
+        15.867,
+        18.25,
+        18.875
+      ],
+      "knownFalseSeconds": [
+        20.176
+      ],
+      "lateSourceSkips": 0,
+      "worstThermal": 0,
+      "queue": {
+        "maximum_queue_depth": 15,
+        "outstanding": 0,
+        "processed": 614,
+        "queue_capacity": 32
+      },
+      "exactTraceReplay": true
+    }
+  ],
+  "interpretationLimits": [
+    "Ground first-request attribution is not removable cost: other checks request most of those same frames. Exclusive-frame demand is descriptive, not permission to discard ground evidence.",
+    "Matched-image automatic/explicit outputs were identical, but full-pipeline repeated counts vary with scheduling and evidence. This is not a nonregression certification.",
+    "The person warmup is an explicitly staged image experiment, not a shipped preview warmup implementation. No warmup pixels enter the contact cache or counter.",
+    "iPhone11 and17 use different RF resolutions and OS versions. Fixed-image tests isolate RF workload, not OS differences. Revision2 compute main stage lists only neuralEngine; this does not trace all preprocessing hardware."
+  ]
+}

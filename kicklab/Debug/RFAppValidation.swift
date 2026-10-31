@@ -14,6 +14,14 @@ nonisolated enum RFAppValidation {
             var row = extra; row["state"] = state; row["updated"] = ISO8601DateFormatter().string(from: Date())
             row["thermal"] = ProcessInfo.processInfo.thermalState.rawValue
             row["memory_mib"] = DetectorPerformance.memoryMB()
+            row["visionRevisions"] = VisionRevisionExperiment.report
+            row["poseTiming"] = VisionRevisionExperiment.poseTiming
+            row["poseWarmup"] = VisionRevisionExperiment.warmupReport
+            row["poseEmptyFallback"] = PoseFallbackAudit.report
+            if PoseWorkloadAudit.enabled {
+                try? RFDiagnosticJSON.data(PoseWorkloadAudit.report)
+                    .write(to: folder.appendingPathComponent("pose-workload.json"), options: .atomic)
+            }
             if let data = try? JSONSerialization.data(withJSONObject: row, options: [.prettyPrinted, .sortedKeys]) { try? data.write(to: status, options: .atomic) }
         }
         let oldIdle = UIApplication.shared.isIdleTimerDisabled
@@ -22,6 +30,37 @@ nonisolated enum RFAppValidation {
         do {
             let config = try JSONDecoder().decode(Config.self, from: Data(contentsOf: folder.appendingPathComponent("config.json")))
             save("running", ["mode": config.mode])
+            if config.mode == "pose-exact-input-probe" {
+                let result = try await Task.detached(priority: .userInitiated) {
+                    try PoseInputAudit.runProbe(folder: folder)
+                }.value
+                save("completed", result); return
+            }
+            if config.mode == "pose-compute-probe" {
+                let result = try await Task.detached(priority: .userInitiated) {
+                    try await VisionPoseComputeProbe.run(folder: folder)
+                }.value
+                save("completed", result); return
+            }
+            if config.mode == "pose-integration-probe" {
+                let result = try await Task.detached(priority: .userInitiated) {
+                    try await VisionIntegrationProbe.run(folder: folder)
+                }.value
+                save("completed", result); return
+            }
+            if config.mode == "cooldown" {
+                // Explicit lab mode: no camera, decoder or model work. Keep
+                // the device awake while a long replay sweep's heat dissipates.
+                let seconds = config.seconds ?? 300
+                guard seconds.isFinite, (0...600).contains(seconds) else { throw NSError(domain: "Invalid cooldown duration", code: 1) }
+                let end = ProcessInfo.processInfo.systemUptime + seconds
+                while ProcessInfo.processInfo.thermalState != .nominal, ProcessInfo.processInfo.systemUptime < end {
+                    save("cooling", ["mode": config.mode])
+                    try await Task.sleep(for: .seconds(10))
+                }
+                save("completed", ["mode": config.mode, "nominal": ProcessInfo.processInfo.thermalState == .nominal])
+                return
+            }
             if config.mode == "capture" {
                 let camera = CameraSession(); defer { camera.stop() }
                 camera.start()
@@ -49,6 +88,7 @@ nonisolated enum RFAppValidation {
             let video = folder.appendingPathComponent(name)
             if config.mode == "paced" {
                 let result = try await Task.detached(priority: .userInitiated) { try await replay(video, seconds: config.seconds ?? 30, folder: folder) }.value
+                try PoseInputAudit.write(to: folder)
                 save("completed", result); return
             }
             if config.mode == "selective" || config.mode == "full-reference" {
@@ -109,27 +149,49 @@ nonisolated enum RFAppValidation {
         let output = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
         output.alwaysCopiesSampleData = false; reader.add(output)
         guard reader.startReading() else { throw reader.error ?? NSError(domain: "Reader start", code: 1) }
-        let epoch = ProcessInfo.processInfo.systemUptime
+        let preciseClock = ProcessInfo.processInfo.arguments.contains("--replay-precise-clock-v1")
+        let auditSource = ProcessInfo.processInfo.arguments.contains("--replay-source-audit")
+        // Explicit diagnostic mode: decoding/setup is not camera lateness.
+        // Anchor the paced clock when its first decoded frame is available.
+        var epoch: Double? = preciseClock ? nil : ProcessInfo.processInfo.systemUptime
         let expectedEnd = min(seconds, try await asset.load(.duration).seconds)
         var index = 0, processed = 0, skipped = 0
+        var sourceAdmissions: [[String: Any]] = []
+        var droppedAuditRows = 0
+        var decodeStarted = ProcessInfo.processInfo.systemUptime
         var previous = -Double.infinity
         var lastSourceTime = -Double.infinity
         while let sample = output.copyNextSampleBuffer() {
+            let decodedAt = ProcessInfo.processInfo.systemUptime
             let time = CMSampleBufferGetPresentationTimeStamp(sample), t = time.seconds
             if t >= seconds { reader.cancelReading(); break }
             lastSourceTime = t
-            defer { index += 1 }
+            defer { index += 1; decodeStarted = ProcessInfo.processInfo.systemUptime }
             guard t-previous >= 1.0/30-0.0005 else { continue }
             previous = t
-            let wait = epoch+t-ProcessInfo.processInfo.systemUptime
-            if wait > 0 { try await Task.sleep(for: .seconds(wait)) }
+            if epoch == nil { epoch = decodedAt-t }
+            let due = epoch!+t
+            let wait = due-ProcessInfo.processInfo.systemUptime
+            if wait > 0 {
+                if preciseClock { try await Task.sleep(for: .seconds(wait), tolerance: .zero) }
+                else { try await Task.sleep(for: .seconds(wait)) }
+            }
+            let lateness = ProcessInfo.processInfo.systemUptime-due
+            if auditSource {
+                if sourceAdmissions.count < 30_000 {
+                    sourceAdmissions.append(["source_frame": index, "source_seconds": t,
+                        "decode_ms": (decodedAt-decodeStarted)*1000,
+                        "requested_wait_ms": max(0,wait)*1000, "admission_lateness_ms": lateness*1000,
+                        "admitted": lateness <= 1.0/30])
+                } else { droppedAuditRows += 1 }
+            }
             // Bounded newest-frame policy: do not catch up by accumulating old source frames.
-            if ProcessInfo.processInfo.systemUptime-(epoch+t) > 1.0/30 { skipped += 1; continue }
+            if lateness > 1.0/30 { skipped += 1; continue }
             try autoreleasepool {
                 guard let pixels = CMSampleBufferGetImageBuffer(sample) else { return }
                 let identity = RecordedFrameIdentity(index: index, time: time, width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels), coordinates: "capture-buffer; normalized upright detector coordinates")
                 _ = try analysis.process(LiveAnalysisFrame(pixels: pixels, sourceTime: t, startTime: 0, captureDrops: 0,
-                    identity: identity, sourceDueUptime: epoch+t), request: request, motionCompensationEnabled: true)
+                    identity: identity, sourceDueUptime: due), request: request, motionCompensationEnabled: true)
                 processed += 1
             }
         }
@@ -145,11 +207,16 @@ nonisolated enum RFAppValidation {
         try encoder.encode(trace).write(to: folder.appendingPathComponent("counter.plist"))
         try SessionAnalysisStore.frameData(result.track).write(to: folder.appendingPathComponent("track.plist"))
         try JSONSerialization.data(withJSONObject: result.touches.map { [Double($0.index), $0.time, $0.x, $0.y] }).write(to: folder.appendingPathComponent("touches.json"))
+        if auditSource {
+            try RFDiagnosticJSON.data(["precise_clock": preciseClock, "rows": sourceAdmissions,
+                "dropped_rows": droppedAuditRows]).write(to: folder.appendingPathComponent("source-admission.json"), options: .atomic)
+        }
         return ["mode": "paced", "count": result.count, "source_frames": index, "admitted_frames": processed,
+            "replay_precise_clock": preciseClock, "replay_source_audit": auditSource,
             "late_source_skips": skipped, "processed_frames": result.frameCount, "trace_replay_exact": true,
             "last_source_seconds": lastSourceTime, "expected_end_seconds": expectedEnd,
             "track_frames": result.track.count, "mask_frames": result.track.filter { $0.ballMask != nil }.count,
-            "elapsed_seconds": ProcessInfo.processInfo.systemUptime-epoch]
+            "elapsed_seconds": ProcessInfo.processInfo.systemUptime-(epoch ?? ProcessInfo.processInfo.systemUptime)]
     }
 }
 #endif

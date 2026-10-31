@@ -1,0 +1,25 @@
+IMG_9029 — OLD BODY POSE VERSUS REVISION2 — 30 OCTOBER 2026
+
+Same iPhone17 Pro Max, build2026103020, original video, current counter flags and replay clock.
+Only --vision-body-pose-revision2 changes. This compares the old pose implementation with revision2;
+it does not claim to reproduce the entire historical App Store/TestFlight setup.
+
+                            Old body pose (VN revision1)     Swift revision2
+First run total             25                               24
+Repeat total                25                               24
+8.003 s visible low kick     Counted; footConfirmed=true      Rejected groundBounce; planted=true
+12.438 s floor candidate    Rejected groundBounce            Rejected groundBounce
+12.471 s second candidate   Rejected amplitudeTooSmall       Counted; footConfirmed=true
+12.805 s later end event    Counted                          Not counted
+
+The old setup handles the clearly reviewed 8.003 s kick better and avoids the revision2 count at12.471 s.
+It counts a different small late event at12.805 s. That event still needs a definitive legal/false label;
+25 is an algorithm total, not a claim of25 correct legal kicks.
+
+Both repeats reproduce exactly within each pose setting. Both paired comparisons have identical
+counter configurations, identical395 admitted frame identities, and ZERO differing ball-input values.
+All four runs have zero late source skips, no RF reply lateness, no pipeline overflow and nominal heat.
+The decisions differ through pose/contact evidence, not lost tracking or playback drops in this clip.
+Old pose returns no empty observations in362 calls per run; revision2 returns15 empty results in352.
+Mean pose time is7.22/7.07 ms old versus9.84/9.78 ms revision2. These are pose-call timings, not counter
+latency. No counter rule was edited or default changed for this comparison.

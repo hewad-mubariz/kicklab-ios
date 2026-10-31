@@ -12,6 +12,23 @@ nonisolated enum ContactFrameWindow {
     // and time-sampled ground/leg evidence. No full-resolution capture buffers.
     static let maximumBufferedFrames = 60
 
+    /// Experimental shared history plan. Keep every impact/release exposure;
+    /// only the earlier approach is sparse. Indices always identify the original
+    /// complete ball/image/pose observation, never a pose borrowed across frames.
+    /// Apply to the already eligible views, without widening any consumer window.
+    static func sharedHistoryIndices(_ frames: [Stamp], contactMs: Int) -> Set<Int> {
+        var selected = Set(frames.filter { $0.timestampMs >= contactMs - 101 }.map(\.index))
+        for offset in [-300, -200] {
+            if let nearest = frames.filter({
+                $0.timestampMs < contactMs - 101 && abs($0.timestampMs-contactMs-offset) <= 34
+            }).min(by: {
+                let a = abs($0.timestampMs-contactMs-offset), b = abs($1.timestampMs-contactMs-offset)
+                return a == b ? $0.timestampMs < $1.timestampMs : a < b
+            }) { selected.insert(nearest.index) }
+        }
+        return selected
+    }
+
     /// The floor check needs at least 200 ms of approach. At 60/120 fps,
     /// nine preceding frame indices cannot supply that evidence.
     static func groundIndices(_ frames: [Stamp], around contact: Stamp) -> Set<Int> {

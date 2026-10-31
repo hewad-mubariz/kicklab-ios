@@ -1,0 +1,59 @@
+{
+  "activeArms" : [
+    "legacy-automatic",
+    "revision2-automatic",
+    "legacy-neuralEngine",
+    "legacy-gpu",
+    "legacy-cpu",
+    "revision2-neuralEngine"
+  ],
+  "failures" : [
+
+  ],
+  "hardware" : "iPhone18,2",
+  "memory_mib" : 167.97075653076172,
+  "mode" : "pose-compute-probe",
+  "poseTiming" : {
+    "calls" : 0,
+    "empty" : 0,
+    "errors" : 0,
+    "maximumMS" : 0,
+    "totalMS" : 0
+  },
+  "rows" : 162,
+  "scope" : "Nine fixed contact images; 512 long edge; two warmups; rotated arm order; request plus equal conversion; no concurrent ball model.",
+  "state" : "completed",
+  "thermal" : 1,
+  "updated" : "2026-10-29T19:55:01Z",
+  "visionRevisions" : {
+    "bodyPoseImplementation" : "VN legacy",
+    "bodyPoseRequestedCompute" : "automatic",
+    "integratedHandDetection" : false,
+    "legacyBodyDefault" : 1,
+    "legacyBodySelected" : 1,
+    "legacyBodySupported" : [
+      1
+    ],
+    "legacyHandSelected" : 1,
+    "legacyHandSupported" : [
+      1
+    ],
+    "objectTrackingSelected" : 1,
+    "objectTrackingSupported" : [
+      1,
+      2
+    ],
+    "swiftBody3DSupported" : [
+      "revision1"
+    ],
+    "swiftBodySupported" : [
+      "revision2"
+    ],
+    "swiftHandSupported" : [
+      "revision1"
+    ],
+    "swiftTrackerSupported" : [
+      "revision2"
+    ]
+  }
+}

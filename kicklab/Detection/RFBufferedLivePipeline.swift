@@ -57,6 +57,8 @@ nonisolated final class RFWorker {
     private var occupied = false
     private var reply: RFReply?
     private var priorityRequested = false
+    private let interleavesContact = RFWorkerAdmissionPolicy.enabled()
+    private var interleavedSubmissions = 0
     private var activeInferences = 0
     private var maximumActiveInferences = 0
     private var inferenceCounts: [String: Int] = [:]
@@ -86,6 +88,7 @@ nonisolated final class RFWorker {
             "regular": inferenceCounts["regular", default: 0],
             "warmup": inferenceCounts["warmup", default: 0],
             "contact": inferenceCounts["contact", default: 0],
+            "interleaved_regular": interleavedSubmissions,
             "impact_gap": inferenceCounts["impact_gap", default: 0], "model_instances": 1]
     }
     func recheck(_ frame: PacedFrame, hint: FollowHit, latestStart: Double) -> RFReply? {
@@ -94,7 +97,8 @@ nonisolated final class RFWorker {
         priorityRequested = true; lock.unlock()
         defer { lock.lock(); priorityRequested = false; lock.unlock() }
         // One shared model. Wait behind at most the already-submitted regular job;
-        // fresh regular submissions are blocked until this contact request finishes.
+        // Default admission blocks new regular jobs until this request finishes.
+        // The opt-in interleave policy may reserve one behind this inference.
         return queue.sync {
             guard uptime() <= latestStart, thermal() < 3 else { return nil }
             return infer(frame, hint: hint, purpose: "contact")
@@ -126,7 +130,11 @@ nonisolated final class RFWorker {
             throw NSError(domain: "Diagnostic input shape mismatch", code: 1)
         }
     }
-    var busy: Bool { lock.lock(); defer { lock.unlock() }; return occupied || priorityRequested }
+    var canSubmitRegular: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return RFWorkerAdmissionPolicy.permits(occupied: occupied, contactRequested: priorityRequested,
+            interleaves: interleavesContact, purpose: "regular")
+    }
     func infer(_ frame: PacedFrame, hint: FollowHit?, purpose: String = "regular") -> RFReply {
         lock.lock(); activeInferences += 1
         maximumActiveInferences = max(maximumActiveInferences, activeInferences)
@@ -156,12 +164,17 @@ nonisolated final class RFWorker {
     }
     func submit(_ frame: PacedFrame, hint: FollowHit?, purpose: String = "regular") -> Bool {
         lock.lock()
-        guard !occupied && !priorityRequested else { lock.unlock(); return false }
-        occupied = true; lock.unlock()
+        guard RFWorkerAdmissionPolicy.permits(occupied: occupied, contactRequested: priorityRequested,
+            interleaves: interleavesContact, purpose: purpose) else { lock.unlock(); return false }
+        occupied = true
+        if priorityRequested { interleavedSubmissions += 1 }
+        // Enqueue the reserved slot before releasing the lock. A subsequent
+        // contact request cannot jump ahead of this fresh exposure.
         queue.async {
             let value = self.infer(frame, hint: hint, purpose: purpose)
             self.lock.lock(); self.reply = value; self.lock.unlock()
         }
+        lock.unlock()
         return true
     }
     func take() -> RFReply? {
@@ -188,6 +201,19 @@ nonisolated final class BufferedTracking {
     private var pending: [PacedFrame] = []
     private var replies: [Int: RFReply] = [:]
     private var lastSubmitted = -Double.infinity
+    private var lastRegularSubmitted = -Double.infinity
+    private let independentRegularClock = RFIndependentRegularClock.enabled()
+    private var retryClockBypasses = 0
+    private let failedRetryClock = RFFailedRetryClock.enabled()
+    private var failedRetryClockRefunds = 0
+    private let usesSourceCadence = RFSourceCadence.enabled()
+    private let sourceCadenceVersion = RFSourceCadence.version()
+    private var sourceCadence = RFSourceCadence()
+    private var sourceCadenceSkips: [String: Int] = [:]
+    /// One reference to an already-owned capture image, not another model job.
+    private var reservedDetectorFrame: PacedFrame?
+    private var reservedSubmissions = 0
+    private var maximumReservedAgeMS = 0.0
     private var consumedIndex = -1
     private var seedTime: Double?
     private var previous: (FollowHit, Double)?
@@ -196,9 +222,18 @@ nonisolated final class BufferedTracking {
     // minute measured), so both tiers keep it; it is what restores the approach
     // views the floor proof needs when a warm phone drops detections.
     private let repairsImpactGaps = CountingPolicy.current.body.usesContactEvidence
-    private var lastGapSource = -Double.infinity, lastGapWall = -Double.infinity
+    private var gapSchedule = ImpactGapRetrySchedule(
+        chargesAcceptedOnly: ImpactGapRecoveryPolicy.chargesAcceptedRetriesOnly())
     private var gapEvents: [[String: Any]] = []
     private var retryingFrame: Int?
+    private let reservesImpactGap = ImpactGapReservation.enabled()
+    private let drainBudgetEnabled = TrackingDrainBudget.enabled()
+    private var reservedGap: (request: ImpactGapReservation, hint: FollowHit)?
+    private var reservedGapSubmissions = 0
+    private var drainBudgetYields = 0
+    private var maximumFramesPerDrain = 0
+    private var maximumDrainMS = 0.0
+    private var slowDrains: [[String: Any]] = []
     private var statuses: [Int: String] = [:]
     var rows: [[String: Any]] = []
     var events: [[String: Any]] = []
@@ -226,8 +261,57 @@ nonisolated final class BufferedTracking {
         maximumReplies = max(maximumReplies, replies.count)
     }
     nonisolated private func processDue() throws {
+        let drainStarted = uptime()
+        var drained = 0
+        let firstSource = pending.first?.time
+        defer {
+            if drained > 0 {
+                let elapsed = (uptime()-drainStarted)*1000
+                maximumFramesPerDrain = max(maximumFramesPerDrain,drained)
+                maximumDrainMS = max(maximumDrainMS,elapsed)
+                if elapsed > 25, let firstSource {
+                    slowDrains.append(["first_source_seconds":firstSource,"frames":drained,"milliseconds":elapsed])
+                    if slowDrains.count > 1000 { slowDrains.removeFirst(slowDrains.count-1000) }
+                }
+            }
+        }
         try receive()
+        if sourceCadenceVersion >= 4 { submitReservedDetectorFrame() }
         while let first = pending.first, uptime() >= first.due+delay {
+            guard ImpactGapReservation.continuesDrain(version: drainBudgetEnabled ? 3 : 0,
+                processed: drained, elapsed: uptime()-drainStarted) else {
+                drainBudgetYields += 1
+                return
+            }
+            if let reserved = reservedGap {
+                let now = uptime(), budget = worker.recheckBudget
+                let depth = counter.summary["outstanding"] ?? Int.max
+                if replies[first.index] != nil {
+                    // A regular result can arrive while we are waiting. Use it
+                    // at its original exposure; never measure that frame twice.
+                    reservedGap = nil
+                } else if !reserved.request.permits(index: first.index, source: first.time,
+                    now: now, outstanding: depth, budget: budget) {
+                    reservedGap = nil
+                    gapEvents.append(["source_frame": reserved.request.index,
+                        "source_seconds": reserved.request.source, "applied": false,
+                        "reason": "reserved_gap_expired", "wait_ms": (now-reserved.request.requestedAt)*1000])
+                    if gapEvents.count > 6000 { gapEvents.removeFirst(gapEvents.count-6000) }
+                } else if worker.submit(first, hint: reserved.hint, purpose: "impact_gap") {
+                    reservedGap = nil; retryingFrame = first.index
+                    gapSchedule.recordReservedAdmission(source: first.time, now: now)
+                    submissionRecords[first.index] = ["submission_uptime": now,
+                        "target_hz": 1/0.3, "submission_thermal": thermal(), "purpose": "impact_gap",
+                        "reserved_wait_ms": (now-reserved.request.requestedAt)*1000]
+                    lastSubmitted = ImpactGapReservation.regularClockAfterAdmission(
+                        version: ImpactGapReservation.version(), previous: lastSubmitted, now: now)
+                    submissions += 1; reservedGapSubmissions += 1
+                    return
+                } else {
+                    // Yield ingestion without skipping or re-tracking this exposure.
+                    return
+                }
+            }
             if retryingFrame == first.index, replies[first.index] == nil {
                 // Yield to camera ingestion while the single RF worker measures
                 // this exposure. Never synchronously infer on the capture queue.
@@ -266,7 +350,17 @@ nonisolated final class BufferedTracking {
                     metrics.lastPreprocessMS = reply.preparationMS
                     metrics.lastTotalMS = reply.predictionMS + reply.preparationMS
                     let hint = hit ?? previous.flatMap { first.time-$0.1 <= policy.maximumHintAge ? $0.0 : nil }
-                    let eligible = initialBackground?.eligible(reply.candidates) ?? reply.candidates
+                    let eligible = initialBackground?.eligible(reply.candidates, at: first.time) ?? reply.candidates
+                    #if DEBUG
+                    if ProcessInfo.processInfo.arguments.contains("--stationary-gate-audit") {
+                        failureDetails["stationary_gate_candidates"] = reply.candidates.map { candidate in
+                            ["query": candidate.query, "score": candidate.hit.score,
+                             "xywh": [candidate.hit.rect.minX, candidate.hit.rect.minY,
+                                      candidate.hit.rect.width, candidate.hit.rect.height],
+                             "eligible": eligible.contains { $0.query == candidate.query }] as [String: Any]
+                        }
+                    }
+                    #endif
                     var (selection, reason) = policy.select(eligible, hint: hint)
                     if !isGapRetry, selection == nil, hit == nil, reason == "identity_gate_rejected",
                        RFMotionRecovery.enabled(),
@@ -279,8 +373,19 @@ nonisolated final class BufferedTracking {
                             completed: reply.completed, due: first.due) {
                             selection = nil; reason = "retry_score_or_deadline"
                         }
+                        var clockRestored = false
+                        if failedRetryClock,
+                           let record = submissionRecords[first.index],
+                           let submitted = record["submission_uptime"] as? Double,
+                           let previousClock = record["previous_any_submission_uptime"] as? Double,
+                           let restored = RFFailedRetryClock.restoredClock(current: lastSubmitted,
+                               submitted: submitted, previous: previousClock, accepted: selection != nil) {
+                            lastSubmitted = restored
+                            failedRetryClockRefunds += 1; clockRestored = true
+                        }
                         gapEvents.append(["source_frame": first.index, "source_seconds": first.time,
                             "applied": selection != nil, "reason": reason, "prediction_ms": reply.predictionMS,
+                            "failed_retry_clock_restored": clockRestored,
                             "completion_latency_ms": (reply.completed-first.due)*1000])
                         if gapEvents.count > 6000 { gapEvents.removeFirst(gapEvents.count-6000) }
                     }
@@ -299,20 +404,38 @@ nonisolated final class BufferedTracking {
                     } else { statuses[first.index] = "no_detection_preserved_track" }
                 }
                 if repairsImpactGaps, hit == nil, !hadRF, let previous {
-                    let policy = ImpactGapRecoveryPolicy(), now = uptime()
+                    let now = uptime()
                     let budget = worker.recheckBudget
                     let depth = counter.summary["outstanding"] ?? Int.max
-                    if policy.permits(source: first.time, hintTime: previous.1, now: now, due: first.due,
-                        lastSource: lastGapSource, lastWall: lastGapWall, outstanding: depth, budget: budget) {
-                        lastGapSource = first.time; lastGapWall = now
-                        if worker.submit(first, hint: previous.0, purpose: "impact_gap") {
+                    let result = gapSchedule.attempt(source: first.time, hintTime: previous.1,
+                        now: now, due: first.due, outstanding: depth, budget: budget) {
+                            worker.submit(first, hint: previous.0, purpose: "impact_gap")
+                        }
+                    switch result {
+                    case .submitted:
                             retryingFrame = first.index; waitingForRetry = true
                             pending.insert(first, at: 0)
                             submissionRecords[first.index] = ["submission_uptime": now,
                                 "target_hz": 1/0.3, "submission_thermal": thermal(), "purpose": "impact_gap"]
+                            if lastSubmitted.isFinite {
+                                submissionRecords[first.index]?["previous_any_submission_uptime"] = lastSubmitted
+                            }
                             lastSubmitted = now; submissions += 1
                             return
+                    case .workerBusy:
+                        gapEvents.append(["source_frame": first.index, "source_seconds": first.time,
+                            "applied": false, "reason": "retry_worker_busy",
+                            "cooldown_consumed": !ImpactGapRecoveryPolicy.chargesAcceptedRetriesOnly(),
+                            "reserved_same_frame": reservesImpactGap])
+                        if gapEvents.count > 6000 { gapEvents.removeFirst(gapEvents.count-6000) }
+                        if reservesImpactGap {
+                            reservedGap = (ImpactGapReservation(index: first.index, source: first.time,
+                                due: first.due, requestedAt: now), previous.0)
+                            pending.insert(first, at: 0); waitingForRetry = true
+                            return
                         }
+                    case .ineligible:
+                        break
                     }
                 }
                 if let hit {
@@ -340,6 +463,7 @@ nonisolated final class BufferedTracking {
                 rows.append(row); if rows.count > 6000 { rows.removeFirst(rows.count-6000) }; consumedIndex = first.index
             }
             if waitingForRetry { return }
+            drained += 1
             try receive()
         }
     }
@@ -347,25 +471,76 @@ nonisolated final class BufferedTracking {
         try processDue()
         let state = thermal(), now = uptime()
         let targetHz = cadence.targetHz(thermalState: state)
-        if targetHz > 0, now-lastSubmitted >= 1/targetHz, !worker.busy {
+        let sourceOpportunity = !usesSourceCadence || sourceCadence.opportunity(source: frame.time,
+            targetHz: targetHz, exactRate: sourceCadenceVersion >= 3)
+        // V2 keeps the source grid's ten-per-second nominal budget. A retry on
+        // an older image cannot suppress the next regular slot. A separate burst
+        // guard and freshness bound prevent queued/stale frames from catching up.
+        let legacyRateReady = RFSourceCadence.rateReady(version: sourceCadenceVersion, now: now,
+            due: frame.due, targetHz: targetHz, lastAny: lastSubmitted, lastRegular: lastRegularSubmitted)
+        let rateReady = independentRegularClock
+            ? RFIndependentRegularClock.rateReady(now: now, targetHz: targetHz,
+                lastAny: lastSubmitted, lastRegular: lastRegularSubmitted, independent: true)
+            : legacyRateReady
+        let workerReady = sourceOpportunity && rateReady && worker.canSubmitRegular
+        if sourceCadenceVersion >= 4, sourceOpportunity {
+            if reservedDetectorFrame != nil { sourceCadenceSkips["replaced_by_new_slot", default: 0] += 1 }
+            reservedDetectorFrame = frame
+            submitReservedDetectorFrame()
+        } else if usesSourceCadence, sourceOpportunity, targetHz > 0 {
+            if !rateReady { sourceCadenceSkips["wall_rate_or_freshness_limit", default: 0] += 1 }
+            else if !workerReady { sourceCadenceSkips["worker_busy", default: 0] += 1 }
+        }
+        if sourceCadenceVersion < 4, sourceOpportunity, rateReady, workerReady {
             // Only scheduling changes. The one-job bound and source identity remain.
             if worker.submit(frame, hint: nil) {
                 var record: [String: Any] = ["submission_uptime": now,
                     "target_hz": targetHz, "submission_thermal": state]
                 if lastSubmitted.isFinite { record["previous_submission_uptime"] = lastSubmitted }
+                if lastRegularSubmitted.isFinite { record["previous_regular_submission_uptime"] = lastRegularSubmitted }
+                if independentRegularClock {
+                    record["retry_clock_bypassed"] = !legacyRateReady
+                    if !legacyRateReady { retryClockBypasses += 1 }
+                }
                 submissionRecords[frame.index] = record
-                lastSubmitted = now; submissions += 1
+                lastSubmitted = now; lastRegularSubmitted = now; submissions += 1
             }
         }
         pending.append(frame)
         if pending.count > 16 {
             let old = pending.removeFirst(); replies.removeValue(forKey: old.index)
             if retryingFrame == old.index { retryingFrame = nil }
+            if reservedGap?.request.index == old.index { reservedGap = nil }
             statuses[old.index] = "buffer_overflow"; consumedIndex = old.index; overflowDrops += 1
             rows.append(["frame": old.index, "source_seconds": old.time, "available": false,
                 "kind": "buffer_overflow", "latency_ms": (uptime()-old.due)*1000, "thermal": thermal()])
         }
         maximumPending = max(maximumPending, pending.count)
+    }
+    /// Start only the original scheduled exposure. When busy, keep one pending
+    /// reference until the next ingestion tick; never wait on the capture queue.
+    /// Missed deadlines/newer slots discard it rather than extending the counter's
+    /// 200 ms buffer or revising an already consumed observation.
+    private func submitReservedDetectorFrame() {
+        guard let frame = reservedDetectorFrame else { return }
+        let now = uptime(), state = thermal(), hz = cadence.targetHz(thermalState: state)
+        guard frame.index > consumedIndex, hz > 0,
+              RFSourceCadence.fitsDeadline(now: now, due: frame.due, delay: delay, budget: worker.recheckBudget) else {
+            sourceCadenceSkips["reserved_deadline_or_thermal", default: 0] += 1
+            reservedDetectorFrame = nil; return
+        }
+        guard RFSourceCadence.rateReady(version: sourceCadenceVersion, now: now, due: frame.due,
+            targetHz: hz, lastAny: lastSubmitted, lastRegular: lastRegularSubmitted), worker.canSubmitRegular,
+            worker.submit(frame, hint: nil) else { return }
+        reservedDetectorFrame = nil
+        reservedSubmissions += 1
+        maximumReservedAgeMS = max(maximumReservedAgeMS, (now-frame.due)*1000)
+        var record: [String: Any] = ["submission_uptime": now, "target_hz": hz,
+            "submission_thermal": state, "scheduled_source_seconds": frame.time,
+            "reserved_age_ms": (now-frame.due)*1000]
+        if lastSubmitted.isFinite { record["previous_submission_uptime"] = lastSubmitted }
+        submissionRecords[frame.index] = record
+        lastSubmitted = now; lastRegularSubmitted = now; submissions += 1
     }
     func skip(index: Int, time: Double, due: Double) throws {
         try processDue()
@@ -381,7 +556,7 @@ nonisolated final class BufferedTracking {
         while let first = pending.first {
             let wait = first.due+delay-uptime()
             if wait > 0 { Thread.sleep(forTimeInterval: wait) }
-            else if retryingFrame != nil { Thread.sleep(forTimeInterval: 0.001) }
+            else if retryingFrame != nil || reservedGap != nil { Thread.sleep(forTimeInterval: 0.001) }
             try processDue()
         }
         // Drain after all scheduled analysis deadlines; late final results are
@@ -403,8 +578,28 @@ nonisolated final class BufferedTracking {
             }
             events[i].merge(record) { _, new in new }
         }
-        tracker.reset(); previous = nil; replies.removeAll()
-        return ["samples": rows.sorted { ($0["frame"] as! Int) < ($1["frame"] as! Int) },
+        tracker.reset(); previous = nil; replies.removeAll(); reservedDetectorFrame = nil; reservedGap = nil
+        return ["reserved_gap_enabled": reservesImpactGap,
+            "reserved_gap_version": ImpactGapReservation.version(),
+            "tracking_drain_budget": drainBudgetEnabled,
+            "drain_budget_yields": drainBudgetYields,
+            "maximum_frames_per_drain": maximumFramesPerDrain,
+            "maximum_drain_ms": maximumDrainMS,
+            "slow_drains": slowDrains,
+            "reserved_gap_submissions": reservedGapSubmissions,
+            "source_cadence_enabled": usesSourceCadence,
+            "source_cadence_version": sourceCadenceVersion,
+            "independent_regular_clock": independentRegularClock,
+            "retry_clock_bypasses": retryClockBypasses,
+            "failed_retry_clock": failedRetryClock,
+            "failed_retry_clock_refunds": failedRetryClockRefunds,
+            "reserved_detector_submissions": reservedSubmissions,
+            "reserved_detector_max_age_ms": maximumReservedAgeMS,
+            "reserved_detector_capacity": sourceCadenceVersion >= 4 ? 1 : 0,
+            "source_cadence_opportunities": sourceCadence.opportunities,
+            "source_cadence_missing_slots": sourceCadence.skippedSourceSlots,
+            "source_cadence_skips": sourceCadenceSkips,
+            "samples": rows.sorted { ($0["frame"] as! Int) < ($1["frame"] as! Int) },
             "rf_events": events, "impact_gap_rechecks": gapEvents, "rf_submissions": submissions, "late_replies": lateReplies,
             "maximum_buffered_frames": maximumPending, "buffer_capacity_frames": 16,
             "maximum_buffered_replies": maximumReplies, "overflow_drops": overflowDrops,
@@ -443,6 +638,8 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
     private var preparedWindows: Set<Int> = []
     private var lastWindowSource = -Double.infinity
     private var lastWindowWall = -Double.infinity
+    private var windowClock = ContactWindowClock()
+    private(set) var windowEvents: [[String: Any]] = []
     /// Offline replay does not represent wall-clock pacing. Source-time rate,
     /// identity, retention, inference deadlines and result checks still apply.
     var enforcesWallRateLimit = true
@@ -450,12 +647,18 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
         let full = RFContactRecheckTier.current == .full
         repairsNeighbors = policy.body.usesContactEvidence && full
         repairsImpactWindow = policy.body.usesImpactWindow && full
+        self.policy.extendsVisibleApproach = policy.body.usesVisibleFoot
+        self.policy.spansContactWindow = ContactRecheckPolicy.usesSpannedWindow()
+        self.policy.measuresLateApproach = ContactRecheckPolicy.usesLateApproach()
+        self.policy.measuresEarlyRelease = ContactRecheckPolicy.usesEarlyRelease()
+        self.policy.schedulesContactEvidence = ContactSchedulingPolicy.enabled()
+        self.policy.balancesMissingImpact = ContactRecheckPolicy.usesBalancedMissingImpact()
         verifier.configure(policy: policy)
     }
     let backlogGuard: Bool
     var queueSnapshot: () -> (Int, Double) = { (-1, .infinity) }
     private let backlogPolicy = ContactBacklogPolicy()
-    private let policy = ContactRecheckPolicy()
+    private var policy = ContactRecheckPolicy()
     private var missing: [Int: Missing] = [:]
     private var observed: [Observed] = []
     private var attempted: Set<Int> = []
@@ -487,7 +690,7 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
                 width: ball.width*frame.size.width, height: ball.height*frame.size.height)
             observed.append(Observed(hit: FollowHit(rect: box, score: ball.score), time: frame.time, index: index))
         } else if let before = observed.last,
-                  frame.time-before.time <= policy.maximumHintAge+0.000001 {
+                  frame.time-before.time <= policy.maximumApproachHintAge+0.000001 {
             missing[index] = Missing(frame: frame, hint: before.hit, hintTime: before.time, hintIndex: before.index)
         }
         missing = missing.filter { frame.time-$0.value.frame.time <= policy.maximumRetainedAge+0.000001 }
@@ -504,6 +707,7 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
         latestSource = 0; operation = 0; lastSource = -.infinity; lastWall = -.infinity
         events.removeAll(); error = nil; peakRetainedMissingFrames = 0
         preparedWindows.removeAll(); lastWindowSource = -.infinity; lastWindowWall = -.infinity
+        windowClock = ContactWindowClock(); windowEvents.removeAll()
     }
     func beginFlush(operation: Int) { self.operation = operation }
 
@@ -513,10 +717,31 @@ nonisolated final class ContactRecheckEvidence: ContactEvidenceProviding {
             let targets = policy.impactWindow(contactMs: time,
                 missing: missing.filter { !attempted.contains($0.key) }.map { .init(index: $0.key, timestampMs: $0.value.frame.timestampMs) },
                 observed: observed.map { .init(index: $0.index, timestampMs: Int($0.time*1000)) })
-            guard !targets.isEmpty, policy.permitsImpactWindow(source: Double(time)/1000, now: uptime(),
-                lastSource: lastWindowSource, lastWall: enforcesWallRateLimit ? lastWindowWall : -.infinity) else { return }
+            guard !targets.isEmpty else { return }
+            let now = uptime()
+            let legacyAllowed = policy.permitsImpactWindow(source: Double(time)/1000, now: now,
+                lastSource: lastWindowSource, lastWall: enforcesWallRateLimit ? lastWindowWall : -.infinity)
+            let nextWall = windowClock.nextWall
+            let allowed = ContactWindowClock.enabled()
+                ? windowClock.admit(source: Double(time)/1000, now: now, enforceWall: enforcesWallRateLimit)
+                : legacyAllowed
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("--contact-window-audit"), windowEvents.count < 6000 {
+                windowEvents.append(["frame": index, "source_seconds": Double(time)/1000,
+                    "operation": operation, "arrived_source_seconds": latestSource,
+                    "trigger": trigger, "targets": targets, "allowed": allowed,
+                    "legacy_allowed": legacyAllowed, "wall": now,
+                    "source_interval": lastWindowSource.isFinite ? Double(time)/1000-lastWindowSource as Any : NSNull(),
+                    "wall_interval": lastWindowWall.isFinite ? now-lastWindowWall as Any : NSNull(),
+                    "next_wall": nextWall.map { $0 as Any } ?? NSNull()])
+            }
+            #endif
+            guard allowed else { return }
             lastWindowSource = Double(time)/1000; lastWindowWall = uptime()
-            for target in targets {
+            let requestedAt = uptime()
+            for target in policy.executionOrder(targets, missing: missing.map {
+                .init(index: $0.key, timestampMs: $0.value.frame.timestampMs)
+            }, ages: missing.mapValues { requestedAt-$0.frame.due }, inferenceBudget: worker.recheckBudget) {
                 // Keep per-image age, identity, worker-idle and backlog checks.
                 // Only the rate reservation belongs to the whole contact.
                 measure(target, trigger: trigger+"_impact_window_of_\(index)", withinImpactWindow: true)
@@ -674,19 +899,27 @@ nonisolated struct RFAsyncPolicy {
 // or move away before they can seed a ball track. Version 1 keeps every
 // first-frame anchor for the whole take, so a ball that is already in play at
 // the first exposure poisons its own starting spot: low juggling returns there
-// every cycle and each return is rejected. Version 2 (opt-in) keeps an anchor
+// every cycle and each return is rejected. Version 2 (the default) keeps an anchor
 // only while something is actually still there: it is dropped after two
 // consecutive detector replies with no candidate at its spot, and it never
 // comes back. A ball resting on a sofa is seen on every reply and stays anchored.
+// Debug-only version 3 also releases a spot after sustained, measured motion
+// inside that radius, so a short kick need not first travel half a diameter away.
 nonisolated final class StationaryCandidateGate {
     static let signatureV2 = "|stationary-gate-v2"
+    static let signatureV3 = "|stationary-gate-motion-v3"
     static func version(arguments: [String] = ProcessInfo.processInfo.arguments) -> Int {
         #if DEBUG
         if arguments.contains("--stationary-gate-v1") { return 1 }
+        if arguments.contains("--stationary-gate-motion-v3") { return 3 }
         #endif
         return 2
     }
-    private struct Anchor { let hit: FollowHit; var absentReplies = 0 }
+    private struct Anchor {
+        let hit: FollowHit
+        var absentReplies = 0
+        var motion: [StationaryAnchorMotion.Sample] = []
+    }
     private var initial: [AsyncBallCandidate]?
     private var anchors: [Anchor] = []
     let version: Int
@@ -696,10 +929,16 @@ nonisolated final class StationaryCandidateGate {
         let scale = candidate.hit.diameter / max(1, anchor.diameter)
         return distance <= 0.5 * anchor.diameter && (0.5...2).contains(scale)
     }
-    func eligible(_ candidates: [AsyncBallCandidate]) -> [AsyncBallCandidate] {
+    private static func sample(_ hit: FollowHit, at time: Double) -> StationaryAnchorMotion.Sample {
+        .init(time: time, x: hit.center.x, y: hit.center.y,
+              width: hit.rect.width, height: hit.rect.height, score: hit.score)
+    }
+    func eligible(_ candidates: [AsyncBallCandidate], at time: Double? = nil) -> [AsyncBallCandidate] {
         guard let initial else {
             self.initial = candidates
-            anchors = candidates.map { Anchor(hit: $0.hit) }
+            anchors = candidates.map { candidate in
+                Anchor(hit: candidate.hit, motion: version >= 3 ? time.map { [Self.sample(candidate.hit, at: $0)] } ?? [] : [])
+            }
             return []
         }
         if version < 2 {
@@ -707,10 +946,22 @@ nonisolated final class StationaryCandidateGate {
         }
         // Age every anchor on this reply, then drop the ones nothing occupies.
         for index in anchors.indices {
-            let occupied = candidates.contains { Self.matches($0, anchors[index].hit) }
-            anchors[index].absentReplies = occupied ? 0 : anchors[index].absentReplies+1
+            if version < 3 {
+                let occupied = candidates.contains { Self.matches($0, anchors[index].hit) }
+                anchors[index].absentReplies = occupied ? 0 : anchors[index].absentReplies+1
+                continue
+            }
+            let occupants = candidates.filter { Self.matches($0, anchors[index].hit) }
+            anchors[index].absentReplies = occupants.isEmpty ? anchors[index].absentReplies+1 : 0
+            if occupants.count == 1, let time {
+                anchors[index].motion.append(Self.sample(occupants[0].hit, at: time))
+                anchors[index].motion = Array(anchors[index].motion.suffix(4))
+            } else {
+                // A gap or two overlapping detections cannot prove identity.
+                anchors[index].motion.removeAll()
+            }
         }
-        anchors.removeAll { $0.absentReplies >= 2 }
+        anchors.removeAll { $0.absentReplies >= 2 || (version >= 3 && StationaryAnchorMotion.confirms($0.motion)) }
         return candidates.filter { candidate in !anchors.contains { Self.matches(candidate, $0.hit) } }
     }
 }
@@ -945,6 +1196,7 @@ nonisolated final class LiveJugglingAnalysis {
             lastReport["elapsed_wall_seconds"] = uptime()-runStartUptime
             lastReport["notification_latency_ms"] = latencies
             lastReport["rechecks"] = checks
+            lastReport["contact_window_admissions"] = consumer.queue.sync { core.contactWindowEvents }
             lastReport["worker"] = worker?.statistics
             lastReport["backend"] = worker?.computeDescription
             lastReport["model"] = RFSmallModel.fp16.displayName

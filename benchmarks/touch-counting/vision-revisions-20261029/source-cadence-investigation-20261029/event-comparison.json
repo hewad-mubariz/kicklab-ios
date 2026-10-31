@@ -1,0 +1,741 @@
+[
+  {
+    "clip": "clip-a16380ba4a5b",
+    "repeat": 1,
+    "lostLegalSeconds": [
+      0.566,
+      8.403,
+      18.25
+    ],
+    "gainedLegalSeconds": [
+      3.368
+    ],
+    "lostDecisions": [
+      {
+        "label_id": "legal-1",
+        "time_s": 0.566,
+        "contact": "visible_legal",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "legal-18",
+        "time_s": 8.403,
+        "contact": "visible_legal",
+        "decision": {
+          "frameIndex": 252,
+          "time": 8.403,
+          "rejection": "groundBounce",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.53955078125,
+              "y": 0.490478515625,
+              "width": 0.3662109375,
+              "height": 0.576171875
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "legal-37",
+        "time_s": 18.25,
+        "contact": "visible_legal",
+        "decision": {
+          "frameIndex": 548,
+          "time": 18.308,
+          "rejection": "disallowedBodyContact",
+          "handConfirmed": false,
+          "bodyFailure": "handsNearBall",
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.4951171875,
+              "y": 0.654296875,
+              "width": 0.258056640625,
+              "height": 0.359375
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      }
+    ],
+    "gainedPreviousDecisions": [
+      {
+        "label_id": "legal-7",
+        "time_s": 3.368,
+        "contact": "visible_legal",
+        "decision": {
+          "frameIndex": 101,
+          "time": 3.368,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.5986328125,
+              "y": 0.462158203125,
+              "width": 0.450439453125,
+              "height": 0.58740234375
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      }
+    ]
+  },
+  {
+    "clip": "clip-a16380ba4a5b",
+    "repeat": 2,
+    "lostLegalSeconds": [
+      0.566,
+      8.403,
+      18.25
+    ],
+    "gainedLegalSeconds": [
+      3.368
+    ],
+    "lostDecisions": [
+      {
+        "label_id": "legal-1",
+        "time_s": 0.566,
+        "contact": "visible_legal",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "legal-18",
+        "time_s": 8.403,
+        "contact": "visible_legal",
+        "decision": {
+          "frameIndex": 252,
+          "time": 8.403,
+          "rejection": "groundBounce",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.53955078125,
+              "y": 0.490478515625,
+              "width": 0.3662109375,
+              "height": 0.576171875
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "legal-37",
+        "time_s": 18.25,
+        "contact": "visible_legal",
+        "decision": {
+          "frameIndex": 548,
+          "time": 18.308,
+          "rejection": "disallowedBodyContact",
+          "handConfirmed": false,
+          "bodyFailure": "handsNearBall",
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.4951171875,
+              "y": 0.654296875,
+              "width": 0.258056640625,
+              "height": 0.359375
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      }
+    ],
+    "gainedPreviousDecisions": [
+      {
+        "label_id": "legal-7",
+        "time_s": 3.368,
+        "contact": "visible_legal",
+        "decision": {
+          "frameIndex": 101,
+          "time": 3.368,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.5986328125,
+              "y": 0.462158203125,
+              "width": 0.450439453125,
+              "height": 0.58740234375
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      }
+    ]
+  },
+  {
+    "clip": "clip-618a1688fcc6",
+    "repeat": 1,
+    "lostLegalSeconds": [],
+    "gainedLegalSeconds": [],
+    "lostDecisions": [],
+    "gainedPreviousDecisions": []
+  },
+  {
+    "clip": "clip-618a1688fcc6",
+    "repeat": 2,
+    "lostLegalSeconds": [],
+    "gainedLegalSeconds": [],
+    "lostDecisions": [],
+    "gainedPreviousDecisions": []
+  },
+  {
+    "clip": "low",
+    "repeat": 1,
+    "lostLegalSeconds": [
+      24.65,
+      31.71,
+      46.6,
+      51.84,
+      52.48,
+      56.26,
+      58.08
+    ],
+    "gainedLegalSeconds": [
+      1.66,
+      4.06,
+      12.72,
+      18.13,
+      23.11,
+      37.43,
+      57.15,
+      57.44
+    ],
+    "lostDecisions": [
+      {
+        "label_id": "e081",
+        "time_s": 24.65,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e104",
+        "time_s": 31.71,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e153",
+        "time_s": 46.6,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1398,
+          "time": 46.6,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.404541015625,
+              "y": 0.4326171875,
+              "width": 0.486083984375,
+              "height": 0.513671875
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e170",
+        "time_s": 51.84,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1554,
+          "time": 51.8,
+          "rejection": "disallowedBodyContact",
+          "handConfirmed": false,
+          "bodyFailure": "missingBall",
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.345458984375,
+              "y": 0.458740234375,
+              "width": 0.59033203125,
+              "height": 0.59375
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e172",
+        "time_s": 52.48,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1571,
+          "time": 52.4,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.322509765625,
+              "y": 0.4658203125,
+              "width": 0.515625,
+              "height": 0.583984375
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e184",
+        "time_s": 56.26,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1685,
+          "time": 56.2,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.439453125,
+              "y": 0.5107421875,
+              "width": 0.487548828125,
+              "height": 0.59765625
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e190",
+        "time_s": 58.08,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1739,
+          "time": 58.0,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.324462890625,
+              "y": 0.486083984375,
+              "width": 0.498046875,
+              "height": 0.572265625
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      }
+    ],
+    "gainedPreviousDecisions": [
+      {
+        "label_id": "e006",
+        "time_s": 1.66,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e014",
+        "time_s": 4.06,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e042",
+        "time_s": 12.72,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e060",
+        "time_s": 18.13,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 542,
+          "time": 18.066,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.55517578125,
+              "y": 0.447265625,
+              "width": 0.68701171875,
+              "height": 0.56689453125
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e076",
+        "time_s": 23.11,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 693,
+          "time": 23.1,
+          "rejection": "disallowedBodyContact",
+          "handConfirmed": false,
+          "bodyFailure": "missingBall",
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.482177734375,
+              "y": 0.375,
+              "width": 0.392822265625,
+              "height": 0.491455078125
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e123",
+        "time_s": 37.43,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1123,
+          "time": 37.433,
+          "rejection": "unresolvedLowContact",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.487060546875,
+              "y": 0.3486328125,
+              "width": 0.28662109375,
+              "height": 0.388916015625
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e187",
+        "time_s": 57.15,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1712,
+          "time": 57.066,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.351318359375,
+              "y": 0.51513671875,
+              "width": 0.56103515625,
+              "height": 0.59033203125
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e188",
+        "time_s": 57.44,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1722,
+          "time": 57.4,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.338623046875,
+              "y": 0.501953125,
+              "width": 0.53076171875,
+              "height": 0.564453125
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      }
+    ]
+  },
+  {
+    "clip": "low",
+    "repeat": 2,
+    "lostLegalSeconds": [
+      19.39,
+      24.65,
+      36.54,
+      41.66,
+      56.26,
+      58.08
+    ],
+    "gainedLegalSeconds": [
+      1.66,
+      4.06,
+      12.72,
+      18.13,
+      23.11,
+      37.43,
+      57.15,
+      57.44
+    ],
+    "lostDecisions": [
+      {
+        "label_id": "e064",
+        "time_s": 19.39,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e081",
+        "time_s": 24.65,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e120",
+        "time_s": 36.54,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e137",
+        "time_s": 41.66,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e184",
+        "time_s": 56.26,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1686,
+          "time": 56.2,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.439453125,
+              "y": 0.5107421875,
+              "width": 0.487548828125,
+              "height": 0.59765625
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e190",
+        "time_s": 58.08,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      }
+    ],
+    "gainedPreviousDecisions": [
+      {
+        "label_id": "e006",
+        "time_s": 1.66,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e014",
+        "time_s": 4.06,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e042",
+        "time_s": 12.72,
+        "contact": "legal_leg",
+        "decision": null,
+        "stage": "no_nearby_candidate"
+      },
+      {
+        "label_id": "e060",
+        "time_s": 18.13,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 542,
+          "time": 18.066,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.55517578125,
+              "y": 0.447265625,
+              "width": 0.68701171875,
+              "height": 0.56689453125
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e076",
+        "time_s": 23.11,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 693,
+          "time": 23.1,
+          "rejection": "disallowedBodyContact",
+          "handConfirmed": false,
+          "bodyFailure": "missingBall",
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.482177734375,
+              "y": 0.375,
+              "width": 0.392822265625,
+              "height": 0.491455078125
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e123",
+        "time_s": 37.43,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1123,
+          "time": 37.433,
+          "rejection": "unresolvedLowContact",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.487060546875,
+              "y": 0.3486328125,
+              "width": 0.28662109375,
+              "height": 0.388916015625
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e187",
+        "time_s": 57.15,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1712,
+          "time": 57.066,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.351318359375,
+              "y": 0.51513671875,
+              "width": 0.56103515625,
+              "height": 0.59033203125
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      },
+      {
+        "label_id": "e188",
+        "time_s": 57.44,
+        "contact": "legal_leg",
+        "decision": {
+          "frameIndex": 1722,
+          "time": 57.4,
+          "rejection": "amplitudeTooSmall",
+          "handConfirmed": false,
+          "player": {
+            "state": "locked",
+            "id": 1,
+            "box": {
+              "x": 0.338623046875,
+              "y": 0.501953125,
+              "width": 0.53076171875,
+              "height": 0.564453125
+            },
+            "observed": true,
+            "peopleCount": 1
+          }
+        },
+        "stage": "rejected_candidate"
+      }
+    ]
+  }
+]

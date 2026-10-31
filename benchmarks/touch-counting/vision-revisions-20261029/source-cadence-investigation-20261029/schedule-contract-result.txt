@@ -1,0 +1,1 @@
+PASS: source-timestamp schedule; monotonic input; fixed nominal budget; no catch-up; busy slots do not shift phase; thermal stop/rate change; opt-in only

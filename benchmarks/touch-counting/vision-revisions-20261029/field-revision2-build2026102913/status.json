@@ -1,0 +1,55 @@
+{
+  "admitted_frames" : 436,
+  "count" : 24,
+  "elapsed_seconds" : 14.845643666667456,
+  "expected_end_seconds" : 14.515000000000001,
+  "last_source_seconds" : 14.506666666666666,
+  "late_source_skips" : 0,
+  "mask_frames" : 130,
+  "memory_mib" : 141.89265441894531,
+  "mode" : "paced",
+  "poseTiming" : {
+    "calls" : 334,
+    "empty" : 0,
+    "errors" : 0,
+    "maximumMS" : 71.889458333316725,
+    "totalMS" : 3315.2760833545472
+  },
+  "processed_frames" : 436,
+  "source_frames" : 1741,
+  "state" : "completed",
+  "thermal" : 0,
+  "trace_replay_exact" : true,
+  "track_frames" : 374,
+  "updated" : "2026-10-29T19:25:06Z",
+  "visionRevisions" : {
+    "bodyPoseImplementation" : "Swift revision2",
+    "integratedHandDetection" : false,
+    "legacyBodyDefault" : 1,
+    "legacyBodySelected" : 1,
+    "legacyBodySupported" : [
+      1
+    ],
+    "legacyHandSelected" : 1,
+    "legacyHandSupported" : [
+      1
+    ],
+    "objectTrackingSelected" : 1,
+    "objectTrackingSupported" : [
+      1,
+      2
+    ],
+    "swiftBody3DSupported" : [
+      "revision1"
+    ],
+    "swiftBodySupported" : [
+      "revision2"
+    ],
+    "swiftHandSupported" : [
+      "revision1"
+    ],
+    "swiftTrackerSupported" : [
+      "revision2"
+    ]
+  }
+}

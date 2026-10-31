@@ -1,0 +1,171 @@
+{
+  "device": "iPhone11 Pro Max",
+  "build": "2026102912 debug diagnostic; no counter-rule changes",
+  "frameCount": 9,
+  "measuredRequests": 216,
+  "scope": "Fixed upright source images, nine deliberately selected positive/negative contact frames;27 calls per arm per size;3 repeats with rotated order. Not a representative accuracy benchmark or full concurrent pipeline test. Two warmups per arm per size excluded.",
+  "timings": [
+    {
+      "edge": 512,
+      "arm": "legacy",
+      "n": 27,
+      "meanMS": 15.31,
+      "medianMS": 14.99,
+      "p95MS": 17.68,
+      "maxMS": 19.85,
+      "empty": 0,
+      "detectedHands": 0,
+      "thermal": [
+        0
+      ]
+    },
+    {
+      "edge": 512,
+      "arm": "revision2_bridge",
+      "n": 27,
+      "meanMS": 43.87,
+      "medianMS": 45.02,
+      "p95MS": 52.12,
+      "maxMS": 54.3,
+      "empty": 6,
+      "detectedHands": 0,
+      "thermal": [
+        0
+      ]
+    },
+    {
+      "edge": 512,
+      "arm": "revision2_native",
+      "n": 27,
+      "meanMS": 40.08,
+      "medianMS": 40.15,
+      "p95MS": 48.89,
+      "maxMS": 49.25,
+      "empty": 6,
+      "detectedHands": 0,
+      "thermal": [
+        0
+      ]
+    },
+    {
+      "edge": 512,
+      "arm": "revision2_hands",
+      "n": 27,
+      "meanMS": 47.69,
+      "medianMS": 44.73,
+      "p95MS": 66.19,
+      "maxMS": 75.17,
+      "empty": 6,
+      "detectedHands": 33,
+      "thermal": [
+        0
+      ]
+    },
+    {
+      "edge": 768,
+      "arm": "legacy",
+      "n": 27,
+      "meanMS": 15.27,
+      "medianMS": 14.99,
+      "p95MS": 17.63,
+      "maxMS": 17.79,
+      "empty": 0,
+      "detectedHands": 0,
+      "thermal": [
+        0
+      ]
+    },
+    {
+      "edge": 768,
+      "arm": "revision2_bridge",
+      "n": 27,
+      "meanMS": 43.94,
+      "medianMS": 43.7,
+      "p95MS": 53.68,
+      "maxMS": 55.66,
+      "empty": 12,
+      "detectedHands": 0,
+      "thermal": [
+        0
+      ]
+    },
+    {
+      "edge": 768,
+      "arm": "revision2_native",
+      "n": 27,
+      "meanMS": 40.25,
+      "medianMS": 38.89,
+      "p95MS": 48.74,
+      "maxMS": 50.41,
+      "empty": 12,
+      "detectedHands": 0,
+      "thermal": [
+        0
+      ]
+    },
+    {
+      "edge": 768,
+      "arm": "revision2_hands",
+      "n": 27,
+      "meanMS": 46.49,
+      "medianMS": 46.43,
+      "p95MS": 55.95,
+      "maxMS": 56.48,
+      "empty": 12,
+      "detectedHands": 27,
+      "thermal": [
+        0
+      ]
+    }
+  ],
+  "bodyOutputChecks": [
+    {
+      "edge": 512,
+      "comparison": "revision2_bridge versus native",
+      "pairedRows": 27,
+      "identicalBodyOutputs": 27
+    },
+    {
+      "edge": 512,
+      "comparison": "revision2_hands versus native",
+      "pairedRows": 27,
+      "identicalBodyOutputs": 27
+    },
+    {
+      "edge": 768,
+      "comparison": "revision2_bridge versus native",
+      "pairedRows": 27,
+      "identicalBodyOutputs": 27
+    },
+    {
+      "edge": 768,
+      "comparison": "revision2_hands versus native",
+      "pairedRows": 27,
+      "identicalBodyOutputs": 27
+    }
+  ],
+  "emptyModernImages": {
+    "512": [
+      "clip-a16380ba4a5b-18250.png",
+      "clip-a16380ba4a5b-20176.png"
+    ],
+    "768": [
+      "clip-618a1688fcc6-5602.png",
+      "clip-618a1688fcc6-5702.png",
+      "clip-a16380ba4a5b-18250.png",
+      "clip-a16380ba4a5b-20176.png"
+    ]
+  },
+  "interpretation": [
+    "Body outputs identical for direct async and bridged revision2 in all54 pairs. No adapter-coordinate corruption detected on selected inputs.",
+    "At512px revision2 direct40.08ms vsbridge43.87ms; bridge adds3.79ms on average. Legacy15.31ms. Most added processing cost remains without the bridge.",
+    "Holistic hands return observations on7/9selected512px images; body landmarks exactly match body-only requests. Enabling the flag alone cannot fix downstream wrist-based vetoes because those rules must consume actual hand evidence.",
+    "Revision2 has no pose on2/9selected512px images and4/9at768px; old has poses on9/9at both. Larger input is not automatically better. These selected difficult images cannot estimate population pose accuracy.",
+    "Recorded earlier iPhone11 live-paced failure at nominal is a throughput limit, not lack of revision2 API support."
+  ],
+  "nextChangesToValidate": [
+    "Separate wrist proximity from confirmed hand contact. Evaluate associated hand observations only for ambiguous contacts, retaining actual hand/holding and ground rejection. Keep IMG8874 gains and require correction of normal4 foot rejects and IMG8606 false ground before promotion.",
+    "Give pose inference a bounded candidate-focused workload, reuse cached timestamps, and profile concurrent RF inference. Native async alone is insufficient based on current benchmark. Do not merely enlarge the32-item queue or drop contact frames without accuracy checks.",
+    "Check coordinate-labelled body/hand overlays and model-specific confidence calibration on fixed source windows, then rerun the frozen20-clip corpus and supplemental cases. Validate iPhone11 separately; retain old default until successful."
+  ]
+}

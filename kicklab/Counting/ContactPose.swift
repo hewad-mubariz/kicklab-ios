@@ -52,14 +52,14 @@ nonisolated struct BodyPose: Sendable {
     var landmarks: [BodyJoint: PoseLandmark] = [:]
 }
 
-nonisolated struct ContactPoseSample: Sendable {
+nonisolated struct ContactPoseSample: Codable, Equatable, Sendable {
     let timestampMs: Int
     let ball: PosePoint
     let width, height, confidence, imageAspect: Double
     let joints: [BodyJoint: PosePoint]
 }
 
-nonisolated struct FootPoseSample: Sendable {
+nonisolated struct FootPoseSample: Codable, Equatable, Sendable {
     let pose: ContactPoseSample
     /// Keep observed confidence, including weak ankles used only with corroboration.
     let ankles: [BodySide: PoseLandmark]

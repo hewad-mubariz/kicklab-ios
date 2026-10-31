@@ -1,0 +1,105 @@
+IMPACT EVIDENCE DELIVERY — IPHONE 17, 30 OCTOBER 2026
+
+STATUS: Explicit debug experiments only. No main-app, default field profile or TestFlight promotion. Counting, body/hand/holding/ground thresholds and pose revision are unchanged in this study. Earlier compact-candidate and floor-margin experiments remain off.
+
+DECISION: Do not promote any of these four scheduling prototypes. The final budget-only pair keeps low at161 and IMG8874 at24; IMG8606 improves33->35 but loses the12.505s legal contact, and raw-juggling stays7 while trading5.60s for4.98s. This has not demonstrated reliable recovery while preserving existing legal touches. No additional labelled false counts or unmatched counts appeared in these four-clip comparisons; the existing IMG8606 false count remains in the final pair. This is not a complete ground-bounce regression certification.
+
+CONFIRMED PROBLEM: When the single RF worker refuses a gap retry because it is busy, the ordinary schedule spends its 300 ms cooldown despite performing no retry. The prior retry-on-admission experiment already addressed later opportunities but exposed false ground counts; it was not enabled here. This study instead reserves the SAME requested source frame briefly, with no new inference queue or substituted exposure.
+
+PROTOTYPES:
+1. Build2026103001 / --rf-reserved-gap-v1: one pending original frame after busy admission, maximum 50 ms wait and the existing 250 ms start/backlog limit. Score >=0.7, identity gate and 400 ms result deadline remain. Actual admitted work owns the cooldown.
+2. Build2026103002 / --rf-reserved-gap-v2: newly admitted reserved retries leave the existing regular timing clock unchanged. Ordinary non-reserved retries and regular admission retain their established behavior; this is not a source-clock grid.
+3. Build2026103003 / --rf-reserved-gap-v3: retain version2 and yield additional overdue tracking work after an 8 ms processing slice. Always process at least one frame; a Vision call cannot be preempted, so this is a soft budget, not a maximum per-call guarantee. Keep the existing 16-frame tracking buffer, 32-frame counter queue and one RF model/worker. Both arms record drain duration and frame count.
+
+4. Build2026103004 / --rf-drain-budget-v1: isolate the catch-up budget with the ORIGINAL gap retry and regular scheduling rules. No reserved retry is admitted in this arm. The result-directory name reserved is retained by the harness, but the verified reservedImpactGap flag is false and trackingDrainBudget is true.
+
+WHY THE THIRD PROTOTYPE EXISTS: In version2 low footage, a reserved retry at 19.800 s is followed by a burst of overdue frames. Individual processing costs include 11.5,21.5,8.1,7.5,16.6,6.1,5.8 ms; the source frame at 20.167 s is then omitted. Similar new gaps appear at 45.633 and 51.933 s. Preserving only the regular timer does not prevent this catch-up burst. The experiment tests whether yielding that work protects capture ingestion.
+
+FRESH PAIRS — legal contacts; known false and unmatched counts reported separately:
+Prototype 1: 8 completed runs.
+  clip-618a1688fcc6 repeat 1: legal 24 -> 23, false 0 -> 0, unmatched 0 -> 0; gained []; lost [7.39]; reserved 1, used 1, expired 0.
+  clip-a16380ba4a5b repeat 1: legal 33 -> 33, false 1 -> 1, unmatched 0 -> 0; gained [3.368]; lost [12.505]; reserved 4, used 4, expired 5.
+  low repeat 1: legal 161 -> 159, false 0 -> 0, unmatched 0 -> 0; gained [23.11, 37.43, 45.65]; lost [24.65, 34.07, 36.54, 45.97, 58.08]; reserved 5, used 5, expired 3.
+  raw-juggling repeat 1: legal 7 -> 5, false 0 -> 0, unmatched 0 -> 0; gained []; lost [4.98, 5.6]; reserved 7, used 2, expired 0.
+Prototype 2: 8 completed runs.
+  clip-618a1688fcc6 repeat 1: legal 24 -> 23, false 0 -> 0, unmatched 0 -> 0; gained []; lost [7.39]; reserved 1, used 1, expired 0.
+  clip-a16380ba4a5b repeat 1: legal 36 -> 32, false 1 -> 0, unmatched 0 -> 0; gained []; lost [3.368, 12.505, 18.25, 18.875]; reserved 5, used 5, expired 5.
+  low repeat 1: legal 161 -> 160, false 0 -> 0, unmatched 0 -> 0; gained [23.11, 37.43, 45.65, 57.15, 57.44]; lost [24.65, 34.07, 36.54, 45.97, 51.84, 58.08]; reserved 5, used 5, expired 4.
+  raw-juggling repeat 1: legal 5 -> 7, false 0 -> 0, unmatched 0 -> 0; gained [4.98, 5.6]; lost []; reserved 5, used 1, expired 0.
+Prototype 3: 8 completed runs.
+  clip-618a1688fcc6 repeat 1: legal 24 -> 24, false 0 -> 0, unmatched 0 -> 0; gained []; lost []; reserved 1, used 1, expired 0.
+  clip-a16380ba4a5b repeat 1: legal 35 -> 33, false 1 -> 1, unmatched 0 -> 0; gained [3.368]; lost [12.505, 18.25, 18.875]; reserved 7, used 7, expired 5.
+  low repeat 1: legal 159 -> 162, false 0 -> 0, unmatched 0 -> 0; gained [31.71, 36.54, 38.65, 46.6, 46.91, 57.15, 57.44]; lost [28.06, 37.43, 51.84, 58.08]; reserved 6, used 6, expired 5.
+  raw-juggling repeat 1: legal 6 -> 8, false 0 -> 0, unmatched 0 -> 0; gained [5.6, 6.62, 8.1]; lost [4.98]; reserved 5, used 2, expired 0.
+Prototype 4: 8 completed runs.
+  clip-618a1688fcc6 repeat 1: legal 24 -> 24, false 0 -> 0, unmatched 0 -> 0; gained []; lost []; reserved 0, used 0, expired 0.
+  clip-a16380ba4a5b repeat 1: legal 33 -> 35, false 1 -> 1, unmatched 0 -> 0; gained [3.368, 18.25, 18.875]; lost [12.505]; reserved 0, used 0, expired 0.
+  low repeat 1: legal 161 -> 161, false 0 -> 0, unmatched 0 -> 0; gained []; lost []; reserved 0, used 0, expired 0.
+  raw-juggling repeat 1: legal 7 -> 7, false 0 -> 0, unmatched 0 -> 0; gained [4.98]; lost [5.6]; reserved 0, used 0, expired 0.
+
+REPEATABILITY OF THE COMPARATOR:
+  clip-618a1688fcc6: experiment-off legal counts [24, 24, 24, 24], range 24–24. These runs share the existing revision2 counting rules; they are not App Store/legacy comparisons.
+  clip-a16380ba4a5b: experiment-off legal counts [33, 36, 35, 33], range 33–36. These runs share the existing revision2 counting rules; they are not App Store/legacy comparisons.
+  low: experiment-off legal counts [161, 161, 159, 161], range 159–161. These runs share the existing revision2 counting rules; they are not App Store/legacy comparisons.
+  raw-juggling: experiment-off legal counts [7, 5, 6, 7], range 5–7. These runs share the existing revision2 counting rules; they are not App Store/legacy comparisons.
+
+INTERPRETATION: A gained/lost label identifies a difference between two fresh executions, not proof that the experimental flag alone caused that individual difference. The comparator itself varies as detector scheduling shifts. A higher total can conceal lost legal contacts. These single pairs are sufficient to withhold promotion when preservation is unproven, but do not establish statistical superiority or inferiority.
+
+REFERENCE QUALITY: Counts use the existing manually reviewed development labels, including supplemental IMG8606/IMG8874 references. They are not a new independent ground-truth audit or an accuracy percentage for all footage.
+
+FRAME DELIVERY AND PERFORMANCE:
+v1 baseline clip-618a1688fcc6 r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 141/6, pose calls 332 at 10.07 ms mean, frame latency median 208.80079166818177, notification median 524.5821666691918, max drain None, max frames/drain None, budget yields None.
+v1 baseline clip-a16380ba4a5b r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 194/13, pose calls 507 at 9.78 ms mean, frame latency median 210.9843750076834, notification median 520.4812708312529, max drain None, max frames/drain None, budget yields None.
+v1 baseline low r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 592/2, pose calls 1672 at 11.54 ms mean, frame latency median 211.3448750023963, notification median 502.9397083404474, max drain None, max frames/drain None, budget yields None.
+v1 baseline raw-juggling r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 112/6, pose calls 70 at 11.00 ms mean, frame latency median 205.29612500104122, notification median 599.97224999842, max drain None, max frames/drain None, budget yields None.
+v1 reserved clip-618a1688fcc6 r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 139/9, pose calls 337 at 9.94 ms mean, frame latency median 208.86416666326113, notification median 524.5662499972386, max drain None, max frames/drain None, budget yields None.
+v1 reserved clip-a16380ba4a5b r1: source skips 1, late RF 0, overflow 0, thermal 0, regular/gap RF 188/17, pose calls 500 at 10.22 ms mean, frame latency median 211.38133333442966, notification median 532.9409166652185, max drain None, max frames/drain None, budget yields None.
+v1 reserved low r1: source skips 3, late RF 0, overflow 0, thermal 0, regular/gap RF 587/8, pose calls 1668 at 11.48 ms mean, frame latency median 211.26433333120076, notification median 506.2179583357647, max drain None, max frames/drain None, budget yields None.
+v1 reserved raw-juggling r1: source skips 3, late RF 0, overflow 0, thermal 0, regular/gap RF 107/10, pose calls 67 at 11.58 ms mean, frame latency median 206.11829166591633, notification median 506.439624993247, max drain None, max frames/drain None, budget yields None.
+v2 baseline clip-618a1688fcc6 r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 141/6, pose calls 334 at 9.93 ms mean, frame latency median 208.8584999946761, notification median 524.0090833328431, max drain None, max frames/drain None, budget yields None.
+v2 baseline clip-a16380ba4a5b r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 196/11, pose calls 496 at 10.39 ms mean, frame latency median 211.28991667501396, notification median 527.742958339164, max drain None, max frames/drain None, budget yields None.
+v2 baseline low r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 592/2, pose calls 1672 at 10.26 ms mean, frame latency median 209.66916666657198, notification median 486.7272083312855, max drain None, max frames/drain None, budget yields None.
+v2 baseline raw-juggling r1: source skips 4, late RF 0, overflow 0, thermal 0, regular/gap RF 112/4, pose calls 54 at 10.88 ms mean, frame latency median 205.05329166189767, notification median 587.0606249942211, max drain None, max frames/drain None, budget yields None.
+v2 reserved clip-618a1688fcc6 r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 140/9, pose calls 334 at 10.05 ms mean, frame latency median 208.8847083359724, notification median 524.6350416697096, max drain None, max frames/drain None, budget yields None.
+v2 reserved clip-a16380ba4a5b r1: source skips 2, late RF 0, overflow 0, thermal 0, regular/gap RF 187/20, pose calls 487 at 9.90 ms mean, frame latency median 211.27591667027446, notification median 532.5875833357859, max drain None, max frames/drain None, budget yields None.
+v2 reserved low r1: source skips 3, late RF 0, overflow 0, thermal 0, regular/gap RF 589/8, pose calls 1661 at 10.36 ms mean, frame latency median 209.91883333044825, notification median 491.48435416517896, max drain None, max frames/drain None, budget yields None.
+v2 reserved raw-juggling r1: source skips 3, late RF 0, overflow 0, thermal 0, regular/gap RF 111/10, pose calls 72 at 10.52 ms mean, frame latency median 205.99083333218005, notification median 539.3999583307886, max drain None, max frames/drain None, budget yields None.
+v3 baseline clip-618a1688fcc6 r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 141/6, pose calls 334 at 9.93 ms mean, frame latency median 208.92549999553012, notification median 526.2655833344907, max drain 37.10787499585422, max frames/drain 4, budget yields 0.
+v3 baseline clip-a16380ba4a5b r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 195/12, pose calls 494 at 10.06 ms mean, frame latency median 210.71120833221357, notification median 522.6290833351377, max drain 40.16120832966408, max frames/drain 4, budget yields 0.
+v3 baseline low r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 593/2, pose calls 1661 at 10.32 ms mean, frame latency median 209.72879166947678, notification median 489.64250000717584, max drain 23.858624997956213, max frames/drain 3, budget yields 0.
+v3 baseline raw-juggling r1: source skips 3, late RF 0, overflow 0, thermal 0, regular/gap RF 111/5, pose calls 73 at 10.35 ms mean, frame latency median 204.91720833524596, notification median 539.2982500008657, max drain 41.657999994640704, max frames/drain 4, budget yields 0.
+v3 reserved clip-618a1688fcc6 r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 141/7, pose calls 333 at 9.90 ms mean, frame latency median 208.75641666498268, notification median 519.0573124970833, max drain 30.552041665941942, max frames/drain 2, budget yields 2.
+v3 reserved clip-a16380ba4a5b r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 191/17, pose calls 488 at 9.99 ms mean, frame latency median 211.99704166065203, notification median 528.0020833295712, max drain 26.471250006579794, max frames/drain 3, budget yields 59.
+v3 reserved low r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 590/8, pose calls 1664 at 10.32 ms mean, frame latency median 210.0641249999171, notification median 490.50822916525067, max drain 25.632749995565973, max frames/drain 4, budget yields 32.
+v3 reserved raw-juggling r1: source skips 1, late RF 0, overflow 0, thermal 0, regular/gap RF 110/12, pose calls 92 at 10.23 ms mean, frame latency median 207.46391666762065, notification median 550.9847708368325, max drain 26.741125002445187, max frames/drain 3, budget yields 5.
+v4 baseline clip-618a1688fcc6 r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 141/6, pose calls 334 at 9.80 ms mean, frame latency median 208.85779166565044, notification median 523.9109375023108, max drain 37.816583331732545, max frames/drain 4, budget yields 0.
+v4 baseline clip-a16380ba4a5b r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 193/13, pose calls 510 at 9.96 ms mean, frame latency median 210.92308333027177, notification median 525.9056874972011, max drain 41.22354167338926, max frames/drain 5, budget yields 0.
+v4 baseline low r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 592/2, pose calls 1672 at 10.40 ms mean, frame latency median 209.70324999507284, notification median 486.96779166784836, max drain 25.19787500204984, max frames/drain 3, budget yields 0.
+v4 baseline raw-juggling r1: source skips 1, late RF 0, overflow 0, thermal 0, regular/gap RF 109/8, pose calls 84 at 10.41 ms mean, frame latency median 205.8279583361582, notification median 535.4797916648677, max drain 40.91320832958445, max frames/drain 4, budget yields 0.
+v4 reserved clip-618a1688fcc6 r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 141/6, pose calls 332 at 9.98 ms mean, frame latency median 208.75895833887625, notification median 519.6068541723362, max drain 25.834208332526032, max frames/drain 2, budget yields 1.
+v4 reserved clip-a16380ba4a5b r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 196/10, pose calls 489 at 10.33 ms mean, frame latency median 211.08162499876926, notification median 538.9046041662514, max drain 26.7091666610213, max frames/drain 2, budget yields 7.
+v4 reserved low r1: source skips 0, late RF 0, overflow 0, thermal 0, regular/gap RF 592/2, pose calls 1672 at 10.31 ms mean, frame latency median 209.69429166871123, notification median 487.5273333338555, max drain 27.647041672025807, max frames/drain 3, budget yields 0.
+v4 reserved raw-juggling r1: source skips 2, late RF 0, overflow 0, thermal 0, regular/gap RF 110/7, pose calls 86 at 10.51 ms mean, frame latency median 205.22675000393065, notification median 554.6940416666912, max drain 27.477749994432088, max frames/drain 3, budget yields 3.
+
+SAME-SOURCE AUDIT: Across the targeted impact windows, 82 source timestamps were measured more than once; RF candidate-count disagreements 0, accepted-box disagreements 0. This compares only actually measured frames, not the entire corpus or unobserved frames. It does not audit all pose outputs.
+Raw-juggling example: RF repeatedly finds no candidate at 4.368 s and finds the ball at 4.402 s; neighboring 4.335 and 4.435 s measurements can also be empty. A sampling phase that misses 4.402 s can therefore lose a visible kick. A busy retry fix cannot guarantee a positive model result on its reserved frame. The same video contains visible motion blur; this is not solely a body-pose request-time issue.
+
+SEPARATE POSE-EVIDENCE REPEATABILITY FINDING:
+  v1 clip-a16380ba4a5b: 1/482 common timestamps have different selected ankle records; aggregate raw empty-pose calls baseline/candidate [34, 35].
+  v2 clip-a16380ba4a5b: 26/458 common timestamps have different selected ankle records; aggregate raw empty-pose calls baseline/candidate [1, 35].
+  v3 clip-a16380ba4a5b: 29/472 common timestamps have different selected ankle records; aggregate raw empty-pose calls baseline/candidate [1, 34].
+  v4 clip-a16380ba4a5b: 28/471 common timestamps have different selected ankle records; aggregate raw empty-pose calls baseline/candidate [35, 1].
+For v3 IMG8606, 29 of472 common timestamps differ, beginning17.941s: a baseline sample has two confident ankles while the candidate has none. The v4 budget-only pair reverses the aggregate empty-pose pattern (35 baseline,1 candidate), so this cannot be attributed solely to reserved retries. The other three clips show identical ankle records at their common saved timestamps in every pair.
+Input pixel hashes and raw per-frame pose counts were not saved. An empty selected ankle record can reflect missing pose, person selection or evidence preparation. Aggregate empty-call counters do not locate each raw empty result. This is not proof of an Apple model bug or identical pose input pixels.
+
+NEXT TARGETED INVESTIGATION: Preserve the actual pose input pixels/hash, raw per-frame observation count and selected-player result around17.9–19.6s of IMG8606, then repeat the exact images independently. This separates image preparation/retention, Vision request behavior and person matching before changing another counting or ground threshold. Do not weaken a hand or ground veto to compensate for missing landmarks.
+
+SOURCE TIMELINE CAVEAT: raw-juggling.mov itself has timestamps 0.000, then 1.966667,2.000,..., confirmed with ffprobe. Do not call that original 1.97 s discontinuity a pipeline-induced gap. Additional reported source skips are separate. The actual mid-clip low-video gaps listed above are new admitted-frame omissions.
+
+VALIDATION: Build logs and contract results are retained per prototype. Each completed phone run validates build, explicit flags, source SHA, end coverage, complete exact counter replay, exported touches/report count and quality status. Existing counting source files and default feature selections were not changed in this turn. Both arms include the same new diagnostic instrumentation. Python tools compile; whitespace checks pass.
+
+LIMITS: iPhone17 Pro Max only, nominal/fair admission, paced original-video replays rather than new live camera recordings. Not a legacy-versus-revision2 benchmark, not an iPhone11 or long-session thermal certification. Frame counts and raw RF recoveries are not themselves legal-touch gains. Fresh pairs still require event-level interpretation when detector phases differ. No wider corpus accuracy percentage is claimed.
+
+PHONE: Field build2026102913 restored and verified; revision2, existing24 flags, no experimental scheduling flags, IMG8874 preview at24 touches and position0 with outlines off.
+
+EVIDENCE: Per-version protocol/source SHA snapshots, contracts, build logs, summary.json, per-arm original-video reports/traces/labels, same-source-rf-audit.json, same-timestamp-pose-evidence.json, raw-phase-audit.json, raw-source-start.csv and raw-impact-strip.jpg.

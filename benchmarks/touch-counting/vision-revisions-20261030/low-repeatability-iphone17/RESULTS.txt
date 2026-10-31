@@ -1,0 +1,133 @@
+REVISION 2: LOW-KICK RULE REPEATABILITY — IPHONE17 — 30 OCTOBER 2026
+
+Same build and source hashes, alternating arm order. Control retains all previously tested common rules;
+both enables only directed-forefoot-v1 and observed-unarmed-turn-v1. Neither is a production default.
+
+Legal counts and known false counts are separate; higher totals do not establish better accuracy.
+
+IMG8606
+  control: legal [33, 31, 33], known false [1, 1, 1], skipped source frames [0, 0, 0], raw empty pose calls [35, 34, 35].
+  both: legal [33, 35, 35], known false [1, 1, 1], skipped source frames [0, 0, 0], raw empty pose calls [34, 1, 1].
+
+raw-juggling
+  control: legal [7, 7, 7], known false [0, 0, 0], skipped source frames [2, 2, 2], raw empty pose calls [0, 0, 0].
+  both: legal [5, 5, 5], known false [0, 0, 0], skipped source frames [0, 1, 0], raw empty pose calls [0, 0, 0].
+
+low.mov
+  control: legal [171, 170], known false [0, 0], skipped source frames [0, 0], raw empty pose calls [0, 0].
+  both: legal [171, 171], known false [0, 0], skipped source frames [0, 0], raw empty pose calls [0, 0].
+
+Per-pair legal changes:
+  IMG8606 r1: gained []; lost []; first changed ball 14140 ms.
+  IMG8606 r2: gained [0.566, 12.505, 18.25, 18.875]; lost []; first changed ball 200 ms.
+  IMG8606 r3: gained [18.25, 18.875]; lost []; first changed ball 6970 ms.
+  low.mov r1: gained []; lost []; first changed ball 52000 ms.
+  low.mov r2: gained [31.71, 36.54, 38.65]; lost [23.11, 37.43]; first changed ball 23600 ms.
+  raw-juggling r1: gained [8.1]; lost [4.43, 4.98, 6.62]; first changed ball 2100 ms.
+  raw-juggling r2: gained [8.1]; lost [4.43, 4.98, 6.62]; first changed ball 2100 ms.
+  raw-juggling r3: gained [8.1]; lost [4.43, 4.98, 6.62]; first changed ball 2100 ms.
+
+Completed 16 runs; thermal states [0]; overflow 0; late RF replies 0.
+
+Counter ablations on improved saved inputs:
+  IMG8606 r1: {"removedMs": [], "addedMs": [], "missingCallbacks": [], "changedDecisions": [], "removedDecisions": []}
+  IMG8606 r2: {"removedMs": [], "addedMs": [], "missingCallbacks": [], "changedDecisions": [], "removedDecisions": []}
+  IMG8606 r3: {"removedMs": [], "addedMs": [], "missingCallbacks": [], "changedDecisions": [], "removedDecisions": []}
+  low.mov r1: {"removedMs": [], "addedMs": [], "missingCallbacks": [], "changedDecisions": [], "removedDecisions": [{"ms": 12633, "outcome": "amplitudeTooSmall"}]}
+  low.mov r2: {"removedMs": [], "addedMs": [], "missingCallbacks": [], "changedDecisions": [], "removedDecisions": [{"ms": 12633, "outcome": "amplitudeTooSmall"}]}
+  raw-juggling r1: {"removedMs": [], "addedMs": [], "missingCallbacks": [], "changedDecisions": [], "removedDecisions": []}
+  raw-juggling r2: {"removedMs": [], "addedMs": [], "missingCallbacks": [], "changedDecisions": [], "removedDecisions": []}
+  raw-juggling r3: {"removedMs": [], "addedMs": [], "missingCallbacks": [], "changedDecisions": [], "removedDecisions": []}
+
+Ablation holds upstream inputs fixed; it cannot exclude timing feedback into the shared worker.
+Same-setting comparisons and per-contact evidence are in summary.json.
+Restored field build and verified preview.
+
+REVISION 2 REPEATABILITY: A REPLAY DEFECT CORRECTED; LIVE CONSISTENCY STILL NEEDS WORK
+
+Completed 30 valid iPhone 17 Pro Max runs: 16 alternating rule comparisons on build 2026103017,
+then 14 clock/rule comparisons on build 2026103018. All stayed nominal, with zero processing overflow,
+zero late RF replies, exact saved-counter replay and matched source hashes. One stalled preparation/replay
+attempt produced no count, was preserved under failed/, and was excluded before its successful retry.
+
+WHAT WAS CORRECTED
+The file-replay harness started its clock before duration loading and first-frame decoding finished.
+It also used Task.sleep with unspecified timing tolerance. In raw-juggling's original opening gap,
+one measured wake was 130.615 ms late, despite decoding that frame taking only 0.307 ms. That skipped four
+source frames. Another old-clock wake was 32.002 ms late: no drop, but substantial delivery jitter.
+
+The explicit --replay-precise-clock-v1 mode anchors time after the first decoded frame and requests zero
+sleep tolerance. It retains the one-frame lateness/drop limit and never catches up with stale frames.
+The corresponding first long-gap wake in the measured precise control was 1.082 ms late. All 10 precise
+replays had zero skipped source frames. Source-admission logs agree exactly with the trace's delivered
+source-frame identities. This is a DEBUG replay correction, not a camera-processing or model change.
+Zero requested tolerance remains a scheduling request, not a real-time guarantee; actual lateness is logged.
+
+COUNTER RESULTS WITH CORRECTED REPLAY CLOCK
+Counts below are matched legal contacts; known false counts are listed separately.
+                           Control            New low-kick rules       Known false
+IMG 8606, two repeats        33,32              32,32                    1 in every run
+raw-juggling, two repeats   6,7                7,7                      0
+low.mov, one pair           171                171                      0
+
+The low pair had identical tracked ball inputs and identical accepted legal contacts. Both retain
+4.633 s,54.033 s and 58.000 s. The previously proven frozen failing input remains the causal recovery
+evidence:170 ->172, recovering 54.033 s and 58.000 s without removing an accepted contact. This new low pair
+already counted those targets in control, so it provides preservation evidence, not another recovery claim.
+
+The corrected-clock raw improved runs both count 7 legal contacts. Old-clock runs of the SAME improved
+rules count 5 and 5. That shows why the earlier 7 ->5 comparison could not be read as a counting-rule regression.
+It does not prove that every count difference was caused by dropped frames: the second old-clock run
+dropped none, but had 32 ms wake jitter, and detector/retry scheduling still responds to arrival timing.
+
+REMAINING EVENT DIFFERENCES, EVEN WITH IDENTICAL DELIVERED SOURCE FRAMES
+IMG 8606 pair 1: gains 12.505 s; loses 18.25 s and 18.875 s. Pair 2: identical accepted legal contacts.
+Raw pair 1: gains 4.43 s,4.98 s,6.62 s; loses 5.6 s and 8.1 s. Pair 2: identical tracked ball inputs and legal contacts.
+Low pair: identical tracked ball inputs and legal contacts.
+The known IMG 8606 false bounce near 20.176 s remains in all comparisons. These runs did not solve it.
+
+Turning both new rules OFF on each improved saved trace changes zero accepted timestamps and requires no
+missing callbacks. In the short clips it changes no decisions at all. In low.mov it removes only the extra
+rejected 12.633 s candidate. Thus the changed fresh counts are not direct veto/acceptance flips by these two
+rules. This does not exclude small timing effects on the shared worker, and is not a no-regression certificate.
+
+WHERE THE REMAINING VARIATION OCCURS
+With corrected playback, raw pair 1's ball inputs first differ at 4.635 s. Control performed a failed retry
+on the older 4.368 s image and next ran regular detection at 4.668 s; the other arm ran regular detection at
+4.635 s. The regular clock is reset by an admitted impact-gap retry, even when that retry finds no usable ball.
+IMG 8606 pair 1 first changes ball inputs at 9.571 s after an impact-gap retry on 9.305 s: regular sampling resumes
+at 9.571 s versus 9.605 s. Shared asynchronous scheduling remains variable even with identical delivered frames.
+
+A prior paired-run example provides a complete count consequence: at 4.935 s a failed retry postponed
+regular sampling from 5.201 s to 5.235 s. The 4.901 s contact counted when the ball returned at 5.201 s, but was
+reported trackLost when it returned one frame later. Evidence is saved in retry-clock-proof.json.
+This code is shared by paced replay and live recording, so the scheduling sensitivity is not confined to
+the replay harness. These tests are original-video replays, not repeated physical camera recordings;
+they do not quantify its frequency during actual juggling.
+
+IMG 8606 also retains a separate revision 2 limitation: the raw pose request sometimes returns no person.
+Fresh runs report 1 versus 34/35 empty pose calls depending on the run. Earlier exact-image probes already
+established empty results on these images. Neither the new low-kick rules nor the replay-clock correction
+claims to repair that Vision behavior.
+
+DECISION
+Keep the two low-kick rules as isolated debug opt-ins. Use the precise replay mode for future paced
+comparisons and retain source-admission audit logs. No production default, TestFlight or iPhone 11 change.
+The next bounded app experiment should separate the regular detector clock from the old-frame retry
+clock while preserving single-worker, age and backlog limits. Do not re-enable the broader source-grid
+prototypes: earlier tests found legal-contact losses. Recheck the known low-kick and ground-negative
+fixtures before any promotion. A better total by itself is insufficient.
+
+REPRODUCTION AND EVIDENCE
+scripts/run-low-repeatability-iphone17.py --phase short / --phase low
+scripts/run-replay-clock-iphone17.py --phase short / --phase low
+scripts/summarize-low-repeatability-iphone17.py
+scripts/summarize-replay-clock-iphone17.py
+Benchmarks: RESULTS.txt, summary.json, CLOCK.txt, clock-summary.json.
+Raw source-clock diagnostics: clock-build2026103018/*/iphone17/*/source-admission.json.
+Production rules were not edited during this follow-up; build 18 changes only the explicit replay harness.
+Swift's documented clock tolerance behavior:
+https://docs.swift.org/main/documentation/swift/continuousclock/clock-implementations/
+
+PHONE RESTORED
+Verified revision 2 field build 2026102913, experimental flags absent; saved IMG8874 preview ready at 0 seconds with 24 touches and outlines off. This preview is a saved result, not a fresh import count.

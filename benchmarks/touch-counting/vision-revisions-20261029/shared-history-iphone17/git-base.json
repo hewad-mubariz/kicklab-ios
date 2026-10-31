@@ -1,0 +1,6 @@
+{
+  "branch": "codex/vision-revision-comparison",
+  "head": "468538865c4551ef0e82ab6d8b917feabedea247",
+  "sourceFiles": 346,
+  "note": "Working tree has pre-existing uncommitted improvements; source snapshot preserves Swift/config for this experiment."
+}

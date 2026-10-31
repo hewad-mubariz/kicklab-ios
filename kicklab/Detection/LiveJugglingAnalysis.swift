@@ -84,6 +84,7 @@ nonisolated final class RFAppCounterCore {
     private(set) var notificationLatencies: [Double] = []
     private var notificationEpoch = 0.0
     private var completedRecheckEvents: [[String: Any]] = []
+    private var completedContactWindowEvents: [[String: Any]] = []
     var recommendedFramesPerSecond: Double { 30 }
 
     #if DEBUG
@@ -92,6 +93,7 @@ nonisolated final class RFAppCounterCore {
 
     var isPrepared: Bool { detector != nil }
     var recheckEvents: [[String: Any]] { evidence?.events ?? completedRecheckEvents }
+    var contactWindowEvents: [[String: Any]] { evidence?.windowEvents ?? completedContactWindowEvents }
     func markFailed() { analysisFailed = true }
 
     init(counterConfig: CounterConfig = CounterConfig()) {
@@ -176,6 +178,7 @@ nonisolated final class RFAppCounterCore {
         cadence = LiveAnalysisCadence()
         notificationLatencies = []
         completedRecheckEvents = []
+        completedContactWindowEvents = []
         notificationEpoch = 0
         retainedMaskBytes = 0
         compensator.reset()
@@ -187,6 +190,7 @@ nonisolated final class RFAppCounterCore {
         let late = flush ? counter.flush() : []
         if flush { performanceMonitor.recordLiveFlush(milliseconds: (ProcessInfo.processInfo.systemUptime - flushStarted) * 1000) }
         completedRecheckEvents = evidence?.events ?? []
+        completedContactWindowEvents = evidence?.windowEvents ?? []
         for touch in late {
             notificationLatencies.append((ProcessInfo.processInfo.systemUptime-notificationEpoch)*1000-Double(touch.timestampMs))
             touchesThisRun.append(RecordedTouch(index: touch.index,

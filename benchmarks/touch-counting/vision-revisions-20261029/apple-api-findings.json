@@ -1,0 +1,57 @@
+{
+  "checked": "2026-10-29",
+  "sdk": "iPhoneOS27.1; Mac runtime26.7.2; iPhone11 runtime27.2",
+  "findings": [
+    {
+      "topic": "Body pose",
+      "currentApp": "VNDetectHumanBodyPoseRequest revision1",
+      "candidate": "DetectHumanBodyPoseRequest revision2",
+      "supported": "Legacy supports[1]; Swift supports[revision2] in checked SDK and runtimes. No revision3 exposed.",
+      "url": "https://developer.apple.com/documentation/vision/detecthumanbodyposerequest/revision-swift.enum"
+    },
+    {
+      "topic": "Ball tracking",
+      "currentApp": "VNTrackObjectRequest revision1",
+      "candidate": "VNTrackObjectRequest revision2; separately new Swift TrackObjectRequest revision2",
+      "supported": "Legacy supports[1,2]. This is a separate choice from body pose. Current comparison changes only legacy revision, retaining other tracking settings.",
+      "url": "https://developer.apple.com/documentation/vision/vntrackobjectrequestrevision2"
+    },
+    {
+      "topic": "Foot anatomy",
+      "finding": "New Swift 2D body pose retains ankles and knees but does not add heel/toe landmarks. It does not directly observe toe-to-ball contact.",
+      "url": "https://developer.apple.com/documentation/vision/humanbodyposeobservation/jointname"
+    },
+    {
+      "topic": "Hand pose",
+      "finding": "Apple announced a smaller, faster, more accurate hand model at WWDC25. Joint locations changed. Checked legacy and Swift hand APIs still expose revision1; revision number alone does not identify every OS model update. Current comparison preserves existing hand detector.",
+      "url": "https://developer.apple.com/videos/play/wwdc2025/272/"
+    },
+    {
+      "topic": "3D pose",
+      "finding": "Swift DetectHumanBodyPose3DRequest exposes revision1. Depth can help where available, but its coordinates/evidence would require a new validated integration. Not a drop-in fix for current 2D ground logic.",
+      "url": "https://developer.apple.com/documentation/vision/detecthumanbodypose3drequest/revision-swift.enum"
+    },
+    {
+      "topic": "WWDC26 Vision",
+      "finding": "The published session focuses on tap-to-segment, image inputs/tool calling for Foundation Models and Vision on watchOS. It does not announce a body pose revision3. These are not demonstrated real-time juggling contact solutions.",
+      "url": "https://developer.apple.com/videos/play/wwdc2026/237/"
+    },
+    {
+      "topic": "ARKit object tracking",
+      "finding": "Apple described reference-object tracking on iOS27. It requires prepared 3D reference objects; applicability to small rotating balls and older phones would need separate work. It is not the current VNTrackObjectRequest revision2 experiment.",
+      "url": "https://developer.apple.com/videos/play/wwdc2026/287/"
+    },
+    {
+      "topic": "ARKit body tracking",
+      "finding": "ARKit offers rear-camera 3D body tracking and foot/toe skeleton joints. A rig joint is not proof of a directly observed toe; tracking confidence and camera integration need separate validation. This is a separate AR session architecture, not a Vision revision switch. No ARKit performance/accuracy test was performed here.",
+      "url": "https://developer.apple.com/documentation/arkit/validating-a-model-for-motion-capture",
+      "configurationURL": "https://developer.apple.com/documentation/arkit/arbodytrackingconfiguration"
+    }
+  ],
+  "limits": [
+    "Latest refers to the checked public Apple documentation, installed SDK and reported runtime revisions.",
+    "Mac pose coverage is not phone count accuracy.",
+    "A higher-confidence joint is not necessarily correctly positioned.",
+    "Changing the OS can change model behavior without a new exposed revision enum."
+  ]
+}

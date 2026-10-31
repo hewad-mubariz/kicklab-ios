@@ -1,0 +1,104 @@
+POSE INPUT REPEATABILITY AND EMPTY-RESULT FALLBACK — IPHONE17, 30 OCT 2026
+
+SCOPE: iPhone17 Pro Max, iOS27.0.1, IMG_8606 3.MOV. Build2026103005 diagnostic captures and fixed-image probes; build2026103006 debug-only fallback. Main app and TestFlight unchanged.
+
+CONFIRMED: The missing selected ankle records can begin with revision2 returning ZERO raw body observations. They are not solely an active-player matching rejection or counter-rule veto. In capture1 versus capture3, common frames have identical packed BGRA bytes but different raw body results. Each original buffer is hashed immediately before and after inference. Captured bytes do not mutate during these calls. No player-selection misses occur when raw poses exist in the captured windows.
+
+CAPTURES (17.7–19.8s only, up to96 uncached calls; disk writes after replay):
+  {'repeat': 1, 'calls': 39, 'empty': 0, 'pixelsChanged': 0, 'playerSelectionMissesWithPose': 0}
+  {'repeat': 2, 'calls': 39, 'empty': 0, 'pixelsChanged': 0, 'playerSelectionMissesWithPose': 0}
+  {'repeat': 3, 'calls': 41, 'empty': 34, 'pixelsChanged': 0, 'playerSelectionMissesWithPose': 0}
+  {'repeat': 4, 'calls': 39, 'empty': 0, 'pixelsChanged': 0, 'playerSelectionMissesWithPose': 0}
+
+CROSS-RUN COMPARISONS:
+  {'repeats': [1, 2], 'common': 39, 'pixelChanges': [], 'rawPoseCountChanges': [], 'poseChanges': []}
+  {'repeats': [1, 3], 'common': 35, 'pixelChanges': [], 'rawPoseCountChanges': [17941, 18008, 18175, 18208, 18241, 18275, 18308, 18341, 18375, 18441, 18575, 18608, 18641, 18675, 18708, 18741, 18775, 18808, 18841, 18875, 18908, 18941, 19341, 19375, 19541, 19641, 19741, 19775], 'poseChanges': [17941, 18008, 18175, 18208, 18241, 18275, 18308, 18341, 18375, 18441, 18575, 18608, 18641, 18675, 18708, 18741, 18775, 18808, 18841, 18875, 18908, 18941, 19341, 19375, 19541, 19641, 19741, 19775]}
+  {'repeats': [1, 4], 'common': 39, 'pixelChanges': [], 'rawPoseCountChanges': [], 'poseChanges': []}
+
+EXACT-PIXEL PROBES:
+  {'captureRepeat': 1, 'mode': 'retained-captured-order', 'repeat': 1, 'calls': 39, 'empty': 39}
+  {'captureRepeat': 1, 'mode': 'retained-chronological', 'repeat': 1, 'calls': 39, 'empty': 39}
+  {'captureRepeat': 1, 'mode': 'fresh-per-image', 'repeat': 1, 'calls': 39, 'empty': 39}
+  {'captureRepeat': 1, 'mode': 'retained-captured-order', 'repeat': 2, 'calls': 39, 'empty': 39}
+  {'captureRepeat': 1, 'mode': 'retained-chronological', 'repeat': 2, 'calls': 39, 'empty': 39}
+  {'captureRepeat': 1, 'mode': 'fresh-per-image', 'repeat': 2, 'calls': 39, 'empty': 39}
+  {'captureRepeat': 3, 'mode': 'retained-captured-order', 'repeat': 1, 'calls': 41, 'empty': 41}
+  {'captureRepeat': 3, 'mode': 'retained-chronological', 'repeat': 1, 'calls': 41, 'empty': 41}
+  {'captureRepeat': 3, 'mode': 'fresh-per-image', 'repeat': 1, 'calls': 41, 'empty': 41}
+  {'captureRepeat': 3, 'mode': 'retained-captured-order', 'repeat': 2, 'calls': 41, 'empty': 41}
+  {'captureRepeat': 3, 'mode': 'retained-chronological', 'repeat': 2, 'calls': 41, 'empty': 41}
+  {'captureRepeat': 3, 'mode': 'fresh-per-image', 'repeat': 2, 'calls': 41, 'empty': 41}
+
+DECODED PNG / API / COMPUTE / PLAYER CROP CONTROLS:
+  png-control legacy: 8/8 calls returned a body.
+  png-control revision2_bridge: 0/8 calls returned a body.
+  png-control revision2_native: 0/8 calls returned a body.
+  png-control revision2_hands: 0/8 calls returned a body.
+  compute-control legacy-automatic: 8/8 calls returned a body.
+  compute-control revision2-automatic: 0/8 calls returned a body.
+  compute-control legacy-neuralEngine: 8/8 calls returned a body.
+  compute-control legacy-gpu: 8/8 calls returned a body.
+  compute-control legacy-cpu: 8/8 calls returned a body.
+  compute-control revision2-neuralEngine: 0/8 calls returned a body.
+  crop-control legacy: 8/8 calls returned a body.
+  crop-control revision2_bridge: 6/8 calls returned a body.
+  crop-control revision2_native: 6/8 calls returned a body.
+  crop-control revision2_hands: 6/8 calls returned a body.
+
+INTERPRETATION: Recreating the request and processing images chronologically did not fix this isolated-image failure. Direct async revision2 and the synchronous bridge both returned empty on the four PNG controls; integrated-hand revision2 also returned empty. The older body request found the player. Explicit supported Neural Engine selection did not restore revision2 detections. This establishes a raw pose-observation problem for these images; it does NOT establish the internal Apple cause of why the full pipeline sometimes succeeds on the same bytes.
+
+CROP CONTROL: Crop the same four images around the existing selected-player box, with1.5x width and1.3x height margins, clipped to the image. This is an offline image diagnostic, not a change to the live pipeline. Each revision2 arm finds a body in6/8 calls; the first repetition misses17.941s and18.241s, the second finds all four. Legacy finds8/8. This suggests subject framing is relevant, but neither cropping nor request repetition has been shown to be a stable correction. Raw crop-to-original transforms are saved in crop-map.json. No contact-count or ground-bounce claim is made from this image probe.
+
+CAPTURE LIMITS: Before/after CPU snapshots add roughly0.5–0.6ms per captured call and can shift live scheduling. Captured pixel bytes and propagated color metadata are preserved; all these captured buffers had no propagated color attachments. This is not a capture of every private framework state or all non-propagated buffer metadata. Diagnostic replay counts are not performance or promotion evidence. Exact raw-pixel probes and decoded-PNG controls deliberately test different input construction paths.
+
+API CHECK: The installed iOS27.1 SDK declares DetectHumanBodyPoseRequest as ImageProcessingRequest with revision2, and supports asynchronous CVPixelBuffer/CIImage/CGImage/Data input. Apple documents this as a body-observation request, not a guarantee of a detection for every visible person. No documented requirement to recreate the request or sort independent image calls was found. The runtime here was iOS27.0.1.
+  https://developer.apple.com/documentation/vision/detecthumanbodyposerequest
+  https://developer.apple.com/documentation/vision/imageprocessingrequest
+
+FALLBACK EXPERIMENT: --pose-empty-legacy-fallback-v1 is DEBUG only and off by default. Only an empty revision2 response with an already matchable selected player permits one legacy body inference on the same requested frame. Both requests warm before the paced clock. The returned whole pose must still pass existing player matching; normal caching and all body, hand, holding, foot and ground rules remain. No interpolation, joint splicing or lowered thresholds. Revision2-empty counters retain their original meaning; separate logs record fallback calls, matches and time.
+
+FRESH FALLBACK COMPARISONS (paired executions can still vary in detector timing):
+Completed runs: 16
+  {'clip': 'ball_in_hand', 'repeat': 1, 'legal': [0, 0], 'false': [0, 0], 'unmatched': [0, 0], 'gainedSeconds': [], 'lostSeconds': [], 'fallbackCalls': 0, 'fallbackMatched': 0, 'fallbackMS': 0, 'rawEmpty': [0, 0]}
+  {'clip': 'clip-618a1688fcc6', 'repeat': 1, 'legal': [24, 23], 'false': [0, 0], 'unmatched': [0, 0], 'gainedSeconds': [], 'lostSeconds': [7.39], 'fallbackCalls': 0, 'fallbackMatched': 0, 'fallbackMS': 0, 'rawEmpty': [0, 0]}
+  {'clip': 'clip-618a1688fcc6', 'repeat': 2, 'legal': [24, 24], 'false': [0, 0], 'unmatched': [0, 0], 'gainedSeconds': [], 'lostSeconds': [], 'fallbackCalls': 0, 'fallbackMatched': 0, 'fallbackMS': 0, 'rawEmpty': [0, 0]}
+  {'clip': 'clip-a16380ba4a5b', 'repeat': 1, 'legal': [35, 33], 'false': [1, 1], 'unmatched': [0, 0], 'gainedSeconds': [], 'lostSeconds': [3.368, 18.25], 'fallbackCalls': 35, 'fallbackMatched': 35, 'fallbackMS': 327.2073333282606, 'rawEmpty': [1, 35]}
+  {'clip': 'clip-a16380ba4a5b', 'repeat': 2, 'legal': [34, 36], 'false': [1, 1], 'unmatched': [0, 0], 'gainedSeconds': [18.25, 18.875], 'lostSeconds': [], 'fallbackCalls': 1, 'fallbackMatched': 1, 'fallbackMS': 5.894958332646638, 'rawEmpty': [35, 1]}
+  {'clip': 'dribbling_with_the_ball_1', 'repeat': 1, 'legal': [0, 0], 'false': [0, 0], 'unmatched': [0, 0], 'gainedSeconds': [], 'lostSeconds': [], 'fallbackCalls': 20, 'fallbackMatched': 18, 'fallbackMS': 188.4893750102492, 'rawEmpty': [16, 20]}
+  {'clip': 'low', 'repeat': 1, 'legal': [161, 160], 'false': [0, 0], 'unmatched': [0, 0], 'gainedSeconds': [54.08, 58.08], 'lostSeconds': [56.26, 57.15, 57.44], 'fallbackCalls': 0, 'fallbackMatched': 0, 'fallbackMS': 0, 'rawEmpty': [0, 0]}
+  {'clip': 'raw-juggling', 'repeat': 1, 'legal': [6, 5], 'false': [0, 0], 'unmatched': [0, 0], 'gainedSeconds': [8.1], 'lostSeconds': [4.43, 4.98], 'fallbackCalls': 0, 'fallbackMatched': 0, 'fallbackMS': 0, 'rawEmpty': [0, 0]}
+  baseline clip-618a1688fcc6 r1: raw empty 0, fallback calls/matched 0/0, fallback total 0.00ms, thermal 0, late source skips 0, pose errors 0, frame median/p95 209.05/222.00ms.
+  baseline dribbling_with_the_ball_1 r1: raw empty 16, fallback calls/matched 0/0, fallback total 0.00ms, thermal 0, late source skips 0, pose errors 0, frame median/p95 211.77/229.39ms.
+  baseline ball_in_hand r1: raw empty 0, fallback calls/matched 0/0, fallback total 0.00ms, thermal 0, late source skips 0, pose errors 0, frame median/p95 208.75/225.93ms.
+  baseline clip-a16380ba4a5b r1: raw empty 1, fallback calls/matched 0/0, fallback total 0.00ms, thermal 0, late source skips 0, pose errors 0, frame median/p95 210.63/225.06ms.
+  baseline low r1: raw empty 0, fallback calls/matched 0/0, fallback total 0.00ms, thermal 0, late source skips 0, pose errors 0, frame median/p95 209.81/222.97ms.
+  baseline clip-618a1688fcc6 r2: raw empty 0, fallback calls/matched 0/0, fallback total 0.00ms, thermal 1, late source skips 0, pose errors 0, frame median/p95 209.00/220.50ms.
+  baseline clip-a16380ba4a5b r2: raw empty 35, fallback calls/matched 0/0, fallback total 0.00ms, thermal 1, late source skips 0, pose errors 0, frame median/p95 211.11/227.32ms.
+  baseline raw-juggling r1: raw empty 0, fallback calls/matched 0/0, fallback total 0.00ms, thermal 0, late source skips 2, pose errors 0, frame median/p95 204.47/225.63ms.
+  fallback clip-618a1688fcc6 r1: raw empty 0, fallback calls/matched 0/0, fallback total 0.00ms, thermal 0, late source skips 0, pose errors 0, frame median/p95 208.79/222.78ms.
+  fallback dribbling_with_the_ball_1 r1: raw empty 20, fallback calls/matched 20/18, fallback total 188.49ms, thermal 1, late source skips 0, pose errors 0, frame median/p95 211.09/227.99ms.
+  fallback ball_in_hand r1: raw empty 0, fallback calls/matched 0/0, fallback total 0.00ms, thermal 0, late source skips 0, pose errors 0, frame median/p95 208.72/225.09ms.
+  fallback clip-a16380ba4a5b r1: raw empty 35, fallback calls/matched 35/35, fallback total 327.21ms, thermal 0, late source skips 0, pose errors 0, frame median/p95 210.88/225.25ms.
+  fallback low r1: raw empty 0, fallback calls/matched 0/0, fallback total 0.00ms, thermal 0, late source skips 0, pose errors 0, frame median/p95 210.01/222.78ms.
+  fallback clip-618a1688fcc6 r2: raw empty 0, fallback calls/matched 0/0, fallback total 0.00ms, thermal 1, late source skips 0, pose errors 0, frame median/p95 208.97/221.60ms.
+  fallback clip-a16380ba4a5b r2: raw empty 1, fallback calls/matched 1/1, fallback total 5.89ms, thermal 1, late source skips 0, pose errors 0, frame median/p95 210.55/225.21ms.
+  fallback raw-juggling r1: raw empty 0, fallback calls/matched 0/0, fallback total 0.00ms, thermal 0, late source skips 3, pose errors 0, frame median/p95 204.42/225.38ms.
+
+FALLBACK CAUSAL LIMIT: IMG8606 repeat1 has35 fallback calls, all matched, and counts18.875s. Its proposed18.308s contact is still rejected as handsNearBall; the neighboring18.275s proposal is amplitudeTooSmall. Baseline proposed18.241s and counted it. Repeat2 gains18.25s and18.875s but has only one fallback at another timestamp, so those gains cannot be credited to recovery of empty poses at the two contacts. IMG8874, low and raw-juggling have zero fallback calls yet their paired counts vary. That establishes a continuing comparator/timing variability problem, not a measured fallback-caused regression.
+
+SEPARATE TIMING OUTLIER: In the low fallback-labelled run, one ordinary revision2 body call at55.800s takes488.93ms. The fallback never runs in that clip. The counter queue reaches19 frames, with no overflow or source skips. This outlier overlaps the region with contact differences but does not by itself prove the cause of every lost label. Median timing alone hides this event; do not attribute it to fallback compute.
+
+VALIDATION: Debug and non-DEBUG standalone builds each pass14 eligibility/player-matching contracts; the experiment flag cannot enable the release path. Both iPhone app builds succeeded. All16 paired runs complete exact saved counter replay, source-hash/build/profile checks and labelled scoring. Thermal stayed nominal/fair; no pose errors, RF late replies or buffer overflows. No new labelled false or unmatched counts appeared; IMG8606 retains its existing false at20.176s.
+
+DECISION:
+Do not promote the legacy-on-empty fallback yet. It demonstrably restores measured poses (35/35 selected matches in the exercised IMG8606 run, 18/20 in the dribbling control) and the negative controls remain zero, but does not establish repeatable legal-touch recovery. The first IMG8606 pair loses two legal contacts; the reversed pair gains two while hardly exercising fallback. Other clips vary despite zero fallback calls. Keep the explicit flag off and restore the previous field app.
+
+The concrete advance is the exact-input reproduction: this dropout occurs before player selection and counting, with identical image bytes and no in-call mutation. Recreating the request, changing image order, removing the bridge, PNG input and explicit Neural Engine assignment did not reliably solve it. Cropping improves isolated detections but still has misses. The internal framework/context cause remains unresolved.
+
+Next bounded work should test a generic selected-player pose strategy on these frozen images with repeatable raw observations and correct image-to-player coordinates, then run the unchanged contact rules and labelled corpus. Keep the independent candidate-timing/long-pose-call issue separate. Do not weaken hand or ground vetoes to hide a missing-pose problem.
+
+LIMITS: Development contact labels, small selected corpus, iPhone17 only. No iPhone11 qualification or 15-minute camera/thermal claim. A higher total does not prove preservation of every legal contact. Existing ground false positives must be reported separately from new gains.
+
+PHONE: Previous field build2026102913 and saved24-touch IMG8874 preview restored and verified; diagnostics/fallback disabled.
+
+EVIDENCE: inputs.json plus raw BGRA files and SHA hashes; exact-probe results; PNG and supported-compute controls; pose overlays; per-build source snapshots and logs; fallback paired traces, labels, runtime profile and source hashes.

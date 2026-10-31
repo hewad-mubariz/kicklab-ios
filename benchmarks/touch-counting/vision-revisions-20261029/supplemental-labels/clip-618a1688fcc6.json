@@ -1,0 +1,230 @@
+{
+  "source_sha256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+  "source_name": "IMG_8874.MOV",
+  "review_status": "reviewed_with_uncertainty",
+  "coverage_s": [
+    0,
+    14.515
+  ],
+  "method": "Full 6fps source overview, then 20fps foot-region visual review. Contact list marked independently of counter outcomes; compare only confirmed airborne juggling contacts.",
+  "reviewer": "assistant visual review; human confirmation pending",
+  "events": [
+    {
+      "id": "e001",
+      "time_s": 2.17,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e002",
+      "time_s": 2.71,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e003",
+      "time_s": 3.22,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e004",
+      "time_s": 3.67,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e005",
+      "time_s": 4.11,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e006",
+      "time_s": 4.6,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e007",
+      "time_s": 5.11,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e008",
+      "time_s": 5.72,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e009",
+      "time_s": 6.22,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e010",
+      "time_s": 6.76,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e011",
+      "time_s": 7.39,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e012",
+      "time_s": 7.93,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e013",
+      "time_s": 8.46,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e014",
+      "time_s": 8.87,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e015",
+      "time_s": 9.36,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e016",
+      "time_s": 9.81,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e017",
+      "time_s": 10.42,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e018",
+      "time_s": 11.02,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e019",
+      "time_s": 11.48,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e020",
+      "time_s": 12.05,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e021",
+      "time_s": 12.58,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e022",
+      "time_s": 12.99,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e023",
+      "time_s": 13.47,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    },
+    {
+      "id": "e024",
+      "time_s": 13.86,
+      "label": "valid",
+      "contact": "legal_leg",
+      "time_uncertainty_s": 0.06,
+      "visibility": "visible"
+    }
+  ],
+  "segments": [
+    {
+      "start_s": 0,
+      "end_s": 1.4,
+      "label": "invalid",
+      "reason": "Ball resting on ground during setup."
+    },
+    {
+      "start_s": 1.4,
+      "end_s": 1.95,
+      "label": "uncertain",
+      "reason": "Initial floor pickup/flick kept separate from the airborne-juggle denominator; neither arm counts it."
+    },
+    {
+      "start_s": 14.45,
+      "end_s": 14.515,
+      "label": "uncertain",
+      "reason": "Clip ends during next descent; a further completed contact is not established."
+    }
+  ],
+  "notes": [
+    "24 clearly reviewed airborne juggling kicks after the initial floor pickup. No intervening ground bounces seen.",
+    "The 24-event denominator does not claim to count the opening floor pickup as a completed juggle. Both modes leave it uncounted.",
+    "Visually confirmed differences around5.72,7.39,7.93s."
+  ]
+}

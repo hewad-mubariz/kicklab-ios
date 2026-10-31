@@ -1,0 +1,48 @@
+{
+  "computeSelection" : "Automatic defaults in all arms; no forced CPU\/GPU\/ANE selection.",
+  "memory_mib" : 165.64251708984375,
+  "mode" : "pose-integration-probe",
+  "poseTiming" : {
+    "calls" : 0,
+    "empty" : 0,
+    "errors" : 0,
+    "maximumMS" : 0,
+    "totalMS" : 0
+  },
+  "rows" : 216,
+  "scope" : "Fixed upright images; rotated arm order; two warmups per size; timings include request and equal joint conversion, exclude decode\/resize\/JSON. No ball inference or counter workload.",
+  "state" : "completed",
+  "thermal" : 0,
+  "updated" : "2026-10-29T18:49:10Z",
+  "visionRevisions" : {
+    "bodyPoseImplementation" : "VN legacy",
+    "integratedHandDetection" : false,
+    "legacyBodyDefault" : 1,
+    "legacyBodySelected" : 1,
+    "legacyBodySupported" : [
+      1
+    ],
+    "legacyHandSelected" : 1,
+    "legacyHandSupported" : [
+      1
+    ],
+    "objectTrackingSelected" : 1,
+    "objectTrackingSupported" : [
+      1,
+      2
+    ],
+    "swiftBody3DSupported" : [
+      "revision1"
+    ],
+    "swiftBodySupported" : [
+      "revision2"
+    ],
+    "swiftHandSupported" : [
+      "revision1"
+    ],
+    "swiftTrackerSupported" : [
+      "revision2"
+    ]
+  },
+  "worstThermal" : 0
+}

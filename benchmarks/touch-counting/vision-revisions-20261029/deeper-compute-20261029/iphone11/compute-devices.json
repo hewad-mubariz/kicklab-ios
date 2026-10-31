@@ -1,0 +1,72 @@
+{
+  "arms" : {
+    "legacy-automatic" : [
+      {
+        "assigned" : "automatic-unspecified",
+        "stage" : "VNComputeStageMain",
+        "supported" : [
+          "neuralEngine",
+          "gpu",
+          "cpu"
+        ]
+      }
+    ],
+    "legacy-cpu" : [
+      {
+        "assigned" : "cpu",
+        "stage" : "VNComputeStageMain",
+        "supported" : [
+          "neuralEngine",
+          "gpu",
+          "cpu"
+        ]
+      }
+    ],
+    "legacy-gpu" : [
+      {
+        "assigned" : "gpu",
+        "stage" : "VNComputeStageMain",
+        "supported" : [
+          "neuralEngine",
+          "gpu",
+          "cpu"
+        ]
+      }
+    ],
+    "legacy-neuralEngine" : [
+      {
+        "assigned" : "neuralEngine",
+        "stage" : "VNComputeStageMain",
+        "supported" : [
+          "neuralEngine",
+          "gpu",
+          "cpu"
+        ]
+      }
+    ],
+    "revision2-automatic" : [
+      {
+        "assigned" : "automatic-unspecified",
+        "stage" : "main",
+        "supported" : [
+          "neuralEngine"
+        ]
+      }
+    ],
+    "revision2-neuralEngine" : [
+      {
+        "assigned" : "neuralEngine",
+        "stage" : "main",
+        "supported" : [
+          "neuralEngine"
+        ]
+      }
+    ]
+  },
+  "assignmentNote" : "Only main is explicitly selected; other stages use defaults. Automatic assignment does not identify actual hardware execution.",
+  "hardware" : "iPhone12,5",
+  "nonfinite_diagnostic_paths" : [
+
+  ],
+  "os" : "Version 27.2 (Build 24B119)"
+}

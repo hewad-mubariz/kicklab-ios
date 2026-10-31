@@ -1,0 +1,541 @@
+[
+  {
+    "clip": "ball_in_hand",
+    "repeat": 1,
+    "legal": [
+      0,
+      0
+    ],
+    "total": [
+      0,
+      0
+    ],
+    "false": [
+      0,
+      0
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [],
+    "lostSeconds": [],
+    "firstTrack": [
+      1.3,
+      1.3
+    ],
+    "suppressedReplies": [
+      13,
+      13
+    ],
+    "sourceSkips": [
+      0,
+      0
+    ],
+    "poseCalls": [
+      0,
+      0
+    ],
+    "latencyP95": [
+      225.3822916682111,
+      224.9014166663983
+    ]
+  },
+  {
+    "clip": "clip-618a1688fcc6",
+    "repeat": 1,
+    "legal": [
+      24,
+      24
+    ],
+    "total": [
+      24,
+      24
+    ],
+    "false": [
+      0,
+      0
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [],
+    "lostSeconds": [],
+    "firstTrack": [
+      1.7341666666666666,
+      1.7341666666666666
+    ],
+    "suppressedReplies": [
+      17,
+      17
+    ],
+    "sourceSkips": [
+      0,
+      0
+    ],
+    "poseCalls": [
+      334,
+      334
+    ],
+    "latencyP95": [
+      221.60749999602558,
+      221.69295833009528
+    ]
+  },
+  {
+    "clip": "clip-a16380ba4a5b",
+    "repeat": 1,
+    "legal": [
+      34,
+      33
+    ],
+    "total": [
+      35,
+      34
+    ],
+    "false": [
+      1,
+      1
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [],
+    "lostSeconds": [
+      16.808
+    ],
+    "firstTrack": [
+      0.23333333333333334,
+      0.23333333333333334
+    ],
+    "suppressedReplies": [
+      6,
+      6
+    ],
+    "sourceSkips": [
+      0,
+      0
+    ],
+    "poseCalls": [
+      490,
+      491
+    ],
+    "latencyP95": [
+      223.9982916653389,
+      224.29399999964517
+    ]
+  },
+  {
+    "clip": "clip-a16380ba4a5b",
+    "repeat": 2,
+    "legal": [
+      33,
+      36
+    ],
+    "total": [
+      34,
+      37
+    ],
+    "false": [
+      1,
+      1
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [
+      3.368,
+      18.25,
+      18.875
+    ],
+    "lostSeconds": [],
+    "firstTrack": [
+      0.23333333333333334,
+      0.23333333333333334
+    ],
+    "suppressedReplies": [
+      6,
+      6
+    ],
+    "sourceSkips": [
+      0,
+      0
+    ],
+    "poseCalls": [
+      499,
+      496
+    ],
+    "latencyP95": [
+      225.88095833634725,
+      225.84608333272627
+    ]
+  },
+  {
+    "clip": "dribbling_with_ball_1",
+    "repeat": 1,
+    "legal": [
+      0,
+      0
+    ],
+    "total": [
+      0,
+      0
+    ],
+    "false": [
+      0,
+      0
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [],
+    "lostSeconds": [],
+    "firstTrack": [
+      0.9004166666666666,
+      0.9004166666666666
+    ],
+    "suppressedReplies": [
+      0,
+      0
+    ],
+    "sourceSkips": [
+      0,
+      1
+    ],
+    "poseCalls": [
+      0,
+      0
+    ],
+    "latencyP95": [
+      226.36325000348734,
+      226.1837083278806
+    ]
+  },
+  {
+    "clip": "dribbling_with_ball_2",
+    "repeat": 1,
+    "legal": [
+      0,
+      0
+    ],
+    "total": [
+      0,
+      0
+    ],
+    "false": [
+      0,
+      0
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [],
+    "lostSeconds": [],
+    "firstTrack": [
+      0.83375,
+      0.2
+    ],
+    "suppressedReplies": [
+      1,
+      1
+    ],
+    "sourceSkips": [
+      0,
+      0
+    ],
+    "poseCalls": [
+      0,
+      0
+    ],
+    "latencyP95": [
+      225.37074999854667,
+      225.5199166611419
+    ]
+  },
+  {
+    "clip": "dribbling_with_ball_3",
+    "repeat": 1,
+    "legal": [
+      0,
+      0
+    ],
+    "total": [
+      0,
+      0
+    ],
+    "false": [
+      0,
+      0
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [],
+    "lostSeconds": [],
+    "firstTrack": [
+      0.43333333333333335,
+      0.43333333333333335
+    ],
+    "suppressedReplies": [
+      1,
+      1
+    ],
+    "sourceSkips": [
+      0,
+      0
+    ],
+    "poseCalls": [
+      0,
+      0
+    ],
+    "latencyP95": [
+      237.79408333211904,
+      226.73162500723265
+    ]
+  },
+  {
+    "clip": "dribbling_with_the_ball_1",
+    "repeat": 1,
+    "legal": [
+      0,
+      0
+    ],
+    "total": [
+      0,
+      0
+    ],
+    "false": [
+      0,
+      0
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [],
+    "lostSeconds": [],
+    "firstTrack": [
+      0.23333333333333334,
+      0.23333333333333334
+    ],
+    "suppressedReplies": [
+      0,
+      0
+    ],
+    "sourceSkips": [
+      0,
+      0
+    ],
+    "poseCalls": [
+      16,
+      30
+    ],
+    "latencyP95": [
+      227.82279166858643,
+      229.32874999241903
+    ]
+  },
+  {
+    "clip": "eighteen",
+    "repeat": 1,
+    "legal": [
+      17,
+      18
+    ],
+    "total": [
+      17,
+      18
+    ],
+    "false": [
+      0,
+      0
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [
+      13.25
+    ],
+    "lostSeconds": [],
+    "firstTrack": [
+      1.4,
+      1.4
+    ],
+    "suppressedReplies": [
+      14,
+      14
+    ],
+    "sourceSkips": [
+      0,
+      0
+    ],
+    "poseCalls": [
+      253,
+      249
+    ],
+    "latencyP95": [
+      225.52112500125077,
+      224.8804583286983
+    ]
+  },
+  {
+    "clip": "juggling_second_ball_in_video",
+    "repeat": 1,
+    "legal": [
+      28,
+      28
+    ],
+    "total": [
+      28,
+      28
+    ],
+    "false": [
+      0,
+      0
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [],
+    "lostSeconds": [],
+    "firstTrack": [
+      0.7070833333333333,
+      0.7070833333333333
+    ],
+    "suppressedReplies": [
+      5,
+      5
+    ],
+    "sourceSkips": [
+      5,
+      5
+    ],
+    "poseCalls": [
+      389,
+      393
+    ],
+    "latencyP95": [
+      221.67066666588653,
+      223.9025833332562
+    ]
+  },
+  {
+    "clip": "low",
+    "repeat": 1,
+    "legal": [
+      159,
+      163
+    ],
+    "total": [
+      159,
+      163
+    ],
+    "false": [
+      0,
+      0
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [
+      0.7,
+      0.98,
+      1.33,
+      1.66,
+      1.94,
+      4.06,
+      31.71,
+      36.54
+    ],
+    "lostSeconds": [
+      4.67,
+      23.11,
+      28.06,
+      37.43
+    ],
+    "firstTrack": [
+      1.3,
+      0.3
+    ],
+    "suppressedReplies": [
+      23,
+      3
+    ],
+    "sourceSkips": [
+      0,
+      0
+    ],
+    "poseCalls": [
+      1661,
+      1735
+    ],
+    "latencyP95": [
+      224.3457500007935,
+      223.04949999670498
+    ]
+  },
+  {
+    "clip": "low",
+    "repeat": 2,
+    "legal": [
+      158,
+      163
+    ],
+    "total": [
+      158,
+      163
+    ],
+    "false": [
+      0,
+      0
+    ],
+    "unmatched": [
+      0,
+      0
+    ],
+    "gainedSeconds": [
+      0.7,
+      0.98,
+      1.33,
+      1.66,
+      1.94,
+      2.86,
+      31.71,
+      36.54
+    ],
+    "lostSeconds": [
+      23.11,
+      28.06,
+      37.43
+    ],
+    "firstTrack": [
+      1.3,
+      0.3
+    ],
+    "suppressedReplies": [
+      23,
+      3
+    ],
+    "sourceSkips": [
+      0,
+      0
+    ],
+    "poseCalls": [
+      1666,
+      1737
+    ],
+    "latencyP95": [
+      224.80150000046706,
+      224.0214583289344
+    ]
+  }
+]

@@ -31,7 +31,21 @@ nonisolated enum JugglingContactRules {
     /// Segment attribution follows the lab's pose.py, including its protection
     /// against a wrist near a legitimate leg touch. Inputs share normalized
     /// upright video coordinates. Only sufficiently confident joints belong here.
-    static func isHand(ball: Point, width: Double, joints: [BodyJoint: Point]) -> Bool {
+    static func isHand(ball: Point, width: Double, joints: [BodyJoint: Point],
+                       measuredArms: [BodyJoint: PoseLandmark]? = nil) -> Bool {
+        // A weak arm estimate can jump onto a ball above a raised knee. When
+        // raw confidence is supplied, require measured arm endpoints for the
+        // arm veto. Keep all legal-body geometry and the caller's separate
+        // finger/holding checks available.
+        func measured(_ names: BodyJoint...) -> Bool {
+            guard let measuredArms else { return true }
+            return names.allSatisfy { name in
+                guard let p = measuredArms[name] else { return false }
+                return [p.x,p.y,p.confidence].allSatisfy(\.isFinite)
+                    && (0...1).contains(p.x) && (0...1).contains(p.y)
+                    && (0.5...1).contains(p.confidence)
+            }
+        }
         func distance(_ a: Point, _ b: Point) -> Double { hypot(a.x - b.x, a.y - b.y) }
         func middle(_ a: Point, _ b: Point) -> Point {
             Point(x: (a.x + b.x) / 2, y: (a.y + b.y) / 2)
@@ -46,7 +60,8 @@ nonisolated enum JugglingContactRules {
             return (distance(ball, Point(x: a.x + t * dx, y: a.y + t * dy)), t)
         }
         // A midpoint alone confuses arms hanging beside a torso with a grip.
-        if width > 0, let left = joints[.leftWrist], let right = joints[.rightWrist],
+        if width > 0, measured(.leftWrist, .rightWrist),
+           let left = joints[.leftWrist], let right = joints[.rightWrist],
            distance(ball, middle(left, right)) <= 0.07, distance(left, right) <= 1.5 * width {
             return true
         }
@@ -60,9 +75,10 @@ nonisolated enum JugglingContactRules {
             }
             if let shoulder = joints[side.shoulder], let elbow = joints[side.elbow] {
                 let (d, along) = segment(shoulder, elbow)
-                if along < 0.3 { legal = min(legal, d) } else { hand = min(hand, d) }
+                if along < 0.3 { legal = min(legal, d) }
+                else if measured(side.shoulder, side.elbow) { hand = min(hand, d) }
             }
-            if let elbow = joints[side.elbow], let wrist = joints[side.wrist] {
+            if measured(side.elbow, side.wrist), let elbow = joints[side.elbow], let wrist = joints[side.wrist] {
                 hand = min(hand, segment(elbow, wrist).0)
             }
         }

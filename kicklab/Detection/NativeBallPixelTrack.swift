@@ -34,7 +34,12 @@ nonisolated final class NativeBallPixelTrack {
             .samplingLinear().transformed(by:CGAffineTransform(scaleX:16/r.width,y:16/r.height))
         var bytes=[UInt8](repeating:0,count:16*16*4)
         context.render(patch,toBitmap:&bytes,rowBytes:16*4,bounds:CGRect(x:0,y:0,width:16,height:16),format:.RGBA8,colorSpace:CGColorSpaceCreateDeviceRGB())
-        return (0..<256).map { i in 0.299*Float(bytes[4*i])+0.587*Float(bytes[4*i+1])+0.114*Float(bytes[4*i+2]) }
+        return (0..<256).map { i -> Float in
+            let red: Float = 0.299 * Float(bytes[4*i])
+            let green: Float = 0.587 * Float(bytes[4*i+1])
+            let blue: Float = 0.114 * Float(bytes[4*i+2])
+            return (red + green) + blue
+        }
     }
     func seed(_ hit: FollowHit, image: CIImage, size: CGSize) {
         // Return the previous Vision tracker to its pool before a detector
@@ -50,7 +55,7 @@ nonisolated final class NativeBallPixelTrack {
         // Revision 2 reached >500 MiB on the small airborne-ball replay.
         // Keep revision 1 for this opt-in mobile experiment; revision 2 remains
         // available only as an explicit developer comparison.
-        request?.revision = ProcessInfo.processInfo.arguments.contains("--follow-vision-revision2")
+        request?.revision = VisionRevisionExperiment.trackingRevision() == 2
             ? VNTrackObjectRequestRevision2 : VNTrackObjectRequestRevision1
         request?.trackingLevel = .accurate
         // Feed the seed frame so the next update really compares two frames.

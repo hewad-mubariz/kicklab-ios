@@ -1,0 +1,61 @@
+INDEPENDENT REGULAR/RETRY CLOCK — IPHONE17 — 30 OCTOBER 2026
+
+Only --rf-independent-regular-clock-v1 differs between arms. Counter config is identical.
+Both use revision2, precise replay timing and the same prior low-contact/ground opt-ins.
+No source-grid/reservation prototype or new threshold is enabled. Production default remains off.
+
+IMG8606 r1: total 33 -> 34; legal 32 -> 33; known false 1 -> 1.
+  Gains [3.368]; losses [].
+  Regular RF 9.48 -> 9.73/s; all RF 11.14 -> 11.29/s; pose work 244.4 -> 256.7ms/s; frame p95 226.5 -> 224.9ms; clock adjustments 8.
+IMG8606 r2: total 33 -> 33; legal 32 -> 32; known false 1 -> 1.
+  Gains [3.368]; losses [8.403].
+  Regular RF 9.48 -> 9.87/s; all RF 11.00 -> 11.19/s; pose work 260.8 -> 246.9ms/s; frame p95 229.5 -> 223.9ms; clock adjustments 10.
+low.mov r1: total 171 -> 167; legal 171 -> 167; known false 0 -> 0.
+  Gains [12.72, 23.11, 37.43]; losses [8.98, 9.56, 12.07, 24.65, 28.06, 34.07, 36.54].
+  Regular RF 9.94 -> 9.98/s; all RF 10.11 -> 10.09/s; pose work 309.7 -> 315.3ms/s; frame p95 222.7 -> 222.7ms; clock adjustments 1.
+  Low targets {"before": {"4633": [4.633], "54033": [54.033], "58000": [58.0]}, "after": {"4633": [4.633], "54033": [54.033], "58000": [58.0]}}
+low.mov r2: total 167 -> 167; legal 167 -> 167; known false 0 -> 0.
+  Gains [12.72, 23.11, 31.71, 38.65, 46.6, 46.91, 58.08]; losses [8.98, 9.56, 12.07, 24.65, 28.06, 34.07, 57.15].
+  Regular RF 9.93 -> 9.98/s; all RF 10.15 -> 10.09/s; pose work 314.0 -> 309.6ms/s; frame p95 223.7 -> 222.7ms; clock adjustments 1.
+  Low targets {"before": {"4633": [4.633], "54033": [54.033], "58000": []}, "after": {"4633": [4.633], "54033": [54.033], "58000": [58.0]}}
+raw-juggling r1: total 7 -> 9; legal 7 -> 9; known false 0 -> 0.
+  Gains [5.6, 8.1]; losses [].
+  Regular RF 8.34 -> 8.64/s; all RF 9.47 -> 10.15/s; pose work 72.6 -> 75.9ms/s; frame p95 224.2 -> 223.6ms; clock adjustments 6.
+raw-juggling r2: total 7 -> 6; legal 7 -> 6; known false 0 -> 0.
+  Gains [3.84, 8.1]; losses [4.43, 4.98, 6.62].
+  Regular RF 8.34 -> 8.64/s; all RF 9.32 -> 10.00/s; pose work 74.1 -> 45.7ms/s; frame p95 219.8 -> 219.6ms; clock adjustments 8.
+
+12 completed runs; thermal states [0]; overflow 0; source skips 0; late RF replies 0.
+One model and at most one simultaneous inference in every run; regular submissions retain the full wall-rate interval.
+
+Same-setting repeat event changes:
+{"clip": "clip-a16380ba4a5b", "arm": "control", "repeats": [1, 2], "changedLegal": []}
+{"clip": "low", "arm": "control", "repeats": [1, 2], "changedLegal": [31.71, 36.54, 37.43, 38.65, 46.6, 46.91, 57.15, 58.08]}
+{"clip": "raw-juggling", "arm": "control", "repeats": [1, 2], "changedLegal": []}
+{"clip": "clip-a16380ba4a5b", "arm": "independent", "repeats": [1, 2], "changedLegal": [8.403]}
+{"clip": "low", "arm": "independent", "repeats": [1, 2], "changedLegal": []}
+{"clip": "raw-juggling", "arm": "independent", "repeats": [1, 2], "changedLegal": [3.84, 4.43, 4.98, 5.6, 6.62]}
+
+Old three-minute footage has selected reviewed events only; its total is not a full legal-touch score.
+Phone restoration pending.
+
+DO NOT PROMOTE THE FULLY INDEPENDENT CLOCK.
+
+Twelve focused phone runs completed using the precise replay clock and unchanged counter rules.
+Legal counts, control -> independent, for the two alternating pairs:
+raw-juggling: 7 -> 9, then 7 -> 6.
+IMG8606: 32 -> 33, then 32 -> 32. The second equal-total pair gains 3.368 s but loses 8.403 s.
+low.mov: 171 -> 167, then 167 -> 167. Equal totals in the second pair conceal seven gains and seven losses.
+Known false counts remain zero in raw/low and one in IMG8606. No source frames were skipped.
+
+In the first low pair, the first changed ball input is exactly 8.500 s, where independent timing bypasses
+the retry clock after a SUCCESSFUL retry on 8.266 s. That changes the subsequent sampling phase.
+Lost reviewed contacts: 8.98, 9.56, 12.07, 24.65, 28.06, 34.07 and 36.54 s.
+Gained reviewed contacts: 12.72, 23.11 and 37.43 s. Existing 4.633/54.033/58.000 s targets survive.
+
+The regular-rate cap and single-model/single-active-inference bounds held. This is an accuracy failure,
+not a thermal or capacity failure. Do not compensate by relaxing counting or floor thresholds.
+
+The follow-up in ../failed-retry-clock-iphone17 narrows the experiment to a completed failed retry's
+own clock charge, preserving successful retries and any newer job. No production default changed.
+Final phone restoration belongs to that follow-up and will be recorded there.

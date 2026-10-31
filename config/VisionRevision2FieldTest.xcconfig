@@ -1,0 +1,3 @@
+// Local Touch Counting Debug field test only. Not the TestFlight/release config.
+// Match the measured24-flag counter baseline, changing only body pose to revision2.
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG TOUCH_COUNTING_DEBUG VISION_REVISION2_FIELD_TEST

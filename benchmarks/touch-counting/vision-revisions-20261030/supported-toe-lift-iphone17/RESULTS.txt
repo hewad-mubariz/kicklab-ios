@@ -1,0 +1,126 @@
+SUPPORTED TOE LIFT — IPHONE17 — 30 OCTOBER 2026
+
+Only --supported-toe-lift-v1 differs. Same revision2, RF scheduling and other counter settings.
+
+ball_in_hand r1: 0 -> 0 counted; labelled legal 0 -> 0; known false 0 -> 0.
+  Same delivered frame IDs: True; differing ball views: 20.
+  Exact event changes: added [] ms; removed [] ms (nearby timestamps can describe the same contact).
+  Labelled gains []; losses [].
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Pose calls 0 -> 0; frame latency p95 223.6 -> 223.9 ms.
+IMG8874 r1: 24 -> 24 counted; labelled legal 24 -> 24; known false 0 -> 0.
+  Same delivered frame IDs: True; differing ball views: 0.
+  Exact event changes: added [] ms; removed [] ms (nearby timestamps can describe the same contact).
+  Labelled gains []; losses [].
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Pose calls 335 -> 335; frame latency p95 218.9 -> 219.8 ms.
+old three-minute r1: 157 -> 158 counted; labelled legal unlabelled -> unlabelled; known false unlabelled -> unlabelled.
+  Same delivered frame IDs: True; differing ball views: 2358.
+  Exact event changes: added [13465, 15398, 15865, 17231, 21398, 22031, 24565, 25465, 36480, 41246, 47513, 47980, 49080, 49480, 51213, 51680, 52113, 52646, 53813, 54713, 56280, 67161, 68095, 80495, 81161, 83628, 84695, 85395, 87061, 91010, 91576, 92776, 93543, 121891, 123825, 125158, 135625, 137225, 138325, 139625, 140158, 141291, 142191, 151673, 152806, 161306] ms; removed [13431, 15365, 17265, 21365, 22065, 24598, 25431, 36513, 41213, 42046, 47546, 47946, 49046, 49513, 51246, 51646, 52146, 52613, 53780, 54746, 56313, 67128, 68128, 80461, 81128, 83661, 84728, 87095, 90976, 91543, 92810, 93610, 107910, 121925, 123925, 125125, 135591, 137258, 138291, 139658, 140125, 142225, 151573, 152773, 161340] ms (nearby timestamps can describe the same contact).
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Selected target counts: {"before": {"8016": [8.016], "42013": [42.046], "107910": [107.91], "125525": [125.458], "145458": [145.458], "153773": [], "154206": [], "157807": []}, "after": {"8016": [8.016], "42013": [], "107910": [], "125525": [125.458], "145458": [145.458], "153773": [], "154206": [], "157807": []}}
+  Pose calls 2347 -> 2332; frame latency p95 225.3 -> 225.0 ms.
+old three-minute r2: 158 -> 157 counted; labelled legal unlabelled -> unlabelled; known false unlabelled -> unlabelled.
+  Same delivered frame IDs: True; differing ball views: 2406.
+  Exact event changes: added [6150, 8483, 10183, 15398, 16265, 17298, 22598, 24598, 33165, 33731, 35846, 36513, 42113, 47080, 47613, 50013, 50613, 51646, 53080, 53746, 54280, 56313, 78995, 79728, 80428, 81595, 82461, 83161, 83661, 91543, 93543, 94276, 96143, 99043, 107910, 121925, 123858, 133758, 134825, 135591, 137825, 138325, 139058, 139658, 140658, 141291, 143825, 151006, 151640, 152040, 159806, 161340, 178888, 179388] ms; removed [6216, 8516, 10216, 15365, 16298, 17231, 22565, 24565, 33198, 33765, 34880, 35880, 36480, 42080, 47046, 47513, 50046, 50580, 51680, 53046, 53780, 54246, 56280, 79028, 79761, 80461, 81628, 82495, 83195, 83628, 91576, 93576, 94176, 96110, 99076, 108576, 121958, 123825, 133725, 134858, 135625, 137791, 138291, 139091, 139691, 140625, 141391, 143858, 150973, 151673, 152006, 159840, 161306, 178855, 179421] ms (nearby timestamps can describe the same contact).
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Selected target counts: {"before": {"8016": [8.016], "42013": [42.08], "107910": [], "125525": [125.458], "145458": [145.458], "153773": [], "154206": [], "157807": []}, "after": {"8016": [8.016], "42013": [42.113], "107910": [107.91], "125525": [125.458], "145458": [145.458], "153773": [], "154206": [], "157807": []}}
+  Pose calls 2302 -> 2378; frame latency p95 225.0 -> 225.0 ms.
+IMG8606 r1: 33 -> 33 counted; labelled legal 32 -> 32; known false 1 -> 1.
+  Same delivered frame IDs: True; differing ball views: 108.
+  Exact event changes: added [14406, 18875] ms; removed [14373, 16875] ms (nearby timestamps can describe the same contact).
+  Labelled gains [18.875]; losses [16.808].
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Pose calls 505 -> 499; frame latency p95 226.4 -> 225.7 ms.
+IMG9029 r1: 24 -> 25 counted; labelled legal unlabelled -> unlabelled; known false unlabelled -> unlabelled.
+  Same delivered frame IDs: True; differing ball views: 0.
+  Exact event changes: added [8003] ms; removed [] ms (nearby timestamps can describe the same contact).
+  Proof ablation on identical saved input: added [8003] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 1.
+  Selected target counts: {"before": {"8003": [], "12471": [12.471], "12805": []}, "after": {"8003": [8.003], "12471": [12.471], "12805": []}}
+  Pose calls 352 -> 352; frame latency p95 220.6 -> 221.0 ms.
+IMG9029 r2: 24 -> 25 counted; labelled legal unlabelled -> unlabelled; known false unlabelled -> unlabelled.
+  Same delivered frame IDs: True; differing ball views: 0.
+  Exact event changes: added [8003] ms; removed [] ms (nearby timestamps can describe the same contact).
+  Proof ablation on identical saved input: added [8003] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 1.
+  Selected target counts: {"before": {"8003": [], "12471": [12.471], "12805": []}, "after": {"8003": [8.003], "12471": [12.471], "12805": []}}
+  Pose calls 352 -> 352; frame latency p95 219.2 -> 220.0 ms.
+dribbling_with_ball_1 r1: 0 -> 0 counted; labelled legal 0 -> 0; known false 0 -> 0.
+  Same delivered frame IDs: True; differing ball views: 60.
+  Exact event changes: added [] ms; removed [] ms (nearby timestamps can describe the same contact).
+  Labelled gains []; losses [].
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Pose calls 0 -> 0; frame latency p95 226.6 -> 225.4 ms.
+dribbling_with_ball_2 r1: 0 -> 0 counted; labelled legal 0 -> 0; known false 0 -> 0.
+  Same delivered frame IDs: True; differing ball views: 52.
+  Exact event changes: added [] ms; removed [] ms (nearby timestamps can describe the same contact).
+  Labelled gains []; losses [].
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Pose calls 0 -> 0; frame latency p95 233.4 -> 232.5 ms.
+dribbling_with_ball_3 r1: 0 -> 0 counted; labelled legal 0 -> 0; known false 0 -> 0.
+  Same delivered frame IDs: True; differing ball views: 55.
+  Exact event changes: added [] ms; removed [] ms (nearby timestamps can describe the same contact).
+  Labelled gains []; losses [].
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Pose calls 0 -> 0; frame latency p95 228.8 -> 222.6 ms.
+dribbling_with_the_ball_1 r1: 0 -> 0 counted; labelled legal 0 -> 0; known false 0 -> 0.
+  Same delivered frame IDs: True; differing ball views: 174.
+  Exact event changes: added [] ms; removed [] ms (nearby timestamps can describe the same contact).
+  Labelled gains []; losses [].
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Pose calls 45 -> 30; frame latency p95 230.0 -> 231.3 ms.
+low.mov r1: 171 -> 170 counted; labelled legal 171 -> 170; known false 0 -> 0.
+  Same delivered frame IDs: True; differing ball views: 862.
+  Exact event changes: added [23100, 25900, 26800, 27733, 29466, 30733, 34000, 34933, 35633, 37433, 40033, 41000, 49366, 51766, 52133] ms; removed [25866, 26833, 27766, 29433, 30700, 31633, 34033, 34966, 35600, 36466, 38600, 40066, 40966, 49333, 51800, 52166] ms (nearby timestamps can describe the same contact).
+  Labelled gains [23.11, 37.43]; losses [31.71, 36.54, 38.65].
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Selected target counts: {"before": {"4633": [4.633], "54033": [54.033], "58000": [58.0]}, "after": {"4633": [4.633], "54033": [54.033], "58000": [58.0]}}
+  Pose calls 1742 -> 1737; frame latency p95 223.4 -> 224.1 ms.
+low.mov r2: 171 -> 170 counted; labelled legal 171 -> 170; known false 0 -> 0.
+  Same delivered frame IDs: True; differing ball views: 780.
+  Exact event changes: added [21200, 23066, 40033, 41000, 51500, 51766, 52166, 53633, 54700, 56500, 57066, 59233] ms; removed [38600, 40066, 40966, 46600, 46800, 51466, 51800, 52133, 53666, 54666, 56466, 58000, 59266] ms (nearby timestamps can describe the same contact).
+  Labelled gains [21.25, 23.11, 57.15]; losses [38.65, 46.6, 46.91, 58.08].
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Selected target counts: {"before": {"4633": [4.633], "54033": [54.033], "58000": [58.0]}, "after": {"4633": [4.633], "54033": [54.033], "58000": []}}
+  Pose calls 1742 -> 1735; frame latency p95 223.6 -> 224.7 ms.
+raw-juggling r1: 7 -> 7 counted; labelled legal 7 -> 7; known false 0 -> 0.
+  Same delivered frame IDs: True; differing ball views: 6.
+  Exact event changes: added [] ms; removed [] ms (nearby timestamps can describe the same contact).
+  Labelled gains []; losses [].
+  Proof ablation on identical saved input: added [] ms; lost [] ms; missing callbacks 0.
+  Enabling proof on control input: added [] ms; lost [] ms; missing callbacks 0.
+  Pose calls 86 -> 86; frame latency p95 225.0 -> 225.7 ms.
+
+28 completed runs. Thermal states [0, 1]; source skips 0; overflow 0; late RF replies 0.
+
+233 saved traces replay exactly. No saved accepted count lost. Only the two IMG9029 revision2 target traces need newly evaluated body evidence.
+
+DECISION: Keep SupportedToeLift opt-in. The visible IMG9029 kick is recovered, but global live/default promotion is not cleared.
+
+IMG9029, 8.003 s: control 24/24, experimental 25/25. Each pair received identical admitted source-frame IDs and identical ball inputs. The only event added is 8003 ms; no event is lost. On the supported trace, switching only this proof off removes only that event, with no missing callbacks. The recovered contact passes body, hand and handling checks. Pose calls remain 352 in all four runs; p95 frame latency is 219.2-221.0 ms. The apparent ground count at 12.471 s remains unchanged and is not declared legal.
+
+Cause and change: the ordinary before/contact/after foot views miss a brief lift between their samples. SupportedToeLift uses the existing compact views at the original ball reversal, requiring same-foot pre-impact lift, continued lift, stable opposite-foot support, and two later foot-settling/ball-departure views. It rejects an independently resolved floor impact. No clip ID or timestamp is encoded in the rule. No Vision request, framing, scheduling or production-default changes were added by this recovery.
+
+Validation: 21 focused contracts passed. The 233 saved traces reproduced their baselines exactly and lost no accepted count when the new rule was enabled. Only the two original IMG9029 traces needed a previously unsaved body callback; the new phone runs supplied and verified it. The predicate-only sweep matched exactly those two target records. These are 233 traces, not 233 distinct clips.
+
+Fresh iPhone17 validation: 28 completed paced-video runs across 11 clips, including four target runs and 24 regression runs. All completed runs stayed nominal or fair with zero source skips, overflow drops or late RF replies. One three-minute run was interrupted by iOS background GPU denial, preserved under failed-attempts, and excluded from all counts. The 100 source-file hashes still match the installed build2026103021.
+
+Regression evidence on identical saved inputs: switching the proof on in every regression control trace and off in every experimental trace changes no counted event and requires no missing callbacks. Five holding/dribbling clips count zero on both sides. IMG8874 stays 24 with identical events; raw-juggling stays 7. IMG8606 stays 33 total / 32 labelled legal / 1 known false, but the fresh passes exchange one labelled legal contact because their ball inputs differ.
+
+Fresh-run limitations remain material. Low.mov control repeats count 171/171, experimental repeats 170/170; their missed events differ. The previously recovered 4.633 s and 54.033 s touches remain, while 58 s has no candidate in the second experimental repeat. Switching this proof off on that saved trace does not recover it. The three-minute controls count 157/158 and experimental repeats 158/157: the 107.910 s kick disappears once on each side and reappears without a code change. The ball inputs vary despite identical admitted source-frame identities. These observations separate the fixed-input counter proof from upstream/runtime variation, but do not rule out timing interactions from the additional check. Do not describe this as a globally regression-free live update.
+
+Known floor cases: 153.773, 154.206 and 157.807 s remain uncounted in all four three-minute runs. The already-suspect 145.458 s count remains present; it is not fixed by this work.
+
+Next priority: investigate repeatability of detector/tracker output and candidate timing, using low.mov at 58 s and the three-minute 107.910 s contact as concrete comparisons. Do not loosen another ground threshold to mask a candidate that is never emitted. The specific toe-kick proof is available for controlled review while that validation issue is open. No commit, push, TestFlight upload or release/default promotion was performed.

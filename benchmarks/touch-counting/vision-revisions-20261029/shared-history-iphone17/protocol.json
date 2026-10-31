@@ -1,0 +1,18 @@
+{
+  "build": "2026102916",
+  "device": "iPhone 17 Pro Max",
+  "onlyDevice": "00008150-00063D221A87401C",
+  "baseline": "revision2 body-only, automatic compute, current 24 counter flags",
+  "candidate": "same + --pose-shared-history-v1",
+  "sampling": "ground and holding windows preserve every eligible view >= contact-101ms; earlier history selects nearest actual view to -200/-300ms within34ms; foot/hand exact contact and release views unchanged",
+  "unchanged": [
+    "RF model and profile",
+    "ball tracker revision1",
+    "counter thresholds",
+    "queue limits",
+    "warmup",
+    "input video original source"
+  ],
+  "scope": "paced full live pipeline on saved source videos; not ordinary import or camera capture",
+  "promotion": "none; restore field build2026102913 and previous preview after experiment"
+}

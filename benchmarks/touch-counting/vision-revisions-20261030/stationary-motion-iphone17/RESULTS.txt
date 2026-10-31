@@ -1,0 +1,60 @@
+STATIONARY STARTING-SPOT MOTION EXPERIMENT — iPhone 17 Pro Max, 30 October 2026
+
+Status: EXPERIMENTAL / NOT PROMOTED. Main app and TestFlight defaults unchanged.
+Empty-pose, crop, fallback and scheduling experiments remain parked/off.
+
+WHY THIS WAS TESTED
+The original reviewed revision-2 cohort has 80 missed labelled legal contacts. Of these, 34 have no nearby candidate and 16 are labelled amplitudeTooSmall. Those diagnostic labels are leads, not independently verified root causes. Empty-pose failures are not the main target of this experiment.
+
+CONFIRMED FINDING
+The existing V2 stationary gate fixes permanent first-frame anchors by removing an anchor after two unoccupied detector replies. But a ball already making very low kicks can remain within half a ball diameter of its first position. In low.mov the detector correctly sees it moving, while the gate suppresses its first 1.3 seconds and continues suppressing returns until 2.267 seconds. The video was inspected visually; this is the actual juggled ball.
+
+ISOLATED CHANGE
+Debug-only --stationary-gate-motion-v3 releases an anchor after four consecutive reliable observations show three movements inside the original exclusion radius. It requires finite geometry, confidence >=0.8, stable box dimensions, 25–150 ms between observations, movement >=0.15 diameter on each step and >=0.25 diameter total spatial spread. Missing or ambiguous detections reset the evidence. A single jump or accumulated small jitter cannot release the spot. The ordinary V2 disappearance path is preserved.
+This changes tracking eligibility only. It does not count a touch, relax ground/hand/holding rules, change pose revision, or call a new model. Recovered contacts still incur their normal pose/contact work.
+
+VALIDATION SCOPE
+Four initial diagnostic captures on build 2026103007, followed by 24 paired real-time original-source replays on build 2026103008: ten distinct clips, with repeated low and IMG8606 pairs. Second repeats reverse arm order. All paired runs completed at nominal/fair temperature with exact counter-trace replay, no quality failure and zero queue overflow. This is iPhone 17 only; not a fresh full-corpus or iPhone 11 sign-off.
+
+PAIRED RESULTS — LEGAL CONTACTS ONLY
+Clip / repeat | Current V2 | Motion V3 | Known false current -> candidate
+ball_in_hand / 1 | 0 | 0 | 0 -> 0
+IMG8874 / 1 | 24 | 24 | 0 -> 0
+IMG8606 / 1 | 34 | 33 | 1 -> 1
+IMG8606 / 2 | 33 | 36 | 1 -> 1
+dribbling_with_ball_1 / 1 | 0 | 0 | 0 -> 0
+dribbling_with_ball_2 / 1 | 0 | 0 | 0 -> 0
+dribbling_with_ball_3 / 1 | 0 | 0 | 0 -> 0
+dribbling_with_the_ball_1 / 1 | 0 | 0 | 0 -> 0
+eighteen / 1 | 17 | 18 | 0 -> 0
+juggling_second_ball_in_video / 1 | 28 | 28 | 0 -> 0
+low / 1 | 159 | 163 | 0 -> 0
+low / 2 | 158 | 163 | 0 -> 0
+
+WHAT THE COUNTS MEAN
+Both low.mov candidate runs recover the same five labelled opening kicks: 0.70, 0.98, 1.33, 1.66 and 1.94 seconds. Tracking begins at 0.30 instead of 1.30 seconds; suppressed detector replies fall from 23 to 3. Each candidate run counts 163/195 legal contacts (83.6%) versus 159/195 (81.5%) and 158/195 (81.0%) in the paired controls. The five opening gains are repeatable; these are not claims of five net extra touches in every run.
+Later differences remain. Both low pairs lose 23.11, 28.06 and 37.43 seconds relative to their paired controls. The first pair also loses 4.67 seconds; the second baseline also misses that event. Other later gains/losses are listed in summary.json. These differences cannot be dismissed because the total improves.
+On the first 4.67-second pair, the current run uses RF at 4.567/4.667 s; the candidate uses RF at 4.600/4.700 s. The measured boxes and smoothed turn differ. The candidate never produces the contact: its smoothed rise remains below the ordinary rise threshold and does not meet the stronger impulse guard for the early small-rise probe. No pose-empty result is needed to explain this miss. The saved motion/box evidence is low-4670-input-timing.json.
+On identical recorded detector inputs, the new gate makes no eligibility changes to the other nine tested clips. Their fresh-run count differences, including IMG8606 and eighteen, cannot be credited as recoveries caused by this gate rule. IMG8606 retains its existing labelled false count at about 20.176 seconds in every paired run.
+All five negative controls (held ball and four dribbling clips) remain zero. No new labelled false or unmatched counts were observed in these paired runs. This does not prove safety on untested footage.
+
+PERFORMANCE
+The low-clip frame pipeline p95 stays about 223–225 ms in both arms. Contact-notification p95 is 605/672 ms in the controls and 607/641 ms in the candidates. Peak counter queue depth is 13/16 versus 17/19 (capacity 32), with zero overflow. Pose calls rise from 1661/1666 to 1735/1737 as the recovered start is processed. No claim of zero additional total workload, or of iPhone 11 performance, is made.
+
+CONTRACTS AND REPRODUCIBILITY
+Both DEBUG and release standalone contracts pass 3141 checks against the extracted production gate and original four-clip fixture, including long stationary jitter, single outliers, missing frames, two competing detections, a second stationary ball, invalid geometry/time/confidence and default-off behavior.
+The broader identical-input screen passes 6531 assertions over 12 baseline captures. The only changed eligibility is 20 detector replies in each low.mov capture. The current default reproduces every saved baseline gate verdict exactly.
+Swift debug app build, Python script compilation and git diff whitespace checks pass. Every fresh run verifies the build, active revision/flags, source SHA, end-of-video completion, count consistency and exact numeric trace replay.
+
+DECISION / NEXT TARGET
+Keep this branch-only flag off in ordinary recordings. The startup fix is real and useful, but the combined live pipeline has not met the user requirement to recover contacts without losing others. Next, make measured short-contact confirmation less sensitive to detector sampling around the impact, using positive foot evidence and unchanged hand/ground vetoes; use the saved paired low clips as regression inputs. Do not globally lower rejection thresholds or add per-clip timestamps. Re-run the reviewed corpus and iPhone 11 before promotion.
+The prior revision-2 field app build 2026102913 and its saved 24-touch IMG8874 preview were restored and verified. The preview is paused at zero, outlines are off, and all experimental flags are absent; see restore/verified.json.
+
+KEY FILES
+/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/artifacts/vision-revisions-20261030/stationary-motion-iphone17/summary.json
+/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/artifacts/vision-revisions-20261030/stationary-motion-iphone17/broad-gate-screen.json
+/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/artifacts/vision-revisions-20261030/stationary-motion-iphone17/low-4670-input-timing.json
+/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/artifacts/vision-revisions-20261030/stationary-motion-iphone17/restore/verified.json
+Implementation: kicklab/Detection/StationaryAnchorMotion.swift; StationaryCandidateGate in RFBufferedLivePipeline.swift.
+Reproduce phone comparisons: scripts/run-stationary-motion-iphone17.py --build 2026103008 --clips <IDs> --arms baseline motion --repeat <N>.
+No commit, branch push or release was made in this session.

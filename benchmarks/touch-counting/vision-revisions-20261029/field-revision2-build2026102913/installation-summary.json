@@ -1,0 +1,26 @@
+{
+  "build": "2026102913",
+  "device": "iPhone17 Pro Max",
+  "bundle": "com.juggledude.touchcounting.debug",
+  "profile": "outdoor-balanced-v3-pose-r2-field-20261029",
+  "persistentNormalLaunchDefaults": true,
+  "launchAndRelaunchVerifiedWithoutFlags": true,
+  "countingFlags": 24,
+  "bodyPose": "Swift revision2",
+  "objectTrackerRevision": 1,
+  "integratedHands": false,
+  "smoke": {
+    "source": "IMG_8874.MOV",
+    "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+    "count": 24,
+    "legalReference": 24,
+    "knownFalse": 0,
+    "nominal": true,
+    "lateSourceSkips": 0,
+    "traceReplayExact": true
+  },
+  "configurationChecks": "Standalone assertions passed for field profile, ordinary debug profile and release profile; explicit manual comparisons preserved. App build and git diff checks passed.",
+  "otherDevices": "iPhone11 remains build2026102911 with legacy pose; no installation performed on it this turn.",
+  "release": "Main app/TestFlight unchanged.",
+  "note": "Temporary field-test build only; known corpus regressions remain. Profile selected with config/VisionRevision2FieldTest.xcconfig. Initial floor pickup excluded from24 airborne reference."
+}

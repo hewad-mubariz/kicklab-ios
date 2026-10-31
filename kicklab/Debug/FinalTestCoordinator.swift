@@ -88,7 +88,7 @@ final class FinalTestCoordinator: ObservableObject {
         stage("recording", status: "running", detail: "Finishing writer and live analysis.")
     }
 
-    func captureFinished(_ camera: CameraSession, traceComplete: Bool, touches: [RecordedTouch]) {
+    func captureFinished(_ camera: CameraSession, trace: CounterTrace?, timeOrigin: Double, touches: [RecordedTouch]) {
         guard self.camera === camera, let id = report?.id, let files else { return }
         restoreIdleTimer()
         let stats = camera.capturePerformance
@@ -97,7 +97,7 @@ final class FinalTestCoordinator: ObservableObject {
         let status = camera.recordingError != nil ? "failed" : (stats.duration + 0.1 >= target ? "completed" : "short")
         stage("recording", status: status, detail: camera.recordingError ?? (status == "short" ? "Stopped before target duration." : "Target duration reached."),
               metrics: ["video_seconds": stats.duration, "live_touches": Double(camera.touchCount),
-                        "analyzed_frames": Double(stats.analysedFrames), "numeric_trace_complete": traceComplete ? 1 : 0])
+                        "analyzed_frames": Double(stats.analysedFrames), "numeric_trace_complete": trace?.complete == true ? 1 : 0])
         files.save(stats, as: "capture.json")
         files.save(touches.map { [$0.time, Double($0.index), $0.x, $0.y] }, as: "live-touches.json")
         if let log = camera.performance.logURL {
@@ -123,6 +123,12 @@ final class FinalTestCoordinator: ObservableObject {
                 let info = try await Self.inspectVideo(saved)
                 guard report?.id == id else { return }
                 report?.retainedVideoName = name; report?.sourceSHA256 = digest
+                if let trace, let pipeline = report?.pipeline {
+                    // Guided-test evidence belongs with its original video;
+                    // ordinary analysis-cache eviction must not erase it.
+                    files.saveBinary(CounterTraceArchive(sourceDigest: digest, pipelineSignature: pipeline,
+                        mode: .capture, timeOriginSeconds: timeOrigin, trace: trace), as: "live-counter.plist")
+                }
                 let valid = abs((info["duration_s"] ?? 0) - stats.duration) < 1
                 stage("video", status: valid ? "completed" : "failed", detail: "Original retained. First/last frame decoded; full decoding is checked by fresh analysis.", metrics: info)
                 message = "Video retained. Review replay, run fresh analysis, then Download the export."

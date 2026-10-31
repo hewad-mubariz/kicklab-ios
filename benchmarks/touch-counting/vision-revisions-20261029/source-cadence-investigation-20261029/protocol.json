@@ -1,0 +1,13 @@
+{
+  "build": "2026102920",
+  "device": "iPhone 17 Pro Max",
+  "baseline": "current wall-clock schedule, full evidence window, revision2",
+  "source": "--rf-source-cadence-v4;12Hz source-clock grid;one pending reference to original scheduled image,estimatedRF finish insideexisting200msdelay,maximumpendingage100ms",
+  "workerMLQueueCapacity": 1,
+  "pendingPlannedImageCapacity": 1,
+  "poseFrameThinning": false,
+  "newPixelCopies": false,
+  "counterRulesChanged": false,
+  "defaultChanged": false,
+  "scope": "original-video paced live engine, not normal import or new camera recording"
+}

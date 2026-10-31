@@ -1,0 +1,538 @@
+{
+  "scope": "Saved production counter decisions from the iPhone17 pilot. Event labels predate this comparison. Full landmark evidence remains in each counter.plist.",
+  "events": [
+    {
+      "clip": "clip-a16380ba4a5b",
+      "referenceSeconds": 20.176,
+      "review": "reviewed ground bounce counted by pose2 in both repeats",
+      "arm": "control",
+      "repeat": 1,
+      "nearbyCountSeconds": [],
+      "diagnostic": {
+        "frameIndex": 605,
+        "time": 20.176,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsUncertain",
+        "ball": {
+          "frameIndex": 605,
+          "timestampMs": 20176,
+          "x": 0.57861328125,
+          "y": 0.6298828125,
+          "width": 0.05426025390625,
+          "height": 0.03338623046875,
+          "confidence": 0.9763105287006256
+        },
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.482666015625,
+            "y": 0.55126953125,
+            "width": 0.2393798828125,
+            "height": 0.271728515625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 605,
+        "timestampMs": 20176,
+        "rejection": "disallowedBodyContact",
+        "bodyContactAllowed": false,
+        "fall": 0.014750016729037085,
+        "requiredFall": 0.007,
+        "rise": 0.01109515554375129,
+        "impulse": 0.29450894624206114,
+        "ground": 0.6871337890625,
+        "observedBallBottom": 0.646575927734375,
+        "plantedFeetConfirmed": false
+      }
+    },
+    {
+      "clip": "clip-a16380ba4a5b",
+      "referenceSeconds": 20.176,
+      "review": "reviewed ground bounce counted by pose2 in both repeats",
+      "arm": "control",
+      "repeat": 2,
+      "nearbyCountSeconds": [],
+      "diagnostic": {
+        "frameIndex": 605,
+        "time": 20.176,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsUncertain",
+        "ball": {
+          "frameIndex": 605,
+          "timestampMs": 20176,
+          "x": 0.57861328125,
+          "y": 0.6298828125,
+          "width": 0.05426025390625,
+          "height": 0.03338623046875,
+          "confidence": 0.9763105287006256
+        },
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.482666015625,
+            "y": 0.55126953125,
+            "width": 0.2393798828125,
+            "height": 0.271728515625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 605,
+        "timestampMs": 20176,
+        "rejection": "disallowedBodyContact",
+        "bodyContactAllowed": false,
+        "fall": 0.01602154620488494,
+        "requiredFall": 0.007,
+        "rise": 0.013538520283169264,
+        "impulse": 0.3031864758082777,
+        "ground": 0.6871337890625,
+        "observedBallBottom": 0.646575927734375,
+        "plantedFeetConfirmed": false
+      }
+    },
+    {
+      "clip": "clip-a16380ba4a5b",
+      "referenceSeconds": 20.176,
+      "review": "reviewed ground bounce counted by pose2 in both repeats",
+      "arm": "pose2",
+      "repeat": 1,
+      "nearbyCountSeconds": [
+        20.176
+      ],
+      "diagnostic": {
+        "frameIndex": 605,
+        "time": 20.176,
+        "handConfirmed": false,
+        "ball": {
+          "frameIndex": 605,
+          "timestampMs": 20176,
+          "x": 0.57861328125,
+          "y": 0.6298828125,
+          "width": 0.05426025390625,
+          "height": 0.03338623046875,
+          "confidence": 0.9763105287006256
+        },
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.482666015625,
+            "y": 0.55126953125,
+            "width": 0.2393798828125,
+            "height": 0.271728515625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 605,
+        "timestampMs": 20176,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "fall": 0.014750016729037085,
+        "requiredFall": 0.007,
+        "rise": 0.01109515554375129,
+        "impulse": 0.29450894624206114,
+        "ground": 0.6871337890625,
+        "observedBallBottom": 0.646575927734375,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    },
+    {
+      "clip": "clip-a16380ba4a5b",
+      "referenceSeconds": 20.176,
+      "review": "reviewed ground bounce counted by pose2 in both repeats",
+      "arm": "pose2",
+      "repeat": 2,
+      "nearbyCountSeconds": [
+        20.176
+      ],
+      "diagnostic": {
+        "frameIndex": 605,
+        "time": 20.176,
+        "handConfirmed": false,
+        "ball": {
+          "frameIndex": 605,
+          "timestampMs": 20176,
+          "x": 0.57861328125,
+          "y": 0.6298828125,
+          "width": 0.05426025390625,
+          "height": 0.03338623046875,
+          "confidence": 0.9763105287006256
+        },
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.482666015625,
+            "y": 0.55126953125,
+            "width": 0.2393798828125,
+            "height": 0.271728515625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 605,
+        "timestampMs": 20176,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "fall": 0.014750016729037085,
+        "requiredFall": 0.007,
+        "rise": 0.01109515554375129,
+        "impulse": 0.29450894624206114,
+        "ground": 0.6871337890625,
+        "observedBallBottom": 0.646575927734375,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    },
+    {
+      "clip": "clip-a16380ba4a5b",
+      "referenceSeconds": 20.176,
+      "review": "reviewed ground bounce counted by pose2 in both repeats",
+      "arm": "tracking2",
+      "repeat": 1,
+      "nearbyCountSeconds": [],
+      "diagnostic": {
+        "frameIndex": 588,
+        "time": 20.176,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "handsUncertain",
+        "ball": {
+          "frameIndex": 588,
+          "timestampMs": 20176,
+          "x": 0.57861328125,
+          "y": 0.6298828125,
+          "width": 0.05426025390625,
+          "height": 0.03338623046875,
+          "confidence": 0.9763105287006256
+        },
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.482666015625,
+            "y": 0.55126953125,
+            "width": 0.2393798828125,
+            "height": 0.271728515625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 588,
+        "timestampMs": 20176,
+        "rejection": "disallowedBodyContact",
+        "bodyContactAllowed": false,
+        "fall": 0.014658108105262135,
+        "requiredFall": 0.007,
+        "rise": 0.013522520181205588,
+        "impulse": 0.2967171709533557,
+        "ground": 0.6871337890625,
+        "observedBallBottom": 0.646575927734375,
+        "plantedFeetConfirmed": false
+      }
+    },
+    {
+      "clip": "clip-a16380ba4a5b",
+      "referenceSeconds": 20.176,
+      "review": "reviewed ground bounce counted by pose2 in both repeats",
+      "arm": "tracking2",
+      "repeat": 2,
+      "nearbyCountSeconds": [],
+      "diagnostic": {
+        "frameIndex": 605,
+        "time": 20.176,
+        "rejection": "insufficientImpulse",
+        "handConfirmed": false,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.46923828125,
+            "y": 0.56494140625,
+            "width": 0.26904296875,
+            "height": 0.26220703125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 605,
+        "timestampMs": 20176,
+        "rejection": "insufficientImpulse",
+        "fall": 0.01332722863554947,
+        "requiredFall": 0.007,
+        "rise": 0.008145752161741182,
+        "impulse": 0.19626414324298105,
+        "ground": 0.696044921875,
+        "observedBallBottom": 0.641510009765625
+      }
+    },
+    {
+      "clip": "clip-47a5b3932618",
+      "referenceSeconds": 26.7,
+      "review": "reviewed legal touch missed by pose2 in both repeats",
+      "arm": "control",
+      "repeat": 1,
+      "nearbyCountSeconds": [
+        26.731
+      ],
+      "diagnostic": {
+        "frameIndex": 798,
+        "time": 26.731,
+        "handConfirmed": false,
+        "player": {
+          "state": "locked",
+          "id": 2,
+          "box": {
+            "x": 0.52587890625,
+            "y": 0.4638671875,
+            "width": 0.3271484375,
+            "height": 0.472412109375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 798,
+        "timestampMs": 26731,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.039447428385416594,
+        "requiredFall": 0.02,
+        "rise": 0.018470865885416687,
+        "impulse": 0.758475687966415,
+        "ground": 0.7000732421875,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    },
+    {
+      "clip": "clip-47a5b3932618",
+      "referenceSeconds": 26.7,
+      "review": "reviewed legal touch missed by pose2 in both repeats",
+      "arm": "control",
+      "repeat": 2,
+      "nearbyCountSeconds": [
+        26.731
+      ],
+      "diagnostic": {
+        "frameIndex": 800,
+        "time": 26.731,
+        "handConfirmed": false,
+        "player": {
+          "state": "locked",
+          "id": 2,
+          "box": {
+            "x": 0.52587890625,
+            "y": 0.4638671875,
+            "width": 0.3271484375,
+            "height": 0.472412109375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 800,
+        "timestampMs": 26731,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.039447428385416594,
+        "requiredFall": 0.02,
+        "rise": 0.018470865885416687,
+        "impulse": 0.758475687966415,
+        "ground": 0.7000732421875,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    },
+    {
+      "clip": "clip-47a5b3932618",
+      "referenceSeconds": 26.7,
+      "review": "reviewed legal touch missed by pose2 in both repeats",
+      "arm": "pose2",
+      "repeat": 1,
+      "nearbyCountSeconds": [],
+      "diagnostic": {
+        "frameIndex": 800,
+        "time": 26.731,
+        "rejection": "groundBounce",
+        "handConfirmed": false,
+        "player": {
+          "state": "locked",
+          "id": 2,
+          "box": {
+            "x": 0.52587890625,
+            "y": 0.4638671875,
+            "width": 0.3271484375,
+            "height": 0.472412109375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 800,
+        "timestampMs": 26731,
+        "rejection": "groundBounce",
+        "footConfirmed": false,
+        "fall": 0.08114165500621895,
+        "requiredFall": 0.0075927734375,
+        "rise": 0.015711263020833366,
+        "impulse": 0.7199099227334045,
+        "ground": 0.7000732421875,
+        "plantedFeetConfirmed": true
+      }
+    },
+    {
+      "clip": "clip-47a5b3932618",
+      "referenceSeconds": 26.7,
+      "review": "reviewed legal touch missed by pose2 in both repeats",
+      "arm": "pose2",
+      "repeat": 2,
+      "nearbyCountSeconds": [],
+      "diagnostic": {
+        "frameIndex": 800,
+        "time": 26.731,
+        "rejection": "groundBounce",
+        "handConfirmed": false,
+        "player": {
+          "state": "locked",
+          "id": 2,
+          "box": {
+            "x": 0.52587890625,
+            "y": 0.4638671875,
+            "width": 0.3271484375,
+            "height": 0.472412109375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 800,
+        "timestampMs": 26731,
+        "rejection": "groundBounce",
+        "footConfirmed": false,
+        "fall": 0.08114165500621895,
+        "requiredFall": 0.0075927734375,
+        "rise": 0.015711263020833366,
+        "impulse": 0.7199099227334045,
+        "ground": 0.7000732421875,
+        "plantedFeetConfirmed": true
+      }
+    },
+    {
+      "clip": "clip-47a5b3932618",
+      "referenceSeconds": 26.7,
+      "review": "reviewed legal touch missed by pose2 in both repeats",
+      "arm": "tracking2",
+      "repeat": 1,
+      "nearbyCountSeconds": [
+        26.731
+      ],
+      "diagnostic": {
+        "frameIndex": 799,
+        "time": 26.731,
+        "handConfirmed": false,
+        "ball": {
+          "frameIndex": 799,
+          "timestampMs": 26731,
+          "x": 0.50341796875,
+          "y": 0.630859375,
+          "width": 0.1343994140625,
+          "height": 0.07574462890625,
+          "confidence": 0.9886682464686385
+        },
+        "player": {
+          "state": "locked",
+          "id": 2,
+          "box": {
+            "x": 0.52734375,
+            "y": 0.46337890625,
+            "width": 0.3173828125,
+            "height": 0.463134765625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 799,
+        "timestampMs": 26731,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.10536946614583331,
+        "requiredFall": 0.0075744628906250005,
+        "rise": 0.07096110026041669,
+        "impulse": 1.278956778606965,
+        "ground": 0.6949462890625,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    },
+    {
+      "clip": "clip-47a5b3932618",
+      "referenceSeconds": 26.7,
+      "review": "reviewed legal touch missed by pose2 in both repeats",
+      "arm": "tracking2",
+      "repeat": 2,
+      "nearbyCountSeconds": [
+        26.731
+      ],
+      "diagnostic": {
+        "frameIndex": 800,
+        "time": 26.731,
+        "handConfirmed": false,
+        "player": {
+          "state": "locked",
+          "id": 2,
+          "box": {
+            "x": 0.52587890625,
+            "y": 0.4638671875,
+            "width": 0.3271484375,
+            "height": 0.472412109375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      "decisionScalars": {
+        "frameIndex": 800,
+        "timestampMs": 26731,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.039447428385416594,
+        "requiredFall": 0.02,
+        "rise": 0.018470865885416687,
+        "impulse": 0.6767067980410415,
+        "ground": 0.7000732421875,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    }
+  ]
+}

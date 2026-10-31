@@ -1,0 +1,2356 @@
+[
+  {
+    "arm": "baseline",
+    "run": "clip-a16380ba4a5b-pose2-r1",
+    "acceptedTarget": true,
+    "nearbyDecisions": [
+      {
+        "frameIndex": 506,
+        "timestampMs": 16875,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "fall": 0.16303200870752338,
+        "requiredFall": 0.007,
+        "rise": 0.07920171568791073,
+        "impulse": 1.6739915690324296,
+        "ground": 0.6907958984375,
+        "observedBallBottom": 0.5725125789642334,
+        "handlingChecked": true
+      }
+    ],
+    "diagnostics": [
+      {
+        "frameIndex": 506,
+        "time": 16.875,
+        "handConfirmed": false,
+        "ball": {
+          "frameIndex": 506,
+          "timestampMs": 16875,
+          "x": 0.4146103805965847,
+          "y": 0.549742080271244,
+          "width": 0.07792232301500109,
+          "height": 0.0455409973859787,
+          "confidence": 0.990216123982345
+        },
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5419921875,
+            "y": 0.54296875,
+            "width": 0.315673828125,
+            "height": 0.295654296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ],
+    "sourceInputsAroundImpact": [
+      {
+        "frameIndex": 498,
+        "timestampMs": 16608,
+        "sourceFrameIndex": 996,
+        "ball": {
+          "frameIndex": 498,
+          "timestampMs": 16608,
+          "x": 0.42529296875,
+          "y": 0.423095703125,
+          "width": 0.072509765625,
+          "height": 0.0379638671875,
+          "confidence": 0.9830850867332734
+        },
+        "person": {
+          "x": 0.5888671875,
+          "y": 0.5390625,
+          "width": 0.2666015625,
+          "height": 0.29931640625
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5888671875,
+            "y": 0.5390625,
+            "width": 0.2666015625,
+            "height": 0.29931640625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 499,
+        "timestampMs": 16641,
+        "sourceFrameIndex": 998,
+        "person": {
+          "x": 0.5888671875,
+          "y": 0.5390625,
+          "width": 0.2666015625,
+          "height": 0.29931640625
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5888671875,
+            "y": 0.5390625,
+            "width": 0.2666015625,
+            "height": 0.29931640625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 500,
+        "timestampMs": 16675,
+        "sourceFrameIndex": 1000,
+        "person": {
+          "x": 0.5888671875,
+          "y": 0.5390625,
+          "width": 0.2666015625,
+          "height": 0.29931640625
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5888671875,
+            "y": 0.5390625,
+            "width": 0.2666015625,
+            "height": 0.29931640625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 501,
+        "timestampMs": 16708,
+        "sourceFrameIndex": 1002,
+        "ball": {
+          "frameIndex": 501,
+          "timestampMs": 16708,
+          "x": 0.4228515625,
+          "y": 0.4765625,
+          "width": 0.07598876953125,
+          "height": 0.041900634765625,
+          "confidence": 0.9853843298993641
+        },
+        "person": {
+          "x": 0.5947265625,
+          "y": 0.54052734375,
+          "width": 0.22021484375,
+          "height": 0.29638671875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5947265625,
+            "y": 0.54052734375,
+            "width": 0.22021484375,
+            "height": 0.29638671875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 502,
+        "timestampMs": 16741,
+        "sourceFrameIndex": 1004,
+        "person": {
+          "x": 0.5947265625,
+          "y": 0.54052734375,
+          "width": 0.22021484375,
+          "height": 0.29638671875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5947265625,
+            "y": 0.54052734375,
+            "width": 0.22021484375,
+            "height": 0.29638671875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 503,
+        "timestampMs": 16775,
+        "sourceFrameIndex": 1006,
+        "person": {
+          "x": 0.5947265625,
+          "y": 0.54052734375,
+          "width": 0.22021484375,
+          "height": 0.29638671875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5947265625,
+            "y": 0.54052734375,
+            "width": 0.22021484375,
+            "height": 0.29638671875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 504,
+        "timestampMs": 16808,
+        "sourceFrameIndex": 1008,
+        "ball": {
+          "frameIndex": 504,
+          "timestampMs": 16808,
+          "x": 0.414794921875,
+          "y": 0.548828125,
+          "width": 0.07806396484375,
+          "height": 0.045623779296875,
+          "confidence": 0.990216123982345
+        },
+        "person": {
+          "x": 0.5419921875,
+          "y": 0.54296875,
+          "width": 0.315673828125,
+          "height": 0.295654296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5419921875,
+            "y": 0.54296875,
+            "width": 0.315673828125,
+            "height": 0.295654296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 505,
+        "timestampMs": 16841,
+        "sourceFrameIndex": 1010,
+        "ball": {
+          "frameIndex": 505,
+          "timestampMs": 16841,
+          "x": 0.4111236572265625,
+          "y": 0.5779586553573608,
+          "width": 0.07806396484375,
+          "height": 0.045623779296875,
+          "confidence": 0.990216123982345
+        },
+        "person": {
+          "x": 0.5419921875,
+          "y": 0.54296875,
+          "width": 0.315673828125,
+          "height": 0.295654296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5419921875,
+            "y": 0.54296875,
+            "width": 0.315673828125,
+            "height": 0.295654296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 506,
+        "timestampMs": 16875,
+        "sourceFrameIndex": 1012,
+        "ball": {
+          "frameIndex": 506,
+          "timestampMs": 16875,
+          "x": 0.4146103805965847,
+          "y": 0.549742080271244,
+          "width": 0.07792232301500109,
+          "height": 0.0455409973859787,
+          "confidence": 0.990216123982345
+        },
+        "person": {
+          "x": 0.5419921875,
+          "y": 0.54296875,
+          "width": 0.315673828125,
+          "height": 0.295654296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5419921875,
+            "y": 0.54296875,
+            "width": 0.315673828125,
+            "height": 0.295654296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 507,
+        "timestampMs": 16908,
+        "sourceFrameIndex": 1014,
+        "ball": {
+          "frameIndex": 507,
+          "timestampMs": 16908,
+          "x": 0.429443359375,
+          "y": 0.50732421875,
+          "width": 0.076416015625,
+          "height": 0.047454833984375,
+          "confidence": 0.989908684514805
+        },
+        "person": {
+          "x": 0.53271484375,
+          "y": 0.54248046875,
+          "width": 0.321044921875,
+          "height": 0.302734375
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53271484375,
+            "y": 0.54248046875,
+            "width": 0.321044921875,
+            "height": 0.302734375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 508,
+        "timestampMs": 16941,
+        "sourceFrameIndex": 1016,
+        "person": {
+          "x": 0.53271484375,
+          "y": 0.54248046875,
+          "width": 0.321044921875,
+          "height": 0.302734375
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53271484375,
+            "y": 0.54248046875,
+            "width": 0.321044921875,
+            "height": 0.302734375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 509,
+        "timestampMs": 16975,
+        "sourceFrameIndex": 1018,
+        "person": {
+          "x": 0.53271484375,
+          "y": 0.54248046875,
+          "width": 0.321044921875,
+          "height": 0.302734375
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53271484375,
+            "y": 0.54248046875,
+            "width": 0.321044921875,
+            "height": 0.302734375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ]
+  },
+  {
+    "arm": "baseline",
+    "run": "clip-a16380ba4a5b-pose2-r2",
+    "acceptedTarget": true,
+    "nearbyDecisions": [
+      {
+        "frameIndex": 505,
+        "timestampMs": 16841,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "fall": 0.1652724636134817,
+        "requiredFall": 0.007,
+        "rise": 0.0396901631711134,
+        "impulse": 1.4716367607973613,
+        "ground": 0.6905517578125,
+        "observedBallBottom": 0.5725356578826905,
+        "handlingChecked": true
+      }
+    ],
+    "diagnostics": [
+      {
+        "frameIndex": 505,
+        "time": 16.841,
+        "handConfirmed": false,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.55859375,
+            "y": 0.54345703125,
+            "width": 0.283447265625,
+            "height": 0.294189453125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ],
+    "sourceInputsAroundImpact": [
+      {
+        "frameIndex": 498,
+        "timestampMs": 16608,
+        "sourceFrameIndex": 996,
+        "person": {
+          "x": 0.5869140625,
+          "y": 0.53759765625,
+          "width": 0.276611328125,
+          "height": 0.29931640625
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5869140625,
+            "y": 0.53759765625,
+            "width": 0.276611328125,
+            "height": 0.29931640625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 499,
+        "timestampMs": 16641,
+        "sourceFrameIndex": 998,
+        "person": {
+          "x": 0.5869140625,
+          "y": 0.53759765625,
+          "width": 0.276611328125,
+          "height": 0.29931640625
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5869140625,
+            "y": 0.53759765625,
+            "width": 0.276611328125,
+            "height": 0.29931640625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 500,
+        "timestampMs": 16675,
+        "sourceFrameIndex": 1000,
+        "ball": {
+          "frameIndex": 500,
+          "timestampMs": 16675,
+          "x": 0.427001953125,
+          "y": 0.456298828125,
+          "width": 0.08331298828125,
+          "height": 0.03912353515625,
+          "confidence": 0.49281360526104684
+        },
+        "person": {
+          "x": 0.59228515625,
+          "y": 0.5400390625,
+          "width": 0.2333984375,
+          "height": 0.294921875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59228515625,
+            "y": 0.5400390625,
+            "width": 0.2333984375,
+            "height": 0.294921875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 501,
+        "timestampMs": 16708,
+        "sourceFrameIndex": 1002,
+        "person": {
+          "x": 0.59228515625,
+          "y": 0.5400390625,
+          "width": 0.2333984375,
+          "height": 0.294921875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59228515625,
+            "y": 0.5400390625,
+            "width": 0.2333984375,
+            "height": 0.294921875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 502,
+        "timestampMs": 16741,
+        "sourceFrameIndex": 1004,
+        "person": {
+          "x": 0.59228515625,
+          "y": 0.5400390625,
+          "width": 0.2333984375,
+          "height": 0.294921875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59228515625,
+            "y": 0.5400390625,
+            "width": 0.2333984375,
+            "height": 0.294921875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 503,
+        "timestampMs": 16775,
+        "sourceFrameIndex": 1006,
+        "ball": {
+          "frameIndex": 503,
+          "timestampMs": 16775,
+          "x": 0.41748046875,
+          "y": 0.52197265625,
+          "width": 0.075439453125,
+          "height": 0.045989990234375,
+          "confidence": 0.9924227587321393
+        },
+        "person": {
+          "x": 0.55859375,
+          "y": 0.54345703125,
+          "width": 0.283447265625,
+          "height": 0.294189453125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.55859375,
+            "y": 0.54345703125,
+            "width": 0.283447265625,
+            "height": 0.294189453125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 504,
+        "timestampMs": 16808,
+        "sourceFrameIndex": 1008,
+        "ball": {
+          "frameIndex": 504,
+          "timestampMs": 16808,
+          "x": 0.41473982069227433,
+          "y": 0.549540662765503,
+          "width": 0.075439453125,
+          "height": 0.045989990234375,
+          "confidence": 0.9924227587321393
+        },
+        "person": {
+          "x": 0.55859375,
+          "y": 0.54345703125,
+          "width": 0.283447265625,
+          "height": 0.294189453125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.55859375,
+            "y": 0.54345703125,
+            "width": 0.283447265625,
+            "height": 0.294189453125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 505,
+        "timestampMs": 16841,
+        "sourceFrameIndex": 1010,
+        "person": {
+          "x": 0.55859375,
+          "y": 0.54345703125,
+          "width": 0.283447265625,
+          "height": 0.294189453125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.55859375,
+            "y": 0.54345703125,
+            "width": 0.283447265625,
+            "height": 0.294189453125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 506,
+        "timestampMs": 16875,
+        "sourceFrameIndex": 1012,
+        "ball": {
+          "frameIndex": 506,
+          "timestampMs": 16875,
+          "x": 0.41943359375,
+          "y": 0.5478515625,
+          "width": 0.07769775390625,
+          "height": 0.04461669921875,
+          "confidence": 0.9890554225990201
+        },
+        "person": {
+          "x": 0.5322265625,
+          "y": 0.54345703125,
+          "width": 0.320068359375,
+          "height": 0.30029296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5322265625,
+            "y": 0.54345703125,
+            "width": 0.320068359375,
+            "height": 0.30029296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 507,
+        "timestampMs": 16908,
+        "sourceFrameIndex": 1014,
+        "person": {
+          "x": 0.5322265625,
+          "y": 0.54345703125,
+          "width": 0.320068359375,
+          "height": 0.30029296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5322265625,
+            "y": 0.54345703125,
+            "width": 0.320068359375,
+            "height": 0.30029296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 508,
+        "timestampMs": 16941,
+        "sourceFrameIndex": 1016,
+        "person": {
+          "x": 0.5322265625,
+          "y": 0.54345703125,
+          "width": 0.320068359375,
+          "height": 0.30029296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5322265625,
+            "y": 0.54345703125,
+            "width": 0.320068359375,
+            "height": 0.30029296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 509,
+        "timestampMs": 16975,
+        "sourceFrameIndex": 1018,
+        "ball": {
+          "frameIndex": 509,
+          "timestampMs": 16975,
+          "x": 0.449462890625,
+          "y": 0.43017578125,
+          "width": 0.079345703125,
+          "height": 0.041473388671875,
+          "confidence": 0.9809855660757951
+        },
+        "person": {
+          "x": 0.53515625,
+          "y": 0.544921875,
+          "width": 0.302001953125,
+          "height": 0.30615234375
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53515625,
+            "y": 0.544921875,
+            "width": 0.302001953125,
+            "height": 0.30615234375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ]
+  },
+  {
+    "arm": "baseline",
+    "run": "clip-a16380ba4a5b-pose2-r3",
+    "acceptedTarget": true,
+    "nearbyDecisions": [
+      {
+        "frameIndex": 506,
+        "timestampMs": 16875,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "fall": 0.16303200870752338,
+        "requiredFall": 0.007,
+        "rise": 0.07920171568791073,
+        "impulse": 1.6739915690324296,
+        "ground": 0.6907958984375,
+        "observedBallBottom": 0.5725125789642334,
+        "handlingChecked": true
+      }
+    ],
+    "diagnostics": [
+      {
+        "frameIndex": 506,
+        "time": 16.875,
+        "handConfirmed": false,
+        "ball": {
+          "frameIndex": 506,
+          "timestampMs": 16875,
+          "x": 0.4146103805965847,
+          "y": 0.549742080271244,
+          "width": 0.07792232301500109,
+          "height": 0.0455409973859787,
+          "confidence": 0.990216123982345
+        },
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5419921875,
+            "y": 0.54296875,
+            "width": 0.315673828125,
+            "height": 0.295654296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ],
+    "sourceInputsAroundImpact": [
+      {
+        "frameIndex": 498,
+        "timestampMs": 16608,
+        "sourceFrameIndex": 996,
+        "ball": {
+          "frameIndex": 498,
+          "timestampMs": 16608,
+          "x": 0.42529296875,
+          "y": 0.423095703125,
+          "width": 0.072509765625,
+          "height": 0.0379638671875,
+          "confidence": 0.9830850867332734
+        },
+        "person": {
+          "x": 0.5888671875,
+          "y": 0.5390625,
+          "width": 0.2666015625,
+          "height": 0.29931640625
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5888671875,
+            "y": 0.5390625,
+            "width": 0.2666015625,
+            "height": 0.29931640625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 499,
+        "timestampMs": 16641,
+        "sourceFrameIndex": 998,
+        "person": {
+          "x": 0.5888671875,
+          "y": 0.5390625,
+          "width": 0.2666015625,
+          "height": 0.29931640625
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5888671875,
+            "y": 0.5390625,
+            "width": 0.2666015625,
+            "height": 0.29931640625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 500,
+        "timestampMs": 16675,
+        "sourceFrameIndex": 1000,
+        "person": {
+          "x": 0.5888671875,
+          "y": 0.5390625,
+          "width": 0.2666015625,
+          "height": 0.29931640625
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5888671875,
+            "y": 0.5390625,
+            "width": 0.2666015625,
+            "height": 0.29931640625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 501,
+        "timestampMs": 16708,
+        "sourceFrameIndex": 1002,
+        "ball": {
+          "frameIndex": 501,
+          "timestampMs": 16708,
+          "x": 0.4228515625,
+          "y": 0.4765625,
+          "width": 0.07598876953125,
+          "height": 0.041900634765625,
+          "confidence": 0.9853843298993641
+        },
+        "person": {
+          "x": 0.5947265625,
+          "y": 0.54052734375,
+          "width": 0.22021484375,
+          "height": 0.29638671875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5947265625,
+            "y": 0.54052734375,
+            "width": 0.22021484375,
+            "height": 0.29638671875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 502,
+        "timestampMs": 16741,
+        "sourceFrameIndex": 1004,
+        "person": {
+          "x": 0.5947265625,
+          "y": 0.54052734375,
+          "width": 0.22021484375,
+          "height": 0.29638671875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5947265625,
+            "y": 0.54052734375,
+            "width": 0.22021484375,
+            "height": 0.29638671875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 503,
+        "timestampMs": 16775,
+        "sourceFrameIndex": 1006,
+        "person": {
+          "x": 0.5947265625,
+          "y": 0.54052734375,
+          "width": 0.22021484375,
+          "height": 0.29638671875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5947265625,
+            "y": 0.54052734375,
+            "width": 0.22021484375,
+            "height": 0.29638671875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 504,
+        "timestampMs": 16808,
+        "sourceFrameIndex": 1008,
+        "ball": {
+          "frameIndex": 504,
+          "timestampMs": 16808,
+          "x": 0.414794921875,
+          "y": 0.548828125,
+          "width": 0.07806396484375,
+          "height": 0.045623779296875,
+          "confidence": 0.990216123982345
+        },
+        "person": {
+          "x": 0.5419921875,
+          "y": 0.54296875,
+          "width": 0.315673828125,
+          "height": 0.295654296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5419921875,
+            "y": 0.54296875,
+            "width": 0.315673828125,
+            "height": 0.295654296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 505,
+        "timestampMs": 16841,
+        "sourceFrameIndex": 1010,
+        "ball": {
+          "frameIndex": 505,
+          "timestampMs": 16841,
+          "x": 0.4111236572265625,
+          "y": 0.5779586553573608,
+          "width": 0.07806396484375,
+          "height": 0.045623779296875,
+          "confidence": 0.990216123982345
+        },
+        "person": {
+          "x": 0.5419921875,
+          "y": 0.54296875,
+          "width": 0.315673828125,
+          "height": 0.295654296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5419921875,
+            "y": 0.54296875,
+            "width": 0.315673828125,
+            "height": 0.295654296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 506,
+        "timestampMs": 16875,
+        "sourceFrameIndex": 1012,
+        "ball": {
+          "frameIndex": 506,
+          "timestampMs": 16875,
+          "x": 0.4146103805965847,
+          "y": 0.549742080271244,
+          "width": 0.07792232301500109,
+          "height": 0.0455409973859787,
+          "confidence": 0.990216123982345
+        },
+        "person": {
+          "x": 0.5419921875,
+          "y": 0.54296875,
+          "width": 0.315673828125,
+          "height": 0.295654296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5419921875,
+            "y": 0.54296875,
+            "width": 0.315673828125,
+            "height": 0.295654296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 507,
+        "timestampMs": 16908,
+        "sourceFrameIndex": 1014,
+        "ball": {
+          "frameIndex": 507,
+          "timestampMs": 16908,
+          "x": 0.429443359375,
+          "y": 0.50732421875,
+          "width": 0.076416015625,
+          "height": 0.047454833984375,
+          "confidence": 0.989908684514805
+        },
+        "person": {
+          "x": 0.53271484375,
+          "y": 0.54248046875,
+          "width": 0.321044921875,
+          "height": 0.302734375
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53271484375,
+            "y": 0.54248046875,
+            "width": 0.321044921875,
+            "height": 0.302734375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 508,
+        "timestampMs": 16941,
+        "sourceFrameIndex": 1016,
+        "person": {
+          "x": 0.53271484375,
+          "y": 0.54248046875,
+          "width": 0.321044921875,
+          "height": 0.302734375
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53271484375,
+            "y": 0.54248046875,
+            "width": 0.321044921875,
+            "height": 0.302734375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 509,
+        "timestampMs": 16975,
+        "sourceFrameIndex": 1018,
+        "person": {
+          "x": 0.53271484375,
+          "y": 0.54248046875,
+          "width": 0.321044921875,
+          "height": 0.302734375
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53271484375,
+            "y": 0.54248046875,
+            "width": 0.321044921875,
+            "height": 0.302734375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ]
+  },
+  {
+    "arm": "shared",
+    "run": "clip-a16380ba4a5b-pose2-r1",
+    "acceptedTarget": false,
+    "nearbyDecisions": [
+      {
+        "frameIndex": 504,
+        "timestampMs": 16808,
+        "rejection": "disallowedBodyContact",
+        "bodyContactAllowed": false,
+        "fall": 0.1665800333023072,
+        "requiredFall": 0.007,
+        "rise": 0.018429988225301175,
+        "impulse": 1.2138727055260197,
+        "ground": 0.6905517578125,
+        "observedBallBottom": 0.5451294422149658
+      }
+    ],
+    "diagnostics": [
+      {
+        "frameIndex": 504,
+        "time": 16.808,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "missingPose",
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5771484375,
+            "y": 0.54248046875,
+            "width": 0.251708984375,
+            "height": 0.296142578125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ],
+    "sourceInputsAroundImpact": [
+      {
+        "frameIndex": 498,
+        "timestampMs": 16608,
+        "sourceFrameIndex": 996,
+        "person": {
+          "x": 0.5830078125,
+          "y": 0.53564453125,
+          "width": 0.272216796875,
+          "height": 0.301513671875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5830078125,
+            "y": 0.53564453125,
+            "width": 0.272216796875,
+            "height": 0.301513671875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 499,
+        "timestampMs": 16641,
+        "sourceFrameIndex": 998,
+        "ball": {
+          "frameIndex": 499,
+          "timestampMs": 16641,
+          "x": 0.425048828125,
+          "y": 0.437744140625,
+          "width": 0.07586669921875,
+          "height": 0.035308837890625,
+          "confidence": 0.9480584384987739
+        },
+        "person": {
+          "x": 0.59130859375,
+          "y": 0.54052734375,
+          "width": 0.25146484375,
+          "height": 0.297607421875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59130859375,
+            "y": 0.54052734375,
+            "width": 0.25146484375,
+            "height": 0.297607421875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 500,
+        "timestampMs": 16675,
+        "sourceFrameIndex": 1000,
+        "person": {
+          "x": 0.59130859375,
+          "y": 0.54052734375,
+          "width": 0.25146484375,
+          "height": 0.297607421875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59130859375,
+            "y": 0.54052734375,
+            "width": 0.25146484375,
+            "height": 0.297607421875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 501,
+        "timestampMs": 16708,
+        "sourceFrameIndex": 1002,
+        "person": {
+          "x": 0.59130859375,
+          "y": 0.54052734375,
+          "width": 0.25146484375,
+          "height": 0.297607421875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59130859375,
+            "y": 0.54052734375,
+            "width": 0.25146484375,
+            "height": 0.297607421875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 502,
+        "timestampMs": 16741,
+        "sourceFrameIndex": 1004,
+        "ball": {
+          "frameIndex": 502,
+          "timestampMs": 16741,
+          "x": 0.42138671875,
+          "y": 0.496337890625,
+          "width": 0.07525634765625,
+          "height": 0.044830322265625,
+          "confidence": 0.983847165177859
+        },
+        "person": {
+          "x": 0.5771484375,
+          "y": 0.54248046875,
+          "width": 0.251708984375,
+          "height": 0.296142578125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5771484375,
+            "y": 0.54248046875,
+            "width": 0.251708984375,
+            "height": 0.296142578125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 503,
+        "timestampMs": 16775,
+        "sourceFrameIndex": 1006,
+        "ball": {
+          "frameIndex": 503,
+          "timestampMs": 16775,
+          "x": 0.41790237426757815,
+          "y": 0.5227142810821533,
+          "width": 0.07525634765625,
+          "height": 0.044830322265625,
+          "confidence": 0.983847165177859
+        },
+        "person": {
+          "x": 0.5771484375,
+          "y": 0.54248046875,
+          "width": 0.251708984375,
+          "height": 0.296142578125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5771484375,
+            "y": 0.54248046875,
+            "width": 0.251708984375,
+            "height": 0.296142578125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 504,
+        "timestampMs": 16808,
+        "sourceFrameIndex": 1008,
+        "person": {
+          "x": 0.5771484375,
+          "y": 0.54248046875,
+          "width": 0.251708984375,
+          "height": 0.296142578125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5771484375,
+            "y": 0.54248046875,
+            "width": 0.251708984375,
+            "height": 0.296142578125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 505,
+        "timestampMs": 16841,
+        "sourceFrameIndex": 1010,
+        "ball": {
+          "frameIndex": 505,
+          "timestampMs": 16841,
+          "x": 0.412841796875,
+          "y": 0.57666015625,
+          "width": 0.07586669921875,
+          "height": 0.045074462890625,
+          "confidence": 0.9741412240872889
+        },
+        "person": {
+          "x": 0.533203125,
+          "y": 0.54296875,
+          "width": 0.3251953125,
+          "height": 0.29736328125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.533203125,
+            "y": 0.54296875,
+            "width": 0.3251953125,
+            "height": 0.29736328125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 506,
+        "timestampMs": 16875,
+        "sourceFrameIndex": 1012,
+        "person": {
+          "x": 0.533203125,
+          "y": 0.54296875,
+          "width": 0.3251953125,
+          "height": 0.29736328125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.533203125,
+            "y": 0.54296875,
+            "width": 0.3251953125,
+            "height": 0.29736328125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 507,
+        "timestampMs": 16908,
+        "sourceFrameIndex": 1014,
+        "person": {
+          "x": 0.533203125,
+          "y": 0.54296875,
+          "width": 0.3251953125,
+          "height": 0.29736328125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.533203125,
+            "y": 0.54296875,
+            "width": 0.3251953125,
+            "height": 0.29736328125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 508,
+        "timestampMs": 16941,
+        "sourceFrameIndex": 1016,
+        "ball": {
+          "frameIndex": 508,
+          "timestampMs": 16941,
+          "x": 0.44189453125,
+          "y": 0.468505859375,
+          "width": 0.06475830078125,
+          "height": 0.04144287109375,
+          "confidence": 0.9767580751989804
+        },
+        "person": {
+          "x": 0.53515625,
+          "y": 0.54296875,
+          "width": 0.30712890625,
+          "height": 0.3046875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53515625,
+            "y": 0.54296875,
+            "width": 0.30712890625,
+            "height": 0.3046875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 509,
+        "timestampMs": 16975,
+        "sourceFrameIndex": 1018,
+        "person": {
+          "x": 0.53515625,
+          "y": 0.54296875,
+          "width": 0.30712890625,
+          "height": 0.3046875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53515625,
+            "y": 0.54296875,
+            "width": 0.30712890625,
+            "height": 0.3046875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ]
+  },
+  {
+    "arm": "shared",
+    "run": "clip-a16380ba4a5b-pose2-r2",
+    "acceptedTarget": true,
+    "nearbyDecisions": [
+      {
+        "frameIndex": 505,
+        "timestampMs": 16841,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "fall": 0.1652724636134817,
+        "requiredFall": 0.007,
+        "rise": 0.0396901631711134,
+        "impulse": 1.4716367607973613,
+        "ground": 0.6905517578125,
+        "observedBallBottom": 0.5725356578826905,
+        "handlingChecked": true
+      }
+    ],
+    "diagnostics": [
+      {
+        "frameIndex": 505,
+        "time": 16.841,
+        "handConfirmed": false,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.55859375,
+            "y": 0.54345703125,
+            "width": 0.283447265625,
+            "height": 0.294189453125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ],
+    "sourceInputsAroundImpact": [
+      {
+        "frameIndex": 498,
+        "timestampMs": 16608,
+        "sourceFrameIndex": 996,
+        "person": {
+          "x": 0.5869140625,
+          "y": 0.53759765625,
+          "width": 0.276611328125,
+          "height": 0.29931640625
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5869140625,
+            "y": 0.53759765625,
+            "width": 0.276611328125,
+            "height": 0.29931640625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 499,
+        "timestampMs": 16641,
+        "sourceFrameIndex": 998,
+        "person": {
+          "x": 0.5869140625,
+          "y": 0.53759765625,
+          "width": 0.276611328125,
+          "height": 0.29931640625
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5869140625,
+            "y": 0.53759765625,
+            "width": 0.276611328125,
+            "height": 0.29931640625
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 500,
+        "timestampMs": 16675,
+        "sourceFrameIndex": 1000,
+        "ball": {
+          "frameIndex": 500,
+          "timestampMs": 16675,
+          "x": 0.427001953125,
+          "y": 0.456298828125,
+          "width": 0.08331298828125,
+          "height": 0.03912353515625,
+          "confidence": 0.49281360526104684
+        },
+        "person": {
+          "x": 0.59228515625,
+          "y": 0.5400390625,
+          "width": 0.2333984375,
+          "height": 0.294921875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59228515625,
+            "y": 0.5400390625,
+            "width": 0.2333984375,
+            "height": 0.294921875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 501,
+        "timestampMs": 16708,
+        "sourceFrameIndex": 1002,
+        "person": {
+          "x": 0.59228515625,
+          "y": 0.5400390625,
+          "width": 0.2333984375,
+          "height": 0.294921875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59228515625,
+            "y": 0.5400390625,
+            "width": 0.2333984375,
+            "height": 0.294921875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 502,
+        "timestampMs": 16741,
+        "sourceFrameIndex": 1004,
+        "person": {
+          "x": 0.59228515625,
+          "y": 0.5400390625,
+          "width": 0.2333984375,
+          "height": 0.294921875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59228515625,
+            "y": 0.5400390625,
+            "width": 0.2333984375,
+            "height": 0.294921875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 503,
+        "timestampMs": 16775,
+        "sourceFrameIndex": 1006,
+        "ball": {
+          "frameIndex": 503,
+          "timestampMs": 16775,
+          "x": 0.41748046875,
+          "y": 0.52197265625,
+          "width": 0.075439453125,
+          "height": 0.045989990234375,
+          "confidence": 0.9924227587321393
+        },
+        "person": {
+          "x": 0.55859375,
+          "y": 0.54345703125,
+          "width": 0.283447265625,
+          "height": 0.294189453125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.55859375,
+            "y": 0.54345703125,
+            "width": 0.283447265625,
+            "height": 0.294189453125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 504,
+        "timestampMs": 16808,
+        "sourceFrameIndex": 1008,
+        "ball": {
+          "frameIndex": 504,
+          "timestampMs": 16808,
+          "x": 0.41473982069227433,
+          "y": 0.549540662765503,
+          "width": 0.075439453125,
+          "height": 0.045989990234375,
+          "confidence": 0.9924227587321393
+        },
+        "person": {
+          "x": 0.55859375,
+          "y": 0.54345703125,
+          "width": 0.283447265625,
+          "height": 0.294189453125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.55859375,
+            "y": 0.54345703125,
+            "width": 0.283447265625,
+            "height": 0.294189453125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 505,
+        "timestampMs": 16841,
+        "sourceFrameIndex": 1010,
+        "person": {
+          "x": 0.55859375,
+          "y": 0.54345703125,
+          "width": 0.283447265625,
+          "height": 0.294189453125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.55859375,
+            "y": 0.54345703125,
+            "width": 0.283447265625,
+            "height": 0.294189453125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 506,
+        "timestampMs": 16875,
+        "sourceFrameIndex": 1012,
+        "ball": {
+          "frameIndex": 506,
+          "timestampMs": 16875,
+          "x": 0.41943359375,
+          "y": 0.5478515625,
+          "width": 0.07769775390625,
+          "height": 0.04461669921875,
+          "confidence": 0.9890554225990201
+        },
+        "person": {
+          "x": 0.5322265625,
+          "y": 0.54345703125,
+          "width": 0.320068359375,
+          "height": 0.30029296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5322265625,
+            "y": 0.54345703125,
+            "width": 0.320068359375,
+            "height": 0.30029296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 507,
+        "timestampMs": 16908,
+        "sourceFrameIndex": 1014,
+        "person": {
+          "x": 0.5322265625,
+          "y": 0.54345703125,
+          "width": 0.320068359375,
+          "height": 0.30029296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5322265625,
+            "y": 0.54345703125,
+            "width": 0.320068359375,
+            "height": 0.30029296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 508,
+        "timestampMs": 16941,
+        "sourceFrameIndex": 1016,
+        "person": {
+          "x": 0.5322265625,
+          "y": 0.54345703125,
+          "width": 0.320068359375,
+          "height": 0.30029296875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5322265625,
+            "y": 0.54345703125,
+            "width": 0.320068359375,
+            "height": 0.30029296875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 509,
+        "timestampMs": 16975,
+        "sourceFrameIndex": 1018,
+        "ball": {
+          "frameIndex": 509,
+          "timestampMs": 16975,
+          "x": 0.449462890625,
+          "y": 0.43017578125,
+          "width": 0.079345703125,
+          "height": 0.041473388671875,
+          "confidence": 0.9809855660757951
+        },
+        "person": {
+          "x": 0.53515625,
+          "y": 0.544921875,
+          "width": 0.302001953125,
+          "height": 0.30615234375
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53515625,
+            "y": 0.544921875,
+            "width": 0.302001953125,
+            "height": 0.30615234375
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ]
+  },
+  {
+    "arm": "shared",
+    "run": "clip-a16380ba4a5b-pose2-r3",
+    "acceptedTarget": false,
+    "nearbyDecisions": [
+      {
+        "frameIndex": 504,
+        "timestampMs": 16808,
+        "rejection": "disallowedBodyContact",
+        "bodyContactAllowed": false,
+        "fall": 0.1665800333023072,
+        "requiredFall": 0.007,
+        "rise": 0.018429988225301175,
+        "impulse": 1.2138727055260197,
+        "ground": 0.6905517578125,
+        "observedBallBottom": 0.5451294422149658
+      }
+    ],
+    "diagnostics": [
+      {
+        "frameIndex": 504,
+        "time": 16.808,
+        "rejection": "disallowedBodyContact",
+        "handConfirmed": false,
+        "bodyFailure": "missingPose",
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5771484375,
+            "y": 0.54248046875,
+            "width": 0.251708984375,
+            "height": 0.296142578125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ],
+    "sourceInputsAroundImpact": [
+      {
+        "frameIndex": 498,
+        "timestampMs": 16608,
+        "sourceFrameIndex": 996,
+        "person": {
+          "x": 0.5830078125,
+          "y": 0.53564453125,
+          "width": 0.272216796875,
+          "height": 0.301513671875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5830078125,
+            "y": 0.53564453125,
+            "width": 0.272216796875,
+            "height": 0.301513671875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 499,
+        "timestampMs": 16641,
+        "sourceFrameIndex": 998,
+        "ball": {
+          "frameIndex": 499,
+          "timestampMs": 16641,
+          "x": 0.425048828125,
+          "y": 0.437744140625,
+          "width": 0.07586669921875,
+          "height": 0.035308837890625,
+          "confidence": 0.9480584384987739
+        },
+        "person": {
+          "x": 0.59130859375,
+          "y": 0.54052734375,
+          "width": 0.25146484375,
+          "height": 0.297607421875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59130859375,
+            "y": 0.54052734375,
+            "width": 0.25146484375,
+            "height": 0.297607421875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 500,
+        "timestampMs": 16675,
+        "sourceFrameIndex": 1000,
+        "person": {
+          "x": 0.59130859375,
+          "y": 0.54052734375,
+          "width": 0.25146484375,
+          "height": 0.297607421875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59130859375,
+            "y": 0.54052734375,
+            "width": 0.25146484375,
+            "height": 0.297607421875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 501,
+        "timestampMs": 16708,
+        "sourceFrameIndex": 1002,
+        "person": {
+          "x": 0.59130859375,
+          "y": 0.54052734375,
+          "width": 0.25146484375,
+          "height": 0.297607421875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.59130859375,
+            "y": 0.54052734375,
+            "width": 0.25146484375,
+            "height": 0.297607421875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 502,
+        "timestampMs": 16741,
+        "sourceFrameIndex": 1004,
+        "ball": {
+          "frameIndex": 502,
+          "timestampMs": 16741,
+          "x": 0.42138671875,
+          "y": 0.496337890625,
+          "width": 0.07525634765625,
+          "height": 0.044830322265625,
+          "confidence": 0.983847165177859
+        },
+        "person": {
+          "x": 0.5771484375,
+          "y": 0.54248046875,
+          "width": 0.251708984375,
+          "height": 0.296142578125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5771484375,
+            "y": 0.54248046875,
+            "width": 0.251708984375,
+            "height": 0.296142578125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 503,
+        "timestampMs": 16775,
+        "sourceFrameIndex": 1006,
+        "ball": {
+          "frameIndex": 503,
+          "timestampMs": 16775,
+          "x": 0.41790237426757815,
+          "y": 0.5227142810821533,
+          "width": 0.07525634765625,
+          "height": 0.044830322265625,
+          "confidence": 0.983847165177859
+        },
+        "person": {
+          "x": 0.5771484375,
+          "y": 0.54248046875,
+          "width": 0.251708984375,
+          "height": 0.296142578125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5771484375,
+            "y": 0.54248046875,
+            "width": 0.251708984375,
+            "height": 0.296142578125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 504,
+        "timestampMs": 16808,
+        "sourceFrameIndex": 1008,
+        "person": {
+          "x": 0.5771484375,
+          "y": 0.54248046875,
+          "width": 0.251708984375,
+          "height": 0.296142578125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.5771484375,
+            "y": 0.54248046875,
+            "width": 0.251708984375,
+            "height": 0.296142578125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 505,
+        "timestampMs": 16841,
+        "sourceFrameIndex": 1010,
+        "ball": {
+          "frameIndex": 505,
+          "timestampMs": 16841,
+          "x": 0.412841796875,
+          "y": 0.57666015625,
+          "width": 0.07586669921875,
+          "height": 0.045074462890625,
+          "confidence": 0.9741412240872889
+        },
+        "person": {
+          "x": 0.533203125,
+          "y": 0.54296875,
+          "width": 0.3251953125,
+          "height": 0.29736328125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.533203125,
+            "y": 0.54296875,
+            "width": 0.3251953125,
+            "height": 0.29736328125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 506,
+        "timestampMs": 16875,
+        "sourceFrameIndex": 1012,
+        "person": {
+          "x": 0.533203125,
+          "y": 0.54296875,
+          "width": 0.3251953125,
+          "height": 0.29736328125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.533203125,
+            "y": 0.54296875,
+            "width": 0.3251953125,
+            "height": 0.29736328125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 507,
+        "timestampMs": 16908,
+        "sourceFrameIndex": 1014,
+        "person": {
+          "x": 0.533203125,
+          "y": 0.54296875,
+          "width": 0.3251953125,
+          "height": 0.29736328125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.533203125,
+            "y": 0.54296875,
+            "width": 0.3251953125,
+            "height": 0.29736328125
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 508,
+        "timestampMs": 16941,
+        "sourceFrameIndex": 1016,
+        "ball": {
+          "frameIndex": 508,
+          "timestampMs": 16941,
+          "x": 0.44189453125,
+          "y": 0.468505859375,
+          "width": 0.06475830078125,
+          "height": 0.04144287109375,
+          "confidence": 0.9767580751989804
+        },
+        "person": {
+          "x": 0.53515625,
+          "y": 0.54296875,
+          "width": 0.30712890625,
+          "height": 0.3046875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53515625,
+            "y": 0.54296875,
+            "width": 0.30712890625,
+            "height": 0.3046875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      },
+      {
+        "frameIndex": 509,
+        "timestampMs": 16975,
+        "sourceFrameIndex": 1018,
+        "person": {
+          "x": 0.53515625,
+          "y": 0.54296875,
+          "width": 0.30712890625,
+          "height": 0.3046875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true,
+        "player": {
+          "state": "locked",
+          "id": 1,
+          "box": {
+            "x": 0.53515625,
+            "y": 0.54296875,
+            "width": 0.30712890625,
+            "height": 0.3046875
+          },
+          "observed": true,
+          "peopleCount": 1
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,171 @@
+{
+  "build": "2026102913",
+  "bodyPose": "Swift revision2",
+  "sourceDigest": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+  "sameCounterConfiguration": true,
+  "userImport": {
+    "count": 19,
+    "frames": 1741,
+    "duration": 14.515,
+    "elapsedSeconds": 47.63161254166698,
+    "traceComplete": true
+  },
+  "livePacedReplay": {
+    "count": 24,
+    "frames": 436,
+    "traceComplete": true
+  },
+  "fiveMissingContacts": [
+    {
+      "userImport": {
+        "timestampMs": 4593,
+        "rejection": "groundBounce",
+        "footConfirmed": false,
+        "plantedFeetConfirmed": true,
+        "ground": 0.801513671875,
+        "observedBallBottom": 0.809173583984375,
+        "footSampleTimesMs": {
+          "before": 4518,
+          "contact": 4593,
+          "after": 4643
+        },
+        "ballConfidence": 0.9799765587105447
+      },
+      "livePacedReplay": {
+        "timestampMs": 4568,
+        "rejection": null,
+        "footConfirmed": true,
+        "plantedFeetConfirmed": false,
+        "ground": 0.80419921875,
+        "observedBallBottom": 0.7861374855041503,
+        "footSampleTimesMs": {
+          "before": 4468,
+          "contact": 4568,
+          "after": 4668
+        },
+        "ballConfidence": 0.991554373058874
+      }
+    },
+    {
+      "userImport": {
+        "timestampMs": 5719,
+        "rejection": "groundBounce",
+        "footConfirmed": false,
+        "plantedFeetConfirmed": true,
+        "ground": 0.83935546875,
+        "observedBallBottom": 0.854705810546875,
+        "footSampleTimesMs": {
+          "before": 5644,
+          "contact": 5719,
+          "after": 5777
+        },
+        "ballConfidence": 0.9786719183399079
+      },
+      "livePacedReplay": {
+        "timestampMs": 5702,
+        "rejection": null,
+        "footConfirmed": true,
+        "plantedFeetConfirmed": true,
+        "ground": 0.836669921875,
+        "observedBallBottom": 0.849945068359375,
+        "footSampleTimesMs": {
+          "before": 5602,
+          "contact": 5702,
+          "after": 5802
+        },
+        "ballConfidence": 0.9935868362586746
+      }
+    },
+    {
+      "userImport": {
+        "timestampMs": 7386,
+        "rejection": "groundBounce",
+        "footConfirmed": false,
+        "plantedFeetConfirmed": true,
+        "ground": 0.873046875,
+        "observedBallBottom": 0.861175537109375,
+        "footSampleTimesMs": {
+          "before": 7311,
+          "contact": 7386,
+          "after": 7436
+        },
+        "ballConfidence": 0.9897513980768414
+      },
+      "livePacedReplay": {
+        "timestampMs": 7370,
+        "rejection": null,
+        "footConfirmed": null,
+        "plantedFeetConfirmed": false,
+        "ground": 0.873291015625,
+        "observedBallBottom": 0.8590087890625,
+        "footSampleTimesMs": {
+          "before": null,
+          "contact": null,
+          "after": null
+        },
+        "ballConfidence": 0.988841968751916
+      }
+    },
+    {
+      "userImport": {
+        "timestampMs": 10996,
+        "rejection": "groundBounce",
+        "footConfirmed": false,
+        "plantedFeetConfirmed": true,
+        "ground": 0.901123046875,
+        "observedBallBottom": 0.913787841796875,
+        "footSampleTimesMs": {
+          "before": 10921,
+          "contact": 10996,
+          "after": 11055
+        },
+        "ballConfidence": 0.9816303618907107
+      },
+      "livePacedReplay": {
+        "timestampMs": 11005,
+        "rejection": null,
+        "footConfirmed": true,
+        "plantedFeetConfirmed": false,
+        "ground": 0.905029296875,
+        "observedBallBottom": 0.8970505237579346,
+        "footSampleTimesMs": {
+          "before": 10905,
+          "contact": 11038,
+          "after": 11105
+        },
+        "ballConfidence": 0.9881308789536605
+      }
+    },
+    {
+      "userImport": {
+        "timestampMs": 13872,
+        "rejection": "groundBounce",
+        "footConfirmed": false,
+        "plantedFeetConfirmed": null,
+        "ground": 0.91943359375,
+        "observedBallBottom": 0.973876953125,
+        "footSampleTimesMs": {
+          "before": 13789,
+          "contact": 13872,
+          "after": 13914
+        },
+        "ballConfidence": 0.9887119261007691
+      },
+      "livePacedReplay": {
+        "timestampMs": 13839,
+        "rejection": null,
+        "footConfirmed": true,
+        "plantedFeetConfirmed": false,
+        "ground": 0.920654296875,
+        "observedBallBottom": 0.9627706855535507,
+        "footSampleTimesMs": {
+          "before": 13739,
+          "contact": 13839,
+          "after": 13939
+        },
+        "ballConfidence": 0.986415607486941
+      }
+    }
+  ],
+  "scope": "Observed user-import trace versus saved build13 normal-default paced replay; not a new controlled ablation. Frame cadence, image preprocessing, detector/tracker scheduling and evidence route all differ. Their individual causal contributions are not isolated."
+}

@@ -1,0 +1,111 @@
+DEEPER REVISION 2 COMPUTE / WORKLOAD AUDIT — 29 OCTOBER 2026
+
+Completed on iPhone11 Pro Max (iPhone12,5, iOS27.2) and iPhone17 Pro Max
+(iPhone18,2, iOS27.0.1). Builds2026102914/15 are diagnostics, with the same24
+counting flags, body-only revision2 and tracker1. No counting thresholds,
+contact-window selection, cache eviction or ball-model policies were changed.
+No TestFlight upload or production promotion.
+
+Scope and quality
+324 fixed-image measurements:9 selected contact images x3 repeats x6 supported
+compute arms x2 phones. Request plus equal joint conversion; no RF-DETR workload.
+iPhone11 fixed-image runs nominal; iPhone17 fair throughout this selected probe.
+30 full-pipeline attempts across IMG8606 and IMG8874, including repeats and the
+warmup experiment:20 completed,10 revision2 queue-overflow failures on iPhone11.
+All completed replays nominal with complete, exactly replayable numeric traces.
+Failed runs have no accuracy score. These short clips do not qualify15-minute
+live recording or all59 inventoried clips. Existing assistant-reviewed labels
+are development references, not an independently measured release benchmark.
+
+1. Public compute-device test: no useful Neural Engine switch
+Both phones list only neuralEngine for the revision2 main stage. Legacy body
+lists neuralEngine, GPU and CPU. Generic VisionRequest access works on-device;
+direct concrete-type access failed compilation. Automatic assignments report
+unspecified; we do not claim to trace the actual hardware of all pipeline stages.
+
+Fixed images, mean milliseconds:
+                         iPhone11        iPhone17
+Legacy automatic           15.99            4.52
+Revision2 automatic        40.47            4.20
+Revision2 explicit ANE     39.55            4.54
+
+Automatic and explicit ANE produced identical body outputs in all27 paired
+rows per phone. Forcing ANE did not rescue either iPhone11 clip, including
+repeat failures on IMG8606. iPhone17 completed both modes with essentially
+similar full-pipeline pose times (approximately9.8–10.4ms).
+The fixed-image set includes empty detections and different OS versions;
+it cannot establish that the newer model is globally faster or more accurate.
+
+2. Cache is effective; first requester is not the same as removable work
+Example IMG8606, iPhone11 baseline repeat1:
+2,848 body-pose lookups;455 new inferences;2,393 cache hits (84.0%).
+455 unique inferred frame IDs: no duplicate inference on the same frame.
+First-request attribution:365 ground,86 foot,3 holding,1 body.
+Ground is therefore80.2% of first calls, but only101/455 frames were requested
+exclusively by ground. Most are also requested by foot, holding or other checks.
+Removing ground requests alone would move many calls to a later consumer.
+Across successful audited runs, ground-exclusive demand is about18–26%.
+Holding-only requests were0–5 frames, so skipping the holding window would save
+very little inference in these two clips while risking holding false counts.
+
+The iPhone11 baseline without detailed workload logging averaged19.14ms per
+pose, compared with19.19/19.28ms with it. Counts vary across repeated live-paced
+runs (e.g.34/36/37 legal IMG8606 contacts), so this is not a proof of zero
+instrumentation impact or stable accuracy. Exact numeric replay confirms only
+that each saved evidence stream reproduces its own decisions.
+
+3. Person-image warmup explains much of the first-request spike, not throughput
+The existing warmup uses a black image. Every measured iPhone11 revision2
+failure in the initial workload experiment had its maximum on the first actual
+pose request. An explicit lab-only ablation warmed the SAME retained request
+with two passes of a staged person image before the replay clock started.
+Those pixels never enter the contact cache, video track or counter.
+
+Worst request during replay, black warmup -> additional person warmup:
+IMG8606: iPhone11 322.94 ->77.78ms; iPhone17 87.12 ->23.29ms.
+IMG8874: iPhone11 349.30 ->78.72ms; iPhone17 70.61 ->20.79ms.
+The cost moves into preparation (roughly350ms extra on11,60ms on17 for this
+image). Both iPhone11 clips STILL overflowed after person warmup. Its ongoing
+pose cost remained approximately48–53ms/call. iPhone17 completed both.
+This is an artificial warmup experiment, not a shipped live-preview solution.
+Accuracy on IMG8606 fluctuated, and its false ground bounce remained. Any real
+preview-frame warmup needs its own integration and regression validation.
+
+4. Accuracy remains a separate blocker
+On iPhone17, revision2 automatic recovered all24 labelled kicks in IMG8874
+in both build14 repeats and both build15 warmup arms. Explicit ANE returned
+24 and23 in its two build14 repeats; it is not a better accuracy setting.
+IMG8606 revision2 still counted the known false ground bounce at20.176s in
+all completed revision2 arms. Legacy comparisons did not count this bounce.
+Faster execution does not remove the previously measured body/ground-rule
+regressions. The separate imported-video19versus live-replay24 discrepancy
+has not been changed by this work.
+
+Decision / next experiment
+Keep revision2 as a test option; do not promote to the main app from this audit.
+Do not disable holding checks, increase the32-item queue, or enable holistic
+hands globally as a performance workaround. No supported faster compute
+assignment was found for revision2.
+Next test should coordinate timestamp selection across ground, foot and
+holding checks so they reuse a smaller set of actual same-frame ball/pose
+samples. Aim to test12–15 unique requests/second, not assume it will be safe.
+First evaluate candidate sample schedules offline on saved evidence, including
+all known ground/hand/holding negatives and legal low touches. Then run fresh
+Vision comparisons on both phones and longer sessions. Warm a real preview
+person frame separately if that experiment preserves accuracy; do not retain
+the staged-image shortcut in a release.
+
+Artifacts
+summary.json contains every arm, accuracy score, timing, cache/scope breakdown,
+exclusive frame demand and warmup comparison. Full traces and per-request logs
+are under artifacts/vision-revisions-20261029/deeper-compute-20261029/.
+Source snapshot and SHA256s are retained there. Reproduction tools:
+scripts/run-deeper-vision-audit.py and scripts/summarize-deeper-vision-audit.py.
+The latter validates workload call counts against the independently accumulated
+poseTiming counters. Builds14/15 passed optimized device compilation; Python
+tools compiled; git diff --check passed. This is not a full unit-test suite run.
+
+Restored phone state, verified after tests:
+iPhone11: build2026102911,24explicit counting flags, legacy body.
+iPhone17: build2026102913, persistent revision2 field profile; verified24-touch
+IMG8874 replay open at0seconds with debug outlines hidden.

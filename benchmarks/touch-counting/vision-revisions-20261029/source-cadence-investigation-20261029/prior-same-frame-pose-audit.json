@@ -1,0 +1,41 @@
+{
+  "scope": "Numeric ankle/hip evidence only, not all raw body poses or a pixel digest comparison",
+  "rows": [
+    {
+      "clip": "clip-a16380ba4a5b",
+      "repeat": 1,
+      "commonEvidenceTimestamps": 385,
+      "sameAnkleHipEvidenceSets": 378,
+      "differentTimes": [
+        19375,
+        19475,
+        19575,
+        19608,
+        19675,
+        19708,
+        19808
+      ]
+    },
+    {
+      "clip": "clip-a16380ba4a5b",
+      "repeat": 2,
+      "commonEvidenceTimestamps": 386,
+      "sameAnkleHipEvidenceSets": 386,
+      "differentTimes": []
+    },
+    {
+      "clip": "low",
+      "repeat": 1,
+      "commonEvidenceTimestamps": 1507,
+      "sameAnkleHipEvidenceSets": 1507,
+      "differentTimes": []
+    },
+    {
+      "clip": "low",
+      "repeat": 2,
+      "commonEvidenceTimestamps": 1511,
+      "sameAnkleHipEvidenceSets": 1511,
+      "differentTimes": []
+    }
+  ]
+}

@@ -1,0 +1,468 @@
+{
+  "clip": "normal_juggling_4",
+  "sourceSHA256": "14df979f808de60f82b76a43458115690167caef6a5d8d28dc9f8e4bc0f60857",
+  "visualReview": [
+    "The27.2\u201328.73s sequence shows ground rebounds followed by foot trapping and rolling. Tracker2 accepts27.617 and27.950s; control and pose2 have no accepted events there.",
+    "Four frames each around8.08,11.88 and20.28s show foot contacts; no hand strike is visible in these contact windows. Pose2 rejects these existing valid reference events with handsNearBall; baseline counts them. This does not establish why the new wrist/ball geometry caused the veto without deeper landmark analysis."
+  ],
+  "visualFiles": [
+    "broad-event-review/normal4-27.20-to-28.73.png",
+    "broad-event-review/normal4-legal-hand-rejections.png",
+    "broad-event-review/normal4-legal-hand-rejections-times.json"
+  ],
+  "runs": [
+    {
+      "arm": "control",
+      "acceptedLegal": 30,
+      "falseAccepted": [],
+      "missedLegal": [
+        {
+          "label_id": "e001",
+          "time_s": 0.34,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e028",
+          "time_s": 23.91,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 706,
+            "time": 23.882,
+            "rejection": "amplitudeTooSmall",
+            "handConfirmed": false,
+            "player": {
+              "state": "locked",
+              "id": 3,
+              "box": {
+                "x": 0.236328125,
+                "y": 0.32568359375,
+                "width": 0.4677734375,
+                "height": 0.61328125
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "eventWindows": [
+        {
+          "referenceSeconds": 8.08,
+          "countSeconds": [
+            8.074
+          ],
+          "nearestDecisionScalars": {
+            "frameIndex": 232,
+            "timestampMs": 8074,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "fall": 0.25342463950316113,
+            "requiredFall": 0.011224365234375,
+            "rise": 0.022828987240791354,
+            "impulse": 1.8990074075869665,
+            "ground": 0.63427734375,
+            "observedBallBottom": 0.354766845703125,
+            "handlingChecked": true
+          }
+        },
+        {
+          "referenceSeconds": 11.88,
+          "countSeconds": [
+            11.843
+          ],
+          "nearestDecisionScalars": {
+            "frameIndex": 345,
+            "timestampMs": 11843,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "fall": 0.02759005228678385,
+            "requiredFall": 0.007678222656250001,
+            "rise": 0.08178822223405185,
+            "impulse": 1.1866350600384787,
+            "ground": 0.61865234375,
+            "observedBallBottom": 0.48401837348937987,
+            "plantedFeetConfirmed": false,
+            "handlingChecked": true
+          }
+        },
+        {
+          "referenceSeconds": 20.28,
+          "countSeconds": [
+            20.28
+          ],
+          "nearestDecisionScalars": {
+            "frameIndex": 598,
+            "timestampMs": 20280,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "fall": 0.14379181938266286,
+            "requiredFall": 0.010412597656250001,
+            "rise": 0.021567609469095916,
+            "impulse": 1.8150488245716827,
+            "ground": 0.627685546875,
+            "observedBallBottom": 0.4293212890625,
+            "handlingChecked": true
+          }
+        },
+        {
+          "referenceSeconds": 27.617,
+          "countSeconds": [],
+          "nearestDecisionScalars": {
+            "frameIndex": 824,
+            "timestampMs": 27817,
+            "rejection": "trackLost"
+          }
+        },
+        {
+          "referenceSeconds": 27.95,
+          "countSeconds": [],
+          "nearestDecisionScalars": {
+            "frameIndex": 824,
+            "timestampMs": 27817,
+            "rejection": "trackLost"
+          }
+        }
+      ]
+    },
+    {
+      "arm": "pose2",
+      "acceptedLegal": 26,
+      "falseAccepted": [],
+      "missedLegal": [
+        {
+          "label_id": "e001",
+          "time_s": 0.34,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e013",
+          "time_s": 7.12,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e014",
+          "time_s": 8.08,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 232,
+            "time": 8.074,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": true,
+            "bodyFailure": "handsNearBall",
+            "player": {
+              "state": "locked",
+              "id": 1,
+              "box": {
+                "x": 0.59326171875,
+                "y": 0.344482421875,
+                "width": 0.52734375,
+                "height": 0.57958984375
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e021",
+          "time_s": 11.88,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 345,
+            "time": 11.843,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall",
+            "player": {
+              "state": "locked",
+              "id": 1,
+              "box": {
+                "x": 0.323974609375,
+                "y": 0.38330078125,
+                "width": 0.40576171875,
+                "height": 0.470703125
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e023",
+          "time_s": 20.28,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 598,
+            "time": 20.28,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": false,
+            "bodyFailure": "handsNearBall",
+            "player": {
+              "state": "locked",
+              "id": 3,
+              "box": {
+                "x": 0.240478515625,
+                "y": 0.343505859375,
+                "width": 0.42041015625,
+                "height": 0.56982421875
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        },
+        {
+          "label_id": "e028",
+          "time_s": 23.91,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 707,
+            "time": 23.915,
+            "rejection": "handContact",
+            "handConfirmed": true,
+            "player": {
+              "state": "locked",
+              "id": 3,
+              "box": {
+                "x": 0.2335205078125,
+                "y": 0.322021484375,
+                "width": 0.46337890625,
+                "height": 0.615234375
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "eventWindows": [
+        {
+          "referenceSeconds": 8.08,
+          "countSeconds": [],
+          "nearestDecisionScalars": {
+            "frameIndex": 232,
+            "timestampMs": 8074,
+            "rejection": "disallowedBodyContact",
+            "bodyContactAllowed": false,
+            "fall": 0.2625638117392858,
+            "requiredFall": 0.011590576171875,
+            "rise": 0.02685554325580597,
+            "impulse": 1.8624515788472118,
+            "ground": 0.63427734375,
+            "observedBallBottom": 0.354766845703125
+          }
+        },
+        {
+          "referenceSeconds": 11.88,
+          "countSeconds": [],
+          "nearestDecisionScalars": {
+            "frameIndex": 345,
+            "timestampMs": 11843,
+            "rejection": "disallowedBodyContact",
+            "bodyContactAllowed": false,
+            "fall": 0.02759005228678385,
+            "requiredFall": 0.007678222656250001,
+            "rise": 0.11058112454701619,
+            "impulse": 1.2192871275761576,
+            "ground": 0.61865234375,
+            "observedBallBottom": 0.48401837348937987,
+            "plantedFeetConfirmed": false
+          }
+        },
+        {
+          "referenceSeconds": 20.28,
+          "countSeconds": [],
+          "nearestDecisionScalars": {
+            "frameIndex": 598,
+            "timestampMs": 20280,
+            "rejection": "disallowedBodyContact",
+            "bodyContactAllowed": false,
+            "fall": 0.14379181938266286,
+            "requiredFall": 0.010412597656250001,
+            "rise": 0.021567609469095916,
+            "impulse": 1.8150488245716827,
+            "ground": 0.627685546875,
+            "observedBallBottom": 0.4293212890625
+          }
+        },
+        {
+          "referenceSeconds": 27.617,
+          "countSeconds": [],
+          "nearestDecisionScalars": null
+        },
+        {
+          "referenceSeconds": 27.95,
+          "countSeconds": [],
+          "nearestDecisionScalars": {
+            "frameIndex": 828,
+            "timestampMs": 27950,
+            "rejection": "trackLost"
+          }
+        }
+      ]
+    },
+    {
+      "arm": "tracking2",
+      "acceptedLegal": 30,
+      "falseAccepted": [
+        {
+          "counter_time_s": 27.617,
+          "frame": 818,
+          "reason": "Ground bounces then foot trap/rolling ball; no airborne juggle"
+        },
+        {
+          "counter_time_s": 27.95,
+          "frame": 828,
+          "reason": "Ground bounces then foot trap/rolling ball; no airborne juggle"
+        }
+      ],
+      "missedLegal": [
+        {
+          "label_id": "e001",
+          "time_s": 0.34,
+          "contact": "legal_leg",
+          "decision": null,
+          "stage": "no_nearby_candidate"
+        },
+        {
+          "label_id": "e028",
+          "time_s": 23.91,
+          "contact": "legal_leg",
+          "decision": {
+            "frameIndex": 706,
+            "time": 23.882,
+            "rejection": "disallowedBodyContact",
+            "handConfirmed": true,
+            "bodyFailure": "handsNearBall",
+            "player": {
+              "state": "locked",
+              "id": 3,
+              "box": {
+                "x": 0.2352294921875,
+                "y": 0.321044921875,
+                "width": 0.463134765625,
+                "height": 0.62060546875
+              },
+              "observed": true,
+              "peopleCount": 1
+            }
+          },
+          "stage": "rejected_candidate"
+        }
+      ],
+      "eventWindows": [
+        {
+          "referenceSeconds": 8.08,
+          "countSeconds": [
+            8.074
+          ],
+          "nearestDecisionScalars": {
+            "frameIndex": 232,
+            "timestampMs": 8074,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "fall": 0.21971748680321143,
+            "requiredFall": 0.011636226177215577,
+            "rise": 0.02197265625,
+            "impulse": 1.7924915647032251,
+            "ground": 0.63427734375,
+            "observedBallBottom": 0.3537630081176758,
+            "handlingChecked": true
+          }
+        },
+        {
+          "referenceSeconds": 11.88,
+          "countSeconds": [
+            11.81
+          ],
+          "nearestDecisionScalars": {
+            "frameIndex": 344,
+            "timestampMs": 11810,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "fall": 0.016592869659264875,
+            "requiredFall": 0.0077741330862045295,
+            "rise": 0.01911478460507282,
+            "impulse": 0.46292067651378577,
+            "ground": 0.618408203125,
+            "observedBallBottom": 0.47057528495788575,
+            "plantedFeetConfirmed": false,
+            "handlingChecked": true
+          }
+        },
+        {
+          "referenceSeconds": 20.28,
+          "countSeconds": [
+            20.28
+          ],
+          "nearestDecisionScalars": {
+            "frameIndex": 598,
+            "timestampMs": 20280,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "fall": 0.10927661498387659,
+            "requiredFall": 0.010595703125000001,
+            "rise": 0.01022938728332523,
+            "impulse": 1.064605683236573,
+            "ground": 0.62890625,
+            "observedBallBottom": 0.38653907775878904,
+            "handlingChecked": true
+          }
+        },
+        {
+          "referenceSeconds": 27.617,
+          "countSeconds": [
+            27.617
+          ],
+          "nearestDecisionScalars": {
+            "frameIndex": 818,
+            "timestampMs": 27617,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "footConfirmed": true,
+            "fall": 0.08781705739090895,
+            "requiredFall": 0.009066779613494873,
+            "rise": 0.005868055555555585,
+            "impulse": 0.7521147089865019,
+            "ground": 0.654931640625,
+            "observedBallBottom": 0.6557837963104247,
+            "plantedFeetConfirmed": false,
+            "handlingChecked": true
+          }
+        },
+        {
+          "referenceSeconds": 27.95,
+          "countSeconds": [
+            27.95
+          ],
+          "nearestDecisionScalars": {
+            "frameIndex": 828,
+            "timestampMs": 27950,
+            "handRejected": false,
+            "bodyContactAllowed": true,
+            "footConfirmed": false,
+            "fall": 0.01697870325389783,
+            "requiredFall": 0.009525964856147767,
+            "rise": 0.008207406004269946,
+            "impulse": 0.23709634247901742,
+            "ground": 0.658896484375,
+            "observedBallBottom": 0.66845534324646,
+            "plantedFeetConfirmed": false,
+            "handlingChecked": true
+          }
+        }
+      ]
+    }
+  ]
+}

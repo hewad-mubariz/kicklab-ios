@@ -1,0 +1,57 @@
+APPLE VISION DOCUMENTATION AND INTEGRATION AUDIT — 29 OCTOBER 2026
+
+Scope: explain the reviewed comparison and check the adapter; no app rules changed.
+The measured result is a drop-in integration result, not a general ranking of Apple models.
+
+Verified primary documentation:
+- https://developer.apple.com/documentation/updates/vision
+  June 2024 explicitly recommends DetectHumanBodyPoseRequest.Revision.revision2
+  to improve 2D human body pose detection. No juggling benchmark is supplied.
+- https://developer.apple.com/videos/play/wwdc2024/10163/
+  Swift concurrency API and holistic body plus hands. detectsHands=true provides
+  left/right hand observations associated with each body. New features use Swift API.
+- https://developer.apple.com/videos/play/wwdc2025/272/
+  Actual title: Read documents using the Vision framework. Hand update at 17:59.
+  Apple describes a smaller, faster, more accurate hand model, with changed joint
+  locations; recommends retraining existing hand pose/action classifiers. This is
+  a separate hand-model update, not a documented body revision2 migration warning.
+- https://developer.apple.com/documentation/vision/detecting-human-body-poses-in-images
+  Subject ideally at least one third image height; key body regions visible;
+  appropriate ROI may improve pose estimates. No evidence here that our 512px cap
+  is invalid or that increasing it will improve this corpus.
+
+Local SDK: iPhoneOS27.1, Vision DetectHumanBodyPoseRequest exposes revision2 only.
+VNTrackObjectRequestRevision2 is available from iOS13, unlike the Swift body API
+introduced with iOS18. These independent revision numbers must not be conflated.
+
+Static integration audit:
+- Explicit Swift body revision2 selected, one retained request per observation store.
+- Same 13 joint names and normalized-to-top-left y conversion as legacy adapter.
+- Same 512px maximum input dimension, confidence>=0.3 strong-joint gate and active
+  person selection. No obvious coordinate or revision selection error found.
+- detectsHands=false: holistic hand/body association NOT evaluated. Separate legacy
+  hand request remains in both arms. This was intentional to isolate body changes.
+- Async perform runs in a detached task and a serial analysis queue waits on a
+  semaphore. Not a native async migration; timing includes integration overhead.
+- VisionComputePolicy only forces CPU when cpuOnly=true. Foreground comparisons
+  leave both requests on default compute selection; modern arm rejects CPU-only.
+- Observation store normally caches pixels only when a ball detection exists.
+  New body pose alone cannot replace upstream missing-ball evidence.
+
+Evidence and limits:
+20 reviewed clips / 615 legal labels: current543, pose2 535 (13 gained/21 lost).
+These are end-to-end legal-touch recall numbers, not body joint accuracy scores.
+normal_juggling_4 at8.08/11.88/20.28: visibly legal foot contacts rejected by pose2
+handsNearBall path in first run. This establishes a counter compatibility failure;
+it does not establish whether the raw Apple joint locations are more accurate.
+47 contacts missed by all arms remain individually unattributed.
+Input scale, confidence calibration, holistic hands and async scheduling are audit
+candidates, not demonstrated causes or guaranteed fixes.
+
+Recommended next experiment:
+Frozen-frame old/new joint overlays with human joint/contact reference, including
+both gains and losses and held-out clips. Test holistic hand association separately,
+then input resolution/ROI and confidence calibration. Profile native async execution
+on iPhone11 and17 before attributing workload timing entirely to the model. Validate
+any general change across frozen corpus; no clip-specific exceptions.
+Keep current release configuration pending a measured overall benefit.

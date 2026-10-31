@@ -1,0 +1,97 @@
+Observed fall amplitude alone — iPhone 17 Pro Max — 30 October 2026
+
+Both arms: build 2026103010, Swift body-pose revision 2, startup motion gate V3, original repair clock.
+The only changed counting option is --observed-fall-amplitude-v1. Profile flags and config equality
+are checked for every completed pair. No counting source or app defaults were changed this session.
+This is an isolated experiment, not a main-app/TestFlight release comparison.
+
+Fresh original-paced comparisons
+- ball_in_hand, repeat 1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+- IMG8874, repeat 1: total 24 -> 24; legal 24 -> 24; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+- old three-minute clip, repeat 1: total 158 -> 157; legal unlabelled -> unlabelled; known false unlabelled -> unlabelled.
+  Unmatched added: [35.413, 54.28, 107.91]; removed: [28.365, 51.213, 53.046, 141.325] (150 ms matching).
+  8.016 legal low kick: [8.016] -> [8.016].
+  42.013 legal high kick: [42.046] -> [42.013].
+  107.910 legal knee: [] -> [107.91].
+  125.525 legal low touch: [125.458] -> [125.525].
+  133.258 legal foot kick: [133.225] -> [133.225].
+  144.625 likely legal, clipped: [] -> [].
+  145.458 suspected false, occluded: [145.458] -> [145.458].
+  153.773 known ground bounce: [] -> [].
+  154.206 known ground bounce: [154.206] -> [154.206].
+  157.807 known ground bounce: [] -> [].
+- IMG8606, repeat 1: total 34 -> 36; legal 33 -> 35; known false 1 -> 1.
+  Gained legal: [18.25, 18.875]; lost legal: [].
+- dribbling_with_the_ball_1, repeat 1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+- low.mov, repeat 1: total 166 -> 170; legal 166 -> 170; known false 0 -> 0.
+  Gained legal: [9.56, 18.13, 28.06, 57.44]; lost legal: [].
+- low.mov, repeat 2: total 165 -> 170; legal 165 -> 170; known false 0 -> 0.
+  Gained legal: [9.56, 18.13, 28.06, 54.08, 57.44]; lost legal: [].
+
+Exact saved-input ablations
+- ball_in_hand-pose2-r1: recorded replay exact; proof adds [] ms, removes [] ms.
+- clip-618a1688fcc6-pose2-r1: recorded replay exact; proof adds [] ms, removes [] ms.
+- clip-89b81fd8bd37-pose2-r1: recorded replay exact; proof adds [] ms, removes [] ms.
+- clip-a16380ba4a5b-pose2-r1: recorded replay exact; proof adds [] ms, removes [] ms.
+- dribbling_with_the_ball_1-pose2-r1: recorded replay exact; proof adds [] ms, removes [] ms.
+- low-pose2-r1: recorded replay exact; proof adds [9500, 18066, 28000, 57400] ms, removes [] ms.
+  INCOMPLETE counterfactual callbacks: [{'frame': 285, 'kind': 'foot', 'operation': 290}, {'frame': 840, 'kind': 'foot', 'operation': 845}, {'frame': 1722, 'kind': 'foot', 'operation': 1727}]. These differences alone are not proven recovery.
+- low-pose2-r2: recorded replay exact; proof adds [9500, 18066, 28000, 57400] ms, removes [] ms.
+  INCOMPLETE counterfactual callbacks: [{'frame': 285, 'kind': 'foot', 'operation': 290}, {'frame': 840, 'kind': 'foot', 'operation': 845}, {'frame': 1722, 'kind': 'foot', 'operation': 1727}]. These differences alone are not proven recovery.
+
+Performance
+- 14 completed runs. Thermal states: [0]; 0=nominal.
+- Source skips: 2; overflow drops: 0.
+- Median notification latency: 208.0–212.6 ms; p95: 222.4–229.2 ms.
+
+Limits
+- low.mov uses 195 reviewed legal labels with uncertainty; IMG8606 has 39 partial legal labels.
+- The three-minute clip has only selected reviewed targets. Extra counts are not automatically legal.
+- Exact numeric replay does not rerun tracking or pose. Missing callbacks stay explicitly unproven.
+- These iPhone 17 clips do not establish iPhone 11 or long-session performance.
+
+Pending pairs: none.
+Field build 2026102913 and 24-touch IMG8874 preview restored and verified.
+No promotion, commit, push, main-app default change or TestFlight upload.
+
+Conclusion and decision
+The observed-descent measurement is a useful narrow recovery. Both low.mov candidate runs count 170
+legal contacts, against 166 and 165 in the controls. Four specific legal contacts recur in both gains:
+9.56, 18.13, 28.06, 57.44 seconds. Inputs within 200 ms of each contact are identical in each pair.
+The controls reject amplitudeTooSmall/footConfirmed=false; the candidates meet the unchanged fall
+threshold using actual measured descent and pass the subsequent contact checks. The fifth difference
+in repeat 2 (54.08 s) is not an observed-fall proof and should not be credited to this mechanism.
+No previously counted labelled low.mov contact is lost in either pair.
+
+Same-input ablation removes the four proof contacts, but three disabled paths lack a recorded foot
+callback. Keep that counterfactual limitation explicit. The fresh paired controls provide independent
+rejection evidence for those same timestamps; do not silently fabricate missing callbacks.
+
+IMG8874 remains 24 -> 24, holding and dribbling remain 0 -> 0. IMG8606 is 33 -> 35 legal contacts and retains
+its existing false count at 20.176 s; no observed-fall proof qualifies there, so its two gains are not
+credited to the new measurement.
+
+The three-minute total 158 -> 157 hides three gained legal contacts (35.413, 54.280, 107.910 s) and four
+lost legal contacts (28.365, 51.213, 53.046, 141.325 s). The six foot contacts were visually reviewed;
+the knee contact at 107.910 was already reviewed. The new proof never qualifies in this clip.
+Disabling it on the same captured inputs preserves all 157 counts with complete callbacks.
+The changed events reflect different tracking/candidate/contact evidence between fresh runs:
+missing candidate at 28.365/51.213; missingBall body rejections at 53.080/141.358; control ground or
+unresolved-low rejection at 35.446/54.280; control track break at 107.943. This establishes no direct
+numeric rejection by the new proof; it does not establish full live-pipeline stability.
+Each three-minute run skipped one source frame. These are not zero-drop performance results.
+
+Both arms still count the known ground bounce 154.206 s and the suspected false event 145.458 s.
+Both reject 153.773 and157.807 s. The suspected event also appears in the old-clock control, so it
+cannot be attributed uniquely to the previously tested clock experiment. None of the visually
+reviewed newly added counts in this isolated pair is a ground bounce. This is partial review,
+not a full-clip ground-truth count or a claim that ground false positives are solved.
+
+Keep this measurement as a separate opt-in change; leave the clock experiment off. No defaults or
+release settings are promoted. The next counting priority remains short legal kicks that never
+produce a candidate (for example 4.67 s in low.mov), with tracking/impact evidence stability tracked
+separately. Field build 2913 has the older startup gate; this test held experimental startup V3
+constant in both arms. Test the ordinary startup configuration before any default promotion.

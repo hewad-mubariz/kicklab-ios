@@ -1,0 +1,168 @@
+BROADER IPHONE17 COMPARISON — 20 REVIEWED CLIPS — 29 OCTOBER 2026
+
+Completed:60 valid comparisons (20 clips x3 independent settings), plus6 targeted
+confirmation runs. The existing low-clip runs were reused. Same optimized build
+2026102911, same24 beta counting flags, same source hashes. All successful runs
+were nominal and their saved numeric counter traces replayed exactly.
+Two incomplete attempts (one AVFoundation interruption, one harness timeout) were
+preserved separately and rerun successfully; neither receives an accuracy score.
+
+Main cohort:615 reviewed legal contacts. Single-reviewer development references;
+not an independently measured release accuracy estimate. Uncertain counts remain
+separate. Percentages below are recall of labelled legal contacts, not precision.
+
+Setting          Legal /615   Missed   Recall   Known false   Uncertain counted
+Current           543          72      88.3%        2                4
+Body pose2        535          80      87.0%        2                2
+Object tracker2   540          75      87.8%        4                3
+
+No accepted event remained unmatched to a valid, invalid or uncertain reference.
+Current had543 legal+2 false+4 uncertain=549 total counts; pose2 had539 total;
+tracker2 had547 total. The raw total is not the number of legal contacts.
+Pose2 recovered13 legal contacts but lost21 others; tracker2 recovered16 but lost19.
+Pose2 improved legal counts in3 clips, worsened6, and tied11. Tracker2 improved3,
+worsened4, and tied13. Mean per-positive-clip recall: current88.06%, pose2 86.21%,
+tracker2 88.37%. The small tracker macro-average gain is not a reliable overall win
+given net legal losses, false-count risk, and observed repeat variation.
+
+Repeat findings (selected cases, excluded from main totals):
+- eighteen: current16 ->15 legal; pose2 18 ->16; tracker2 16 ->16.
+  Pose2 recovered the3.75 and6.32s contacts in both runs, but lost other contacts
+  on its second run. Its net advantage narrowed from2 to1.
+- normal_juggling_4: current30 ->29 legal; pose2 26 ->27; tracker2 30 ->29.
+  Pose2 lost4 legal contacts initially and2 on repeat relative to current.
+  Tracker2 added2 false counts initially and0 on repeat. The false-count risk is
+  observed, not deterministic. Visual review confirms stopping/rolling the ball
+  on the ground at27.62/27.95s; the first-run acceptances are invalid.
+  Foot-contact windows at8.08,11.88,20.28s were also visually reviewed; the
+  pose2 handsNearBall veto rejects legal foot contacts in the initial run.
+
+Shared failures: both ground rebounds around10.3 and10.7s in nomral_juggling_6
+were counted by all3 arms. Additional visual review confirmed the invalid sequence.
+47 legal contacts were missed by all3 arms. These are investigation targets; the
+nearby diagnostic reason is not by itself proof of the upstream cause.
+The earlier IMG8606 pose2 false ground count at20.176s recurred in both pilot runs;
+that clip is not included in this original20-clip denominator.
+
+Workload: mean observed pose-call time was7.12ms current,10.37ms pose2,7.61ms
+tracker2 (which retains the old body request). Source-frame skips111/106/123.
+These are workload timings, not isolated microbenchmarks. The reviewed clips are
+4.5–61s long; this is not a15-minute continuous thermal qualification.
+
+Decision: retain the current Vision requests. There are real improvements in some
+contacts, but no reliable overall drop-in upgrade. Do not add clip-specific rules
+to make this benchmark look better. Investigate shared misses and the shared floor
+failure separately, then validate any pipeline change against the frozen corpus.
+
+Clip                              Valid  Current  Pose2  Tracker2  False C/P/T
+ball_in_hand                         0      0       0       0       0/0/0
+dribbling_with_ball_3                0      0       0       0       0/0/0
+dribbling_with_ball_2                0      0       0       0       0/0/0
+raw-juggling                        10      5       3       6       0/0/0
+normal_juggling_2                   24     21      22      22       0/0/0
+juggling_second_ball_very_far       22     20      19      20       0/0/0
+dribbling_with_the_ball_1            0      0       0       0       0/0/0
+34dd                                18     18      18      18       0/0/0
+normal_juggling_1                   25     23      23      23       0/0/0
+eighteen                            18     16      18      16       0/0/0
+normal_juggling_5                   38     37      37      36       0/0/0
+juggling                            38     37      37      37       0/0/0
+dribbling_with_ball_1                0      0       0       0       0/0/0
+juggling_second_ball_in_video       28     27      28      27       0/0/0
+normal_juggling_7                   31     22      21      20       0/0/0
+nomral_juggling_6                   34     32      32      34       2/2/2
+normal_juggling_4                   32     30      26      30       0/0/2
+normal_juggling_3                   64     60      60      60       0/0/0
+low                                195    163     161     161       0/0/0
+normal_juggling_8                   38     32      30      30       0/0/0
+
+Current phone state: baseline24 flags, legacy body, tracker1, verified after
+testing in iphone17-restored-after-broader-profile.json. TestFlight unchanged.
+Across this study there are81 valid iPhone17 replays of22 distinct clips including
+prior pilot repeats.36 of58 sources remain unrun on phone; all58 were screened on Mac.
+Evidence: iphone17-reviewed-corpus-summary.json; iphone17-comparison.json;
+iphone17-reviewed-corpus-event-audit.json; iphone17-normal4-event-audit.json.
+Review: http://127.0.0.1:8771/review.html
+Reproduce: scripts/summarize-reviewed-vision-corpus.py --device iphone17
+          scripts/compare-vision-revision-phone.py --device iphone17
+          scripts/report-vision-revision-study.py
+
+EARLIER PILOT RECORD (historical):
+Vision revision comparison — 29 October 2026
+
+Decision: retain the existing live Vision requests. Neither revision change is
+qualified as a drop-in replacement. TestFlight remains user-managed and unchanged.
+
+IPHONE 17 PRO MAX: REPEATED QUALIFICATION COMPLETED
+18 full paced replays: three clips x three independent arms x two repeats.
+Same build 2026102911, optimized Swift (-O), same 24 beta counting flags and sources.
+All 18 stayed nominal, completed without counting errors, and replayed their numeric
+counter traces exactly. No pose queue overflow occurred on this phone.
+
+Reviewed legal touches counted (first / second repeat):
+Clip                      Reference  Current   Body pose2  Object tracker2
+IMG_8606 3.MOV            39         35 / 35   35 / 34     35 / 36
+Outdoor round2, 30s       39         39 / 39   37 / 38     39 / 39
+Original fast-low, 59.75s 195        163 /162  161 /161    161 /160
+
+Body pose2 additionally counted the same known ground bounce at 20.176 s in IMG8606
+in both repeats. No other labelled false counts or unmatched counts appeared in
+these18 runs. At 26.70 s in the outdoor30 clip, body pose2 rejects a reviewed legal
+contact as groundBounce in both repeats; the current and tracker2 arms count it.
+At 20.176 s the baseline body gate rejects handsUncertain, while body pose2 allows
+the candidate and the remaining rules fail to remove the floor bounce. The paired
+candidate has the same ball trajectory and ground estimate; new pose evidence
+changes the decision. Full saved evidence: iphone17-event-audit.json and raw traces.
+
+Across the six runs per arm, average time per pose request was 6.04–7.23ms for the
+current arm,9.23–10.48ms for pose2, and6.33–7.37ms for tracker2 (legacy body pose).
+These are observed workload means, not isolated microbenchmarks. Buffered pipeline
+median latency remained about210–213ms. Short-clip nominal results do not establish
+15-minute thermal stability. Counts use existing single-reviewer development labels
+and a one-to-one 200 ms alignment window; they are not held-out release accuracy.
+
+The iPhone 17 uses rf384 full rechecks on iOS 27.0.1; the iPhone 11 uses rf288 compact rechecks on
+OS 27.2. Within-device arm comparisons are valid; cross-device differences include
+both runtime and pipeline configuration, not only processor speed.
+
+IPHONE 11: EARLIER QUALIFICATION
+IMG8606: current 32/39 legal, tracker 2: 34/39; body pose2 overflows the counting queue
+at nominal temperature. Both the initial adapter and retained-request adapter fail.
+New30: current 37/39, pose2 38/39, tracker2 38/39; both newer arms lose the 14.533 s
+contact that current counted. One run per arm and different source skips limit the
+one-touch apparent gain. Low 59.75: current 162/195, tracker2 153/195, no known false
+counts. Current ended serious, so the full run is not matched nominal/fair evidence.
+First 30 s were nominal for both: 77 versus73. Full-run frame skips 0 versus97.
+The two initial all-skipped dribbling runs are invalid accuracy results, not successes.
+
+MAC SCREENING AND SCOPE
+58 distinct local sources, 85.58 minutes; all 20 original labelled corpus files present.
+All 58 sources screened on Mac: 4474 identical frame pairs, 4494 requested samples,
+zero API errors. Old-only pose 113 frames, new-only 12. Every 2 s plus samples around
+original contact events and extra IMG8606 windows. Pose availability on Mac is not
+phone performance or legal-touch recall. Newly filmed iPhone 17 footage still needs separate
+reconciliation; the 14 FinalValidation files were inventoried before the experiment
+install, and the only locally unmatched sizes were two older rendered exports.
+The full 58-clip fresh-phone matrix remains unfinished. Expansion is deferred because
+these repeated qualification cases already expose accuracy regressions. A revised
+candidate should clear them before the broad comparison.
+
+PHONE STATE AND REPRODUCTION
+The iPhone 17 debug app was relaunched with the tested 24 baseline counting flags and legacy
+body pose / tracker1, verified in iphone17-restored-profile.json. Experiment build 11
+remains installed; revision2 was not made the default. Command-line counting options
+apply to the current process; ordinary icon launches keep existing debug defaults.
+The iPhone 11 baseline launch was verified earlier in iphone11-restored-profile.json.
+No production counting rules were changed for this experiment.
+
+Review: http://127.0.0.1:8771/review.html
+Evidence: iphone17-comparison.json, iphone17-event-audit.json, experiment-status.json
+Raw replays: artifacts/vision-revisions-20261029/iphone17-build 2026102911/
+Run: scripts/run-vision-revision-study.py (dry run default; --execute to run)
+Compare: scripts/compare-vision-revision-phone.py --device iphone17
+Report: scripts/report-vision-revision-study.py
+Apple API findings and primary sources: apple-api-findings.json
+
+Checks: existing iOS device build passed; standalone adapter coordinate/confidence/
+flag assertions passed. Python compilation and generated JavaScript syntax checked.
+The added XCTest file was not run through XCTest in this study.

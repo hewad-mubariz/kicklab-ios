@@ -106,6 +106,15 @@ nonisolated final class FinalTestFiles: @unchecked Sendable {
         }
     }
 
+    func saveBinary<T: Encodable & Sendable>(_ value: T, as name: String) {
+        queue.async {
+            do {
+                let encoder = PropertyListEncoder(); encoder.outputFormat = .binary
+                try encoder.encode(value).write(to: self.directory.appendingPathComponent(name), options: .atomic)
+            } catch { self.failure(error.localizedDescription) }
+        }
+    }
+
     func flush() async {
         await withCheckedContinuation { continuation in queue.async { continuation.resume() } }
     }

@@ -1,0 +1,62 @@
+COMPACT CANDIDATE / IMPACT FLOOR EXPERIMENT — 29–30 OCTOBER 2026
+
+DECISION: Both experiments remain opt-in and separate. Neither has passed the fresh no-regression requirement. Do not promote either to field defaults, main app or TestFlight.
+
+SCOPE: iPhone17 Pro Max only; build2026102922. Both sides use body pose revision2, the existing 24 counting flags, automatic compute and the existing scheduler. Shared-history, source-cadence and shallow-lateral experiments are off. This is not a revision1-versus-revision2 comparison.
+
+CANDIDATE CHANGE: --compact-release-window-v1 retains a continuous measured ball reversal for 65–167 ms while two release views develop. The fixed five-view early route can otherwise move past a shallow peak before the release is resolved; smoothing can leave only one falling view. The new route requires positive measured foot evidence and the existing body, hand, holding and floor checks. It respects cooldown, clipping, ball-size stability and recent rejections. No clip name, absolute timestamp or new Vision model is used.
+
+FLOOR CHANGE: --resolved-floor-margin-v1 requires a center at least 0.1 ball heights below both ankles in two views for the below-feet proof. Other floor and foot proofs are unchanged. A few thousandths of normalized ball-position movement could previously flip IMG8874 at 7.39 s between one and two below-ankle views. The experiment addresses that numerical ambiguity, not all ground-contact timing problems.
+
+COMPLETED PHONE PAIRS (legal contacts; false counts separate):
+margin, clip-618a1688fcc6, repeat 1: legal 24 -> 24; known false 0 -> 0; unmatched 0 -> 0; gained []; lost [].
+candidate, clip-618a1688fcc6, repeat 2: legal 23 -> 23; known false 0 -> 0; unmatched 0 -> 0; gained []; lost [].
+margin, clip-618a1688fcc6, repeat 2: legal 23 -> 24; known false 0 -> 0; unmatched 0 -> 0; gained [7.39]; lost [].
+margin, clip-a16380ba4a5b, repeat 1: legal 34 -> 33; known false 1 -> 1; unmatched 0 -> 0; gained [0.566]; lost [18.25, 18.875].
+candidate, clip-a16380ba4a5b, repeat 2: legal 34 -> 35; known false 1 -> 1; unmatched 0 -> 0; gained [18.25]; lost [].
+margin, clip-a16380ba4a5b, repeat 2: legal 34 -> 35; known false 1 -> 1; unmatched 0 -> 0; gained [18.25]; lost [].
+candidate, dribbling_with_the_ball_1, repeat 2: legal 0 -> 0; known false 0 -> 0; unmatched 0 -> 0; gained []; lost [].
+candidate, low, repeat 1: legal 161 -> 162; known false 0 -> 0; unmatched 0 -> 0; gained [4.06]; lost [].
+candidate, low, repeat 2: legal 161 -> 161; known false 0 -> 0; unmatched 0 -> 0; gained [4.06]; lost [54.08].
+candidate, raw-juggling, repeat 2: legal 7 -> 4; known false 0 -> 0; unmatched 0 -> 0; gained []; lost [4.43, 5.6, 6.62].
+
+IMPORTANT EVENT FINDINGS:
+Low, 4.06 s: recovered by the candidate window in both initial fresh repeats (counter timestamp 4.033 s). The first pair is 161 -> 162; the second is 161 -> 161 because 54.08 s is lost. The other examined shallow peaks at 12.633, 20.566 and 28.600 s now reach verification but still fail positive foot proof. Candidate eligibility alone must not count them.
+Low, 54.08 s: both runs propose 54.033 s. Baseline positive foot proof uses 53.900/54.033/54.166 s, while the candidate run obtains a different ball box and 53.933/54.033/54.133 s window. Right-ankle distance becomes 0.805 instead of 0.747 ball diameters against the existing 0.75 limit. It is an evidence/proximity failure, not absence of a candidate. This does not isolate whether ordinary scheduling variation or extra work caused the changed detector inputs; the observed loss still blocks promotion.
+IMG8606, first margin pair: 34 -> 33 legal, with the same known false at 20.176 s. It gains 0.566 s but loses 18.25 and 18.875 s. The experimental run has 36 empty pose results versus 1, with no pose exceptions or late source skips. The regression cannot be dismissed because the numerical floor change is a relaxation.
+IMG8874: baseline and margin first pair both count 24. The later baseline and candidate pair both count 23, missing 7.39 s. The underlying input/timing instability is present without either experimental rule.
+
+Repeat margin: IMG8874 improves 23 -> 24 by recovering 7.39 s. IMG8606 improves 34 -> 35 by recovering 18.25 s, with the same existing false count. These promising repeats do not erase the losses in the first margin comparison.
+Raw-juggling regression: baseline counts 7 legal contacts, candidate run 4; the lost reviewed contacts are 4.43, 5.60 and 6.62 s. The candidate trace records trackLost near those events. On identical saved input, enabling or disabling the new candidate rule both produce exactly the same four contacts, with no missing callbacks. This isolates the losses from the numeric candidate rule on that trace, but not from possible timing effects of the full workload. Baseline reports two late source skips; candidate reports zero. Do not treat this as an all-frames identical-input live comparison.
+
+IDENTICAL-INPUT ABLATION LIMIT: The lab now records missing callback lookups explicitly. Disabling a candidate path can move a later evidence request to a different operation; that callback may not exist in the saved trace. Gains after such a gap are not proven recoveries. The full enabled trace must replay exactly, and a complete disabled callback set is required for a whole-trace causal claim. Inspect summary.json rather than treating every enabled/disabled count difference as real.
+
+CAUSAL DETAIL: In both low candidate traces, the 4.033 s recovery precedes the first absent disabled callback by roughly 26 seconds. Later apparent ablation gains around 30–58 s have incomplete callback coverage and are not claimed. The fresh IMG8606 candidate gain at 18.25 s remains counted with the new candidate rule disabled; it is not an isolated benefit of that rule. Likewise, missing fallback callbacks prevent treating the margin ablation total as a complete counterfactual.
+
+VALIDATION: App build22 succeeded; 73 candidate-window/ground-margin contracts passed. All 123 historical default traces replay exactly. The floor-evidence screen covered 123 saved traces across 23 unique clips: 12 unique changed timestamps, all near reviewed legal contacts; some were already accepted through foot proof, so these are not 12 recovered touches. A separate 60-trace older outdoor screen changes only three already accepted events and preserves the two reviewed three-minute bounces at 153.773 and 154.206 s. These are numeric evidence screens, not fresh whole-corpus device validation.
+
+PERFORMANCE (pose means are per-run; small differences do not establish a speed improvement):
+clip-618a1688fcc6, baseline: pose calls [334, 334], means [9.76, 11.19] ms; frame-pipeline medians [208.8, 210.0] ms; notification medians [520.3, 542.8] ms.
+clip-618a1688fcc6, candidate: pose calls [334], means [9.91] ms; frame-pipeline medians [209.1] ms; notification medians [524.7] ms.
+clip-618a1688fcc6, margin: pose calls [334, 335], means [9.88, 11.26] ms; frame-pipeline medians [209.0, 210.0] ms; notification medians [524.0, 549.1] ms.
+clip-a16380ba4a5b, baseline: pose calls [494, 511], means [10.12, 11.52] ms; frame-pipeline medians [210.6, 212.2] ms; notification medians [522.1, 540.8] ms.
+clip-a16380ba4a5b, candidate: pose calls [509], means [11.0] ms; frame-pipeline medians [211.8] ms; notification medians [542.9] ms.
+clip-a16380ba4a5b, margin: pose calls [498, 496], means [9.94, 11.21] ms; frame-pipeline medians [210.9, 212.3] ms; notification medians [527.3, 541.8] ms.
+dribbling_with_the_ball_1, baseline: pose calls [16], means [11.31] ms; frame-pipeline medians [213.0] ms; notification medians [None] ms.
+dribbling_with_the_ball_1, candidate: pose calls [30], means [10.13] ms; frame-pipeline medians [213.2] ms; notification medians [None] ms.
+low, baseline: pose calls [1672, 1672], means [10.36, 10.23] ms; frame-pipeline medians [209.7, 209.6] ms; notification medians [486.6, 487.1] ms.
+low, candidate: pose calls [1690, 1691], means [10.42, 10.32] ms; frame-pipeline medians [209.8, 209.9] ms; notification medians [487.1, 487.0] ms.
+raw-juggling, baseline: pose calls [84], means [11.15] ms; frame-pipeline medians [206.2] ms; notification medians [535.2] ms.
+raw-juggling, candidate: pose calls [55], means [12.69] ms; frame-pipeline medians [204.2] ms; notification medians [566.5] ms.
+
+Completed runs 18. Highest thermal state 0 (0=nominal). Pose errors 0. Late source skips 2. Overflow drops 0.
+
+HOST INTERRUPTIONS: Storage filled during report collection. Generated build caches were removed, preserving sources, recordings, evidence and signed app products; the user also freed space. A completed low baseline was recovered and validated after transfer failure. A later IMG8874 baseline was recovered after a partially copied progress JSON. These completed results passed count/export/trace/source checks. Polling now tolerates partial JSON only within its existing deadline. Unrelated background Git repacks were left alone.
+
+LIMITS: Paced original-video replay is not live camera capture. No iPhone11 testing, ordinary-import fix, revision1 comparison, full new-corpus percentage or TestFlight promotion is established here. The dribbling negative has 16 empty pose results; it is a useful no-count control but does not strongly exercise downstream foot proofs.
+
+NEXT: Preserve this isolated candidate recovery, then address phase-dependent ball/foot alignment and positive foot evidence for the now-generated shallow candidates. Keep the floor margin separate until repeated positive and ground-negative device checks pass. Do not globally lower foot-distance or motion thresholds.
+
+PHONE: Verified restoration to field build2026102913, revision2, no experimental flags, IMG8874 main preview at 24 touches, position zero, outlines off.
+
+EVIDENCE: summary.json, protocol.json, source-sha256.json, contracts.txt, historical-replay.txt, ground-margin-screen.jsonl, outdoor-ground-screen.jsonl, ablation.jsonl, low-54.08-investigation.json and per-arm phone folders.

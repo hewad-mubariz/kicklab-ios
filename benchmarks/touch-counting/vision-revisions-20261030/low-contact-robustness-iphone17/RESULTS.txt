@@ -1,0 +1,120 @@
+LOW-CONTACT ROBUSTNESS — REVISION 2 / IPHONE17 — 30 OCT 2026
+
+Scope: explicit debug flags --directed-forefoot-v1 and --observed-unarmed-turn-v1.
+Both fresh arms retain revision2, motion gateV3, observed fall/short-rise/plateau-foot,
+recent measured floor and the old contact-window clock. Model and regular RF scheduling are unchanged.
+No production default, commit, push or TestFlight promotion.
+
+The foot proof supplements the ordinary ankle circle only for a directed toe swing:
+two adjacent ankle-height ball views, moving/lifting foot, stable opposite support,
+resolved approach and two release views, confident bounded evidence and no resolved ground proof.
+The new candidate route requires a completed continuous observed turn meeting normal fall/rise/impulse
+thresholds after upward motion ends. It requires positive foot proof and retains all later vetoes.
+No clip identity or absolute time is used in either production rule.
+
+Initial saved screen:135 exact baseline traces, no previously accepted counts lost.
+Foot shape matches only54.033s in three captures. New candidate evidence is needed at12.633s
+and58.000s in low.mov. Missing callbacks in old traces are not accepted-count evidence.
+PASS: 17 directed forefoot contracts
+
+Fresh paced phone runs:
+- ball_in_hand r1: 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained []; lost [].
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+- clip-618a1688fcc6 r1: 24 -> 24; legal 24 -> 24; known false 0 -> 0.
+  Gained []; lost [].
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+- clip-89b81fd8bd37 r1: 157 -> 157; legal unlabelled -> unlabelled; known false unlabelled -> unlabelled.
+  Reviewed targets {"8.016": {"before": [8.016], "after": [8.016]}, "42.013": {"before": [42.046], "after": [42.046]}, "107.91": {"before": [107.91], "after": [107.91]}, "125.525": {"before": [125.491], "after": [125.458]}, "145.458": {"before": [145.458], "after": [145.458]}, "153.773": {"before": [], "after": []}, "154.206": {"before": [], "after": []}, "157.807": {"before": [], "after": []}}
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+- clip-a16380ba4a5b r1: 35 -> 35; legal 34 -> 34; known false 1 -> 1.
+  Gained [18.25, 18.875]; lost [0.566, 12.505].
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+- dribbling_with_ball_1 r1: 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained []; lost [].
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+- dribbling_with_ball_2 r1: 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained []; lost [].
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+- dribbling_with_ball_3 r1: 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained []; lost [].
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+- dribbling_with_the_ball_1 r1: 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained []; lost [].
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+- low r1: 170 -> 171; legal 170 -> 171; known false 0 -> 0.
+  Gained [54.08, 58.08]; lost [57.15].
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+- low r2: 171 -> 171; legal 171 -> 171; known false 0 -> 0.
+  Gained []; lost [].
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+- raw-juggling r1: 7 -> 6; legal 7 -> 6; known false 0 -> 0.
+  Gained []; lost [4.98].
+  Same-input ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+
+22 completed paced runs; thermal states [0], source skips 9, overflow 0.
+Raw-juggling skipped three source frames per arm; old3min skipped one per arm; IMG8606 skipped one in the improved arm.
+All other tested runs had zero skipped source frames. Nominal temperature and zero overflow do not mean zero omissions.
+
+Frozen tracked-input comparison:
+- low-bad: 170 -> 172; added [54033, 58000]; removed [].
+  Original input operations identical; fresh pose/contact evaluation. Ablation {"directed-foot-ablation": {"removedMs": [54033], "addedMs": [], "missingCallbacks": [{"frame": 1621, "kind": "ground", "operation": 1627}, {"frame": 1621, "kind": "body", "operation": 1627}, {"frame": 1621, "kind": "foot", "operation": 1628}, {"frame": 1621, "kind": "foot", "operation": 1630}]}, "unarmed-turn-ablation": {"removedMs": [58000], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [54033, 58000], "addedMs": [], "missingCallbacks": [{"frame": 1621, "kind": "ground", "operation": 1627}, {"frame": 1621, "kind": "body", "operation": 1627}, {"frame": 1621, "kind": "foot", "operation": 1628}, {"frame": 1621, "kind": "foot", "operation": 1630}]}}
+- low-good: 172 -> 172; added []; removed [].
+  Original input operations identical; fresh pose/contact evaluation. Ablation {"directed-foot-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "unarmed-turn-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}, "low-robustness-ablation": {"removedMs": [], "addedMs": [], "missingCallbacks": []}}
+
+Final combined-rule saved screen: 161 traces; 161 exact baselines; 0 traces lose an accepted count; 31 need unsaved evidence for new candidates.
+This screen is not fresh-Vision validation of those missing callbacks. Frozen phone comparisons supply the target evidence.
+
+Frozen contact replay disables the wall-clock contact-recheck rate limit, as in the existing
+harness. It tests evidence/rules with fixed original tracked inputs; it is not a live speed benchmark.
+Fresh-run input differences must still be reported even when neither new rule activates at the changed contact.
+The three-minute clip has selected reviewed targets only, not a complete manual ground-truth count.
+Phone field build restored and verified.
+
+DECISION: retain both rules as debug opt-ins; the two target recoveries are confirmed.
+
+On iPhone 17 build 2026103017, identical archived tracked inputs and unchanged counter configuration
+except the two opt-ins produced 170 -> 172 legal counts. Added exactly 54.033 s and 58.000 s, removed none.
+The independently archived successful input stayed 172 -> 172, with neither target duplicated.
+All counts in these four frozen passes match the available legal labels; no known false or unmatched count.
+The original archived runs had 169/171 counts. Fresh contact replay independently recovered 23.100 s in BOTH
+control and experimental arms; that extra count is not credited to either new rule. This harness disables
+wall-clock contact-recheck rate limiting, so 172 is not a promise for a new live recording.
+
+54.033 s: identical first FootContactEvidence in the frozen before/after decisions. The ordinary ankle-circle
+proof fails; a directed approach toward the ball, ankle lift relative to stable opposite support, two
+adjacent contact views and subsequent release support a toe contact. The new proof accepts it without
+overriding a resolved floor proof. It does not widen the ankle threshold for every contact.
+Disabling only this proof removes 54.033 s. That saved ablation then lacks four callbacks for later retries;
+the fresh control pass supplies those actual retry decisions, and none accepts the kick.
+
+58.000 s: the old smoothed descent never armed a candidate. A complete measured fall/release is now allowed
+to request foot evidence after upward motion ends. Ordinary fall/rise/impulse thresholds and subsequent
+body, hand, holding and ground vetoes still apply. Disabling only this route removes 58.000 s with no missing
+callbacks.12.633 s is proposed but still fails positive foot confirmation; it remains a known miss.
+
+22 paced fresh runs across 10 distinct clips (two low.mov pairs), all nominal and no overflow:
+low.mov 170 -> 171 and 171 -> 171; IMG 8874 24 -> 24; IMG 8606 35 -> 35; raw-juggling 7 -> 6;
+old three-minute clip 157 -> 157; five handling/dribbling negative clips 0 -> 0.
+The four reviewed old three-minute clip legal kicks survive; known floor events 153.773,154.206 and 157.807 stay rejected.
+The suspected false count 145.458 remains present. Old 3 min has selected reviewed targets, not full labels.
+
+These fresh totals do not establish zero regression. The first low pair gained 54.08/58.08 but lost 57.15;
+IMG 8606 gained 18.25/18.875 but lost 0.566/12.505; raw-juggling lost 4.98. Neither new rule changes an accepted
+count when individually disabled on any of those improved saved traces. That points to differing upstream
+inputs, but does not rule out additional evidence work influencing shared-worker timing. Live repeatability
+therefore remains a release blocker for this experiment. The second low pair has identical labelled counts.
+
+The two changes are general geometry/trajectory rules: no clip names or absolute timestamps in app code.
+Seventeen focused contracts pass, including whole-body translation, stationary/uncertain feet, missing or
+invisible ball views, unstable support, missing release and timestamp translation.161 saved traces replay
+their baselines exactly; enabling both rules removes no saved accepted count.31 traces need unavailable
+callbacks for new decisions, so this is a bounded regression screen, not a complete fresh-Vision corpus sweep.
+
+No production default, main-app or TestFlight change. iPhone 11 untouched. iPhone 17 restored to verified
+revision 2 field build 2026102913 with all experiment flags absent and the saved 24-touch IMG 8874 preview ready
+at 0 seconds. That preview is saved evidence, not a new import performance claim.
+
+Recommended next priority: isolate repeatability of the shared RF/contact-recheck workload on IMG 8606 and
+raw-juggling before promoting these opt-ins. Preserve the proven 54.033/58.000 cases and the old three-minute clip floor
+controls as regression targets; do not loosen generic foot/ground thresholds to chase changing totals.

@@ -1,0 +1,103 @@
+Recent measured floor — iPhone 17 — 30 October 2026
+
+Target: the reviewed false ground bounce at 154.206 s in the old three-minute outdoor clip.
+The ordinary body-box floor is too low and the ball barely crosses the support-ankle line.
+The existing descending-foot floor proof therefore remains inconclusive, and no foot proof is requested.
+The first bounce at 153.773 s is independently confirmed by the existing unlifted-foot proof.
+
+Opt-in --recent-measured-floor-v1 uses that proven floor for at most 600 ms. It requires two adjacent
+low-ball views to bound the reference, nearby stable support, consistent ball size/location,
+a complete observed rebound and a descending nearest ankle. A successful intervening kick,
+tracking discontinuity or expired reference prevents reuse. A new rejection cannot extend its own reference.
+No clip name or absolute timestamp is used. No new Vision request, input crop, frame rate or model is added.
+Both phone arms retain revision 2, startup gate V3, observed-fall and short-kick recovery, and the old contact clock.
+Build 2026103015 tightens expiry: the new route always requires a matched recent reference, even for
+a shape that an independent deep-floor rule could classify. Existing floor classification is unchanged.
+
+Saved input screen: 111 exact baselines; 6 target-only changes.
+Final-rule compatibility screen: 135 saved traces replay exactly; no changed counts outside the target.
+The original single-edge prototype missed older captures because the detected lower edge jumped.
+The final two-view range catches the target in all six historical captures without changing other counts.
+PASS: 25 recent measured-floor contracts
+
+Fresh phone comparisons
+- build 2026103014 ball_in_hand r1: total 0 -> 0; labelled legal 0 -> 0; known false 0 -> 0.
+  Gained legal []; lost legal [].
+- build 2026103014 clip-618a1688fcc6 r1: total 24 -> 24; labelled legal 24 -> 24; known false 0 -> 0.
+  Gained legal []; lost legal [].
+- build 2026103014 clip-89b81fd8bd37 r1: total 159 -> 156; labelled legal unlabelled -> unlabelled; known false unlabelled -> unlabelled.
+  Reviewed targets: {"8.016": {"before": [8.016], "after": [8.016]}, "42.013": {"before": [42.046], "after": [42.046]}, "107.91": {"before": [107.91], "after": []}, "125.525": {"before": [125.491], "after": [125.525]}, "145.458": {"before": [], "after": [145.458]}, "153.773": {"before": [], "after": []}, "154.206": {"before": [154.206], "after": []}, "157.807": {"before": [], "after": []}}
+  Unmatched fresh times: new [145.458]; old [14.365, 51.213, 107.91, 154.206].
+- build 2026103014 clip-a16380ba4a5b r1: total 35 -> 35; labelled legal 34 -> 34; known false 1 -> 1.
+  Gained legal [18.25]; lost legal [16.808].
+- build 2026103014 dribbling_with_ball_1 r1: total 0 -> 0; labelled legal 0 -> 0; known false 0 -> 0.
+  Gained legal []; lost legal [].
+- build 2026103014 dribbling_with_ball_2 r1: total 0 -> 0; labelled legal 0 -> 0; known false 0 -> 0.
+  Gained legal []; lost legal [].
+- build 2026103014 dribbling_with_ball_3 r1: total 0 -> 0; labelled legal 0 -> 0; known false 0 -> 0.
+  Gained legal []; lost legal [].
+- build 2026103014 dribbling_with_the_ball_1 r1: total 0 -> 0; labelled legal 0 -> 0; known false 0 -> 0.
+  Gained legal []; lost legal [].
+- build 2026103014 low r1: total 171 -> 171; labelled legal 171 -> 171; known false 0 -> 0.
+  Gained legal []; lost legal [].
+- build 2026103014 raw-juggling r1: total 7 -> 7; labelled legal 7 -> 7; known false 0 -> 0.
+  Gained legal [4.43, 6.62]; lost legal [4.98, 8.1].
+- build 2026103015 clip-89b81fd8bd37 r2: total 158 -> 158; labelled legal unlabelled -> unlabelled; known false unlabelled -> unlabelled.
+  Reviewed targets: {"8.016": {"before": [8.016], "after": [8.016]}, "42.013": {"before": [42.046], "after": [42.046]}, "107.91": {"before": [107.91], "after": [107.91]}, "125.525": {"before": [125.458], "after": [125.458]}, "145.458": {"before": [145.458], "after": []}, "153.773": {"before": [], "after": []}, "154.206": {"before": [154.206], "after": []}, "157.807": {"before": [], "after": []}}
+  Unmatched fresh times: new [35.413, 51.213, 108.576]; old [12.898, 145.458, 154.206].
+- build 2026103015 low r2: total 171 -> 169; labelled legal 171 -> 169; known false 0 -> 0.
+  Gained legal []; lost legal [54.08, 58.08].
+  New proof build 2026103014 ball_in_hand r1: []
+  New proof build 2026103014 clip-618a1688fcc6 r1: []
+  New proof build 2026103014 clip-89b81fd8bd37 r1: [{'ms': 154206, 'previousMs': 153773, 'rejection': 'groundBounce'}]
+  New proof build 2026103014 clip-a16380ba4a5b r1: []
+  New proof build 2026103014 dribbling_with_ball_1 r1: []
+  New proof build 2026103014 dribbling_with_ball_2 r1: []
+  New proof build 2026103014 dribbling_with_ball_3 r1: []
+  New proof build 2026103014 dribbling_with_the_ball_1 r1: []
+  New proof build 2026103014 low r1: []
+  New proof build 2026103014 raw-juggling r1: []
+  New proof build 2026103015 clip-89b81fd8bd37 r2: [{'ms': 154206, 'previousMs': 153773, 'rejection': 'groundBounce'}]
+  New proof build 2026103015 low r2: []
+
+Exact-input forward checks on fresh controls
+- ball_in_hand-pose2-r1: removed []; added []; missing callbacks [].
+- clip-618a1688fcc6-pose2-r1: removed []; added []; missing callbacks [].
+- clip-89b81fd8bd37-pose2-r1: removed [154206]; added []; missing callbacks [].
+- clip-a16380ba4a5b-pose2-r1: removed []; added []; missing callbacks [].
+- dribbling_with_ball_1-pose2-r1: removed []; added []; missing callbacks [].
+- dribbling_with_ball_2-pose2-r1: removed []; added []; missing callbacks [].
+- dribbling_with_ball_3-pose2-r1: removed []; added []; missing callbacks [].
+- dribbling_with_the_ball_1-pose2-r1: removed []; added []; missing callbacks [].
+- low-pose2-r1: removed []; added []; missing callbacks [].
+- raw-juggling-pose2-r1: removed []; added []; missing callbacks [].
+- clip-89b81fd8bd37-pose2-r2: removed [154206]; added []; missing callbacks [].
+- low-pose2-r2: removed []; added []; missing callbacks [].
+
+24 complete runs, thermal states [0] (0=nominal), source skips 3, overflow 0.
+
+Field build restored and verified.
+One final control attempt was interrupted by AVFoundation (-11847); its files are preserved separately and it was retried.
+Incomplete runs are excluded. Selected targets are not a full manual recount of the three-minute clip.
+No default change, commit, push or TestFlight upload.
+
+Conclusion
+The reviewed false bounce at 154.206 s is rejected in both completed experimental phone runs. The control counts it in both comparisons. The new trace field identifies the independent floor reference at 153.773 s. This is a counting-evidence improvement: the ball and pose observations were already present, but the ordinary floor rules did not resolve this shallow, moving-foot rebound.
+
+The final rule uses a short-lived, two-view floor range, not a single permanent position. It expires after 600 ms between observed impacts, requires a stable nearby support and descending nearest ankle, respects independently confirmed compact/leg contact, and cannot extend itself into a chain. Counted intervening kicks and continuity breaks prevent reuse. The older planted-feet false rejection at the legitimate 14.365 s kick was visually checked and explicitly tested: it cannot seed this new reference.
+
+Validation: 24 completed iPhone 17 replays, 25 Swift evidence contracts, and 135 saved traces. All 135 baseline counts replay exactly; enabling the rule removes only 154.206 s where it was previously counted, with no additional counts or other count removals. Both fresh control traces show that same target-only change on identical inputs. This is not a claim that fresh tracking results are identical between phone runs.
+
+Fresh comparison limitations remain important. In the first three-minute pair (build 2026103014), total counts were 159 -> 156. Apart from the target removal, the improved run lost legal contacts near 14.365, 51.213 and 107.910 s and gained the suspected false count at 145.458 s. Their tracked inputs differ and the new rule never activates there. The 14.365 s contact was visually confirmed as a legal foot kick.
+
+The final-build three-minute pair (build 2026103015) was 158 -> 158. Both sides count the reviewed legal contacts at 8.016, 42.013, 107.910 and 125.525 s; both reject 153.773 and 157.807 s. Only the experimental side rejects 154.206 s through the new proof. It also gains counts at 35.413, 51.213 and 108.576 s, and loses counts at 12.898 and 145.458 s. The lost 12.898 s contact is visually confirmed legal; 145.458 s is the existing suspected false count. These non-target differences must not be credited to the ground rule or hidden by equal totals.
+
+Low.mov was 171 -> 171 in the first pair, then 171 -> 169 in the final pair. The new floor proof is never invoked in either improved low trace. Disabling it on exactly those inputs leaves every count unchanged. The recovered 4.67 s kick remains counted in every completed arm. The final fresh-run misses at 54.08 and 58.08 s remain a tracking/evidence repeatability issue to investigate separately.
+
+IMG8874 stays 24 legal / zero known false. IMG8606 stays 34 legal plus the existing one false count; some individual legal contacts differ. Raw-juggling stays seven legal, also with individual contact swaps. All five holding/dribbling clips stay at zero. All completed runs stayed nominal; three source-frame skips occurred in total, with zero overflow. There is no added Vision/model request in this proof.
+
+One final control attempt was interrupted by AVFoundation error -11847. It is preserved under interrupted-build2026103015, excluded from accuracy totals, and the retry completed. The failed run is not treated as a counting result or a successful timing benchmark.
+
+The ground fix remains debug-only and opt-in. No main-app default, commit, push or TestFlight upload was made. The field build 2026102913 was restored and verified on iPhone 17, with experimental flags absent and the saved 24-touch IMG8874 preview ready. No iPhone 11 installation was performed in this work.
+
+Next revision-2 priority: isolate fresh tracking/contact-evidence variation before claiming a stable whole-pipeline improvement. Useful cases are the legitimate 12.898/14.365 s foot kicks, the intermittent 51.213 s proposal and 107.910 s knee contact, and the low.mov 54.08/58.08 s differences. Keep the verified short-kick recovery and recent-floor proof isolated while examining those upstream inputs.

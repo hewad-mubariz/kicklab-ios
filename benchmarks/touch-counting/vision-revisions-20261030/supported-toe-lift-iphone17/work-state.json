@@ -1,0 +1,61 @@
+{
+  "phase": "target recovery and regression assessment complete",
+  "targetSeconds": 8.003,
+  "source": "IMG_9029.MOV",
+  "defaultsChanged": false,
+  "plannedBuild": "2026103021",
+  "screenTraces": 233,
+  "build": "2026103021",
+  "installed": true,
+  "offlineExactTraces": 233,
+  "offlineLostCounts": 0,
+  "offlineAddedCounts": 0,
+  "missingNewBodyCallbacks": 2,
+  "predicateHits": 2,
+  "contracts": 21,
+  "resumeCommand": null,
+  "nextSteps": [
+    "Verify phone review handoff",
+    "Investigate fresh pipeline/candidate repeatability before default promotion"
+  ],
+  "phoneVerificationComplete": true,
+  "targetRepeatCounts": {
+    "control": [
+      24,
+      24
+    ],
+    "supported": [
+      25,
+      25
+    ]
+  },
+  "targetOnlyAddedMs": [
+    8003
+  ],
+  "targetLostMs": [],
+  "failedAttempts": [
+    "old-three-supported-background-214117"
+  ],
+  "promotion": "not approved: low clip fresh runs remain 171 off versus 170 on; target recovery verified",
+  "knownUnresolved": [
+    "IMG9029 end bounce at 12.471 s remains counted",
+    "Low clip repeat2 with proof enabled has no candidate near 58 s; saved-input ablation does not change result",
+    "Fresh ball inputs differ despite identical admitted source frames"
+  ],
+  "completedRuns": 28,
+  "distinctFreshClips": 11,
+  "regressionPairs": 12,
+  "targetPairs": 2,
+  "allSavedInputRegressionEventsUnchanged": true,
+  "productionDefaultsChanged": false,
+  "promotionApproved": false,
+  "sourceFilesVerified": 100,
+  "phoneReviewVerified": true,
+  "phoneReviewCount": 25,
+  "phoneReviewAtSeconds": 0,
+  "phoneBuild": "2026103021",
+  "savedBranch": "codex/vision-revision-comparison",
+  "checkpointDate": "2026-10-31",
+  "rawArtifactsLocal": "artifacts/vision-revisions-20261030/supported-toe-lift-iphone17",
+  "purpose": "Git checkpoint of completed experiment; not release approval"
+}

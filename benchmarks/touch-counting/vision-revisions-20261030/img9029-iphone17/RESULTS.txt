@@ -1,0 +1,28 @@
+IMG_9029 — IPHONE 17 PRO MAX LIVE-ENGINE REVIEW — 30 OCTOBER 2026
+
+24 counted events in both fresh runs, at exactly the same timestamps.
+Original source: 13.1717 seconds, portrait 4K/120 fps; no transcoded input was used.
+Build2026103020, revision2, latest control profile including prior low-contact opt-ins.
+The rejected independent-clock and failed-retry-clock experiments are both disabled.
+395 source frames admitted per run; zero late source skips, zero pipeline overflow, zero late RF replies.
+Both runs stayed nominal. Pose returned no person in 15/352 calls in each run, with no pose errors.
+The saved trace replays exactly and the phone view is verified at position0 with 24 events, 26 diagnostics,
+and contact outlines enabled. Press Play in Touch Counting Debug to review.
+
+INITIAL EVENT REVIEW
+8.003 s: a visible legal low kick is rejected as groundBounce. Ball tracking is present before, during
+and after contact, including RF detections at 7.903, 8.003, 8.070 and 8.103 s. The decision reports
+footConfirmed=false and plantedFeetConfirmed=true. This miss is a contact/ground-classification issue,
+not a lost ball track or a source frame dropped by the replay.
+12.438–12.471 s: an apparent ground bounce is correctly rejected by its first candidate, then a second
+candidate 33 ms later passes foot confirmation and is counted. This needs follow-up against the saved
+frames; it should not be treated as an additional confirmed legal kick merely because it was counted.
+The longer count gap near3.9 s has no rejection; it was not automatically labelled a missed touch.
+The clip begins mid-action, so its opening boundary also needs care in any full ground-truth count.
+
+The 24 total is therefore not a claim of 24 correct legal touches or 100% accuracy. The two flagged
+moments reproduce across both runs. Turning off directed-forefoot and unarmed-turn separately and
+together on the saved input leaves all24 counted timestamps unchanged, with exact baseline replay
+and no missing callbacks. Those two latest low-kick flags do not explain these events on this input.
+No counting rule was changed for this clip. The next targeted investigation is the low-foot/ground
+proof at8.003 s and why the rejected floor event can be accepted again at12.471 s.

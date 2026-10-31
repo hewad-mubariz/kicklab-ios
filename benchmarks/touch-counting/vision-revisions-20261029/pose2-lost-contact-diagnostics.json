@@ -1,0 +1,138 @@
+{
+  "scope": "Nearest logged rejection is a diagnostic hint, not proof of causal attribution. First-run21 losses on original20 clips.",
+  "histogram": {
+    "trackLost": 2,
+    "disallowedBodyContact": 12,
+    "amplitudeTooSmall": 3,
+    "no_nearby_candidate": 3,
+    "unresolvedLowContact": 1
+  },
+  "events": [
+    {
+      "clip": "raw-juggling",
+      "time": 4.43,
+      "reason": "trackLost",
+      "bodyFailure": null
+    },
+    {
+      "clip": "raw-juggling",
+      "time": 7.39,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "missingBall"
+    },
+    {
+      "clip": "juggling_second_ball_very_far",
+      "time": 10.88,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "handsNearBall"
+    },
+    {
+      "clip": "normal_juggling_7",
+      "time": 6.26,
+      "reason": "trackLost",
+      "bodyFailure": null
+    },
+    {
+      "clip": "normal_juggling_7",
+      "time": 6.8,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "insufficientContactViews"
+    },
+    {
+      "clip": "normal_juggling_7",
+      "time": 12.86,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "insufficientContactViews"
+    },
+    {
+      "clip": "normal_juggling_7",
+      "time": 15.13,
+      "reason": "amplitudeTooSmall",
+      "bodyFailure": null
+    },
+    {
+      "clip": "normal_juggling_4",
+      "time": 7.12,
+      "reason": "no_nearby_candidate",
+      "bodyFailure": null
+    },
+    {
+      "clip": "normal_juggling_4",
+      "time": 8.08,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "handsNearBall"
+    },
+    {
+      "clip": "normal_juggling_4",
+      "time": 11.88,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "handsNearBall"
+    },
+    {
+      "clip": "normal_juggling_4",
+      "time": 20.28,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "handsNearBall"
+    },
+    {
+      "clip": "normal_juggling_3",
+      "time": 3.4,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "handsNearBall"
+    },
+    {
+      "clip": "low",
+      "time": 23.11,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "missingBall"
+    },
+    {
+      "clip": "low",
+      "time": 28.06,
+      "reason": "amplitudeTooSmall",
+      "bodyFailure": null
+    },
+    {
+      "clip": "low",
+      "time": 34.41,
+      "reason": "no_nearby_candidate",
+      "bodyFailure": null
+    },
+    {
+      "clip": "low",
+      "time": 37.43,
+      "reason": "unresolvedLowContact",
+      "bodyFailure": null
+    },
+    {
+      "clip": "normal_juggling_8",
+      "time": 39.38,
+      "reason": "amplitudeTooSmall",
+      "bodyFailure": null
+    },
+    {
+      "clip": "normal_juggling_8",
+      "time": 44.25,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "insufficientContactViews"
+    },
+    {
+      "clip": "normal_juggling_8",
+      "time": 45.55,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "handsNearBall"
+    },
+    {
+      "clip": "normal_juggling_8",
+      "time": 49.47,
+      "reason": "disallowedBodyContact",
+      "bodyFailure": "missingBall"
+    },
+    {
+      "clip": "normal_juggling_8",
+      "time": 53.84,
+      "reason": "no_nearby_candidate",
+      "bodyFailure": null
+    }
+  ]
+}

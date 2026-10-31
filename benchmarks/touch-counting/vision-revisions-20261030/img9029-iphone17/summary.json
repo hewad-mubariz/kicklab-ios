@@ -1,0 +1,283 @@
+{
+  "source": {
+    "id": "clip-e842657024ae",
+    "sha256": "e842657024ae5982693e9612b8e98b17b00d6df10778f8358e61e59fcf12426c",
+    "source": "/Users/hewadmubariz/Downloads/IMG_9029.MOV",
+    "aliases": [
+      "/Users/hewadmubariz/Downloads/IMG_9029.MOV"
+    ],
+    "bytes": 246647792,
+    "duration": 13.1717,
+    "video": {
+      "width": 3840,
+      "height": 2160,
+      "avg_frame_rate": "3792000/31613",
+      "side_data_list": [
+        {},
+        {},
+        {}
+      ]
+    },
+    "labelFile": null,
+    "referenceCoverage": "unreviewed",
+    "state": "ready"
+  },
+  "runs": [
+    {
+      "clip": "clip-e842657024ae",
+      "sourceSHA256": "e842657024ae5982693e9612b8e98b17b00d6df10778f8358e61e59fcf12426c",
+      "build": "2026103020",
+      "arm": "pose2",
+      "count": 24,
+      "countTimes": [
+        0.466,
+        1.0,
+        1.467,
+        1.934,
+        2.467,
+        2.934,
+        3.434,
+        4.301,
+        4.835,
+        5.302,
+        5.735,
+        6.169,
+        6.669,
+        7.102,
+        7.57,
+        8.57,
+        8.97,
+        9.503,
+        9.97,
+        10.437,
+        10.871,
+        11.371,
+        11.938,
+        12.471
+      ],
+      "sourceSeconds": 13.16375,
+      "lateSourceSkips": 0,
+      "worstThermal": 0,
+      "peakSampledMemoryMiB": 359.3614959716797,
+      "latencyMedianMs": 209.12333333399147,
+      "latencyP95Ms": 217.94587498879991,
+      "errors": [],
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1793375874.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|stationary-gate-motion-v3|contact-evidence-early-release-v3|rf-contact-interleave-v1|contact-evidence-scheduling-v3|observed-fall-amplitude-v1|observed-short-rise-v1|observed-plateau-foot-v1|recent-measured-floor-v1|directed-forefoot-v1|observed-unarmed-turn-v1|corroborated-floor-rebound-v1|adjacent-measured-foot-v3-height|planted-impact-evidence-v1|unlifted-floor-rebound-v1|aligned-foot-region-v1|brief-toe-lift-v1|descending-floor-rebound-v1|corroborated-support-ankle-v1|aligned-leg-ground-v1|measured-gap-candidate-v1|measured-rebound-confirmation-v2|settled-measured-rebound-v1|raised-forefoot-v1|balanced-missing-impact-v3|weak-low-foot-v1|terminal-rebound-evidence-v1|slow-measured-rise-v1|raised-compact-foot-v3|late-impact-evidence-v2|early-impact-evidence-v1|hands=true|vision-body-pose-swift-r2|small-arc-v23|handling-v2|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "worker": {
+        "active": 0,
+        "contact": 4,
+        "impact_gap": 4,
+        "interleaved_regular": 0,
+        "maximum_active": 1,
+        "model_instances": 1,
+        "regular": 130,
+        "warmup": 2
+      },
+      "referenceCoverage": "unreviewed",
+      "hardwareModel": "iPhone18,2",
+      "modelFunction": "rf384",
+      "resolution": 384,
+      "runtimeVersion": "Version 27.0.1 (Build 24A446)",
+      "admittedFrames": 395,
+      "poseTiming": {
+        "calls": 352,
+        "empty": 15,
+        "errors": 0,
+        "maximumMS": 77.44570833165199,
+        "totalMS": 3463.522291785921
+      },
+      "validForAccuracy": true,
+      "auditEnabled": true
+    },
+    {
+      "clip": "clip-e842657024ae",
+      "sourceSHA256": "e842657024ae5982693e9612b8e98b17b00d6df10778f8358e61e59fcf12426c",
+      "build": "2026103020",
+      "arm": "pose2",
+      "count": 24,
+      "countTimes": [
+        0.466,
+        1.0,
+        1.467,
+        1.934,
+        2.467,
+        2.934,
+        3.434,
+        4.301,
+        4.835,
+        5.302,
+        5.735,
+        6.169,
+        6.669,
+        7.102,
+        7.57,
+        8.57,
+        8.97,
+        9.503,
+        9.97,
+        10.437,
+        10.871,
+        11.371,
+        11.938,
+        12.471
+      ],
+      "sourceSeconds": 13.16375,
+      "lateSourceSkips": 0,
+      "worstThermal": 0,
+      "peakSampledMemoryMiB": 358.8458480834961,
+      "latencyMedianMs": 209.129833325278,
+      "latencyP95Ms": 217.81741666200105,
+      "errors": [],
+      "pipeline": "analysis-v15-contact-evidence-v2|RFDETRSmallRecovery040FP16|0.0|1793375874.0|Version 27.0.1 (Build 24A446)|RFDETRSmallRecovery040FP16|rfshared-e0c3e470cdb8-c8c1b8d53923|function=rf384|rgb384|fp16|cpuAndGPU-cpuFallback-v1|ball=0.40|person=0.50|association=rf-v1|motionRecovery=true|rf-motion-recovery-v1|stationary-gate-v2|stationary-gate-motion-v3|contact-evidence-early-release-v3|rf-contact-interleave-v1|contact-evidence-scheduling-v3|observed-fall-amplitude-v1|observed-short-rise-v1|observed-plateau-foot-v1|recent-measured-floor-v1|directed-forefoot-v1|observed-unarmed-turn-v1|corroborated-floor-rebound-v1|adjacent-measured-foot-v3-height|planted-impact-evidence-v1|unlifted-floor-rebound-v1|aligned-foot-region-v1|brief-toe-lift-v1|descending-floor-rebound-v1|corroborated-support-ankle-v1|aligned-leg-ground-v1|measured-gap-candidate-v1|measured-rebound-confirmation-v2|settled-measured-rebound-v1|raised-forefoot-v1|balanced-missing-impact-v3|weak-low-foot-v1|terminal-rebound-evidence-v1|slow-measured-rise-v1|raised-compact-foot-v3|late-impact-evidence-v2|early-impact-evidence-v1|hands=true|vision-body-pose-swift-r2|small-arc-v23|handling-v2|timed-trajectory-v1|cadence-ground-v2|active-juggler-v1|player-ground-v1",
+      "worker": {
+        "active": 0,
+        "contact": 4,
+        "impact_gap": 4,
+        "interleaved_regular": 0,
+        "maximum_active": 1,
+        "model_instances": 1,
+        "regular": 130,
+        "warmup": 2
+      },
+      "referenceCoverage": "unreviewed",
+      "hardwareModel": "iPhone18,2",
+      "modelFunction": "rf384",
+      "resolution": 384,
+      "runtimeVersion": "Version 27.0.1 (Build 24A446)",
+      "admittedFrames": 395,
+      "poseTiming": {
+        "calls": 352,
+        "empty": 15,
+        "errors": 0,
+        "maximumMS": 75.4411250090925,
+        "totalMS": 3440.8203331840923
+      },
+      "validForAccuracy": true,
+      "auditEnabled": true
+    }
+  ],
+  "identicalCountTimestamps": true,
+  "reviewedEvents": [
+    {
+      "time": 8.003,
+      "review": "visible legal kick rejected",
+      "detail": "Ball remains tracked throughout the approach/contact/release. Rejected groundBounce with footConfirmed=false and plantedFeetConfirmed=true.",
+      "decisions": [
+        {
+          "frameIndex": 240,
+          "timestampMs": 8003,
+          "rejection": "groundBounce",
+          "footConfirmed": false,
+          "fall": 0.07520619630813596,
+          "requiredFall": 0.011785888671875001,
+          "rise": 0.027159357070922874,
+          "impulse": 1.4158237336286845,
+          "ground": 0.8232421875,
+          "observedBallBottom": 0.82373046875,
+          "plantedFeetConfirmed": true
+        }
+      ]
+    },
+    {
+      "time": 12.438,
+      "review": "apparent ground bounce",
+      "detail": "First candidate rejected as groundBounce. A second candidate at 12.471 s is accepted with footConfirmed=true; this supplies count 24.",
+      "decisions": [
+        {
+          "frameIndex": 373,
+          "timestampMs": 12438,
+          "rejection": "groundBounce",
+          "footConfirmed": false,
+          "fall": 0.18136865695317583,
+          "requiredFall": 0.011975097656250001,
+          "rise": 0.013120275735854947,
+          "impulse": 1.480814054345503,
+          "ground": 0.843017578125,
+          "observedBallBottom": 0.91778564453125
+        },
+        {
+          "frameIndex": 374,
+          "timestampMs": 12471,
+          "handRejected": false,
+          "bodyContactAllowed": true,
+          "footConfirmed": true,
+          "fall": 0.06224422454833989,
+          "requiredFall": 0.011975097656250001,
+          "rise": 0.06677803993225107,
+          "impulse": 0.9546712998727076,
+          "ground": 0.843017578125,
+          "observedBallBottom": 0.91778564453125,
+          "plantedFeetConfirmed": false,
+          "handlingChecked": true
+        }
+      ]
+    }
+  ],
+  "review": {
+    "build": "2026103020",
+    "selectedRun": "/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/artifacts/vision-revisions-20261030/img9029-iphone17/iphone17/clip-e842657024ae-pose2-r2",
+    "state": {
+      "diagnostics": 26,
+      "duration": 13.171666666666667,
+      "outlines": true,
+      "position": 0,
+      "state": "ready",
+      "touches": 24,
+      "video": "source.mov"
+    },
+    "profile": {
+      "bodyPoseImplementation": "Swift revision2",
+      "bodyPoseRequestedCompute": "automatic",
+      "compactReleaseWindow": false,
+      "contactWindowClock": false,
+      "directedForefoot": true,
+      "failedRetryClock": false,
+      "independentRegularClock": false,
+      "integratedHandDetection": false,
+      "legacyBodyDefault": 1,
+      "legacyBodySelected": 1,
+      "legacyBodySupported": [
+        1
+      ],
+      "legacyHandSelected": 1,
+      "legacyHandSupported": [
+        1
+      ],
+      "objectTrackingSelected": 1,
+      "objectTrackingSupported": [
+        1,
+        2
+      ],
+      "observedFallAmplitude": true,
+      "observedPlateauFoot": true,
+      "observedShortRise": true,
+      "observedUnarmedTurn": true,
+      "poseEmptyLegacyFallback": false,
+      "recentMeasuredFloor": true,
+      "reservedImpactGap": false,
+      "reservedImpactGapVersion": 0,
+      "resolvedFloorMargin": false,
+      "shallowLateralContact": false,
+      "sharedPoseHistory": false,
+      "sourceCadence": false,
+      "sourceCadenceVersion": 0,
+      "stationaryGateVersion": 3,
+      "swiftBody3DSupported": [
+        "revision1"
+      ],
+      "swiftBodySupported": [
+        "revision2"
+      ],
+      "swiftHandSupported": [
+        "revision1"
+      ],
+      "swiftTrackerSupported": [
+        "revision2"
+      ],
+      "trackingDrainBudget": false
+    },
+    "freshReviewWriteVerified": true
+  },
+  "scope": "Original 4K/120 fps video replayed at normal source time into the live engine, admitted at 30 Hz. Not a new camera recording or a fully labelled accuracy score.",
+  "counterCodeChanged": false
+}

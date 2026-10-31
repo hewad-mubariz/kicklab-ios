@@ -1,0 +1,38 @@
+FILE-REPLAY CLOCK CHECK — IPHONE17 — BUILD2026103018
+
+Precise mode anchors time after the first frame is decoded and requests zero timer tolerance.
+It preserves the existing one-frame lateness/drop limit; no backlog catch-up or saved touch injection.
+This debug replay change does not alter live camera capture, model inference or counting defaults.
+
+clip-a16380ba4a5b legacy-both r1: legal 32, known false 1, skips 0, empty pose 35, maximum wake lateness 2.14ms.
+clip-a16380ba4a5b legacy-both r2: legal 35, known false 1, skips 0, empty pose 1, maximum wake lateness 2.11ms.
+raw-juggling legacy-both r1: legal 5, known false 0, skips 4, empty pose 0, maximum wake lateness 130.62ms.
+raw-juggling legacy-both r2: legal 5, known false 0, skips 0, empty pose 0, maximum wake lateness 32.00ms.
+clip-a16380ba4a5b precise-both r1: legal 32, known false 1, skips 0, empty pose 35, maximum wake lateness 1.25ms.
+clip-a16380ba4a5b precise-both r2: legal 32, known false 1, skips 0, empty pose 35, maximum wake lateness 1.27ms.
+low precise-both r1: legal 171, known false 0, skips 0, empty pose 0, maximum wake lateness 1.29ms.
+raw-juggling precise-both r1: legal 7, known false 0, skips 0, empty pose 0, maximum wake lateness 1.23ms.
+raw-juggling precise-both r2: legal 7, known false 0, skips 0, empty pose 0, maximum wake lateness 1.62ms.
+clip-a16380ba4a5b precise-control r1: legal 33, known false 1, skips 0, empty pose 1, maximum wake lateness 1.27ms.
+clip-a16380ba4a5b precise-control r2: legal 32, known false 1, skips 0, empty pose 35, maximum wake lateness 1.33ms.
+low precise-control r1: legal 171, known false 0, skips 0, empty pose 0, maximum wake lateness 1.46ms.
+raw-juggling precise-control r1: legal 6, known false 0, skips 0, empty pose 0, maximum wake lateness 1.20ms.
+raw-juggling precise-control r2: legal 7, known false 0, skips 0, empty pose 0, maximum wake lateness 1.24ms.
+
+Paired comparisons:
+clock-only clip-a16380ba4a5b r1: 32 -> 32 legal; gains [12.505]; losses [0.566]; admitted source frames identical: True.
+clock-only clip-a16380ba4a5b r2: 35 -> 32 legal; gains []; losses [0.566, 3.368, 18.875]; admitted source frames identical: True.
+clock-only raw-juggling r1: 5 -> 7 legal; gains [4.43, 4.98, 6.62]; losses [8.1]; admitted source frames identical: False.
+clock-only raw-juggling r2: 5 -> 7 legal; gains [4.43, 4.98, 6.62]; losses [8.1]; admitted source frames identical: True.
+rules-with-precise-clock clip-a16380ba4a5b r1: 33 -> 32 legal; gains [12.505]; losses [18.25, 18.875]; admitted source frames identical: True.
+rules-with-precise-clock clip-a16380ba4a5b r2: 32 -> 32 legal; gains []; losses []; admitted source frames identical: True.
+rules-with-precise-clock low r1: 171 -> 171 legal; gains []; losses []; admitted source frames identical: True.
+rules-with-precise-clock raw-juggling r1: 6 -> 7 legal; gains [4.43, 4.98, 6.62]; losses [5.6, 8.1]; admitted source frames identical: True.
+rules-with-precise-clock raw-juggling r2: 7 -> 7 legal; gains []; losses []; admitted source frames identical: True.
+
+14 completed runs; thermal states [0]; overflow 0; late RF replies 0.
+
+Zero requested tolerance is not a real-time deadline guarantee. Measured wake lateness remains recorded.
+Swift documents that omitting tolerance lets the system coalesce wake-ups:
+https://docs.swift.org/main/documentation/swift/continuousclock/clock-implementations/
+A matched delivery schedule does not freeze asynchronous detector scheduling or pose outputs.

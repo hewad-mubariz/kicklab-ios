@@ -1,0 +1,44 @@
+{
+  "build": "2026102913",
+  "revision": {
+    "bodyPoseImplementation": "Swift revision2",
+    "integratedHandDetection": false,
+    "legacyBodyDefault": 1,
+    "legacyBodySelected": 1,
+    "legacyBodySupported": [
+      1
+    ],
+    "legacyHandSelected": 1,
+    "legacyHandSupported": [
+      1
+    ],
+    "objectTrackingSelected": 1,
+    "objectTrackingSupported": [
+      1,
+      2
+    ],
+    "swiftBody3DSupported": [
+      "revision1"
+    ],
+    "swiftBodySupported": [
+      "revision2"
+    ],
+    "swiftHandSupported": [
+      "revision1"
+    ],
+    "swiftTrackerSupported": [
+      "revision2"
+    ]
+  },
+  "review": {
+    "diagnostics": 25,
+    "duration": 14.515,
+    "outlines": false,
+    "position": 0,
+    "state": "ready",
+    "touches": 24,
+    "video": "source.mov"
+  },
+  "sharedHistoryEnabled": false,
+  "freshReviewWriteVerified": true
+}

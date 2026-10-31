@@ -1,0 +1,1 @@
+PASS: actual indices only, dense impact/release preserved, early history bounded, order independent, missing views never invented, deterministic ties

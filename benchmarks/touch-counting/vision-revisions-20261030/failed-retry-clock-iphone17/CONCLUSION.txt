@@ -1,0 +1,27 @@
+DO NOT PROMOTE EITHER RETRY-CLOCK CHANGE. 30 OCTOBER 2026.
+
+The broad clock prototype lost reviewed low kicks (171 to 167 in the first pair).
+The narrower failed-retry-only prototype counted 6 rather than 7 legal contacts in both raw-clip repeats.
+Each repeat gained 3.84 and 8.10 s but lost 4.43, 4.98 and 6.62 s to trackLost. Counter rules were identical.
+Low.mov remained 171 in both paired repeats, with the 4.633, 54.033 and 58.000 s targets preserved.
+IMG8606 varied between 32 and 34 legal counts in both settings, with zero clock restorations in all four runs.
+Do not attribute that variability to the inactive clock mechanism. Its one known false count remained.
+IMG8874 stayed at 24. All five holding/dribbling controls stayed at zero in both arms.
+In the old three-minute clip, reviewed ground events at 153.773, 154.206 and 157.807 s remained uncounted.
+The 42.013 s legal target was missed in the control and counted in the experiment. The suspected false
+at 145.458 s persisted in both. These are selected reviewed events, not a full accuracy score.
+The control skipped source frames at 28.265 and 95.843 s; the experiment skipped none, so this pair
+cannot support an identical-input causal claim.
+
+12 broad-clock runs plus 26 failed-retry-clock runs completed. One extra dribbling attempt was invalid
+because iOS blocked GPU execution in the background; its evidence is preserved separately and a fresh
+retry completed. All completed runs were nominal; no RF reply was late and no pipeline buffer overflowed.
+The same RF model, single-active-inference bound and regular-rate cap held. There is no useful latency
+improvement that compensates for losing legal contacts. Neither production default was enabled.
+
+Keep regular scheduling unchanged. Further recovery work should isolate contact-window evidence with
+fixed inputs, then validate fresh paced runs; a global shift of sampled frames trades one miss for another.
+
+Phone handoff: the user then requested IMG_9029.MOV. The phone now displays that completed 24-count
+control run on build2026103020, with both retry-clock experiments disabled. This supersedes the planned
+restoration of the previous 24-touch IMG8874 preview. See ../img9029-iphone17/review/verified.json.

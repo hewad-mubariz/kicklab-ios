@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-29",
+  "scope": "Read-only audit of saved device runs, code, Apple documentation and new iOS-targeted compiler probes. No new phone performance runs; no app rebuild or install; iPhone17 preview left untouched.",
+  "workload": {
+    "sourceSeconds": 20.475,
+    "admittedFrames": 611,
+    "poseCalls": 468,
+    "poseTotalMS": 9106.021666668312,
+    "callsPerSourceSecond": 22.857142857142854,
+    "poseMSPerSourceSecond": 444.73854293862325,
+    "estimatedRevision2NativeMSPerSourceSecond": 916.1142857142855,
+    "estimatedRevision2BridgeMSPerSourceSecond": 1002.7428571428569,
+    "caveat": "Projection assumes unchanged inference demand; not a completed revision2 run."
+  },
+  "failedRevision2": {
+    "calls": 53,
+    "meanMS": 57.5248632075238,
+    "maxMS": 365.5691666663188,
+    "thermal": "nominal",
+    "error": "RFContactQueue overflow",
+    "interpretation": "Consumer backlog is established; actual automatic hardware placement and cause of latency outlier are not measured."
+  },
+  "computeAPI": {
+    "sdk": "iPhoneOS27.1",
+    "swift": "6.4",
+    "target": "arm64-apple-ios18.0",
+    "directPropertyAccess": "Fails with no member supportedComputeStageDevices; reproduced",
+    "viaVisionRequestGeneric": "Typecheck AND optimized iOS object compilation succeed",
+    "onDeviceRuntimeVerified": false,
+    "caveats": [
+      "The older failed probe did attempt this query; it is not an unattempted idea.",
+      "computeDevice returns an assigned device, or nil when no assignment exists; automatic nil is not CPU fallback evidence.",
+      "Only test an explicit Neural Engine assignment if listed as supported on that exact request/stage/device; then verify request success, accuracy and concurrent pipeline latency."
+    ]
+  },
+  "claimAudit": [
+    {
+      "claim": "Call volume rather than request cost is the real problem",
+      "verdict": "Both matter: serial occupancy is request demand times latency, plus other work and burst/queue effects. Saved numbers support excessive workload."
+    },
+    {
+      "claim": "Cache rarely saves frames",
+      "verdict": "Not established. poseCache is keyed by frame index and shared across all checks, including empty poses. Overlapping windows reuse entries. Need per-consumer demand/miss/hit attribution; high unique-call coverage is not a low cache-hit ratio."
+    },
+    {
+      "claim": "GPU contention explains slowdown and365ms spike",
+      "verdict": "Unproven. 40.08vs15.31ms penalty persists in the isolated probe with no RF-DETR workload. Contention may contribute under concurrency but requires profiling."
+    },
+    {
+      "claim": "Halving calls guarantees iPhone11 fits",
+      "verdict": "Plausible target, not guarantee: estimate falls from916to458ms/source-second native; other work, bursts, tails, false/missed contacts must be checked."
+    },
+    {
+      "claim": "Bridge removal gets3.8ms for free",
+      "verdict": "Observed average gap3.79ms at512,3.69at768 in selected fixed-image probe. Async refactor changes scheduling, ownership/cancellation and backpressure; separate serial executor alone does not eliminate waiting. Full pipeline benefit unmeasured."
+    },
+    {
+      "claim": "Holistic hands cost7.6ms and help association",
+      "verdict": "7.61ms observed512 average marginal cost,6.24ms at768. Actual hands associated with body are promising; existing code must consume them. Blanket use can cost more than current conditional hand inference."
+    },
+    {
+      "claim": "Resolution or ROI cannot improve speed",
+      "verdict": "512and768 showed near-equal request timings for9images. No ROI speed ablation; total preprocessing and person-count effects untested. Larger input produced more empty modern poses on these selected images."
+    },
+    {
+      "claim": "All extra losses were handsNearBall and phone17 is fine",
+      "verdict": "Overstated.21extra misses:6handsNearBall,3missingBall,3insufficientContactViews,3amplitudeTooSmall,3noNearbyCandidate,2trackLost,1unresolvedLowContact. Nearest diagnostics are hints.20short clips do not qualify15minute capture or imports."
+    }
+  ],
+  "nextOrder": [
+    "Instrument compute support/explicit assignments plus per-consumer pose-demand and cache attribution; measure latency tails and queue depth.",
+    "On iPhone11 compare automatic versus supported explicit devices in fixed-image tests then simultaneous ball/pose pipeline. Do not assume ANE is available or faster.",
+    "Try one bounded timestamp-based evidence-workload reduction at a time, retaining impact, approach/release and hand/holding negatives. Score all21losses and13gains, not just net count.",
+    "Separately repair and validate import/live processing parity: verified same-source import19versus live24.",
+    "Validate both phones, warmup/steady state/long sessions, all reviewed corpus plus IMG8606andIMG8874 before production promotion."
+  ],
+  "sources": [
+    "https://developer.apple.com/documentation/vision/visionrequest/supportedcomputestagedevices",
+    "https://developer.apple.com/documentation/vision/visionrequest/computedevice(for:)-52l0g",
+    "https://developer.apple.com/documentation/vision/visionrequest/setcomputedevice(_:for:)",
+    "https://developer.apple.com/documentation/vision/detecthumanbodyposerequest/detectshands"
+  ]
+}

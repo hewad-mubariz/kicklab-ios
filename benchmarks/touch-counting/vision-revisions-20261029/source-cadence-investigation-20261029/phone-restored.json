@@ -1,0 +1,15 @@
+{
+  "build": "2026102913",
+  "bodyPose": "revision2",
+  "sourceCadenceEnabled": false,
+  "sharedHistoryEnabled": false,
+  "freshReview": {
+    "diagnostics": 25,
+    "duration": 14.515,
+    "outlines": false,
+    "position": 0,
+    "state": "ready",
+    "touches": 24,
+    "video": "source.mov"
+  }
+}

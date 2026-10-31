@@ -1,0 +1,26 @@
+IMG_8874 BODY POSE COMPARISON — 29 OCTOBER 2026
+
+Completed four fresh iPhone17 replays: old then revision2, then revision2 then old.
+Old body pose:21 and22 legal counts. Revision2:24 and24 legal counts.
+Visual reference:24 clear airborne juggling contacts; initial floor pickup separate
+(neither counts it). Final incomplete descent is not counted as a confirmed touch.
+No false or unmatched count found. No intervening floor bounce seen, so this clip
+cannot qualify general ground-bounce rejection.
+
+Recovered legal kicks:
+5.70s: old rejects via weak foot evidence then groundBounce; revision2 confirms foot
+contact and accepts. Right ankle pre-contact confidence0.237 vs0.738 in run1.
+7.37s: old classifies feet as planted and rejects groundBounce; revision2 does not
+confirm planted feet, and accepts. Repeated consistently.
+7.90s: same distinction in run1. Old also accepts on repeat; report variable gain.
+In first-run paired candidates, ball evidence and ground estimate are identical;
+pose evidence changes the decision. No rule or ball-model change was made.
+
+All4 runs nominal,436 admitted frames each,0 late skips,0 errors. Exact numeric
+trace replay verified. Same optimized build2026102911,24 counting flags,tracker1;
+integrated body+hand mode remains off. Total source14.515s,4K~120fps; pipeline30fps.
+Conclusion: revision2 improves this clip by2–3 real kicks. This supplemental clip
+is separate from the frozen20-clip cohort and does not overturn its regressions.
+Review: http://127.0.0.1:8771/img8874/review.html
+Data: img8874-comparison.json; supplemental-labels/clip-618a1688fcc6.json;
+iphone17-build2026102911/clip-618a1688fcc6-{control,pose2}-r{1,2}.

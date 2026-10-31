@@ -1,0 +1,83 @@
+Measured short-rise candidate — iPhone 17 — 30 October 2026
+
+Build 2026103012. Both arms retain startup gate V3, revision2, the observed-fall improvement
+and the ORIGINAL contact-window clock. Only --observed-short-rise-v1 differs. Defaults unchanged.
+Build 2026103013 also tests --observed-plateau-foot-v1: the same measured turn must match
+the foot evidence. A resolved lateral swing and separation, reliable four-view pose, and
+whole-ball clearance above the support ankle are mandatory. All floor vetoes remain.
+Build 2026103011 was compiled but never installed: its early version proposed 17 extra checks
+in low.mov. The tested build waits until confirmed upward motion slows to neutral, so ordinary
+rising candidates retain their established timing.
+
+The missed 4.67-second kick has a real, fully visible rebound. Smoothing makes its rise less
+than 0.007 and its impulse less than the early-probe threshold 0.4. The opt-in path requires
+a continuous measured turn meeting the UNCHANGED ordinary fall, rise and impulse thresholds;
+it only requests positive foot evidence. Ground, body, hand, holding and cooldown checks remain.
+No timestamp, clip identity, model change or relaxed foot distance is used.
+
+Offline: 87 pre-experiment traces replay exactly. Only low.mov at 4633 ms gains proposal eligibility.
+Combined screen: 111 saved traces; exact baselines 111.
+Foot-shape audit: 2749 evidence records across repeated traces; 3 matches, all at the target contact.
+Old traces lack the foot callback for that new proposal: offline eligibility is not a recovered count.
+20 short-rise contracts, 21 existing-fall contracts and 17 existing lateral contracts passed. The plateau-foot checks passed 18 contracts, including a saved positive floor veto. Builds compiled.
+
+Fresh comparisons
+- build 2026103012 low r1: total 170 -> 170; legal 170 -> 170; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+- build 2026103013 ball_in_hand r1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+- build 2026103013 clip-618a1688fcc6 r1: total 24 -> 24; legal 24 -> 24; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+- build 2026103013 clip-89b81fd8bd37 r3: total 160 -> 160; legal unlabelled -> unlabelled; known false unlabelled -> unlabelled.
+  Selected targets only: {"8.016": {"before": [8.016], "after": [8.016]}, "42.013": {"before": [42.08], "after": [42.046]}, "107.91": {"before": [107.91], "after": [107.91]}, "125.525": {"before": [125.458], "after": [125.458]}, "145.458": {"before": [145.458], "after": [145.458]}, "153.773": {"before": [], "after": []}, "154.206": {"before": [154.206], "after": [154.206]}, "157.807": {"before": [], "after": []}}
+- build 2026103013 clip-a16380ba4a5b r1: total 35 -> 37; legal 34 -> 36; known false 1 -> 1.
+  Gained legal: [18.25, 18.875]; lost legal: [].
+- build 2026103013 dribbling_with_ball_1 r1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+- build 2026103013 dribbling_with_ball_2 r1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+- build 2026103013 dribbling_with_ball_3 r1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+- build 2026103013 dribbling_with_the_ball_1 r1: total 0 -> 0; legal 0 -> 0; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+- build 2026103013 low r1: total 170 -> 171; legal 170 -> 171; known false 0 -> 0.
+  Gained legal: [4.67]; lost legal: [].
+- build 2026103013 low r2: total 166 -> 171; legal 166 -> 171; known false 0 -> 0.
+  Gained legal: [4.67, 31.71, 36.54, 38.65, 46.6, 46.91]; lost legal: [37.43].
+- build 2026103013 raw-juggling r1: total 7 -> 7; legal 7 -> 7; known false 0 -> 0.
+  Gained legal: []; lost legal: [].
+
+Exact-input ablation (the causal comparison; fresh runs can differ upstream)
+- low-pose2-r1: enabled 170; disabled 170; eligible [{'fall': 0.01231036782264705, 'ms': 4633, 'observedFall': 0.016264963150024347, 'observedImpulse': 0.2678737640380846, 'observedRise': 0.010522413253784113, 'outcome': 'amplitudeTooSmall', 'required': 0.007146453857421875}]; missing callbacks [].
+- ball_in_hand-pose2-r1: enabled 0; disabled 0; eligible []; missing callbacks [].
+- clip-618a1688fcc6-pose2-r1: enabled 24; disabled 24; eligible []; missing callbacks [].
+- clip-89b81fd8bd37-pose2-r3: enabled 160; disabled 160; eligible [{'fall': 0.013025283813476562, 'ms': 158106, 'observedFall': 0.018443489074707053, 'observedImpulse': 0.30321168899536177, 'observedRise': 0.011877679824829124, 'outcome': 'amplitudeTooSmall', 'required': 0.007}]; missing callbacks [].
+- clip-a16380ba4a5b-pose2-r1: enabled 37; disabled 37; eligible []; missing callbacks [].
+- dribbling_with_ball_1-pose2-r1: enabled 0; disabled 0; eligible []; missing callbacks [].
+- dribbling_with_ball_2-pose2-r1: enabled 0; disabled 0; eligible []; missing callbacks [].
+- dribbling_with_ball_3-pose2-r1: enabled 0; disabled 0; eligible []; missing callbacks [].
+- dribbling_with_the_ball_1-pose2-r1: enabled 0; disabled 0; eligible []; missing callbacks [].
+- low-pose2-r1: enabled 171; disabled 170; eligible [{'fall': 0.01231036782264705, 'ms': 4633, 'observedFall': 0.016264963150024347, 'observedImpulse': 0.2678737640380846, 'observedRise': 0.010522413253784113, 'outcome': 'accepted', 'required': 0.007146453857421875}]; missing callbacks [].
+- low-pose2-r2: enabled 171; disabled 170; eligible [{'fall': 0.01231036782264705, 'ms': 4633, 'observedFall': 0.016264963150024347, 'observedImpulse': 0.2678737640380846, 'observedRise': 0.010522413253784113, 'outcome': 'accepted', 'required': 0.007146453857421875}]; missing callbacks [].
+- raw-juggling-pose2-r1: enabled 7; disabled 7; eligible []; missing callbacks [].
+
+Completed 24 runs; thermal states [0] (0=nominal); source skips 8; overflow 0.
+
+Two incomplete three-minute attempts produced no completed result and timed out; excluded from accuracy totals.
+Field build restored and verified.
+No commit, push or TestFlight upload. This is not a full-corpus recall or live-camera accuracy claim.
+
+Conclusion
+The causal gain is ONE reviewed legal contact at 4.67 s (measured impact 4.633 s), reproduced in both improved low.mov runs. Both scored 171 legal contacts, zero known false. Candidate recovery alone scored 170 and still failed the foot check; the bounded lateral-foot proof completes the recovery. On each improved trace, disabling either the candidate route or the new foot proof removes exactly this one contact, with no other count changes and no missing callbacks.
+
+Fresh comparisons are not fully identical. Low r2 control scored 166 against 171 improved, but included a legal 37.43 s contact that the improved run missed. The local input stream and ordinary ground/contact decision differ there. Identical-input ablation leaves that difference unchanged. Other gains in this pair must not be credited to the new proof.
+
+The full three-minute comparison completed after the phone was made visible again: 160 versus 160. The reviewed legal contacts at 8.016, 42.013, 107.910 and 125.525 s remain counted. Ground bounces at 153.773 and 157.807 s remain rejected. The known false bounce at 154.206 s and suspected false at 145.458 s remain counted on BOTH sides. The improved fresh run gained the previously reviewed legal 35.413 s contact and lost the legal 51.213 s contact; the new candidate/proof is never eligible in this clip, and identical-input ablation changes no count. Do not describe this as a full-pipeline zero-regression result or a complete manual recount of the three-minute clip.
+
+IMG8874 remains 24 legal / 0 known false; raw-juggling remains 7 legal / 0 known false with the same misses. IMG8606 changes from 34 to 36 legal, with the same one known false at 20.176 s; empty pose returns vary from 35 to 1, and the new proof is never eligible, so these two gains are not attributed to it. All five holding/dribbling clips remain at zero.
+
+The new route adds three pose requests across the roughly one-minute low clip. Completed runs remained nominal, with no overflow. Occasional source-frame skips occurred in other comparisons and are recorded per run; no claim of zero skips across the batch is made.
+
+This is a narrow debug-only improvement, not a new default or a TestFlight promotion. No clip name or timestamp is used in the production rule. Existing foot-distance, floor, body, hand, holding and cooldown requirements remain. The remaining ground error at 154.206 s does not have a positive foot proof: its ordinary ground classifier returns false. Next work should isolate that ground-height/impact evidence separately and preserve recovered legal contacts.
+
+Field build 2026102913 was restored and verified with experimental flags absent and the saved 24-touch IMG8874 preview ready at zero. The phone is free for field testing.

@@ -85,6 +85,8 @@ private struct DebugRuntimeHUD: View {
             if expanded {
                 Text(RFSmallModel(rawValue: BallDetector.configuredResourceName)?.displayName ?? BallDetector.configuredResourceName)
                 Text("Counter V9 · completed rise")
+                Text(VisionRevisionExperiment.bodyPose2() ? "Body pose: revision 2" : "Body pose: revision 1")
+                    .accessibilityIdentifier("debug-body-pose-revision")
                 Text("Thermal: \(monitor.thermal)")
                     .foregroundStyle(monitor.thermal == "nominal" ? .green : monitor.thermal == "fair" ? .yellow : .red)
                     .accessibilityIdentifier("debug-thermal-state")

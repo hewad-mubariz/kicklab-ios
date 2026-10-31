@@ -1,0 +1,40 @@
+Revision-comparison branch checkpoint — 31 October 2026
+
+Branch: codex/vision-revision-comparison
+Scope: revision-2 integration and workload experiments, shared contact/ground
+recovery rules, debug/replay controls, numeric fixtures and benchmark reports
+from 29–30 October. This checkpoint is not approval to promote the latest
+experimental rules into production or TestFlight defaults.
+
+Latest experiment: supported-toe-lift-iphone17/conclusion.txt and RESULTS.txt.
+IMG9029's visible 8.003-second kick is recovered in two phone comparisons,
+24 -> 25 counted, with no other event change in that clip. The apparent end
+bounce remains counted. The latest rule requires --supported-toe-lift-v1.
+
+Validation already completed: build2026103021, 28 fresh iPhone17 paced runs,
+233 saved-trace counter checks, and 21 supported-toe contracts. The 100-file
+source fingerprint still matches the tested build. Low-touch fresh replays
+remain 171 with the new proof off versus 170 with it on, despite identical
+saved-input counter replays having no regression. Preserve this limitation:
+upstream/runtime repeatability needs investigation before global promotion.
+
+This checkpoint also includes the latest work-state, source hashes, target
+decision verification and the 58-second low-touch repeatability evidence in
+supported-toe-lift-iphone17/. Other experiment reports remain in the dated
+vision-revisions-20261029 and vision-revisions-20261030 directories.
+
+Local-only material, per the repository .gitignore: source videos, full raw
+traces, generated binaries, builds and logs under artifacts/ and build/.
+The latest raw runs are in:
+artifacts/vision-revisions-20261030/supported-toe-lift-iphone17/
+Original target video: /Users/hewadmubariz/Downloads/IMG_9029.MOV
+A fresh clone also needs the ignored Core ML models and local app config.
+
+Focused contract check from the repository root:
+mkdir -p build/offline-counter-lab
+swiftc -O -parse-as-library kicklab/Counting/*.swift scripts/check-supported-toe.swift -o build/offline-counter-lab/check-supported-toe
+build/offline-counter-lab/check-supported-toe kicklabTests/Fixtures/supported-toe-lift-20261030.json
+
+The report summaries retain the state and conclusions at the time of each
+experiment. Historical statements that no commit/push had occurred refer
+to those experiments, before this branch checkpoint.

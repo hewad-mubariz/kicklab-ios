@@ -1,0 +1,70 @@
+[
+  {
+    "arm": "control",
+    "repeat": 1,
+    "decisions": [
+      {
+        "frameIndex": 1740,
+        "timestampMs": 58000,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.008322010437647576,
+        "requiredFall": 0.009906005859375,
+        "rise": 0.015034640828768486,
+        "impulse": 0.3553567389350631,
+        "ground": 0.77490234375,
+        "observedBallBottom": 0.7329473257064819,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    ]
+  },
+  {
+    "arm": "control",
+    "repeat": 2,
+    "decisions": [
+      {
+        "frameIndex": 1740,
+        "timestampMs": 58000,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.008322010437647576,
+        "requiredFall": 0.009906005859375,
+        "rise": 0.015034640828768486,
+        "impulse": 0.3553567389350631,
+        "ground": 0.77490234375,
+        "observedBallBottom": 0.7329473257064819,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    ]
+  },
+  {
+    "arm": "supported",
+    "repeat": 1,
+    "decisions": [
+      {
+        "frameIndex": 1740,
+        "timestampMs": 58000,
+        "handRejected": false,
+        "bodyContactAllowed": true,
+        "footConfirmed": true,
+        "fall": 0.008322010437647576,
+        "requiredFall": 0.009906005859375,
+        "rise": 0.015034640828768486,
+        "impulse": 0.3553567389350631,
+        "ground": 0.77490234375,
+        "observedBallBottom": 0.7329473257064819,
+        "plantedFeetConfirmed": false,
+        "handlingChecked": true
+      }
+    ]
+  },
+  {
+    "arm": "supported",
+    "repeat": 2,
+    "decisions": []
+  }
+]

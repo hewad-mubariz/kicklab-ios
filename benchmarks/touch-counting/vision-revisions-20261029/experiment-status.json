@@ -1,0 +1,408 @@
+{
+  "date": "2026-10-29",
+  "branch": "codex/vision-revision-comparison",
+  "baseline": "Exact source snapshot used for TestFlight1.0.3(30); TestFlight remains user-managed.",
+  "baselineSnapshotSHA256": "b6f645cf9c94b112507596ed25e68a2c678ddc0d19cd507bc7f851dcc0b604cd",
+  "changedBaselineFiles": [
+    "kicklab/Counting/TouchCountingDebugProfile.swift",
+    "kicklab/Effects/SessionAnalysisStore.swift",
+    "kicklab/Detection/ContactObservationStore.swift",
+    "kicklab/Detection/RFBufferedPixelTrack.swift",
+    "kicklab/Detection/NativeBallPixelTrack.swift",
+    "kicklab/Debug/RFAppValidation.swift"
+  ],
+  "newStudyFiles": [
+    "kicklab/Detection/VisionRevisionExperiment.swift",
+    "kicklabTests/VisionRevisionExperimentTests.swift",
+    "scripts/inventory-juggling-revision-study.py",
+    "scripts/prepare-vision-pose-plan.py",
+    "scripts/run-vision-revision-study.py",
+    "scripts/report-vision-revision-study.py",
+    "scripts/vision-pose-offline-audit.swift",
+    "scripts/compare-vision-revision-phone.py",
+    "scripts/summarize-reviewed-vision-corpus.py",
+    "kicklab/Debug/VisionIntegrationProbe.swift"
+  ],
+  "phoneBuild": "2026102911",
+  "swiftOptimization": "-O, verified in build11.log",
+  "completed": {
+    "inventory": {
+      "sources": 58,
+      "minutes": 85.58,
+      "originalCorpusPresent": "20/20",
+      "additionalIPhone11Backups": 2
+    },
+    "macPoseSweep": {
+      "clips": 58,
+      "requestedSamples": 4494,
+      "uniquePairedFrames": 4474,
+      "errors": 0,
+      "oldOnlyPoseFrames": 113,
+      "newOnlyPoseFrames": 12,
+      "clipsWithLessPoseCoverage": 19,
+      "clipsWithMorePoseCoverage": 7
+    },
+    "iphone11FinalAdapterPilot": {
+      "completedFullReplays": 7,
+      "failedReplays": 1,
+      "clips": [
+        "IMG8606",
+        "new30",
+        "low"
+      ],
+      "fullCorpusQualification": false
+    },
+    "adapterChecks": "Standalone coordinate, confidence and independent-flag assertions passed; app build passed. XCTest file added but not run through XCTest in this study.",
+    "iphone17RepeatedPilot": {
+      "completedFullReplays": 18,
+      "failedReplays": 0,
+      "uniqueClips": 3,
+      "repeatsPerArm": 2,
+      "arms": [
+        "control",
+        "pose2",
+        "tracking2"
+      ],
+      "allNominal": true,
+      "allTraceReplaysExact": true,
+      "fullCorpusQualification": false,
+      "hardwareModel": "iPhone18,2",
+      "runtimeVersion": "Version 27.0.1 (Build 24A446)",
+      "modelFunction": "rf384",
+      "sourceMinutesReplayed": 11.06
+    },
+    "iphone17ReviewedCorpus": {
+      "clips": 20,
+      "validRuns": 60,
+      "selectedConfirmationRuns": 6,
+      "referenceLegalContacts": 615,
+      "referenceUncertainEvents": 10,
+      "allSuccessfulRunsNominal": true,
+      "preservedIncompleteAttempts": 2,
+      "results": {
+        "control": {
+          "count": 549,
+          "legal": 543,
+          "missed": 72,
+          "knownFalse": 2,
+          "uncertain": 4,
+          "unreviewed": 0,
+          "sourceSkips": 111,
+          "labelledValid": 615,
+          "legalRecallPercent": 88.29268292682927,
+          "meanClipRecallPercent": 88.05660348211033,
+          "excludingFastLowClip": {
+            "legal": 380,
+            "labelledValid": 420,
+            "knownFalse": 2
+          },
+          "thermalRunCounts": {
+            "nominal": 20
+          },
+          "poseMeanMS": 7.122411741849672,
+          "poseCalls": 7293,
+          "missStages": {
+            "rejected_candidate": 37,
+            "no_nearby_candidate": 35
+          },
+          "missReasons": {
+            "trackLost": 6,
+            "no_nearby_candidate": 35,
+            "handContact": 1,
+            "disallowedBodyContact": 17,
+            "amplitudeTooSmall": 11,
+            "outsidePersonRegion": 1,
+            "unresolvedLowContact": 1
+          }
+        },
+        "pose2": {
+          "count": 539,
+          "legal": 535,
+          "missed": 80,
+          "knownFalse": 2,
+          "uncertain": 2,
+          "unreviewed": 0,
+          "sourceSkips": 106,
+          "labelledValid": 615,
+          "legalRecallPercent": 86.99186991869918,
+          "meanClipRecallPercent": 86.20921324422771,
+          "excludingFastLowClip": {
+            "legal": 374,
+            "labelledValid": 420,
+            "knownFalse": 2
+          },
+          "thermalRunCounts": {
+            "nominal": 20
+          },
+          "poseMeanMS": 10.366132740129016,
+          "poseCalls": 7305,
+          "missStages": {
+            "no_nearby_candidate": 34,
+            "rejected_candidate": 46
+          },
+          "missReasons": {
+            "no_nearby_candidate": 34,
+            "trackLost": 8,
+            "disallowedBodyContact": 19,
+            "amplitudeTooSmall": 16,
+            "outsidePersonRegion": 1,
+            "handContact": 1,
+            "unresolvedLowContact": 1
+          }
+        },
+        "tracking2": {
+          "count": 547,
+          "legal": 540,
+          "missed": 75,
+          "knownFalse": 4,
+          "uncertain": 3,
+          "unreviewed": 0,
+          "sourceSkips": 123,
+          "labelledValid": 615,
+          "legalRecallPercent": 87.8048780487805,
+          "meanClipRecallPercent": 88.36840540456839,
+          "excludingFastLowClip": {
+            "legal": 379,
+            "labelledValid": 420,
+            "knownFalse": 4
+          },
+          "thermalRunCounts": {
+            "nominal": 20
+          },
+          "poseMeanMS": 7.605329623819813,
+          "poseCalls": 7492,
+          "missStages": {
+            "rejected_candidate": 41,
+            "no_nearby_candidate": 34
+          },
+          "missReasons": {
+            "amplitudeTooSmall": 13,
+            "trackLost": 8,
+            "disallowedBodyContact": 16,
+            "handContact": 1,
+            "no_nearby_candidate": 34,
+            "unresolvedLowContact": 3
+          }
+        }
+      },
+      "selectedConfirmations": [
+        {
+          "clip": "eighteen",
+          "firstRun": {
+            "control": {
+              "legal": 16,
+              "knownFalse": 0
+            },
+            "pose2": {
+              "legal": 18,
+              "knownFalse": 0
+            },
+            "tracking2": {
+              "legal": 16,
+              "knownFalse": 0
+            }
+          },
+          "secondRun": {
+            "control": {
+              "count": 15,
+              "acceptedValid": 15,
+              "knownFalse": 0,
+              "missedLegalSeconds": [
+                3.75,
+                6.32,
+                10.98
+              ],
+              "knownFalseSeconds": [],
+              "worstThermal": 0
+            },
+            "pose2": {
+              "count": 16,
+              "acceptedValid": 16,
+              "knownFalse": 0,
+              "missedLegalSeconds": [
+                10.35,
+                13.25
+              ],
+              "knownFalseSeconds": [],
+              "worstThermal": 0
+            },
+            "tracking2": {
+              "count": 16,
+              "acceptedValid": 16,
+              "knownFalse": 0,
+              "missedLegalSeconds": [
+                3.75,
+                6.32
+              ],
+              "knownFalseSeconds": [],
+              "worstThermal": 0
+            }
+          }
+        },
+        {
+          "clip": "normal_juggling_4",
+          "firstRun": {
+            "control": {
+              "legal": 30,
+              "knownFalse": 0
+            },
+            "pose2": {
+              "legal": 26,
+              "knownFalse": 0
+            },
+            "tracking2": {
+              "legal": 30,
+              "knownFalse": 2
+            }
+          },
+          "secondRun": {
+            "control": {
+              "count": 30,
+              "acceptedValid": 29,
+              "knownFalse": 0,
+              "missedLegalSeconds": [
+                0.34,
+                8.08,
+                23.91
+              ],
+              "knownFalseSeconds": [],
+              "worstThermal": 0
+            },
+            "pose2": {
+              "count": 27,
+              "acceptedValid": 27,
+              "knownFalse": 0,
+              "missedLegalSeconds": [
+                0.34,
+                8.08,
+                11.88,
+                20.28,
+                23.91
+              ],
+              "knownFalseSeconds": [],
+              "worstThermal": 0
+            },
+            "tracking2": {
+              "count": 30,
+              "acceptedValid": 29,
+              "knownFalse": 0,
+              "missedLegalSeconds": [
+                0.34,
+                8.08,
+                23.91
+              ],
+              "knownFalseSeconds": [],
+              "worstThermal": 0
+            }
+          }
+        }
+      ],
+      "missedByAllThreeCount": 47,
+      "scope": "One run per arm per original reviewed clip (r1), reusing the already completed low clip. Selected repeats and the supplemental pilot clips are not added to cohort totals."
+    },
+    "iphone17OverallNow": {
+      "completedRuns": 85,
+      "distinctSources": 23,
+      "notYetRunOf58": 36,
+      "allCompletedTraceReplaysExact": true,
+      "inventorySourcesNow": 59,
+      "scope": "The original58-source inventory plus user-added IMG8874.36 of current59 have no phone result."
+    },
+    "iphone17IMG8874": {
+      "source": "clip-618a1688fcc6",
+      "validRuns": 4,
+      "referenceAirborneContacts": 24,
+      "initialFloorPickup": "separate; neither mode counts it",
+      "controlCounts": [
+        21,
+        22
+      ],
+      "pose2Counts": [
+        24,
+        24
+      ],
+      "knownFalseCounts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "allNominal": true,
+      "sourceSkips": 0,
+      "scope": "Supplemental user-requested clip, outside original20-cohort totals."
+    },
+    "iphone11IntegrationProbe": {
+      "build": "2026102912",
+      "measuredRequests": 216,
+      "selectedFixedImages": 9,
+      "longEdges": [
+        512,
+        768
+      ],
+      "repeats": 3,
+      "allNominal": true,
+      "legacyMeanMS512": 15.31,
+      "revision2NativeMeanMS512": 40.08,
+      "revision2BridgeMeanMS512": 43.87,
+      "revision2HandsMeanMS512": 47.69,
+      "identicalNativeBridgeBodyOutputs": "54/54 paired observations",
+      "scope": "Pose-only diagnostic, not a live counter regression or long-session benchmark.",
+      "restored": "iPhone11 build2026102911, old pose/tracker1,baseline24flags verified."
+    },
+    "revision2FieldInstall": {
+      "build": "2026102913",
+      "device": "iPhone17 Pro Max",
+      "bundle": "com.juggledude.touchcounting.debug",
+      "profile": "outdoor-balanced-v3-pose-r2-field-20261029",
+      "persistentNormalLaunchDefaults": true,
+      "launchAndRelaunchVerifiedWithoutFlags": true,
+      "countingFlags": 24,
+      "bodyPose": "Swift revision2",
+      "objectTrackerRevision": 1,
+      "integratedHands": false,
+      "smoke": {
+        "source": "IMG_8874.MOV",
+        "sourceSHA256": "618a1688fcc65da5f207d93734b27d7a08c4cb4707c368de6383711188bea9a8",
+        "count": 24,
+        "legalReference": 24,
+        "knownFalse": 0,
+        "nominal": true,
+        "lateSourceSkips": 0,
+        "traceReplayExact": true
+      },
+      "configurationChecks": "Standalone assertions passed for field profile, ordinary debug profile and release profile; explicit manual comparisons preserved. App build and git diff checks passed.",
+      "otherDevices": "iPhone11 remains build2026102911 with legacy pose; no installation performed on it this turn.",
+      "release": "Main app/TestFlight unchanged.",
+      "note": "Temporary field-test build only; known corpus regressions remain. Profile selected with config/VisionRevision2FieldTest.xcconfig. Initial floor pickup excluded from24 airborne reference."
+    }
+  },
+  "findings": [
+    "Pose2 IMG8606 overflowed the counting queue in both the initial adapter and retained-request adapter. Retained adapter failed at nominal thermal state. Its53 pose calls took3048.8ms total (57.5ms mean), max365.6ms. Control468 calls took9106.0ms (19.5ms mean), max33.0ms. These are workload timings, not isolated model microbenchmarks.",
+    "New30: current37, pose2 38, tracking2 38. Control missed12.50 and13.05s; both revision2 arms missed14.533s. Different source skips and one repeat per arm prevent treating +1 as a robust accuracy gain.",
+    "IMG8606: current32 of39 reviewed legal contacts, tracking2 34 of39; pose2 no valid completed result. Two known floor bounces remained uncounted in completed arms. Tracker2 skipped38 source frames versus3 in the control.",
+    "Low59.75s: current162 of195 reference legal contacts, tracker2 153 of195; known false counts0 for both. Control ended at serious thermal state, so this is not a matched nominal/fair full-clip qualification. During the first30s both were nominal: current77, tracker2 73. Tracker2 skipped97 source frames, control0.",
+    "The two earliest all-skipped dribbling replays on build10 are invalid accuracy results. Their zero counts were excluded. Failed runs do not get a zero-touch score.",
+    "Mac pose-only availability is not legal-touch recall and not iPhone performance. Modern pose still has no toe/heel landmark in the Vision2D joint set.",
+    "iPhone17: all18 full replays completed at nominal temperature, without counting errors or pose queue overflow. These were the same three qualification clips, three independent arms and two repeats with rotated ordering. This rules out the iPhone11 throughput failure on these iPhone17 clips, not long-session stability.",
+    "iPhone17 IMG8606 (39 reviewed legal contacts): control35 in both repeats, pose2 35/34 legal plus the same known ground bounce20.176s in both repeats, tracking2 35/36 legal and no known false counts.",
+    "iPhone17 new30 (39 reviewed legal contacts): control39/39 and tracking2 39/39 in both repeats; pose2 37/38. The legal26.70s contact is rejected as groundBounce by pose2 in both repeats and counted by control/tracking2.",
+    "iPhone17 low59.75s (195 reference legal contacts): control163/162, pose2 161/161, tracking2 161/160; no known false counts in these runs. All were nominal. Differences include both recoveries and losses, not merely lower totals.",
+    "iPhone17 pose-request mean time across runs: legacy6.04\u20137.37ms, pose2 9.23\u201310.48ms. Fixed buffering dominates sampled full-pipeline latency, which stayed around210\u2013213ms; pose-call time is not the total counting delay.",
+    "At IMG8606 20.176s, control rejects with bodyFailure handsUncertain while pose2 allows the contact; ball trajectory and ground estimate are identical in those paired candidate decisions. The changed pose evidence exposes a floor rejection gap. This is not evidence that the ball model alone caused the difference.",
+    "iPhone17 usesrf384 full rechecks and OS27.0.1; iPhone11 usesrf288 compact rechecks and OS27.2. Compare arms within each phone; between-phone differences are not isolated hardware benchmarks."
+  ],
+  "decision": "Keep the current Vision requests. Broader20-clip testing does not establish a reliable overall improvement from either drop-in revision switch: current543/615 legal with2 known false, pose2 535/615 with2 known false, tracker2 540/615 with4 known false. Gains and losses coexist; selected repeats vary. Tracker2 extra false counts in normal4 did not recur on repeat, so report the risk and variability rather than a deterministic regression. The earlier repeated pose2 false ground bounce in IMG8606 remains outside these20-cohort totals. No release or default change is justified by these results.",
+  "phoneState": "iPhone17 now has user-requested temporary revision2 field build2026102913. Normal launch and relaunch without flags verified:24 beta counting flags+body revision2, tracker1, integratedHands=false. IMG8874 smoke24/24 legal,0false,nominal,0late skips. iPhone11 stays build11 baseline. Main app/TestFlight untouched.",
+  "remaining": [
+    "Investigate47 reviewed legal contacts missed by all3 arms, using saved evidence to distinguish missing candidates from vetoes; no blanket cause is inferred from the shared misses.",
+    "Investigate the two shared false ground counts in nomral_juggling_6 separately from revision selection.",
+    "The other36 inventory sources have no fresh phone results in this study; the Mac screening covers all58. The user chose reviewed clips first.",
+    "Newly filmed iPhone17 sessions still require separate reconciliation.",
+    "A broadly reviewed held-out set and long-session qualification remain necessary before claiming general release accuracy for a changed Vision pipeline."
+  ],
+  "activeWork": {
+    "state": "complete",
+    "scope": "User-selected20 reviewed clips plus6 targeted repeats completed. Full58 sweep was not started after the user selected reviewed clips first.",
+    "completedAt": "2026-10-29T18:07:39.386306+00:00"
+  }
+}

@@ -36,8 +36,31 @@ struct StationaryCandidateGateTests {
         #expect(StationaryCandidateGate.version(arguments: ["--stationary-gate-v2"]) == 2)
         #if DEBUG
         #expect(StationaryCandidateGate.version(arguments: ["--stationary-gate-v1"]) == 1)
+        #expect(StationaryCandidateGate.version(arguments: ["--stationary-gate-motion-v3"]) == 3)
         #else
         #expect(StationaryCandidateGate.version(arguments: ["--stationary-gate-v1"]) == 2)
+        #expect(StationaryCandidateGate.version(arguments: ["--stationary-gate-motion-v3"]) == 2)
         #endif
+    }
+
+    @Test func shortObservedMotionReleasesOnlyTheMovingStartingSpot() {
+        let old = StationaryCandidateGate(version: 2), moving = StationaryCandidateGate(version: 3)
+        let positions: [(CGFloat, CGFloat)] = [(100,500),(94,526.1),(82.3,496.9),(74.5,513.1)]
+        for (index, point) in positions.enumerated() {
+            let detections = [candidate(point.0,point.1,size:100), candidate(600,300,size:100)]
+            #expect(old.eligible(detections,at:Double(index)*0.1).isEmpty)
+            let result = moving.eligible(detections,at:Double(index)*0.1)
+            #expect(result.count == (index == 3 ? 1 : 0))
+            #expect(!result.contains { $0.hit.center.x == 600 })
+        }
+        #expect(moving.eligible([candidate(100,500,size:100),candidate(600,300,size:100)],at:0.4).count == 1)
+    }
+
+    @Test func stationaryJitterNeverAccumulatesIntoMotion() {
+        let gate = StationaryCandidateGate(version: 3)
+        for index in 0..<1000 {
+            let offset = CGFloat(index % 3 - 1) * 4
+            #expect(gate.eligible([candidate(100+offset,500-offset,size:100)],at:Double(index)*0.1).isEmpty)
+        }
     }
 }

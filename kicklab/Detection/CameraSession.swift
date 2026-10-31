@@ -434,7 +434,8 @@ final class CameraSession: NSObject, ObservableObject {
                 if case .failure(let error) = result { self.recordingError = error.localizedDescription }
             }
             #if DEBUG
-            FinalTestCoordinator.shared.captureFinished(self, traceComplete: analysis.trace?.complete == true, touches: analysis.touches)
+            FinalTestCoordinator.shared.captureFinished(self, trace: analysis.trace, timeOrigin: analysis.timeOrigin,
+                touches: analysis.touches)
             #endif
             if self.wantsPreparedPreview { self.prepareTracking() }
         }

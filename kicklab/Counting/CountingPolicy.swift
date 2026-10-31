@@ -4,7 +4,7 @@ import Foundation
 /// the same rules. Historical policies remain available for saved comparisons.
 nonisolated struct CountingPolicy: Equatable, Sendable {
     enum BodyContact: String, Sendable {
-        case unrestricted, headKneeFoot, clearHandsV2, movingFootV3, poseContinuityV4, observedJointContinuityV5, timedFootMotionV6, observedLegMotionV7, observedLegMotionV8, temporalEvidenceV9, trackedFootV10, observedImpactV11, independentLegV12, legReboundV13, raisedFootV14, footEvidenceV15, contactEvidenceV16, impactWindowV17, floorEvidenceV18, floorRescueV19, toeContactV20
+        case unrestricted, headKneeFoot, clearHandsV2, movingFootV3, poseContinuityV4, observedJointContinuityV5, timedFootMotionV6, observedLegMotionV7, observedLegMotionV8, temporalEvidenceV9, trackedFootV10, observedImpactV11, independentLegV12, legReboundV13, raisedFootV14, footEvidenceV15, contactEvidenceV16, impactWindowV17, floorEvidenceV18, floorRescueV19, toeContactV20, visibleFootV21, measuredFootV22, smallArcV23
 
         var usesClearHands: Bool { self != .headKneeFoot && self != .unrestricted }
         var usesMovingFoot: Bool { self == .movingFootV3 || usesPoseContinuity }
@@ -15,7 +15,10 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
         var usesObservedImpact: Bool { self == .observedImpactV11 || self == .independentLegV12 || self == .legReboundV13 || usesRaisedFoot }
         var usesContactEvidence: Bool { self == .contactEvidenceV16 || usesImpactWindow }
         var usesImpactWindow: Bool { self == .impactWindowV17 || usesFloorEvidence }
-        var usesFloorEvidence: Bool { self == .floorEvidenceV18 || self == .floorRescueV19 || self == .toeContactV20 }
+        var usesMeasuredFoot: Bool { self == .measuredFootV22 || self == .smallArcV23 }
+        var usesVisibleFoot: Bool { self == .visibleFootV21 || usesMeasuredFoot }
+        var usesToeContact: Bool { self == .toeContactV20 || usesVisibleFoot }
+        var usesFloorEvidence: Bool { self == .floorEvidenceV18 || self == .floorRescueV19 || usesToeContact }
         var usesRaisedFoot: Bool { self == .raisedFootV14 || self == .footEvidenceV15 || usesContactEvidence }
         var bodyTracksFootPixels: Bool { self == .trackedFootV10 }
 
@@ -28,7 +31,7 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
             case .temporalEvidenceV9, .trackedFootV10, .observedImpactV11: failure == .handsUncertain || failure == .handsNearBall || failure == .invalidGeometry
             // Missing shoulders or sparse arm views must not veto visible leg
             // motion. Keep low-contact/floor eligibility on its existing path.
-            case .independentLegV12, .legReboundV13, .raisedFootV14, .footEvidenceV15, .contactEvidenceV16, .impactWindowV17, .floorEvidenceV18, .floorRescueV19, .toeContactV20:
+            case .independentLegV12, .legReboundV13, .raisedFootV14, .footEvidenceV15, .contactEvidenceV16, .impactWindowV17, .floorEvidenceV18, .floorRescueV19, .toeContactV20, .visibleFootV21, .measuredFootV22, .smallArcV23:
                 BodyContact.observedImpactV11.allowsObservedLegRecovery(after: failure)
                     || failure == .missingPose || failure == .insufficientContactViews
             default: false
@@ -43,10 +46,24 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
     let body: BodyContact
     let ground: GroundContactPolicy
 
-    static var current: Self { configured(arguments: ProcessInfo.processInfo.arguments) }
+    static var current: Self { configured(arguments: TouchCountingDebugProfile.arguments) }
 
     static func configured(arguments: [String]) -> Self {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        if arguments.contains("--small-arc-v23") {
+            return .init(handling: .temporalGripV2, verifiesContacts: true,
+                         body: .smallArcV23, ground: .corroboratedFeet)
+        }
+        #endif
         #if DEBUG
+        if arguments.contains("--measured-foot-v22") {
+            return .init(handling: .temporalGripV2, verifiesContacts: true,
+                         body: .measuredFootV22, ground: .corroboratedFeet)
+        }
+        if arguments.contains("--visible-foot-v21") {
+            return .init(handling: .temporalGripV2, verifiesContacts: true,
+                         body: .visibleFootV21, ground: .corroboratedFeet)
+        }
         if arguments.contains("--toe-contact-v20") {
             return .init(handling: .temporalGripV2, verifiesContacts: true,
                          body: .toeContactV20, ground: .corroboratedFeet)
@@ -73,7 +90,7 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
         }
         #endif
         return .init(handling: .temporalGripV2, verifiesContacts: true,
-                     body: .toeContactV20, ground: .corroboratedFeet)
+                     body: .visibleFootV21, ground: .corroboratedFeet)
     }
 
     var handlingSignature: String {
@@ -107,6 +124,152 @@ nonisolated struct CountingPolicy: Equatable, Sendable {
         case .floorEvidenceV18: "|floor-evidence-v18"
         case .floorRescueV19: "|floor-rescue-v19"
         case .toeContactV20: "|toe-contact-v20"
+        case .visibleFootV21: "|visible-foot-v21"
+        case .measuredFootV22: "|measured-foot-v22"
+        case .smallArcV23: "|small-arc-v23"
         }
+    }
+}
+
+/// A weak ankle cannot establish a below-ankle kick without resolved evidence.
+nonisolated enum WeakLowFootPolicy {
+    static let signature = "|weak-low-foot-v1"
+    static func enabled(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--weak-low-foot-proof")
+        #else
+        return false
+        #endif
+    }
+}
+
+/// Independent debug arms for real-evidence recovery; release selection is unchanged.
+nonisolated enum MeasuredReboundPolicy {
+    static func raisedForefoot(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--raised-forefoot-proof")
+        #else
+        return false
+        #endif
+    }
+    static func settledProbe(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--settled-rebound-probe")
+        #else
+        return false
+        #endif
+    }
+    static func confirmation(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--measured-rebound-confirmation")
+        #else
+        return false
+        #endif
+    }
+    static func slowRise(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--slow-measured-rise")
+        #else
+        return false
+        #endif
+    }
+    static func raisedFoot(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--raised-compact-foot")
+        #else
+        return false
+        #endif
+    }
+}
+
+/// Independent debug arms; release selection and old serialized traces stay unchanged.
+nonisolated enum ObservedContactRecoveryPolicy {
+    static func alignedLeg(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--aligned-leg-ground")
+        #else
+        return false
+        #endif
+    }
+    static func gapRebound(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--measured-gap-candidate")
+        #else
+        return false
+        #endif
+    }
+    static func terminalRebound(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--terminal-rebound-evidence")
+        #else
+        return false
+        #endif
+    }
+}
+
+/// Isolated ground-proof correction; normal release selection is unchanged.
+nonisolated enum GroundImpactEvidencePolicy {
+    static let signature = "|planted-impact-evidence-v1"
+    static func enabled(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--ground-impact-evidence")
+        #else
+        return false
+        #endif
+    }
+}
+
+/// Numeric evidence only; no extra detector work or release default change.
+nonisolated enum UnliftedFloorReboundPolicy {
+    static let signature = "|unlifted-floor-rebound-v1"
+    static func enabled(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--unlifted-floor-rebound")
+        #else
+        return false
+        #endif
+    }
+}
+
+/// A bounded measured contact may establish region eligibility at its real time.
+nonisolated enum AlignedFootRegionPolicy {
+    static let signature = "|aligned-foot-region-v1"
+    static func enabled(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--aligned-foot-region")
+        #else
+        return false
+        #endif
+    }
+}
+
+nonisolated enum MeasuredFootImpactPolicy {
+    static func corroboratedFloor(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--corroborated-floor-rebound")
+        #else
+        return false
+        #endif
+    }
+    static func weakSupport(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--corroborated-support-ankle")
+        #else
+        return false
+        #endif
+    }
+    static func toeLift(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--brief-toe-lift")
+        #else
+        return false
+        #endif
+    }
+    static func floorRebound(arguments: [String] = TouchCountingDebugProfile.arguments) -> Bool {
+        #if DEBUG || TOUCH_COUNTER_BETA
+        return arguments.contains("--descending-floor-rebound")
+        #else
+        return false
+        #endif
     }
 }

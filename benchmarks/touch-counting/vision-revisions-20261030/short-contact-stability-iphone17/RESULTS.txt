@@ -1,0 +1,122 @@
+Short contact stability — iPhone 17 Pro Max — 30 October 2026
+
+Status: experimental, NOT promoted. Both new flags remain off by default.
+Build 2026103009 isolates the contact-window clock. Build 2026103010 adds observed fall amplitude.
+Every fresh arm uses Swift body-pose revision 2 and the same experimental startup motion gate V3.
+These comparisons are NOT a comparison against the ordinary field app or TestFlight.
+
+What changed
+1. Contact-window clock: a repair window may borrow at most one 30 FPS frame of wall-clock time.
+   The debt is repaid at the next slot. The 300 ms source interval, sustained wall rate,
+   per-image age, identity, worker-idle and backlog guards remain.
+2. Observed fall: an existing candidate may use its actual continuous ball descent to meet
+   the unchanged fall threshold when smoothing flattens it. At least five consecutive,
+   confident, fully visible observations must resolve both sides of the turn.
+   Explicit foot-proof routes and later body, hand, ground and holding vetoes still apply.
+   This does not create candidates for kicks that never produced a proposal.
+
+Fresh original-paced comparisons (completed pairs only)
+- low.mov, build 2026103009, repeat 1: motion -> clock; legal 164 -> 168; known false 0 -> 0.
+  Gained labelled contacts: [31.71, 36.54, 38.65, 46.6, 46.91, 57.15, 57.44]; lost: [28.06, 37.43, 58.08].
+- low.mov, build 2026103009, repeat 2: motion -> clock; legal 166 -> 166; known false 0 -> 0.
+  Gained labelled contacts: [23.11]; lost: [54.08].
+- ball_in_hand, build 2026103010, repeat 1: clock -> observed; legal 0 -> 0; known false 0 -> 0.
+- IMG8874, build 2026103010, repeat 1: clock -> observed; legal 24 -> 24; known false 0 -> 0.
+- IMG8606, build 2026103010, repeat 1: clock -> observed; legal 36 -> 34; known false 1 -> 1.
+  Gained labelled contacts: []; lost: [16.808, 18.25].
+- IMG8606, build 2026103010, repeat 2: clock -> observed; legal 32 -> 33; known false 1 -> 1.
+  Gained labelled contacts: [12.505]; lost: [].
+- dribbling_with_the_ball_1, build 2026103010, repeat 1: clock -> observed; legal 0 -> 0; known false 0 -> 0.
+- low.mov, build 2026103010, repeat 1: clock -> observed; legal 164 -> 167; known false 0 -> 0.
+  Gained labelled contacts: [9.56, 18.13, 57.15, 57.44]; lost: [58.08].
+- low.mov, build 2026103010, repeat 2: clock -> observed; legal 164 -> 167; known false 0 -> 0.
+  Gained labelled contacts: [9.56, 18.13, 57.44]; lost: [].
+- old three-minute clip, build 2026103010, repeat 1: motion -> observed; total 157 -> 159; no complete legal/false labels.
+- dribbling_with_ball_1, build 2026103010, repeat 1: motion -> observed; legal 0 -> 0; known false 0 -> 0.
+- dribbling_with_ball_2, build 2026103010, repeat 1: motion -> observed; legal 0 -> 0; known false 0 -> 0.
+- dribbling_with_ball_3, build 2026103010, repeat 1: motion -> observed; legal 0 -> 0; known false 0 -> 0.
+
+Label caveat: low.mov has 195 reviewed legal contacts with reference uncertainty. IMG8606
+has partial labels (39 legal contacts). A known-false count is not a comprehensive false-positive
+rate; unreviewed events cannot be assumed correct. Old three-minute targets are partial coverage.
+
+What the evidence establishes
+- At 23.1 s, the old 300 ms wall guard can reject a repair despite 334 ms between source contacts.
+  Fresh audit logged about 293 ms wall spacing: legacyAllowed=false, bounded clock allowed=true.
+  Build09 repeat2 recovered the labelled 23.11 s contact, but lost 54.08 s elsewhere (166 ->166).
+- At 28 s in the earlier missed trace, smoothed fall is .00746824 versus required .00749512.
+  A continuous measured descent is .01918850. The new helper qualifies this existing candidate,
+  but old rejected traces lack downstream callbacks, so that offline eligibility alone is not
+  proof of a recovered live count. The first build10 pair counts this target in both arms.
+- The first build10 candidate run records accepted observed-fall proofs at 9.500 and 18.066 s
+  (labelled legal contacts 9.56 and 18.13). Same-input ablation removes both; however the
+  disabled 9.500 s path requests one unrecorded foot callback, so its counterfactual is incomplete.
+  The 18.066 s ablation does not have that missing-callback limitation.
+- IMG8606 lost labelled contacts 16.808 and 18.25 s in the first fresh pair. Both became body
+  rejections with different ball samples and proposal times. No observed-fall proof qualified
+  anywhere in this clip. Turning that proof off on the exact captured inputs yields the same
+  35 touches with no missing callbacks. This excludes a direct numeric-rule regression on those
+  inputs, but does not establish end-to-end stability. In the reverse-order pair, legal counts
+  were 32 ->33. Both arms counted 16.8 s and rejected 18.25 s as missingPose. The candidate
+  repeated with no observed-fall eligibility; same-input ablation again changes no counts.
+  This is variable upstream sampling/pose evidence, not a repeatable direct amplitude-rule loss.
+- The 37.43 s low contact has two original missing impact exposures in earlier failed runs
+  and weak ankle estimates. Successful image repairs do not establish foot contact. Its
+  acceptance varies between fresh captures. The positive-foot requirement was not weakened.
+- The 4.67 s low kick remains outside this change: in a missed capture no candidate is created.
+
+Offline scope and checks
+- 47 saved traces reproduced their recorded default counts exactly. Observed-fall eligibility
+  appears only in five low.mov traces; newly reached missing callbacks are reported explicitly.
+- Two saved old-three-minute traces remain exactly 158 and 160 touches. The proof has no eligible
+  candidate there. All three known ground targets (153.773,154.206,157.807 s) stay uncounted.
+  These are numeric checks on saved inputs; they do not test fresh timing or the new clock.
+- Clock contracts: 3016 passed in DEBUG and 3016 in release; observed-fall contracts: 21 passed.
+- Both debug builds compiled successfully. Python compilation and git diff whitespace checks pass.
+
+Performance of completed runs
+- 26 completed runs; thermal states: [0] (0=nominal).
+- Source skips: 0; overflow drops: 0.
+- Median notification latency range: 208.2–213.1 ms; p95 range: 220.0–230.8 ms.
+  This small iPhone 17 sample does not establish iPhone 11 or long-session performance.
+
+Fresh old-three-minute targets (partial coverage)
+- motion: 8.016 legal low kick: [8.016]; 42.013 legal high kick: [42.046]; 107.910 legal knee contact: [107.91]; 125.525 legal low touch: [125.458]; 153.773 ground bounce: []; 154.206 ground bounce: [154.206]; 157.807 ground bounce: []
+- observed: 8.016 legal low kick: [8.016]; 42.013 legal high kick: [42.046]; 107.910 legal knee contact: [107.91]; 125.525 legal low touch: [125.458]; 153.773 ground bounce: []; 154.206 ground bounce: [154.206]; 157.807 ground bounce: []
+
+Review of changed three-minute counts
+- 92.776 s (added): likely legal kick; partially clipped at right image edge [confidence: likely].
+- 133.258 s (added): clear visible foot kick [confidence: confirmed].
+- 144.625 s (lost): likely legal foot kick; ball/contact partially clipped at right edge [confidence: likely].
+- 145.458 s (added): suspected false count: bouncing ball while player walks away; impact partly hidden behind legs [confidence: suspected].
+- 154.206 s (present in both): previously reviewed ground bounce counted in both fresh arms [confidence: confirmed].
+- The 157 ->159 total is three added counts and one lost count, not two proven legal gains.
+- The clear added kick is at 133.258 s. The edge-of-frame gain at 92.776 s and loss at
+  144.625 s are likely legal but partly clipped; they remain qualified assessments.
+- At 145.458 s the control breaks tracking. The candidate accepts on different tracking samples;
+  the observed-fall rule does not qualify. The video shows a bouncing ball while the player
+  walks away, with the exact impact obscured. Treat this as a suspected false count pending
+  confirmation, never as a recovered legal touch.
+- At 154.206 s both arms accept the already reviewed ground bounce. In the control evidence,
+  the lower ball edge is above the estimated floor threshold, and the ball center is only about
+  0.05 ball heights below the lowest ankle, short of the unlifted-floor proof's 0.1 margin.
+  This fresh-pose/geometry result differs from the older saved traces that rejected it.
+- Turning observed-fall off on the new three-minute trace gives the identical 159 touches
+  with complete callbacks. This excludes a direct numeric change by that proof, but the
+  combined clock/repair/tracking change has not passed the broader regression check.
+
+Resumed session status
+- Pending comparisons: none.
+- Field build 2026102913 restored; 24-touch IMG8874 preview verified; experimental flags absent.
+
+Decision and next priority
+- Keep the combined experiment off. Two low.mov pairs both gain three net legal contacts;
+  the second pair loses none. All five holding/dribbling controls remain zero.
+- The new fall measurement is promising. Next isolate it with the old clock, so contact
+  repair scheduling is held constant. Do not promote the entire combined pipeline based
+  on net totals while the three-minute suspicious count and clipped legal loss remain.
+- Preserve 145.458 and 154.206 s as regression targets for impact timing and floor evidence.
+  The unproposed 4.67 s low kick is still a separate candidate-generation problem.
+
+No commits, pushes, main-app default changes, or TestFlight upload were made by this experiment.
+Full run paths, gains/losses, source hashes and restore state: summary.json.
