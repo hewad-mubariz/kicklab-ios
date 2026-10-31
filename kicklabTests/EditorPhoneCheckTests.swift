@@ -1,6 +1,7 @@
 import AVFoundation
 import CoreVideo
 import Metal
+import UIKit
 import XCTest
 @testable import kicklab
 
@@ -128,6 +129,53 @@ final class EditorPhoneCheckTests: XCTestCase {
             note("effect_\(style.rawValue)_gpu_ms_p50_p95", "\(sorted[sorted.count / 2]) / \(sorted[Int(Double(sorted.count) * 0.95)])")
         }
         note("thermal_end", ProcessInfo.processInfo.thermalState.rawValue)
+    }
+
+    /// The real replay surface playing the clip with the Lava ball and Fire for 12 s: frames shown
+    /// per second, and how late the main thread answers a short timer, which a ball print built
+    /// on the main thread delays.
+    @MainActor
+    func testReplayPaceWithABallPrint() async throws {
+        let bundle = Bundle(for: Self.self)
+        let video = try XCTUnwrap(bundle.url(forResource: "juggling-eighteen", withExtension: "mov"))
+        var effects = BallEffectTrack(frames: try await track(video))
+        effects.surfaceMotion = try await BallSurfaceTimeline.prepare(source: video, track: effects)
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.first as? UIWindowScene)
+        let window = UIWindow(windowScene: scene)
+        window.rootViewController = UIViewController(); window.makeKeyAndVisible()
+        defer { window.isHidden = true; window.rootViewController = nil }
+        let view = EffectVideoView()
+        view.frame = window.bounds
+        window.rootViewController!.view.addSubview(view)
+        var failures = [String](); view.onFailure = { failures.append($0) }
+        let player = AVPlayer(url: video)
+        view.configure(player: player, edit: SessionEditState(style: .fire, intensity: 0.85, ballSkin: .lava), track: effects)
+        player.play()
+        try await Task.sleep(for: .seconds(1))
+        let shownAtStart = view.presentedFrameCount
+        var late: [Double] = []
+        let start = ProcessInfo.processInfo.systemUptime
+        while ProcessInfo.processInfo.systemUptime - start < 12 {
+            let asked = ProcessInfo.processInfo.systemUptime
+            try await Task.sleep(for: .milliseconds(8))
+            late.append(max(0, (ProcessInfo.processInfo.systemUptime - asked) * 1000 - 8))
+        }
+        let elapsed = ProcessInfo.processInfo.systemUptime - start
+        let shown = view.presentedFrameCount - shownAtStart
+        player.pause(); view.stop(); view.removeFromSuperview()
+        XCTAssertTrue(failures.isEmpty, failures.joined(separator: "; "))
+        let sorted = late.sorted()
+        note("pace_frames_per_second", Double(shown) / elapsed)
+        note("pace_main_late_ms_p50_p95_max", String(format: "%.1f / %.1f / %.1f", sorted[sorted.count / 2],
+                                                     sorted[Int(Double(sorted.count) * 0.95)], sorted.last ?? 0))
+        note("pace_main_late_over_16ms", late.filter { $0 > 16 }.count)
+        #if DEBUG
+        let prints = view.printMilliseconds.sorted()
+        if !prints.isEmpty {
+            note("pace_print_ms_p50_p95", String(format: "%.1f / %.1f", prints[prints.count / 2], prints[Int(Double(prints.count) * 0.95)]))
+        }
+        note("pace_prints", prints.count); note("pace_print_busy", view.printBusyCount); note("pace_print_dropped", view.printDroppedCount)
+        #endif
     }
 
     /// Per-frame cost of each counter's milestone: the replay's layers (behind, and over the badge

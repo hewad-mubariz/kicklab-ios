@@ -159,6 +159,30 @@ up to Fire. The remaining slow frames come from the ball print raster, up to abo
 CPU on frames with a print; that cost predates this branch and is the next thing to move off
 the main thread.
 
+### Ball prints off the main thread (31 October 2026)
+
+The table above adds CPU and GPU time per frame. On the phone the GPU already overlaps the
+next frame's CPU work, so the real replay kept 30 frames a second; what suffered was the main
+thread, busy about 20 ms of every 33 drawing the print, so the dial, sliders and panel
+animations stuttered. During playback the print is now built on a background queue as soon as
+its frame is decoded, and the frame is shown together with its own print; frames that arrive
+meanwhile are skipped for the newest, the next print starts as soon as one finishes, and a
+print more than a quarter second behind the playhead (a seek) is dropped. Still frames draw
+their print directly. The two material canvases are unchanged.
+
+`EditorPhoneCheckTests.testReplayPaceWithABallPrint` plays the clip on the real replay surface
+with Lava and Fire for 12 s on the iPhone 11 Pro Max:
+
+| | Before | After |
+| --- | --- | --- |
+| Frames shown per second | 30.0 | 30.0 |
+| Main thread late, p50 / p95 / max | 7.2 / 25.6 / 29.5 ms | 1.2 / 1.5 / 2.9 ms |
+| Checks held over 16 ms | 220 | 0 |
+
+A print takes 20 ms (p50) and 26 ms (p95) off the main thread there. A first version that only
+started a print from the draw call fell to 21.7 frames a second; starting it on decode fixed
+that.
+
 ## Graphs on long sessions
 
 Ball Motion and Comet used to fit the whole clip into the graph, so a 433-touch session

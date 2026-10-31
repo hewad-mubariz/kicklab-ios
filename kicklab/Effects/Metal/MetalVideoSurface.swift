@@ -94,9 +94,23 @@ final class EffectVideoView: MTKView {
     private var previousSize = CGSize.zero
     private let inFlight = DispatchSemaphore(value: 2)
     private let materialPool = BallMaterialTexturePool()
+    /// During playback a frame's ball print is built here, off the main thread, and the frame is
+    /// shown together with its print once it is ready. Older phones keep their pace this way.
+    private let printQueue = DispatchQueue(label: "kicklab.ball-print", qos: .userInteractive)
+    private var printInProgress = false
+    private var readyPrint: ReadyPrint?
+    /// The decoded frame last sent for a print, so each frame is printed once.
+    private var requestedPixels: CVPixelBuffer?
+    #if DEBUG
+    /// Phone check: each off-main print's duration, and how often a print could not start or show.
+    private(set) var printMilliseconds: [Double] = []
+    private(set) var printBusyCount = 0, printDroppedCount = 0
+    #endif
     // Visible to lifecycle regressions; these count owned canvases/textures.
     var materialAllocationCount: Int { materialPool.allocationCount }
     var retainedMaterialSlotCount: Int { materialPool.retainedSlotCount }
+    /// Frames sent to the screen; the phone check reads the replay's pace from it.
+    private(set) var presentedFrameCount = 0
     private var reportedError = false
     var onFailure: (String) -> Void = { _ in }
     #if DEBUG
@@ -159,9 +173,11 @@ final class EffectVideoView: MTKView {
     }
 
     func configure(player: AVPlayer, edit: SessionEditState, track: BallEffectTrack) {
-        if self.edit != edit || self.track.surfaceMotion?.entries.count != track.surfaceMotion?.entries.count { dirty = true; setNeedsDisplay() }
+        if self.edit != edit || self.track.surfaceMotion?.entries.count != track.surfaceMotion?.entries.count {
+            dirty = true; requestedPixels = nil; setNeedsDisplay()
+        }
         if self.edit != edit || self.track.touches != track.touches { swaps = BallSwapTimeline(edit: edit, touchTimes: track.touches) }
-        if !edit.usesBallMaterial { materialPool.removeAll() }
+        if !edit.usesBallMaterial { dropPrints() }
         self.edit = edit; self.track = track; self.player = player
         #if DEBUG
         if benchmark == nil, edit.ballSkin != .original, track.surfaceMotion != nil,
@@ -201,7 +217,7 @@ final class EffectVideoView: MTKView {
     func configure(image: CGImage, edit: SessionEditState, track: BallEffectTrack, time: Double) {
         if self.edit != edit || frameTime != time { dirty = true; setNeedsDisplay() }
         if self.edit != edit || self.track.touches != track.touches { swaps = BallSwapTimeline(edit: edit, touchTimes: track.touches) }
-        if !edit.usesBallMaterial { materialPool.removeAll() }
+        if !edit.usesBallMaterial { dropPrints() }
         self.edit = edit; self.track = track; frameTime = time
         if stillImage !== image, let engine {
             stillImage = image
@@ -220,7 +236,7 @@ final class EffectVideoView: MTKView {
         output = nil; item = nil; pixels = nil; player = nil
         stillImage = nil; stillTexture = nil
         track = BallEffectTrack(frames: [])
-        materialPool.removeAll()
+        dropPrints()
         engine?.releaseCameraTargets()
         if let textureCache { CVMetalTextureCacheFlush(textureCache, 0) }
     }
@@ -269,6 +285,10 @@ final class EffectVideoView: MTKView {
             }
         }
         if drawableSize != previousSize { dirty = true }
+        // A decoded frame's print starts now rather than on the next draw.
+        if dirty, let engine, let pixels, printsOffMain(at: frameTime) {
+            requestPrint(for: pixels, size: drawableSize, device: engine.device)
+        }
         if dirty { setNeedsDisplay() }
     }
 
@@ -280,17 +300,33 @@ final class EffectVideoView: MTKView {
         let drawStart = ProcessInfo.processInfo.systemUptime
         if dirty, engine != nil, inFlight.wait(timeout: .now()) == .success { inFlight.signal() }
         else if dirty { benchmark?.busySkip() }
+        var materialMS = 0.0
         #endif
         guard let engine, dirty, drawableSize.width > 0, drawableSize.height > 0,
               inFlight.wait(timeout: .now()) == .success else { return }
         var submitted = false
-        defer { if !submitted { inFlight.signal() } }
+        var material: BallMaterialTexturePool.Lease?
+        defer { if !submitted { material?.release(); inFlight.signal() } }
         do {
+            // Playback with a ball print: show the frame its finished print belongs to, or start one.
+            var framePixels = pixels, time = frameTime, caughtUp = true
+            let printsOffMain = printsOffMain(at: frameTime)
+            if printsOffMain, let current = pixels {
+                guard let ready = takeReadyPrint(size: drawableSize) else {
+                    requestPrint(for: current, size: drawableSize, device: engine.device)
+                    return
+                }
+                framePixels = ready.request.pixels; time = ready.request.time; material = ready.lease
+                caughtUp = ready.request.pixels === current
+                #if DEBUG
+                materialMS = ready.milliseconds
+                #endif
+            }
             var videoReference: CVMetalTexture?
             let source: MTLTexture
-            if let pixels, let textureCache {
-                guard CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, pixels, nil,
-                    .bgra8Unorm, CVPixelBufferGetWidth(pixels), CVPixelBufferGetHeight(pixels), 0, &videoReference) == kCVReturnSuccess,
+            if let framePixels, let textureCache {
+                guard CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache, framePixels, nil,
+                    .bgra8Unorm, CVPixelBufferGetWidth(framePixels), CVPixelBufferGetHeight(framePixels), 0, &videoReference) == kCVReturnSuccess,
                       let videoReference, let videoTexture = CVMetalTextureGetTexture(videoReference) else {
                     throw MetalEffectEngine.Failure.unavailable("Couldn’t read this video frame.")
                 }
@@ -307,60 +343,170 @@ final class EffectVideoView: MTKView {
                                intensity: 0, visibility: 0, style: BallStyle.glowTrail.shaderID)
             } ?? shot.map { EffectFrame.shot(size: size, sourceSize: sourceSize, style: $0.style,
                                                      intensity: $0.intensity, track: track, time: frameTime) }
-                ?? EffectFrame.video(size: size, sourceSize: sourceSize, edit: edit, track: track, time: frameTime)
-            #if DEBUG
-            let materialStart = ProcessInfo.processInfo.systemUptime
-            #endif
-            let material = try materialTexture(engine: engine, size: size, sourceSize: sourceSize)
-            #if DEBUG
-            let materialMS = (ProcessInfo.processInfo.systemUptime - materialStart) * 1000
-            #endif
+                ?? EffectFrame.video(size: size, sourceSize: sourceSize, edit: edit, track: track, time: time)
+            if !printsOffMain {
+                #if DEBUG
+                let materialStart = ProcessInfo.processInfo.systemUptime
+                #endif
+                material = try materialTexture(engine: engine, size: size, sourceSize: sourceSize)
+                #if DEBUG
+                materialMS = (ProcessInfo.processInfo.systemUptime - materialStart) * 1000
+                #endif
+            }
             let camera = shot == nil ? nil : shotPlan.map { plan in
                 plan.frame(location: shotLocation ?? shotTimeline.locate(shotTimeline.outputTime(for: frameTime)), size: size)
             }
             try engine.encode(frame, into: drawable.texture, source: source, material: material?.texture,
                               camera: camera, atlas: shotAtlas, arc: shotArc, command: command)
             command.present(drawable)
-            let retainedPixels = pixels
+            let retainedPixels = framePixels, used = material
             let semaphore = inFlight
             command.addCompletedHandler { [weak self] completed in
-                withExtendedLifetime((videoReference, retainedPixels, material)) {}
-                material?.release()
+                withExtendedLifetime((videoReference, retainedPixels, used)) {}
+                used?.release()
                 semaphore.signal()
                 if let error = completed.error { Task { @MainActor [weak self] in self?.report(error) } }
             }
-            command.commit(); submitted = true
+            command.commit(); submitted = true; presentedFrameCount += 1
             if liveSource != nil { isHidden = false }
-            previousSize = drawableSize; dirty = false
+            // A newer frame arrived while this one's print was drawn; it is next.
+            previousSize = drawableSize; dirty = !caughtUp
             #if DEBUG
-            benchmark?.record(frameTime: frameTime, materialMS: materialMS,
+            benchmark?.record(frameTime: time, materialMS: materialMS,
                               drawMS: (ProcessInfo.processInfo.systemUptime - drawStart) * 1000)
             #endif
         } catch { report(error) }
     }
 
+    private struct PrintRequest: @unchecked Sendable {
+        let pixels: CVPixelBuffer
+        let time: Double
+        let size: CGSize
+        let edit: SessionEditState
+        let track: BallEffectTrack
+        let swaps: BallSwapTimeline
+    }
+
+    private struct ReadyPrint {
+        let request: PrintRequest
+        let lease: BallMaterialTexturePool.Lease
+        let milliseconds: Double
+    }
+
+    /// Both canvases are still being read by the GPU.
+    private struct PrintCanvasBusy: Error {}
+
+    private func printsOffMain(at time: Double) -> Bool {
+        stillImage == nil && liveSource == nil && shot == nil && showsPrint(at: time)
+    }
+
+    /// Whether this frame carries a ball print or a change moment on the material canvas.
+    private func showsPrint(at time: Double) -> Bool {
+        edit.usesBallMaterial && (edit.ballSkin(at: time, touchTimes: track.touches) != .original || swaps.active(at: time) != nil)
+    }
+
+    /// The finished print if it still belongs on screen: same edit and size, and at most a few
+    /// frames behind the playhead, so a seek drops it rather than flashing the old frame.
+    private func takeReadyPrint(size: CGSize) -> ReadyPrint? {
+        guard let ready = readyPrint else { return nil }
+        readyPrint = nil
+        let behind = frameTime - ready.request.time
+        guard ready.request.size == size, ready.request.edit == edit, behind >= 0, behind < 0.25 else {
+            #if DEBUG
+            printDroppedCount += 1
+            #endif
+            ready.lease.release(); requestedPixels = nil
+            return nil
+        }
+        return ready
+    }
+
+    /// One print at a time, for the newest decoded frame; frames that arrive meanwhile are skipped.
+    private func requestPrint(for pixels: CVPixelBuffer, size: CGSize, device: MTLDevice) {
+        guard !printInProgress, pixels !== requestedPixels else { return }
+        printInProgress = true; requestedPixels = pixels
+        let request = PrintRequest(pixels: pixels, time: frameTime, size: size, edit: edit, track: track, swaps: swaps)
+        let pool = materialPool
+        printQueue.async { [weak self] in
+            let start = ProcessInfo.processInfo.systemUptime
+            let result = Result {
+                try Self.material(time: request.time, pixels: request.pixels, image: nil, size: request.size,
+                                  sourceSize: CGSize(width: CVPixelBufferGetWidth(request.pixels), height: CVPixelBufferGetHeight(request.pixels)),
+                                  edit: request.edit, track: request.track, swaps: request.swaps, device: device, pool: pool)
+            }
+            let milliseconds = (ProcessInfo.processInfo.systemUptime - start) * 1000
+            Task { @MainActor [weak self] in self?.printFinished(request, result, milliseconds: milliseconds) }
+        }
+    }
+
+    private func printFinished(_ request: PrintRequest, _ result: Result<BallMaterialTexturePool.Lease?, Error>, milliseconds: Double) {
+        printInProgress = false
+        switch result {
+        case .success(let lease?) where request.edit == edit && player != nil:
+            readyPrint?.lease.release()
+            readyPrint = ReadyPrint(request: request, lease: lease, milliseconds: milliseconds)
+            #if DEBUG
+            printMilliseconds.append(milliseconds)
+            #endif
+            // The next decoded frame's print starts while this one is shown.
+            if let engine, let pixels, printsOffMain(at: frameTime) {
+                requestPrint(for: pixels, size: drawableSize, device: engine.device)
+            }
+            setNeedsDisplay()
+        case .success(let lease):
+            // Stopped, or the edit changed while it was drawn; the next tick asks again.
+            lease?.release(); requestedPixels = nil
+        case .failure(let error) where error is PrintCanvasBusy:
+            requestedPixels = nil
+            #if DEBUG
+            printBusyCount += 1
+            #endif
+        case .failure(let error):
+            report(error)
+        }
+    }
+
+    private func dropPrints() {
+        readyPrint?.lease.release(); readyPrint = nil; requestedPixels = nil
+        materialPool.removeAll()
+    }
+
+    /// A still frame draws its print directly: one draw, no playback to keep pace with.
     private func materialTexture(engine: MetalEffectEngine, size: CGSize, sourceSize: CGSize) throws -> BallMaterialTexturePool.Lease? {
         guard edit.usesBallMaterial else { return nil }
-        // The ball on screen at this frame, and the change moment if one is still playing.
-        let skin = edit.ballSkin(at: frameTime, touchTimes: track.touches)
-        let swap = swaps.active(at: frameTime)
-        guard skin != .original || swap != nil else { return nil }
-        let width = Int(size.width), height = Int(size.height)
-        guard let lease = try materialPool.acquire(device: engine.device, width: width, height: height) else {
+        do {
+            return try Self.material(time: frameTime, pixels: pixels, image: stillImage, size: size, sourceSize: sourceSize,
+                                     edit: edit, track: track, swaps: swaps, device: engine.device, pool: materialPool)
+        } catch is PrintCanvasBusy {
             throw MetalEffectEngine.Failure.unavailable("The ball material buffers are still in use.")
         }
+    }
+
+    /// The ball print and change moment for one frame, or nil when it shows neither. Every input
+    /// is a value or thread-safe, so playback runs this off the main thread.
+    nonisolated private static func material(time: Double, pixels: CVPixelBuffer?, image: CGImage?, size: CGSize,
+                                             sourceSize: CGSize, edit: SessionEditState, track: BallEffectTrack,
+                                             swaps: BallSwapTimeline, device: MTLDevice,
+                                             pool: BallMaterialTexturePool) throws -> BallMaterialTexturePool.Lease? {
+        // The ball on screen at this frame, and the change moment if one is still playing.
+        let skin = edit.ballSkin(at: time, touchTimes: track.touches)
+        let swap = swaps.active(at: time)
+        guard skin != .original || swap != nil else { return nil }
+        guard let lease = try pool.acquire(device: device, width: Int(size.width), height: Int(size.height)) else {
+            throw PrintCanvasBusy()
+        }
         let context = lease.context
-        let sample = track.replacementGuide(at: frameTime)
+        let sample = track.replacementGuide(at: time)
         var replacement: BallMaterialRenderer.Replacement?
         if skin != .original {
             let fitted = sample.flatMap { sample -> BallReplacementFootprint? in
                 if let pixels { return BallReplacementFootprint.fit(pixels: pixels, sample: sample, measureTexture: true) }
-                if let stillImage { return BallReplacementFootprint.fit(image: stillImage, sample: sample, measureTexture: true) }
+                if let image { return BallReplacementFootprint.fit(image: image, sample: sample, measureTexture: true) }
                 return nil
             }
             // Motion smear comes from the shared track, so replay and export agree.
-            let smear = track.smear(at: frameTime, size: sourceSize)
-            let matte = track.replacementMatte(at: frameTime, fitted: fitted, size: sourceSize, smear: smear,
+            let smear = track.smear(at: time, size: sourceSize)
+            let matte = track.replacementMatte(at: time, fitted: fitted, size: sourceSize, smear: smear,
                 photographicSmear: track.surfaceMotion?.photographicExposure != nil)
             let footprint = track.usesBallMasks ? matte?.footprint : fitted
             let coverage: ((Double, Double) -> Double)? = matte.map { m in
@@ -368,20 +514,20 @@ final class EffectVideoView: MTKView {
             }
             let background = matte.flatMap { m -> BallReplacementBackground? in
                 if let pixels { return BallReplacementBackground(pixels: pixels, matte: m) }
-                if let stillImage { return BallReplacementBackground(image: stillImage, matte: m) }
+                if let image { return BallReplacementBackground(image: image, matte: m) }
                 return nil
             }
             replacement = BallMaterialRenderer.replacement(footprint: footprint, skin: skin,
-                time: frameTime, coverage: coverage, coverageBounds: matte?.bounds,
-                orientation: track.surfaceMotion?.renderOrientation(at: frameTime), smear: smear,
-                light: track.surfaceMotion?.light(at: frameTime), background: background)
+                time: time, coverage: coverage, coverageBounds: matte?.bounds,
+                orientation: track.surfaceMotion?.renderOrientation(at: time), smear: smear,
+                light: track.surfaceMotion?.light(at: time), background: background)
         }
         // No supported silhouette: retain the source instead of inventing a ball.
         BallMaterialRenderer.draw(in: context, size: size, sourceSize: sourceSize, skin: skin,
-            sample: replacement == nil ? nil : sample, time: frameTime, replacement: replacement,
+            sample: replacement == nil ? nil : sample, time: time, replacement: replacement,
             scale: swap.map { swaps.effect.ballScale(age: $0.age) } ?? 1)
         // The moment is drawn around the tracked ball even where no print could be fitted.
-        if let swap, let guide = sample ?? track.sample(at: frameTime) {
+        if let swap, let guide = sample ?? track.sample(at: time) {
             let geometry = BallMaterialRenderer.outputGeometry(size: size, sourceSize: sourceSize, sample: guide)
             BallSwapRenderer.draw(in: context, center: geometry.center, radius: geometry.radius,
                                   effect: swaps.effect, age: swap.age, event: swap.event)
