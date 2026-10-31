@@ -201,7 +201,14 @@ The change moment is drawn with Core Graphics into the same material canvas as t
 contact. Replay (`EffectVideoView.materialTexture`) and export (`BallStyleBurnIn.render`)
 resolve the ball per frame, draw the print, scale it by the effect's `ballScale(age:)`, then
 draw the moment. Everything is a deterministic function of the event and its age, so seeks,
-loops and the export agree. No shader changed.
+loops and the export agree.
+
+A look change restarts the new effect's trail, so for a frame or two it has one recorded
+point. Lab Flame, Blue Flame and Flame Ribbon measure their wake with `studyPathFX`, whose
+signed distance started at 0 when there was no segment: every pixel sat on the wake and the
+whole effect tile (16 ball radii, centred on the ball) flashed orange or cyan. The same
+happened on a clip's first frame and when tracking found the ball again. The signed
+distance now starts far away, like the unsigned one, which is how Rainbow already handled it.
 
 ## Sounds
 
@@ -220,6 +227,8 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
   every change moment drawing deterministically and fading out.
 - `LookExportTests`: a saved video draws fire for the first run and nothing after the
   change, and the reverse.
+- `NewBallEffectsTests.aTrailOfOnePointDrawsNoWake`: each of the six study effects with a
+  one-point trail leaves the tile clear away from the ball.
 - `MilestoneTests`: milestone touches, the celebration window and pulse; for every counter
   its own deterministic celebration that fades out cleanly, its front layer, a badge motion
   that comes to rest and its own fanfare; the words and levels; the export overlay; settings

@@ -66,6 +66,29 @@ struct NewBallEffectsTests {
         }
     }
 
+    /// A clip's first frame, a reacquired ball and a look change all start with a
+    /// single trail point. Without a segment there is no wake to draw.
+    @Test(arguments: Self.styles)
+    func aTrailOfOnePointDrawsNoWake(style: BallStyle) throws {
+        let engine = try MetalEffectEngine()
+        let texture = try engine.texture(width: 640, height: 640, storage: .shared)
+        let frame = EffectFrame(size: CGSize(width: 640, height: 640), center: SIMD2(320, 320),
+                                radius: 30, time: 2, intensity: 0.85, style: style.shaderID,
+                                trail: [SIMD4(320, 330, 30, 0.02)])
+        try engine.render(frame, into: texture)
+        var pixels = [UInt8](repeating: 0, count: 640 * 640 * 4)
+        pixels.withUnsafeMutableBytes {
+            texture.getBytes($0.baseAddress!, bytesPerRow: 640 * 4, from: MTLRegionMake2D(0, 0, 640, 640), mipmapLevel: 0)
+        }
+        var lit = 0, far = 0
+        for y in stride(from: 0, to: 640, by: 4) { for x in stride(from: 0, to: 640, by: 4)
+            where hypot(Double(x) - 320, Double(y) - 320) > 30 * 4 {
+            far += 1
+            if pixels[(y * 640 + x) * 4 + 3] > 40 { lit += 1 }
+        } }
+        #expect(Double(lit) / Double(far) < 0.02, "\(style) filled \(lit) of \(far) samples away from the ball")
+    }
+
     @Test func pulseRingsNeedAnEventAndClearAfterTheirEnvelope() throws {
         let engine = try MetalEffectEngine()
         let texture = try engine.texture(width: 256, height: 256, storage: .shared)
