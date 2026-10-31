@@ -729,17 +729,27 @@ struct ReplayEffectsView: View {
         }
     }
 
+    /// Under the session badge: a wait with its progress, or a problem the player can retry.
+    /// Players never see the frame-by-frame spin state; it read like errors on a good clip.
     private var effectsStatus: String? {
         guard displayedLook.edit.requiresVisualTrack else { return nil }
         if preparation.isPreparing || (summary.needsVisualPreparation && preparation.prepared == nil) {
             if preparation.error != nil || surfaceMotionError != nil { return String(localized: "Effects unavailable — tap to retry", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
             return String(localized: "Preparing effects · \(Int(preparation.progress * 100))%", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
+        if displayedLook.edit.usesBallMaterial, surfaceMotionError != nil { return String(localized: "Ball effects unavailable — tap to retry", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        guard Self.showsSpinReadout else {
+            return displayedLook.edit.usesBallMaterial && surfaceMotionTask != nil
+                ? String(localized: "Preparing the ball…", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : nil
+        }
         guard displayedLook.edit.usesBallMaterial else { return String(localized: "Effects ready", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
-        if surfaceMotionError != nil { return String(localized: "Ball effects unavailable — tap to retry", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
         if surfaceMotionTask != nil { return String(localized: "Preparing source spin…", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
         return effectTrack.surfaceMotion?.status(at: currentTime).label ?? String(localized: "Spin uncertain", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
+
+    /// Reviews and pipeline tests read the frame-by-frame spin state under the badge.
+    private static let showsSpinReadout = ProcessInfo.processInfo.arguments.contains("--spin-readout")
+        || ProcessInfo.processInfo.arguments.contains("--rf-effects-audit")
 
     private var renderedEdit: SessionEditState {
         var value = displayedLook.edit

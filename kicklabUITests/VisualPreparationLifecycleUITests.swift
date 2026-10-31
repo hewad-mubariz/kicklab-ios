@@ -14,7 +14,7 @@ final class VisualPreparationLifecycleUITests: ProReplayUITestCase {
         app.launchArguments = ["-kicklab.welcome.completed", "YES",
             "--capture-processing-video", "documents:batch-fresh-source.mov",
             "--yolo26-motion-model-only", "--visual-async2", "--analysis-ignore-cache",
-            "--effects-folder", "batch-visual-lifecycle-background", "--effects-follow-review"]
+            "--effects-folder", "batch-visual-lifecycle-background", "--effects-follow-review", "--spin-readout"]
         app.launch()
         XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout: 20))
         app.buttons["module-juggling"].tap()

@@ -39,7 +39,7 @@ final class CaptureProcessingUITests: ProReplayUITestCase {
         let fixture = "documents:processing-regression.mov"
         #endif
         let app = XCUIApplication()
-        app.launchArguments = ["-kicklab.welcome.completed", "YES", "--capture-processing-video", fixture]
+        app.launchArguments = ["-kicklab.welcome.completed", "YES", "--capture-processing-video", fixture, "--spin-readout"]
         app.launch()
         XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout:15))
         app.buttons["module-juggling"].tap()
