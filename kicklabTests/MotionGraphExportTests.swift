@@ -79,8 +79,10 @@ final class MotionGraphExportTests: XCTestCase {
                 XCTAssertTrue(CGRect(origin: .zero, size: size).contains(rect))
                 let first = try XCTUnwrap(ExportMotionGraphRenderer.image(style: style,
                     snapshot: MotionStyleSample.timeline.snapshot(at: 2.1, duration: 5.6), size: size))
+                // Not 4.3: on the sample's steady 0.8 s beat it puts the metronome at the same point
+                // of the opposite swing as 2.1, so the two cards would be the same picture.
                 let second = try XCTUnwrap(ExportMotionGraphRenderer.image(style: style,
-                    snapshot: MotionStyleSample.timeline.snapshot(at: 4.3, duration: 5.6), size: size))
+                    snapshot: MotionStyleSample.timeline.snapshot(at: MotionStyleSample.time, duration: 5.6), size: size))
                 XCTAssertGreaterThan(first.width, 0)
                 XCTAssertNotEqual(UIImage(cgImage: first).pngData(), UIImage(cgImage: second).pngData(),
                                   "\(style) must follow media time")

@@ -172,6 +172,13 @@ while scrolling. The other eight styles already scrolled. Drawing only the windo
 eight times cheaper per frame on a 433-touch session (0.36 ms against 3.0 ms in the
 Simulator), so the saved video is not slower.
 
+The word in the card's corner used to be the ball's direction for every style, so Heartbeat
+or Combo said "FALLING ↓" or "TRACK LOST" beside a pulse or a streak. In replays and saved
+videos only Ball Motion and Comet keep it (rising, falling, at the turn), and it goes blank
+while the ball is out of sight. The other styles show their own reading inside the graph and
+have no corner word. The live recording screen still says "ACQUIRING" and "TRACK LOST",
+because there it tells whoever set up the phone that the ball isn't seen.
+
 ## Model
 
 `SessionEditState` gains:
@@ -229,6 +236,8 @@ audio is left out: cues alone, or no audio track at all when no cue plays.
   change, and the reverse.
 - `NewBallEffectsTests.aTrailOfOnePointDrawsNoWake`: each of the six study effects with a
   one-point trail leaves the tile clear away from the ball.
+- `MotionStyleTests.testMissingTrackingDoesNotInventPeaksOrContinueTheBall`: a lost track
+  leaves Ball Motion's corner blank, and only Ball Motion and Comet have a corner word.
 - `MilestoneTests`: milestone touches, the celebration window and pulse; for every counter
   its own deterministic celebration that fades out cleanly, its front layer, a badge motion
   that comes to rest and its own fanfare; the words and levels; the export overlay; settings

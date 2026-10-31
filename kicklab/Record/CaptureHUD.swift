@@ -120,8 +120,11 @@ struct CaptureMetrics: View {
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text(graph.status).font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(Color(cgColor: NormalCounterAppearance.lime))
+                        // Live, "track lost" tells whoever set up the phone that the ball isn't seen.
+                        if let status = duration == nil ? graph.status : motionStyle.status(graph) {
+                            Text(status).font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(Color(cgColor: NormalCounterAppearance.lime))
+                        }
                         Text(motionStyle.measure).font(.system(size: 9, weight: .medium)).foregroundStyle(.white.opacity(0.65))
                     }
                 }
