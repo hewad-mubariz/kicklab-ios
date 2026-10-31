@@ -90,6 +90,31 @@ final class MotionGraphExportTests: XCTestCase {
         }
     }
 
+    /// The sample's fifth bounce is a new best (apex 3.6 s), so at 4.1 s Sky Meter shows NEW BEST!.
+    /// The gold tag must end inside the graph, not run into its right edge and get cut off.
+    @MainActor
+    func testSkyMeterNewBestStaysInsideTheCard() throws {
+        let image = try XCTUnwrap(ExportMotionGraphRenderer.image(style: .skyMeter,
+            snapshot: MotionStyleSample.timeline.snapshot(at: 4.1, duration: 5.6), size: CGSize(width: 1080, height: 1920)))
+        let scale = CGFloat(image.width) / ExportMotionGraphRenderer.cardWidth
+        var pixels = [UInt8](repeating: 0, count: image.width * image.height * 4)
+        let context = try XCTUnwrap(CGContext(data: &pixels, width: image.width, height: image.height, bitsPerComponent: 8,
+            bytesPerRow: image.width * 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        func gold(inColumns columns: Range<Int>) -> Int {
+            var count = 0
+            for y in 0..<image.height { for x in columns {
+                let i = (y * image.width + x) * 4
+                if pixels[i] > 200 && pixels[i + 1] > 140 && pixels[i + 2] < 120 { count += 1 }
+            } }
+            return count
+        }
+        // The graph spans the card's width less its 14 pt padding on each side.
+        let edge = Int(((ExportMotionGraphRenderer.cardWidth - 14) * scale).rounded())
+        XCTAssertGreaterThan(gold(inColumns: (edge - Int(40 * scale))..<(edge - Int(2 * scale))), 0, "NEW BEST! is drawn")
+        XCTAssertEqual(gold(inColumns: (edge - Int(1 * scale))..<edge), 0, "NEW BEST! must not touch the graph's right edge")
+    }
+
     /// Decode the real encoder output: catches dropped graphs and upside-down text.
     func testSavedGraphIsUprightAndOptional() async throws {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

@@ -435,15 +435,20 @@ struct MotionStyleGraph: View {
         let bestLevel = max(snapshot.best, pushing ? live : 0)
         if bestLevel > 0 {
             let by = y(bestLevel), fresh = snapshot.bestAge.map { $0 < 0.9 } ?? false
-            var dashed = Path(); dashed.move(to: CGPoint(x: 24, y: by)); dashed.addLine(to: CGPoint(x: size.width - (size.width < 230 ? 20 : 46), y: by))
+            // Wide graphs tag the line flush right. The crown and the line's end make room for the
+            // tag, so the wider NEW BEST! never runs off the card.
+            let tag = size.width < 230 ? nil : context.resolve(Text(verbatim: fresh ? "NEW BEST!" : "BEST")
+                .font(.system(size: fresh ? 8 : 8.5, weight: .heavy)).foregroundStyle(gold))
+            let tagX = tag.map { size.width - 2 - $0.measure(in: size).width } ?? size.width
+            let crownX = tag == nil ? size.width - 16 : tagX - 15
+            var dashed = Path(); dashed.move(to: CGPoint(x: 24, y: by)); dashed.addLine(to: CGPoint(x: crownX - 4, y: by))
             if fresh || pushing { glow(context, radius: 3).stroke(dashed, with: .color(gold), lineWidth: 3) }
             context.stroke(dashed, with: .color(gold.opacity(0.9)), style: StrokeStyle(lineWidth: 1.2, dash: [5, 3]))
-            if size.width < 230 {
-                symbol("crown.fill", in: CGRect(x: size.width - 16, y: by - 6, width: 12, height: 9), color: gold, in: &context)
+            if let tag {
+                symbol("crown.fill", in: CGRect(x: crownX, y: by - 7, width: 13, height: 10), color: gold, in: &context)
+                context.draw(tag, at: CGPoint(x: tagX, y: by), anchor: .leading)
             } else {
-                symbol("crown.fill", in: CGRect(x: size.width - 42, y: by - 7, width: 13, height: 10), color: gold, in: &context)
-                label(fresh ? "NEW BEST!" : "BEST", at: CGPoint(x: size.width - 27, y: by), in: &context,
-                      size: fresh ? 8 : 8.5, weight: .heavy, color: gold, anchor: .leading)
+                symbol("crown.fill", in: CGRect(x: crownX, y: by - 6, width: 12, height: 9), color: gold, in: &context)
             }
         }
         if let lift = snapshot.lift {
