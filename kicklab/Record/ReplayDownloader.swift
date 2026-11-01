@@ -5,7 +5,8 @@ import SwiftUI
 import UIKit
 
 /// One-tap download from the editor: renders exactly what the editor shows (effects, ball,
-/// environment and counter) at 1080p and saves it to Photos. No Original/Edited choice.
+/// environment and counter) at 1080p, or at the clip's own size and frame rate when chosen, and
+/// saves it to Photos. No Original/Edited choice.
 final class ReplayDownloader: ObservableObject {
     enum Phase: Equatable {
         case idle
@@ -28,6 +29,8 @@ final class ReplayDownloader: ObservableObject {
     /// The saved file, for sharing, and a frame of it for the toast.
     @Published private(set) var savedURL: URL?
     @Published private(set) var thumbnail: CGImage?
+    /// The saved file's size and frame rate, such as "4K · 120 fps", for the toast.
+    @Published private(set) var savedQuality = "1080p"
     private let burnIn = BallStyleBurnIn()
     /// What the last saved file shows; an edit after saving makes the next tap save again.
     private var savedLook: (SessionEditState, ExportOverlaySettings)?
@@ -162,8 +165,15 @@ final class ReplayDownloader: ObservableObject {
         savedURL = url
         savedLook = (edit, overlays)
         thumbnail = await Self.frame(of: url)
+        savedQuality = await Self.quality(of: url) ?? savedQuality
         phase = .saved
         await VideoSaveCompletion.shared.saved()
+    }
+
+    private static func quality(of url: URL) async -> String? {
+        guard let track = try? await AVURLAsset(url: url).loadTracks(withMediaType: .video).first,
+              let size = try? await track.load(.naturalSize), let fps = try? await track.load(.nominalFrameRate) else { return nil }
+        return ExportChoice.label(size: size, fps: Double(fps))
     }
 
     private static func frame(of url: URL) async -> CGImage? {
@@ -182,11 +192,71 @@ struct ReplayDownloadButton: View {
     let progress: Double
     let action: () -> Void
     var needsForeground = false
+    /// Set while a large or fast clip asks how to save: the button stretches into the two choices.
+    var choices: (faster: ExportChoice, original: ExportChoice)?
+    var onChoose: (ExportChoice) -> Void = { _ in }
+    var onCancelChoice: () -> Void = {}
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let lime = Color(red: 0.84, green: 1, blue: 0.42)
+    /// Overshoots a little as the circle stretches into the choices and back.
+    private static let stretch = Animation.spring(response: 0.46, dampingFraction: 0.62)
+
+    private var choosing: Bool { choices != nil && kind == 0 }
 
     var body: some View {
+        ZStack(alignment: .trailing) {
+            if let choices, choosing {
+                choicePill(choices).fixedSize()
+                    // A container keeps each choice's own identifier under the caller's one.
+                    .accessibilityElement(children: .contain)
+                    .transition(.modifier(active: StretchFromTrailing(amount: 0.18), identity: StretchFromTrailing(amount: 1)))
+            } else {
+                downloadButton.transition(.sessionPop(scale: 0.6))
+            }
+        }
+        // While idle the button keeps the circle's width, so the choices grow to the left over the
+        // title instead of pushing the bar's layout; progress widens it as before.
+        .frame(width: kind == 0 ? 44 : nil, alignment: .trailing)
+        .animation(SessionMotion.animation(Self.stretch, reduceMotion: reduceMotion), value: choosing)
+        .sensoryFeedback(.impact(weight: .light), trigger: choosing) { _, new in new }
+    }
+
+    private func choicePill(_ choices: (faster: ExportChoice, original: ExportChoice)) -> some View {
+        HStack(spacing: 6) {
+            Button(action: onCancelChoice) {
+                Image(systemName: "xmark").font(.system(size: 12, weight: .bold)).foregroundStyle(.white)
+                    .frame(width: 32, height: 32)
+                    .background(.white.opacity(0.14), in: .circle)
+            }
+            .buttonStyle(SessionPressStyle(scale: 0.9))
+            .accessibilityLabel(Text("Cancel"))
+            .accessibilityIdentifier("replay-save-cancel")
+            option(choices.original, caption: "Original", primary: false)
+                .accessibilityIdentifier("replay-save-original")
+            option(choices.faster, caption: "Faster", primary: true)
+                .accessibilityIdentifier("replay-save-faster")
+        }
+        .padding(4)
+        .appGlass(in: .capsule)
+    }
+
+    private func option(_ choice: ExportChoice, caption: LocalizedStringKey, primary: Bool) -> some View {
+        Button { onChoose(choice) } label: {
+            VStack(spacing: 0) {
+                Text(verbatim: choice.label).font(.system(size: 12, weight: .bold, design: .rounded)).monospacedDigit()
+                Text(caption).font(.system(size: 9, weight: .semibold)).opacity(0.75)
+            }
+            .foregroundStyle(primary ? Color.black : Color.white)
+            .padding(.horizontal, 12)
+            .frame(height: 36)
+            .background(primary ? lime : Color.white.opacity(0.14), in: .capsule)
+        }
+        .buttonStyle(SessionPressStyle(scale: 0.92))
+        .accessibilityElement(children: .combine)
+    }
+
+    private var downloadButton: some View {
         Button(action: action) {
             ZStack {
                 switch phase {
@@ -418,4 +488,27 @@ struct ReplayShareSheet: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
+}
+
+/// Grows a view sideways out of its trailing edge, as the Download circle stretches into its choices:
+/// a capsule reveals the content without squashing it, and only the spring's overshoot bulges it.
+private struct StretchFromTrailing: ViewModifier, Animatable {
+    var amount: Double
+    var animatableData: Double {
+        get { amount }
+        set { amount = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .mask(alignment: .trailing) {
+                GeometryReader { proxy in
+                    Capsule()
+                        .frame(width: max(proxy.size.height, proxy.size.width * min(amount, 1)))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
+                }
+            }
+            .scaleEffect(x: max(1, amount), y: 1, anchor: .trailing)
+            .opacity(min(1, amount * 2.5))
+    }
 }

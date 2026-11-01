@@ -82,9 +82,9 @@ struct ReplayEffectsView: View {
     /// True while play-from-the-end rewinds; the time observer must not see the old end time.
     @State private var restarting = false
     @State private var showSharePanel = false
-    /// A clip above 1080p or 60 fps offers the faster download or its original size and frame rate.
+    /// A clip above 1080p or 60 fps offers the faster download or its original size and frame rate;
+    /// the Download button stretches into the two while this is set.
     @State private var saveChoices: (faster: ExportChoice, original: ExportChoice)?
-    @State private var choosesSaveSize = false
     @State private var toast: DownloadToast?
     @State private var noticeShown = false
     @State private var shareItem: ReplayShareItem?
@@ -235,15 +235,6 @@ struct ReplayEffectsView: View {
             default: break
             }
         }
-        .confirmationDialog("Save your replay", isPresented: $choosesSaveSize, titleVisibility: .visible,
-                            presenting: saveChoices) { choices in
-            Button("\(choices.faster.label) (faster)") { startDownload(choices.faster) }
-                .accessibilityIdentifier("replay-save-faster")
-            Button("\(choices.original.label) (original)") { startDownload(choices.original) }
-                .accessibilityIdentifier("replay-save-original")
-        } message: { _ in
-            Text("The original keeps the full size and every frame, so it takes longer to save.")
-        }
         .onChange(of: subscriptions.isPro) { _, isPro in
             if !isPro {
                 pendingProTool = nil; selectedSticker = nil
@@ -324,15 +315,22 @@ struct ReplayEffectsView: View {
                         .onTapGesture { prepareVisualEffects() }
                 }
             }
+            // The download choices stretch over the title, which steps aside meanwhile.
+            .opacity(saveChoices == nil ? 1 : 0)
+            .animation(SessionMotion.animation(SessionMotion.fade, reduceMotion: reduceMotion), value: saveChoices == nil)
             Spacer(minLength: 0)
             // Saves what you see in one tap; the button itself shows the progress.
             if LeaderboardRules.touchChecks && showsTouchTools && historySessionID != nil {
                 roundButton("trophy", label: "Submit a leaderboard streak") {
                     pause(); showsLeaderboardSubmission = true
                 }.accessibilityIdentifier("replay-leaderboard-submit")
+                .opacity(saveChoices == nil ? 1 : 0).allowsHitTesting(saveChoices == nil)
+                .animation(SessionMotion.animation(SessionMotion.fade, reduceMotion: reduceMotion), value: saveChoices == nil)
             }
             ReplayDownloadButton(phase: downloader.phase, progress: downloader.progress, action: download,
-                                 needsForeground: downloader.needsForeground)
+                                 needsForeground: downloader.needsForeground, choices: saveChoices,
+                                 onChoose: { choice in saveChoices = nil; startDownload(choice) },
+                                 onCancelChoice: { saveChoices = nil })
                 .accessibilityIdentifier("replay-export")
         }.padding(.horizontal, 20).padding(.top, 8)
     }
@@ -355,7 +353,7 @@ struct ReplayEffectsView: View {
             Task {
                 let choices = (try? await VideoProcessingInfo.load(summary.videoURL)).map(ExportChoice.choices(for:))
                 if let choices, let original = choices.original {
-                    saveChoices = (choices.faster, original); choosesSaveSize = true
+                    saveChoices = (choices.faster, original)
                 } else {
                     startDownload(nil)
                 }
@@ -405,7 +403,7 @@ struct ReplayEffectsView: View {
                 switch toast {
                 case .saved:
                     ReplaySavedToast(thumbnail: downloader.thumbnail,
-                                     detail: "1080p · \(ExportPreviewTime.label(at: duration))")
+                                     detail: "\(downloader.savedQuality) · \(ExportPreviewTime.label(at: duration))")
                 case .failed(let message):
                     ReplaySavedToast(thumbnail: nil, detail: "", failure: message)
                 case .notice(let message):

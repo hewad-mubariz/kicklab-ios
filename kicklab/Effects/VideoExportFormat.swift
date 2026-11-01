@@ -49,6 +49,12 @@ nonisolated struct ExportChoice: Equatable, Sendable {
         return (faster, ExportChoice(shortEdge: nil, maxFrameRate: nil, label: label(short: short, long: long, fps: fps)))
     }
 
+    /// "4K · 120 fps" for a saved video's size and frame rate.
+    static func label(size: CGSize, fps: Double) -> String {
+        let width = Double(abs(size.width)), height = Double(abs(size.height))
+        return label(short: Int(min(width, height).rounded()), long: Int(max(width, height).rounded()), fps: fps)
+    }
+
     private static func label(short: Int, long: Int, fps: Double) -> String {
         let size = long >= 3_840 ? "4K" : short >= 1_440 ? "\(short)p" : short >= 1_080 ? "1080p"
             : short >= 720 ? "720p" : "\(short)p"
