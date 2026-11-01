@@ -12,29 +12,37 @@ final class SessionEffectsPreparation: ObservableObject {
     private var generation = UUID()
     private var source: URL?
 
-    func prepare(_ summary: SessionSummary, for edit: SessionEditState) async throws -> SessionSummary {
+    /// `everyFrame` asks a fast import's replacement ball for a silhouette on every source frame, for
+    /// a download at the original frame rate; otherwise it gets the faster download's 60 fps.
+    func prepare(_ summary: SessionSummary, for edit: SessionEditState, everyFrame: Bool = false) async throws -> SessionSummary {
         guard edit.requiresVisualTrack else { return summary }
-        return try await prepare(summary, dense: edit.usesBallMaterial)
+        return try await prepare(summary, dense: edit.usesBallMaterial, everyFrame: everyFrame)
     }
 
     func prepare(_ summary: SessionSummary) async throws -> SessionSummary {
         try await prepare(summary, dense: true)
     }
 
-    private func prepare(_ summary: SessionSummary, dense: Bool) async throws -> SessionSummary {
+    private func covers(_ result: SessionSummary, dense: Bool, everyFrame: Bool) -> Bool {
+        guard dense else { return true }
+        return !result.visualTrackIsPositionsOnly
+            && (!everyFrame || !result.framesUseCompositionClock || BallVisualRefiner.analysedEveryFrame(result.renderTrack))
+    }
+
+    private func prepare(_ summary: SessionSummary, dense: Bool, everyFrame: Bool = false) async throws -> SessionSummary {
         if source != summary.videoURL { cancel(); prepared = nil; source = summary.videoURL }
         if let prepared, prepared.videoURL == summary.videoURL,
-           !dense || !prepared.visualTrackIsPositionsOnly { return prepared }
+           covers(prepared, dense: dense, everyFrame: everyFrame) { return prepared }
         if let worker {
             let token = generation
             let result = try await worker.value
             try Task.checkCancellation()
             guard generation == token, source == summary.videoURL else { throw CancellationError() }
-            if !dense || !result.visualTrackIsPositionsOnly { return result }
+            if covers(result, dense: dense, everyFrame: everyFrame) { return result }
             // Let the initiating caller publish completion before upgrading.
             while self.worker != nil && generation == token { await Task.yield() }
             guard generation == token else { throw CancellationError() }
-            return try await prepare(summary, dense: true)
+            return try await prepare(summary, dense: true, everyFrame: everyFrame)
         }
         guard summary.needsVisualPreparation || (dense && summary.visualTrackIsPositionsOnly) else {
             prepared = summary; return summary
@@ -58,7 +66,8 @@ final class SessionEffectsPreparation: ObservableObject {
             } else {
                 frames = try await BallVisualRefiner.refineVideo(source: summary.videoURL,
                     frames: summary.visualTrackIsPositionsOnly ? summary.track : summary.renderTrack,
-                    framesUseCompositionClock: summary.framesUseCompositionClock, denseMasks: dense, onProgress: progress)
+                    framesUseCompositionClock: summary.framesUseCompositionClock, denseMasks: dense,
+                    everyFrame: everyFrame, onProgress: progress)
             }
             try Task.checkCancellation()
             var result = summary; result.visualTrack = frames; result.needsVisualPreparation = false

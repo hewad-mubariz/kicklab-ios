@@ -37,6 +37,62 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "%@ (faster)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (schneller)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (más rápido)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (plus rapide)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (mais rápido)"
+          }
+        }
+      }
+    },
+    "%@ (original)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (Original)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (original)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (original)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (original)"
+          }
+        }
+      }
+    },
     "%@ Kenji" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -19178,6 +19234,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Save your replay" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replay sichern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar tu repetición"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer ton replay"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvar seu replay"
+          }
+        }
+      }
+    },
     "Saved %.1f / target %lld fps" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -23048,6 +23132,34 @@
     "The home streak and milestone currently show sample progress. Session history is coming soon." : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "The original keeps the full size and every frame, so it takes longer to save." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Original behält die volle Größe und jedes Bild, daher dauert das Sichern länger."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El original conserva el tamaño completo y todos los fotogramas, así que tarda más en guardarse."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’original garde la taille complète et chaque image, l’enregistrement prend donc plus de temps."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O original mantém o tamanho total e todos os quadros, por isso demora mais para salvar."
+          }
+        }
+      }
     },
     "The original recording has changed. This upload cannot continue." : {
       "localizations" : {

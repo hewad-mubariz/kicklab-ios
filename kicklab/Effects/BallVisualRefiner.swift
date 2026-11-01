@@ -96,44 +96,49 @@ extension BallVisualRefiner {
     /// Revisit the captured track at the same timestamps after recording stops.
     /// The original track remains available to statistics and diagnostics.
     /// `denseMasks` asks for a silhouette on every frame, which a replacement ball needs; effects
-    /// follow positions and do without it on an import counted at 30 fps.
+    /// follow positions and do without it on an import counted at 30 fps. A clip of 100 fps or more
+    /// gets silhouettes at the faster download's 60 fps unless `everyFrame` asks for all of them.
     static func refineVideo(
         source: URL,
         frames: [RecordedFrame],
         framesUseCompositionClock: Bool = false,
         denseMasks: Bool = true,
+        everyFrame: Bool = false,
         onProgress: (@Sendable (Double) -> Void)? = nil
     ) async throws -> [RecordedFrame] {
         try Task.checkCancellation()
         guard !frames.isEmpty else { return [] }
         let content = try SessionAnalysisStore.sourceDigest(source)
         let sparse = framesUseCompositionClock && !analysedEveryFrame(frames)
-        let mode = sparse ? (denseMasks ? "composition-dense" : "composition-positions")
+        var fastClip = false
+        if sparse, denseMasks, !everyFrame { fastClip = try await VideoProcessingInfo.load(source).fps >= 100 }
+        let outlineRate: Double? = fastClip ? ExportChoice.fasterFrameRate : nil
+        let mode = sparse ? (denseMasks ? (outlineRate == nil ? "composition-dense" : "composition-dense-60fps") : "composition-positions")
             : framesUseCompositionClock ? "composition" : frames.contains(where: \.usesBallMasks) ? "capture-masks" : "capture-boxes"
         // Capture-mask reconstruction is independent of the sparse live track.
         // Imports and legacy box refinement depend on their exact seed observations.
         let seed = mode == "capture-masks" ? "" : try SessionAnalysisStore.digest(SessionAnalysisStore.frameData(frames))
         if ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache") {
             return try await computeVideo(source:source,frames:frames,framesUseCompositionClock:framesUseCompositionClock,
-                                          denseMasks:denseMasks,onProgress:onProgress)
+                                          denseMasks:denseMasks,outlineRate:outlineRate,onProgress:onProgress)
         }
         let key = SessionAnalysisStore.digest(Data("visual-v1|\(content)|\(mode)|\(seed)|\(SessionAnalysisStore.visualPipelineSignature())".utf8))
         return try await SessionAnalysisStore.shared.prepare(key: key, onProgress: onProgress ?? { _ in }) { progress in
             try await computeVideo(source: source, frames: frames, framesUseCompositionClock: framesUseCompositionClock,
-                                   denseMasks: denseMasks, onProgress: progress)
+                                   denseMasks: denseMasks, outlineRate: outlineRate, onProgress: progress)
         }
     }
 
     /// Whether some consecutive observations come from consecutive source frames. An import
     /// counted at 30 fps from a faster clip never has them; tracks without identities count as dense.
-    static func analysedEveryFrame(_ frames: [RecordedFrame]) -> Bool {
+    nonisolated static func analysedEveryFrame(_ frames: [RecordedFrame]) -> Bool {
         let indices = frames.filter { !$0.isVisualRecovery }.compactMap { $0.identity?.index }.sorted()
         guard indices.count > 1 else { return true }
         return zip(indices, indices.dropFirst()).contains { $1 - $0 == 1 }
     }
 
     private static func computeVideo(source: URL, frames: [RecordedFrame], framesUseCompositionClock: Bool,
-                                     denseMasks: Bool,
+                                     denseMasks: Bool, outlineRate: Double? = nil,
                                      onProgress: (@Sendable (Double) -> Void)?) async throws -> [RecordedFrame] {
         // Imports have already been analysed on the replay clock. Retain that
         // inference and add only the same appearance repair used by recordings.
@@ -142,7 +147,7 @@ extension BallVisualRefiner {
                 // Counted at 30 fps from a faster clip: effects follow the positions between
                 // counted frames, and a replacement ball reads every frame as recordings do.
                 guard denseMasks else { return frames }
-                let fresh = try await VideoAnalyzer.replayTrack(source: source) { onProgress?($0 * 0.9) }
+                let fresh = try await VideoAnalyzer.replayTrack(source: source, maxFrameRate: outlineRate) { onProgress?($0 * 0.9) }
                 return try await repairMasks(source: source, frames: fresh) { onProgress?(0.9 + $0 * 0.1) }
             }
             return try await repairMasks(source: source, frames: frames, onProgress: onProgress)

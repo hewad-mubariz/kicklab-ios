@@ -121,13 +121,15 @@ final class VideoAnalyzer: ObservableObject {
     /// Rebuild only the editor's visual track from saved pixels on the same
     /// composition clock used by imported videos, replay and export. The caller
     /// retains the live counter, original track and touch markers unchanged.
+    /// `maxFrameRate` reads a faster clip at that rate, keeping the frames a capped download keeps.
     nonisolated static func replayTrack(
         source: URL,
+        maxFrameRate: Double? = nil,
         onProgress: (@Sendable (Double) -> Void)? = nil
     ) async throws -> [RecordedFrame] {
         let task = VideoWorkExecution.detached {
             let analyzer = await VideoAnalyzer()
-            try await analyzer.run(url: source, visualOnly: true, onProgress: onProgress)
+            try await analyzer.run(url: source, visualOnly: true, maxFrameRate: maxFrameRate, onProgress: onProgress)
             return await analyzer.renderTrack
         }
         return try await withTaskCancellationHandler {
@@ -137,7 +139,7 @@ final class VideoAnalyzer: ObservableObject {
         }
     }
 
-    private nonisolated func run(url: URL, visualOnly: Bool = false,
+    private nonisolated func run(url: URL, visualOnly: Bool = false, maxFrameRate: Double? = nil,
                                 onProgress: (@Sendable (Double) -> Void)? = nil) async throws {
         try await VideoAnalysisScheduler.shared.perform {
             // A granted continued-processing job may run after auto-lock.
@@ -148,7 +150,7 @@ final class VideoAnalyzer: ObservableObject {
                 return previous
             }
             do {
-                try await self.runExclusively(url: url, visualOnly: visualOnly, onProgress: onProgress)
+                try await self.runExclusively(url: url, visualOnly: visualOnly, maxFrameRate: maxFrameRate, onProgress: onProgress)
                 await MainActor.run { UIApplication.shared.isIdleTimerDisabled = wasIdleDisabled }
             } catch {
                 await MainActor.run { UIApplication.shared.isIdleTimerDisabled = wasIdleDisabled }
@@ -157,7 +159,7 @@ final class VideoAnalyzer: ObservableObject {
         }
     }
 
-    private nonisolated func runExclusively(url: URL, visualOnly: Bool,
+    private nonisolated func runExclusively(url: URL, visualOnly: Bool, maxFrameRate: Double? = nil,
                                 onProgress: (@Sendable (Double) -> Void)?) async throws {
         try Task.checkCancellation()
         // Security-scoped access is required for files picked outside the app.
@@ -176,13 +178,15 @@ final class VideoAnalyzer: ObservableObject {
         let recoveryRequested = DistantBallVisualRecovery.enabled()
         // A 60, 120 or 240 fps import is counted at 30 fps and keeps its own timestamps. The
         // visual pass, which a replacement ball needs on every frame, still reads them all.
-        let countingSpacing = !visualOnly && info.highFrameRate ? Self.countingSpacing : 0
+        let visualSpacing = maxFrameRate.map { VideoExportFormat.spacing(maxFrameRate: $0, sourceFrameRate: info.fps) } ?? 0
+        let countingSpacing = !visualOnly && info.highFrameRate ? Self.countingSpacing : visualSpacing
         let countedRate = info.highFrameRate ? "|counted-every-\(Self.countingSpacing)s" : ""
         let fullKey = SessionAnalysisStore.digest(Data("inference|\(pipelineSignature)|\(sourceDigest)\(DistantBallVisualRecovery.signature())\(countedRate)".utf8))
         // A visual-only result cannot masquerade as a counted import. A complete
         // import remains a valid source of visual observations in either mode,
         // unless it was counted at 30 fps from a faster clip.
-        let cacheKey = visualOnly ? SessionAnalysisStore.digest(Data("visual-inference|\(visualSignature)|\(sourceDigest)".utf8)) : fullKey
+        let visualRate = visualSpacing > 0 ? "|at-most-\(maxFrameRate ?? 0)fps" : ""
+        let cacheKey = visualOnly ? SessionAnalysisStore.digest(Data("visual-inference|\(visualSignature)|\(sourceDigest)\(visualRate)".utf8)) : fullKey
         #if DEBUG
         let validationFiles = await self.finalTestFiles
         let isFinalValidation = validationFiles != nil
@@ -193,7 +197,7 @@ final class VideoAnalyzer: ObservableObject {
             || ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache")
             || ProcessInfo.processInfo.arguments.contains("--effects-follow-review")
         let cached = bypassCache ? nil : await SessionAnalysisStore.shared.loadInference(key:cacheKey)
-        let fallback = visualOnly && !batchRequested && !info.highFrameRate && cached == nil && !bypassCache
+        let fallback = visualOnly && visualSpacing == 0 && !batchRequested && !info.highFrameRate && cached == nil && !bypassCache
             ? await SessionAnalysisStore.shared.loadInference(key:fullKey) : nil
         if let stored = cached ?? fallback {
             try Task.checkCancellation()

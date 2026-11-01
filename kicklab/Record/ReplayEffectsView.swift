@@ -82,6 +82,9 @@ struct ReplayEffectsView: View {
     /// True while play-from-the-end rewinds; the time observer must not see the old end time.
     @State private var restarting = false
     @State private var showSharePanel = false
+    /// A clip above 1080p or 60 fps offers the faster download or its original size and frame rate.
+    @State private var saveChoices: (faster: ExportChoice, original: ExportChoice)?
+    @State private var choosesSaveSize = false
     @State private var toast: DownloadToast?
     @State private var noticeShown = false
     @State private var shareItem: ReplayShareItem?
@@ -232,6 +235,15 @@ struct ReplayEffectsView: View {
             default: break
             }
         }
+        .confirmationDialog("Save your replay", isPresented: $choosesSaveSize, titleVisibility: .visible,
+                            presenting: saveChoices) { choices in
+            Button("\(choices.faster.label) (faster)") { startDownload(choices.faster) }
+                .accessibilityIdentifier("replay-save-faster")
+            Button("\(choices.original.label) (original)") { startDownload(choices.original) }
+                .accessibilityIdentifier("replay-save-original")
+        } message: { _ in
+            Text("The original keeps the full size and every frame, so it takes longer to save.")
+        }
         .onChange(of: subscriptions.isPro) { _, isPro in
             if !isPro {
                 pendingProTool = nil; selectedSticker = nil
@@ -329,8 +341,6 @@ struct ReplayEffectsView: View {
 
     private func download() {
         guard !downloader.phase.isBusy else { return }
-        let exportLook = committedLook
-        let exportOverlays = resolvedOverlays(exportLook)
         switch downloader.phase {
         case .preparing, .exporting, .saving:
             return
@@ -340,12 +350,27 @@ struct ReplayEffectsView: View {
             showSharePanel = true
         default:
             pause()
-            showToolbox = false; selectedSticker = nil; showSharePanel = false; toast = nil
+            // A prepared stadium scene has its own size and clock, so it saves as before.
+            guard committedLook.edit.scene == nil else { return startDownload(nil) }
             Task {
-                await downloader.download(summary: summary, edit: exportLook.edit, overlays: exportOverlays,
-                                          sceneModel: stadiumPreview, preparation: preparation,
-                                          distanceTimeline: distanceTimeline)
+                let choices = (try? await VideoProcessingInfo.load(summary.videoURL)).map(ExportChoice.choices(for:))
+                if let choices, let original = choices.original {
+                    saveChoices = (choices.faster, original); choosesSaveSize = true
+                } else {
+                    startDownload(nil)
+                }
             }
+        }
+    }
+
+    private func startDownload(_ choice: ExportChoice?) {
+        let exportLook = committedLook
+        let exportOverlays = resolvedOverlays(exportLook)
+        showToolbox = false; selectedSticker = nil; showSharePanel = false; toast = nil
+        Task {
+            await downloader.download(summary: summary, edit: exportLook.edit, overlays: exportOverlays,
+                                      sceneModel: stadiumPreview, preparation: preparation,
+                                      distanceTimeline: distanceTimeline, choice: choice)
         }
     }
 

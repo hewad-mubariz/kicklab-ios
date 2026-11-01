@@ -54,7 +54,7 @@ final class ReplayDownloader: ObservableObject {
 
     func download(summary: SessionSummary, edit: SessionEditState, overlays: ExportOverlaySettings,
                   sceneModel: StadiumPreviewModel, preparation: SessionEffectsPreparation,
-                  distanceTimeline: BallDistanceTimeline? = nil) async {
+                  distanceTimeline: BallDistanceTimeline? = nil, choice: ExportChoice? = nil) async {
         guard !phase.isBusy else { return }
         #if DEBUG
         if FinalTestCoordinator.shared.analysisRunning, FinalTestCoordinator.shared.matches(summary.videoURL) {
@@ -76,7 +76,7 @@ final class ReplayDownloader: ObservableObject {
                 requiresGPU: edit.usesEffects || edit.environment != .original || edit.scene != nil
                     || (edit.usesBallMaterial && summary.needsVisualPreparation && preparation.prepared == nil)) {
                 try await self.performDownload(summary: summary, edit: edit, overlays: overlays,
-                    sceneModel: sceneModel, preparation: preparation, distanceTimeline: distanceTimeline)
+                    sceneModel: sceneModel, preparation: preparation, distanceTimeline: distanceTimeline, choice: choice)
             }
             outcome = .completed
             #if DEBUG
@@ -101,7 +101,7 @@ final class ReplayDownloader: ObservableObject {
 
     private func performDownload(summary: SessionSummary, edit: SessionEditState, overlays: ExportOverlaySettings,
                   sceneModel: StadiumPreviewModel, preparation: SessionEffectsPreparation,
-                  distanceTimeline: BallDistanceTimeline?) async throws {
+                  distanceTimeline: BallDistanceTimeline?, choice: ExportChoice?) async throws {
         needsForeground = VideoWorkExecution.lease?.canContinue != true
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else {
@@ -109,7 +109,7 @@ final class ReplayDownloader: ObservableObject {
         }
         let media: ScenePlayback
         do {
-            let ready = try await preparation.prepare(summary, for: edit)
+            let ready = try await preparation.prepare(summary, for: edit, everyFrame: choice?.keepsEveryFrame == true)
             if let selection = edit.scene {
                 media = try await sceneModel.media(summary: ready, selection: selection)
             } else {
@@ -120,7 +120,8 @@ final class ReplayDownloader: ObservableObject {
         }
         try Task.checkCancellation()
         burnIn.export(source: media.url, track: media.track, style: edit.style, intensity: edit.intensity,
-                      skin: edit.ballSkin, environment: edit.environment, shortEdge: 1080,
+                      skin: edit.ballSkin, environment: edit.environment, shortEdge: choice == nil ? 1080 : choice?.shortEdge,
+                      maxFrameRate: choice?.maxFrameRate,
                       counter: ExportCounterTimeline(touches: summary.touchesMarked, total: summary.touches),
                       overlays: overlays, preserveFrameTimes: edit.scene != nil, distanceTimeline: distanceTimeline,
                       motionTimeline: overlays.graph.enabled ? MotionStyleTimeline(points: summary.track.map {

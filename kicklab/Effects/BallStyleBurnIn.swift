@@ -21,8 +21,8 @@ final class BallStyleBurnIn: ObservableObject {
     }
 
     func export(source: URL, track: [RecordedFrame], style: BallStyle, intensity: Double,
-                skin: BallSkin = .original, environment: EffectEnvironment = .original, shortEdge: Int = 1080,
-                counter: ExportCounterTimeline? = nil, overlays: ExportOverlaySettings? = nil,preserveFrameTimes:Bool=false,
+                skin: BallSkin = .original, environment: EffectEnvironment = .original, shortEdge: Int? = 1080,
+                maxFrameRate: Double? = nil, counter: ExportCounterTimeline? = nil, overlays: ExportOverlaySettings? = nil,preserveFrameTimes:Bool=false,
                 distanceTimeline: BallDistanceTimeline? = nil, motionTimeline: MotionStyleTimeline? = nil,
                 lookChanges: [Int: TouchLook] = [:], swapEffect: BallSwapEffect = .none, soundtrack: ReplaySoundtrack? = nil,
                 clipAudio: Bool = true) {
@@ -36,7 +36,8 @@ final class BallStyleBurnIn: ObservableObject {
                     requiresGPU: Self.drawsEffects(style: style, intensity: intensity, looks: lookChanges) || environment != .original) {
                     let renderTask = VideoWorkExecution.detached {
                         try await Self.render(source: source, track: track, style: style, skin: skin,
-                                              intensity: intensity, environment: environment, shortEdge: shortEdge, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes, distanceTimeline: distanceTimeline, motionTimeline: motionTimeline,
+                                              intensity: intensity, environment: environment, shortEdge: shortEdge,
+                                              maxFrameRate: maxFrameRate, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes, distanceTimeline: distanceTimeline, motionTimeline: motionTimeline,
                                               lookChanges: lookChanges, swapEffect: swapEffect, soundtrack: soundtrack,
                                               clipAudio: clipAudio) { p in
                             VideoWorkExecution.lease?.progress(p, subtitle: p < 0.94 ? String(localized: "Rendering your video", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Finishing video", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
@@ -68,8 +69,11 @@ final class BallStyleBurnIn: ObservableObject {
         intensity > 0 && (style != .none || looks.values.contains { $0.effect != .none })
     }
 
-    nonisolated static func bitrate(for outputSize: CGSize) -> Int {
-        min(outputSize.width, outputSize.height) >= 1080 ? 14_000_000 : 7_000_000
+    nonisolated static func bitrate(for outputSize: CGSize, frameRate: Float = 30) -> Int {
+        let short = min(outputSize.width, outputSize.height)
+        // Above 1080p the original size is saved as HEVC, near the camera's own bitrate.
+        if short > 1080 { return frameRate > 60 ? 60_000_000 : 40_000_000 }
+        return short >= 1080 ? 14_000_000 : 7_000_000
     }
 
     /// Bypass composition only when it would apply neither a transform nor a
@@ -111,7 +115,8 @@ final class BallStyleBurnIn: ObservableObject {
     /// Used by the app and real-video integration harness. Never falls back to an
     /// unedited source when rendering fails. Source audio is muxed back losslessly.
     nonisolated static func render(source: URL, track: [RecordedFrame], style: BallStyle,
-                                  skin: BallSkin = .original, intensity: Double, environment: EffectEnvironment = .original, shortEdge: Int = 1080,
+                                  skin: BallSkin = .original, intensity: Double, environment: EffectEnvironment = .original, shortEdge: Int? = 1080,
+                                  maxFrameRate: Double? = nil,
                                   counter: ExportCounterTimeline? = nil,
                                   overlays: ExportOverlaySettings? = nil,
                                   touchTimes: [Double]? = nil,
@@ -164,7 +169,11 @@ final class BallStyleBurnIn: ObservableObject {
         // AVFoundation drops the QuickTime playback-intent key in MP4 files.
         // High-frame-rate replays need MOV to retain that intent in Photos.
         // A recording gap must not disguise 120/240 fps footage as low-rate MP4.
-        let frameRate = Float(1 / composition.frameDuration.seconds)
+        // A capped download keeps a frame once `spacing` has passed, as the outline pass does.
+        let sourceRate = Double(try await videoTrack.load(.nominalFrameRate))
+        let spacing = maxFrameRate.map { VideoExportFormat.spacing(maxFrameRate: $0, sourceFrameRate: sourceRate) } ?? 0
+        let composedRate = Float(1 / composition.frameDuration.seconds)
+        let frameRate = spacing > 0 ? min(composedRate, Float(maxFrameRate ?? Double(composedRate))) : composedRate
         let fileType = VideoExportFormat.fileType(fps: frameRate)
         let fileExtension = VideoExportFormat.fileExtension(fps: frameRate)
         let silentURL = temp.appendingPathComponent("juggledude-render-\(UUID().uuidString).\(fileExtension)")
@@ -180,11 +189,11 @@ final class BallStyleBurnIn: ObservableObject {
         let playbackIntent = VideoExportFormat.playbackIntent()
         writer.metadata = [playbackIntent]
         let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
-            AVVideoCodecKey: AVVideoCodecType.h264,
+            AVVideoCodecKey: min(size.width, size.height) > 1080 ? AVVideoCodecType.hevc : AVVideoCodecType.h264,
             AVVideoWidthKey: Int(size.width), AVVideoHeightKey: Int(size.height),
             AVVideoColorPropertiesKey: [AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
                 AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2, AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2],
-            AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: bitrate(for: size)]])
+            AVVideoCompressionPropertiesKey: [AVVideoAverageBitRateKey: bitrate(for: size, frameRate: frameRate)]])
         input.expectsMediaDataInRealTime = false
         input.mediaTimeScale = 60_000
         let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: [
@@ -205,11 +214,17 @@ final class BallStyleBurnIn: ObservableObject {
         let engine = needsGPU ? try MetalEffectEngine() : nil
         var ci = engine.map { CIContext(mtlDevice: $0.device, options: [.cacheIntermediates: false]) }
         let canCopyComposedPixels = !preserveFrameTimes && !needsGPU && !usesMaterial
-        var frameCount = 0
+        var frameCount = 0, lastKept = -Double.infinity
         do {
             while true {
                 try await VideoWorkExecution.checkpoint(requiresGPU: needsGPU)
-                guard let buffer = output.copyNextSampleBuffer() else { break }
+                var next: CMSampleBuffer?
+                while next == nil, let sample = output.copyNextSampleBuffer() {
+                    let sampleTime = CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sample))
+                    guard sampleTime - lastKept >= spacing else { continue }
+                    lastKept = sampleTime; next = sample
+                }
+                guard let buffer = next else { break }
                 try Task.checkCancellation()
                 guard let pixels = CMSampleBufferGetImageBuffer(buffer), let pool = adaptor.pixelBufferPool else {
                     throw failure("Missing decoded frame or pixel buffer pool.")

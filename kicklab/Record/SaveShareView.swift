@@ -35,6 +35,8 @@ struct SaveShareView: View {
     private enum Quality: String, CaseIterable, Identifiable {
         case p720 = "720p"
         case p1080 = "1080p"
+        /// The clip's own size and frame rate, offered when it is above 1080p or 60 fps.
+        case original = "Original"
         var id: String { rawValue }
     }
 
@@ -42,6 +44,7 @@ struct SaveShareView: View {
     @State private var isResolving = false
     @State private var showOverlayEditor = false
     @State private var quality: Quality = .p1080
+    @State private var originalChoice: ExportChoice?
     @State private var thumb: UIImage?
     @State private var thumbnailTime: Double = 0
     @State private var sourceSize = CGSize(width: 9, height: 16)
@@ -147,6 +150,9 @@ struct SaveShareView: View {
         .preferredColorScheme(.dark)
         .onAppear { shown = true }
         .task(id: version) { await loadThumb() }
+        .task {
+            originalChoice = (try? await VideoProcessingInfo.load(summary.videoURL)).flatMap { ExportChoice.choices(for: $0).original }
+        }
         .sensoryFeedback(.success, trigger: saves)
         .sheet(item: $sharePayload) { payload in ActivityView(items: [payload.url]) }
         .sheet(isPresented: $showsProPaywall) {
@@ -284,13 +290,20 @@ struct SaveShareView: View {
             Text("Video Quality").font(.system(size: 13, weight: .medium)).foregroundStyle(.white)
             Spacer()
             Picker("Quality", selection: $quality) {
-                ForEach(Quality.allCases) { value in Text(value.rawValue).tag(value) }
+                ForEach(Quality.allCases.filter { $0 != .original || originalChoice != nil }) { value in
+                    Text(qualityLabel(value)).tag(value)
+                }
             }
             .pickerStyle(.menu).tint(.white)
         }
         .padding(.horizontal, 14)
         .frame(height: 46)
         .modifier(SessionPanel())
+    }
+
+    /// 720p and 1080p save at up to 60 fps; the original keeps the clip's size and every frame.
+    private func qualityLabel(_ value: Quality) -> String {
+        value == .original ? originalChoice?.label ?? value.rawValue : value.rawValue
     }
 
     private var previewEdit: SessionEditState {
@@ -343,7 +356,7 @@ struct SaveShareView: View {
         let edited = subscriptions.isPro && version == .edited && edit.isEdited
         let media: ScenePlayback
         do {
-            let ready = edited ? try await preparation.prepare(summary, for: edit) : summary
+            let ready = edited ? try await preparation.prepare(summary, for: edit, everyFrame: quality == .original) : summary
             if edited, let selection = edit.scene {
                 media = try await sceneModel.media(summary: ready, selection: selection)
             } else {
@@ -353,7 +366,8 @@ struct SaveShareView: View {
         guard !Task.isCancelled else { return nil }
         burnIn.export(source: media.url, track: media.track,
             style: edited ? edit.style : .none, intensity: edited ? edit.intensity : 0,
-            skin: edited ? edit.ballSkin : .original, environment: edited ? edit.environment : .original, shortEdge: quality == .p1080 ? 1080 : 720,
+            skin: edited ? edit.ballSkin : .original, environment: edited ? edit.environment : .original, shortEdge: quality == .original ? nil : quality == .p1080 ? 1080 : 720,
+            maxFrameRate: quality == .original ? nil : ExportChoice.fasterFrameRate,
             counter: counterTimeline, overlays: allowedLook.overlays,preserveFrameTimes:edited && edit.scene != nil,
             lookChanges: edited ? edit.lookChanges : [:], swapEffect: edited ? edit.swapEffect : .none,
             soundtrack: ReplaySoundtrack(edit: edited ? edit : SessionEditState(style: .none, intensity: 0),
@@ -395,7 +409,7 @@ struct SaveShareView: View {
                 PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: url)
             }
             let tag = version == .edited && allowedLook.edit.isEdited ? "Edited" : "Original"
-            statusMessage = "Saved \(tag) to Photos (\(quality.rawValue))."
+            statusMessage = "Saved \(tag) to Photos (\(qualityLabel(quality)))."
             celebrateSave()
         } catch {
             statusMessage = "Couldn’t save: \(error.localizedDescription)"

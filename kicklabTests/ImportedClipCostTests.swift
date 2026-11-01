@@ -176,6 +176,84 @@ extension ImportedClipCostTests {
     }
 }
 
+extension ImportedClipCostTests {
+    /// The two download choices for a replacement ball: 60 fps outlines and the faster 1080p · 60 fps
+    /// save, then every-frame outlines and the original size and frame rate. Frames from both videos
+    /// at the same moments are written to Documents/cost-check/frames for a visual check.
+    @MainActor
+    func testDownloadChoicesWithAReplacementBall() async throws {
+        let folder = URL.documentsDirectory.appending(path: "cost-check", directoryHint: .isDirectory)
+        let clip = folder.appending(path: "clip.mov")
+        try XCTSkipUnless(FileManager.default.fileExists(atPath: clip.path), "Copy a clip to Documents/cost-check/clip.mov")
+        let previousIdle = UIApplication.shared.isIdleTimerDisabled
+        UIApplication.shared.isIdleTimerDisabled = true
+        defer { UIApplication.shared.isIdleTimerDisabled = previousIdle }
+        func timed<T>(_ name: String, _ work: () async throws -> T) async rethrows -> T {
+            let start = ProcessInfo.processInfo.systemUptime
+            let value = try await work()
+            note("\(name)_s", (ProcessInfo.processInfo.systemUptime - start).rounded(toPlaces: 1))
+            note("\(name)_thermal_after", ProcessInfo.processInfo.thermalState.rawValue)
+            return value
+        }
+        let analyzer = VideoAnalyzer()
+        analyzer.analyse(url: clip)
+        await analyzer.waitUntilFinished()
+        var summary = SessionSummary.make(touches: analyzer.touchCount, duration: analyzer.videoDuration,
+            bestCombo: analyzer.touchCount, personalBest: analyzer.touchCount, videoURL: clip,
+            touchesMarked: analyzer.recordedTouches, track: analyzer.recordedTrack)
+        summary.framesUseCompositionClock = true
+        summary.needsVisualPreparation = !summary.track.isEmpty
+        let edit = SessionEditState(style: .fire, intensity: 0.8, ballSkin: .lava)
+        let counter = ExportCounterTimeline(touches: summary.touchesMarked, total: summary.touches)
+        let choices = ExportChoice.choices(for: try await VideoProcessingInfo.load(clip))
+        let original = try XCTUnwrap(choices.original)
+        note("choices", "\(choices.faster.label) | \(original.label)")
+        let preparation = SessionEffectsPreparation()
+
+        let faster = try await timed("prepare_60fps") { try await preparation.prepare(summary, for: edit) }
+        note("prepare_60fps_frames", faster.renderTrack.filter { !$0.isVisualMaskRepair && !$0.isVisualRecovery }.count)
+        let fasterTrack = BallEffectTrack(frames: faster.renderTrack, touchTimes: faster.touchesMarked.map(\.time))
+        _ = try await timed("spin_60fps") { try await BallSurfaceTimeline.prepare(source: clip, track: fasterTrack) }
+        let fasterVideo = try await timed("save_faster") {
+            try await BallStyleBurnIn.render(source: clip, track: faster.renderTrack, style: .fire, skin: .lava, intensity: 0.8,
+                                             shortEdge: choices.faster.shortEdge, maxFrameRate: choices.faster.maxFrameRate, counter: counter)
+        }
+        let every = try await timed("prepare_every_frame") { try await preparation.prepare(summary, for: edit, everyFrame: true) }
+        let everyTrack = BallEffectTrack(frames: every.renderTrack, touchTimes: every.touchesMarked.map(\.time))
+        _ = try await timed("spin_every_frame") { try await BallSurfaceTimeline.prepare(source: clip, track: everyTrack) }
+        let originalVideo = try await timed("save_original") {
+            try await BallStyleBurnIn.render(source: clip, track: every.renderTrack, style: .fire, skin: .lava, intensity: 0.8,
+                                             shortEdge: original.shortEdge, maxFrameRate: original.maxFrameRate, counter: counter)
+        }
+        defer { try? FileManager.default.removeItem(at: fasterVideo); try? FileManager.default.removeItem(at: originalVideo) }
+
+        let frames = folder.appending(path: "frames", directoryHint: .isDirectory)
+        try? FileManager.default.removeItem(at: frames)
+        try FileManager.default.createDirectory(at: frames, withIntermediateDirectories: true)
+        for (name, video) in [("faster", fasterVideo), ("original", originalVideo)] {
+            let asset = AVURLAsset(url: video)
+            let tracks = try await asset.loadTracks(withMediaType: .video)
+            let track = try XCTUnwrap(tracks.first)
+            let size = try await track.load(.naturalSize), rate = try await track.load(.nominalFrameRate)
+            let codec = try await track.load(.formatDescriptions).first.map(CMFormatDescriptionGetMediaSubType) ?? 0
+            let bytes = (try FileManager.default.attributesOfItem(atPath: video.path)[.size] as? NSNumber)?.doubleValue ?? 0
+            note("\(name)_video", "\(Int(size.width))x\(Int(size.height)) · \(Int(rate.rounded())) fps · "
+                + (codec == kCMVideoCodecType_HEVC ? "HEVC" : "H.264") + " · \(Int(bytes / 1_048_576)) MB")
+            let generator = AVAssetImageGenerator(asset: asset)
+            generator.requestedTimeToleranceBefore = .zero; generator.requestedTimeToleranceAfter = .zero
+            for seconds in [5.0, 15.9, 30.0] {
+                let image = try await generator.image(at: CMTime(seconds: seconds, preferredTimescale: 600)).image
+                let url = frames.appending(path: "\(name)-\(seconds).jpg")
+                let destination = try XCTUnwrap(CGImageDestinationCreateWithURL(url as CFURL, "public.jpeg" as CFString, 1, nil))
+                CGImageDestinationAddImage(destination, image, [kCGImageDestinationLossyCompressionQuality: 0.85] as CFDictionary)
+                XCTAssertTrue(CGImageDestinationFinalize(destination))
+            }
+        }
+        try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys])
+            .write(to: folder.appending(path: "download-report.json"))
+    }
+}
+
 private extension Double {
     func rounded(toPlaces places: Int) -> Double {
         let scale = pow(10, Double(places))
