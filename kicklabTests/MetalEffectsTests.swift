@@ -303,7 +303,9 @@ struct MetalEffectsTests {
         f.impact = 1; f.impactAge = 0.11
         try engine.render(f,into: target)
         let hit = read(target)
-        #expect(energy(hit) > energy(ordinary)*13/10)
+        // The accepted Effects Lab Neon brightens its strands by up to 28% on contact instead of
+        // flashing a ring; Rainbow still flashes.
+        #expect(energy(hit) > energy(ordinary) * (style == 3 ? 105 : 130) / 100)
         for y in 0..<256 { for x in 0..<192 {
             if hypot(Double(x)+0.5-96,Double(y)+0.5-128) <= 17*0.9 {
                 #expect(hit[(y*192+x)*4+3] == 0)

@@ -329,152 +329,11 @@ float4 electricFX(float2 pixel,constant FXUniforms &u,constant float4 *emitters)
 // Neon: open, asymmetric energy strokes above the ball and a fading wake
 // attached to recorded positions below it. Fine cores, saturated shoulders and
 // local bloom replace the old uniformly thick spring and its broad green fog.
-float4 neonStrokeFX(float d,float width,float strength,float aa) {
-    float bodyWidth=sqrt(width*width+aa*aa);
-    float coreWidth=sqrt(width*width*0.075+aa*aa);
-    float body=lineFX(d,bodyWidth)*width/bodyWidth;
-    float core=lineFX(d,coreWidth)*width*0.274/coreWidth;
-    float glow=lineFX(d,width*3.8);
-    float3 color=float3(0.075,3.4,0.48)*(body+glow*0.15)
-                +float3(4.6,5.2,4.5)*core*1.15;
-    return float4(color,body*0.72+core*0.42+glow*0.13)*strength;
-}
-float2 neonCubicFX(float2 a,float2 b,float2 c,float2 d,float s) {
-    float v=1-s;
-    return a*v*v*v+b*3*v*v*s+c*3*v*s*s+d*s*s*s;
-}
-// Contact response has its own short envelope. It is absent during ordinary
-// fast flight, and its released crescent stays at the historical contact point.
-float4 neonImpactFX(float2 q,constant FXUniforms &u,constant float4 *emitters,float aa) {
-    float age=u.environment.z;
-    if(age<0.0 || age>=0.42 || u.motion.z<=0.001)return 0;
-    float4 birth=wakeEmitterFX(age,emitters);
-    if(birth.w<=0)return 0;
-    float R=max(1.0,u.ball.z),t=u.viewport.z;
-    float envelope=smoothstep(0.035,0.085,age)*pow(saturate(1-age/0.42),1.25)*u.motion.z;
-    float4 light=0;
-    float angle=atan2(q.y,q.x),r=length(q);
-    // The white-green wraps tighten around the ball, brighten at the hit and
-    // open into uneven, fading arcs. No wash across the readable ball face.
-    for(uint j=0;j<3;j++) {
-        float lane=float(j),phase=t*3.0+lane*1.9;
-        float rr=1.10+lane*0.17+age*0.55+0.035*sin(angle*4.0+phase);
-        float gate=0.25+0.75*smoothstep(-0.6,0.65,sin(angle*1.5+phase));
-        light+=neonStrokeFX(abs(r-rr),0.07-lane*0.012,envelope*gate*(3.2-lane*0.6),aa);
-    }
-    float2 origin=(birth.xy-u.ball.xy)/R;
-    float2 p=q-origin;
-    // A broad, open crescent peels away near the contact point, rather than a
-    // permanent orbit. Expansion, thinning and fading use the same event age.
-    float turn=-0.30+0.10*sin((t-age)*1.2);
-    float2 v=float2(p.x*cos(turn)-p.y*sin(turn),p.x*sin(turn)+p.y*cos(turn));
-    for(uint j=0;j<2;j++) {
-        float lane=float(j),reach=1.10+age*6.3+lane*0.18;
-        float2 oval=float2(v.x,v.y/(0.38+lane*0.035));
-        float theta=atan2(oval.y,oval.x);
-        float gate=smoothstep(-0.35,0.5,sin(theta+0.5+age*3.0+lane*0.18));
-        float ripple=0.06*sin(theta*3.0-age*5.0);
-        // Approximate distance to the flattened ellipse, keeping uniform width.
-        float metric=length(float2(cos(theta),sin(theta)/(0.38+lane*0.035)));
-        float d=abs(length(oval)-reach-ripple)/max(1.0,metric);
-        light+=neonStrokeFX(d,(j==0?0.13:0.052)*(1-age),envelope*gate*(j==0?3.0:1.4),aa);
-    }
-    // Charged fragments leave the hit, instead of following the new ball centre.
-    for(uint j=0;j<14;j++) {
-        float id=float(j),theta=id*2.399963+sin((t-age)*0.7)*0.8;
-        float2 dir=float2(cos(theta),sin(theta));
-        float speed=3.0+hashFX(id+37.0)*5.0;
-        float2 point=dir*(1.0+age*speed)+float2(0,-age*0.7+age*age*2.0);
-        float d=segmentDistanceFX(p,point-dir*0.10,point);
-        float sparkle=0.5+0.5*pow(sin(age*22.0+id),2.0);
-        light+=neonStrokeFX(d,0.035+hashFX(id+18.0)*0.018,envelope*sparkle*1.2,aa);
-    }
-    // Soft local spill supports the cores, with no persistent green fog.
-    float spill=lineFX(r-1.24,0.30)*envelope;
-    light+=float4(float3(0.025,0.8,0.09)*spill,spill*0.12);
-    return light;
-}
+// Neon is the accepted Effects Lab version (1 November 2026); NeonEffect.h owns its strands and
+// sparse sparks, so the shared particle pass draws none for it.
+#include "NeonEffect.h"
 float4 neonFX(float2 pixel,constant FXUniforms &u,constant float4 *emitters,float pixelStep) {
-    float R=max(1.0,u.ball.z),t=u.viewport.z;
-    float2 q=(pixel-u.ball.xy)/R;
-    float r=length(q),aa=max(0.007,pixelStep/R*0.55);
-    float4 light=0;
-    float lean=clamp(-u.motion.x*0.023,-0.45,0.45);
-    // Two related, unequal open sweeps. Their ends taper to nothing and the
-    // curves breathe slowly rather than spinning a rigid orbit around the ball.
-    for(uint j=0;j<2;j++) {
-        float lane=float(j),bestD=1e5,bestS=0;
-        float2 prev=0;
-        for(uint i=0;i<=44;i++) {
-            float s=float(i)/44.0;
-            float2 p=neonCubicFX(float2(0.65,-0.82),
-                float2(-2.8-0.15*lane,-0.65),float2(-3.7+0.5*lane,-3.15),
-                float2(-0.65+0.45*sin(t*0.63+lane),-4.85+lane*0.48),s);
-            p.x+=lean*s+sin(s*9.0-t*1.6+lane*0.9)*sin(s*3.14159)*0.12;
-            p.y+=sin(s*7.0+t*1.2+lane)*sin(s*3.14159)*0.12;
-            p+=float2(lane*0.16*sin(s*10.0+t*0.6),lane*0.13*cos(s*9.0+t*0.8));
-            if(i>0) {
-                float2 ab=p-prev;
-                float f=saturate(dot(q-prev,ab)/max(dot(ab,ab),0.0001));
-                float d=length(q-prev-ab*f);
-                if(d<bestD){bestD=d;bestS=(float(i)-1+f)/44.0;}
-            }
-            prev=p;
-        }
-        float taper=smoothstep(0.0,0.065,bestS)*(1-smoothstep(0.62,1.0,bestS));
-        float pulse=pow(0.5+0.5*sin(bestS*16.0+t*3.2+lane),8.0);
-        float width=(j==0?0.048:0.022)*(0.35+0.65*taper);
-        light+=neonStrokeFX(bestD,width,taper*(j==0?1.0:0.55)*(0.62+pulse*1.0),aa);
-        float bead=pow(0.5+0.5*sin(bestS*43.0-t*2.3+lane*4.0),36.0);
-        light+=neonStrokeFX(bestD,0.075,taper*bead*(j==0?0.8:0.35),aa);
-    }
-    // The lower sweeps are emitted by the actual ball path. Old positions stay
-    // in place as the ball moves on; a missing interval breaks the curve.
-    for(uint j=0;j<2;j++) {
-        float lane=float(j),bestD=1e5,bestS=0;
-        float2 prev=0; bool have=false;
-        for(uint i=0;i<=56;i++) {
-            float s=float(i)/56.0,age=s*0.78;
-            float4 e=wakeEmitterFX(age,emitters);
-            if(e.w<=0){have=false;continue;}
-            // Broaden the history filter only for the decorative wake. The
-            // current ball and its tight filaments remain at the exact anchor.
-            float4 earlier=wakeEmitterFX(max(0.0,age-0.045),emitters);
-            float4 later=wakeEmitterFX(min(0.80,age+0.045),emitters);
-            if(earlier.w>0 && later.w>0)
-                e.xy=mix(e.xy,(earlier.xy+e.xy*2+later.xy)*0.25,smoothstep(0.0,0.10,age));
-            float theta=0.65+t*0.85-s*9.4+lane*(0.42+0.22*sin(s*8.0+t));
-            float reach=1.16+0.72*sin(s*3.14159)+0.14*sin(s*11.0-t*1.2);
-            float2 offset=float2(cos(theta)*reach,sin(theta)*reach*(0.54+0.08*sin(t*0.8)));
-            offset+=float2(-0.4*sin(s*3.14159)+lane*0.12,4.1*s+0.35*s*s);
-            float2 p=(e.xy-u.ball.xy)/R+offset;
-            if(have) {
-                float2 ab=p-prev;
-                float f=saturate(dot(q-prev,ab)/max(dot(ab,ab),0.0001));
-                float d=length(q-prev-ab*f);
-                if(d<bestD){bestD=d;bestS=(float(i)-1+f)/56.0;}
-            }
-            prev=p;have=true;
-        }
-        float taper=pow(saturate(1-bestS),0.65)*(1-smoothstep(0.88,1.0,bestS));
-        float pulse=pow(0.5+0.5*sin(bestS*23.0+t*4.0+lane),10.0);
-        float width=(j==0?0.058:0.024)*(0.4+0.6*taper);
-        light+=neonStrokeFX(bestD,width,taper*(j==0?1.18:0.80)*(0.6+1.1*pulse),aa);
-        float bead=pow(0.5+0.5*sin(bestS*55.0+t*3.0+lane*5.0),40.0);
-        light+=neonStrokeFX(bestD,0.080,taper*bead*(j==0?0.85:0.35),aa);
-    }
-    // Irregular broken filaments hug the silhouette without painting the face.
-    float angle=atan2(q.y,q.x);
-    for(uint j=0;j<2;j++) {
-        float lane=float(j);
-        float reach=1.10+lane*0.12+0.035*sin(angle*5+t*2.4+lane)
-            +0.021*sin(angle*9-t*1.6);
-        float gate=smoothstep(-0.75,0.25,sin(angle*2-t*1.5+lane*2.1));
-        light+=neonStrokeFX(abs(r-reach),j==0?0.045:0.026,gate*(j==0?1.0:0.52),aa);
-    }
-    light+=neonImpactFX(q,u,emitters,aa);
-    float mask=smoothstep(0.95,1.06,r);
-    return float4(light.rgb*mask,saturate(light.a)*mask);
+    return neonEffect(pixel,u.viewport,u.ball,u.motion,u.environment.z,emitters,pixelStep);
 }
 
 // ---------------------------------------------------------------------------
@@ -744,63 +603,11 @@ float galaxyDustFX(float2 p,float footprint) {
 // Galaxy: luminous blue-violet nebula strands. Open curls flow around the
 // ball, the wake stays on its recorded path, and detached stars drift away.
 // Large areas between strands remain clear instead of becoming purple fog.
-float4 galaxyFX(float2 pixel,constant FXUniforms &u,constant float4 *emitters,float footprint) {
-    float R=max(1.0,u.ball.z),t=u.viewport.z;
-    float2 q=(pixel-u.ball.xy)/R,w=pixel/max(4.0,u.viewport.y*0.03);
-    float r=length(q),aa=max(0.01,footprint/R*0.60);
-    float4 light=0;float dustEnvelope=0;
-    for(uint j=0;j<2;j++) {
-        float lane=float(j),best=1e6,sd=0,along=0;float2 prev=0;
-        for(uint i=0;i<=40;i++) {
-            float s=float(i)/40.0;
-            float angle=(lane==0?0.15:2.2)-s*(lane==0?2.85:4.1)+sin(t*0.85+lane)*0.23;
-            float reach=1.14+s*s*(lane==0?3.5:2.3);
-            float2 p=float2(cos(angle)*reach,sin(angle)*reach*0.86);
-            p+=float2(sin(s*8.5-t*1.7+lane)*s*0.48,-s*s*(lane==0?2.9:1.6));
-            if(i>0) {
-                float2 ab=p-prev;float f=saturate(dot(q-prev,ab)/max(dot(ab,ab),0.0001));
-                float2 diff=q-prev-ab*f;float d=length(diff);
-                if(d<best){best=d;sd=(ab.x*diff.y-ab.y*diff.x>=0?d:-d);along=(float(i)-1+f)/40.0;}
-            }
-            prev=p;
-        }
-        if(best>1e5)continue;
-        float fade=smoothstep(0.0,0.055,along)*pow(saturate(1-along),0.55);
-        float width=(0.22+0.46*sin(along*3.14159))*(0.2+0.8*sqrt(saturate(1-along)));
-        light+=flowingVeilFX(sd,along,width,fade*1.6,lane,t,aa,true);
-        dustEnvelope=max(dustEnvelope,lineFX(best,width*2.4)*fade);
-    }
-    for(uint j=0;j<2;j++) {
-        float lane=float(j),best=1e6,sd=0,along=0;float2 prev=0;bool have=false;
-        for(uint i=0;i<=32;i++) {
-            float age=float(i)*0.025;float4 e=wakeEmitterFX(age,emitters);
-            if(e.w<=0){have=false;continue;}
-            float birth=t-age,phase=birth*1.55+age*6.3+lane*2.1;
-            float reach=1.06+age*1.35;
-            float2 p=(e.xy-u.ball.xy)/R+float2(cos(phase)*reach,sin(phase)*reach*0.68);
-            p+=float2(sin(birth*1.7+age*4)*age*0.65,-age*(1.3+age*0.8));
-            if(have) {
-                float2 ab=p-prev;float f=saturate(dot(q-prev,ab)/max(dot(ab,ab),0.0001));
-                float2 diff=q-prev-ab*f;float d=length(diff);
-                if(d<best){best=d;sd=(ab.x*diff.y-ab.y*diff.x>=0?d:-d);along=(float(i)-1+f)/32.0;}
-            }
-            prev=p;have=true;
-        }
-        if(best>1e5)continue;
-        float fade=pow(saturate(1-along),0.7),width=0.36+along*0.42;
-        light+=flowingVeilFX(sd,along,width,fade*1.7,lane+3,t,aa,true);
-        dustEnvelope=max(dustEnvelope,lineFX(best,width*2)*fade);
-    }
-    float dust=galaxyDustFX(w*8.0+float2(t*0.20,-t*1.3),footprint/max(4.0,u.viewport.y*0.03)*8.0)*dustEnvelope;
-    light.rgb+=float3(2.0,2.6,4.2)*dust*2.8;light.a+=dust*0.22;
-    float angle=atan2(q.y,q.x);
-    float rim=lineFX(r-(1.07+0.045*sin(angle*4-t*2.3)),0.065);
-    float gate=0.3+0.7*pow(0.5+0.5*sin(angle*3-t*2.0),2.0);
-    light.rgb+=mix(float3(0.20,0.75,3.4),float3(2.8,0.35,3.4),0.5+0.5*sin(angle*2+t))*rim*gate;
-    float pulse=u.environment.z>=0 && u.environment.z<0.42 ? u.motion.z*pow(1-u.environment.z/0.42,1.2):0;
-    light.rgb*=1+pulse*0.8;
-    float mask=smoothstep(0.94,1.06,r);
-    return float4(light.rgb*mask,saturate(light.a)*mask);
+// Galaxy is the accepted Effects Lab version (31 October 2026); GalaxyEffect.h owns its nebula,
+// filaments and free stars, so the shared particle pass draws none for it.
+#include "GalaxyEffect.h"
+float4 galaxyFX(float2 pixel,constant FXUniforms &u,constant float4 *emitters,float pixelStep) {
+    return galaxyEffect(pixel,u.viewport,u.ball,u.motion,u.environment.z,emitters,pixelStep);
 }
 
 // ---------------------------------------------------------------------------

@@ -82,8 +82,8 @@ nonisolated struct EffectFrame: Sendable, Equatable {
         switch style {
         case 1: return 240 // Embers; the flame body is the continuous field.
         case 2: return 110
-        case 3: return 80
-        case 4: return 320
+        case 3: return 0 // Neon draws its own sparks in NeonEffect.h.
+        case 4: return 0 // Galaxy draws its own stars in GalaxyEffect.h.
         case 5: return 160
         case 6: return 36
         case 7: return 80
