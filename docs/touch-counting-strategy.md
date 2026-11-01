@@ -31,6 +31,36 @@ confirmation and short falling-arc continuity are enabled in `CounterConfig`, wi
 the same policy through [ContactCounterFactory](../kicklab/Counting/ContactCounterFactory.swift)
 and [CountingPolicy](../kicklab/Counting/CountingPolicy.swift).
 
+## 1 November: imports counted at 30 fps
+
+The live camera counts at 30 fps. Imports used to be counted on every source frame, so a
+120 fps camera clip ran the detector, pose checks and counter four times as often as live.
+Now a 50 fps or faster import is counted on a frame at least 30 ms after the last counted one
+([VideoAnalyzer](../kicklab/Detection/VideoAnalyzer.swift), `countingSpacing`). Counted frames
+keep their source timestamps and source frame numbers. 30 fps imports are unchanged.
+
+Effects follow the counted positions, which `BallEffectTrack` already interpolates. A replacement
+ball needs a silhouette on every saved frame, so for such an import its preparation reads every
+frame with the visual pass, as recordings do
+([BallVisualRefiner](../kicklab/Effects/BallVisualRefiner.swift)). The saved video keeps the
+source frame rate.
+
+IMG_9064, iPhone 17 Pro Max camera, 52 s, 4K, 120 fps HLG, on the iPhone 17 Pro Max
+([ImportedClipCostTests](../kicklabTests/ImportedClipCostTests.swift), Release build):
+
+| | Every frame | 30 fps |
+| --- | --- | --- |
+| Frames counted | 6,193 | 1,549 |
+| Import analysis | 276 s, phone reached "fair" | 100 s, phone stayed nominal |
+| Touches | 94 | 98 |
+| Preparation for an effect | 41 s | 0.4 s |
+| Preparation for a replacement ball | 41 s | 204 s (reads every frame) |
+
+All 94 every-frame touches were matched within 0.15 s at 30 fps. The four extra touches at
+1.17, 3.94, 15.91 and 20.74 s are foot contacts on visual review that the every-frame count
+missed. This is one clip and one player; it is not a corpus result. Exports are unchanged:
+1080p at the source rate, 41–51 s with an effect and 140 s with Lava + Fire for this clip.
+
 ## V14: ordinary foot contacts and an occluded player
 
 The five-minute walk-through recording exposed two separate problems. A raised

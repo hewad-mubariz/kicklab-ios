@@ -23,7 +23,7 @@ nonisolated struct VideoProcessingInfo: Sendable {
 
     private var longEdge: Double { max(abs(size.width), abs(size.height)) }
     private var highResolution: Bool { longEdge >= 2_560 }
-    private var highFrameRate: Bool { fps.isFinite && fps >= 50 }
+    var highFrameRate: Bool { fps.isFinite && fps >= 50 }
 
     var resolutionLabel: String? {
         guard longEdge.isFinite, longEdge > 0 else { return nil }

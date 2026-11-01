@@ -58,11 +58,13 @@ final class SessionEffectsPreparation: ObservableObject {
             } else {
                 frames = try await BallVisualRefiner.refineVideo(source: summary.videoURL,
                     frames: summary.visualTrackIsPositionsOnly ? summary.track : summary.renderTrack,
-                    framesUseCompositionClock: summary.framesUseCompositionClock, onProgress: progress)
+                    framesUseCompositionClock: summary.framesUseCompositionClock, denseMasks: dense, onProgress: progress)
             }
             try Task.checkCancellation()
             var result = summary; result.visualTrack = frames; result.needsVisualPreparation = false
+            // An import counted at 30 fps keeps positions only until a replacement ball asks for more.
             result.visualTrackIsPositionsOnly = selective
+                || (summary.framesUseCompositionClock && !dense && !BallVisualRefiner.analysedEveryFrame(frames))
             return result
         }
         worker = task

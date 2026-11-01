@@ -52,6 +52,9 @@ final class VideoAnalyzer: ObservableObject {
     @Published private(set) var isCooling = false
     @Published private(set) var canContinueInBackground = false
     private var worker: Task<Void, Never>?
+    /// Shortest gap between counted frames of a 50 fps or faster import, so it is counted at the
+    /// live camera's 30 fps. Zero counts every frame, for comparisons.
+    nonisolated(unsafe) static var countingSpacing = 0.03
 
     #if DEBUG
     var finalTestFiles: FinalTestFiles?
@@ -171,9 +174,14 @@ final class VideoAnalyzer: ObservableObject {
         let asyncBatchRequested = batchRequested && ProcessInfo.processInfo.arguments.contains("--visual-async2")
         let visualSignature = SessionAnalysisStore.visualPipelineSignature()
         let recoveryRequested = DistantBallVisualRecovery.enabled()
-        let fullKey = SessionAnalysisStore.digest(Data("inference|\(pipelineSignature)|\(sourceDigest)\(DistantBallVisualRecovery.signature())".utf8))
+        // A 60, 120 or 240 fps import is counted at 30 fps and keeps its own timestamps. The
+        // visual pass, which a replacement ball needs on every frame, still reads them all.
+        let countingSpacing = !visualOnly && info.highFrameRate ? Self.countingSpacing : 0
+        let countedRate = info.highFrameRate ? "|counted-every-\(Self.countingSpacing)s" : ""
+        let fullKey = SessionAnalysisStore.digest(Data("inference|\(pipelineSignature)|\(sourceDigest)\(DistantBallVisualRecovery.signature())\(countedRate)".utf8))
         // A visual-only result cannot masquerade as a counted import. A complete
-        // import remains a valid source of visual observations in either mode.
+        // import remains a valid source of visual observations in either mode,
+        // unless it was counted at 30 fps from a faster clip.
         let cacheKey = visualOnly ? SessionAnalysisStore.digest(Data("visual-inference|\(visualSignature)|\(sourceDigest)".utf8)) : fullKey
         #if DEBUG
         let validationFiles = await self.finalTestFiles
@@ -185,7 +193,7 @@ final class VideoAnalyzer: ObservableObject {
             || ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache")
             || ProcessInfo.processInfo.arguments.contains("--effects-follow-review")
         let cached = bypassCache ? nil : await SessionAnalysisStore.shared.loadInference(key:cacheKey)
-        let fallback = visualOnly && !batchRequested && cached == nil && !bypassCache
+        let fallback = visualOnly && !batchRequested && !info.highFrameRate && cached == nil && !bypassCache
             ? await SessionAnalysisStore.shared.loadInference(key:fullKey) : nil
         if let stored = cached ?? fallback {
             try Task.checkCancellation()
@@ -225,9 +233,8 @@ final class VideoAnalyzer: ObservableObject {
                           userInfo: [NSLocalizedDescriptionKey: "no video track"])
         }
         let duration = try await asset.load(.duration)
-        let nominalFps = try await track.load(.nominalFrameRate)
-        let fps = nominalFps > 0 ? Double(nominalFps) : 30.0
-        let total = max(1.0, CMTimeGetSeconds(duration) * fps)
+        // Progress follows the clip's time, since a fast clip is not counted frame by frame.
+        let total = max(0.001, CMTimeGetSeconds(duration))
 
         let reader = try AVAssetReader(asset: asset)
         let output = AVAssetReaderVideoCompositionOutput(
@@ -285,7 +292,8 @@ final class VideoAnalyzer: ObservableObject {
 
         var maskBytes = 0
         var consecutiveFailures = 0
-        var pendingSamples=[CMSampleBuffer](), pendingPredictions=[BallDetector.PreparedFrame]()
+        var pendingSamples=[CMSampleBuffer](), pendingSourceFrames=[Int](), pendingPredictions=[BallDetector.PreparedFrame]()
+        var sourceFrame = -1, lastCounted = -Double.infinity, analysedTime = 0.0
         while true {
             let frameStarted = try await pacer.beginFrame { cooling in
                 await MainActor.run { self.isCooling = cooling }
@@ -294,8 +302,15 @@ final class VideoAnalyzer: ObservableObject {
                 try Task.checkCancellation()
                 let readStart = ProcessInfo.processInfo.systemUptime
                 for _ in 0..<(batchEnabled ? 2 : 1) {
-                    guard let sample=output.copyNextSampleBuffer() else { break }
-                    if CMSampleBufferGetImageBuffer(sample) != nil { pendingSamples.append(sample) }
+                    var next: CMSampleBuffer?
+                    while next == nil, let sample=output.copyNextSampleBuffer() {
+                        guard CMSampleBufferGetImageBuffer(sample) != nil else { continue }
+                        sourceFrame += 1
+                        guard sample.presentationTimeStamp.seconds - lastCounted >= countingSpacing else { continue }
+                        lastCounted = sample.presentationTimeStamp.seconds; next = sample
+                    }
+                    guard let next else { break }
+                    pendingSamples.append(next); pendingSourceFrames.append(sourceFrame)
                 }
                 decodeSeconds += ProcessInfo.processInfo.systemUptime-readStart
                 if pendingSamples.isEmpty {
@@ -317,12 +332,13 @@ final class VideoAnalyzer: ObservableObject {
                     }
                 }
             }
-            let sample=pendingSamples.removeFirst()
+            let sample=pendingSamples.removeFirst(), sourceIndex=pendingSourceFrames.removeFirst()
             let prepared=pendingPredictions.isEmpty ? nil : pendingPredictions.removeFirst()
             try Task.checkCancellation()
             guard let pixels = CMSampleBufferGetImageBuffer(sample) else { continue }
             let stampMs = Int(CMTimeGetSeconds(
                 CMSampleBufferGetPresentationTimeStamp(sample)) * 1000)
+            analysedTime = Double(stampMs) / 1000
 
             var detectionFailed = false
             var found = autoreleasepool { () -> FrameDetections in
@@ -391,7 +407,7 @@ final class VideoAnalyzer: ObservableObject {
             contactSeconds += ProcessInfo.processInfo.systemUptime - contactStart
             let counterStart = ProcessInfo.processInfo.systemUptime
             let confirmed = counter.push(frameIndex: index, timestampMs: stampMs,
-                ball: ball, person: person, cameraOffsetY: shift, reliable: !compensator.isTooShaky, sourceFrameIndex: index, player: player)
+                ball: ball, person: person, cameraOffsetY: shift, reliable: !compensator.isTooShaky, sourceFrameIndex: sourceIndex, player: player)
             counterSeconds += ProcessInfo.processInfo.systemUptime - counterStart
             maskBytes += (found.ballMask?.alpha.count ?? 0) + (visual?.ballMask?.alpha.count ?? 0)
             if let detection = found.ball {
@@ -401,7 +417,7 @@ final class VideoAnalyzer: ObservableObject {
                     smoothedX: counter.lastPoint?.x ?? b.x, smoothedY: counter.lastPoint?.y ?? b.y,
                     vy: counter.lastPoint?.vy ?? 0, motion: counter.lastPoint?.motion ?? .unknown,
                     detected: true, person: person, ballMask: found.ballMask, usesBallMasks: found.usesBallMasks,
-                    identity: RecordedFrameIdentity(index:index, time:CMSampleBufferGetPresentationTimeStamp(sample),
+                    identity: RecordedFrameIdentity(index:sourceIndex, time:CMSampleBufferGetPresentationTimeStamp(sample),
                         width:CVPixelBufferGetWidth(pixels),height:CVPixelBufferGetHeight(pixels),coordinates:"composition-720-sdr-v1")))
             }
             if let b = visual?.ball, let mask = visual?.ballMask {
@@ -409,7 +425,7 @@ final class VideoAnalyzer: ObservableObject {
                     width: b.width, height: b.height, score: b.score,
                     smoothedX: b.x, smoothedY: b.y, vy: 0, motion: .unknown,
                     detected: true, person: person, ballMask: mask, usesBallMasks: true, isVisualRecovery: true,
-                    identity: RecordedFrameIdentity(index:index,time:CMSampleBufferGetPresentationTimeStamp(sample),
+                    identity: RecordedFrameIdentity(index:sourceIndex,time:CMSampleBufferGetPresentationTimeStamp(sample),
                         width:CVPixelBufferGetWidth(pixels),height:CVPixelBufferGetHeight(pixels),coordinates:"composition-720-sdr-v1")))
             }
             touches.append(contentsOf: confirmed.map {
@@ -422,6 +438,7 @@ final class VideoAnalyzer: ObservableObject {
                 let publishStart = ProcessInfo.processInfo.systemUptime
                 let snapshot = (index, counter.count, detected, peak,
                                 plausibility.rejectedSize + plausibility.rejectedJump)
+                let fraction = min(1.0, analysedTime / total)
                 #if DEBUG
                 let profile: [String: Double] = [
                     "cpu_only": VideoWorkExecution.cpuOnly ? 1 : 0,
@@ -446,11 +463,11 @@ final class VideoAnalyzer: ObservableObject {
                     self.detections = snapshot.2
                     self.peakScore = snapshot.3
                     self.dropped = snapshot.4
-                    self.progress = min(1.0, Double(snapshot.0) / total)
+                    self.progress = fraction
                     self.status = "analysing…"
                 }
-                VideoWorkExecution.lease?.progress(min(0.95, Double(snapshot.0) / total), subtitle: String(localized: "Analysing your video", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
-                onProgress?(min(1.0, Double(snapshot.0) / total))
+                VideoWorkExecution.lease?.progress(min(0.95, fraction), subtitle: String(localized: "Analysing your video", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
+                onProgress?(fraction)
                 publishSeconds += ProcessInfo.processInfo.systemUptime - publishStart
             }
         }
