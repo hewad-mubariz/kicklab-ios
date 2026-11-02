@@ -332,9 +332,6 @@ float4 electricFX(float2 pixel,constant FXUniforms &u,constant float4 *emitters)
 // Neon is the accepted Effects Lab version (1 November 2026); NeonEffect.h owns its strands and
 // sparse sparks, so the shared particle pass draws none for it.
 #include "NeonEffect.h"
-float4 neonFX(float2 pixel,constant FXUniforms &u,constant float4 *emitters,float pixelStep) {
-    return neonEffect(pixel,u.viewport,u.ball,u.motion,u.environment.z,emitters,pixelStep);
-}
 
 // ---------------------------------------------------------------------------
 // Rainbow owns a spectral ribbon material: ordered colours across a rolling
@@ -606,8 +603,18 @@ float galaxyDustFX(float2 p,float footprint) {
 // Galaxy is the accepted Effects Lab version (31 October 2026); GalaxyEffect.h owns its nebula,
 // filaments and free stars, so the shared particle pass draws none for it.
 #include "GalaxyEffect.h"
-float4 galaxyFX(float2 pixel,constant FXUniforms &u,constant float4 *emitters,float pixelStep) {
-    return galaxyEffect(pixel,u.viewport,u.ball,u.motion,u.environment.z,emitters,pixelStep);
+#include "EffectPaths.h"
+float4 neonFX(float2 pixel,constant FXUniforms &u,constant float4 *path,float pixelStep) {
+    return neonEffectPath(pixel,u.viewport,u.ball,u.motion,u.environment.z,path,pixelStep);
+}
+float4 galaxyFX(float2 pixel,constant FXUniforms &u,constant float4 *path,float pixelStep) {
+    return galaxyEffectPath(pixel,u.viewport,u.ball,u.motion,u.environment.z,path,pixelStep);
+}
+/// One thread per Neon or Galaxy path entry (EffectPaths.h), once per frame before fxEmission.
+kernel void fxEffectPath(device float4 *path [[buffer(3)]], constant FXUniforms &u [[buffer(0)]],
+                         constant float4 *emitters [[buffer(2)]], uint id [[thread_position_in_grid]]) {
+    if (u.motion.w==3) neonPath(id,u.viewport,u.ball,emitters,path);
+    else if (u.motion.w==4) galaxyPath(id,u.viewport,u.ball,emitters,path);
 }
 
 // ---------------------------------------------------------------------------
@@ -1064,7 +1071,8 @@ float4 distinctMaterialFX(float2 pixel, constant FXUniforms &u,
 kernel void fxEmission(texture2d<half,access::write> out [[texture(0)]],
                        texture3d<float> noise [[texture(1)]],
                        constant FXUniforms &u [[buffer(0)]], constant float4 *trail [[buffer(1)]],
-                       constant float4 *emitters [[buffer(2)]], uint2 gid [[thread_position_in_grid]]) {
+                       constant float4 *emitters [[buffer(2)]], constant float4 *path [[buffer(3)]],
+                       uint2 gid [[thread_position_in_grid]]) {
     if (gid.x>=out.get_width() || gid.y>=out.get_height()) return;
     float2 pixel = u.region.xy + (float2(gid)+0.5)/float2(out.get_width(),out.get_height()) * u.region.zw;
     float4 result = 0;
@@ -1085,11 +1093,11 @@ kernel void fxEmission(texture2d<half,access::write> out [[texture(0)]],
                : u.motion.w==15 ? flameRibbonFX(pixel,u,emitters,u.region.z/float(out.get_width()))
                : u.motion.w==16 ? heatPulseFX(pixel,u,emitters,u.region.z/float(out.get_width()))
                : u.motion.w==5 ? electricFX(pixel,u,emitters)
-               : u.motion.w==3 ? neonFX(pixel,u,emitters,u.region.z/float(out.get_width()))
+               : u.motion.w==3 ? neonFX(pixel,u,path,u.region.z/float(out.get_width()))
                : u.motion.w==8 ? rainbowFX(pixel,u,emitters,u.region.z/float(out.get_width()))
                : u.motion.w==9 ? pixelFX(pixel,u,emitters)
                : u.motion.w==6 ? auraFX(pixel,u,emitters,u.region.z/float(out.get_width()))
-               : u.motion.w==4 ? galaxyFX(pixel,u,emitters,u.region.z/float(out.get_width()))
+               : u.motion.w==4 ? galaxyFX(pixel,u,path,u.region.z/float(out.get_width()))
                : u.motion.w==10 ? natureFX(pixel,u,emitters)
                : u.motion.w==2 ? iceFX(pixel,u,emitters,u.region.z/float(out.get_width()))
                : u.motion.w==7 ? shadowFX(pixel,u,emitters)

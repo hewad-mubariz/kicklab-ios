@@ -15,16 +15,37 @@ final class LabEffectParityTests: XCTestCase {
 
     private static let demo = URL(fileURLWithPath: "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/launch-demo-20261011")
 
-    private func track(_ url: URL? = nil) throws -> BallEffectTrack {
+    private func recorded(_ url: URL? = nil) throws -> (frames: [RecordedFrame], touches: [Double]) {
         let url = url ?? Self.demo.appending(path: "analysis-native.json")
         let analysis = try JSONDecoder().decode(Analysis.self, from: Data(contentsOf: url))
-        return BallEffectTrack(frames: analysis.track.map { p in
+        return (analysis.track.map { p in
             let person: PersonBox? = if let x = p.personX, let y = p.personY, let w = p.personWidth, let h = p.personHeight {
                 PersonBox(x: x, y: y, width: w, height: h)
             } else { nil }
             return RecordedFrame(time: p.time, x: p.x, y: p.y, width: p.width, height: p.height, score: p.score,
                                  smoothedX: p.x, smoothedY: p.y, vy: 0, motion: .unknown, detected: p.score >= 0.05, person: person)
-        }, touchTimes: analysis.touchesMarked.map(\.time))
+        }, analysis.touchesMarked.map(\.time))
+    }
+
+    private func track(_ url: URL? = nil) throws -> BallEffectTrack {
+        let (frames, touches) = try recorded(url)
+        return BallEffectTrack(frames: frames, touchTimes: touches)
+    }
+
+    /// The launch demo with one lab skin, through the app's full export (ball replacement included),
+    /// at the lab footage renders' 1080p 30 fps. Set LAB_PARITY_SKIN (a BallSkin raw value) and LAB_PARITY_OUT.
+    func testRenderLaunchDemoWithSkin() async throws {
+        let environment = ProcessInfo.processInfo.environment
+        guard let name = environment["LAB_PARITY_SKIN"], let folder = environment["LAB_PARITY_OUT"],
+              let skin = BallSkin(rawValue: name) else { throw XCTSkip("Set LAB_PARITY_SKIN and LAB_PARITY_OUT") }
+        let (frames, touches) = try recorded()
+        // LAB_PARITY_SOURCE may point at a trimmed copy of the demo to shorten the run.
+        let source = environment["LAB_PARITY_SOURCE"].map { URL(fileURLWithPath: $0) } ?? Self.demo.appending(path: "v2/source-1080p120.mp4")
+        let made = try await BallStyleBurnIn.render(source: source, track: frames,
+                                                    style: .none, skin: skin, intensity: 0.7, maxFrameRate: 30, touchTimes: touches)
+        let output = URL(fileURLWithPath: folder).appending(path: "\(name)-app.mp4")
+        try? FileManager.default.removeItem(at: output)
+        try FileManager.default.moveItem(at: made, to: output)
     }
 
     /// On the phone: 10 seconds of the launch demo at export size for each new effect, timing the
@@ -93,6 +114,18 @@ final class LabEffectParityTests: XCTestCase {
     }
 
     /// The picker icons of the lab effects, written as PNGs next to the renders.
+    /// Water's flat neighbour grid must give the lab's dictionary-grid kernels bit for bit.
+    func testWaterKernelsMatchTheLabGrid() {
+        func bits(_ k: WaterOptics.Kernel) -> [UInt32] { [k.shape, k.quadric0, k.quadric1].flatMap { v in (0..<4).map { v[$0].bitPattern } } }
+        WaterCrown.prepareAll()
+        for (age, seed) in [(Float(0.02), 0), (0.2, 3), (0.45, 7), (0.7, 11)] {
+            let atoms = WaterCrown.sample(age: age, seed: seed)
+            let flat = WaterOptics.kernels(atoms), lab = WaterOptics.sparseKernels(atoms, h: 0.32)
+            XCTAssertEqual(flat.count, lab.count)
+            XCTAssertEqual(zip(flat, lab).filter { bits($0) != bits($1) }.count, 0, "age \(age) seed \(seed)")
+        }
+    }
+
     func testLabEffectIcons() throws {
         guard let folder = ProcessInfo.processInfo.environment["LAB_PARITY_OUT"] else { throw XCTSkip("Set LAB_PARITY_OUT") }
         let engine = try MetalEffectEngine()

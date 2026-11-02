@@ -17,6 +17,8 @@ nonisolated final class MetalEffectEngine {
         let device: MTLDevice
         let queue: MTLCommandQueue
         let emission: MTLComputePipelineState
+        /// Neon's and Galaxy's per-frame strands (EffectPaths.h), which fxEmission reads.
+        let effectPath: MTLComputePipelineState
         let resolve: MTLComputePipelineState
         let composite: MTLComputePipelineState
         let shotCamera: MTLComputePipelineState?
@@ -44,6 +46,7 @@ nonisolated final class MetalEffectEngine {
             }
             emission = try kernel("fxEmission"); resolve = try kernel("fxResolve"); composite = try kernel("fxComposite")
             shotCamera = library.makeFunction(name: "fxShotCamera").map { try? device.makeComputePipelineState(function: $0) } ?? nil
+            effectPath = try kernel("fxEffectPath")
             let desc = MTLRenderPipelineDescriptor()
             desc.vertexFunction = library.makeFunction(name: "fxParticleVertex")
             desc.fragmentFunction = library.makeFunction(name: "fxParticleFragment")
@@ -91,6 +94,8 @@ nonisolated final class MetalEffectEngine {
     let resources: Resources
     var device: MTLDevice { resources.device }
     private var emission: MTLTexture?
+    /// fxEffectPath's output: 311 float4 for Neon, 224 for Galaxy (EffectPaths.h).
+    private var paths: MTLBuffer?
     private var near: MTLTexture?
     private var far: MTLTexture?
     private var cache: CVMetalTextureCache?
@@ -265,18 +270,34 @@ nonisolated final class MetalEffectEngine {
             return
         }
         try prepare(frame)
-        guard let emission, let near, let far, let first = command.makeComputeCommandEncoder() else {
-            throw Failure.unavailable("Cannot encode the effects volume.")
-        }
         var u = frame.uniforms
         u.environment.y = material == nil ? 0 : 1
         var history = Array(frame.trail.suffix(64))
         let emitters = frame.emissionHistory
         if history.isEmpty { history = [.zero] }
+        if paths == nil { paths = device.makeBuffer(length: 320 * MemoryLayout<SIMD4<Float>>.stride, options: .storageModePrivate) }
+        guard let paths else { throw Failure.unavailable("Cannot allocate effect paths.") }
+        // Neon and Galaxy strands depend on the frame, not the pixel: build them once, then shade.
+        if frame.style == 3 || frame.style == 4 {
+            guard let build = command.makeComputeCommandEncoder() else { throw Failure.unavailable("Cannot encode effect paths.") }
+            let pipeline = resources.effectPath
+            build.label = "Effect paths"
+            build.setComputePipelineState(pipeline)
+            build.setBytes(&u, length: MemoryLayout<EffectUniforms>.stride, index: 0)
+            emitters.withUnsafeBytes { build.setBytes($0.baseAddress!, length: $0.count, index: 2) }
+            build.setBuffer(paths, offset: 0, index: 3)
+            build.dispatchThreads(MTLSize(width: 320, height: 1, depth: 1),
+                                  threadsPerThreadgroup: MTLSize(width: min(320, pipeline.maxTotalThreadsPerThreadgroup), height: 1, depth: 1))
+            build.endEncoding()
+        }
+        guard let emission, let near, let far, let first = command.makeComputeCommandEncoder() else {
+            throw Failure.unavailable("Cannot encode the effects volume.")
+        }
         first.label = "Effect material"
         first.setBytes(&u, length: MemoryLayout<EffectUniforms>.stride, index: 0)
         history.withUnsafeBytes { first.setBytes($0.baseAddress!, length: $0.count, index: 1) }
         emitters.withUnsafeBytes { first.setBytes($0.baseAddress!, length: $0.count, index: 2) }
+        first.setBuffer(paths, offset: 0, index: 3)
         first.setTexture(emission, index: 0); first.setTexture(resources.noise, index: 1)
         dispatch(first, resources.emission, emission)
         let pass = MTLRenderPassDescriptor()

@@ -106,6 +106,14 @@ nonisolated final class WaterLabRenderer {
         splat.setVertexBuffer(buffer,offset:0,index:1)
         if !frame.parts.isEmpty {splat.drawPrimitives(type:.triangle,vertexStart:0,vertexCount:6,instanceCount:frame.parts.count)}
         splat.endEncoding()
+        // Over footage only the splash bounds are shaded (the scissor below). The filters reach 12
+        // pixels and the shading 1 more, so filtering the bounds plus 16 gives the same shaded pixels.
+        let shaded=bounds(frame,width:target.width,height:target.height)
+        let x0=source == nil ? 0:max(0,shaded.x-16),y0=source == nil ? 0:max(0,shaded.y-16)
+        let x1=source == nil ? target.width:min(target.width,shaded.x+shaded.width+16)
+        let y1=source == nil ? target.height:min(target.height,shaded.y+shaded.height+16)
+        var origin=SIMD2<UInt32>(UInt32(x0),UInt32(y0))
+        let filterSize=MTLSize(width:x1-x0,height:y1-y0,depth:1)
         // Smooth the particle-scale quilting before reconstructing optical normals.
         // This filters the changing water field, never the source footage.
         for direction in 0..<2 {
@@ -115,7 +123,8 @@ nonisolated final class WaterLabRenderer {
             e.setTexture(direction==0 ? temporary:filtered,index:1)
             var data=SIMD4<Float>(Float(direction),max(0.7,uniforms.ball.z*0.024),0,0)
             e.setBytes(&data,length:MemoryLayout<SIMD4<Float>>.stride,index:0)
-            e.dispatchThreads(MTLSize(width:target.width,height:target.height,depth:1),threadsPerThreadgroup:MTLSize(width:16,height:16,depth:1));e.endEncoding()
+            e.setBytes(&origin,length:MemoryLayout<SIMD2<UInt32>>.stride,index:1)
+            e.dispatchThreads(filterSize,threadsPerThreadgroup:MTLSize(width:16,height:16,depth:1));e.endEncoding()
         }
         let frontPass=MTLRenderPassDescriptor();frontPass.colorAttachments[0].texture=front
         frontPass.colorAttachments[0].loadAction = .clear;frontPass.colorAttachments[0].storeAction = .store
@@ -131,13 +140,14 @@ nonisolated final class WaterLabRenderer {
             e.setTexture(iteration%2==0 ? frontTemp:frontFiltered,index:1)
             var data=SIMD4<Float>(Float(iteration%2),max(1,uniforms.ball.z*0.030),max(2,uniforms.ball.z*0.20),0)
             e.setBytes(&data,length:MemoryLayout<SIMD4<Float>>.stride,index:0)
-            e.dispatchThreads(MTLSize(width:target.width,height:target.height,depth:1),threadsPerThreadgroup:MTLSize(width:16,height:16,depth:1));e.endEncoding()
+            e.setBytes(&origin,length:MemoryLayout<SIMD2<UInt32>>.stride,index:1)
+            e.dispatchThreads(filterSize,threadsPerThreadgroup:MTLSize(width:16,height:16,depth:1));e.endEncoding()
         }
         let pass=MTLRenderPassDescriptor();pass.colorAttachments[0].texture=target
         pass.colorAttachments[0].loadAction=source == nil ? .dontCare:.load;pass.colorAttachments[0].storeAction = .store
         let e=command.makeRenderCommandEncoder(descriptor:pass)!
         e.setRenderPipelineState(pipeline)
-        if source != nil {e.setScissorRect(bounds(frame,width:target.width,height:target.height))}
+        if source != nil {e.setScissorRect(shaded)}
         e.setFragmentBytes(&uniforms,length:MemoryLayout<WaterUniforms>.stride,index:0)
         e.setFragmentTexture(source ?? dummy,index:0);e.setFragmentTexture(filtered,index:1);e.setFragmentTexture(frontFiltered,index:2)
         e.drawPrimitives(type:.triangle,vertexStart:0,vertexCount:3)

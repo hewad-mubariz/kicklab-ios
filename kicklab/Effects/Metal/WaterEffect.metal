@@ -32,7 +32,9 @@ fragment float4 waterFragment(WaterVertex in [[stage_in]],constant WaterUniforms
 // Separable reconstruction keeps fluid continuous while softening voxel-sized ridges.
 kernel void waterSmooth(texture2d<float,access::read> src [[texture(0)]],
                         texture2d<float,access::write> dst [[texture(1)]],
-                        constant float4 &data [[buffer(0)]],uint2 p [[thread_position_in_grid]]) {
+                        constant float4 &data [[buffer(0)]],constant uint2 &origin [[buffer(1)]],
+                        uint2 gid [[thread_position_in_grid]]) {
+    uint2 p=gid+origin;
     if(p.x>=dst.get_width() || p.y>=dst.get_height()) return;
     float4 value=0;float total=0;float sigma=data.y;
     int radius=min(8,int(ceil(sigma*2.5)));
@@ -137,7 +139,9 @@ fragment float4 waterFrontFragment(WaterFront in [[stage_in]]) {
 }
 kernel void waterBilateral(texture2d<float,access::read> src [[texture(0)]],
                            texture2d<float,access::write> dst [[texture(1)]],
-                           constant float4 &data [[buffer(0)]],uint2 p [[thread_position_in_grid]]) {
+                           constant float4 &data [[buffer(0)]],constant uint2 &origin [[buffer(1)]],
+                           uint2 gid [[thread_position_in_grid]]) {
+    uint2 p=gid+origin;
     if(p.x>=dst.get_width() || p.y>=dst.get_height())return;
     float4 center=src.read(p);
     if(center.w<.5) {dst.write(center,p);return;}
