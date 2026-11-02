@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DAAD00010000000000000001 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = DAAD00010000000000000002 /* FacebookCore */; };
 		DAAA00010000000000000001 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = DAAA00010000000000000002 /* PostHog */; };
 		DADD00010000000000000001 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = DADD00010000000000000002 /* Auth */; };
 /* End PBXBuildFile section */
@@ -59,6 +60,7 @@
 			files = (
 				DADD00010000000000000001 /* Auth in Frameworks */,
 				DAAA00010000000000000001 /* PostHog in Frameworks */,
+				DAAD00010000000000000001 /* FacebookCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -121,6 +123,7 @@
 			packageProductDependencies = (
 				DADD00010000000000000002 /* Auth */,
 				DAAA00010000000000000002 /* PostHog */,
+				DAAD00010000000000000002 /* FacebookCore */,
 			);
 			productName = kicklab;
 			productReference = 7441B447305617DC007026EB /* Juggle Dude.app */;
@@ -220,6 +223,7 @@
 			mainGroup = 7441B43E305617DC007026EB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
 				DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */,
 				DADD00010000000000000003 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
@@ -1082,6 +1086,11 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/facebook-ios-sdk.git";
+			requirement = { kind = exactVersion; version = 19.0.0; };
+		};
 		DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/PostHog/posthog-ios.git";
@@ -1101,6 +1110,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		DAAD00010000000000000002 /* FacebookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookCore;
+		};
 		DAAA00010000000000000002 /* PostHog */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */;

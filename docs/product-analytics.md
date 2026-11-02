@@ -2,6 +2,8 @@
 
 PostHog iOS 3.92.0 is pinned in the Xcode project and Package.resolved. The current project is hosted in the EU: https://eu.posthog.com/project/300647.
 
+[Meta install-ad measurement](meta-install-ads.md) is separate: it ships in 1.2.0, follows the tracking permission and the App Store region, and never reuses PostHog consent. Its App Store privacy answers are listed there.
+
 ## Configuration and consent
 
 Copy `config/PostHogConfig.example.plist` to `kicklab/Analytics/PostHogConfig.plist` and fill in the project token and ingestion host. The local file is ignored by Git and bundled by Xcode's synchronized app folder. It contains only a public ingestion token (`phc_`), never a personal API key. This checkout is configured for the existing EU project. Missing or invalid configuration makes tracking a no-op.

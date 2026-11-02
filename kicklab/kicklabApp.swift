@@ -142,6 +142,7 @@ struct kicklabApp: App {
                 Task { await account.handleCallback(url) }
             }
             .onChange(of: scenePhase, initial: true) { _, phase in
+                Task { await MetaAdsMeasurement.shared.sceneChanged(isActive: phase == .active) }
                 if phase == .active {
                     AppLanguage.refresh()
                     ProductAnalytics.shared.track(.appOpened)

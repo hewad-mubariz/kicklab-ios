@@ -4,6 +4,7 @@ import SwiftUI
 struct RootShellView: View {
     @EnvironmentObject private var account: AccountStore
     @EnvironmentObject private var player: PlayerStore
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("kicklab.appearance") private var appearance = "system"
     @AppStorage("kicklab.welcome.completed") private var hasEnteredApp = false
     @AppStorage("kicklab.juggling.personalBest") private var personalBest = 0
@@ -16,8 +17,15 @@ struct RootShellView: View {
     @State private var showsProfile = false
     @State private var showsHistory = false
     @ObservedObject private var updateNotice = AppUpdateNotice.shared
+    @ObservedObject private var adMeasurement = MetaAdsMeasurement.shared
     @Namespace private var zoom
     private var accountBest: Int { account.user == nil ? personalBest : player.personalBest }
+
+    /// The tracking question comes after a first finished training (or the third launch), on a calm home screen.
+    private var canRequestAdPermission: Bool {
+        adMeasurement.wantsPermission && hasEnteredApp && scenePhase == .active && capture == nil && sheet == nil &&
+        !showImport && !showsLeaderboard && !showsProfile && !showsHistory
+    }
 
     private var preferredScheme: ColorScheme? {
         switch appearance {
@@ -51,6 +59,13 @@ struct RootShellView: View {
             }
         }
         .animation(.smooth(duration: 0.4), value: hasEnteredApp)
+        .task(id: canRequestAdPermission) {
+            guard canRequestAdPermission, adMeasurement.isAvailable else { return }
+            // Let the replay close first; cancel if a camera, sign-in, or sheet opens.
+            do { try await Task.sleep(for: .milliseconds(700)) } catch { return }
+            guard !Task.isCancelled else { return }
+            await MetaAdsMeasurement.shared.requestPermission()
+        }
         #if DEBUG && TOUCH_COUNTING_DEBUG
         .safeAreaInset(edge: .top, spacing: 0) {
             Text("Touch test · Clear chest allowed")

@@ -273,6 +273,8 @@ final class SubscriptionStore: ObservableObject {
             }
             await transaction.finish()
             guard isPro else { throw SubscriptionFailure.activation }
+            MetaAdsMeasurement.shared.subscriptionStarted(freeTrial: transaction.offer?.paymentMode == .freeTrial,
+                                                          price: product.price, currency: product.priceFormatStyle.currencyCode)
             return .purchased
         case .userCancelled: return .cancelled
         case .pending: return .pending

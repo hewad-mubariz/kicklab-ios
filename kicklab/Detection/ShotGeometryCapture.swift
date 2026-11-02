@@ -613,6 +613,7 @@ final class ShotGeometryCapture: NSObject, ObservableObject, ARSessionDelegate {
                     #endif
                     #if !POWER_SHOT_DEBUG
                     ProductAnalytics.shared.track(.trainingCompleted(.ballDistance, duration: recordingDuration))
+                    MetaAdsMeasurement.shared.trainingCompleted()
                     #endif
                     self.files = [video, frames, manifest] + (rollFile.map { [$0] } ?? []) + (calibrationImage.map { [$0] } ?? [])
                     self.status = bad == 0 ? "Saved to Saved shots — video + data" :

@@ -1,9 +1,12 @@
+import AppTrackingTransparency
 import SwiftUI
+import UIKit
 
 struct TrainingHomeSettings: View {
     @Binding var appearance: String
     @ObservedObject private var analytics = ProductAnalytics.shared
     @ObservedObject private var updates = AppUpdateNotice.shared
+    @ObservedObject private var adMeasurement = MetaAdsMeasurement.shared
     @Environment(\.openURL) private var openURL
     @Environment(\.colorScheme) private var scheme
     #if DEBUG
@@ -36,6 +39,28 @@ struct TrainingHomeSettings: View {
             } footer: {
                 Text("Help improve Juggle Dude by sharing feature usage and whether actions succeed. Uses a random installation ID. Your videos, email and sign-in details aren’t included. You can turn this off anytime.")
             }
+            if adMeasurement.isAvailable {
+                Section {
+                    LabeledContent("Tracking permission", value: adPermissionLabel)
+                    if adMeasurement.authorizationStatus == .notDetermined {
+                        Button("Choose tracking permission") {
+                            Task { await adMeasurement.requestPermission() }
+                        }
+                        .disabled(adMeasurement.isRequesting)
+                        .accessibilityIdentifier("meta-ad-permission")
+                    } else {
+                        Button("Open iPhone Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                        }
+                        .accessibilityIdentifier("meta-ad-settings")
+                    }
+                    Link("Privacy Policy", destination: LegalLinks.privacy)
+                } header: {
+                    Text("Advertising measurement")
+                } footer: {
+                    Text("To measure our Facebook and Instagram ads, Juggle Dude tells Meta when the app is installed and opened, when you finish your first session and when you start Pro. With tracking allowed this includes your advertising identifier. In the EU, UK and Switzerland nothing is shared unless you allow tracking. Training videos, touch counts and account details are never included.")
+                }
+            }
             if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
                 Section("About") {
                     LabeledContent("Juggle Dude", value: String(localized: "Version \(version)", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
@@ -63,6 +88,16 @@ struct TrainingHomeSettings: View {
         .background(TrainingHomeStyle.background(scheme))
         .navigationTitle(String(localized: "Settings", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var adPermissionLabel: String {
+        switch adMeasurement.authorizationStatus {
+        case .authorized: String(localized: "Allowed", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .denied: String(localized: "Not allowed", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .restricted: String(localized: "Restricted on this device", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .notDetermined: String(localized: "Not chosen", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        @unknown default: String(localized: "Not allowed", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        }
     }
 }
 

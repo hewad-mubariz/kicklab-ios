@@ -2,6 +2,33 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Meta ad measurement, approved for 1.2.0. Debug builds also need --enable-meta-install-measurement. -->
+	<key>JuggleDudeMetaAdsEnabled</key>
+	<true/>
+	<key>FacebookAppID</key>
+	<string>1439446130906551</string>
+	<!-- Distributable mobile client token, not the Meta app secret or an access token. -->
+	<key>FacebookClientToken</key>
+	<string>53427dfbebb91a856757eb34a9cb47ff</string>
+	<key>FacebookDisplayName</key>
+	<string>Juggle Dude</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Allow tracking so we can see which Facebook and Instagram ads bring new jugglers to Juggle Dude. Your training videos, touch counts and account details are never shared.</string>
+	<key>FacebookAutoLogAppEventsEnabled</key>
+	<false/>
+	<!-- The SDK adds the advertising identifier only with Allow; SKAdNetwork needs no permission. -->
+	<key>FacebookAdvertiserIDCollectionEnabled</key>
+	<true/>
+	<key>FacebookSKAdNetworkReportEnabled</key>
+	<true/>
+	<key>FacebookCodelessDebugLogEnabled</key>
+	<false/>
+	<key>FBSDKAutoLogMetaDataEnabled</key>
+	<false/>
+	<key>FBSDKAutoLogProductImprovementEnabled</key>
+	<false/>
+	<key>FBSDKAemAutoSetupEnabled</key>
+	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>CFBundleDisplayName</key>

@@ -417,6 +417,7 @@ struct RecordView: View {
     private func saveAccountResult(_ summary: SessionSummary, source: SavedJugglingResult.Source) {
         if source == .recording {
             ProductAnalytics.shared.track(.trainingCompleted(.juggling, duration: summary.duration))
+            MetaAdsMeasurement.shared.trainingCompleted()
         }
         let completed = source == .recording ? resultStartedAt.addingTimeInterval(summary.duration) : resultStartedAt
         player.recordSession(id: resultID, owner: sessionOwner, summary: summary,
