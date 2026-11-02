@@ -205,6 +205,26 @@ final class CaptureFlowUITests: ProReplayUITestCase {
         }
     }
 
+    /// Paced taps for a screen recording of the tray opening each page (TRAY_TIMING_REVIEW).
+    func testTrayOpeningTimingReview() throws {
+        guard ProcessInfo.processInfo.environment["TRAY_TIMING_REVIEW"] != nil else { throw XCTSkip("Review only") }
+        let fixture = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("kicklabTests/Fixtures/juggling-eighteen.mov").path
+        let app = XCUIApplication()
+        app.launchArguments = ["--session-design", "capture-flow", "--session-video", fixture]
+        app.launch()
+        XCTAssertTrue(app.buttons["replay-customize"].waitForExistence(timeout: 15))
+        Thread.sleep(forTimeInterval: 3)
+        app.buttons["replay-customize"].tap()
+        Thread.sleep(forTimeInterval: 2)
+        for tool in ["ball", "effects", "counter", "effects"] {
+            app.buttons["replay-tool-\(tool)"].tap()
+            Thread.sleep(forTimeInterval: 2.5)
+            app.buttons["replay-tools-back"].tap()
+            Thread.sleep(forTimeInterval: 2)
+        }
+    }
+
     private func openTool(_ name: String, in app: XCUIApplication) {
         XCTAssertTrue(app.buttons["replay-customize"].waitForExistence(timeout: 5))
         app.buttons["replay-customize"].tap()

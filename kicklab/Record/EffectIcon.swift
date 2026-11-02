@@ -5,11 +5,14 @@ actor EffectIconStore {
     static let shared = EffectIconStore()
     private var engine: MetalEffectEngine?
     private var images: [String: CGImage] = [:]
+    private var solving: [BallStyle: Task<Void, Never>] = [:]
 
-    func icon(style: BallStyle, ball: BallSkin) -> CGImage? {
+    func icon(style: BallStyle, ball: BallSkin) async -> CGImage? {
         // The original ball has no material of its own; show the classic print instead.
         let skin = ball == .original ? BallSkin.classic : ball
         let key = "\(style.rawValue):\(skin.rawValue)"
+        if let image = images[key] { return image }
+        await solve(style)
         if let image = images[key] { return image }
         if engine == nil { engine = try? MetalEffectEngine() }
         guard let engine,
@@ -18,6 +21,28 @@ actor EffectIconStore {
         if images.count > 64 { images.removeAll() }
         images[key] = image
         return image
+    }
+
+    /// Liquid and Water solve their fluid for seconds before the first frame (16 s for Water in the
+    /// Simulator). The solve runs off this actor, once, so icons already drawn keep coming back at
+    /// once meanwhile instead of queueing behind it.
+    private func solve(_ style: BallStyle) async {
+        guard style == .liquid || style == .water else { return }
+        let task = solving[style] ?? Task.detached(priority: .userInitiated) {
+            if style == .liquid { LiquidFluid.prepareAll() } else { WaterCrown.prepareAll() }
+        }
+        solving[style] = task
+        await task.value
+    }
+
+    /// Renders every effect's icon for `ball` ahead of time, so the Effects page opens complete. One
+    /// actor call per icon, so a tile asking for its own never waits behind the whole set; the lab
+    /// effects, which solve their fluid first, come last.
+    nonisolated func prepare(ball: BallSkin) async {
+        for style in BallStyle.selectableCases.sorted(by: { !$0.isLabEffect && $1.isLabEffect }) {
+            guard !Task.isCancelled else { return }
+            _ = await icon(style: style, ball: ball)
+        }
     }
 }
 
@@ -31,6 +56,9 @@ struct EffectIcon: View {
     var body: some View {
         let key = "\(style.rawValue):\(ball.rawValue)"
         ZStack {
+            // Holds the tile's full size while the icon renders, so the grid and the tray around it
+            // never resize as icons arrive one by one.
+            Color.clear
             if let image {
                 Image(decorative: image, scale: 1).resizable().scaledToFit()
                     .id(shownKey)

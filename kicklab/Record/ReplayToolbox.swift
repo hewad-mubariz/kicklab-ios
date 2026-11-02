@@ -93,6 +93,8 @@ struct ReplayToolbox: View {
         .padding(16).foregroundStyle(.white)
         .appGlass(in: .rect(cornerRadius: 26))
         .onAppear { appeared = true }
+        // Effect icons render while the tools are on screen, before the Effects page asks for them.
+        .task(id: edit.ballSkin) { await EffectIconStore.shared.prepare(ball: edit.ballSkin) }
         // The tap is the kick; the slot adds a thud when the ball lands.
         .sensoryFeedback(.impact(flexibility: .rigid, intensity: 0.7), trigger: shownBall)
         .sensoryFeedback(.selection, trigger: edit.style)
