@@ -70,7 +70,7 @@ nonisolated enum ShotEffectExporter {
         guard reader.canAdd(frames) else { throw Failure.writer(String(localized: "Cannot decode this video.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) }
         reader.add(frames)
         // Sound gets its own reader: two outputs of one reader can block each other.
-        let audioTrack = try await asset.loadTracks(withMediaType: .audio).first
+        let audioTrack = try await ClipAudio.tracks(of: asset).first
         let soundReader = audioTrack == nil ? nil : try AVAssetReader(asset: asset)
         let sound: AVAssetReaderOutput? = audioTrack.map { audio in
             if clock.isOriginal { return AVAssetReaderTrackOutput(track: audio, outputSettings: nil) }

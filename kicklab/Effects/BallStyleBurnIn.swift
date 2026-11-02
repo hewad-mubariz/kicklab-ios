@@ -364,7 +364,7 @@ final class BallStyleBurnIn: ObservableObject {
         try await VideoWorkExecution.checkpoint()
         await onProgress(0.95)
         // A muted original keeps none of the recorded sound in the saved file.
-        let audioTracks = clipAudio ? try await asset.loadTracks(withMediaType: .audio) : []
+        let audioTracks = clipAudio ? try await ClipAudio.tracks(of: asset) : []
         // Replay sounds are mixed with the clip's own audio into one track, so every
         // player hears both; most players ignore a second, parallel audio track.
         var mixedAudio: URL?

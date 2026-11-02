@@ -671,7 +671,7 @@ nonisolated struct ReplaySoundtrack: Hashable, Sendable {
                 try await write({ _, _, _ in }, count: min(frame - written, Int(rate)))
             }
         }
-        let tracks = includeSource ? try await source.loadTracks(withMediaType: .audio) : []
+        let tracks = includeSource ? try await ClipAudio.tracks(of: source) : []
         if !tracks.isEmpty {
             let reader = try AVAssetReader(asset: source)
             let output = AVAssetReaderAudioMixOutput(audioTracks: tracks, audioSettings: [

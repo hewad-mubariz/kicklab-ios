@@ -150,7 +150,7 @@ nonisolated struct ShotEditTimeline: Equatable, Sendable {
             throw ShotEffectExporter.Failure.noVideo
         }
         let frames = try await ShotSourceFrames.load(source)
-        let audio = try await original.loadTracks(withMediaType: .audio).first
+        let audio = try await ClipAudio.tracks(of: original).first
         let audioRange = try await audio?.load(.timeRange) ?? .zero
         let composition = AVMutableComposition()
         guard let picture = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {

@@ -82,7 +82,7 @@ nonisolated enum SceneMovieRenderer {
             try await movie.finish(duration: duration)
             phase = "Restoring the original audio"
             let audioAsset = AVURLAsset(url: prepared.original)
-            let audio = try await audioAsset.loadTracks(withMediaType: .audio)
+            let audio = try await ClipAudio.tracks(of: audioAsset)
             defer { withExtendedLifetime(audioAsset) {} }
             try await StadiumPreviewPreparer.preserveAudio(silent: silent, destination: destination, audio: audio, duration: duration)
             try Task.checkCancellation()

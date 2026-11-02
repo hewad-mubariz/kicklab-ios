@@ -42,7 +42,7 @@ nonisolated enum BallDistanceMedia {
         let bounds = CGRect(origin: .zero, size: size).applying(transform)
         transform.tx = -bounds.minX; transform.ty = -bounds.minY
         video.preferredTransform = transform
-        if let sourceAudio = try await asset.loadTracks(withMediaType: .audio).first,
+        if let sourceAudio = try await ClipAudio.tracks(of: asset).first,
            let audio = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) {
             try audio.insertTimeRange(range, of: sourceAudio, at: .zero)
         }
