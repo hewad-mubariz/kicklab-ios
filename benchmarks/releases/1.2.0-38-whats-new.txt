@@ -1,0 +1,34 @@
+Juggle Dude 1.2.0 (38) - What's New and App Review notes (draft, not uploaded)
+
+WHAT'S NEW
+
+en: New effects: Crystal, Water and Liquid Spectrum, with brighter Neon and Galaxy. Four new balls: Gold Polish, Prism, Wave and Night Pulse. Looks change the ball and effect as you juggle, and touch sounds can follow each look. Plus change sounds, timer styles, milestone celebrations, My style and a Fireworks graph that lights up the night. Faster downloads for 4K and slow-motion clips, and smoother playback on older iPhones.
+de: Neue Effekte: Crystal, Water und Liquid Spectrum, dazu leuchtendere Neon und Galaxy. Vier neue Bälle: Gold Polish, Prism, Wave und Night Pulse. Looks wechseln Ball und Effekt beim Jonglieren, und Kontakttöne können jedem Look folgen. Dazu Wechseltöne, Timerstile, Meilensteine, Mein Stil und eine Fireworks-Grafik, die die Nacht erhellt. Schnellere Downloads für 4K- und Zeitlupenclips und flüssigere Wiedergabe auf älteren iPhones.
+es: Nuevos efectos: Crystal, Water y Liquid Spectrum, con Neon y Galaxy más brillantes. Cuatro balones nuevos: Gold Polish, Prism, Wave y Night Pulse. Los Looks cambian el balón y el efecto mientras haces toques, y los sonidos de toque pueden seguir cada look. Además, sonidos de cambio, estilos de cronómetro, celebraciones de hitos, Mi estilo y un gráfico Fireworks que ilumina la noche. Descargas más rápidas de clips en 4K y cámara lenta, y reproducción más fluida en iPhone anteriores.
+fr: Nouveaux effets : Crystal, Water et Liquid Spectrum, avec des Neon et Galaxy plus lumineux. Quatre nouveaux ballons : Gold Polish, Prism, Wave et Night Pulse. Les Looks changent le ballon et l’effet pendant que tu jongles, et les sons de jongle peuvent suivre chaque look. Avec aussi des sons de changement, des styles de chrono, des paliers à célébrer, Mon style et un graphique Fireworks qui illumine la nuit. Téléchargements plus rapides pour les clips 4K et au ralenti, et lecture plus fluide sur les anciens iPhone.
+pt-BR: Novos efeitos: Crystal, Water e Liquid Spectrum, com Neon e Galaxy mais brilhantes. Quatro bolas novas: Gold Polish, Prism, Wave e Night Pulse. Os Looks trocam a bola e o efeito enquanto você faz embaixadinhas, e os sons de toque podem seguir cada visual. Além de sons de troca, estilos de cronômetro, comemorações de marcos, Meu estilo e um gráfico Fireworks que ilumina a noite. Downloads mais rápidos de clipes em 4K e câmera lenta, e reprodução mais suave em iPhones mais antigos.
+
+App Store Connect currently lists en-US, en-AU, en-CA, en-GB and de-DE; the other three
+are ready if those locales are added.
+
+APP REVIEW NOTES (English)
+
+Juggle Dude counts football juggling touches with the iPhone camera and lets you edit the
+replay with effects, balls, sounds and graphs. No sign-in is needed: tap "Try it first" on
+the welcome screen.
+
+App Tracking Transparency: the app uses Meta's SDK (FacebookCore) to measure Facebook and
+Instagram install ads. The system tracking prompt appears once, on the home screen, after
+the first finished training session, or on the third launch if none has been finished.
+To see it: tap Juggling, record a few seconds, stop and close the replay; the prompt follows
+on the home screen. Profile > Settings > Advertising measurement shows the choice and links
+to iPhone Settings. In the EEA, the UK and Switzerland (by App Store country) nothing is sent
+to Meta unless tracking is allowed. Videos, touch counts and account details are never sent.
+
+Pro (monthly or yearly auto-renewing subscription) unlocks the paid editor looks: decorative
+counter styles, replacement balls, ball effects and graph styles. Capture, the touch
+counter, replay, imports, history and basic video export work without a subscription.
+
+New in this version: replay Looks, sounds and effects; a Download button that offers a
+faster 1080p version or the original for 4K and slow-motion clips; and a banner that
+announces newer App Store versions using Apple's public lookup.

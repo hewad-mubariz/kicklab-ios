@@ -13,7 +13,7 @@
 	<key>FacebookDisplayName</key>
 	<string>Juggle Dude</string>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>Allow tracking so we can see which Facebook and Instagram ads bring new jugglers to Juggle Dude. Your training videos, touch counts and account details are never shared.</string>
+	<string>Allow tracking so we can measure which ads bring new players to Juggle Dude. Your training videos, touch counts and account details are never shared.</string>
 	<key>FacebookAutoLogAppEventsEnabled</key>
 	<false/>
 	<!-- The SDK adds the advertising identifier only with Allow; SKAdNetwork needs no permission. -->

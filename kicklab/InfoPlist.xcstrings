@@ -118,6 +118,42 @@
           }
         }
       }
+    },
+    "NSUserTrackingUsageDescription" : {
+      "comment" : "Privacy - Tracking Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erlaube Tracking, damit wir messen können, welche Anzeigen neue Spieler zu Juggle Dude bringen. Deine Trainingsvideos, Kontaktzahlen und Kontodaten werden nie geteilt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow tracking so we can measure which ads bring new players to Juggle Dude. Your training videos, touch counts and account details are never shared."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite el rastreo para que podamos medir qué anuncios traen nuevos jugadores a Juggle Dude. Tus videos de entrenamiento, conteos de toques y datos de cuenta nunca se comparten."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorise le suivi pour que nous puissions mesurer quelles publicités amènent de nouveaux joueurs sur Juggle Dude. Tes vidéos d’entraînement, ton nombre de jongles et tes données de compte ne sont jamais partagés."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permita o rastreamento para medirmos quais anúncios trazem novos jogadores ao Juggle Dude. Seus vídeos de treino, contagens de toques e dados da conta nunca são compartilhados."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

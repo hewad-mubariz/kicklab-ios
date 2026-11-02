@@ -356,6 +356,9 @@
     "%@ · %@" : {
       "shouldTranslate" : false
     },
+    "%@ · 10, 25, 50, 100" : {
+      "shouldTranslate" : false
+    },
     "%@ – %@ s · %@ s long" : {
       "localizations" : {
         "de" : {
@@ -2122,6 +2125,9 @@
     "05" : {
       "shouldTranslate" : false
     },
+    "1" : {
+      "shouldTranslate" : false
+    },
     "1.8 m" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -2991,6 +2997,34 @@
         }
       }
     },
+    "Advertising measurement" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werbemessung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medición de anuncios"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesure publicitaire"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medição de anúncios"
+          }
+        }
+      }
+    },
     "After a session, open your streak to see the touches inside it that the counter wasn’t sure of. If some were valid, send them. A reviewer watches short clips of just those moments and, if they confirm them, your streak goes up. Clear hand touches, catches and bounces aren’t offered: they always end a streak." : {
       "localizations" : {
         "de" : {
@@ -3304,6 +3338,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Permita o acesso à câmera nos Ajustes ou escolha um vídeo."
+          }
+        }
+      }
+    },
+    "Allowed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erlaubt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisé"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permitido"
           }
         }
       }
@@ -3904,6 +3966,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Auto toca %1$@ com %2$@. Escolha um som para usar o seu."
+          }
+        }
+      }
+    },
+    "Auto plays each touch's look: Crackle with fire, Frost with ice, Splash with water, Clang with metal." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto spielt den Ton zum Look jedes Kontakts: Crackle bei Fire, Frost bei Ice, Splash bei Water, Clang bei Metal."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto suena según el look de cada toque: Crackle con Fire, Frost con Ice, Splash con Water, Clang con Metal."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto joue le son du look de chaque jongle : Crackle avec Fire, Frost avec Ice, Splash avec Water, Clang avec Metal."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Auto toca o som do visual de cada toque: Crackle com Fire, Frost com Ice, Splash com Water, Clang com Metal."
+          }
+        }
+      }
+    },
+    "Auto touch sound, %@, matches each touch's look" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatischer Kontaktton, %@, passend zum Look jedes Kontakts"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido de toque automático, %@, a juego con el look de cada toque"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son de jongle automatique, %@, assorti au look de chaque jongle"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som de toque automático, %@, combinando com o visual de cada toque"
           }
         }
       }
@@ -5366,6 +5484,34 @@
         }
       }
     },
+    "Change sound" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ton beim Wechsel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido del cambio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son du changement"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som da troca"
+          }
+        }
+      }
+    },
     "Changes are saved when you tap Save changes." : {
       "localizations" : {
         "de" : {
@@ -5826,6 +5972,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escolha toques para enviar"
+          }
+        }
+      }
+    },
+    "Choose tracking permission" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracking-Erlaubnis wählen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir permiso de rastreo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir l’autorisation de suivi"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolher permissão de rastreamento"
           }
         }
       }
@@ -11055,6 +11229,34 @@
     "Juggle Dude" : {
       "shouldTranslate" : false
     },
+    "Juggle Dude %@ is here" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude %@ ist da"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ya llegó Juggle Dude %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude %@ est là"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chegou o Juggle Dude %@"
+          }
+        }
+      }
+    },
     "Juggle Dude / %@" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -13355,6 +13557,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "New features and fixes are ready." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Funktionen und Verbesserungen sind da."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hay nuevas funciones y correcciones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De nouvelles fonctions et corrections t’attendent."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novos recursos e correções estão prontos."
+          }
+        }
+      }
+    },
     "New in-between frames, like a TV replay" : {
       "localizations" : {
         "de" : {
@@ -13959,6 +14189,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Not allowed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht erlaubt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No permitido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non autorisé"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não permitido"
+          }
+        }
+      }
+    },
     "Not chosen" : {
       "localizations" : {
         "de" : {
@@ -14510,6 +14768,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abra Verificações de toques para ver os toques que ficaram de fora dos seus treinos ou o resultado de uma verificação."
+          }
+        }
+      }
+    },
+    "Open iPhone Settings" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iPhone-Einstellungen öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir la configuración del iPhone"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir les Réglages de l’iPhone"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir os Ajustes do iPhone"
           }
         }
       }
@@ -18337,6 +18623,34 @@
     "Restoring…" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Restricted on this device" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf diesem Gerät eingeschränkt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restringido en este dispositivo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restreint sur cet appareil"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restrito neste aparelho"
+          }
+        }
+      }
     },
     "Resume" : {
       "localizations" : {
@@ -24257,6 +24571,34 @@
         }
       }
     },
+    "To measure our Facebook and Instagram ads, Juggle Dude tells Meta when the app is installed and opened, when you finish your first session and when you start Pro. With tracking allowed this includes your advertising identifier. In the EU, UK and Switzerland nothing is shared unless you allow tracking. Training videos, touch counts and account details are never included." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um unsere Werbung auf Facebook und Instagram zu messen, teilt Juggle Dude Meta mit, wann die App installiert und geöffnet wird, wann du dein erstes Training beendest und wann du Pro startest. Wenn du Tracking erlaubst, gehört deine Werbe-ID dazu. In der EU, im Vereinigten Königreich und in der Schweiz wird nichts geteilt, solange du Tracking nicht erlaubst. Trainingsvideos, Kontaktzahlen und Kontodaten sind nie dabei."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para medir nuestros anuncios en Facebook e Instagram, Juggle Dude le informa a Meta cuándo se instala y se abre la app, cuándo terminas tu primera sesión y cuándo empiezas Pro. Si permites el rastreo, se incluye tu identificador de publicidad. En la UE, el Reino Unido y Suiza no se comparte nada a menos que permitas el rastreo. Nunca se incluyen videos de entrenamiento, conteos de toques ni datos de tu cuenta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour mesurer nos publicités sur Facebook et Instagram, Juggle Dude indique à Meta quand l’app est installée et ouverte, quand tu termines ta première séance et quand tu passes à Pro. Si tu autorises le suivi, ton identifiant publicitaire est inclus. Dans l’UE, au Royaume-Uni et en Suisse, rien n’est partagé tant que tu n’autorises pas le suivi. Les vidéos d’entraînement, le nombre de jongles et les données de compte ne sont jamais inclus."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para medir nossos anúncios no Facebook e no Instagram, o Juggle Dude informa à Meta quando o app é instalado e aberto, quando você conclui seu primeiro treino e quando começa o Pro. Se você permitir o rastreamento, isso inclui seu identificador de publicidade. Na UE, no Reino Unido e na Suíça, nada é compartilhado a menos que você permita o rastreamento. Vídeos de treino, contagens de toques e dados da conta nunca são incluídos."
+          }
+        }
+      }
+    },
     "Too dark for sharp ball effects · add more light" : {
       "localizations" : {
         "de" : {
@@ -24789,6 +25131,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Tracking permission" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracking-Erlaubnis"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permiso de rastreo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisation de suivi"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permissão de rastreamento"
+          }
+        }
+      }
+    },
     "Tracking the ball" : {
       "localizations" : {
         "de" : {
@@ -25013,6 +25383,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Atualizar"
+          }
+        }
+      }
+    },
+    "Update available" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Update verfügbar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualización disponible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise à jour disponible"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualização disponível"
           }
         }
       }
