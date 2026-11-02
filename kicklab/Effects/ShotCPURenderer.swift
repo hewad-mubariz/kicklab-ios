@@ -21,7 +21,7 @@ nonisolated enum ShotCPURenderer {
                         atlasBytes.withUnsafeBufferPointer { atlasPixels in
                             KLRenderShotCPU(pixelBuffer, &uniforms, trail.baseAddress!, camera.baseAddress!, path.baseAddress!, stamps.baseAddress!,
                                             atlasPixels.baseAddress, Int32(picture?.width ?? 0), Int32(picture?.height ?? 0),
-                                            frame.style >= 20 && frame.intensity > 0.005 && frame.visibility > 0.005, cameraUniforms[0].z > 0)
+                                            frame.style >= 20 && frame.style < 30 && frame.intensity > 0.005 && frame.visibility > 0.005, cameraUniforms[0].z > 0)
                         }
                     }
                 }

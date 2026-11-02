@@ -71,6 +71,19 @@ extension EffectFrame {
                                 time: time, intensity: 0, visibility: 0, style: style.shaderID)
         }
         frame.environment = edit.environment.shaderAmount
+        if style == .liquid || style == .water {
+            // The lab rendered at full strength; the default 0.7 shows that, lower settings fade it.
+            let sampler = LabBallSampler(track: track, size: size, sourceSize: sourceSize)
+            let touches = track.touches.filter { edit.effect(at: $0, touchTimes: track.touches) == style }.map(Float.init)
+            let pixels = SIMD2(Float(size.width), Float(size.height)), strength = min(1, frame.intensity / 0.7)
+            if style == .liquid {
+                frame.liquid = LiquidScene.frame(time: Float(time), size: pixels, intensity: strength, touches: touches,
+                                                 sample: sampler.callAsFunction)
+            } else {
+                frame.water = WaterScene.frame(time: Float(time), size: pixels, stage: .motion, intensity: strength,
+                                               light: true, source: true, touches: touches, sample: sampler.callAsFunction)
+            }
+        }
         if style == .heatPulse, frame.visibility > 0,
            let touch = track.latestTouch(at: time), time - touch < 0.60 {
             frame.impact = 1

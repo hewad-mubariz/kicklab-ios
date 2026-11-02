@@ -28,13 +28,46 @@ nonisolated enum EffectIconRenderer {
                 let p = pulse ? center : center - velocity * radius * age + SIMD2(0, radius * 1.6 * age * age)
                 return SIMD4(p.x, p.y, radius, age)
             }
-            let frame = EffectFrame(size: CGSize(width: w, height: h), center: center, radius: radius, time: time,
+            var frame = EffectFrame(size: CGSize(width: w, height: h), center: center, radius: radius, time: time,
                                     intensity: 0.85, velocity: velocity,
                                     impact: shaderStyle == 16 ? 1 : 0,
                                     impactAge: shaderStyle == 16 ? 0.16 : -1,
                                     style: shaderStyle, trail: trail)
-            try engine.render(frame, into: target)
-            effect = image(from: target)
+            if shaderStyle == BallStyle.liquid.shaderID {
+                // One fresh splash along the same flight, over a plain grey the liquid can refract.
+                LiquidFluid.prepareAll()
+                let path: (Float) -> SIMD4<Float> = { t in
+                    let age = Float(time) - t
+                    let p = center - velocity * radius * age + SIMD2(0, radius * 1.6 * age * age)
+                    return SIMD4(p.x, p.y, radius, 1)
+                }
+                var liquid = LiquidScene.frame(time: Float(time), size: SIMD2(Float(w), Float(h)), intensity: 1,
+                                               touches: [Float(time) - 0.20], sample: path)
+                liquid.uniforms.options.y = -1; liquid.uniforms.options.w = 0.52
+                frame.liquid = liquid
+            }
+            if shaderStyle == BallStyle.water.shaderID {
+                // Water draws itself over the picture it refracts. Drawn once over black and once over
+                // white, the difference is its transparency and the black render its colour.
+                WaterCrown.prepareAll()
+                let path: (Float) -> SIMD4<Float> = { t in
+                    let age = Float(time) - t
+                    let p = center - velocity * radius * age + SIMD2(0, radius * 1.6 * age * age)
+                    return SIMD4(p.x, p.y, radius, 1)
+                }
+                frame.water = WaterScene.frame(time: Float(time), size: SIMD2(Float(w), Float(h)), stage: .motion, intensity: 1,
+                                               light: true, source: true, touches: [Float(time) - 0.16], sample: path)
+                frame.labBackdrop = 0
+                try engine.render(frame, into: target)
+                let black = pixels(of: target)
+                frame.labBackdrop = 1
+                try engine.render(frame, into: target)
+                let white = pixels(of: target)
+                effect = matte(black: black, white: white, width: w, height: h)
+            } else {
+                try engine.render(frame, into: target)
+                effect = image(from: target)
+            }
         }
         let info = CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
         guard let context = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
@@ -74,6 +107,34 @@ nonisolated enum EffectIconRenderer {
         guard let provider = CGDataProvider(data: Data(bytes) as CFData) else { return nil }
         return CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 8, bytesPerRow: width,
                        space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
+                       provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
+    }
+
+    private static func pixels(of texture: MTLTexture) -> [UInt8] {
+        var bytes = [UInt8](repeating: 0, count: texture.width * texture.height * 4)
+        bytes.withUnsafeMutableBytes {
+            texture.getBytes($0.baseAddress!, bytesPerRow: texture.width * 4,
+                             from: MTLRegionMake2D(0, 0, texture.width, texture.height), mipmapLevel: 0)
+        }
+        return bytes
+    }
+
+    /// Premultiplied pixels from renders over black and white: what the white backdrop adds is
+    /// what shows through, so opacity is one minus that, and the black render is the colour. Clear
+    /// water barely shows over a plain tile, so `boost` strengthens both for the icon.
+    private static func matte(black: [UInt8], white: [UInt8], width: Int, height: Int, boost: Int = 4) -> CGImage? {
+        var bytes = black
+        for i in stride(from: 0, to: bytes.count, by: 4) {
+            let through = (0..<3).reduce(0) { $0 + max(0, Int(white[i + $1]) - Int(black[i + $1])) } / 3
+            let alpha = min(255, (255 - min(255, through)) * boost)
+            for c in 0..<3 { bytes[i + c] = UInt8(min(alpha, Int(black[i + c]) * boost)) }
+            bytes[i + 3] = UInt8(alpha)
+        }
+        guard let provider = CGDataProvider(data: Data(bytes) as CFData) else { return nil }
+        return CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: width * 4,
+                       space: CGColorSpaceCreateDeviceRGB(),
+                       bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue
+                                                | CGBitmapInfo.byteOrder32Little.rawValue),
                        provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
     }
 

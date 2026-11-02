@@ -22,6 +22,12 @@ nonisolated struct EffectFrame: Sendable, Equatable {
     var burstAge: Float = 10
     var seed: Float = 0
     var tint = SIMD3<Float>(0.18, 1, 0.4)
+    /// Liquid Spectrum's releases for this moment; drawn by the lab renderer instead of the field.
+    var liquid: LiquidFrame?
+    /// Water's splashes for this moment; drawn by the lab renderer instead of the field.
+    var water: WaterFrame?
+    /// Picker icons only: the solid grey a lab effect is drawn over when there is no video.
+    var labBackdrop: Double?
 
     /// A visual down-to-up reversal cue, not a classified foot touch. Sample
     /// velocities over time windows so 30/60/120 Hz tracks behave consistently.
@@ -102,7 +108,7 @@ nonisolated struct EffectFrame: Sendable, Equatable {
 
     var region: CGRect {
         if counter { return CGRect(origin: .zero, size: size) }
-        if style >= 20 {
+        if style >= 20 && style < 30 {
             // Power Shot: the whole flight behind the ball, plus room for rings and sparks.
             let r = CGFloat(max(4, radius))
             var rect = CGRect(x: CGFloat(center.x) - r * 3, y: CGFloat(center.y) - r * 3, width: r * 6, height: r * 6)

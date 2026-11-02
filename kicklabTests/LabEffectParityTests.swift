@@ -26,6 +26,22 @@ final class LabEffectParityTests: XCTestCase {
         }, touchTimes: analysis.touchesMarked.map(\.time))
     }
 
+    /// The picker icons of the lab effects, written as PNGs next to the renders.
+    func testLabEffectIcons() throws {
+        guard let folder = ProcessInfo.processInfo.environment["LAB_PARITY_OUT"] else { throw XCTSkip("Set LAB_PARITY_OUT") }
+        let engine = try MetalEffectEngine()
+        let ball = BallSkinSphereRenderer.image(skin: .classic, time: 0)
+        for style in [BallStyle.neon, .galaxy, .liquid, .water] {
+            for (suffix, print) in [("", ball), ("-effect", nil)] {
+                let icon = try XCTUnwrap(EffectIconRenderer.image(shaderStyle: style.shaderID, height: 240, ball: print, engine: engine))
+                let url = URL(fileURLWithPath: folder).appending(path: "icon-\(style.rawValue)\(suffix).png")
+                let destination = try XCTUnwrap(CGImageDestinationCreateWithURL(url as CFURL, "public.png" as CFString, 1, nil))
+                CGImageDestinationAddImage(destination, icon, nil)
+                XCTAssertTrue(CGImageDestinationFinalize(destination))
+            }
+        }
+    }
+
     func testRenderLaunchDemoWithEffect() async throws {
         let environment = ProcessInfo.processInfo.environment
         guard let name = environment["LAB_PARITY_EFFECT"], let folder = environment["LAB_PARITY_OUT"],
@@ -67,6 +83,7 @@ final class LabEffectParityTests: XCTestCase {
         writer.startSession(atSourceTime: .zero)
         let engine = try MetalEffectEngine()
         let edit = SessionEditState(style: style, intensity: intensity, ballSkin: .original)
+        LiquidFluid.prepareAll(); WaterCrown.prepareAll()
         var held: CMSampleBuffer?, pending = decoded.copyNextSampleBuffer()
         for index in 0..<Int(ceil(duration * fps)) {
             let time = Double(index) / fps

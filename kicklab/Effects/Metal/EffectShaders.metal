@@ -1076,7 +1076,7 @@ kernel void fxEmission(texture2d<half,access::write> out [[texture(0)]],
         float wave = exp(-pow((length(p)-0.7-age*2.5)*24,2.0)) * exp(-age*6) * 0.06;
         result = float4(u.tint.rgb*(halo+wave)*2.2,(halo+wave)*0.14);
     } else if (u.ball.w>0.005 && u.viewport.w>0.005 && u.motion.w>0.5) {
-        result = u.motion.w>=20 ? shotTrailFX(pixel,u,trail,u.region.z/float(out.get_width()))
+        result = (u.motion.w>=20 && u.motion.w<30) ? shotTrailFX(pixel,u,trail,u.region.z/float(out.get_width()))
                : u.motion.w==1 ? proceduralFireFX(pixel,u,emitters,u.region.z/float(out.get_width()))
                : u.motion.w==11 ? labFlameFX(pixel,u,emitters,u.region.z/float(out.get_width()))
                : u.motion.w==12 ? glowTrailFX(pixel,u,emitters,u.region.z/float(out.get_width()))
@@ -1473,7 +1473,7 @@ float4 resolveFX(float4 sharp,float4 nearGlow,float4 farGlow,float2 pixel,consta
         float alpha=clamp(max(max(mapped.r,max(mapped.g,mapped.b))*0.92,sharp.a),0.0,0.93)*face;
         return float4(min(mapped*face,float3(alpha)),alpha);
     }
-    if(u.control.y<0.5 && ((u.motion.w>=11 && u.motion.w<=16) || u.motion.w>=20)) {
+    if(u.control.y<0.5 && ((u.motion.w>=11 && u.motion.w<=16) || (u.motion.w>=20 && u.motion.w<30))) {
         // Bloom and particles must respect the same clear ball face as the field.
         float face=smoothstep(0.96,1.055,length(pixel-u.ball.xy)/max(1.0,u.ball.z));
         float3 energy=sharp.rgb+nearGlow.rgb*0.18+farGlow.rgb*0.045;

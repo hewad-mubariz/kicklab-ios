@@ -82,7 +82,8 @@ struct MetalEffectsTests {
         let engine = try MetalEffectEngine()
         let target = try engine.texture(width: 192, height: 256, storage: .shared)
         var masks: [[Double]] = []
-        for style in BallStyle.allCases where style != .none {
+        // Lab effects draw from touches on a real track; LabEffectParityTests covers them.
+        for style in BallStyle.allCases where style != .none && !style.isLabEffect {
             var frame = base(); frame.style = style.shaderID
             frame.trail = (1...32).map { i in
                 let age = Float(i) / 40

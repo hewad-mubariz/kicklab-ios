@@ -22,6 +22,10 @@ nonisolated final class MetalEffectEngine {
         let shotCamera: MTLComputePipelineState?
         let particles: MTLRenderPipelineState
         let noise: MTLTexture
+        /// Effects Lab renderers. Absent from libraries built without their shaders.
+        let liquidSplat: MTLRenderPipelineState?
+        let liquidShade: MTLRenderPipelineState?
+        let library: MTLLibrary
 
         init(libraryURL: URL? = nil, source: String? = nil) throws {
             guard let device = MTLCreateSystemDefaultDevice(), let queue = device.makeCommandQueue() else {
@@ -33,6 +37,7 @@ nonisolated final class MetalEffectEngine {
             else if let libraryURL { library = try device.makeLibrary(URL: libraryURL) }
             else if let bundled = device.makeDefaultLibrary() { library = bundled }
             else { throw Failure.unavailable("The effects shader library is missing.") }
+            self.library = library
             func kernel(_ name: String) throws -> MTLComputePipelineState {
                 guard let f = library.makeFunction(name: name) else { throw Failure.unavailable("Missing effect shader: \(name)") }
                 return try device.makeComputePipelineState(function: f)
@@ -48,6 +53,21 @@ nonisolated final class MetalEffectEngine {
             color.sourceRGBBlendFactor = .one; color.destinationRGBBlendFactor = .one
             color.sourceAlphaBlendFactor = .one; color.destinationAlphaBlendFactor = .one
             particles = try device.makeRenderPipelineState(descriptor: desc)
+            func pass(_ vertex: String, _ fragment: String, _ format: MTLPixelFormat, additive: Bool) -> MTLRenderPipelineState? {
+                guard let v = library.makeFunction(name: vertex), let f = library.makeFunction(name: fragment) else { return nil }
+                let d = MTLRenderPipelineDescriptor()
+                d.vertexFunction = v; d.fragmentFunction = f
+                let color = d.colorAttachments[0]!
+                color.pixelFormat = format
+                if additive {
+                    color.isBlendingEnabled = true
+                    color.sourceRGBBlendFactor = .one; color.destinationRGBBlendFactor = .one
+                    color.sourceAlphaBlendFactor = .one; color.destinationAlphaBlendFactor = .one
+                }
+                return try? device.makeRenderPipelineState(descriptor: d)
+            }
+            liquidSplat = pass("liquidSplatVertex", "liquidSplatFragment", .rgba16Float, additive: true)
+            liquidShade = pass("liquidVertex", "liquidFragment", .bgra8Unorm, additive: false)
             let noiseDesc = MTLTextureDescriptor()
             noiseDesc.textureType = .type3D; noiseDesc.pixelFormat = .rgba8Unorm
             noiseDesc.width = 32; noiseDesc.height = 32; noiseDesc.depth = 32
@@ -83,6 +103,9 @@ nonisolated final class MetalEffectEngine {
     private var blurFar: MPSImageGaussianBlur?
     private var blurRadius: Float = -1
     private var blurFarRadius: Float = -1
+    private var labBackground: MTLTexture?
+    private var labField: MTLTexture?
+    private var water: WaterLabRenderer?
 
     init(resources: Resources? = nil) throws {
         self.resources = try resources ?? Resources.shared.get()
@@ -102,7 +125,7 @@ nonisolated final class MetalEffectEngine {
     private func prepare(_ frame: EffectFrame) throws {
         let region = frame.region
         // Shot trails span the whole flight, so they need more texels than a ball-sized effect.
-        let limit = frame.counter ? 768.0 : frame.style == 1 ? 832.0 : frame.style >= 20 ? 1024.0 : 640.0
+        let limit = frame.counter ? 768.0 : frame.style == 1 ? 832.0 : frame.style >= 20 && frame.style < 30 ? 1024.0 : 640.0
         let scale = min(1, limit / max(1, max(region.width, region.height)))
         // Quantization avoids allocation churn as the tracked ball moves.
         let w = max(16, Int(ceil(region.width * scale / 16)) * 16)
@@ -183,7 +206,32 @@ nonisolated final class MetalEffectEngine {
         }
         guard frame.size.width > 0, frame.size.height > 0, !frame.region.isNull,
               frame.region.width > 0, frame.region.height > 0 else { throw Failure.unavailable("Invalid effect geometry.") }
-        if !frame.counter && (frame.style < 0.5 || frame.intensity <= 0.005 || frame.visibility <= 0.005) {
+        if let liquid = frame.liquid, !frame.counter, frame.intensity > 0.005, frame.visibility > 0.005,
+           let splat = resources.liquidSplat, let shade = resources.liquidShade {
+            // Liquid refracts the picture behind it, so a transparent overlay without one shows
+            // nothing; picker icons ask for a plain backdrop instead.
+            let icon = liquid.uniforms.options.y < 0
+            if source != nil || icon {
+                try encodeLiquid(liquid, frame: frame, into: target, source: source, material: material,
+                                 backdrop: icon ? Double(liquid.uniforms.options.w) : nil,
+                                 splat: splat, shade: shade, command: command)
+                return
+            }
+        }
+        if let splash = frame.water, !frame.counter, frame.intensity > 0.005, frame.visibility > 0.005,
+           source != nil || frame.labBackdrop != nil {
+            if water == nil { water = try? WaterLabRenderer(device: device, library: resources.library) }
+            if let water {
+                // Water refracts the picture it splashes over: the video with any replacement ball.
+                let background = try labBackground(frame, target: target, source: source, material: material,
+                                                   backdrop: frame.labBackdrop, command: command)
+                try water.encode(frame: splash, source: background, target: target, command: command)
+                return
+            }
+        }
+        // A lab effect without its touches and track (style 30 and up) has nothing to draw.
+        let labWithoutScene = frame.style >= 30 && frame.liquid == nil && frame.water == nil
+        if !frame.counter && (frame.style < 0.5 || frame.intensity <= 0.005 || frame.visibility <= 0.005 || labWithoutScene) {
             // An explicit off frame never consumes cached flame/bloom textures.
             // Still composite an independently selected ball material or grade.
             if let source {
@@ -247,6 +295,72 @@ nonisolated final class MetalEffectEngine {
             last.setTexture(target, index: 3)
             dispatch(last, resources.resolve, target)
         }
+    }
+
+    /// The picture a lab effect refracts: the video, aspect-filled as the compositor does, with any
+    /// replacement ball, in output pixels. Without a video it stays clear.
+    private func labBackground(_ frame: EffectFrame, target: MTLTexture, source: MTLTexture?, material: MTLTexture?,
+                               backdrop: Double? = nil, command: MTLCommandBuffer) throws -> MTLTexture {
+        if labBackground?.width != target.width || labBackground?.height != target.height {
+            labBackground = try texture(width: target.width, height: target.height)
+        }
+        guard let background = labBackground else { throw Failure.unavailable("Cannot allocate the effect background.") }
+        if let source {
+            guard let encoder = command.makeComputeCommandEncoder() else { throw Failure.unavailable("Cannot draw the video frame.") }
+            var u = frame.uniforms; u.viewport.w = 0; u.motion.w = 0
+            u.environment.y = material == nil ? 0 : 1
+            encoder.setBytes(&u, length: MemoryLayout<EffectUniforms>.stride, index: 0)
+            for i in 0...3 { encoder.setTexture(source, index: i) }
+            encoder.setTexture(background, index: 4); encoder.setTexture(material ?? source, index: 5)
+            dispatch(encoder, resources.composite, background)
+        } else {
+            let pass = MTLRenderPassDescriptor()
+            pass.colorAttachments[0].texture = background
+            pass.colorAttachments[0].loadAction = .clear; pass.colorAttachments[0].storeAction = .store
+            let level = backdrop ?? 0
+            pass.colorAttachments[0].clearColor = MTLClearColorMake(level, level, level, backdrop == nil ? 0 : 1)
+            guard let encoder = command.makeRenderCommandEncoder(descriptor: pass) else { throw Failure.unavailable("Cannot clear the effect background.") }
+            encoder.endEncoding()
+        }
+        return background
+    }
+
+    /// Liquid Spectrum, drawn by the Effects Lab's two passes: particles splat into a density
+    /// field, then the field is shaded over the picture it refracts.
+    private func encodeLiquid(_ liquid: LiquidFrame, frame: EffectFrame, into target: MTLTexture, source: MTLTexture?,
+                              material: MTLTexture?, backdrop: Double?, splat: MTLRenderPipelineState,
+                              shade: MTLRenderPipelineState, command: MTLCommandBuffer) throws {
+        let background = try labBackground(frame, target: target, source: source, material: material,
+                                           backdrop: backdrop, command: command)
+        if labField?.width != target.width || labField?.height != target.height {
+            labField = try texture(width: target.width, height: target.height, format: .rgba16Float)
+        }
+        guard let field = labField else { throw Failure.unavailable("Cannot allocate the liquid field.") }
+        var uniforms = liquid.uniforms
+        let density = MTLRenderPassDescriptor()
+        density.colorAttachments[0].texture = field
+        density.colorAttachments[0].loadAction = .clear; density.colorAttachments[0].storeAction = .store
+        density.colorAttachments[0].clearColor = MTLClearColorMake(0, 0, 0, 0)
+        guard let splats = command.makeRenderCommandEncoder(descriptor: density) else { throw Failure.unavailable("Cannot draw the liquid.") }
+        splats.label = "Liquid density"
+        splats.setRenderPipelineState(splat)
+        splats.setVertexBytes(&uniforms, length: MemoryLayout<LiquidUniforms>.stride, index: 0)
+        if !liquid.parts.isEmpty,
+           let parts = liquid.parts.withUnsafeBytes({ device.makeBuffer(bytes: $0.baseAddress!, length: $0.count, options: .storageModeShared) }) {
+            splats.setVertexBuffer(parts, offset: 0, index: 1)
+            splats.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 6, instanceCount: liquid.parts.count)
+        }
+        splats.endEncoding()
+        let surface = MTLRenderPassDescriptor()
+        surface.colorAttachments[0].texture = target
+        surface.colorAttachments[0].loadAction = .dontCare; surface.colorAttachments[0].storeAction = .store
+        guard let shading = command.makeRenderCommandEncoder(descriptor: surface) else { throw Failure.unavailable("Cannot shade the liquid.") }
+        shading.label = "Liquid surface"
+        shading.setRenderPipelineState(shade)
+        shading.setFragmentBytes(&uniforms, length: MemoryLayout<LiquidUniforms>.stride, index: 0)
+        shading.setFragmentTexture(background, index: 0); shading.setFragmentTexture(field, index: 1)
+        shading.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
+        shading.endEncoding()
     }
 
     func render(_ frame: EffectFrame, into target: MTLTexture, source: MTLTexture? = nil, camera: ShotCameraFrame? = nil,
