@@ -7,8 +7,9 @@ Tapping Download on such a clip now asks how to save it; smaller clips save stra
 - **Original** — the clip's own size and frame rate. Above 1080p it is saved as HEVC at 40 Mbit/s,
   or 60 Mbit/s above 60 fps. Above 60 fps it stays a MOV with the full-speed playback intent.
 
-In the editor the Download button itself stretches, with a spring, into `✕ · Original · Faster`
-over the session title; ✕ folds it back and a choice starts the download in the same button
+In the editor the Download circle splits into two lime buttons drawn like it, `Original · Faster`,
+over the session title: Faster takes the circle's place and Original slides out from behind it. A
+tap anywhere else folds them back; a choice starts the download in the same button
 ([ReplayDownloadButton](../kicklab/Record/ReplayDownloader.swift)). The saved toast names what was
 saved, such as "4K · 120 fps". Save & Share keeps its 720p and
 1080p entries, now capped at 60 fps, and adds the original to the Quality menu

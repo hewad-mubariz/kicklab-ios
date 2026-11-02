@@ -1,7 +1,7 @@
 import XCTest
 
-/// A clip above 60 fps: Download stretches into the faster and original choices, ✕ folds them back,
-/// and picking one starts the download in the same button.
+/// A clip above 60 fps: Download splits into the faster and original choices, a tap away folds them
+/// back, and picking one starts the download in the same button.
 final class DownloadChoiceUITests: ProReplayUITestCase {
     /// Keeps a screenshot in the result and, when DOWNLOAD_CHOICE_SHOTS names a folder, as a PNG there.
     @MainActor private func capture(_ app: XCUIApplication, _ name: String) {
@@ -14,7 +14,7 @@ final class DownloadChoiceUITests: ProReplayUITestCase {
     }
 
     @MainActor
-    func testFastClipDownloadStretchesIntoTwoChoices() {
+    func testFastClipDownloadSplitsIntoTwoChoices() {
         let fixture = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("kicklabTests/Fixtures/capture-sixty-as-120.mov").path
         let app = XCUIApplication()
@@ -34,8 +34,10 @@ final class DownloadChoiceUITests: ProReplayUITestCase {
         Thread.sleep(forTimeInterval: 0.8)
         capture(app, "download-choices")
 
-        app.buttons["replay-save-cancel"].tap()
+        XCTAssertFalse(app.buttons["replay-save-cancel"].exists, "No close button: a tap away dismisses")
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         XCTAssertTrue(faster.waitForNonExistence(timeout: 3))
+        XCTAssertFalse(original.exists)
         XCTAssertTrue(download.waitForExistence(timeout: 3))
         Thread.sleep(forTimeInterval: 0.6)
 

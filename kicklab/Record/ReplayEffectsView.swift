@@ -168,6 +168,10 @@ struct ReplayEffectsView: View {
                     }
                 }
             }
+            // Below the bar, a tap anywhere folds the download choices back into the button.
+            if saveChoices != nil {
+                dismissChoicesLayer.padding(.top, chromeBottom).ignoresSafeArea()
+            }
         }
     }
 
@@ -297,6 +301,7 @@ struct ReplayEffectsView: View {
         HStack(spacing: 10) {
             roundButton("chevron.left", label: closeLabel, action: onBack)
                 .accessibilityIdentifier("replay-close")
+                .allowsHitTesting(saveChoices == nil)
             Spacer(minLength: 0)
             VStack(spacing: 4) {
                 if showsTouchTools {
@@ -315,8 +320,8 @@ struct ReplayEffectsView: View {
                         .onTapGesture { prepareVisualEffects() }
                 }
             }
-            // The download choices stretch over the title, which steps aside meanwhile.
-            .opacity(saveChoices == nil ? 1 : 0)
+            // The download choices open over the title, which steps aside meanwhile.
+            .opacity(saveChoices == nil ? 1 : 0).allowsHitTesting(saveChoices == nil)
             .animation(SessionMotion.animation(SessionMotion.fade, reduceMotion: reduceMotion), value: saveChoices == nil)
             Spacer(minLength: 0)
             // Saves what you see in one tap; the button itself shows the progress.
@@ -333,6 +338,15 @@ struct ReplayEffectsView: View {
                                  onCancelChoice: { saveChoices = nil })
                 .accessibilityIdentifier("replay-export")
         }.padding(.horizontal, 20).padding(.top, 8)
+        // A tap on the bar beside the download choices folds them back (see dismissChoicesLayer).
+        .background { if saveChoices != nil { dismissChoicesLayer } }
+    }
+
+    /// Catches a tap anywhere away from the two download choices and folds them back into the button.
+    private var dismissChoicesLayer: some View {
+        Color.clear.contentShape(.rect)
+            .onTapGesture { saveChoices = nil }
+            .accessibilityHidden(true)
     }
 
     // MARK: Download

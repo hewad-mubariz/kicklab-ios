@@ -55,6 +55,11 @@ extension AnyTransition {
         session(scale: scale, anchor: anchor, blur: 4)
     }
 
+    /// Slides out from behind its trailing neighbour, as Download splits into its two choices.
+    static func sessionSplit(offset x: CGFloat) -> AnyTransition {
+        session(offset: CGSize(width: x, height: 0), scale: 0.6, anchor: .trailing, blur: 4)
+    }
+
     /// Rises a few points into place.
     static var sessionRise: AnyTransition { session(offset: CGSize(width: 0, height: 14), blur: 2) }
 

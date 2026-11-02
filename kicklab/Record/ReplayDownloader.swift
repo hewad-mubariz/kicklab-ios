@@ -186,71 +186,63 @@ final class ReplayDownloader: ObservableObject {
 
 // MARK: - Download button
 
-/// Lime download circle → glass pill with a progress ring and percentage → mint check.
+/// Lime download circle → glass pill with a progress ring and percentage → mint check. For a large
+/// or fast clip the circle first splits into two lime buttons, Original and Faster.
 struct ReplayDownloadButton: View {
     let phase: ReplayDownloader.Phase
     let progress: Double
     let action: () -> Void
     var needsForeground = false
-    /// Set while a large or fast clip asks how to save: the button stretches into the two choices.
+    /// Set while a large or fast clip asks how to save: the circle splits into the two choices.
     var choices: (faster: ExportChoice, original: ExportChoice)?
     var onChoose: (ExportChoice) -> Void = { _ in }
+    /// Folds the choices back; the editor calls it on a tap anywhere else.
     var onCancelChoice: () -> Void = {}
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let lime = Color(red: 0.84, green: 1, blue: 0.42)
-    /// Overshoots a little as the circle stretches into the choices and back.
-    private static let stretch = Animation.spring(response: 0.46, dampingFraction: 0.62)
 
     private var choosing: Bool { choices != nil && kind == 0 }
 
     var body: some View {
-        ZStack(alignment: .trailing) {
+        HStack(spacing: 8) {
             if let choices, choosing {
-                choicePill(choices).fixedSize()
-                    // A container keeps each choice's own identifier under the caller's one.
-                    .accessibilityElement(children: .contain)
-                    .transition(.modifier(active: StretchFromTrailing(amount: 0.18), identity: StretchFromTrailing(amount: 1)))
+                // Faster takes the circle's place; Original slides out from behind it.
+                option(choices.original, caption: "Original")
+                    .accessibilityIdentifier("replay-save-original")
+                    .transition(.sessionSplit(offset: 56))
+                option(choices.faster, caption: "Faster")
+                    .accessibilityIdentifier("replay-save-faster")
+                    .transition(.sessionPop(from: .trailing))
             } else {
-                downloadButton.transition(.sessionPop(scale: 0.6))
+                downloadButton
+                    .accessibilityIdentifier("replay-export")
+                    .transition(.sessionPop(scale: 0.6))
             }
         }
-        // While idle the button keeps the circle's width, so the choices grow to the left over the
+        .fixedSize()
+        // While idle the button keeps the circle's width, so the choices open to the left over the
         // title instead of pushing the bar's layout; progress widens it as before.
         .frame(width: kind == 0 ? 44 : nil, alignment: .trailing)
-        .animation(SessionMotion.animation(Self.stretch, reduceMotion: reduceMotion), value: choosing)
+        // A container keeps each button's own identifier under the caller's one.
+        .accessibilityElement(children: .contain)
+        .accessibilityAction(.escape) { if choosing { onCancelChoice() } }
+        .animation(SessionMotion.animation(SessionMotion.pop, reduceMotion: reduceMotion), value: choosing)
         .sensoryFeedback(.impact(weight: .light), trigger: choosing) { _, new in new }
     }
 
-    private func choicePill(_ choices: (faster: ExportChoice, original: ExportChoice)) -> some View {
-        HStack(spacing: 6) {
-            Button(action: onCancelChoice) {
-                Image(systemName: "xmark").font(.system(size: 12, weight: .bold)).foregroundStyle(.white)
-                    .frame(width: 32, height: 32)
-                    .background(.white.opacity(0.14), in: .circle)
-            }
-            .buttonStyle(SessionPressStyle(scale: 0.9))
-            .accessibilityLabel(Text("Cancel"))
-            .accessibilityIdentifier("replay-save-cancel")
-            option(choices.original, caption: "Original", primary: false)
-                .accessibilityIdentifier("replay-save-original")
-            option(choices.faster, caption: "Faster", primary: true)
-                .accessibilityIdentifier("replay-save-faster")
-        }
-        .padding(4)
-        .appGlass(in: .capsule)
-    }
-
-    private func option(_ choice: ExportChoice, caption: LocalizedStringKey, primary: Bool) -> some View {
+    /// Drawn like the Download circle itself: solid lime, black type, the same height.
+    private func option(_ choice: ExportChoice, caption: LocalizedStringKey) -> some View {
         Button { onChoose(choice) } label: {
-            VStack(spacing: 0) {
-                Text(verbatim: choice.label).font(.system(size: 12, weight: .bold, design: .rounded)).monospacedDigit()
-                Text(caption).font(.system(size: 9, weight: .semibold)).opacity(0.75)
+            VStack(spacing: 1) {
+                Text(verbatim: choice.label).font(.system(size: 13, weight: .bold, design: .rounded)).monospacedDigit()
+                Text(caption).font(.system(size: 9, weight: .semibold)).opacity(0.7)
             }
-            .foregroundStyle(primary ? Color.black : Color.white)
-            .padding(.horizontal, 12)
-            .frame(height: 36)
-            .background(primary ? lime : Color.white.opacity(0.14), in: .capsule)
+            .foregroundStyle(.black)
+            .padding(.horizontal, 14)
+            .frame(height: 44)
+            .background(lime, in: .capsule)
+            .contentShape(.capsule)
         }
         .buttonStyle(SessionPressStyle(scale: 0.92))
         .accessibilityElement(children: .combine)
@@ -488,27 +480,4 @@ struct ReplayShareSheet: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
-}
-
-/// Grows a view sideways out of its trailing edge, as the Download circle stretches into its choices:
-/// a capsule reveals the content without squashing it, and only the spring's overshoot bulges it.
-private struct StretchFromTrailing: ViewModifier, Animatable {
-    var amount: Double
-    var animatableData: Double {
-        get { amount }
-        set { amount = newValue }
-    }
-
-    func body(content: Content) -> some View {
-        content
-            .mask(alignment: .trailing) {
-                GeometryReader { proxy in
-                    Capsule()
-                        .frame(width: max(proxy.size.height, proxy.size.width * min(amount, 1)))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .trailing)
-                }
-            }
-            .scaleEffect(x: max(1, amount), y: 1, anchor: .trailing)
-            .opacity(min(1, amount * 2.5))
-    }
 }
