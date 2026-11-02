@@ -59,6 +59,12 @@ struct RootShellView: View {
             }
         }
         .animation(.smooth(duration: 0.4), value: hasEnteredApp)
+        // Prepare the tracking model for this phone once per build, away from the camera opening.
+        .task(id: hasEnteredApp) {
+            guard hasEnteredApp else { return }
+            do { try await Task.sleep(for: .seconds(2)) } catch { return }
+            TrackingModelPrewarm.runIfNeeded()
+        }
         .task(id: canRequestAdPermission) {
             guard canRequestAdPermission, adMeasurement.isAvailable else { return }
             // Let the replay close first; cancel if a camera, sign-in, or sheet opens.

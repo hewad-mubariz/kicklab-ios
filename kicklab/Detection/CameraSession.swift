@@ -179,7 +179,8 @@ final class CameraSession: NSObject, ObservableObject {
                     guard self.previewRequest === request, !request.isCancelled else { return }
                     self.isReady = configured
                     self.status = configured ? "preview only" : "camera unavailable"
-                    if configured { self.prepareTracking() }
+                    // The viewfinder opens and settles before the tracking model loads beside it.
+                    if configured { self.prepareTracking(after: 0.6) }
                     else { self.previewRequest = nil }
                 }
             }
@@ -228,9 +229,10 @@ final class CameraSession: NSObject, ObservableObject {
     }
 
     /// One bounded warmup while framing the shot; never a continuous preview-analysis loop.
-    /// Repeated calls (including lens changes) do not reload a ready or in-flight model.
+    /// Repeated calls (including lens changes) do not reload a ready or in-flight model. The controls
+    /// show the preparation at once; the work itself can wait `delay` seconds.
     @MainActor
-    func prepareTracking() {
+    func prepareTracking(after delay: TimeInterval = 0) {
         guard pipeline == .juggling, isReady, previewRequest != nil, trackingRequest == nil,
               recordingRequest == nil, !isFinishingRecording else { return }
         let request = CaptureRequest()
@@ -238,7 +240,7 @@ final class CameraSession: NSObject, ObservableObject {
         isPreparingTracking = true
         isTrackingReady = false
         trackingPreparationError = nil
-        queue.async { [weak self] in
+        queue.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self, !request.isCancelled else { return }
             autoreleasepool {
                 do {

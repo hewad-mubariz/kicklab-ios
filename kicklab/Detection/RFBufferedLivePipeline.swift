@@ -117,13 +117,24 @@ nonisolated final class RFWorker {
         let configuration = MLModelConfiguration(); configuration.computeUnits = .cpuAndGPU
         configuration.functionName = resolution.functionName
         let url = resources.appendingPathComponent("RFDETRSmallRecovery040FP16.mlmodelc")
-        do {
-            model = try MLModel(contentsOf: url, configuration: configuration)
-            computeDescription = "CPU + GPU"
-        } catch {
+        // Where the GPU load fails (an iPhone 11 rejects it after 0.9 s, every time) this phone goes
+        // straight to the CPU on later loads of the same build and iOS, instead of failing again.
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
+        let cpuKey = "kicklab.rf.cpuOnly.\(build).\(ProcessInfo.processInfo.operatingSystemVersionString)"
+        if UserDefaults.standard.bool(forKey: cpuKey) {
             configuration.computeUnits = .cpuOnly
             model = try MLModel(contentsOf: url, configuration: configuration)
             computeDescription = "CPU (compatibility)"
+        } else {
+            do {
+                model = try MLModel(contentsOf: url, configuration: configuration)
+                computeDescription = "CPU + GPU"
+            } catch {
+                configuration.computeUnits = .cpuOnly
+                model = try MLModel(contentsOf: url, configuration: configuration)
+                computeDescription = "CPU (compatibility)"
+                UserDefaults.standard.set(true, forKey: cpuKey)
+            }
         }
         guard [288,384].contains(edge),
             model.modelDescription.inputDescriptionsByName["tensors"]?.multiArrayConstraint?.shape.map(\.intValue) == [1,3,edge,edge] else {
