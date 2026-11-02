@@ -100,7 +100,7 @@ final class BallSwapsUITests: ProReplayUITestCase {
         XCTAssertTrue(app.buttons["ball-swap-lightning"].waitForExistence(timeout: 5))
         app.buttons["ball-swap-lightning"].tap()
         XCTAssertTrue(app.buttons["ball-swap-lightning"].isSelected)
-        XCTAssertTrue(app.descendants(matching: .any)["ball-swap-sound-summary"].label.contains("Thunder"))
+        XCTAssertTrue(app.buttons["swap-sound-auto"].label.contains("Thunder"), "Auto follows the moment")
         capture(app, "04 Change moment")
 
         // Remove look hands its touches back to Volt and Electric.
@@ -169,30 +169,32 @@ final class BallSwapsUITests: ProReplayUITestCase {
     }
 
     @MainActor
-    func testChangeSoundFollowsTheEffectAndOriginalSoundMutes() throws {
+    func testChangeSoundSitsInLooksAndOriginalSoundMutes() throws {
         continueAfterFailure = false
         #if !targetEnvironment(simulator)
         throw XCTSkip("Requires the local video fixture")
         #endif
         let app = launchEditor()
-        // Without looks there is no change to hear.
+        // The Sound page holds the original and touch sounds; the change sound lives in Looks.
         app.buttons["replay-tool-sound"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["sound-change-note"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["touch-sound-none"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["swap-sound-auto"].exists, "No change sound on the Sound page")
         app.buttons["replay-tools-back"].tap()
         app.buttons["replay-tool-looks"].tap()
         XCTAssertTrue(app.buttons["look-recipe-powerUp"].waitForExistence(timeout: 5))
         app.buttons["look-recipe-powerUp"].tap()
-        app.buttons["replay-tools-back"].tap()
-        app.buttons["replay-tool-sound"].tap()
 
-        // Power-up's Burst plays Drop on Auto; a picked sound overrides it.
+        // Power-up's Burst plays Drop on Auto; a picked sound overrides it, beside the moment.
+        app.buttons["look-part-change"].tap()
         XCTAssertTrue(app.buttons["swap-sound-auto"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["swap-sound-auto"].isSelected, "The change sound follows the effect")
         XCTAssertTrue(app.buttons["swap-sound-auto"].label.contains("Drop"))
-        XCTAssertTrue(app.descendants(matching: .any)["sound-auto-note"].exists)
         app.buttons["swap-sound-chime"].tap()
         XCTAssertTrue(app.buttons["swap-sound-chime"].isSelected)
         XCTAssertFalse(app.buttons["swap-sound-auto"].isSelected, "A picked sound overrides the effect's")
+        capture(app, "04b Change sound in Looks")
+        app.buttons["replay-tools-back"].tap()
+        app.buttons["replay-tool-sound"].tap()
 
         // The first touch sound mutes the original, None brings it back, and a manual choice wins.
         let original = app.switches["sound-original"]

@@ -523,7 +523,8 @@ struct SoundTile: View {
     }
 }
 
-/// The original sound, a sound for every touch and one for every ball change.
+/// The original sound and a sound for every touch. The sound at a change of look is picked in
+/// Looks, with the change itself.
 struct ReplaySoundPage: View {
     @Binding var edit: SessionEditState
     /// Set when picking a touch sound muted the original; choosing no touch sound brings it back.
@@ -563,47 +564,6 @@ struct ReplaySoundPage: View {
             if edit.touchSound == .auto {
                 note("Auto plays each touch's look: Crackle with fire, Frost with ice, Splash with water, Clang with metal.")
                     .accessibilityIdentifier("touch-sound-auto-note")
-            }
-            label("Ball change sound", symbol: "arrow.triangle.2.circlepath")
-            // Auto follows the change effect; any other tile overrides it until Auto is picked again.
-            row([nil] + BallSwapSound.allCases.map { Optional($0) }, selection: edit.swapSoundChoice) { choice in
-                let sound = choice ?? edit.swapEffect.defaultSound
-                SoundTile(sound: .swap(sound), title: choice?.title ?? String(localized: "Auto", bundle: AppLanguage.bundle, locale: AppLanguage.locale), selected: choice == edit.swapSoundChoice,
-                          identifier: "swap-sound-\(choice?.rawValue ?? "auto")",
-                          accessibility: choice == nil ? String(localized: "Auto ball change sound, \(sound.title), matches the change effect", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-                              : choice == BallSwapSound.none ? String(localized: "No ball change sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-                              : String(localized: "\(sound.title) ball change sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) {
-                    withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { edit.swapSoundChoice = choice }
-                    onPreview(.swap(sound))
-                }
-                .overlay(alignment: .top) {
-                    // Auto names the sound it is playing, so the pairing is never a guess.
-                    if choice == nil, sound != .none {
-                        Text(sound.title)
-                            .font(.system(size: 8, weight: .bold)).foregroundStyle(SessionStyle.background)
-                            .padding(.horizontal, 5).padding(.vertical, 2)
-                            .background(SessionStyle.mint, in: .capsule)
-                            .offset(y: -5)
-                            .contentTransition(.interpolate)
-                            .accessibilityHidden(true)
-                    }
-                }
-            }
-            if edit.hasLookChanges && edit.swapSoundChoice == nil && edit.swapEffect != .none {
-                note("Auto plays \(edit.swapSound.title) with \(edit.swapEffect.title). Pick a sound to use your own.")
-                    .accessibilityIdentifier("sound-auto-note")
-            }
-            if !edit.hasLookChanges {
-                HStack(spacing: 8) {
-                    Image(systemName: "info.circle").font(.system(size: 12)).foregroundStyle(SessionStyle.mint)
-                    Text("Add looks to hear the change sound.")
-                        .font(.system(size: 11)).foregroundStyle(.white.opacity(0.7))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .padding(.horizontal, 16)
-                .transition(.sessionRise)
-                .accessibilityElement(children: .combine)
-                .accessibilityIdentifier("sound-change-note")
             }
         }
         .padding(.top, 2)
@@ -658,6 +618,17 @@ struct ReplaySoundPage: View {
 
     private func row<Item: Hashable, Tile: View>(_ items: [Item], selection: Item,
                                                 @ViewBuilder tile: @escaping (Item) -> Tile) -> some View {
+        SoundRow(items: items, selection: selection, tile: tile)
+    }
+}
+
+/// A scrolling row of sound tiles that opens on the selected one.
+struct SoundRow<Item: Hashable, Tile: View>: View {
+    let items: [Item]
+    let selection: Item
+    @ViewBuilder let tile: (Item) -> Tile
+
+    var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 8) {

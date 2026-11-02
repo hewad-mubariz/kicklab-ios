@@ -525,7 +525,8 @@ struct LooksPage: View {
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
-    /// The moment at every change, and the sound it makes.
+    /// The moment at every change, and the sound it makes. The sound is picked here rather than on the
+    /// Sound page, since only a clip with changes plays it.
     private var changeArea: some View {
         VStack(alignment: .leading, spacing: 6) {
             SwapMomentPicker(selection: edit.swapEffect, from: momentPair.from, to: momentPair.to) { effect in
@@ -533,21 +534,36 @@ struct LooksPage: View {
                 // The moment preview plays the change sound with the picture; with no change yet, play the sound alone.
                 if let change = nextChange { onPreviewMoment(change) } else { onPreviewSound(.swap(edit.swapSound)) }
             }
-            HStack(spacing: 4) {
-                Image(systemName: edit.swapSound == .none ? "speaker.slash.fill" : "speaker.wave.2.fill")
-                    .font(.system(size: 10, weight: .semibold))
-                    .contentTransition(.symbolEffect(.replace))
-                Text(edit.swapSound == .none ? String(localized: "No sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : edit.swapSound.title).contentTransition(.interpolate)
-                if edit.swapSoundChoice == nil && edit.swapSound != .none {
-                    Text("auto").foregroundStyle(SessionStyle.mint)
-                }
-                Text("· change it on the Sound page").foregroundStyle(.white.opacity(0.45))
+            HStack(spacing: 6) {
+                Image(systemName: "speaker.wave.2.fill").font(.system(size: 11, weight: .semibold)).foregroundStyle(SessionStyle.mint)
+                Text("Change sound").font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
             }
-            .font(.system(size: 11, weight: .medium))
-            .foregroundStyle(.white.opacity(0.75))
-            .padding(.horizontal, 16)
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("ball-swap-sound-summary")
+            .padding(.horizontal, 16).padding(.top, 4)
+            .accessibilityAddTraits(.isHeader)
+            // Auto plays the moment's own sound; any other tile overrides it until Auto is picked again.
+            SoundRow(items: [nil] + BallSwapSound.allCases.map { Optional($0) }, selection: edit.swapSoundChoice) { choice in
+                let sound = choice ?? edit.swapEffect.defaultSound
+                SoundTile(sound: .swap(sound), title: choice?.title ?? String(localized: "Auto", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+                          selected: choice == edit.swapSoundChoice, identifier: "swap-sound-\(choice?.rawValue ?? "auto")",
+                          accessibility: choice == nil ? String(localized: "Auto ball change sound, \(sound.title), matches the change effect", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                              : choice == BallSwapSound.none ? String(localized: "No ball change sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                              : String(localized: "\(sound.title) ball change sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) {
+                    withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { edit.swapSoundChoice = choice }
+                    onPreviewSound(.swap(sound))
+                }
+                .overlay(alignment: .top) {
+                    // Auto names the sound it is playing, so the pairing is never a guess.
+                    if choice == nil, sound != .none {
+                        Text(sound.title)
+                            .font(.system(size: 8, weight: .bold)).foregroundStyle(SessionStyle.background)
+                            .padding(.horizontal, 5).padding(.vertical, 2)
+                            .background(SessionStyle.mint, in: .capsule)
+                            .offset(y: -5)
+                            .contentTransition(.interpolate)
+                            .accessibilityHidden(true)
+                    }
+                }
+            }
         }
     }
 

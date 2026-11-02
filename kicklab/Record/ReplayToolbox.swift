@@ -281,8 +281,7 @@ struct ReplayToolbox: View {
         case .sound:
             // The sound in use as its waveform, so the tile doubles as the current setting.
             // Auto draws the sound the first look plays.
-            let shown: ReplaySound? = edit.touchSound != .none ? .touch(edit.touchSound(forTouch: 0))
-                : edit.hasSounds ? .swap(edit.swapSound) : nil
+            let shown: ReplaySound? = edit.touchSound != .none ? .touch(edit.touchSound(forTouch: 0)) : nil
             VStack(spacing: 6) {
                 if let shown {
                     SoundWaveform(sound: shown, bars: 10, color: SessionStyle.mint)
@@ -295,7 +294,7 @@ struct ReplayToolbox: View {
                         .contentTransition(.symbolEffect(.replace))
                         .frame(height: 26)
                 }
-                Text(shown.map { _ in edit.touchSound != .none ? edit.touchSound.title : edit.swapSound.title }
+                Text(shown.map { _ in edit.touchSound.title }
                      ?? (edit.clipAudio ? String(localized: "Original", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Muted", bundle: AppLanguage.bundle, locale: AppLanguage.locale)))
                     .font(.system(size: 9, weight: .medium)).foregroundStyle(.white.opacity(0.7))
                     .contentTransition(.interpolate)
