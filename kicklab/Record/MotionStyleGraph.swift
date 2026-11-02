@@ -599,7 +599,9 @@ struct MotionStyleGraph: View {
 
     private func rainbow(_ context: inout GraphicsContext, _ size: CGSize) {
         let window = 6.0, ground = size.height - 6, top: CGFloat = 8
-        func x(_ t: Double) -> CGFloat { CGFloat((t - (now - window)) / window) * size.width }
+        // The ball rides the newest arc at "now"; stopping short of the edge keeps it and its glow whole.
+        let right = size.width - 9
+        func x(_ t: Double) -> CGFloat { CGFloat((t - (now - window)) / window) * right }
         func rise(_ lift: Double) -> CGFloat { CGFloat(max(0.06, lift)) * (ground - top) }
         func color(_ number: Int) -> Color {
             Color(hue: (Double(number) * 0.11).truncatingRemainder(dividingBy: 1), saturation: 0.7, brightness: 1)
