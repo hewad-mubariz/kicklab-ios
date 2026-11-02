@@ -12,12 +12,22 @@ import Foundation
 
 /// A cue on every counted touch.
 nonisolated enum TouchSound: String, CaseIterable, Identifiable, Hashable, Sendable, Codable {
-    case none, thud, pop, click, kick, snare, laser, bubble, coin, bell, whistle
+    /// Auto plays each touch's own look sound (see `matching`); the themed sounds after it belong
+    /// to effects and balls, and every sound can also be picked on its own.
+    case none, auto, crackle, frost, glass, splash, clang, spark
+    case thud, pop, click, kick, snare, laser, bubble, coin, bell, whistle
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .none: String(localized: "sound.none", defaultValue: "None", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .auto: String(localized: "Auto", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .crackle: "Crackle"
+        case .frost: "Frost"
+        case .glass: "Glass"
+        case .splash: "Splash"
+        case .clang: "Clang"
+        case .spark: "Spark"
         case .thud: "Thud"
         case .pop: "Pop"
         case .click: "Click"
@@ -34,6 +44,13 @@ nonisolated enum TouchSound: String, CaseIterable, Identifiable, Hashable, Senda
     var symbol: String {
         switch self {
         case .none: "speaker.slash.fill"
+        case .auto: "wand.and.stars"
+        case .crackle: "flame.fill"
+        case .frost: "snowflake"
+        case .glass: "diamond.fill"
+        case .splash: "water.waves"
+        case .clang: "hammer.fill"
+        case .spark: "bolt.fill"
         case .thud: "circle.fill"
         case .pop: "smallcircle.filled.circle"
         case .click: "cursorarrow.click"
@@ -49,6 +66,56 @@ nonisolated enum TouchSound: String, CaseIterable, Identifiable, Hashable, Senda
 }
 
 /// A cue at the moment the ball changes.
+extension TouchSound {
+    /// What Auto plays for a look: a themed effect's sound, else a themed ball's, else a sound
+    /// already in the list that suits the effect, else a plain kick. `effectShown` is false when
+    /// the effect is at zero intensity.
+    nonisolated static func matching(_ look: TouchLook, effectShown: Bool = true) -> TouchSound {
+        let effect = effectShown ? look.effect : .none
+        return themed(effect) ?? themed(look.ball) ?? suited(effect) ?? .kick
+    }
+
+    private nonisolated static func themed(_ effect: BallStyle) -> TouchSound? {
+        switch effect {
+        case .fire, .labFlame, .blueFlame, .emberWake, .flameRibbon, .heatPulse: .crackle
+        case .ice: .frost
+        case .crystal: .glass
+        case .water, .liquid: .splash
+        case .neon, .electric: .spark
+        default: nil
+        }
+    }
+
+    private nonisolated static func themed(_ ball: BallSkin) -> TouchSound? {
+        switch ball {
+        case .metal, .chrome: .clang
+        case .gold, .goldPolish: .coin
+        case .lava: .crackle
+        case .arctic: .frost
+        case .prism: .glass
+        default: nil
+        }
+    }
+
+    private nonisolated static func suited(_ effect: BallStyle) -> TouchSound? {
+        switch effect {
+        case .galaxy, .glowTrail: .laser
+        case .aura: .bubble
+        case .rainbow: .bell
+        case .nature: .pop
+        case .shadow, .pixel: .click
+        default: nil
+        }
+    }
+}
+
+extension SessionEditState {
+    /// The touch sound heard on touch `index`: Auto follows that touch's look.
+    nonisolated func touchSound(forTouch index: Int) -> TouchSound {
+        touchSound == .auto ? TouchSound.matching(look(forTouch: index), effectShown: intensity > 0.02) : touchSound
+    }
+}
+
 nonisolated enum BallSwapSound: String, CaseIterable, Identifiable, Hashable, Sendable, Codable {
     case none, whoosh, chime, zap, shimmer, drop, glitch, thunder, sparkle, flip, warp
     var id: String { rawValue }
@@ -221,6 +288,63 @@ nonisolated enum ReplaySoundSynth {
         switch sound {
         case .none:
             return (0.01, 0, { _, _, _ in 0 })
+        case .auto:
+            // Resolved per touch before it plays; on its own it sounds like the plain kick.
+            return touchVoice(.kick)
+        case .crackle:
+            // A soft whoomp of air with dry pops scattered through it, like a log catching.
+            return (0.42, 0.8, { t, n, s in
+                let whoomp = lowpass(n.next(), &s, cutoff: 700 + 2600 * exp(-t / 0.05)) * envelope(t, attack: 0.008, decay: 0.12)
+                let pops = [(0.0, 1.0), (0.045, 0.6), (0.09, 0.8), (0.16, 0.45), (0.23, 0.55), (0.31, 0.3)]
+                    .reduce(0.0) { sum, pop in
+                        let age = t - pop.0
+                        return age >= 0 && age < 0.014 ? sum + pop.1 * sin(2 * .pi * 3100 * age) * exp(-age / 0.0025) : sum
+                    }
+                return whoomp * 0.9 + pops * 0.7
+            })
+        case .frost:
+            // A crisp crack, then a high, inharmonic tinkle that melts away.
+            return (0.36, 0.7, { t, n, s in
+                let raw = n.next()
+                let crack = (raw - lowpass(raw, &s, cutoff: 2500)) * envelope(t, attack: 0.0002, decay: 0.006)
+                let tinkle = [(3150.0, 1.0, 0.09), (4720.0, 0.6, 0.14), (6900.0, 0.4, 0.2)]
+                    .reduce(0.0) { $0 + $1.1 * sin(2 * .pi * $1.0 * t) * exp(-t / $1.2) } * min(1, t / 0.0008)
+                return crack * 1.2 + tinkle * 0.35
+            })
+        case .glass:
+            // A struck crystal glass: inharmonic partials, a near-unison pair that shimmers.
+            return (0.6, 0.65, { t, _, _ in
+                let f = 1480.0
+                let partials = [(1.0, 1.0, 0.32), (1.003, 0.6, 0.3), (2.32, 0.45, 0.16), (4.25, 0.25, 0.08), (6.63, 0.12, 0.04)]
+                return partials.reduce(0.0) { $0 + $1.1 * sin(2 * .pi * f * $1.0 * t) * exp(-t / $1.2) } * min(1, t / 0.0006)
+            })
+        case .splash:
+            // A wash that dulls as it falls, and droplets landing after it.
+            return (0.4, 0.8, { t, n, s in
+                let wash = lowpass(n.next(), &s, cutoff: 5200 * exp(-t / 0.09) + 400) * envelope(t, attack: 0.004, decay: 0.09)
+                let drops = [(0.07, 900.0, 0.5), (0.13, 1300.0, 0.35), (0.2, 1050.0, 0.25)].reduce(0.0) { sum, drop in
+                    let age = t - drop.0
+                    guard age >= 0 else { return sum }
+                    return sum + drop.2 * sin(sweepPhase(age, drop.1, drop.1 * 2.2, over: 0.03)) * envelope(age, attack: 0.001, decay: 0.018)
+                }
+                return wash + drops
+            })
+        case .clang:
+            // A struck metal plate: a dull hit and a bright ring of inharmonic partials.
+            return (0.55, 0.75, { t, n, s in
+                let f = 410.0
+                let partials = [(1.0, 1.0, 0.28), (1.006, 0.5, 0.26), (2.76, 0.7, 0.18), (5.40, 0.45, 0.1), (8.93, 0.25, 0.05)]
+                let ring = partials.reduce(0.0) { $0 + $1.1 * sin(2 * .pi * f * $1.0 * t) * exp(-t / $1.2) } * min(1, t / 0.0005)
+                let hit = lowpass(n.next(), &s, cutoff: 4000) * envelope(t, attack: 0.0003, decay: 0.004)
+                return ring + hit * 0.8
+            })
+        case .spark:
+            // An electric snap: a clipped tone diving in pitch over a fizz.
+            return (0.2, 0.7, { t, n, s in
+                let buzz = tanh(4 * sin(sweepPhase(t, 1800, 300, over: 0.08))) * envelope(t, attack: 0.001, decay: 0.05)
+                let fizz = lowpass(n.next(), &s, cutoff: 7000) * envelope(t, attack: 0.0005, decay: 0.03)
+                return buzz * 0.6 + fizz * 0.5
+            })
         case .thud:
             return (0.22, 0.85, { t, n, s in
                 let body = sin(sweepPhase(t, 95, 55, over: 0.12)) * envelope(t, attack: 0.002, decay: 0.07)
@@ -540,7 +664,7 @@ nonisolated struct ReplaySoundtrack: Hashable, Sendable {
         var events: [Event] = []
         if edit.touchSound != .none {
             events += touchTimes.enumerated().filter { !changed.contains($0.offset) && !celebrated.contains($0.offset) }
-                .map { Event(time: $0.element, sound: .touch(edit.touchSound)) }
+                .map { Event(time: $0.element, sound: .touch(edit.touchSound(forTouch: $0.offset))) }
         }
         events += swaps.map { Event(time: $0.time, sound: .swap(edit.swapSound)) }
         if let milestones { events += celebrated.sorted().map { Event(time: touchTimes[$0], sound: .milestone(milestones)) } }

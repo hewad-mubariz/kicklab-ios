@@ -201,12 +201,24 @@ final class BallSwapsUITests: ProReplayUITestCase {
         XCTAssertTrue(app.buttons["touch-sound-pop"].isSelected)
         XCTAssertFalse(isOn(original), "A touch sound mutes the original automatically")
         capture(app, "05 Sound tool")
+        // Pop sits past the themed sounds, so the row has scrolled; back to its start for None.
+        let touchRow = app.scrollViews.containing(.button, identifier: "touch-sound-pop").firstMatch
+        touchRow.swipeRight(); touchRow.swipeRight()
         app.buttons["touch-sound-none"].tap()
         XCTAssertTrue(isOn(original), "No touch sound restores the original it muted")
-        app.buttons["touch-sound-kick"].tap()
+        app.buttons["touch-sound-crackle"].tap()
         XCTAssertFalse(isOn(original))
         original.tap()
         XCTAssertTrue(isOn(original), "The person can keep both")
+
+        // Auto plays each touch's look sound and names the one the first look plays.
+        let auto = app.buttons["touch-sound-auto"]
+        auto.tap()
+        XCTAssertTrue(auto.isSelected)
+        XCTAssertTrue(auto.label.contains("matches each touch's look"), auto.label)
+        XCTAssertTrue(app.descendants(matching: .any)["touch-sound-auto-note"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["touch-sound-crackle"].exists && app.buttons["touch-sound-frost"].exists)
+        capture(app, "06 Auto touch sound")
         app.buttons["replay-close-tools"].tap()
     }
 

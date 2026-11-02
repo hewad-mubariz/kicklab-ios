@@ -54,6 +54,31 @@ struct ReplaySoundTests {
         #expect(ReplaySoundtrack(edit: edit, touchTimes: [0.5, 1.0]).isEmpty, "A change sound needs a change")
     }
 
+    @Test func autoTouchSoundFollowsEachTouchsLook() {
+        var edit = SessionEditState(style: .fire, intensity: 0.7)
+        edit.touchSound = .auto
+        edit.swapSound = .none
+        edit.lookChanges = [2: TouchLook(ball: .metal, effect: .none), 3: TouchLook(ball: .classic, effect: .water),
+                            4: TouchLook(ball: .classic, effect: .galaxy), 5: TouchLook(ball: .classic, effect: .none)]
+        let sounds = ReplaySoundtrack(edit: edit, touchTimes: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]).events.map(\.sound)
+        #expect(sounds == [.touch(.crackle), .touch(.crackle), .touch(.clang), .touch(.splash), .touch(.laser), .touch(.kick)],
+                "Fire crackles, a metal ball clangs, water splashes, Galaxy keeps a sound from the list, a plain look kicks")
+        // A themed effect wins over a themed ball; with the effect at zero the ball's sound plays.
+        #expect(TouchSound.matching(TouchLook(ball: .metal, effect: .ice)) == .frost)
+        #expect(TouchSound.matching(TouchLook(ball: .metal, effect: .ice), effectShown: false) == .clang)
+        #expect(TouchSound.matching(TouchLook(ball: .metal, effect: .galaxy)) == .clang)
+        // A picked sound plays on every touch, whatever the look.
+        edit.touchSound = .bell
+        #expect(Set(ReplaySoundtrack(edit: edit, touchTimes: [0.5, 1.5, 2.0]).events.map(\.sound)) == [.touch(.bell)])
+    }
+
+    @Test func themedTouchSoundsSoundDifferentFromEachOther() {
+        let themed: [TouchSound] = [.crackle, .frost, .glass, .splash, .clang, .spark]
+        let renders = themed.map { ReplaySoundSynth.samples(.touch($0)) }
+        #expect(Set(renders).count == themed.count)
+        #expect(!renders.contains(ReplaySoundSynth.samples(.touch(.kick))))
+    }
+
     @Test func eachChangeEffectHasItsOwnSoundUntilThePersonPicksOne() {
         let paired = BallSwapEffect.allCases.filter { $0 != .none }.map(\.defaultSound)
         #expect(Set(paired).count == paired.count, "Every effect sounds different")

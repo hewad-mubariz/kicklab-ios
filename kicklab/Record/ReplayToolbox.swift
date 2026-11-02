@@ -280,7 +280,8 @@ struct ReplayToolbox: View {
             LooksPreview(looks: [edit.baseLook] + LookRecipes.ladder(lightweight: LookRecipes.prefersLightEffects).prefix(2))
         case .sound:
             // The sound in use as its waveform, so the tile doubles as the current setting.
-            let shown: ReplaySound? = edit.touchSound != .none ? .touch(edit.touchSound)
+            // Auto draws the sound the first look plays.
+            let shown: ReplaySound? = edit.touchSound != .none ? .touch(edit.touchSound(forTouch: 0))
                 : edit.hasSounds ? .swap(edit.swapSound) : nil
             VStack(spacing: 6) {
                 if let shown {

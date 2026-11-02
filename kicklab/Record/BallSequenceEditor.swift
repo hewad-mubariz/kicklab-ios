@@ -539,11 +539,30 @@ struct ReplaySoundPage: View {
                           identifier: "sound-original", nudge: nudge)
             label("Touch sound", symbol: "hand.tap.fill")
             row(TouchSound.allCases, selection: edit.touchSound) { sound in
-                SoundTile(sound: .touch(sound), title: sound.title, selected: sound == edit.touchSound,
+                let heard = sound == .auto ? TouchSound.matching(edit.baseLook, effectShown: edit.intensity > 0.02) : sound
+                SoundTile(sound: .touch(heard), title: sound.title, selected: sound == edit.touchSound,
                           identifier: "touch-sound-\(sound.rawValue)",
-                          accessibility: sound == .none ? String(localized: "No touch sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "\(sound.title) touch sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) {
+                          accessibility: sound == .none ? String(localized: "No touch sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                              : sound == .auto ? String(localized: "Auto touch sound, \(heard.title), matches each touch's look", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                              : String(localized: "\(sound.title) touch sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)) {
                     pickTouch(sound)
                 }
+                .overlay(alignment: .top) {
+                    // Auto names the sound the first look plays, so the pairing is never a guess.
+                    if sound == .auto {
+                        Text(heard.title)
+                            .font(.system(size: 8, weight: .bold)).foregroundStyle(SessionStyle.background)
+                            .padding(.horizontal, 5).padding(.vertical, 2)
+                            .background(SessionStyle.mint, in: .capsule)
+                            .offset(y: -5)
+                            .contentTransition(.interpolate)
+                            .accessibilityHidden(true)
+                    }
+                }
+            }
+            if edit.touchSound == .auto {
+                note("Auto plays each touch's look: Crackle with fire, Frost with ice, Splash with water, Clang with metal.")
+                    .accessibilityIdentifier("touch-sound-auto-note")
             }
             label("Ball change sound", symbol: "arrow.triangle.2.circlepath")
             // Auto follows the change effect; any other tile overrides it until Auto is picked again.
@@ -625,7 +644,7 @@ struct ReplaySoundPage: View {
                 edit.clipAudio = true; autoMuted = false; nudge += 1
             }
         }
-        onPreview(.touch(sound))
+        onPreview(.touch(sound == .auto ? TouchSound.matching(edit.baseLook, effectShown: edit.intensity > 0.02) : sound))
     }
 
     private func label(_ text: LocalizedStringKey, symbol: String) -> some View {
