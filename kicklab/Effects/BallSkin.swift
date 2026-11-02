@@ -7,6 +7,10 @@ nonisolated enum BallSkin: String, CaseIterable, Identifiable, Hashable, Sendabl
     /// Accepted in the Effects Lab on 1 November 2026 and drawn by its shaders.
     case goldPolish, prism, wave, nightPulse
     var id: String { rawValue }
+    /// Every ball picker's order, newest first after Original. Each skin appears once.
+    static let pickerOrder: [BallSkin] = [.original, .goldPolish, .prism, .wave, .nightPulse,
+                                          .metal, .lava, .pearl, .volt, .chrome, .arctic, .matrix,
+                                          .stealth, .crimson, .gold, .galaxy, .graffiti, .aurora, .classic]
     /// Lab skins are lit shaders rather than artwork maps; LabSkinRenderer draws them.
     var isLabSkin: Bool { self == .goldPolish || self == .prism || self == .wave || self == .nightPulse }
     var title: String {

@@ -331,6 +331,9 @@ struct BallEffectsTests {
     @Test func everyCatalogSkinHasDistinctArtwork() throws {
         let styles = BallSkin.allCases.filter { $0 != .original }
         #expect(styles.count == 18) // 14 artwork maps and the 4 Effects Lab skins
+        // The pickers list every skin exactly once, so a new one cannot be left out of them.
+        #expect(BallSkin.pickerOrder.count == BallSkin.allCases.count)
+        #expect(Set(BallSkin.pickerOrder) == Set(BallSkin.allCases))
         var rasters = Set<Data>()
         for skin in styles {
             #expect(BallSkinSphereRenderer.hasArtwork(for: skin), "Missing material: \(skin.title)")

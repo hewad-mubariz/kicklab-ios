@@ -38,9 +38,7 @@ struct LooksPage: View {
         }
     }
 
-    private let skins: [BallSkin] = [.original, .metal, .lava, .pearl, .volt,
-                                     .chrome, .arctic, .matrix, .stealth, .crimson,
-                                     .gold, .galaxy, .graffiti, .aurora, .classic]
+    private let skins = BallSkin.pickerOrder
 
     init(edit: Binding<SessionEditState>, touchTimes: [Double], currentTime: Double,
          onSeek: @escaping (Double) -> Void, onPreviewMoment: @escaping (Double) -> Void,

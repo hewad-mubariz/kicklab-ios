@@ -63,9 +63,7 @@ struct ReplayToolbox: View {
     /// Into a tool or back out of it; the swap leans slightly that way.
     @State private var forward = true
 
-    private let skins: [BallSkin] = [.original, .metal, .lava, .pearl, .volt,
-                                     .chrome, .arctic, .matrix, .stealth, .crimson,
-                                     .gold, .galaxy, .graffiti, .aurora, .classic]
+    private let skins = BallSkin.pickerOrder
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {

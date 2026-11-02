@@ -179,6 +179,32 @@ final class CaptureFlowUITests: ProReplayUITestCase {
     }
 
     @MainActor
+    /// The Effects Lab skins sit on the Ball page with the rest, on screen and pickable.
+    func testBallPageListsTheLabSkins() throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("This fixture path is only available in the simulator")
+        #endif
+        let fixture = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("kicklabTests/Fixtures/juggling-eighteen.mov").path
+        let app = XCUIApplication()
+        app.launchArguments = ["--session-design", "capture-flow", "--session-video", fixture]
+        app.launch()
+        XCTAssertTrue(app.buttons["replay-export"].waitForExistence(timeout: 15))
+        openTool("ball", in: app)
+        for skin in ["goldPolish", "prism", "wave", "nightPulse", "classic"] {
+            let option = app.buttons["ball-picker-\(skin)"]
+            XCTAssertTrue(option.waitForExistence(timeout: 5), skin)
+            XCTAssertTrue(option.isHittable, "\(skin) is on screen")
+        }
+        app.buttons["ball-picker-prism"].tap()
+        XCTAssertTrue(app.buttons["ball-picker-prism"].isSelected)
+        Thread.sleep(forTimeInterval: 1)
+        attach(app, "Ball page - lab skins")
+        if let folder = ProcessInfo.processInfo.environment["BALL_PAGE_SHOTS"], !folder.isEmpty {
+            try? app.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: folder).appendingPathComponent("ball-page.png"))
+        }
+    }
+
     private func openTool(_ name: String, in app: XCUIApplication) {
         XCTAssertTrue(app.buttons["replay-customize"].waitForExistence(timeout: 5))
         app.buttons["replay-customize"].tap()
