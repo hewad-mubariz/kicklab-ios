@@ -145,6 +145,7 @@ struct kicklabApp: App {
                 if phase == .active {
                     AppLanguage.refresh()
                     ProductAnalytics.shared.track(.appOpened)
+                    Task { await AppUpdateNotice.shared.check() }
                 }
             }
             .onChange(of: scenePhase) { _, phase in

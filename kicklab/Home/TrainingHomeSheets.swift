@@ -3,6 +3,8 @@ import SwiftUI
 struct TrainingHomeSettings: View {
     @Binding var appearance: String
     @ObservedObject private var analytics = ProductAnalytics.shared
+    @ObservedObject private var updates = AppUpdateNotice.shared
+    @Environment(\.openURL) private var openURL
     @Environment(\.colorScheme) private var scheme
     #if DEBUG
     @AppStorage(DebugOverlayPreferences.visibilityKey) private var showDebugOverlays = DebugOverlayPreferences.visibleByDefault
@@ -37,6 +39,13 @@ struct TrainingHomeSettings: View {
             if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
                 Section("About") {
                     LabeledContent("Juggle Dude", value: String(localized: "Version \(version)", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
+                    if let release = updates.available {
+                        // Stays here after the home banner is dismissed, until the update is installed.
+                        Button { openURL(AppUpdateNotice.appStoreURL) } label: {
+                            LabeledContent("Update available", value: String(localized: "Version \(release.version)", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
+                        }
+                        .accessibilityIdentifier("settings-app-update")
+                    }
                 }
             }
             #if DEBUG

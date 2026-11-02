@@ -15,6 +15,7 @@ struct RootShellView: View {
     @State private var recordsAfterLeaderboard = false
     @State private var showsProfile = false
     @State private var showsHistory = false
+    @ObservedObject private var updateNotice = AppUpdateNotice.shared
     @Namespace private var zoom
     private var accountBest: Int { account.user == nil ? personalBest : player.personalBest }
 
@@ -61,7 +62,14 @@ struct RootShellView: View {
         .modifier(SoftHaloOpening())
         .debugRuntimeOverlay()
         .overlay(alignment: .top) {
-            if hasEnteredApp && sheet == nil && !showsProfile { AccountErrorBanner().padding() }
+            if hasEnteredApp && sheet == nil && !showsProfile {
+                VStack(spacing: 8) {
+                    AccountErrorBanner()
+                    AppUpdateBanner(notice: updateNotice)
+                }
+                .padding()
+                .animation(.smooth, value: updateNotice.showsBanner)
+            }
         }
         // Keep presentation anchored to the root while welcome becomes home.
         .preferredColorScheme(preferredScheme)
