@@ -71,6 +71,13 @@ extension EffectFrame {
                                 time: time, intensity: 0, visibility: 0, style: style.shaderID)
         }
         frame.environment = edit.environment.shaderAmount
+        if style == .crystal {
+            // Crystal ignored intensity in the lab; the default 0.7 shows it as accepted.
+            let sampler = LabBallSampler(track: track, size: size, sourceSize: sourceSize)
+            let touches = track.touches.filter { edit.effect(at: $0, touchTimes: track.touches) == .crystal }
+            frame.crystal = CrystalFrame.make(time: time, size: size, strength: min(1, frame.intensity / 0.7),
+                                              track: CrystalTrack(sample: sampler.callAsFunction, touchTimes: touches))
+        }
         if style == .liquid || style == .water {
             // The lab rendered at full strength; the default 0.7 shows that, lower settings fade it.
             let sampler = LabBallSampler(track: track, size: size, sourceSize: sourceSize)

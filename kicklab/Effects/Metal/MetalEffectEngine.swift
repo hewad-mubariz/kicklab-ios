@@ -106,6 +106,7 @@ nonisolated final class MetalEffectEngine {
     private var labBackground: MTLTexture?
     private var labField: MTLTexture?
     private var water: WaterLabRenderer?
+    private var crystal: CrystalLabRenderer?
 
     init(resources: Resources? = nil) throws {
         self.resources = try resources ?? Resources.shared.get()
@@ -218,6 +219,17 @@ nonisolated final class MetalEffectEngine {
                 return
             }
         }
+        if let ice = frame.crystal, !frame.counter, frame.intensity > 0.005, frame.visibility > 0.005,
+           source != nil || frame.labBackdrop != nil {
+            if crystal == nil { crystal = try? CrystalLabRenderer(device: device, library: resources.library) }
+            if let crystal {
+                // Crystal refracts the picture behind it: the video with any replacement ball.
+                let background = try labBackground(frame, target: target, source: source, material: material,
+                                                   backdrop: frame.labBackdrop, command: command)
+                try crystal.encode(frame: ice, source: background, target: target, command: command)
+                return
+            }
+        }
         if let splash = frame.water, !frame.counter, frame.intensity > 0.005, frame.visibility > 0.005,
            source != nil || frame.labBackdrop != nil {
             if water == nil { water = try? WaterLabRenderer(device: device, library: resources.library) }
@@ -230,7 +242,7 @@ nonisolated final class MetalEffectEngine {
             }
         }
         // A lab effect without its touches and track (style 30 and up) has nothing to draw.
-        let labWithoutScene = frame.style >= 30 && frame.liquid == nil && frame.water == nil
+        let labWithoutScene = frame.style >= 30 && frame.liquid == nil && frame.water == nil && frame.crystal == nil
         if !frame.counter && (frame.style < 0.5 || frame.intensity <= 0.005 || frame.visibility <= 0.005 || labWithoutScene) {
             // An explicit off frame never consumes cached flame/bloom textures.
             // Still composite an independently selected ball material or grade.

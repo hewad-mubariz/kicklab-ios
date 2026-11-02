@@ -26,6 +26,8 @@ nonisolated struct EffectFrame: Sendable, Equatable {
     var liquid: LiquidFrame?
     /// Water's splashes for this moment; drawn by the lab renderer instead of the field.
     var water: WaterFrame?
+    /// Crystal's crystals, mist and frost for this moment; drawn by the lab renderer.
+    var crystal: CrystalFrame?
     /// Picker icons only: the solid grey a lab effect is drawn over when there is no video.
     var labBackdrop: Double?
 

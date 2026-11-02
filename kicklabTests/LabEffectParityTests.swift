@@ -15,8 +15,9 @@ final class LabEffectParityTests: XCTestCase {
 
     private static let demo = URL(fileURLWithPath: "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/launch-demo-20261011")
 
-    private func track() throws -> BallEffectTrack {
-        let analysis = try JSONDecoder().decode(Analysis.self, from: Data(contentsOf: Self.demo.appending(path: "analysis-native.json")))
+    private func track(_ url: URL? = nil) throws -> BallEffectTrack {
+        let url = url ?? Self.demo.appending(path: "analysis-native.json")
+        let analysis = try JSONDecoder().decode(Analysis.self, from: Data(contentsOf: url))
         return BallEffectTrack(frames: analysis.track.map { p in
             let person: PersonBox? = if let x = p.personX, let y = p.personY, let w = p.personWidth, let h = p.personHeight {
                 PersonBox(x: x, y: y, width: w, height: h)
@@ -26,12 +27,77 @@ final class LabEffectParityTests: XCTestCase {
         }, touchTimes: analysis.touchesMarked.map(\.time))
     }
 
+    /// On the phone: 10 seconds of the launch demo at export size for each new effect, timing the
+    /// scene (CPU) and the draw (GPU) separately. Copy the demo and its track to Documents/lab-check.
+    func testNewEffectCostOnThisPhone() async throws {
+        let folder = URL.documentsDirectory.appending(path: "lab-check")
+        let source = folder.appending(path: "source-1080p120.mp4")
+        try XCTSkipUnless(FileManager.default.fileExists(atPath: source.path), "Copy the launch demo to Documents/lab-check")
+        let track = try track(folder.appending(path: "analysis-native.json"))
+        func note(_ key: String, _ value: Any) { print("PHONECHECK \(key) = \(value)") }
+        func percentile(_ values: [Double], _ p: Double) -> Double {
+            let sorted = values.sorted()
+            return sorted.isEmpty ? 0 : (sorted[min(sorted.count - 1, Int(Double(sorted.count - 1) * p))] * 10).rounded() / 10
+        }
+        var start = ProcessInfo.processInfo.systemUptime
+        LiquidFluid.prepareAll()
+        note("prepare_liquid_ms", Int((ProcessInfo.processInfo.systemUptime - start) * 1000))
+        start = ProcessInfo.processInfo.systemUptime
+        WaterCrown.prepareAll()
+        note("prepare_water_ms", Int((ProcessInfo.processInfo.systemUptime - start) * 1000))
+        let asset = AVURLAsset(url: source)
+        let videoTracks = try await asset.loadTracks(withMediaType: .video)
+        let video = try XCTUnwrap(videoTracks.first)
+        let size = try await video.load(.naturalSize)
+        let engine = try MetalEffectEngine()
+        var made: CVPixelBuffer?
+        CVPixelBufferCreate(nil, Int(size.width), Int(size.height), kCVPixelFormatType_32BGRA,
+                            [kCVPixelBufferMetalCompatibilityKey: true, kCVPixelBufferIOSurfacePropertiesKey: [:]] as CFDictionary, &made)
+        let target = try XCTUnwrap(made)
+        for style in [BallStyle.neon, .galaxy, .liquid, .water, .crystal] {
+            let reader = try AVAssetReader(asset: asset)
+            let decoded = AVAssetReaderTrackOutput(track: video, outputSettings: [
+                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+                kCVPixelBufferMetalCompatibilityKey as String: true, kCVPixelBufferIOSurfacePropertiesKey as String: [:]])
+            decoded.alwaysCopiesSampleData = false
+            reader.add(decoded)
+            XCTAssertTrue(reader.startReading())
+            let edit = SessionEditState(style: style, intensity: 0.7, ballSkin: .original)
+            var scene: [Double] = [], draw: [Double] = [], parts = 0
+            var held: CMSampleBuffer?, pending = decoded.copyNextSampleBuffer()
+            for index in 0..<300 {
+                let time = Double(index) / 30
+                while let next = pending, next.presentationTimeStamp.seconds <= time + 0.000001 {
+                    held = next; pending = decoded.copyNextSampleBuffer()
+                }
+                let pixels = try XCTUnwrap(CMSampleBufferGetImageBuffer(try XCTUnwrap(held ?? pending)))
+                CVPixelBufferLockBaseAddress(pixels, .readOnly); CVPixelBufferLockBaseAddress(target, [])
+                let from = CVPixelBufferGetBaseAddress(pixels)!, to = CVPixelBufferGetBaseAddress(target)!
+                let fromRow = CVPixelBufferGetBytesPerRow(pixels), toRow = CVPixelBufferGetBytesPerRow(target)
+                for y in 0..<Int(size.height) { memcpy(to + y * toRow, from + y * fromRow, min(fromRow, toRow)) }
+                CVPixelBufferUnlockBaseAddress(pixels, .readOnly); CVPixelBufferUnlockBaseAddress(target, [])
+                let a = ProcessInfo.processInfo.systemUptime
+                let frame = EffectFrame.video(size: size, sourceSize: size, edit: edit, track: track, time: time)
+                let b = ProcessInfo.processInfo.systemUptime
+                try engine.composite(frame, pixelBuffer: target)
+                let c = ProcessInfo.processInfo.systemUptime
+                scene.append((b - a) * 1000); draw.append((c - b) * 1000)
+                parts = max(parts, frame.liquid?.parts.count ?? frame.water?.parts.count ?? frame.crystal?.objects.count ?? 0)
+            }
+            reader.cancelReading()
+            note("\(style.rawValue)_scene_ms_p50_p95", "\(percentile(scene, 0.5)) / \(percentile(scene, 0.95))")
+            note("\(style.rawValue)_draw_ms_p50_p95", "\(percentile(draw, 0.5)) / \(percentile(draw, 0.95))")
+            note("\(style.rawValue)_max_parts", parts)
+            note("\(style.rawValue)_thermal_after", ProcessInfo.processInfo.thermalState.rawValue)
+        }
+    }
+
     /// The picker icons of the lab effects, written as PNGs next to the renders.
     func testLabEffectIcons() throws {
         guard let folder = ProcessInfo.processInfo.environment["LAB_PARITY_OUT"] else { throw XCTSkip("Set LAB_PARITY_OUT") }
         let engine = try MetalEffectEngine()
         let ball = BallSkinSphereRenderer.image(skin: .classic, time: 0)
-        for style in [BallStyle.neon, .galaxy, .liquid, .water] {
+        for style in [BallStyle.neon, .galaxy, .liquid, .water, .crystal] {
             for (suffix, print) in [("", ball), ("-effect", nil)] {
                 let icon = try XCTUnwrap(EffectIconRenderer.image(shaderStyle: style.shaderID, height: 240, ball: print, engine: engine))
                 let url = URL(fileURLWithPath: folder).appending(path: "icon-\(style.rawValue)\(suffix).png")

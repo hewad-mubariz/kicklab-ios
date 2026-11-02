@@ -24,13 +24,13 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
     case nature
     case labFlame, glowTrail, blueFlame, emberWake, flameRibbon, heatPulse
     /// Accepted in the Effects Lab on 1 November 2026 and drawn by its own renderers.
-    case liquid, water
+    case liquid, water, crystal
 
     var id: String { rawValue }
 
     /// Effects Lab effects draw from the touches on the ball track over the video they refract,
     /// with their own renderers rather than the shared effect field.
-    var isLabEffect: Bool { self == .liquid || self == .water }
+    var isLabEffect: Bool { self == .liquid || self == .water || self == .crystal }
 
     /// Keep retired identifiers and shader IDs stable while removing them from all pickers.
     static var selectableCases: [BallStyle] {
@@ -58,6 +58,7 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
         case .heatPulse: return "Heat Pulse"
         case .liquid: return "Liquid Spectrum"
         case .water: return "Water"
+        case .crystal: return "Crystal"
         }
     }
 
@@ -74,7 +75,7 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
         case .rainbow: return "effect-card-rainbow"
         case .pixel: return "effect-card-pixel"
         case .nature: return "effect-card-nature"
-        case .labFlame, .glowTrail, .blueFlame, .emberWake, .flameRibbon, .heatPulse, .liquid, .water: return nil
+        case .labFlame, .glowTrail, .blueFlame, .emberWake, .flameRibbon, .heatPulse, .liquid, .water, .crystal: return nil
         }
     }
 
@@ -99,6 +100,7 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
         case .heatPulse: return Color(red: 1, green: 0.72, blue: 0.24)
         case .liquid: return Color(red: 0.35, green: 0.78, blue: 1)
         case .water: return Color(red: 0.55, green: 0.86, blue: 1)
+        case .crystal: return Color(red: 0.72, green: 0.9, blue: 1)
         }
     }
 }
@@ -237,6 +239,7 @@ extension BallStyle {
         // Lab effects own 30 and up; Power Shot trails own 20–29.
         case .liquid: 31
         case .water: 33
+        case .crystal: 30
         }
     }
     var caption: String {
@@ -260,6 +263,7 @@ extension BallStyle {
         case .heatPulse: "A soft burst on every touch."
         case .liquid: "Flowing colour from every touch."
         case .water: "A clear splash on every touch."
+        case .crystal: "Ice crystals break off the ball."
         }
     }
     var symbol: String {
@@ -283,6 +287,7 @@ extension BallStyle {
         case .heatPulse: "dot.radiowaves.left.and.right"
         case .liquid: "drop.fill"
         case .water: "water.waves"
+        case .crystal: "snowflake.circle"
         }
     }
 }

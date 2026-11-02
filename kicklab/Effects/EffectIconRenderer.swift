@@ -46,24 +46,31 @@ nonisolated enum EffectIconRenderer {
                 liquid.uniforms.options.y = -1; liquid.uniforms.options.w = 0.52
                 frame.liquid = liquid
             }
-            if shaderStyle == BallStyle.water.shaderID {
-                // Water draws itself over the picture it refracts. Drawn once over black and once over
-                // white, the difference is its transparency and the black render its colour.
-                WaterCrown.prepareAll()
+            if shaderStyle == BallStyle.water.shaderID || shaderStyle == BallStyle.crystal.shaderID {
+                // Water and Crystal draw over the picture they refract. Drawn once over black and once
+                // over white, the difference is their transparency and the black render their colour.
                 let path: (Float) -> SIMD4<Float> = { t in
                     let age = Float(time) - t
                     let p = center - velocity * radius * age + SIMD2(0, radius * 1.6 * age * age)
                     return SIMD4(p.x, p.y, radius, 1)
                 }
-                frame.water = WaterScene.frame(time: Float(time), size: SIMD2(Float(w), Float(h)), stage: .motion, intensity: 1,
-                                               light: true, source: true, touches: [Float(time) - 0.16], sample: path)
+                if shaderStyle == BallStyle.water.shaderID {
+                    WaterCrown.prepareAll()
+                    frame.water = WaterScene.frame(time: Float(time), size: SIMD2(Float(w), Float(h)), stage: .motion, intensity: 1,
+                                                   light: true, source: true, touches: [Float(time) - 0.16], sample: path)
+                } else {
+                    frame.crystal = CrystalFrame.make(time: time, size: CGSize(width: w, height: h), strength: 1,
+                                                      track: CrystalTrack(sample: path, touchTimes: [time - 0.18]))
+                }
                 frame.labBackdrop = 0
                 try engine.render(frame, into: target)
                 let black = pixels(of: target)
                 frame.labBackdrop = 1
                 try engine.render(frame, into: target)
                 let white = pixels(of: target)
-                effect = matte(black: black, white: white, width: w, height: h)
+                // Clear water needs a boost to read on the tile; Crystal's mist and ice already do.
+                effect = matte(black: black, white: white, width: w, height: h,
+                               boost: shaderStyle == BallStyle.water.shaderID ? 4 : 1)
             } else {
                 try engine.render(frame, into: target)
                 effect = image(from: target)
