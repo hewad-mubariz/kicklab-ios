@@ -1,4 +1,5 @@
 import AVFoundation
+import UIKit
 import XCTest
 @testable import kicklab
 
@@ -75,7 +76,7 @@ final class LabEffectParityTests: XCTestCase {
         CVPixelBufferCreate(nil, Int(size.width), Int(size.height), kCVPixelFormatType_32BGRA,
                             [kCVPixelBufferMetalCompatibilityKey: true, kCVPixelBufferIOSurfacePropertiesKey: [:]] as CFDictionary, &made)
         let target = try XCTUnwrap(made)
-        for style in [BallStyle.neon, .galaxy, .liquid, .water, .crystal] {
+        for style in [BallStyle.ice, .neon, .galaxy, .liquid, .water, .crystal] {
             let reader = try AVAssetReader(asset: asset)
             let decoded = AVAssetReaderTrackOutput(track: video, outputSettings: [
                 kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
@@ -111,6 +112,27 @@ final class LabEffectParityTests: XCTestCase {
             note("\(style.rawValue)_max_parts", parts)
             note("\(style.rawValue)_thermal_after", ProcessInfo.processInfo.thermalState.rawValue)
         }
+        // The editor's live preview draws Crystal lighter, at this phone's preview size (2x points).
+        let screen = await MainActor.run { UIScreen.main.bounds.size }
+        let previewSize = CGSize(width: screen.width * 2, height: screen.height * 2)
+        var previewTarget: CVPixelBuffer?
+        CVPixelBufferCreate(nil, Int(previewSize.width), Int(previewSize.height), kCVPixelFormatType_32BGRA,
+                            [kCVPixelBufferMetalCompatibilityKey: true, kCVPixelBufferIOSurfacePropertiesKey: [:]] as CFDictionary, &previewTarget)
+        let preview = try XCTUnwrap(previewTarget)
+        let edit = SessionEditState(style: .crystal, intensity: 0.7, ballSkin: .original)
+        for live in [false, true] {
+            engine.livePreview = live
+            var draw: [Double] = []
+            for index in 0..<240 {
+                let time = 2 + Double(index) / 30
+                let frame = EffectFrame.video(size: previewSize, sourceSize: size, edit: edit, track: track, time: time)
+                let b = ProcessInfo.processInfo.systemUptime
+                try engine.composite(frame, pixelBuffer: preview)
+                draw.append((ProcessInfo.processInfo.systemUptime - b) * 1000)
+            }
+            note("crystal_preview_\(live ? "live" : "full")_draw_ms_p50_p95", "\(percentile(draw, 0.5)) / \(percentile(draw, 0.95))")
+        }
+        engine.livePreview = false
     }
 
     /// The picker icons of the lab effects, written as PNGs next to the renders.

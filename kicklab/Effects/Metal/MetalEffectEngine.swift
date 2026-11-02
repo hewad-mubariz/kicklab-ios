@@ -112,6 +112,8 @@ nonisolated final class MetalEffectEngine {
     private var labField: MTLTexture?
     private var water: WaterLabRenderer?
     private var crystal: CrystalLabRenderer?
+    /// Set by the editor's live preview: Crystal draws lighter there, saved videos in full.
+    var livePreview = false
 
     init(resources: Resources? = nil) throws {
         self.resources = try resources ?? Resources.shared.get()
@@ -231,7 +233,8 @@ nonisolated final class MetalEffectEngine {
                 // Crystal refracts the picture behind it: the video with any replacement ball.
                 let background = try labBackground(frame, target: target, source: source, material: material,
                                                    backdrop: frame.labBackdrop, command: command)
-                try crystal.encode(frame: ice, source: background, target: target, command: command)
+                try crystal.encode(frame: ice, source: background, target: target, command: command,
+                                   previewLevel: livePreview ? CrystalLabRenderer.previewLevel(device: device) : 0)
                 return
             }
         }

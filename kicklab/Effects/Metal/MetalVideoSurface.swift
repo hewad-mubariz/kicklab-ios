@@ -131,6 +131,7 @@ final class EffectVideoView: MTKView {
         contentScaleFactor = min(2, traitCollection.displayScale)
         do {
             let engine = try MetalEffectEngine()
+            engine.livePreview = true
             self.engine = engine
             device = engine.device
             guard CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, engine.device, nil, &textureCache) == kCVReturnSuccess else {

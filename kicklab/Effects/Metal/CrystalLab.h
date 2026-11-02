@@ -337,7 +337,9 @@ float3 shadeIce(float2 screen,float3 ro,float3 rd,MeshHit first,uint root,
     float3 direction=refract(rd,normal,1/1.31);
     if(dot(direction,gn)>0)direction=refract(rd,gn,1/1.31);
     float3 origin=point+direction*.0004;
-    for(uint bounce=0;bounce<5;bounce++) {
+    // The live preview on older GPUs follows two bounces (atmosphere.w = 2); saved videos five.
+    uint bounces=u.atmosphere.w>1.5?2u:5u;
+    for(uint bounce=0;bounce<bounces;bounce++) {
         MeshHit next=meshHit(origin,direction,root,triangles,nodes);
         if(!next.found)break;
         Triangle surface=triangles[next.id];
@@ -527,15 +529,18 @@ fragment float4 labFragment(Varying in [[stage_in]],constant Uniforms &u [[buffe
 #ifdef ICE_FOOTAGE
     // Four independent rays filter silhouettes and sparkling internal facets
     // at football-video size, without blurring the original camera pixels.
+    // The live preview draws one (atmosphere.w >= 1): four cost 32 ms a frame
+    // on an iPhone 17 Pro Max and 147 ms on an iPhone 11. Saved videos keep four.
+    uint rays=u.atmosphere.w>.5?1u:4u;
     float3 color=0;
     float surfaceDepth=-100;
-    for(uint j=0;j<4;j++) {
-        float2 offset=float2((j&1)? .25:-.25,(j&2)? .25:-.25);
+    for(uint j=0;j<rays;j++) {
+        float2 offset=rays==1u?float2(0):float2((j&1)? .25:-.25,(j&2)? .25:-.25);
         float4 sample=icePixel(in.position.xy+offset,u,objects,triangles,nodes,roots,normalTex,detailTex,roughTex,studio,footage);
         color+=sample.rgb;surfaceDepth=max(surfaceDepth,sample.a);
     }
     float2 p=(in.position.xy-u.footageTransform.xy)/u.footageTransform.z;
-    return float4(iceAtmosphere(color*.25,p,surfaceDepth,u,mist,dust),1);
+    return float4(iceAtmosphere(color/float(rays),p,surfaceDepth,u,mist,dust),1);
 #else
     return icePixel(in.position.xy,u,objects,triangles,nodes,roots,normalTex,detailTex,roughTex,studio);
 #endif
