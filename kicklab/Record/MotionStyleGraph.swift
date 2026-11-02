@@ -332,81 +332,225 @@ struct MotionStyleGraph: View {
 
     // MARK: Fireworks: every bounce launches one. Higher bounce, higher and bigger; your best goes gold.
 
-    private func fireworks(_ context: inout GraphicsContext, _ size: CGSize) {
-        let ground = size.height - 4
-        let colors = [lime, mint, coral, Color(red: 0.4, green: 0.82, blue: 1), Color(red: 0.8, green: 0.55, blue: 1)]
-        func x(_ number: Int) -> CGFloat {
-            let spread = (Double(number) * 0.61803398875).truncatingRemainder(dividingBy: 1)
-            return size.width * CGFloat(0.12 + 0.76 * spread)
-        }
-        func altitude(_ lift: Double) -> CGFloat { ground - 14 - CGFloat(lift) * (ground - 28) }
-        line(&context, from: CGPoint(x: 0, y: ground), to: CGPoint(x: size.width, y: ground), color: .white.opacity(0.12), width: 0.6)
+    private enum ShellKind { case peony, chrysanthemum, ring, crossette, willow }
 
-        var bursts = snapshot.arcs.map { ($0.number, $0.apex, $0.lift) }
+    /// A stable 0…1 value for a pair of integers, the same on every frame and in every process.
+    private func noise(_ a: Int, _ b: Int) -> Double {
+        var h = UInt64(bitPattern: Int64((a &* 73_856_093) ^ (b &* 19_349_663))) &+ 0x9E37_79B9_7F4A_7C15
+        h = (h ^ (h >> 30)) &* 0xBF58_476D_1CE4_E5B9
+        h = (h ^ (h >> 27)) &* 0x94D0_49BB_1331_11EB
+        return Double((h ^ (h >> 31)) >> 11) / Double(UInt64(1) << 53)
+    }
+
+    /// A night show over the rooftops. Every bounce launches a shell whose height and size follow the
+    /// bounce; shells vary (peony, chrysanthemum, ring, crossette) and the session's best opens as a gold
+    /// willow. Sparks fly with drag and gravity, cool from white-hot to embers and crackle out. Each
+    /// shell's trails are a few batched strokes, since an export draws this on every frame.
+    private func fireworks(_ context: inout GraphicsContext, _ size: CGSize) {
+        let base = size.height - 2, launch = size.height - 10
+        let sky = Color(red: 0.35, green: 0.85, blue: 1), violet = Color(red: 0.78, green: 0.52, blue: 1)
+        let ember = Color(red: 1, green: 0.5, blue: 0.16)
+        let palette: [(Color, Color)] = [(coral, gold), (sky, ivory), (lime, mint), (violet, Color(red: 1, green: 0.55, blue: 0.85)),
+                                         (ember, coral), (mint, sky)]
+        func x(_ number: Int) -> CGFloat {
+            size.width * CGFloat(0.12 + 0.76 * (Double(number) * 0.61803398875).truncatingRemainder(dividingBy: 1))
+        }
+        func reach(_ lift: Double) -> CGFloat { 15 + 33 * CGFloat(lift) }
+        // Higher bounces break higher, never so high that the shell leaves the sky.
+        func altitude(_ lift: Double) -> CGFloat { max(reach(lift) + 5, launch - 16 - CGFloat(lift) * (launch - 16 - 50)) }
+
+        struct Shell { let number: Int; let apex: Double; let lift: Double }
+        var shells = snapshot.arcs.map { Shell(number: $0.number, apex: $0.apex, lift: $0.lift) }
+        var rocket: (number: Int, lift: Double, start: Double)?
         if let flight = snapshot.flight {
             let number = snapshot.played.count
-            if flight.falling {
-                bursts.append((number, flight.apex, flight.peak))
-            } else {
-                // The rocket climbs with the ball.
-                let top = CGPoint(x: x(number), y: altitude(flight.lift))
-                context.stroke(Path { $0.move(to: CGPoint(x: top.x, y: ground)); $0.addLine(to: top) },
-                               with: .linearGradient(Gradient(colors: [.clear, gold.opacity(0.9)]),
-                                                     startPoint: CGPoint(x: top.x, y: ground), endPoint: top),
-                               lineWidth: 1.6)
-                glow(context, radius: 4).fill(Path(ellipseIn: CGRect(x: top.x - 5, y: top.y - 5, width: 10, height: 10)), with: .color(gold))
-                for k in 1...4 {
-                    let spark = CGPoint(x: top.x + CGFloat(sin(now * 31 + Double(k) * 2.1)) * 3, y: top.y + CGFloat(k) * 5)
-                    dot(&context, at: spark, radius: 0.9, color: gold.opacity(0.8 - Double(k) * 0.15))
-                }
-                dot(&context, at: top, radius: 2, color: .white)
-            }
+            if flight.falling { shells.append(Shell(number: number, apex: flight.apex, lift: flight.peak)) }
+            else { rocket = (number, flight.lift, flight.start) }
         }
+        func kind(_ shell: Shell) -> ShellKind {
+            if shell.lift >= snapshot.best - 0.001 && shell.lift > 0.2 { return .willow }
+            if shell.number % 4 == 3 { return .ring }
+            if shell.lift > 0.62 { return .chrysanthemum }
+            return shell.number % 5 == 2 ? .crossette : .peony
+        }
+        func life(_ kind: ShellKind) -> Double { kind == .willow ? 2.8 : kind == .chrysanthemum ? 2.2 : 1.9 }
+        let active = shells.filter { now - $0.apex >= 0 && now - $0.apex < life(kind($0)) }
+
+        // Falling sparks end at the skyline's foot rather than spilling onto the card around the graph.
+        context.clip(to: Path(CGRect(origin: .zero, size: size)))
         var lit = context
         lit.blendMode = .plusLighter
-        let haze = glow(lit, radius: 4)
-        for (number, apex, lift) in bursts {
-            let age = now - apex
-            guard age >= 0, age < 1.8 else { continue }
-            let record = lift >= snapshot.best - 0.001 && lift > 0.2
-            let tint = record ? gold : colors[number % colors.count]
-            let center = CGPoint(x: x(number), y: altitude(lift))
-            let opened = 1 - pow(1 - min(1, age / 0.75), 3)
-            let reach = (16 + 40 * CGFloat(lift)) * CGFloat(opened)
-            let fade = pow(max(0, 1 - age / 1.8), 1.3)
-            let count = 26 + Int(lift * 18) + (record ? 12 : 0)
-            let drop = CGFloat(12 * age * age)
-            for ring in 0..<2 {
-                let scale: CGFloat = ring == 0 ? 1 : 0.55, ink = ring == 0 ? tint : ivory
-                for i in 0..<(ring == 0 ? count : count / 2) {
-                    let angle = Double(i) / Double(ring == 0 ? count : count / 2) * 2 * .pi + Double(number) + Double(ring) * 0.3
-                    let jitter = 0.86 + 0.28 * ((Double(i * 37 + number * 11).truncatingRemainder(dividingBy: 10)) / 10)
-                    let d = reach * scale * CGFloat(jitter)
-                    let dir = CGPoint(x: CGFloat(cos(angle)), y: CGFloat(sin(angle)) * 0.88)
-                    let p = CGPoint(x: center.x + dir.x * d, y: center.y + dir.y * d + drop)
-                    // Each spark streaks outward, its tail shortening as it slows.
-                    let tail = min(11, d * 0.45) * CGFloat(max(0.15, 1 - age / 1.1))
-                    let from = CGPoint(x: p.x - dir.x * tail, y: p.y - dir.y * tail)
-                    let twinkle = age > 0.9 ? 0.55 + 0.45 * sin(age * 38 + Double(i)) : 1
-                    let alpha = fade * twinkle * (ring == 0 ? 1 : 0.7)
-                    haze.stroke(Path { $0.move(to: from); $0.addLine(to: p) }, with: .color(ink.opacity(alpha * 0.8)), lineWidth: 2.4)
-                    lit.stroke(Path { $0.move(to: from); $0.addLine(to: p) },
-                               with: .linearGradient(Gradient(colors: [ink.opacity(0), ink.opacity(alpha)]), startPoint: from, endPoint: p),
-                               style: StrokeStyle(lineWidth: 1.3, lineCap: .round))
-                    dot(&lit, at: p, radius: record ? 1.5 : 1.2, color: Color.white.opacity(alpha * 0.85))
+        // Stars, and each shell lighting the air around it in its colour for a moment.
+        for i in 0..<18 {
+            let star = CGPoint(x: CGFloat(noise(i, 1)) * size.width, y: 4 + CGFloat(noise(i, 2)) * (launch - 26))
+            let twinkle = 0.18 + 0.22 * (0.5 + 0.5 * sin(now * (1.3 + noise(i, 3) * 2.4) + noise(i, 4) * 6.3))
+            dot(&lit, at: star, radius: 0.45 + CGFloat(noise(i, 5)) * 0.4, color: .white.opacity(twinkle))
+        }
+        var flashTint = Color.clear, flashLevel = 0.0
+        for shell in active where now - shell.apex < 0.5 {
+            let age = now - shell.apex, strength = 1 - age / 0.5
+            let tint = kind(shell) == .willow ? gold : palette[shell.number % palette.count].0
+            let center = CGPoint(x: x(shell.number), y: altitude(shell.lift)), radius = reach(shell.lift) * 1.5
+            lit.fill(Path(ellipseIn: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)),
+                     with: .radialGradient(Gradient(colors: [tint.opacity(0.22 * strength), .clear]),
+                                           center: center, startRadius: 0, endRadius: radius))
+            if strength > flashLevel { flashLevel = strength; flashTint = tint }
+        }
+
+        // The rocket climbs with the ball, shedding embers that fall behind it.
+        if let rocket {
+            let tint = palette[rocket.number % palette.count].0
+            let climb = min(1, (now - rocket.start) / 0.12)
+            let headX = x(rocket.number) + CGFloat(sin(now * 9 + Double(rocket.number))) * 0.8
+            let head = CGPoint(x: headX, y: launch - (launch - altitude(max(0.04, rocket.lift))) * CGFloat(climb))
+            lit.stroke(Path { $0.move(to: CGPoint(x: headX, y: launch)); $0.addLine(to: head) },
+                       with: .linearGradient(Gradient(colors: [.clear, gold.opacity(0.7)]),
+                                             startPoint: CGPoint(x: headX, y: launch), endPoint: head), lineWidth: 1.1)
+            var embers = Path()
+            for k in 1...9 {
+                let spawn = now - Double(k) * 0.045
+                guard spawn > rocket.start else { break }
+                let age = now - spawn
+                let along = head.y + (launch - head.y) * CGFloat(k) / 10
+                let p = CGPoint(x: headX + CGFloat(noise(k, rocket.number) - 0.5) * 3.5, y: along + CGFloat(20 * age * age))
+                let r = 0.9 - CGFloat(k) * 0.07
+                embers.addEllipse(in: CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2))
+            }
+            lit.fill(embers, with: .color(gold.opacity(0.75)))
+            glow(lit, radius: 3).fill(Path(ellipseIn: CGRect(x: head.x - 3.5, y: head.y - 3.5, width: 7, height: 7)), with: .color(tint))
+            dot(&lit, at: head, radius: 1.7, color: .white)
+        }
+
+        for shell in active {
+            let kind = kind(shell), life = life(kind), age = now - shell.apex, f = age / life
+            let center = CGPoint(x: x(shell.number), y: altitude(shell.lift)), radius = reach(shell.lift)
+            let (primary, secondary) = kind == .willow ? (gold, ember) : palette[shell.number % palette.count]
+            let drag = kind == .willow ? 2.0 : 3.2, gravity = kind == .willow ? 30.0 : 24.0
+            let fade = kind == .willow ? pow(max(0, 1 - f), 1.1) : (f < 0.7 ? 1 : pow(max(0, (1 - f) / 0.3), 1.3))
+            // White-hot at the break, the shell's colour in flight, cooling toward its second colour.
+            let ink = f < 0.06 ? ivory : f < 0.55 ? primary : primary.mix(with: secondary, by: min(1, (f - 0.55) / 0.35))
+            let crackles = kind != .willow && kind != .ring && f > 0.62
+
+            func position(_ origin: CGPoint, _ dir: CGPoint, _ speed: CGFloat, _ t: Double) -> CGPoint {
+                let e = 1 - exp(-drag * t)
+                let fly = CGFloat(e / drag) * speed, fall = CGFloat(gravity * (t - e / drag) / drag)
+                return CGPoint(x: origin.x + dir.x * fly, y: origin.y + dir.y * fly + fall)
+            }
+            var head = Path(), middle = Path(), tail = Path(), sparks = Path(), glitter = Path()
+            func trail(_ origin: CGPoint, _ dir: CGPoint, _ speed: CGFloat, from start: Double, at t: Double,
+                       samples: Int, spacing: Double, seed: Int) {
+                var previous = position(origin, dir, speed, t)
+                if crackles {
+                    // Crackle: the spark flickers out in white instead of trailing.
+                    if noise(seed, Int(age * 26)) > 0.45 { sparks.addEllipse(in: CGRect(x: previous.x - 0.8, y: previous.y - 0.8, width: 1.6, height: 1.6)) }
+                    return
+                }
+                sparks.addEllipse(in: CGRect(x: previous.x - 0.9, y: previous.y - 0.9, width: 1.8, height: 1.8))
+                for k in 1...samples {
+                    let sample = t - Double(k) * spacing
+                    guard sample > start - 0.0001 else { break }
+                    let p = position(origin, dir, speed, max(0, sample))
+                    var segment = Path(); segment.move(to: previous); segment.addLine(to: p)
+                    if k == 1 { head.addPath(segment) } else if k <= samples / 2 + 1 { middle.addPath(segment) } else { tail.addPath(segment) }
+                    if kind == .willow, noise(seed * 7 + k, Int(age * 20)) > 0.86 {
+                        glitter.addEllipse(in: CGRect(x: p.x - 0.6, y: p.y - 0.6, width: 1.2, height: 1.2))
+                    }
+                    previous = p
                 }
             }
-            if age < 0.18 {
-                glow(lit, radius: 7).fill(Path(ellipseIn: CGRect(x: center.x - 12, y: center.y - 12, width: 24, height: 24)),
-                                         with: .color(.white.opacity(1 - age / 0.18)))
+
+            // A faint puff of smoke lingers where the shell broke.
+            context.fill(Path(ellipseIn: CGRect(x: center.x - radius * 0.5, y: center.y - radius * 0.4 - CGFloat(age) * 3,
+                                                width: radius, height: radius * 0.8)),
+                         with: .radialGradient(Gradient(colors: [.white.opacity(0.05 * fade), .clear]),
+                                               center: CGPoint(x: center.x, y: center.y - CGFloat(age) * 3), startRadius: 0, endRadius: radius * 0.55))
+
+            let tilt = (noise(shell.number, 7) - 0.5) * 1.2
+            let count = kind == .crossette ? 14 : kind == .willow ? 36 : kind == .ring ? 30 : 28 + Int(shell.lift * 22)
+            for i in 0..<count {
+                let angle = Double(i) / Double(count) * 2 * .pi + noise(shell.number, 3) * 6.3 + (noise(i, shell.number) - 0.5) * 0.12
+                var dir: CGPoint
+                if kind == .ring {
+                    let flat = CGPoint(x: cos(angle), y: sin(angle) * 0.32)
+                    dir = CGPoint(x: flat.x * cos(tilt) - flat.y * sin(tilt), y: flat.x * sin(tilt) + flat.y * cos(tilt))
+                } else {
+                    // Points on a sphere seen from the side: the shell reads as round, not as a flat ring.
+                    let z = noise(i, shell.number * 3 + 1) * 2 - 1, radial = (1 - z * z).squareRoot()
+                    dir = CGPoint(x: cos(angle) * radial, y: sin(angle) * radial * 0.92)
+                }
+                let speed = radius * CGFloat(drag) * CGFloat(0.9 + 0.18 * noise(i, shell.number + 41))
+                switch kind {
+                case .crossette:
+                    // Each star splits in three part way out.
+                    let split = life * 0.42
+                    if age < split {
+                        trail(center, dir, speed, from: 0, at: age, samples: 2, spacing: 0.04, seed: i)
+                    } else {
+                        let origin = position(center, dir, speed, split), heading = atan2(dir.y, dir.x)
+                        for child in -1...1 {
+                            let turn = heading + CGFloat(child) * 0.9
+                            trail(origin, CGPoint(x: cos(turn), y: sin(turn)), speed * 0.4, from: 0, at: age - split,
+                                  samples: 2, spacing: 0.04, seed: i * 3 + child + 1)
+                        }
+                    }
+                case .willow: trail(center, dir, speed, from: 0, at: age, samples: 7, spacing: 0.08, seed: i)
+                case .chrysanthemum: trail(center, dir, speed, from: 0, at: age, samples: 4, spacing: 0.06, seed: i)
+                case .peony, .ring: trail(center, dir, speed, from: 0, at: age, samples: 3, spacing: 0.045, seed: i)
+                }
             }
-            if record && age < 1.3 {
-                label("BEST", at: CGPoint(x: center.x, y: max(8, center.y - reach - 9)), in: &context, size: 8, weight: .heavy,
-                      color: gold.opacity(min(1, (1.3 - age) * 3)))
+            let alpha = fade
+            glow(lit, radius: 2.5).stroke(head, with: .color(ink.opacity(0.6 * alpha)), lineWidth: 2.4)
+            lit.stroke(tail, with: .color(ink.opacity(0.22 * alpha)), style: StrokeStyle(lineWidth: 0.8, lineCap: .round))
+            lit.stroke(middle, with: .color(ink.opacity(0.5 * alpha)), style: StrokeStyle(lineWidth: 1.1, lineCap: .round))
+            lit.stroke(head, with: .color(ink.opacity(0.95 * alpha)), style: StrokeStyle(lineWidth: 1.4, lineCap: .round))
+            lit.fill(sparks, with: .color((crackles ? Color.white : ivory).opacity(0.9 * alpha)))
+            lit.fill(glitter, with: .color(.white.opacity(0.9 * alpha)))
+
+            // A small pistil of the second colour at the heart of peonies and rings.
+            if kind == .peony || kind == .ring, age < life * 0.6 {
+                var pistil = Path()
+                for i in 0..<10 {
+                    let angle = Double(i) / 10 * 2 * .pi + noise(shell.number, 9) * 6.3
+                    let p = position(center, CGPoint(x: cos(angle), y: sin(angle)), radius * 0.42 * CGFloat(drag), age)
+                    pistil.addEllipse(in: CGRect(x: p.x - 0.8, y: p.y - 0.8, width: 1.6, height: 1.6))
+                }
+                lit.fill(pistil, with: .color(secondary.opacity(0.85 * (1 - age / (life * 0.6)))))
+            }
+            if age < 0.14 {
+                glow(lit, radius: 6).fill(Path(ellipseIn: CGRect(x: center.x - 9, y: center.y - 9, width: 18, height: 18)),
+                                         with: .color(.white.opacity(1 - age / 0.14)))
+            }
+            if kind == .willow && age < 1.4 {
+                label("BEST", at: CGPoint(x: center.x, y: max(7, center.y - radius - 7)), in: &context, size: 8, weight: .heavy,
+                      color: gold.opacity(min(1, (1.4 - age) * 3)))
             }
         }
-        if bursts.isEmpty && snapshot.flight == nil {
-            label("Each bounce launches a firework", at: CGPoint(x: size.width / 2, y: size.height / 2), in: &context,
+        // Rooftops: a fixed skyline in front of the show, rim-lit by the latest burst.
+        var roofs = Path(), rim = Path(), windows = Path()
+        roofs.move(to: CGPoint(x: 0, y: size.height))
+        var left: CGFloat = 0, index = 0
+        while left < size.width {
+            let width = min(9 + CGFloat(noise(index, 11)) * 17, size.width - left), height = 3 + CGFloat(noise(index, 12)) * 9
+            let top = base - height
+            roofs.addLine(to: CGPoint(x: left, y: top)); roofs.addLine(to: CGPoint(x: left + width, y: top))
+            rim.move(to: CGPoint(x: left, y: top)); rim.addLine(to: CGPoint(x: left + width, y: top))
+            if noise(index, 13) > 0.82 {
+                let mast = left + width * 0.6
+                rim.move(to: CGPoint(x: mast, y: top)); rim.addLine(to: CGPoint(x: mast, y: top - 4))
+            }
+            if height > 6, noise(index, 14) > 0.45 {
+                windows.addEllipse(in: CGRect(x: left + width * 0.35, y: top + 2.5, width: 1.1, height: 1.1))
+            }
+            left += width; index += 1
+        }
+        roofs.addLine(to: CGPoint(x: size.width, y: size.height)); roofs.closeSubpath()
+        context.fill(roofs, with: .color(.black.opacity(0.8)))
+        context.stroke(rim, with: .color(.white.opacity(0.13)), lineWidth: 0.7)
+        if flashLevel > 0 { lit.stroke(rim, with: .color(flashTint.opacity(0.75 * flashLevel)), lineWidth: 0.8) }
+        lit.fill(windows, with: .color(gold.opacity(0.55)))
+
+        if active.isEmpty && rocket == nil && snapshot.arcs.isEmpty {
+            label("Each bounce launches a firework", at: CGPoint(x: size.width / 2, y: size.height / 2 - 6), in: &context,
                   size: 9, weight: .medium, color: .white.opacity(0.55))
         }
     }
