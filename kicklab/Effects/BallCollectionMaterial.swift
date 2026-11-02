@@ -15,7 +15,8 @@ nonisolated enum BallCollectionMaterial {
 
     static func artwork(skin: BallSkin, width: Int, height: Int,
                         panelSites: [SIMD3<Float>]) -> Artwork? {
-        guard skin != .original else { return nil }
+        // Lab skins are shaders, not artwork maps.
+        guard skin != .original, !skin.isLabSkin else { return nil }
         #if os(macOS)
         let selected = ProcessInfo.processInfo.environment["JUGGLE_DUDE_BAKE_SKINS"]?.split(separator: ",").map(String.init)
         if ProcessInfo.processInfo.environment["JUGGLE_DUDE_BAKE_MATERIALS"] != nil,
@@ -91,7 +92,8 @@ nonisolated enum BallCollectionMaterial {
                 gap = panelGap(curved, sites: largePanels)
                 elevation = rubber.y * 0.030 * smooth(0.018, 0.04, gap)
                     + smooth(0.017, 0.065, gap) * 0.015
-            case .classic, .stealth, .matrix, .gold, .arctic, .crimson, .galaxy, .chrome, .graffiti, .aurora:
+            case .classic, .stealth, .matrix, .gold, .arctic, .crimson, .galaxy, .chrome, .graffiti, .aurora,
+                 .goldPolish, .prism, .wave, .nightPulse:
                 // Preserve the existing print exactly. Ink colour must not become
                 // fake mountains: relief comes from the material and panel shapes.
                 rgb = print!.color(x: x, y: y)

@@ -93,14 +93,18 @@ nonisolated enum BallMaterialRenderer {
         }
         let dimension = min(256, max(16, Int(ceil(extent*2))))
         let step = extent*2/Double(dimension)
-        let textureSize = BallSkinSphereRenderer.rasterDimension(for: skin)
+        // Lab skins are lit spheres whose shaders filter detail at their own pixel size, so they are
+        // drawn at the ball's size: a multiple of 48 pixels puts the 92/96 sphere on whole pixels.
+        let labScale = skin.isLabSkin ? min(16, max(1, Int((f.radius/23).rounded(.up)))) : 0
+        let textureSize = labScale > 0 ? 48*labScale : BallSkinSphereRenderer.rasterDimension(for: skin)
         let textureCenter = Double(textureSize) / 2, textureRadius = textureCenter * (92.0 / 96.0)
         let info = CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
         guard let material = CGContext(data: nil, width: textureSize, height: textureSize,
             bitsPerComponent: 8, bytesPerRow: textureSize*4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: info),
               let bytes = material.data?.assumingMemoryBound(to: UInt8.self) else { return nil }
         material.translateBy(x: 0,y: CGFloat(textureSize)); material.scaleBy(x: 1,y: -1)
-        drawSkin(material, center: CGPoint(x:textureCenter,y:textureCenter), radius:textureRadius,skin:skin,time:time,orientation:orientation)
+        drawSkin(material, center: CGPoint(x:textureCenter,y:textureCenter), radius:textureRadius,skin:skin,time:time,orientation:orientation,
+                 size: labScale > 0 ? 46*labScale : nil)
         let raw = Array(UnsafeBufferPointer(start: bytes, count:textureSize*textureSize*4))
         var texture = raw
         // The print is only prefiltered for minification from the ball-sized sphere
@@ -108,7 +112,7 @@ nonisolated enum BallMaterialRenderer {
         // sigma on reviewed frames), so rim softness and a fixed floor over-blurred it.
         // Motion blur comes from the smear below, not from an isotropic estimate.
         let minification = textureRadius/max(f.radius,1)
-        let blur = max(0, Int(((minification-1)/2).rounded(.up)))
+        let blur = labScale > 0 && minification < 2 ? 0 : max(0, Int(((minification-1)/2).rounded(.up)))
         let channels=4
         // Separable box blur keeps work linear in patch area.
         let span = blur*2+1
@@ -142,8 +146,8 @@ nonisolated enum BallMaterialRenderer {
         }
         // Scene light from the real ball's white panels: the material's white is
         // rendered near 228, so scale each channel toward the photographed white.
-        // Bounded so artistic skins keep their character.
-        let gain: SIMD3<Double> = light.map { l in
+        // Bounded so artistic skins keep their character. Lab skins carry their own lighting.
+        let gain: SIMD3<Double> = (labScale > 0 ? nil : light).map { l in
             SIMD3(Double(l.x), Double(l.y), Double(l.z)).clamped(lowerBound: .zero, upperBound: SIMD3(repeating: 255))/228
         }.map { simd_clamp($0, SIMD3(repeating: 0.75), SIMD3(repeating: 1.15)) } ?? SIMD3(repeating: 1)
         // The material buffer is BGRA in memory: channel 0 is blue, 2 is red.
@@ -212,8 +216,11 @@ nonisolated enum BallMaterialRenderer {
     }
 
     /// Draw the same material used by replay/export in the style picker.
-    static func drawSkin(_ ctx: CGContext, center: CGPoint, radius: Double, skin: BallSkin, time: Double, orientation: simd_quatf? = nil) {
-        guard radius > 0, let image = BallSkinSphereRenderer.image(skin: skin, time: time, orientation: orientation) else { return }
+    static func drawSkin(_ ctx: CGContext, center: CGPoint, radius: Double, skin: BallSkin, time: Double, orientation: simd_quatf? = nil,
+                         size: Int? = nil) {
+        let image = size.map { BallSkinSphereRenderer.labImage(skin: skin, time: time, orientation: orientation, size: $0) }
+            ?? BallSkinSphereRenderer.image(skin: skin, time: time, orientation: orientation)
+        guard radius > 0, let image else { return }
         ctx.saveGState()
         ctx.translateBy(x: center.x-radius, y: center.y+radius)
         ctx.scaleBy(x: 1, y: -1)

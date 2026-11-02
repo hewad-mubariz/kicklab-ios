@@ -4,7 +4,11 @@ nonisolated enum BallSkin: String, CaseIterable, Identifiable, Hashable, Sendabl
     // Preserve the previous raw IDs so existing selections still resolve.
     case original, classic, stealth, matrix, gold, arctic, crimson, galaxy, chrome, graffiti, aurora
     case metal, lava, pearl, volt
+    /// Accepted in the Effects Lab on 1 November 2026 and drawn by its shaders.
+    case goldPolish, prism, wave, nightPulse
     var id: String { rawValue }
+    /// Lab skins are lit shaders rather than artwork maps; LabSkinRenderer draws them.
+    var isLabSkin: Bool { self == .goldPolish || self == .prism || self == .wave || self == .nightPulse }
     var title: String {
         switch self {
         case .original: return "Original"
@@ -22,6 +26,10 @@ nonisolated enum BallSkin: String, CaseIterable, Identifiable, Hashable, Sendabl
         case .lava: return "Lava"
         case .pearl: return "Pearl"
         case .volt: return "Volt"
+        case .goldPolish: return "Gold Polish"
+        case .prism: return "Prism"
+        case .wave: return "Wave"
+        case .nightPulse: return "Night Pulse"
         }
     }
     var materialResource: String { "ball-skin-" + rawValue }

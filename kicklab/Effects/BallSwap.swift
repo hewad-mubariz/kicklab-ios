@@ -115,6 +115,10 @@ extension BallSkin {
         case .lava: SIMD3(1, 0.45, 0.12)
         case .pearl: SIMD3(1, 0.95, 0.9)
         case .volt: SIMD3(0.85, 1, 0.25)
+        case .goldPolish: SIMD3(1, 0.8, 0.32)
+        case .prism: SIMD3(0.88, 0.92, 1)
+        case .wave: SIMD3(0.35, 0.8, 1)
+        case .nightPulse: SIMD3(0.3, 1, 0.9)
         }
     }
 }

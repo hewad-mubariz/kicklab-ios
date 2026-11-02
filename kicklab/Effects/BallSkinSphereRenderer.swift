@@ -47,7 +47,9 @@ nonisolated enum BallSkinSphereRenderer {
     }
     private static let materials = MaterialCache()
 
-    static func hasArtwork(for skin: BallSkin) -> Bool { materials.texture(for: skin) != nil }
+    static func hasArtwork(for skin: BallSkin) -> Bool {
+        skin.isLabSkin ? LabSkinRenderer.shared != nil : materials.texture(for: skin) != nil
+    }
     static var decodedArtworkBytes: Int { materials.byteCount }
 
     // Dual of a truncated icosahedron: twelve pentagonal and twenty hexagonal
@@ -101,6 +103,12 @@ nonisolated enum BallSkinSphereRenderer {
         render(skin: skin, time: time, rasterSize: rasterSize, pixels: pixels, cached: true, orientation: orientation)
     }
 
+    /// A lab skin's sphere filling `size` pixels, so a replacement can draw it at the ball's own size.
+    static func labImage(skin: BallSkin, time: Double, orientation: simd_quatf?, size: Int) -> CGImage? {
+        guard skin.isLabSkin, size > 0 else { return nil }
+        return render(skin: skin, time: time, rasterSize: size, pixels: [], cached: true, orientation: orientation)
+    }
+
     static func rasterDimension(for _: BallSkin) -> Int {
         rasterSize
     }
@@ -117,11 +125,18 @@ nonisolated enum BallSkinSphereRenderer {
         // estimate of the real football's angular velocity.
         let tick = Int64((max(0,min(time,1e7))*60).rounded())
         let poseKey = orientation.map { q in [q.vector.x,q.vector.y,q.vector.z,q.vector.w].map { String($0.bitPattern) }.joined(separator: ":") } ?? "timer:\(tick)"
-        let key = "\(skin.rawValue):\(poseKey)" as NSString
+        let key = "\(skin.rawValue):\(poseKey)\(skin.isLabSkin ? ":\(rasterSize)" : "")" as NSString
         if cached, let image = cache.images.object(forKey:key) { return image }
-        guard let texture = materials.texture(for: skin) else { return nil }
         let t = Float(Double(tick)/60)
         let yaw = t*1.1+0.35, pitch = t*0.29+0.18
+        if skin.isLabSkin {
+            // The same timed spin when no source pose is known: object = Rx(pitch) Ry(yaw) view.
+            let pose = orientation ?? (simd_quatf(angle: pitch, axis: SIMD3(1, 0, 0)) * simd_quatf(angle: -yaw, axis: SIMD3(0, 1, 0))).inverse
+            guard let image = LabSkinRenderer.shared?.image(skin: skin, orientation: pose, size: rasterSize) else { return nil }
+            if cached { cache.images.setObject(image, forKey: key, cost: rasterSize * rasterSize * 4) }
+            return image
+        }
+        guard let texture = materials.texture(for: skin) else { return nil }
         let cy = cos(yaw), sy = sin(yaw), cp = cos(pitch), sp = sin(pitch)
         // A source-driven pose uses the same inverse for every sphere pixel.
         let inverseOrientation = orientation?.inverse
@@ -205,7 +220,8 @@ nonisolated enum BallSkinSphereRenderer {
                 + SIMD3(repeating: specular * 0.065 + pixel.rim * 0.012)
         case .classic, .stealth, .matrix, .gold, .arctic, .crimson, .galaxy, .chrome, .graffiti, .aurora:
             return printedShade(skin: skin, rgb: rgb, gap: gap, normal: normal, pixel: pixel)
-        case .original: return .zero
+        // Lab skins are lit by their own shaders and never reach the artwork shading.
+        case .original, .goldPolish, .prism, .wave, .nightPulse: return .zero
         }
     }
 
