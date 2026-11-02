@@ -38,21 +38,24 @@ float3 lqEnvironment(float3 direction) {
     float dark=exp(-pow((direction.x-.52)/.12,2))*exp(-pow((direction.y-.08)/.45,2));
     return env*(1-dark*.72);
 }
+// Glossy spectrum paint rather than tinted glass: a lit, saturated body that only the thinnest
+// edges let the video through, an environment reflection, a sharp sun highlight with a broad sheen,
+// and a soft rim that keeps every drop round.
 float3 lqShade(LiquidHit hit,float2 pixel,constant LiquidUniforms &u,texture2d<float> source) {
     float3 n=hit.normal,spectrum=lqSpectrum(hit.hue);
-    float nearBall=u.options.x<.5 ? 0:1-smoothstep(1.15,2.75,length(pixel-u.ball.xy)/max(1.0,u.ball.z));
-    float3 transmitted=lqBackdrop(pixel+hit.refraction,u,source);
-    float3 absorption=float3(.015)+(1-spectrum)*(hit.film>.5?.88:.50+hit.rim*.50)*(1+.30*nearBall);
-    transmitted*=exp(-absorption*hit.thickness*2.5);
-    float f=.025+.975*pow(1-saturate(n.z),5);
-    float3 reflected=lqEnvironment(reflect(float3(0,0,-1),n));
-    reflected*=mix(float3(1),spectrum,hit.film>.5?.12+.28*hit.rim+.10*nearBall:.10+.55*hit.rim);
-    float reflectWeight=saturate(hit.film>.5 ? .03+f*.85+hit.rim*.22 : f*.88+hit.rim*.28+.04);
-    float3 color=mix(transmitted,reflected,reflectWeight);
-    float highlight=pow(saturate(dot(n,normalize(float3(-.55,-.65,1.05)))),85);
-    color+=float3(1.0,.98,.93)*highlight*(1.65+hit.rim*.9);
-    // A narrow grazing reflection keeps the thinnest moving rims readable.
-    color+=float3(.82,.92,1.0)*pow(1-saturate(n.z),4)*.20;
+    float3 light=normalize(float3(-.45,-.62,1.0));
+    float3 transmitted=lqBackdrop(pixel+hit.refraction*.6,u,source)*mix(float3(1),spectrum,.75);
+    float lambert=saturate(dot(n,light));
+    float3 body=spectrum*(.30+.70*lambert)*(1-.25*saturate(hit.thickness*1.4-.2));
+    float opacity=saturate(.62+hit.thickness*1.8);
+    float3 color=mix(transmitted,body,opacity);
+    float f=.04+.96*pow(1-saturate(n.z),5);
+    float3 reflected=lqEnvironment(reflect(float3(0,0,-1),n))*mix(float3(1),spectrum,.35);
+    color=mix(color,reflected,saturate(f*.75+hit.rim*.12));
+    float highlight=pow(saturate(dot(n,normalize(light+float3(0,0,1)))),70);
+    float sheen=pow(saturate(dot(n,normalize(light+float3(0,0,1)))),14);
+    color+=float3(1.0,.98,.94)*(highlight*2.2+sheen*.18);
+    color+=float3(.95,.97,1.0)*pow(1-saturate(n.z),3)*.28;
     return saturate(color);
 }
 

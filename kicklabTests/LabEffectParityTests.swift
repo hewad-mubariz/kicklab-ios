@@ -61,10 +61,8 @@ final class LabEffectParityTests: XCTestCase {
             let sorted = values.sorted()
             return sorted.isEmpty ? 0 : (sorted[min(sorted.count - 1, Int(Double(sorted.count - 1) * p))] * 10).rounded() / 10
         }
-        var start = ProcessInfo.processInfo.systemUptime
-        LiquidFluid.prepareAll()
-        note("prepare_liquid_ms", Int((ProcessInfo.processInfo.systemUptime - start) * 1000))
-        start = ProcessInfo.processInfo.systemUptime
+        // Water and Liquid Spectrum share Water's solved crown.
+        let start = ProcessInfo.processInfo.systemUptime
         WaterCrown.prepareAll()
         note("prepare_water_ms", Int((ProcessInfo.processInfo.systemUptime - start) * 1000))
         let asset = AVURLAsset(url: source)
@@ -204,7 +202,7 @@ final class LabEffectParityTests: XCTestCase {
         writer.startSession(atSourceTime: .zero)
         let engine = try MetalEffectEngine()
         let edit = SessionEditState(style: style, intensity: intensity, ballSkin: .original)
-        LiquidFluid.prepareAll(); WaterCrown.prepareAll()
+        WaterCrown.prepareAll()
         var held: CMSampleBuffer?, pending = decoded.copyNextSampleBuffer()
         for index in 0..<Int(ceil(duration * fps)) {
             let time = Double(index) / fps

@@ -28,10 +28,11 @@ actor EffectIconStore {
     /// once meanwhile instead of queueing behind it.
     private func solve(_ style: BallStyle) async {
         guard style == .liquid || style == .water else { return }
-        let task = solving[style] ?? Task.detached(priority: .userInitiated) {
-            if style == .liquid { LiquidFluid.prepareAll() } else { WaterCrown.prepareAll() }
+        // Both pour with Water's solved crown.
+        let task = solving[.water] ?? Task.detached(priority: .userInitiated) {
+            WaterCrown.prepareAll()
         }
-        solving[style] = task
+        solving[.water] = task
         await task.value
     }
 

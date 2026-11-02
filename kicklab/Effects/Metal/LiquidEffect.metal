@@ -1,7 +1,7 @@
 #include <metal_stdlib>
 using namespace metal;
-// Liquid Spectrum, accepted in the Effects Lab on 1 November 2026. The entry points are the lab's
-// own: particles splat into a density field, then the field is shaded over the video it refracts.
+// Liquid Spectrum: particles splat into a density field, then the field is shaded over the video it
+// refracts. Its particles now come from Water's motion stage (LiquidScene).
 #include "LiquidEffect.h"
 struct LiquidVertex {float4 position [[position]];};
 vertex LiquidVertex liquidVertex(uint id [[vertex_id]]) {
@@ -11,18 +11,20 @@ vertex LiquidVertex liquidVertex(uint id [[vertex_id]]) {
 struct LiquidSplat {
     float4 position [[position]];
     float2 local;
-    float depth,hue,radius;
+    float depth,hue,radius,weight;
 };
 vertex LiquidSplat liquidSplatVertex(uint id [[vertex_id]],uint instance [[instance_id]],
     constant LiquidUniforms &u [[buffer(0)]],device const LiquidPart *parts [[buffer(1)]]) {
     const float2 corners[6]={float2(-1,-1),float2(1,-1),float2(-1,1),float2(-1,1),float2(1,-1),float2(1,1)};
     LiquidPart p=parts[instance];float2 local=corners[id];
     float2 pixel=p.centerSize.xy+lqRotate(local*p.shape.xy*p.centerSize.w*2,p.shape.z);
-    return {float4(pixel/u.viewport.xy*float2(2,-2)+float2(-1,1),0,1),local,p.centerSize.z/max(1.0,u.ball.z),p.material.x,p.centerSize.w};
+    // Crown atoms (material.w 2) keep the same mass however their kernel is stretched, as in Water.
+    float weight=p.material.w>1.5 ? 1.0/(p.shape.x*p.shape.y):1.0;
+    return {float4(pixel/u.viewport.xy*float2(2,-2)+float2(-1,1),0,1),local,p.centerSize.z/max(1.0,u.ball.z),p.material.x,p.centerSize.w,weight};
 }
 fragment float4 liquidSplatFragment(LiquidSplat in [[stage_in]]) {
     float r2=dot(in.local,in.local);if(r2>1)discard_fragment();
-    float w=(exp(-r2*4)-exp(-4.0))*1.25;
+    float w=(exp(-r2*4)-exp(-4.0))*1.25*in.weight;
     return float4(w,w*in.depth,w*in.hue,w*in.radius);
 }
 fragment float4 liquidFragment(LiquidVertex in [[stage_in]],constant LiquidUniforms &u [[buffer(0)]],

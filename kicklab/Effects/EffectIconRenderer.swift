@@ -35,7 +35,7 @@ nonisolated enum EffectIconRenderer {
                                     style: shaderStyle, trail: trail)
             if shaderStyle == BallStyle.liquid.shaderID {
                 // One fresh splash along the same flight, over a plain grey the liquid can refract.
-                LiquidFluid.prepareAll()
+                WaterCrown.prepareAll()
                 let path: (Float) -> SIMD4<Float> = { t in
                     let age = Float(time) - t
                     let p = center - velocity * radius * age + SIMD2(0, radius * 1.6 * age * age)

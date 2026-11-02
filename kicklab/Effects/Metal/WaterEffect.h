@@ -50,34 +50,31 @@ float3 wtShade(WaterHit hit,float2 pixel,constant WaterUniforms &u,texture2d<flo
     return saturate(color);
 }
 
-// Water in a short airborne splash is mostly clear. Thickness modulates a
-// restrained tint; bright reflections come from the sun/sky rather than an
-// emissive rim. This material is separate from the earlier drop-only study.
+// Water in a short airborne splash, made to read as water on real footage at phone size rather than
+// as a thicker liquid: it is nearly clear and shows itself by how strongly it bends what is behind
+// it, the sun glints off every curve, and it turns white where it is aerated, in thin torn sheets
+// and edge-on spray. No time-varying noise drives the shape.
 float3 wtClearWater(WaterHit hit,float2 pixel,constant WaterUniforms &u,texture2d<float> source) {
     float3 n=hit.normal;
     float path=hit.thickness/max(.25,n.z);
-    float bend=min(u.ball.z*.25,hit.size*(1.3+path*.65));
-    float2 offset=-n.xy*bend;
-    float3 transmission=wtBackdrop(pixel+offset,u,source);
-    transmission*=exp(-float3(.50,.10,.045)*path);
+    float bend=min(u.ball.z*.32,hit.size*(1.8+path*.8));
+    float3 transmission=wtBackdrop(pixel-n.xy*bend,u,source);
+    transmission*=exp(-float3(.30,.07,.03)*path);
     float fresnel=.0204+.9796*pow(1-saturate(n.z),5);
     float3 direction=reflect(float3(0,0,-1),n);
     float sky=smoothstep(-.25,.35,-direction.y);
-    float3 environment=mix(float3(.07,.12,.10),float3(.18,.43,.60),sky);
+    float3 environment=mix(float3(.10,.16,.17),float3(.50,.74,.95),sky);
     float horizon=exp(-pow((direction.y+.08)/.055,2));
-    environment+=float3(.90,.98,1.0)*horizon;
-    float3 color=mix(transmission,environment,saturate(.025+fresnel*.94));
-    float sun=pow(saturate(dot(n,normalize(float3(-.55,-.65,1.05)))),160);
-    float broad=pow(saturate(dot(n,normalize(float3(-.55,-.65,1.05)))),32);
-    color+=float3(1,.98,.94)*(sun*1.55+broad*.05);
-    // A weak transmitted-light modulation gives volume without outlining every
-    // particle as a white ring. No time-varying noise drives the fluid shape.
-    color*=1+.09*(1-n.z)*sky;
+    environment+=float3(.95,1.0,1.0)*horizon*1.3;
+    float3 color=mix(transmission,environment,saturate(.04+fresnel*.92+hit.rim*.18));
+    float sun=pow(saturate(dot(n,normalize(float3(-.55,-.65,1.05)))),140);
+    float broad=pow(saturate(dot(n,normalize(float3(-.55,-.65,1.05)))),28);
+    color+=float3(1,.98,.94)*(sun*3.2+broad*.10);
+    float foam=saturate(pow(1-saturate(n.z),1.6)*.55+saturate(.22-hit.thickness)*1.6);
+    color=mix(color,float3(.93,.97,1.0),foam*.55);
     return saturate(color);
 }
 
-// Density kernels are accumulated every frame. Connectivity is the level set
-// of the transported fluid, not a stored polygon or animated splash cutout.
 float4 waterEffect(float2 pixel,constant WaterUniforms &u,texture2d<float> field,texture2d<float> source) {
     float3 base=wtBackdrop(pixel,u,source);
     if(u.viewport.w<=0 || u.ball.w<=0)return float4(base,1);

@@ -209,8 +209,10 @@ final class BallStyleBurnIn: ObservableObject {
         var edit = SessionEditState(style: style, intensity: intensity, ballSkin: skin, environment: environment)
         edit.lookChanges = lookChanges; edit.swapEffect = swapEffect
         // Lab effects solve their fluid once up front, so no exported frame is missing any of it.
-        if style == .liquid || lookChanges.values.contains(where: { $0.effect == .liquid }) { LiquidFluid.prepareAll() }
-        if style == .water || lookChanges.values.contains(where: { $0.effect == .water }) { WaterCrown.prepareAll() }
+        // Liquid Spectrum pours with Water's solved crown.
+        if [.liquid, .water].contains(style) || lookChanges.values.contains(where: { [.liquid, .water].contains($0.effect) }) {
+            WaterCrown.prepareAll()
+        }
         let swaps = BallSwapTimeline(edit: edit, touchTimes: effects.touches)
         let needsGPU = Self.drawsEffects(style: style, intensity: intensity, looks: lookChanges) || environment != .original
         try await VideoWorkExecution.checkpoint(requiresGPU: needsGPU)

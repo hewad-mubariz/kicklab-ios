@@ -110,8 +110,9 @@ nonisolated enum WaterScene {
                     let p=base+n*radius*(1.05+speed*age)+inherited
                     let size:Float=j<7 ? 0.065+0.055*hash(key+2):j<27 ? 0.025+0.030*hash(key+2):0.008+0.014*hash(key+2)
                     let r=radius*size*sqrt(max(0,fade))
+                    // Each drop streaks along its flight, faster drops longer, as spray does on video.
                     if r>0.28 {parts.append(WaterPart(centerSize:SIMD4(p.x,p.y,0.4*radius,r),
-                        shape:SIMD4(1.2,0.85,atan2(n.y,n.x),1),material:SIMD4(0,Float(id*10000+8000+j),age,1)))}
+                        shape:SIMD4(1.2+speed*0.12,0.6,atan2(n.y,n.x),1),material:SIMD4(0,Float(id*10000+8000+j),age,1)))}
                 }
                 continue
             }
