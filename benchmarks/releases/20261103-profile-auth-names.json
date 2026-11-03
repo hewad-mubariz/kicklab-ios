@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-03",
+  "project": "shbdsjvpjdtqbiaevrxy",
+  "migration": "202611030001_profile_auth_names.sql",
+  "deployment": "Applied and verified through the authenticated Supabase SQL Editor",
+  "cliMigrationHistoryReconciled": false,
+  "profilesBeforeAndAfter": 51,
+  "authNamesFilled": 35,
+  "previouslyEditedProfilesPreserved": 12,
+  "previouslyEditedLiteralPlayerNamesPreserved": 5,
+  "unsetProfilesWithoutAuthName": 4,
+  "sharingEnabledBeforeAndAfter": 8,
+  "verification": {
+    "preservedNamesAndTimestampsUnchanged": true,
+    "countryAvatarSharingAndAccountStateUnchanged": true,
+    "authenticatedCannotUpdateNameSource": true,
+    "lateAuthNameTriggerEnabled": true,
+    "allSeededNamesMatchAuth": true
+  },
+  "fingerprints": {
+    "preservedNamesAndTimestamps": "fc6819c3cb6ff75cf0b6eac6e776bb4e",
+    "otherProfileFields": "3d26b6e6dfcdbcbb4bd30a838cee2963"
+  },
+  "localTests": "Full scripts/test-account-backend.sh passed, including profile_auth_names_before.sql and profile_auth_names.sql",
+  "evidenceDirectory": "artifacts/profile-auth-names-20261103",
+  "iosBinaryChangeRequired": false
+}
