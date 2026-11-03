@@ -1,0 +1,98 @@
+{
+  "app": "Juggle Dude",
+  "version": "1.2.0",
+  "build": "38",
+  "apple_app_id": "6820780610",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "source_commit": "becc5acd2d76bdcffa2c902c23cec9290ce2189f",
+  "test_fixture_commit": "7e1405e1da0e5a23cdd99c784975d7e129ae7823",
+  "upload_succeeded": true,
+  "upload_completed_at": "2026-11-03T07:27:31+01:00",
+  "processing_started": true,
+  "processing_complete": null,
+  "testing_group_confirmed": false,
+  "what_to_test_saved": false,
+  "browser_blocker": "App Store Connect redirects to login with authResult=FAILED. User sign-in requested.",
+  "submitted_to_app_store_review": false,
+  "submitted_to_external_beta_review": false,
+  "archive_verification": {
+    "version": "1.2.0",
+    "build": "38",
+    "source_commit": "becc5acd2d76bdcffa2c902c23cec9290ce2189f",
+    "archive": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/releases/20261103-1.2.0-38/JuggleDude-1.2.0-38.xcarchive",
+    "signature_verified": true,
+    "source_files_verified": 616,
+    "app_binary_sha256": "7477b57f7db64407a2b445b4aac36ea2049eb741cd0bc34324dfa8783d26e432",
+    "test_status": "Completed; merged results in automated-test-results.json",
+    "google_signin_and_font_verified": true,
+    "meta_release_configuration_verified": true,
+    "metal_library_present": true,
+    "counter_profile": "outdoor-balanced-v3-20261029",
+    "compilation": "Release with TOUCH_COUNTER_BETA; DEBUG modes absent",
+    "models": [
+      "RFDETRSmallRecovery040FP16.mlmodelc"
+    ],
+    "languages": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "pt-BR"
+    ],
+    "minimum_ios": "18.0",
+    "iphone_only": true,
+    "privacy_manifest": true,
+    "model_license": true,
+    "client_configurations_verified": true,
+    "editor_upgrade_sources_present": true,
+    "touch_review_disabled": true,
+    "mach_o_minimum_ios": "18.0"
+  },
+  "manual_checklist": "benchmarks/releases/1.2.0-38-testing-checklist.txt",
+  "what_to_test_file": "artifacts/releases/20261103-1.2.0-38/what-to-test.txt",
+  "automated_tests": {
+    "method": "Merged latest per-test results: preserve completed passing suites, rerun interrupted/failed checks after fixture fixes. Not a single uninterrupted green run.",
+    "passed": 1231,
+    "skipped": 38,
+    "failed": 0,
+    "unique_tests": 1269,
+    "by_target": {
+      "kicklabTests": {
+        "Passed": 1200,
+        "Skipped": 38
+      },
+      "kicklabUITests": {
+        "Passed": 31
+      }
+    },
+    "scope": "Broad unit/integration suite plus 31 selected release UI tests; not every UI test in the repository.",
+    "test_harness_commit": "7e1405e1da0e5a23cdd99c784975d7e129ae7823",
+    "app_code_changed_after_archive": false,
+    "excluded": [
+      "EditorPhoneCheckTests: physical-device timing benchmark"
+    ],
+    "manual_testflight_on_iphone11_and_17": "NOT TESTED in this run",
+    "fixtures_repaired": [
+      "Historical optional YOLO model prerequisites now skip explicitly when unbundled",
+      "Replay memory host now supplies isolated player and subscription environment objects",
+      "Physical 60 fps camera probe skips Simulator",
+      "Best-streak UI wording and fixture preference key aligned with current app",
+      "Animated controls wait for stable geometry; shot download assertion addresses shared button inside container"
+    ],
+    "environment_issue": "StoreKitTest setup on iOS 26.5 returned SKInternalErrorDomain Code=3 and hung. Purchase tests passed on iOS 18.0 after restarting there.",
+    "result_bundles": [
+      "unit-tests.xcresult",
+      "release-regressions-ios18.xcresult",
+      "targeted-rechecks.xcresult",
+      "animation-rechecks.xcresult",
+      "shot-ui-recheck.xcresult"
+    ]
+  },
+  "continued_test_runtime": "iOS 18.0",
+  "storekit_simulator_issue": "iOS 26.5 SKTestSession reports SKInternalErrorDomain Code=3 while configuring local store; purchase call hangs. Retrying on iOS 18.0.",
+  "status": "uploaded; tester availability unconfirmed",
+  "app_store_connect_url": "https://appstoreconnect.apple.com/apps/6820780610/testflight/ios",
+  "internal_testing_requested_group": "Early testers",
+  "updated_at_utc": "2026-11-03T06:56:25.512583+00:00",
+  "proof": "upload.log: Upload succeeded / EXPORT SUCCEEDED at 2026-11-03 07:27:31 CET"
+}

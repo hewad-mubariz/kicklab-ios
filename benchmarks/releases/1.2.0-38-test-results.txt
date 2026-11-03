@@ -1,0 +1,50 @@
+JUGGLE DUDE 1.2.0 (38) — TEST RESULTS, 3 NOVEMBER 2026
+
+UPLOAD
+Signed Release archive uploaded successfully at 07:27 CET. Apple confirmed the
+package had begun processing. Browser authentication is needed to verify that
+processing completed, confirm availability for Early testers, and save What to Test.
+No public App Store review or external beta review was submitted.
+
+AUTOMATED RESULTS
+1,231 passed: 1,200 unit/integration tests and 31 selected UI tests.
+38 skipped for environment/model/fixture prerequisites. The separate physical
+EditorPhoneCheckTests performance benchmark was excluded from this simulator run.
+No unresolved failure remains among the checks executed, after focused rechecks.
+
+These are merged latest results across runs, not one uninterrupted green run.
+The initial broad run exposed outdated optional-model fixtures, missing environment
+objects in the isolated replay-memory host, and UI assertions predating the current
+labels/download control. Those test fixtures were repaired and rechecked.
+Two selection tests tapped moving tray cards; stable-frame waits fixed the automation.
+The Chrome ball persists through six effect selections. Pro purchase applies the
+requested shot effect and exposes the paid controls. No app-code change was needed.
+
+Simulator coverage: iOS 26.5 and iOS 18.0. StoreKitTest's iOS 26.5 service rejected
+setup commands; the complete purchase unit suite and relevant UI checks passed on
+iOS 18.0. This does not replace TestFlight StoreKit testing on actual phones.
+
+KEY COVERAGE
+- GPU/CPU ball artwork parity, CPU fallback and background transition handling.
+- Retained replay analysis, long-session cache, relaunch and edit/export persistence.
+- Counter text across styles, export audio/video and slow-motion paths.
+- Personal best streak semantics, photo cache identity and account data isolation.
+- Consent-gated Meta event logic and update-notice behavior.
+- Purchase, cancellation, approval, restore and free/Pro access in local StoreKit tests.
+- Native Google consent cancellation; light/dark and large-text sign-in screens.
+- Profile edits, account deletion via isolated fake accounts, history and camera controls.
+
+STILL REQUIRED ON BOTH PHONES — USE TESTFLIGHT BUILD 38
+- Install over existing data; check sessions, edits and Pro access survive.
+- Full Google/Apple/email sign-in and account recovery, including a non-developer Google account.
+- TestFlight/sandbox trial, purchase and restore with the real backend.
+- Real recording/counting, 4K/slow-motion export, audio, background/lock recovery.
+- iPhone 11 cold/warm timings, heat and repeated exports against iPhone 17.
+- Actual ATT/Meta event delivery in the Release build; a Debug prompt is insufficient.
+
+APP SOURCE
+Archived app commit: becc5acd2d76bdcffa2c902c23cec9290ce2189f
+The 616 production source/config/resource hashes still match the archived candidate.
+Later commits changed only tests and release documentation.
+Full per-test results: artifacts/releases/20261103-1.2.0-38/automated-test-results.json
+Hands-on checklist: benchmarks/releases/1.2.0-38-testing-checklist.txt
