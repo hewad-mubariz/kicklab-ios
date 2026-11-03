@@ -12,8 +12,8 @@ final class SignInUITests: XCTestCase {
             app.launch()
             let guest = app.buttons["signin-guest"]
             XCTAssertTrue(guest.waitForExistence(timeout: 15))
-            XCTAssertFalse(app.buttons["signin-google"].exists)
-            for identifier in ["signin-apple", "signin-email", "signin-guest"] {
+            XCTAssertTrue(app.buttons["signin-google"].exists)
+            for identifier in ["signin-apple", "signin-google", "signin-email", "signin-guest"] {
                 reveal(app.buttons[identifier], in: app)
             }
             attach(app, "Welcome - \(appearance)")
@@ -39,8 +39,8 @@ final class SignInUITests: XCTestCase {
             app.buttons["profile-sign-in"].tap()
             // Sign-in opens on top of Profile and returns to it.
             XCTAssertTrue(app.buttons["signin-not-now"].waitForExistence(timeout: 5))
-            XCTAssertFalse(app.buttons["signin-google"].exists)
-            for identifier in ["signin-apple", "signin-email"] {
+            XCTAssertTrue(app.buttons["signin-google"].exists)
+            for identifier in ["signin-apple", "signin-google", "signin-email"] {
                 reveal(app.buttons[identifier], in: app)
             }
             XCTAssertFalse(app.buttons["profile-sign-in"].isHittable)
@@ -66,13 +66,42 @@ final class SignInUITests: XCTestCase {
         }
     }
 
+    /// Opens only the system consent sheet; never authorizes a real Google account.
+    @MainActor
+    func testNativeGoogleConsentCanBeCancelled() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--reset-welcome"]
+        app.launch()
+        let google = app.buttons["signin-google"]
+        XCTAssertTrue(google.waitForExistence(timeout: 15))
+        reveal(google, in: app)
+        google.tap()
+        let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let systemAlert = system.alerts.firstMatch
+        let appAlert = app.alerts.firstMatch
+        let alert = systemAlert.waitForExistence(timeout: 5) ? systemAlert : appAlert
+        XCTAssertTrue(alert.waitForExistence(timeout: 10), "Google should open its system consent sheet")
+        let text = alert.staticTexts.allElementsBoundByIndex.map(\.label).joined(separator: " ")
+        XCTAssertTrue(text.lowercased().contains("google.com"), text)
+        XCTAssertFalse(text.lowercased().contains("supabase"), text)
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = "Native Google consent uses google.com"
+        attachment.lifetime = .keepAlways; add(attachment)
+        alert.buttons["Cancel"].tap()
+        XCTAssertTrue(google.waitForExistence(timeout: 5))
+        XCTAssertTrue(google.isEnabled)
+        reveal(app.buttons["signin-email"], in: app)
+        app.buttons["signin-email"].tap()
+        XCTAssertTrue(app.textFields["email-address"].waitForExistence(timeout: 5))
+    }
+
     @MainActor
     func testGuestChoicePersistsAndProfileFollowsAppearanceSettings() {
         let app = XCUIApplication()
         app.launchArguments = ["--reset-welcome"]
         app.launch()
         XCTAssertTrue(app.buttons["signin-guest"].waitForExistence(timeout: 15))
-        XCTAssertFalse(app.buttons["signin-google"].exists)
+        XCTAssertTrue(app.buttons["signin-google"].exists)
         reveal(app.buttons["signin-email"], in: app)
         app.buttons["signin-email"].tap()
         XCTAssertTrue(app.textFields["email-address"].waitForExistence(timeout: 3))
@@ -93,8 +122,8 @@ final class SignInUITests: XCTestCase {
             app.navigationBars["Settings"].buttons.element(boundBy: 0).tap()
             app.buttons["profile-sign-in"].tap()
             XCTAssertTrue(app.buttons["signin-apple"].waitForExistence(timeout: 3))
-            XCTAssertFalse(app.buttons["signin-google"].exists)
-            for identifier in ["signin-apple", "signin-email", "signin-not-now"] {
+            XCTAssertTrue(app.buttons["signin-google"].exists)
+            for identifier in ["signin-apple", "signin-google", "signin-email", "signin-not-now"] {
                 reveal(app.buttons[identifier], in: app)
             }
             attach(app, "Sign in appearance switched - \(appearance)")
@@ -116,8 +145,8 @@ final class SignInUITests: XCTestCase {
                                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         app.launch()
         XCTAssertTrue(app.buttons["signin-guest"].waitForExistence(timeout: 15))
-        XCTAssertFalse(app.buttons["signin-google"].exists)
-        for identifier in ["signin-apple", "signin-email", "signin-guest", "signin-privacy"] {
+        XCTAssertTrue(app.buttons["signin-google"].exists)
+        for identifier in ["signin-apple", "signin-google", "signin-email", "signin-guest", "signin-privacy"] {
             reveal(app.buttons[identifier], in: app)
         }
         attach(app, "Welcome - accessibility text")

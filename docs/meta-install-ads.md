@@ -36,7 +36,7 @@ The release gate `JuggleDudeMetaAdsEnabled` is **on** in both Info.plists. Debug
 
 ## Before submitting 1.2.0 (owner)
 
-1. **Publish the privacy policy paragraph below** on the website. App Review compares it with the app.
+1. **Verify the published privacy policy** on the website. The Meta disclosure and related retention, consent, purchase and local-replay sections were published on 2 November 2026 (website commit `6c0061a`); App Review compares it with the app.
 2. **Update the App Store privacy answers** in App Store Connect → App Privacy, as in the table below.
 3. **Meta Business:** finish connecting the app to the business portfolio. The connection earlier failed with a technical error; access to portfolio `1096907693082408` is needed. Do not create a new ad account.
 4. **Test on a phone** before submitting:
@@ -57,14 +57,20 @@ The release gate `JuggleDudeMetaAdsEnabled` is **on** in both Info.plists. Debug
 
 | Data type | Purpose |
 | --- | --- |
-| Device ID | Third-Party Advertising measurement (Developer's Advertising or Marketing) |
+| Device ID | Developer's Advertising or Marketing, Analytics |
 | Product Interaction | Developer's Advertising or Marketing, Analytics |
 | Purchase History | Developer's Advertising or Marketing |
 
 The existing answers for account, training and purchases stay as they are. Check the Xcode privacy report from the archive, which combines the app's and the SDK's manifests, before entering the final answers.
 
-## Privacy policy paragraph (to publish)
+## Published privacy policy and notice checks
 
-> **Advertising measurement (Meta).** To understand which Facebook and Instagram ads bring people to Juggle Dude, the app uses Meta's software development kit. It tells Meta when the app is installed and opened, when you finish your first training session, and when you start a Pro trial or subscription (with its price). Meta also receives device and app information and your IP address when the app contacts it. If you allow tracking in Apple's prompt, this includes your device's advertising identifier, and Meta may link it with information it holds to measure our ads. If you do not allow tracking, it is sent without the advertising identifier and Meta uses it only in aggregate. If your App Store country is in the European Economic Area, the United Kingdom or Switzerland, nothing is shared with Meta unless you allow tracking. Training videos, touch counts and account details are never included. Apple's SKAdNetwork also tells advertising networks, without identifying you, that an install came from an ad. You can change tracking permission at any time in your iPhone's Settings; this stops new sharing but does not delete what Meta already received. This is separate from our optional usage analytics.
+The canonical disclosure is [privacy policy section 5a](https://juggledude.com/privacy/#advertising), effective for app version 1.2.0. It replaces the previous blanket claim that the app includes no advertising SDKs. Turning tracking off stops new app events in consent storefronts; outside them, measurement without the advertising identifier can continue. The policy does not promise that permission withdrawal or account deletion erases information already received by Meta, or apply PostHog's retention period to Meta.
 
-Align this with the rest of the policy, Meta's terms, international transfers, retention and the existing contact and deletion process before publishing.
+The system tracking explanation names Meta and the events shared in English, German, Spanish, French and Brazilian Portuguese. Both `Info.plist` and the localized `InfoPlist.xcstrings` must agree: iOS displays the localized value when present. The Settings explanation also distinguishes consent storefronts and measurement without the advertising identifier.
+
+On 2 November, 12 measurement tests and 5 update-notice tests passed, plus the update-notice UI test. They cover permission timing, Allow/denial, withdrawal without backfilling a denied purchase, numeric version comparison, incompatible iOS versions and dismissal persistence. These use a recording transport; they do not prove delivery in Meta Events Manager.
+
+For an owner-requested local phone preview, launch the Debug build with `--app-update-preview --enable-meta-install-measurement -kicklab.meta.launches 2`. The update version is a fixture (`1.3.0`); the notice is the production native SwiftUI alert. It waits for Home and any pending tracking permission prompt. **Update** opens the App Store; **Not now** dismisses that version, while Settings keeps the update link. The tracking question is the real iOS prompt, not a recreated view; iOS only presents it if permission has not been decided and device restrictions allow it. The launch override exercises the existing third-launch trigger without recording a fake training. Normal Debug launches keep Meta disabled. Release builds do not include the update fixture.
+
+The update alert uses a neutral system tint (black in light mode, white in dark mode), scoped to the alert. Preview dismissal now survives relaunch too; only the explicit `--app-update-preview-reset` flag resets its separate test preference. The UI test dismisses the native alert, checks the Settings link, then relaunches and verifies the alert does not return. Clean cache-testing installs must launch without either update-preview flag or any analysis-cache bypass.

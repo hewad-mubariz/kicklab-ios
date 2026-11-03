@@ -107,8 +107,8 @@ struct HomeView: View {
                 .foregroundStyle(TrainingHomeStyle.accent(scheme))
                 .frame(width: 42, height: 42)
             VStack(alignment: .leading, spacing: 5) {
-                Text("JUGGLING PERSONAL BEST").font(.caption2.weight(.semibold)).tracking(0.5)
-                Text(personalBest > 0 ? "A little better, every session." : "Your first record starts here.")
+                Text("BEST STREAK").font(.caption2.weight(.semibold)).tracking(0.5)
+                Text(personalBest > 0 ? "Consecutive touches · recorded in app" : "Record your first juggling streak.")
                     .font(.caption)
                     .foregroundStyle(TrainingHomeStyle.muted(scheme))
             }
@@ -121,7 +121,7 @@ struct HomeView: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(personalBest > 0 ? "Juggling personal best, \(personalBest) touches" : "Juggling personal best. Your first record starts here.")
+        .accessibilityLabel(personalBest > 0 ? "Personal best streak, \(personalBest) consecutive touches" : "Personal best streak. Record your first juggling streak.")
         .accessibilityIdentifier("home-personal-best")
     }
 

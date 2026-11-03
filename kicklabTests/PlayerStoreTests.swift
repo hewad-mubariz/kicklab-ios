@@ -10,7 +10,9 @@ final class PlayerStoreTests: XCTestCase {
     override func tearDown() { try? FileManager.default.removeItem(at: root) }
     private func identity(_ id: UUID) -> AccountIdentity { .init(id: id, email: nil, name: nil) }
     private func result(_ owner: UUID, touches: Int = 12) throws -> SavedJugglingResult {
-        try .init(ownerID: owner, touches: touches, duration: 20, source: .recording)
+        var value = try SavedJugglingResult(ownerID: owner, touches: touches, duration: 20, source: .recording)
+        value.rank(.init(count: touches, startMS: 0, endMS: 19000))
+        return value
     }
     private func waitUntil(_ predicate: () -> Bool) async {
         for _ in 0..<200 {

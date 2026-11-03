@@ -65,7 +65,7 @@ struct DetailedStatsView: View {
             spacing: 8
         ) {
             PostStatCard(icon: "trophy.fill", iconColor: Theme.star, title: "Total Touches", value: "\(summary.touches)")
-            PostStatCard(icon: "flame", iconColor: .white, title: "Best Combo", value: "\(summary.bestCombo)")
+            PostStatCard(icon: "flame", iconColor: .white, title: "Best streak", value: summary.bestStreakLabel)
             PostStatCard(icon: "stopwatch", iconColor: .white, title: "Duration", value: summary.durationLabel)
             PostStatCard(icon: "arrow.up.to.line", title: "Max Height", value: summary.maxHeightLabel)
             PostStatCard(icon: "chart.bar.fill", title: "Avg. Height", value: summary.avgHeightMeters.map { String(format: "%.1f m", $0) } ?? "—")
@@ -156,7 +156,7 @@ struct DetailedStatsView: View {
                 .font(.system(size: 15, weight: .semibold, design: .default))
                 .foregroundStyle(.white)
             HStack {
-                metric("Best", "\(summary.bestCombo)")
+                metric("Best streak", summary.bestStreakLabel)
                 metric("Session", "\(summary.touches)")
             }
             ConsistencyRingView(

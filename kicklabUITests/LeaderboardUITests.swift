@@ -212,7 +212,7 @@ final class LeaderboardUITests: XCTestCase {
     func testOpensOneLeaderboardSwitchesPeriodsAndCloses() {
         let app = XCUIApplication()
         app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-samples",
-                               "-kicklab.juggling.personalBest", "350", "-kicklab.appearance", "dark"]
+                               "-kicklab.juggling.bestStreak", "350", "-kicklab.appearance", "dark"]
         app.launch()
         let open = app.buttons["home-leaderboard"]
         XCTAssertTrue(open.waitForExistence(timeout: 10))

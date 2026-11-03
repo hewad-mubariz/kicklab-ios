@@ -58,14 +58,14 @@ struct TrainingHomeSettings: View {
                 } header: {
                     Text("Advertising measurement")
                 } footer: {
-                    Text("To measure our Facebook and Instagram ads, Juggle Dude tells Meta when the app is installed and opened, when you finish your first session and when you start Pro. With tracking allowed this includes your advertising identifier. In the EU, UK and Switzerland nothing is shared unless you allow tracking. Training videos, touch counts and account details are never included.")
+                    Text("Meta measures our Facebook and Instagram ads using app installs and opens, first-session completion, and Pro trial or subscription starts. With tracking allowed, your advertising identifier is included. In the EEA, UK and Switzerland, nothing is sent without permission. Elsewhere, events without that identifier can still be sent. Videos, touch counts and account details aren’t included.")
                 }
             }
             if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
                 Section("About") {
                     LabeledContent("Juggle Dude", value: String(localized: "Version \(version)", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                     if let release = updates.available {
-                        // Stays here after the home banner is dismissed, until the update is installed.
+                        // Stays here after the update alert is dismissed, until the update is installed.
                         Button { openURL(AppUpdateNotice.appStoreURL) } label: {
                             LabeledContent("Update available", value: String(localized: "Version \(release.version)", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                         }

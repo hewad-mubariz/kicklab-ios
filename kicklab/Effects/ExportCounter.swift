@@ -28,7 +28,17 @@ nonisolated struct ExportCounterState: Equatable, Sendable {
     let count: Int
     let isTotal: Bool
     let age: Double?
-    var label: String { isTotal ? "TOTAL TOUCHES" : "TOUCHES" }
+    var customLabel: String? = nil
+    var label: String {
+        let text = CounterLabel.display(customLabel).uppercased()
+        return isTotal ? "TOTAL " + text : text
+    }
+
+    func withLabel(_ text: String?) -> Self {
+        var result = self
+        result.customLabel = text
+        return result
+    }
 }
 
 /// Shared CoreText badge for the share preview and the actual encoded pixels.

@@ -1,6 +1,321 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Continue with Google": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue with Google"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weiter mit Google"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar con Google"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuer avec Google"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar com o Google"
+          }
+        }
+      }
+    },
+    "Counter text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Counter text"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zählertext"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto del contador"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texte du compteur"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Texto do contador"
+          }
+        }
+      }
+    },
+    "Reset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zurücksetzen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restablecer"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réinitialiser"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redefinir"
+          }
+        }
+      }
+    },
+    "New best streak!" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New best streak!"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Bestserie!"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¡Nueva mejor racha!"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvelle meilleure série !"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova melhor sequência!"
+          }
+        }
+      }
+    },
+    "Personal best streak. Record your first juggling streak." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personal best streak. Record your first juggling streak."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Persönliche Bestserie. Nimm deine erste Jonglierserie auf."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mejor racha personal. Graba tu primera racha de toques."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meilleure série personnelle. Enregistre ta première série de jongles."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Melhor sequência pessoal. Grave sua primeira sequência de embaixadinhas."
+          }
+        }
+      }
+    },
+    "Personal best streak, %lld consecutive touches" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personal best streak, %lld consecutive touches"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Persönliche Bestserie, %lld aufeinanderfolgende Kontakte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mejor racha personal, %lld toques consecutivos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meilleure série personnelle, %lld touches consécutives"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Melhor sequência pessoal, %lld toques consecutivos"
+          }
+        }
+      }
+    },
+    "Record your first juggling streak." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record your first juggling streak."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nimm deine erste Jonglierserie auf."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Graba tu primera racha de toques."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistre ta première série de jongles."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grave sua primeira sequência de embaixadinhas."
+          }
+        }
+      }
+    },
+    "Consecutive touches · recorded in app" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consecutive touches · recorded in app"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufeinanderfolgende Kontakte · in der App aufgenommen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toques consecutivos · grabados en la app"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touches consécutives · enregistrées dans l’app"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toques consecutivos · gravados no app"
+          }
+        }
+      }
+    },
+    "BEST STREAK" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BEST STREAK"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BESTE SERIE"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MEJOR RACHA"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MEILLEURE SÉRIE"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MELHOR SEQUÊNCIA"
+          }
+        }
+      }
+    },
     "" : {
       "shouldTranslate" : false
     },
@@ -6632,6 +6947,34 @@
         }
       }
     },
+    "Continue editing or export another version." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeite weiter oder exportiere eine neue Version."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sigue editando o exporta otra versión."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuez le montage ou exportez une autre version."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue editando ou exporte outra versão."
+          }
+        }
+      }
+    },
     "Continue with Apple" : {
       "localizations" : {
         "de" : {
@@ -8464,6 +8807,34 @@
         }
       }
     },
+    "Edit replay" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replay bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar repetición"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier le replay"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar replay"
+          }
+        }
+      }
+    },
     "Effect" : {
       "localizations" : {
         "de" : {
@@ -9788,6 +10159,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preparando"
+          }
+        }
+      }
+    },
+    "Getting this older replay ready…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses ältere Replay wird vorbereitet…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando esta repetición anterior…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préparation de cet ancien replay…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando este replay antigo…"
           }
         }
       }
@@ -14772,6 +15171,34 @@
         }
       }
     },
+    "Open editor" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editor öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir editor"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir l’éditeur"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir editor"
+          }
+        }
+      }
+    },
     "Open iPhone Settings" : {
       "localizations" : {
         "de" : {
@@ -14996,6 +15423,34 @@
         }
       }
     },
+    "Opening editor…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editor wird geöffnet…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abriendo el editor…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouverture de l’éditeur…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrindo o editor…"
+          }
+        }
+      }
+    },
     "Opening frames…" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
@@ -15007,6 +15462,34 @@
     "Opening saved test…" : {
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
+    },
+    "Opening your replay…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Replay wird geöffnet…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abriendo tu repetición…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouverture de votre replay…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrindo seu replay…"
+          }
+        }
+      }
     },
     "Opens Apple’s code redemption sheet to review and redeem your Pro offer." : {
       "localizations" : {
@@ -16298,6 +16781,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Preparando a bola…"
+          }
+        }
+      }
+    },
+    "Preparing this replay for editing…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Replay wird zum Bearbeiten vorbereitet…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando esta repetición para editarla…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préparation de ce replay pour la modification…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando este replay para edição…"
           }
         }
       }
@@ -18184,6 +18695,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Replay neste celular"
+          }
+        }
+      }
+    },
+    "Replay preparation couldn’t be saved. Check the free space on your phone." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Replay-Vorbereitung konnte nicht gespeichert werden. Prüfe den freien Speicherplatz auf deinem Telefon."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo guardar la preparación de la repetición. Comprueba el espacio libre de tu teléfono."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La préparation du replay n’a pas pu être enregistrée. Vérifiez l’espace libre de votre téléphone."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível salvar a preparação do replay. Verifique o espaço livre no celular."
           }
         }
       }
@@ -23995,6 +24534,62 @@
         }
       }
     },
+    "This older replay’s timing was rebuilt for editing. Your saved result is unchanged." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Zeitpunkte dieses älteren Replays wurden zum Bearbeiten neu ermittelt. Dein gespeichertes Ergebnis bleibt unverändert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se reconstruyó la sincronización de esta repetición antigua para editarla. Tu resultado guardado no cambia."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le minutage de cet ancien replay a été recalculé pour la modification. Votre résultat enregistré reste inchangé."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A sincronização deste replay antigo foi reconstruída para edição. Seu resultado salvo permanece inalterado."
+          }
+        }
+      }
+    },
+    "This only needs to happen once. You can keep editing it later." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das ist nur einmal nötig. Danach kannst du jederzeit weiterbearbeiten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo hace falta hacerlo una vez. Podrás seguir editándolo después."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette étape n’est nécessaire qu’une fois. Vous pourrez continuer le montage plus tard."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Isso só precisa acontecer uma vez. Você poderá continuar editando depois."
+          }
+        }
+      }
+    },
     "This permanently removes your account, profile photo, saved results and this account’s local replays. You’ll be signed out.\n\nIf your account is linked to Apple, you’ll be asked to confirm your identity with Apple.\n\nClips exported to Photos and guest sessions stay on this phone. Apple subscriptions must be cancelled separately." : {
       "localizations" : {
         "de" : {
@@ -24047,6 +24642,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este plano está indisponível agora. Tente de novo."
+          }
+        }
+      }
+    },
+    "This replay couldn’t be opened for editing. Try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Replay konnte nicht zum Bearbeiten geöffnet werden. Versuche es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo abrir esta repetición para editarla. Inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’ouvrir ce replay pour le modifier. Réessayez."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível abrir este replay para edição. Tente novamente."
           }
         }
       }
@@ -24571,30 +25194,30 @@
         }
       }
     },
-    "To measure our Facebook and Instagram ads, Juggle Dude tells Meta when the app is installed and opened, when you finish your first session and when you start Pro. With tracking allowed this includes your advertising identifier. In the EU, UK and Switzerland nothing is shared unless you allow tracking. Training videos, touch counts and account details are never included." : {
+    "Meta measures our Facebook and Instagram ads using app installs and opens, first-session completion, and Pro trial or subscription starts. With tracking allowed, your advertising identifier is included. In the EEA, UK and Switzerland, nothing is sent without permission. Elsewhere, events without that identifier can still be sent. Videos, touch counts and account details aren’t included." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Um unsere Werbung auf Facebook und Instagram zu messen, teilt Juggle Dude Meta mit, wann die App installiert und geöffnet wird, wann du dein erstes Training beendest und wann du Pro startest. Wenn du Tracking erlaubst, gehört deine Werbe-ID dazu. In der EU, im Vereinigten Königreich und in der Schweiz wird nichts geteilt, solange du Tracking nicht erlaubst. Trainingsvideos, Kontaktzahlen und Kontodaten sind nie dabei."
+            "value" : "Meta misst unsere Facebook- und Instagram-Werbung anhand von App-Installationen und -Aufrufen, dem ersten abgeschlossenen Training und dem Beginn von Pro-Probeabos oder Abonnements. Wenn du Tracking erlaubst, wird deine Werbe-ID mitgesendet. Im EWR, im Vereinigten Königreich und in der Schweiz wird ohne Erlaubnis nichts gesendet. Anderswo können Ereignisse ohne diese ID weiterhin gesendet werden. Videos, Kontaktzahlen und Kontodaten sind nicht enthalten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para medir nuestros anuncios en Facebook e Instagram, Juggle Dude le informa a Meta cuándo se instala y se abre la app, cuándo terminas tu primera sesión y cuándo empiezas Pro. Si permites el rastreo, se incluye tu identificador de publicidad. En la UE, el Reino Unido y Suiza no se comparte nada a menos que permitas el rastreo. Nunca se incluyen videos de entrenamiento, conteos de toques ni datos de tu cuenta."
+            "value" : "Meta mide nuestros anuncios de Facebook e Instagram mediante instalaciones y aperturas de la app, la primera sesión completada y el inicio de pruebas o suscripciones Pro. Si permites el rastreo, se incluye tu identificador de publicidad. En el EEE, el Reino Unido y Suiza no se envía nada sin permiso. En otros lugares, se pueden seguir enviando eventos sin ese identificador. No se incluyen videos, conteos de toques ni datos de cuenta."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pour mesurer nos publicités sur Facebook et Instagram, Juggle Dude indique à Meta quand l’app est installée et ouverte, quand tu termines ta première séance et quand tu passes à Pro. Si tu autorises le suivi, ton identifiant publicitaire est inclus. Dans l’UE, au Royaume-Uni et en Suisse, rien n’est partagé tant que tu n’autorises pas le suivi. Les vidéos d’entraînement, le nombre de jongles et les données de compte ne sont jamais inclus."
+            "value" : "Meta mesure nos publicités Facebook et Instagram à partir des installations et ouvertures de l’app, de la première séance terminée et du début d’un essai ou abonnement Pro. Si tu autorises le suivi, ton identifiant publicitaire est inclus. Dans l’EEE, au Royaume-Uni et en Suisse, rien n’est envoyé sans autorisation. Ailleurs, des événements sans cet identifiant peuvent encore être envoyés. Les vidéos, le nombre de jongles et les données de compte ne sont pas inclus."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para medir nossos anúncios no Facebook e no Instagram, o Juggle Dude informa à Meta quando o app é instalado e aberto, quando você conclui seu primeiro treino e quando começa o Pro. Se você permitir o rastreamento, isso inclui seu identificador de publicidade. Na UE, no Reino Unido e na Suíça, nada é compartilhado a menos que você permita o rastreamento. Vídeos de treino, contagens de toques e dados da conta nunca são incluídos."
+            "value" : "A Meta mede nossos anúncios do Facebook e do Instagram usando instalações e aberturas do app, a primeira sessão concluída e o início de testes ou assinaturas Pro. Com o rastreamento permitido, seu identificador de publicidade é incluído. No EEE, no Reino Unido e na Suíça, nada é enviado sem permissão. Em outros locais, eventos sem esse identificador ainda podem ser enviados. Vídeos, contagens de toques e dados da conta não são incluídos."
           }
         }
       }
@@ -26043,6 +26666,34 @@
         }
       }
     },
+    "Watch original" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original ansehen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver original"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voir l’original"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assistir ao original"
+          }
+        }
+      }
+    },
     "Watch replay" : {
       "localizations" : {
         "de" : {
@@ -27477,6 +28128,34 @@
         }
       }
     },
+    "Your latest replay edits couldn’t be saved. Check the free space on your phone." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine letzten Replay-Änderungen konnten nicht gespeichert werden. Prüfe den freien Speicherplatz auf deinem Handy."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron guardar los últimos cambios de la repetición. Revisa el espacio libre de tu teléfono."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les dernières modifications du replay n’ont pas pu être enregistrées. Vérifiez l’espace libre sur votre téléphone."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível salvar suas últimas edições do replay. Verifique o espaço livre no celular."
+          }
+        }
+      }
+    },
     "Your name" : {
       "localizations" : {
         "de" : {
@@ -27589,6 +28268,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Do jeito que foi, sem efeito."
+          }
+        }
+      }
+    },
+    "Your original video and saved result will stay unchanged." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Originalvideo und dein gespeichertes Ergebnis bleiben unverändert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu video original y tu resultado guardado se conservarán sin cambios."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre vidéo originale et votre résultat enregistré resteront inchangés."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seu vídeo original e seu resultado salvo permanecerão inalterados."
           }
         }
       }
@@ -27785,6 +28492,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suas gravações ficam no seu iPhone. Os resultados e os dados básicos dos treinos são sincronizados com sua conta."
+          }
+        }
+      }
+    },
+    "Your replay" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dein Replay"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu repetición"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre replay"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seu replay"
           }
         }
       }

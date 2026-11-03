@@ -53,6 +53,8 @@ struct PlayerAvatar: View {
     var isYou = false
     let size: CGFloat
     var remoteURL: URL? = nil
+    var reference: PlayerPhotoReference? = nil
+    @EnvironmentObject private var player: PlayerStore
 
     var body: some View {
         Group {
@@ -73,12 +75,55 @@ struct PlayerAvatar: View {
     }
 
     private var remoteAvatar: some View {
-        AsyncImage(url: remoteURL) { phase in
-            if let image = phase.image {
-                image.resizable().scaledToFill()
+        Group {
+            if let reference {
+                CachedPlayerAvatar(reference: reference, name: name, size: size, photos: player.photos) {
+                    await player.loadPhoto(reference)
+                }
+                .id(reference)
+            } else {
+                AsyncImage(url: remoteURL) { phase in
+                    if let image = phase.image { image.resizable().scaledToFill() }
+                    else { PlayerPlaceholder(name: name, size: size) }
+                }
+                .id(remoteURL)
+            }
+        }
+    }
+}
+
+private struct CachedPlayerAvatar: View {
+    let reference: PlayerPhotoReference
+    let name: String
+    let size: CGFloat
+    @ObservedObject var photos: PlayerPhotoCache
+    let load: () async -> UIImage?
+    @State private var displayedImage: UIImage?
+
+    var body: some View {
+        Group {
+            if let image = photos.image(for: reference) ?? displayedImage {
+                Image(uiImage: image).resizable().scaledToFill()
             } else {
                 PlayerPlaceholder(name: name, size: size)
+                    .overlay(alignment: .bottomTrailing) {
+                        if photos.isLoading(reference) {
+                            ProgressView().controlSize(.mini).tint(.white)
+                                .padding(4).background(.black.opacity(0.6), in: .circle)
+                        }
+                    }
             }
+        }
+        .task(id: photos.identity(for: reference)) {
+            displayedImage = nil
+            let image = await load()
+            guard !Task.isCancelled else { return }
+            displayedImage = image
+        }
+        .onChange(of: photos.revision) { _, _ in
+            // Evicting cache entries must not blank a photo already on screen.
+            // A new upload still replaces the visible pixels immediately.
+            if let image = photos.image(for: reference) { displayedImage = image }
         }
     }
 }

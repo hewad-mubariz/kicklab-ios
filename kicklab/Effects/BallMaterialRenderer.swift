@@ -103,8 +103,9 @@ nonisolated enum BallMaterialRenderer {
             bitsPerComponent: 8, bytesPerRow: textureSize*4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: info),
               let bytes = material.data?.assumingMemoryBound(to: UInt8.self) else { return nil }
         material.translateBy(x: 0,y: CGFloat(textureSize)); material.scaleBy(x: 1,y: -1)
-        drawSkin(material, center: CGPoint(x:textureCenter,y:textureCenter), radius:textureRadius,skin:skin,time:time,orientation:orientation,
-                 size: labScale > 0 ? 46*labScale : nil)
+        // No print (a lab skin whose GPU draw failed) leaves the real ball rather than a black disc.
+        guard drawSkin(material, center: CGPoint(x:textureCenter,y:textureCenter), radius:textureRadius,skin:skin,time:time,orientation:orientation,
+                       size: labScale > 0 ? 46*labScale : nil) else { return nil }
         let raw = Array(UnsafeBufferPointer(start: bytes, count:textureSize*textureSize*4))
         var texture = raw
         // The print is only prefiltered for minification from the ball-sized sphere
@@ -215,17 +216,19 @@ nonisolated enum BallMaterialRenderer {
                 max(2, sample.pixelRadius(in: rect.size)))
     }
 
-    /// Draw the same material used by replay/export in the style picker.
+    /// Draw the same material used by replay/export in the style picker. False when there was nothing to draw.
+    @discardableResult
     static func drawSkin(_ ctx: CGContext, center: CGPoint, radius: Double, skin: BallSkin, time: Double, orientation: simd_quatf? = nil,
-                         size: Int? = nil) {
+                         size: Int? = nil) -> Bool {
         let image = size.map { BallSkinSphereRenderer.labImage(skin: skin, time: time, orientation: orientation, size: $0) }
             ?? BallSkinSphereRenderer.image(skin: skin, time: time, orientation: orientation)
-        guard radius > 0, let image else { return }
+        guard radius > 0, let image else { return false }
         ctx.saveGState()
         ctx.translateBy(x: center.x-radius, y: center.y+radius)
         ctx.scaleBy(x: 1, y: -1)
         ctx.interpolationQuality = .high
         ctx.draw(image, in: CGRect(x:0,y:0,width:radius*2,height:radius*2))
         ctx.restoreGState()
+        return true
     }
 }

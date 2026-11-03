@@ -135,6 +135,8 @@ nonisolated struct ExportOverlayItem: Codable, Equatable, Sendable {
     var enabled: Bool
     var style: ExportBadgeStyle
     var placement: ExportOverlayPlacement
+    /// Optional so existing saved replays retain their original caption.
+    var customLabel: String? = nil
 }
 
 nonisolated struct ExportGraphSettings: Codable, Equatable, Sendable {

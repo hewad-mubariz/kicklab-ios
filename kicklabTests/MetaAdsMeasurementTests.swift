@@ -98,6 +98,36 @@ final class MetaAdsMeasurementTests: XCTestCase {
         XCTAssertEqual(registrations.value, 0)
     }
 
+    func testWithdrawingConsentStopsNewEventsAndDoesNotBackfillThemLater() async {
+        let (measurement, authorization, transport, _) = make(.authorized, consent: true)
+        await measurement.sceneChanged(isActive: true)
+        measurement.trainingCompleted()
+        let beforeWithdrawal = transport.calls
+
+        await measurement.sceneChanged(isActive: false)
+        authorization.status = .denied
+        await measurement.sceneChanged(isActive: true)
+        measurement.subscriptionStarted(freeTrial: false, price: 29.99, currency: "EUR")
+        XCTAssertEqual(transport.calls, beforeWithdrawal, "No new event is passed to Meta after consent is withdrawn")
+
+        await measurement.sceneChanged(isActive: false)
+        authorization.status = .authorized
+        await measurement.sceneChanged(isActive: true)
+        XCTAssertEqual(transport.calls, beforeWithdrawal + ["activate"], "A purchase made without consent cannot be backfilled")
+    }
+
+    func testPermissionRequestWaitsUntilTheAppIsActive() async {
+        let (measurement, authorization, transport, _) = make(.notDetermined, response: .authorized, consent: true)
+        measurement.trainingCompleted()
+        await measurement.requestPermission()
+        XCTAssertEqual(authorization.requests, 0)
+        XCTAssertTrue(transport.calls.isEmpty)
+        await measurement.sceneChanged(isActive: true)
+        await measurement.requestPermission()
+        XCTAssertEqual(authorization.requests, 1)
+        XCTAssertEqual(transport.calls, ["start", "activate", "log firstTraining"])
+    }
+
     func testConsentStorefrontsAreTheEEATheUKAndSwitzerland() {
         for country in ["DEU", "FRA", "IRL", "NOR", "GBR", "CHE"] { XCTAssertTrue(MetaAdsMeasurement.consentStorefronts.contains(country), country) }
         for country in ["USA", "CAN", "BRA", "AUS", "TUR"] { XCTAssertFalse(MetaAdsMeasurement.consentStorefronts.contains(country), country) }
@@ -106,6 +136,12 @@ final class MetaAdsMeasurementTests: XCTestCase {
 
     func testBundledSettingsKeepAutomaticCollectionOffAndTestsNeverMeasure() {
         let bundle = Bundle.main
+        for language in ["en", "de", "es", "fr", "pt-BR"] {
+            let path = bundle.path(forResource: language, ofType: "lproj")
+            let localized = path.flatMap { Bundle(path: $0) }
+            let explanation = localized?.localizedString(forKey: "NSUserTrackingUsageDescription", value: nil, table: "InfoPlist")
+            XCTAssertTrue(explanation?.contains("Meta") == true, "The \(language) system prompt must name the recipient")
+        }
         XCTAssertEqual(bundle.object(forInfoDictionaryKey: "FacebookAppID") as? String, "1439446130906551")
         XCTAssertEqual(bundle.object(forInfoDictionaryKey: "JuggleDudeMetaAdsEnabled") as? Bool, true)
         for key in ["FacebookAdvertiserIDCollectionEnabled", "FacebookSKAdNetworkReportEnabled"] {

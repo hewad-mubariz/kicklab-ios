@@ -471,7 +471,31 @@ private struct SignInProviderButtons: View {
                     if busy == .apple { waiting("Waiting for Apple…").transition(.opacity) }
                 }
                 .opacity(dimmed(.apple) ? 0.35 : 1)
-            // Google stays off the account screens until the auth domain is branded.
+            Button { onSelect(.google) } label: {
+                HStack(spacing: 12) {
+                    Image("signin-google-mark").renderingMode(.original)
+                        .resizable().scaledToFit().frame(width: 20, height: 20)
+                        .accessibilityHidden(true)
+                    Text("Continue with Google")
+                        .font(.custom("GoogleSans-Regular", fixedSize: fontSize).weight(.medium))
+                        .multilineTextAlignment(.center)
+                }
+                .foregroundStyle(Color(red: 31 / 255, green: 31 / 255, blue: 31 / 255))
+                .padding(.horizontal, 16).padding(.vertical, 12)
+                .frame(maxWidth: .infinity, minHeight: height)
+                .background(.white, in: .capsule)
+                .overlay {
+                    Capsule().strokeBorder(Color(red: 116 / 255, green: 119 / 255, blue: 117 / 255), lineWidth: 1)
+                }
+                .contentShape(Capsule())
+            }
+            .buttonStyle(SessionPressStyle(scale: 0.97))
+            .disabled(busy != nil)
+            .overlay {
+                if busy == .google { waiting("Waiting for Google…").transition(.opacity) }
+            }
+            .opacity(dimmed(.google) ? 0.35 : 1)
+            .accessibilityIdentifier("signin-google")
             Button { onSelect(.email) } label: {
                 Label("Continue with email", systemImage: "envelope")
                     .font(.subheadline.weight(.medium))
@@ -492,7 +516,7 @@ private struct SignInProviderButtons: View {
 
     private func dimmed(_ provider: SignInProvider) -> Bool { busy != nil && busy != provider }
 
-    /// Covers Apple's control only while its sheet is up, so the wait reads in place.
+    /// Covers the active provider's control while its sheet is up, so the wait reads in place.
     private func waiting(_ title: LocalizedStringKey) -> some View {
         HStack(spacing: 10) {
             ProgressView().tint(.black)

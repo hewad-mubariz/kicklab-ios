@@ -196,8 +196,8 @@ nonisolated struct BallSurfaceTimeline: Sendable {
         return result
     }
 
-    static func prepare(source: URL, track: BallEffectTrack) async throws -> Self {
-        try await BallSurfaceMotionCache.shared.prepare(source:source,track:track)
+    static func prepare(source: URL, track: BallEffectTrack, history: HistoryReplayContext? = nil) async throws -> Self {
+        try await BallSurfaceMotionCache.shared.prepare(source:source,track:track,history:history)
     }
 
     #if DEBUG
@@ -288,16 +288,25 @@ private actor BallSurfaceMotionCache {
     private var pending: [String:Task<BallSurfaceTimeline,Error>] = [:]
     private var tail: Task<BallSurfaceTimeline,Error>?
 
-    func prepare(source: URL,track: BallEffectTrack) async throws -> BallSurfaceTimeline {
+    func prepare(source: URL,track: BallEffectTrack, history: HistoryReplayContext?) async throws -> BallSurfaceTimeline {
         let requestedAt = ProcessInfo.processInfo.systemUptime
-        let content = try SessionAnalysisStore.sourceDigest(source)
         let samples = track.samples.map { [$0.time, Double($0.center.x), Double($0.center.y),
             Double($0.boxSize?.width ?? 0), Double($0.boxSize?.height ?? 0), $0.confidence] }
         let signature = try JSONEncoder().encode(samples)
+        // The source is owned by this immutable session. Match the actual ball
+        // track, without invalidating completed spin on unrelated app rebuilds.
+        let historyKey = SessionAnalysisStore.digest(Data("saved-spin-v4-photo-exposure|".utf8) + signature)
+        if let history, let value = try? history.library.replayMotion(for: history.item, key: historyKey) {
+            BallPreparationTiming.writeRequest(origin: "saved_session", key: historyKey, since: requestedAt,
+                                               computation: value.preparationTiming)
+            return value
+        }
+        let content = try SessionAnalysisStore.sourceDigest(source)
         let requested = SessionAnalysisStore.digest(Data("spin-v4-photo-exposure|\(SessionAnalysisStore.pipelineSignature())|\(content)|".utf8) + signature)
         let folder = URL.cachesDirectory.appendingPathComponent("SessionSpin-v3", isDirectory: true)
         let file = folder.appendingPathComponent(requested + ".json")
         func report(_ value: BallSurfaceTimeline, origin: String) -> BallSurfaceTimeline {
+            if let history { try? history.library.saveReplayMotion(value, for: history.item, key: historyKey) }
             BallPreparationTiming.writeRequest(origin: origin, key: requested, since: requestedAt,
                                                computation: value.preparationTiming)
             return value
@@ -341,8 +350,8 @@ private actor BallSurfaceMotionCache {
     }
 }
 
-nonisolated private struct StoredSurfaceTimeline: Codable {
-    struct Row: Codable {
+nonisolated struct StoredSurfaceTimeline: Codable, Sendable {
+    struct Row: Codable, Sendable {
         let time: Double
         let q: [Float]
         let accepted: Bool

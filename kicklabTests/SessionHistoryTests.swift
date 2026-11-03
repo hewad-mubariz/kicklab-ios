@@ -75,15 +75,16 @@ final class SessionHistoryTests: XCTestCase {
         let suite = "DeletionBest-" + UUID().uuidString
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        let key = "kicklab.juggling.personalBest"
+        let key = JugglingRecords.bestKey
         JugglingRecords.recordIfNeeded(17, ownerID: nil, defaults: defaults)
         JugglingRecords.recordIfNeeded(350, ownerID: owner, defaults: defaults)
         XCTAssertEqual(defaults.integer(forKey: key), 17)
 
         // Reproduce a cache left by a signed-in replay from an older build.
         defaults.set(350, forKey: key)
-        let guest = HistorySession(id: UUID(), ownerID: nil, touches: 17, durationMS: 1000,
+        var guest = HistorySession(id: UUID(), ownerID: nil, touches: 17, durationMS: 1000,
             source: .recording, completedAt: Date(), syncState: .deviceOnly)
+        guest.rankedProposal = .init(count: 17, startMS: 0, endMS: 1000)
         try library.save(guest)
         let saved = try result(touches: 350)
         try queue.save(saved); try library.save(HistorySession(result: saved))
@@ -102,11 +103,11 @@ final class SessionHistoryTests: XCTestCase {
         let suite = "DeletionBest-" + UUID().uuidString
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        defaults.set(350, forKey: "kicklab.juggling.personalBest")
+        defaults.set(350, forKey: JugglingRecords.bestKey)
         let player = PlayerStore(service: nil, queue: queue, guestDefaults: defaults)
         let removed = await player.removeDeletedAccountData(owner)
         XCTAssertTrue(removed)
-        XCTAssertEqual(defaults.integer(forKey: "kicklab.juggling.personalBest"), 0)
+        XCTAssertEqual(defaults.integer(forKey: JugglingRecords.bestKey), 0)
     }
 
     func testExistingOutboxAppearsOfflineThenSurvivesSuccessfulSyncAndRestart() async throws {
@@ -151,6 +152,18 @@ final class SessionHistoryTests: XCTestCase {
         await restored.refresh()
         XCTAssertEqual(restored.items.map(\.id), [a.id, b.id])
         XCTAssertNotNil(restored.errorMessage)
+    }
+
+    func testServerStreakSurvivesHistoryRefreshWithoutLocalAnalysis() async throws {
+        var saved = try result(touches: 60)
+        saved.rank(.init(count: 30, startMS: 0, endMS: 1000))
+        let server = HistorySession(result: saved, syncState: .synced)
+        let service = FakePlayerDataService()
+        service.historyPages = [.init(items: [server], next: nil)]
+        let history = store(service); history.useAccount(owner)
+        await history.refresh()
+        XCTAssertEqual(history.items.first?.personalBestStreak, 30)
+        XCTAssertEqual(try library.session(id: saved.id, owner: owner)?.rankedProposal, saved.streak)
     }
 
     func testLatePageCannotLeakAfterAccountSwitchOrSignOut() async throws {

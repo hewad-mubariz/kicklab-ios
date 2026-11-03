@@ -25,7 +25,10 @@ final class AppUpdateNotice: ObservableObject {
         // UI tests and screenshots: --app-update-preview announces a made-up next version.
         if ProcessInfo.processInfo.arguments.contains("--app-update-preview") {
             let defaults = UserDefaults(suiteName: "kicklab.app-update-preview")!
-            defaults.removePersistentDomain(forName: "kicklab.app-update-preview")
+            // Reopening the preview should respect Not now, just like a real release.
+            if ProcessInfo.processInfo.arguments.contains("--app-update-preview-reset") {
+                defaults.removePersistentDomain(forName: "kicklab.app-update-preview")
+            }
             return AppUpdateNotice(installed: "1.2.0", defaults: defaults, lookup: { _ in
                 Release(version: "1.3.0", notes: "Crystal ice, a fireworks show and four new balls.", minimumOS: nil)
             })
@@ -57,8 +60,8 @@ final class AppUpdateNotice: ObservableObject {
         dismissedVersion = defaults.string(forKey: Self.dismissedKey)
     }
 
-    /// The home banner shows a found release until the person updates or dismisses that version.
-    var showsBanner: Bool { available.map { $0.version != dismissedVersion } ?? false }
+    /// Offer a found release once; Settings keeps the update link after the alert is dismissed.
+    var shouldPrompt: Bool { available.map { $0.version != dismissedVersion } ?? false }
 
     /// Looks for a newer release, at most every six hours.
     func check(now: Date = .now) async {
@@ -109,37 +112,5 @@ final class AppUpdateNotice: ObservableObject {
     private nonisolated struct Lookup: Decodable {
         nonisolated struct Result: Decodable { let version: String; let releaseNotes: String?; let minimumOsVersion: String? }
         let results: [Result]
-    }
-}
-
-/// The update banner on the home screen: the new version, its first line of notes, Update or not now.
-struct AppUpdateBanner: View {
-    @ObservedObject var notice: AppUpdateNotice
-    @Environment(\.openURL) private var openURL
-
-    var body: some View {
-        if notice.showsBanner, let release = notice.available {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "arrow.down.app.fill").font(.title2).foregroundStyle(Theme.accent)
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Juggle Dude \(release.version) is here").font(.callout.weight(.semibold))
-                    Text(release.headline).font(.footnote).foregroundStyle(.secondary)
-                        .lineLimit(2).fixedSize(horizontal: false, vertical: true)
-                    Button("Update") { openURL(AppUpdateNotice.appStoreURL) }
-                        .buttonStyle(.borderedProminent).controlSize(.small).padding(.top, 4)
-                        .accessibilityIdentifier("app-update-open")
-                }
-                Spacer(minLength: 0)
-                Button("Not now", systemImage: "xmark") { withAnimation(.smooth) { notice.dismiss() } }
-                    .labelStyle(.iconOnly)
-                    .accessibilityIdentifier("app-update-dismiss")
-            }
-            .padding(16).foregroundStyle(.primary)
-            .background(.regularMaterial, in: .rect(cornerRadius: 18))
-            .transition(.move(edge: .top).combined(with: .opacity))
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("app-update-banner")
-        }
     }
 }

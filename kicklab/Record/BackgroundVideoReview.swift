@@ -35,6 +35,11 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         if mode == "photos" { status = "Ready"; return }
         let source = SessionDesignReview.fileURL(SessionDesignReview.argument("--background-video-source") ?? "documents:background-input.mov")
         do {
+            if mode == "artwork" {
+                // Match a prepared editor session: source-motion analysis finishes before Save.
+                record(progress:0,phase:"Preparing ball")
+                _ = try await BallSurfaceTimeline.prepare(source:source,track:BallEffectTrack(frames:Self.artworkFrames()))
+            }
             if mode == "import" {
                 analyzer.analyse(url: source)
                 while analyzer.isRunning {
@@ -53,6 +58,15 @@ private final class BackgroundVideoReviewModel: ObservableObject {
                         try await Task.sleep(for: .milliseconds(500))
                     }
                     let task = VideoWorkExecution.detached {
+                        if mode == "artwork" {
+                            // A staged 320x480, 20-second fixture with a white ball at (160,240), r=48.
+                            // Exercise the real exporter after Home, including CPU-only background time.
+                            return try await BallStyleBurnIn.render(source:source,track:Self.artworkFrames(),style:.none,skin:.arctic,
+                                intensity:0,shortEdge:320,preserveFrameTimes:true) { value in
+                                    VideoWorkExecution.lease?.progress(0.2+value*0.8,subtitle:"Exporting artwork")
+                                    await self.record(progress:value,phase:"Exporting")
+                                }
+                        }
                         if mode == "shot" || mode == "shot-cancel" {
                             let frames = (0...1200).map { i -> RecordedFrame in
                                 let t = Double(i) / 60, f = t.truncatingRemainder(dividingBy: 1)
@@ -85,6 +99,17 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         } catch { record(progress: 0, phase: "Failed: " + error.localizedDescription) }
     }
 
+    nonisolated private static func artworkFrames() -> [RecordedFrame] {
+        let alpha = (0..<10000).map { i -> UInt8 in
+            hypot(Double(i%100)+0.5-50,Double(i/100)+0.5-50) < 48 ? 255 : 0
+        }
+        let mask = BallMask(rect:CGRect(x:110.0/320,y:190.0/480,width:100.0/320,height:100.0/480),width:100,height:100,alpha:alpha)
+        return (0..<600).map { i in
+            RecordedFrame(time:Double(i)/30,x:0.5,y:0.5,width:96.0/320,height:96.0/480,score:0.99,
+                smoothedX:0.5,smoothedY:0.5,vy:0,motion:.unknown,detected:true,person:nil,ballMask:mask,usesBallMasks:true)
+        }
+    }
+
     private func record(progress: Double, phase: String) {
         let background = UIApplication.shared.applicationState == .background
         if background && progress > previousProgress && (phase == "Exporting" || phase == "Importing") { backgroundUpdates += 1 }
@@ -96,6 +121,8 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         let value: [String: Any] = ["phase": phase, "progress": progress, "background": background,
             "backgroundUpdates": backgroundUpdates, "gpuSupported": gpuSupported,
             "analysisFrames": analyzer.framesRead, "touches": analyzer.touchCount,
+            "artworkGPUAllowed": BallSkinMetalRenderer.isAllowed,
+            "backgroundLeaseAllowed": VideoWorkExecution.lease?.canContinue ?? false,
             "time": Date().timeIntervalSince1970, "performance": analyzer.performance]
         if let data = try? JSONSerialization.data(withJSONObject: value, options: .prettyPrinted) {
             try? data.write(to: URL.documentsDirectory.appendingPathComponent("background-video-review.json"), options: .atomic)

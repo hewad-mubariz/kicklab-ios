@@ -258,7 +258,7 @@ struct ReplayToolbox: View {
         switch tool {
         case .counter:
             if let image = ExportOverlayRenderer.image(style: counter.style, time: 5 + CounterArt.previewAge(counter.style),
-                counter: .init(count: 5, isTotal: false, age: CounterArt.previewAge(counter.style))) {
+                counter: .init(count: 5, isTotal: false, age: CounterArt.previewAge(counter.style)), customLabel: counter.customLabel) {
                 Image(decorative: image, scale: 1).resizable().scaledToFit()
             } else {
                 Text("05").font(.system(size: 32, weight: .bold, design: .rounded)).monospacedDigit()
@@ -375,6 +375,7 @@ struct ReplayToolbox: View {
             }
             .padding(.horizontal, 16)
             if showsTouchTools { milestonesRow.transition(.sessionRise) }
+            CounterLabelField(item: $counter).padding(.horizontal, 16)
         }
     }
 

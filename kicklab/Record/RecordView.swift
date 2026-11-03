@@ -184,7 +184,7 @@ struct RecordView: View {
                 touches: camera.touchCount,
                 duration: elapsed,
                 bestCombo: max(comboPeak, camera.touchCount),
-                personalBest: JugglingRecords.personalBest,
+                personalBest: sessionOwner == nil ? JugglingRecords.personalBest : player.personalBest,
                 videoURL: url,
                 touchesMarked: camera.recordedTouches,
                 track: camera.recordedTrack, sessionNumber: sessionNumber
@@ -250,7 +250,8 @@ struct RecordView: View {
                 // Cover is up — drop overlay underneath without a black flash.
                 showProcessing = false
                 isFinishingSession = false
-                hudShown = false
+                // Keep the covered HUD visible. Hiding its glass controls here
+                // can leave Back unresponsive after the editor is dismissed.
             }
         }
     }
@@ -275,7 +276,7 @@ struct RecordView: View {
                 score: 0, smoothedX: 0, smoothedY: 0, vy: 0, motion: .unknown,
                 detected: false, person: nil, usesBallMasks: true)
             let summary = SessionSummary.make(touches: 0, duration: duration, bestCombo: 0,
-                personalBest: JugglingRecords.personalBest, videoURL: url,
+                personalBest: sessionOwner == nil ? JugglingRecords.personalBest : player.personalBest, videoURL: url,
                 touchesMarked: [], track: [maskedCapture], sessionNumber: sessionNumber)
             // Shows the note a take cut short by heat or tracking would carry.
             sessionNotice = SessionDesignReview.argument("--capture-early-stop").map {
@@ -302,11 +303,6 @@ struct RecordView: View {
         motionPoints = []
         sessionNumber = JugglingSessionIdentity.next()
         camera.start()
-        // The HUD builds back in as the editor slides away.
-        Task {
-            try? await Task.sleep(for: .milliseconds(220))
-            hudShown = true
-        }
     }
 
     // MARK: - Processing
@@ -326,7 +322,7 @@ struct RecordView: View {
         }
         var summary = SessionSummary.make(
             touches: importedVideo.touchCount, duration: importedVideo.videoDuration,
-            bestCombo: importedVideo.touchCount, personalBest: JugglingRecords.personalBest,
+            bestCombo: importedVideo.touchCount, personalBest: sessionOwner == nil ? JugglingRecords.personalBest : player.personalBest,
             videoURL: url, touchesMarked: importedVideo.recordedTouches,
             track: importedVideo.recordedTrack, sessionNumber: JugglingSessionIdentity.begin())
         if !importedVideo.visualRecoveries.isEmpty { summary.visualTrack = importedVideo.renderTrack }

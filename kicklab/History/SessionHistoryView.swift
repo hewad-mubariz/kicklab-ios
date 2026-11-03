@@ -175,7 +175,7 @@ private struct SessionHistoryRow: View {
                 VStack(alignment: .trailing, spacing: 0) {
                     Text(item.touches.formatted()).font(TrainingHomeStyle.display(44, relativeTo: .largeTitle))
                         .monospacedDigit().lineLimit(1).minimumScaleFactor(0.6)
-                    Text("TOUCHES").font(.system(.caption2, design: .monospaced)).tracking(0.6)
+                    Text("TOTAL TOUCHES").font(.system(.caption2, design: .monospaced)).tracking(0.6)
                         .foregroundStyle(TrainingHomeStyle.muted(scheme))
                 }
                 Image(systemName: "chevron.right").font(.caption.weight(.semibold))
@@ -196,6 +196,8 @@ private struct SessionHistoryDetail: View {
     @EnvironmentObject private var player: PlayerStore
     @Environment(\.colorScheme) private var scheme
     @State private var showsReplay = false
+    @State private var showsEditor = false
+    @State private var editAfterReplay = false
     @State private var confirmsRemoval = false
     private var item: HistorySession? { store.items.first { $0.id == id } }
 
@@ -220,16 +222,33 @@ private struct SessionHistoryDetail: View {
                         stat("SOURCE", value: item.sourceLabel, symbol: item.source == .recording ? "video" : "photo")
                     }
 
-                    if store.replayURL(for: item) != nil {
-                        Button { showsReplay = true } label: {
-                            Label("Watch replay", systemImage: "play.fill")
-                                .font(.headline).frame(maxWidth: .infinity, minHeight: 48)
-                                .foregroundStyle(scheme == .dark ? TrainingHomeStyle.buttonInk : .white)
+                    if let url = store.replayURL(for: item) {
+                        VStack(spacing: 16) {
+                            HStack(spacing: 16) {
+                                HistoryReplayThumbnail(url: url)
+                                    .frame(width: 72, height: 94).clipShape(.rect(cornerRadius: 12))
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Your replay").font(.headline)
+                                    Text("Continue editing or export another version.")
+                                        .font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))
+                                }
+                                Spacer(minLength: 0)
+                            }
+                            Button { showsEditor = true } label: {
+                                Label("Open editor", systemImage: "slider.horizontal.3")
+                                    .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+                                    .foregroundStyle(scheme == .dark ? TrainingHomeStyle.buttonInk : .white)
+                            }
+                            .appGlassButtonStyle(prominent: true).tint(TrainingHomeStyle.accent(scheme))
+                            .accessibilityIdentifier("history-edit-replay")
+                            Button { showsReplay = true } label: {
+                                Label("Watch original", systemImage: "play")
+                                    .font(.subheadline.weight(.medium)).frame(maxWidth: .infinity, minHeight: 32)
+                            }
+                            .buttonStyle(.plain).foregroundStyle(TrainingHomeStyle.muted(scheme))
+                            .accessibilityIdentifier("history-watch-replay")
                         }
-                        .appGlassButtonStyle(prominent: true).tint(TrainingHomeStyle.accent(scheme))
-                        .accessibilityIdentifier("history-watch-replay")
-                        Text("Original video · saved on this phone")
-                            .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
+                        .padding(18).background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 22))
                     } else {
                         Label("Replay isn’t on this phone", systemImage: "video.slash")
                             .font(.headline)
@@ -266,8 +285,17 @@ private struct SessionHistoryDetail: View {
                     }
                 }
                 .frame(maxWidth: 560).padding(20).frame(maxWidth: .infinity)
-                .sheet(isPresented: $showsReplay) {
-                    if let url = store.replayURL(for: item) { HistoryVideoPlayer(url: url) }
+                .sheet(isPresented: $showsReplay, onDismiss: {
+                    if editAfterReplay { editAfterReplay = false; showsEditor = true }
+                }) {
+                    if let url = store.replayURL(for: item) {
+                        HistoryVideoPlayer(url: url) { editAfterReplay = true; showsReplay = false }
+                    }
+                }
+                .fullScreenCover(isPresented: $showsEditor) {
+                    if let url = store.replayURL(for: item) {
+                        HistoryReplayEditor(item: item, source: url, store: store)
+                    }
                 }
                 .confirmationDialog("Remove this replay?", isPresented: $confirmsRemoval, titleVisibility: .visible) {
                     Button("Remove replay", role: .destructive) { store.removeVideo(for: item) }
@@ -293,6 +321,7 @@ private struct SessionHistoryDetail: View {
 
 private struct HistoryVideoPlayer: View {
     let url: URL
+    let onEdit: () -> Void
     @State private var player: AVPlayer?
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var phase
@@ -301,6 +330,10 @@ private struct HistoryVideoPlayer: View {
             VideoPlayer(player: player).background(.black)
                 .navigationTitle("Original replay").navigationBarTitleDisplayMode(.inline)
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Open editor", systemImage: "slider.horizontal.3", action: onEdit)
+                            .accessibilityIdentifier("history-replay-edit")
+                    }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Close replay", systemImage: "xmark") { dismiss() }
                             .labelStyle(.iconOnly).accessibilityIdentifier("history-replay-close")
@@ -311,5 +344,30 @@ private struct HistoryVideoPlayer: View {
         .onAppear { player = AVPlayer(url: url); player?.play() }
         .onDisappear { player?.pause(); player?.replaceCurrentItem(with: nil); player = nil }
         .onChange(of: phase) { _, phase in if phase != .active { player?.pause() } }
+    }
+}
+
+/// A small source poster; generating it never starts tracking or effect preparation.
+struct HistoryReplayThumbnail: View {
+    let url: URL
+    @State private var thumbnail: UIImage?
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.12)
+            if let thumbnail {
+                Image(uiImage: thumbnail).resizable().scaledToFill()
+            } else {
+                Image(systemName: "play.rectangle").font(.title2).foregroundStyle(.secondary)
+            }
+        }
+        .clipped().accessibilityHidden(true)
+        .task(id: url) {
+            let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+            generator.appliesPreferredTrackTransform = true
+            generator.maximumSize = CGSize(width: 300, height: 400)
+            if let frame = try? await generator.image(at: CMTime(seconds: 0.2, preferredTimescale: 600)), !Task.isCancelled {
+                thumbnail = UIImage(cgImage: frame.image)
+            }
+        }
     }
 }

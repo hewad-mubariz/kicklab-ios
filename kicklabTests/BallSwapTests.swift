@@ -149,6 +149,9 @@ struct BallSwapTests {
         #expect(edit.isEdited, "Runs are still an edit")
         edit.lookChanges = [2: look(.galaxy)]
         #expect(edit.usesBallMaterial && edit.requiresVisualTrack)
+        #expect(!edit.usesLabSkin, "Artwork prints retain a CPU fallback and do not require GPU access")
+        edit.lookChanges = [2: look(.goldPolish)]
+        #expect(edit.usesLabSkin, "A lab skin in any run needs the GPU to export")
         edit.lookChanges = [2: look(.original, .fire)]
         #expect(!edit.usesBallMaterial && edit.usesEffects && edit.requiresVisualTrack, "An effect in one run needs the track")
         #expect(edit.label.contains("Looks on touches"))

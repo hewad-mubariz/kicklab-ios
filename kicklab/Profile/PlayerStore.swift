@@ -76,8 +76,11 @@ final class PlayerStore: ObservableObject {
     @Published var errorMessage: String?
     private let service: (any PlayerDataService)?
     private let queue: JugglingResultQueue
+    let photos = PlayerPhotoCache()
+    private var profileRevision = UUID()
     private let guestDefaults: UserDefaults
     private var generation = UUID()
+    private var accountRequest = UUID()
     private var syncTask: Task<Void, Never>?
     private var retryTask: Task<Void, Never>?
     private var syncFailures = 0
@@ -135,9 +138,19 @@ final class PlayerStore: ObservableObject {
     }
 
     func useAccount(_ identity: AccountIdentity?) async {
+        let request = UUID(); accountRequest = request
+        if guestDefaults.object(forKey: JugglingRecords.bestKey) == nil {
+            let library = history.library
+            if let sessions = try? await Task.detached(priority: .utility, operation: { try library.sessions(owner: nil) }).value {
+                JugglingRecords.migrateGuestBest(from: sessions, defaults: guestDefaults)
+            }
+        }
         for owner in queue.pendingDeletions() { _ = await removeDeletedAccountData(owner) }
+        guard accountRequest == request, !Task.isCancelled else { return }
         let identity = identity.flatMap { deletedOwners.contains($0.id) ? nil : $0 }
         generation = UUID()
+        photos.reset()
+        profileRevision = UUID()
         syncTask?.cancel(); syncTask = nil
         retryTask?.cancel(); retryTask = nil; syncFailures = 0
         userID = identity?.id; profile = nil; avatarData = nil; pendingCount = 0; personalBest = 0
@@ -164,6 +177,7 @@ final class PlayerStore: ObservableObject {
         saves.forEach { $0.cancel() }
         if userID == owner {
             generation = UUID(); syncTask = nil
+            photos.reset(); profileRevision = UUID()
             retryTask?.cancel(); retryTask = nil
             userID = nil; profile = nil; avatarData = nil; personalBest = 0; pendingCount = 0
             isSaving = false; errorMessage = nil
@@ -177,7 +191,7 @@ final class PlayerStore: ObservableObject {
             let guestBest = try await Task.detached(priority: .utility) {
                 try queue.removeAccount(owner)
                 try library.removeAccount(owner)
-                return try library.sessions(owner: nil).map(\.touches).max() ?? 0
+                return try library.sessions(owner: nil).map(\.personalBestStreak).max() ?? 0
             }.value
             JugglingRecords.restoreGuestBest(guestBest, defaults: guestDefaults)
             try queue.finishDeletion(owner)
@@ -190,14 +204,15 @@ final class PlayerStore: ObservableObject {
         syncPending()
         leaderboardReview.sendQueued()
         guard let id = userID, let service else { return }
-        let current = generation
+        let current = generation, revision = profileRevision
         do {
             async let best = service.personalBest(userID: id)
             let loaded = try await service.profile(userID: id)
             let loadedBest = try await best
             guard current == generation, !Task.isCancelled else { return }
+            guard revision == profileRevision else { return }
             profile = loaded
-            personalBest = max(loadedBest, (try? queue.pending(for: id).map(\.touches).max()) ?? 0)
+            personalBest = max(loadedBest, (try? queue.pending(for: id).map(\.personalBestStreak).max()) ?? 0)
             await loadAvatar(loaded, generation: current)
         } catch {
             if current == generation, !Task.isCancelled { errorMessage = PlayerDataError.requestFailed.localizedDescription }
@@ -213,6 +228,7 @@ final class PlayerStore: ObservableObject {
         }
         updated.displayName = trimmed; updated.countryCode = country; updated.leaderboardVisible = visible
         let current = generation
+        profileRevision = UUID()
         isSaving = true
         defer { if current == generation { isSaving = false } }
         let saved = try await service.saveProfile(updated)
@@ -223,6 +239,7 @@ final class PlayerStore: ObservableObject {
     func uploadAvatar(_ jpeg: Data) async throws {
         guard var updated = profile, updated.id == userID, let service, !isSaving else { throw PlayerDataError.signIn }
         let current = generation
+        profileRevision = UUID()
         isSaving = true
         defer { if current == generation { isSaving = false } }
         try await service.uploadAvatar(jpeg, userID: updated.id)
@@ -231,19 +248,23 @@ final class PlayerStore: ObservableObject {
         let saved = try await service.saveProfile(updated)
         guard current == generation else { throw CancellationError() }
         profile = saved; avatarData = jpeg; errorMessage = nil
+        if let path = saved.avatarPath { try? photos.store(jpeg, for: .init(playerID: saved.id, path: path)) }
     }
 
     func removeAvatar() async throws {
         guard var updated = profile, updated.id == userID, let service, !isSaving else { throw PlayerDataError.signIn }
         let current = generation
+        profileRevision = UUID()
         isSaving = true
         defer { if current == generation { isSaving = false } }
+        let removedPhoto = updated.avatarPath.map { PlayerPhotoReference(playerID: updated.id, path: $0) }
         try await service.deleteAvatar(userID: updated.id)
         guard current == generation else { throw CancellationError() }
         updated.avatarPath = nil
         let saved = try await service.saveProfile(updated)
         guard current == generation else { throw CancellationError() }
         profile = saved; avatarData = nil; errorMessage = nil
+        if let removedPhoto { photos.remove(removedPhoto) }
     }
 
     func record(_ result: SavedJugglingResult) {
@@ -253,15 +274,15 @@ final class PlayerStore: ObservableObject {
             // Keep history after the outbox is removed on a successful upload.
             try history.save(HistorySession(result: result))
             if result.ownerID == userID {
-                personalBest = max(personalBest, result.touches)
+                personalBest = max(personalBest, result.personalBestStreak)
                 pendingCount = try queue.pending(for: result.ownerID).count
                 syncPending()
             }
         } catch { errorMessage = String(localized: "The session could not be queued for your account. Your video is still available on this device.", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
     }
 
-    /// Returns immediately. The root-owned task keeps only metadata and a URL,
-    /// never the session's analysis buffers, and outlives the capture/editor view.
+    /// Returns immediately. The video-copy journal keeps compact positions;
+    /// a separate root-owned writer retains compressed analysis off the UI thread.
     @discardableResult
     func recordSession(id: UUID, owner: UUID?, summary: SessionSummary,
                        source: SavedJugglingResult.Source, completedAt: Date) -> Task<Void, Never>? {
@@ -272,8 +293,7 @@ final class PlayerStore: ObservableObject {
         }
         var item: HistorySession
         let review = summary.leaderboardTouchReview
-        let streak = RankedStreakProposal.suggest(touchTimes: summary.touchesMarked.map(\.time),
-            boundaries: review?.streakBoundaries ?? [], duration: summary.duration)
+        let streak = source == .recording ? summary.bestStreak : nil
         do {
             let result: SavedJugglingResult?
             if let owner {
@@ -292,10 +312,15 @@ final class PlayerStore: ObservableObject {
             item.touchReview = review
             item.rankedProposal = result?.streak ?? streak
             item.touchTimesMS = summary.touchesMarked.map { Int(($0.time * 1000).rounded()) }
-            let request = SessionSaveRequest(item: item, result: result, videoURL: summary.videoURL)
+            var replay = summary
+            replay.framesUseCompositionClock = source == .gallery
+            let replayData = HistoryReplayData(summary: replay)
+            let request = SessionSaveRequest(item: item, result: result, videoURL: summary.videoURL,
+                                             replayData: replayData.isValid ? replayData : nil)
             if let task = saveTasks[request.key] { return task }
             history.showImmediately(item, videoURL: summary.videoURL)
-            if owner == userID { personalBest = max(personalBest, item.touches) }
+            history.retainReplayAnalysis(replay, id: id, owner: owner, prepared: false)
+            if owner == userID { personalBest = max(personalBest, item.personalBestStreak) }
             return startSave(request)
         } catch { errorMessage = String(localized: "This session could not be saved to history. Your current replay is still available.", bundle: AppLanguage.bundle, locale: AppLanguage.locale); return nil }
     }
@@ -408,36 +433,47 @@ final class PlayerStore: ObservableObject {
         guard let service else { throw PlayerDataError.unavailable }
         let owner = userID
         let board = try await service.leaderboard(period: period == .week ? "week" : "all_time", country: nil, userID: owner)
-        let all = board.entries + board.aroundMe.filter { row in !board.entries.contains { $0.userID == row.userID } }
-        let urls = await withTaskGroup(of: (UUID, URL?).self, returning: [UUID: URL].self) { group in
-            for row in all {
-                guard let path = row.avatarPath else { continue }
-                group.addTask { (row.userID, try? await service.avatarURL(path: path, userID: owner)) }
-            }
-            var result: [UUID: URL] = [:]
-            for await (id, url) in group { if let url { result[id] = url } }
-            return result
-        }
         try Task.checkCancellation()
         func entry(_ row: RankedPlayer) -> LeaderboardEntry {
             LeaderboardEntry(rank: row.rank, name: row.displayName, touches: row.touches,
-                isYou: row.isYou, photo: urls[row.userID], attemptID: row.attemptID, sessionID: row.sessionID,
+                isYou: row.isYou, userID: row.userID,
+                avatar: row.avatarPath.map { .init(playerID: row.userID, path: $0) }, attemptID: row.attemptID, sessionID: row.sessionID,
                 streakDurationMS: row.streakDurationMS, countryCode: row.countryCode)
         }
         return (board.entries.map(entry), board.aroundMe.map(entry))
     }
 
-    private func loadAvatar(_ profile: PlayerProfile, generation current: UUID) async {
-        guard let path = profile.avatarPath, let service else { avatarData = nil; return }
-        do {
-            let url = try await service.avatarURL(path: path, userID: profile.id)
+    func loadPhoto(_ reference: PlayerPhotoReference) async -> UIImage? {
+        guard let data = await photoData(reference) else { return nil }
+        return photos.image(for: reference) ?? UIImage(data: data)
+    }
+
+    private func photoData(_ reference: PlayerPhotoReference) async -> Data? {
+        guard let service else { return nil }
+        let viewer = userID
+        return await photos.load(reference) {
+            // Resolve a new signed link only when pixels need loading. Cached
+            // boards never keep a URL that can expire before details are opened.
+            let url = try await service.avatarURL(path: reference.path, userID: viewer)
             var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData)
             request.timeoutInterval = 15
             let (data, response) = try await URLSession.shared.data(for: request)
-            guard let response = response as? HTTPURLResponse, response.statusCode == 200, data.count <= 2_097_152 else { return }
-            if current == generation, !Task.isCancelled { avatarData = data }
-        } catch { /* A missing photo never blocks account access or result sync. */ }
+            guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+                throw PlayerDataError.requestFailed
+            }
+            return data
+        }
     }
+
+    private func loadAvatar(_ profile: PlayerProfile, generation current: UUID) async {
+        guard let path = profile.avatarPath else { avatarData = nil; return }
+        let revision = profileRevision
+        let data = await photoData(.init(playerID: profile.id, path: path))
+        guard current == generation, revision == profileRevision, !Task.isCancelled,
+              self.profile?.avatarPath == path else { return }
+        avatarData = data
+    }
+
 }
 
 /// iOS grants a short grace period on backgrounding; the journal survives if

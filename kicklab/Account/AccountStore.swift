@@ -48,9 +48,7 @@ final class AccountStore: ObservableObject {
         guard let service else { errorMessage = AccountFailure.configuration.localizedDescription; return }
         guard provider != .email else { return }
         errorMessage = nil; isBusy = true
-        // Google replaces the SDK's shared PKCE verifier before opening the browser.
-        // Cancellation cannot make a previously sent email link usable again.
-        if provider == .google { pendingEmail = nil }
+        // Native providers exchange ID tokens without replacing a pending email's PKCE verifier.
         ProductAnalytics.shared.track(.signInStarted(provider))
         defer { isBusy = false }
         do {

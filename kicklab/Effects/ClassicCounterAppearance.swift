@@ -44,8 +44,9 @@ nonisolated enum ClassicCounterAppearance {
             NSAttributedString.Key(kCTKernAttributeName as String): 2.5
         ]))
         let labelBounds = CTLineGetBoundsWithOptions(label, .useGlyphPathBounds)
-        context.translateBy(x: 14 - labelBounds.minX, y: 139 + labelBounds.maxY)
-        context.scaleBy(x: 1, y: -1)
+        let fit = min(1, 212 / max(1, labelBounds.width))
+        context.translateBy(x: 14 - labelBounds.minX * fit, y: 139 + labelBounds.maxY * fit)
+        context.scaleBy(x: fit, y: -fit)
         context.textMatrix = .identity
         context.textPosition = .zero
         CTLineDraw(label, context)

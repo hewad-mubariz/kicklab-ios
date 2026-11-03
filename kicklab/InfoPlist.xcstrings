@@ -126,31 +126,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erlaube Tracking, damit wir messen können, welche Anzeigen neue Spieler zu Juggle Dude bringen. Deine Trainingsvideos, Kontaktzahlen und Kontodaten werden nie geteilt."
+            "value" : "Erlaube Juggle Dude, App-Aktivitäten und den Beginn eines Pro-Probeabos oder Abonnements mit Meta zu teilen, um Facebook- und Instagram-Werbung zu messen. Deine Trainingsvideos, Kontaktzahlen und Kontodaten werden nicht an Meta gesendet."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow tracking so we can measure which ads bring new players to Juggle Dude. Your training videos, touch counts and account details are never shared."
+            "value" : "Allow Juggle Dude to share app activity and Pro trial or subscription events with Meta to measure Facebook and Instagram ads. Your training videos, touch counts and account details are not sent to Meta."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permite el rastreo para que podamos medir qué anuncios traen nuevos jugadores a Juggle Dude. Tus videos de entrenamiento, conteos de toques y datos de cuenta nunca se comparten."
+            "value" : "Permite que Juggle Dude comparta con Meta la actividad de la app y el inicio de pruebas o suscripciones Pro para medir los anuncios de Facebook e Instagram. Tus videos de entrenamiento, conteos de toques y datos de cuenta no se envían a Meta."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autorise le suivi pour que nous puissions mesurer quelles publicités amènent de nouveaux joueurs sur Juggle Dude. Tes vidéos d’entraînement, ton nombre de jongles et tes données de compte ne sont jamais partagés."
+            "value" : "Autorise Juggle Dude à partager avec Meta l’activité de l’app et le début d’un essai ou d’un abonnement Pro pour mesurer les publicités Facebook et Instagram. Tes vidéos d’entraînement, ton nombre de jongles et tes données de compte ne sont pas envoyés à Meta."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permita o rastreamento para medirmos quais anúncios trazem novos jogadores ao Juggle Dude. Seus vídeos de treino, contagens de toques e dados da conta nunca são compartilhados."
+            "value" : "Permita que o Juggle Dude compartilhe com a Meta a atividade do app e o início de testes ou assinaturas Pro para medir anúncios do Facebook e do Instagram. Seus vídeos de treino, contagens de toques e dados da conta não são enviados à Meta."
           }
         }
       }

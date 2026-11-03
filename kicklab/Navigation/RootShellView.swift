@@ -1,3 +1,4 @@
+import AppTrackingTransparency
 import PhotosUI
 import SwiftUI
 
@@ -5,9 +6,10 @@ struct RootShellView: View {
     @EnvironmentObject private var account: AccountStore
     @EnvironmentObject private var player: PlayerStore
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
     @AppStorage("kicklab.appearance") private var appearance = "system"
     @AppStorage("kicklab.welcome.completed") private var hasEnteredApp = false
-    @AppStorage("kicklab.juggling.personalBest") private var personalBest = 0
+    @AppStorage(JugglingRecords.bestKey) private var personalBest = 0
     @State private var capture: HomeCapture?
     @State private var sheet: HomeSheet?
     @State private var showImport = false
@@ -16,15 +18,28 @@ struct RootShellView: View {
     @State private var recordsAfterLeaderboard = false
     @State private var showsProfile = false
     @State private var showsHistory = false
+    @State private var showsUpdateAlert = false
     @ObservedObject private var updateNotice = AppUpdateNotice.shared
     @ObservedObject private var adMeasurement = MetaAdsMeasurement.shared
     @Namespace private var zoom
     private var accountBest: Int { account.user == nil ? personalBest : player.personalBest }
 
+    private var homeIsReadyForNotice: Bool {
+        hasEnteredApp && scenePhase == .active && capture == nil && sheet == nil &&
+        !showImport && !showsLeaderboard && !showsProfile && !showsHistory
+    }
+
     /// The tracking question comes after a first finished training (or the third launch), on a calm home screen.
     private var canRequestAdPermission: Bool {
-        adMeasurement.wantsPermission && hasEnteredApp && scenePhase == .active && capture == nil && sheet == nil &&
-        !showImport && !showsLeaderboard && !showsProfile && !showsHistory
+        homeIsReadyForNotice && adMeasurement.wantsPermission && !showsUpdateAlert
+    }
+
+    private var canShowUpdateAlert: Bool {
+        // Let Apple's tracking prompt finish before presenting a second native dialog.
+        let trackingChoicePending = adMeasurement.isAvailable && adMeasurement.wantsPermission &&
+            adMeasurement.authorizationStatus == .notDetermined
+        return homeIsReadyForNotice && updateNotice.shouldPrompt &&
+            !adMeasurement.isRequesting && !trackingChoicePending
     }
 
     private var preferredScheme: ColorScheme? {
@@ -72,6 +87,14 @@ struct RootShellView: View {
             guard !Task.isCancelled else { return }
             await MetaAdsMeasurement.shared.requestPermission()
         }
+        .task(id: canShowUpdateAlert) {
+            guard canShowUpdateAlert else { return }
+            // Wait for a dismissed sheet or system prompt to finish its transition.
+            do { try await Task.sleep(for: .milliseconds(700)) } catch { return }
+            guard !Task.isCancelled, canShowUpdateAlert else { return }
+            showsUpdateAlert = true
+        }
+        .background { updateAlert }
         #if DEBUG && TOUCH_COUNTING_DEBUG
         .safeAreaInset(edge: .top, spacing: 0) {
             Text("Touch test · Clear chest allowed")
@@ -84,12 +107,7 @@ struct RootShellView: View {
         .debugRuntimeOverlay()
         .overlay(alignment: .top) {
             if hasEnteredApp && sheet == nil && !showsProfile {
-                VStack(spacing: 8) {
-                    AccountErrorBanner()
-                    AppUpdateBanner(notice: updateNotice)
-                }
-                .padding()
-                .animation(.smooth, value: updateNotice.showsBanner)
+                AccountErrorBanner().padding()
             }
         }
         // Keep presentation anchored to the root while welcome becomes home.
@@ -133,6 +151,22 @@ struct RootShellView: View {
             SessionHistoryView(store: player.history)
                 .preferredColorScheme(preferredScheme)
         }
+    }
+
+    // Scope the neutral system tint to the alert; the rest of the app keeps its accent.
+    private var updateAlert: some View {
+        Color.clear
+            .alert("Update available", isPresented: $showsUpdateAlert, presenting: updateNotice.available) { _ in
+                Button("Update") {
+                    updateNotice.dismiss()
+                    openURL(AppUpdateNotice.appStoreURL)
+                }
+                Button("Not now", role: .cancel) { updateNotice.dismiss() }
+            } message: { release in
+                Text(String(localized: "Juggle Dude \(release.version) is here", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                    + "\n\n" + release.headline)
+            }
+            .tint(.primary)
     }
 
     private func openImportedVideoIfReady() {

@@ -1,5 +1,47 @@
 # Juggle Dude account setup
 
+## Native Google sign-in — 2026-11-03
+
+This supersedes the paused Google button and custom-domain prerequisite below.
+The shared welcome/Profile screen now uses GoogleSignIn-iOS 10.1.0 and a rounded
+button with Google’s official mark and Google Sans Medium typography. The SDK requests basic identity scopes and returns an ID token;
+Supabase exchanges it using `signInWithIdToken`. A fresh nonce is hashed for Google
+and verified by Supabase. System/Google consent UI is still expected; the flow no
+longer starts a browser session at the Supabase host.
+
+Google project `juggle-dude-auth-shbdsj` now has **Juggle Dude iOS**, registered for
+`com.juggledude`, team `G276PSQ2LH`, App Store ID `6820780610`. Its public client ID
+is `312611098464-ut664skmcfjlg7nnck966cnfq9824a9v.apps.googleusercontent.com`.
+Both build plists register its reversed callback scheme. `GIDServerClientID` is the
+existing **Juggle Dude - Supabase** Web client
+(`312611098464-dkqd08atv84ne68qpj772j4t0ivn8qus.apps.googleusercontent.com`), so
+the backend audience stays the same. No client secret is bundled, no extra scopes
+are requested, and no paid Supabase plan/custom domain is needed.
+
+Supabase session storage, user IDs, refresh and account ownership remain unchanged.
+Only Supabase restores the app session. Local Google credentials clear on sign-out
+and confirmed deletion. Google cancellation preserves pending email links and the
+resend cooldown because native sign-in does not replace the email PKCE verifier.
+Different Apple private-relay/Google emails can represent different accounts; this
+change does not automatically merge them or migrate guest history.
+
+Before public rollout, complete a real Google login, relaunch, cancellation, sign-out
+and same-account sign-in on a phone, and confirm access to its existing history and
+purchases. Simulator tests cannot verify Google consent or Supabase token acceptance.
+
+Verification: 55 focused tests passed, two unrelated phone-only replay tests skipped.
+This includes the actual iOS Google consent sheet and cancellation (no account login),
+welcome/Profile in light and dark modes, large text, auth state and counter/replay tests.
+Debug 1.2.0 (38) was installed as an update on iPhone 17 Pro Max.
+Evidence: `artifacts/google-counter-label/verification.json` and the two `.xcresult` bundles.
+
+The Google Sans font is bundled unmodified from `google/fonts/ofl/googlesans`;
+its SIL Open Font License is included as `kicklab/Resources/GoogleSans-OFL.txt`.
+The button follows [Google’s custom-button guidelines](https://developers.google.com/identity/branding-guidelines).
+
+References: [Google iOS setup](https://developers.google.com/identity/sign-in/ios/start-integrating),
+[Supabase ID-token sign-in](https://supabase.com/docs/reference/swift/auth-signinwithidtoken).
+
 ## Google option paused — 2026-10-22
 
 At the owner's request, the shared welcome/Profile screen now offers **Apple, email

@@ -24,12 +24,12 @@ nonisolated enum NormalCounterAppearance {
                  color: lime.copy(alpha: 1 - age / 0.3)!, in: context)
         }
         text(counter.label, topLeft: CGPoint(x: 9, y: 139), name: "HelveticaNeue-Medium", size: 16,
-             color: white, tracking: 2.5, in: context)
+             color: white, tracking: 2.5, maxWidth: 222, in: context)
     }
 
     @discardableResult
     private static func text(_ text: String, topLeft: CGPoint, name: String, size: CGFloat,
-                             color: CGColor, tracking: CGFloat = 0, in context: CGContext) -> CGFloat {
+                             color: CGColor, tracking: CGFloat = 0, maxWidth: CGFloat = .infinity, in context: CGContext) -> CGFloat {
         let line = CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: [
             NSAttributedString.Key(kCTFontAttributeName as String): CTFontCreateWithName(name as CFString, size, nil),
             NSAttributedString.Key(kCTForegroundColorAttributeName as String): color,
@@ -37,8 +37,9 @@ nonisolated enum NormalCounterAppearance {
         ]))
         let bounds = CTLineGetBoundsWithOptions(line, .useGlyphPathBounds)
         context.saveGState()
-        context.translateBy(x: topLeft.x - bounds.minX, y: topLeft.y + bounds.maxY)
-        context.scaleBy(x: 1, y: -1)
+        let fit = min(1, maxWidth / max(1, bounds.width))
+        context.translateBy(x: topLeft.x - bounds.minX * fit, y: topLeft.y + bounds.maxY * fit)
+        context.scaleBy(x: fit, y: -fit)
         context.textMatrix = .identity; context.textPosition = .zero
         CTLineDraw(line, context)
         context.restoreGState()

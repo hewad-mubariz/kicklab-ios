@@ -119,6 +119,15 @@ nonisolated enum BallSkinSphereRenderer {
                orientation: orientation)
     }
 
+    #if DEBUG
+    static func clearImageCacheForReview() { cache.images.removeAllObjects() }
+
+    static func uncachedImageForReview(skin: BallSkin, time: Double, orientation: simd_quatf? = nil, preview: Bool = false) -> CGImage? {
+        render(skin: skin, time: time, rasterSize: preview ? previewRaster : rasterSize,
+               pixels: preview ? previewPixels : pixels, cached: false, orientation: orientation)
+    }
+    #endif
+
     private static func render(skin: BallSkin, time: Double, rasterSize: Int, pixels: [Pixel], cached: Bool, orientation: simd_quatf? = nil) -> CGImage? {
         guard skin != .original, time.isFinite else { return nil }
         // Deterministic video-time rotation. This is an art animation, not an
@@ -137,6 +146,19 @@ nonisolated enum BallSkinSphereRenderer {
             return image
         }
         guard let texture = materials.texture(for: skin) else { return nil }
+        #if canImport(UIKit) && !BALL_SKIN_CPU_REFERENCE
+        // Normal artwork remains CPU-capable, including a background job without GPU time.
+        // A failed draw (including a foreground/background race) falls through for this same pose.
+        if BallSkinMetalRenderer.isAllowed {
+            let pose = orientation ?? (simd_quatf(angle: yaw, axis: SIMD3(0, 1, 0))
+                * simd_quatf(angle: pitch, axis: SIMD3(1, 0, 0)))
+            if let image = BallSkinMetalRenderer.shared?.image(skin: skin, size: rasterSize, pose: pose,
+                                                              rgba: texture.rgba, normals: texture.normals) {
+                if cached { cache.images.setObject(image, forKey: key, cost: rasterSize*rasterSize*4) }
+                return image
+            }
+        }
+        #endif
         let cy = cos(yaw), sy = sin(yaw), cp = cos(pitch), sp = sin(pitch)
         // A source-driven pose uses the same inverse for every sphere pixel.
         let inverseOrientation = orientation?.inverse

@@ -28,7 +28,7 @@ struct CounterStyleGrid: View {
             }
         } label: {
             VStack(spacing: 5) {
-                CounterStyleThumbnail(style: style)
+                CounterStyleThumbnail(style: style, customLabel: item.customLabel)
                     .padding(4)
                     .frame(maxWidth: .infinity)
                     .aspectRatio(4 / 3, contentMode: .fit)
@@ -65,20 +65,28 @@ struct CounterStyleGrid: View {
 /// Drawn once per style by the same renderer as the exported video, at its best moment.
 struct CounterStyleThumbnail: View {
     let style: ExportBadgeStyle
-    private static var cache: [ExportBadgeStyle: CGImage] = [:]
+    var customLabel: String? = nil
+    // A bounded cache also covers live text edits without retaining every keystroke.
+    private static let cache: NSCache<NSString, CGImage> = {
+        let cache = NSCache<NSString, CGImage>()
+        cache.countLimit = 48
+        cache.totalCostLimit = 8 * 1024 * 1024
+        return cache
+    }()
 
     var body: some View {
-        if let image = Self.image(for: style) {
+        if let image = Self.image(for: style, customLabel: customLabel) {
             Image(decorative: image, scale: 1).resizable().scaledToFit()
         }
     }
 
-    static func image(for style: ExportBadgeStyle) -> CGImage? {
-        if let cached = cache[style] { return cached }
+    static func image(for style: ExportBadgeStyle, customLabel: String? = nil) -> CGImage? {
+        let key = "\(style.rawValue):\(CounterLabel.display(customLabel))" as NSString
+        if let cached = cache.object(forKey: key) { return cached }
         let age = CounterArt.previewAge(style)
         let image = ExportOverlayRenderer.image(style: style, time: 24 + age,
-                                                counter: .init(count: 24, isTotal: false, age: age), scale: 1)
-        cache[style] = image
+                                                counter: .init(count: 24, isTotal: false, age: age), scale: 1, customLabel: customLabel)
+        if let image { cache.setObject(image, forKey: key, cost: image.bytesPerRow * image.height) }
         return image
     }
 }

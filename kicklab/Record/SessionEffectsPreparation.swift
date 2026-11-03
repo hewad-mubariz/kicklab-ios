@@ -44,11 +44,14 @@ final class SessionEffectsPreparation: ObservableObject {
             guard generation == token else { throw CancellationError() }
             return try await prepare(summary, dense: true, everyFrame: everyFrame)
         }
-        guard summary.needsVisualPreparation || (dense && summary.visualTrackIsPositionsOnly) else {
+        let needsMoreFrames = dense && everyFrame && summary.framesUseCompositionClock
+            && !BallVisualRefiner.analysedEveryFrame(summary.renderTrack)
+        guard summary.needsVisualPreparation || (dense && summary.visualTrackIsPositionsOnly) || needsMoreFrames else {
             prepared = summary; return summary
         }
         let token = UUID(); generation = token
         isPreparing = true; progress = 0; error = nil
+        let hasOnlyPositions = summary.visualTrackIsPositionsOnly && summary.renderTrack.allSatisfy { $0.ballMask == nil }
         let task = VideoWorkExecution.detached { [weak self] in
             let progress: @Sendable (Double) -> Void = { [weak self] value in
                 Task { @MainActor [weak self] in
@@ -61,7 +64,15 @@ final class SessionEffectsPreparation: ObservableObject {
                 selective = try await SelectiveEffectTrack.canReuse(source: summary.videoURL, frames: summary.track)
             }
             let frames: [RecordedFrame]
-            if selective {
+            if dense && hasOnlyPositions {
+                // Older history entries retained only positions. Never pass those
+                // stripped observations off as completed replacement masks.
+                let fastClip = try await VideoProcessingInfo.load(summary.videoURL).fps >= 100
+                let fresh = try await VideoAnalyzer.replayTrack(source: summary.videoURL,
+                    maxFrameRate: !everyFrame && fastClip ? ExportChoice.fasterFrameRate : nil) { progress($0 * 0.9) }
+                frames = try await BallVisualRefiner.refineVideo(source: summary.videoURL, frames: fresh,
+                    framesUseCompositionClock: true, denseMasks: true, everyFrame: everyFrame) { progress(0.9 + $0 * 0.1) }
+            } else if selective {
                 frames = try await SelectiveEffectTrack.refine(source: summary.videoURL, frames: summary.track, onProgress: progress)
             } else {
                 frames = try await BallVisualRefiner.refineVideo(source: summary.videoURL,

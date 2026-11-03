@@ -7,7 +7,7 @@ nonisolated enum ExportOverlayRenderer {
     static let badgeSize = CGSize(width: 240, height: 180)
 
     static func image(style: ExportBadgeStyle,
-                      time: Double, counter: ExportCounterState, scale: CGFloat = 2) -> CGImage? {
+                      time: Double, counter: ExportCounterState, scale: CGFloat = 2, customLabel: String? = nil) -> CGImage? {
         let size = badgeSize
         let width = Int(size.width * scale), height = Int(size.height * scale)
         guard width > 0, height > 0,
@@ -15,7 +15,7 @@ nonisolated enum ExportOverlayRenderer {
                 bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
         ctx.translateBy(x: 0, y: CGFloat(height)); ctx.scaleBy(x: scale, y: -scale)
-        drawBadge(in: ctx, style: style, time: time, counter: counter)
+        drawBadge(in: ctx, style: style, time: time, counter: customLabel.map { counter.withLabel($0) } ?? counter)
         return ctx.makeImage()
     }
 
@@ -33,6 +33,7 @@ nonisolated enum ExportOverlayRenderer {
             ctx.restoreGState()
         }
         guard settings.counter.enabled else { return }
+        let counter = counter.withLabel(settings.counter.customLabel)
         let item = settings.counter, rect = item.placement.rect(in: size)
         ctx.saveGState()
         ctx.translateBy(x: rect.midX, y: rect.midY)

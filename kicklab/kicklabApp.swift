@@ -16,6 +16,7 @@ struct kicklabApp: App {
     @StateObject private var videoWork = VideoBackgroundWork.shared
     @Environment(\.scenePhase) private var scenePhase
     init() {
+        BallSkinMetalRenderer.observeApplication()
         Task.detached(priority: .utility) { try? VideoSafetyPolicy.cleanExpiredExports() }
         #if DEBUG
         let account = ProfileEditorReview.requested ? ProfileEditorReview.account() :
@@ -136,7 +137,10 @@ struct kicklabApp: App {
                 await ProfileEditorReview.refreshWhileReviewing(player)
                 #endif
             }
-            .onOpenURL { url in Task { await account.handleCallback(url) } }
+            .onOpenURL { url in
+                guard !NativeGoogleSignIn.handle(url) else { return }
+                Task { await account.handleCallback(url) }
+            }
             .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
                 guard let url = activity.webpageURL else { return }
                 Task { await account.handleCallback(url) }

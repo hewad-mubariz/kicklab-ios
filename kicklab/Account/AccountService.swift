@@ -30,7 +30,6 @@ extension AccountAuthService {
 final class SupabaseAccountService: AccountAuthService {
     private let client: AuthClient
     private let configuration: AccountConfiguration
-    private let browser = BrowserSignIn()
     private let appleSignIn = NativeAppleSignIn()
 
     init(configuration: AccountConfiguration) {
@@ -70,11 +69,15 @@ final class SupabaseAccountService: AccountAuthService {
     }
 
     func google() async throws -> AccountIdentity {
-        let session = try await client.signInWithOAuth(provider: .google, redirectTo: configuration.redirectURL,
-                                                       scopes: "openid email profile") { [browser] url in
-            try await browser.authenticate(url: url)
+        let result = try await NativeGoogleSignIn.signIn()
+        do {
+            let session = try await client.signInWithIdToken(credentials: .init(provider: .google,
+                idToken: result.idToken, nonce: result.nonce))
+            return Self.identity(session.user)
+        } catch {
+            NativeGoogleSignIn.signOut()
+            throw error
         }
-        return Self.identity(session.user)
     }
 
     func apple() async throws -> AccountIdentity {
@@ -104,7 +107,10 @@ final class SupabaseAccountService: AccountAuthService {
         return Self.identity(try await client.session(from: callback).user)
     }
 
-    func signOut() async throws { try await client.signOut(scope: .local) }
+    func signOut() async throws {
+        defer { NativeGoogleSignIn.signOut() }
+        try await client.signOut(scope: .local)
+    }
 
     func deleteAccount(userID: UUID) async throws {
         let session = try await client.session
@@ -127,6 +133,7 @@ final class SupabaseAccountService: AccountAuthService {
         // AuthClient clears Keychain and emits signedOut before its logout network call.
         // A network error after confirmed deletion must not resurrect the deleted account.
         try? await client.signOut(scope: .local)
+        NativeGoogleSignIn.signOut()
     }
     func accessToken(for userID: UUID) async throws -> String {
         let session = try await client.session

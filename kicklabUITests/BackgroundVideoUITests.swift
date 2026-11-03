@@ -14,6 +14,9 @@ final class BackgroundVideoUITests: XCTestCase {
     func testShotExportMakesProgressAfterHome() throws { try exercise("shot", backgroundSeconds: 25) }
 
     @MainActor
+    func testArtworkExportMakesProgressAfterHome() throws { try exercise("artwork", backgroundSeconds: 25) }
+
+    @MainActor
     func testSavedBannerOpensPhotosAndDoesNotRedirectOnReturn() {
         let app = XCUIApplication()
         app.launchArguments = ["--background-video-review", "photos"]
@@ -39,10 +42,15 @@ final class BackgroundVideoUITests: XCTestCase {
         throw XCTSkip("Continued processing requires a physical device")
         #endif
         let app = XCUIApplication()
-        app.launchArguments = ["--background-video-review", mode, "--background-video-source", "documents:background-input.mov", "--analysis-ignore-cache"]
+        let source = mode == "artwork" ? "documents:ball-gpu-background-input.mov" : "documents:background-input.mov"
+        app.launchArguments = ["--background-video-review", mode, "--background-video-source", source, "--analysis-ignore-cache"]
         app.launch()
         let status = app.staticTexts["background-video-status"]
         XCTAssertTrue(status.waitForExistence(timeout: 20))
+        if mode == "artwork" {
+            let preparing = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Preparing export'"), object: status)
+            XCTAssertEqual(XCTWaiter.wait(for:[preparing],timeout:20),.completed)
+        }
         XCUIDevice.shared.press(.home)
         XCTAssertTrue(app.wait(for: .runningBackground, timeout: 5))
         Thread.sleep(forTimeInterval: backgroundSeconds)

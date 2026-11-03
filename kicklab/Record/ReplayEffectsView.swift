@@ -868,7 +868,7 @@ struct ReplayEffectsView: View {
                     effectTrack = BallEffectTrack(frames: ready.renderTrack, touchTimes: ready.touchesMarked.map(\.time))
                 }
                 if displayedLook.edit.usesBallMaterial {
-                    let motion = try await BallSurfaceTimeline.prepare(source: url, track: BallEffectTrack(frames: ready.renderTrack))
+                    let motion = try await BallSurfaceTimeline.prepare(source: url, track: BallEffectTrack(frames: ready.renderTrack), history: ready.historyReplay)
                     try Task.checkCancellation()
                     guard motionSource == url, surfaceMotionGeneration == token else { return }
                     effectTrack.surfaceMotion = motion

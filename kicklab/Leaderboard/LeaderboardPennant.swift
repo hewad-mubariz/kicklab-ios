@@ -74,7 +74,8 @@ struct LeaderboardMedallion: View {
 
     var body: some View {
         ZStack {
-            PlayerAvatar(name: entry.name, isYou: entry.isYou, size: size, remoteURL: entry.photo)
+            PlayerAvatar(name: entry.name, isYou: entry.isYou, size: size, remoteURL: entry.photo, reference: entry.avatar)
+                .id(entry.id)
             Circle().strokeBorder(ring, lineWidth: ringWidth)
         }
         .frame(width: size, height: size)

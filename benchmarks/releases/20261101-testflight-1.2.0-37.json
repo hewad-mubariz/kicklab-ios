@@ -1,0 +1,76 @@
+{
+  "app": "Juggle Dude",
+  "apple_app_id": "6820780610",
+  "version": "1.2.0",
+  "build": "37",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "source_commit": "8c33001690587172842333e2f0d8f2bb769b5365",
+  "status": "testing_internal",
+  "minimum_ios": "18.0",
+  "archive_verification": {
+    "version": "1.2.0",
+    "build": "37",
+    "source_commit": "8c33001690587172842333e2f0d8f2bb769b5365",
+    "archive": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/releases/20261101-editor-1.2.0-37/JuggleDude-1.2.0-37.xcarchive",
+    "signature_verified": true,
+    "source_files_verified": 871,
+    "matches_tested_source": "8c33001690587172842333e2f0d8f2bb769b5365",
+    "counter_profile": "outdoor-balanced-v3-20261029",
+    "compilation": "Release with TOUCH_COUNTER_BETA; DEBUG modes absent",
+    "models": [
+      "RFDETRSmallRecovery040FP16.mlmodelc"
+    ],
+    "languages": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "pt-BR"
+    ],
+    "minimum_ios": "18.0",
+    "iphone_only": true,
+    "privacy_manifest": true,
+    "model_license": true,
+    "client_configurations_verified": true,
+    "editor_upgrade_sources_present": true,
+    "touch_review_disabled": true,
+    "mach_o_minimum_ios": "18.0",
+    "archived_binary_sha256": "22b254fd99634f547fa6bb3bcd50eacaecfd904a443b7c8101c5a154e00d12aa"
+  },
+  "validation": {
+    "ios18_editor_tests": {
+      "passed": 86,
+      "failed": 0,
+      "skipped": 0,
+      "total": 86,
+      "result_bundle": "artifacts/releases/20261101-editor-1.2.0-37/editor-tests.xcresult"
+    },
+    "pinned_model_verified": true,
+    "counting_sources_unchanged_from_build_36": true
+  },
+  "what_to_test_file": "artifacts/releases/20261101-editor-1.2.0-37/what-to-test.txt",
+  "what_to_test": "Juggle Dude 1.2.0 (37) — replay editor upgrade\n\n• Record or import a juggling clip, open the replay editor, and try Looks: Power-up, Every, Custom and New look here. Check ball/effect changes, seeking, looping and replay playback.\n• Try touch sounds, look-change sounds, milestone fanfares and muting the original clip audio. Save a video to Photos and check that the sound and visuals match the editor.\n• Try timer styles and milestone celebrations. Move and resize overlays, save My style, then reopen a replay and check the saved choices.\n• Change the app language to English, German, Spanish, French or Brazilian Portuguese and check the editor labels. “TOUCHES” in videos and “Milestones” remain English by design.\n• On iPhone 11 and other older phones, check editor responsiveness, ball appearance, longer replay playback and export. On iOS 18, keep the app open during preparation/export.\n• Check free and Pro access, restore purchases, recording/history, and automatic leaderboard updates. This build keeps the existing counting rules; the separate touch-counting research is not included.\n\nSource: feature/leaderboard-editor-upgrade, commit 8c330016.\n",
+  "what_to_test_sha256": "48ca00c199175af4ae7887c7d106f06ea5a9eae4921a69ca6a9fcab2a826c645",
+  "submitted_to_app_store_review": false,
+  "submitted_to_external_beta_review": false,
+  "upload_log": "artifacts/releases/20261101-editor-1.2.0-37/upload.log",
+  "updated_at_utc": "2026-11-01T16:39:13.854878+00:00",
+  "upload_succeeded": true,
+  "processing_confirmed_in_app_store_connect": true,
+  "processing_complete": true,
+  "what_to_test_saved": true,
+  "build_id": "bcf1678c-8939-4b26-b795-74d1c2652120",
+  "app_store_connect_url": "https://appstoreconnect.apple.com/teams/9b7830cc-2a57-43c6-813e-db0800261e24/apps/6820780610/testflight/ios/bcf1678c-8939-4b26-b795-74d1c2652120",
+  "internal_testing": {
+    "group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "existing_testers": 3,
+    "status": "Testing",
+    "expires_in_days_at_verification": 90
+  },
+  "proof_screenshots": [
+    "artifacts/releases/20261101-editor-1.2.0-37/testflight-build-details.png",
+    "artifacts/releases/20261101-editor-1.2.0-37/testflight-testing.png"
+  ],
+  "installed_to_device_by_agent_after_upload": false
+}

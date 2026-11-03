@@ -2,6 +2,15 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>GoogleSans-Regular.ttf</string>
+	</array>
+	<!-- Public OAuth client IDs; no client secret belongs in an iOS app. -->
+	<key>GIDClientID</key>
+	<string>312611098464-ut664skmcfjlg7nnck966cnfq9824a9v.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>312611098464-dkqd08atv84ne68qpj772j4t0ivn8qus.apps.googleusercontent.com</string>
 	<!-- Meta ad measurement, approved for 1.2.0. Debug builds also need --enable-meta-install-measurement. -->
 	<key>JuggleDudeMetaAdsEnabled</key>
 	<true/>
@@ -13,7 +22,7 @@
 	<key>FacebookDisplayName</key>
 	<string>Juggle Dude</string>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>Allow tracking so we can measure which ads bring new players to Juggle Dude. Your training videos, touch counts and account details are never shared.</string>
+	<string>Allow Juggle Dude to share app activity and Pro trial or subscription events with Meta to measure Facebook and Instagram ads. Your training videos, touch counts and account details are not sent to Meta.</string>
 	<key>FacebookAutoLogAppEventsEnabled</key>
 	<false/>
 	<!-- The SDK adds the advertising identifier only with Allow; SKAdNetwork needs no permission. -->
@@ -45,6 +54,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>juggledude</string>
+				<string>com.googleusercontent.apps.312611098464-ut664skmcfjlg7nnck966cnfq9824a9v</string>
 			</array>
 		</dict>
 	</array>

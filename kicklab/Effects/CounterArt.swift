@@ -174,7 +174,7 @@ nonisolated enum CounterArt {
         let tab = CGRect(x: 52, y: 38, width: 100, height: 20)
         fill(ctx, slanted(tab), accent)
         label(ctx, s.label, font: "AvenirNextCondensed-HeavyItalic", size: 12.5, tracking: 1.2,
-              center: CGPoint(x: tab.midX + 2, y: tab.midY), color: rgb(0.02, 0.05, 0.08))
+              center: CGPoint(x: tab.midX + 2, y: tab.midY), color: rgb(0.02, 0.05, 0.08), maxWidth: 90)
 
         // Match clock from the video's own time.
         let seconds = Int(s.time)
@@ -288,7 +288,7 @@ nonisolated enum CounterArt {
         ctx.translateBy(x: 62, y: 154); ctx.rotate(by: -0.05)
         let caption = CGPath(rect: CGRect(x: -54, y: -14, width: 108, height: 28), transform: nil)
         fill(ctx, caption, rgb(1, 1, 1)); stroke(ctx, caption, rgb(0, 0, 0), 2.5)
-        label(ctx, s.label, font: "AvenirNextCondensed-Heavy", size: 16, tracking: 0.8, center: .zero, color: rgb(0, 0, 0))
+        label(ctx, s.label, font: "AvenirNextCondensed-Heavy", size: 16, tracking: 0.8, center: .zero, color: rgb(0, 0, 0), maxWidth: 96)
         ctx.restoreGState()
     }
 
@@ -333,7 +333,7 @@ nonisolated enum CounterArt {
             ctx.restoreGState()
             stroke(ctx, tubes, rgb(1, 0.87, 0.95, min(1, level)), 2.3)
         }
-        let script = Lettering(s.isTotal ? "total touches" : "touches", font: "SnellRoundhand-Black", size: 36)
+        let script = Lettering(s.label.lowercased(), font: "SnellRoundhand-Black", size: 36)
             .placed(at: CGPoint(x: 124, y: 142), fit: CGSize(width: 190, height: 40))
         ctx.saveGState()
         shadow(ctx, offset: .zero, blur: 10, color: cyan)
@@ -507,7 +507,10 @@ nonisolated enum CounterArt {
         let text = Lettering(caption, font: "Menlo-Bold", size: 14, tracking: 2)
         ctx.saveGState()
         shadow(ctx, offset: CGSize(width: 0, height: 1), blur: 3, color: rgb(0, 0.05, 0.1, 0.85))
-        fill(ctx, text.placed(at: CGPoint(x: box.minX + text.bounds.width / 2 + 2, y: min(170, box.maxY + 15))), cyan)
+        let captionWidth = max(1, 232 - box.minX - 2)
+        fill(ctx, text.placed(at: CGPoint(x: box.minX + min(text.bounds.width, captionWidth) / 2 + 2,
+                                        y: min(170, box.maxY + 15)),
+                             fit: CGSize(width: captionWidth, height: 20)), cyan)
         ctx.restoreGState()
     }
 
@@ -568,7 +571,7 @@ nonisolated enum CounterArt {
         shadow(ctx, offset: CGSize(width: 0, height: 2), blur: 3, color: rgb(0, 0, 0, 0.5))
         fill(ctx, tape, rgb(0.96, 0.94, 0.86, 0.96))
         shadow(ctx, offset: .zero, blur: 0, color: nil)
-        label(ctx, s.label, font: "MarkerFelt-Wide", size: 15, center: .zero, color: rgb(0.08, 0.05, 0.1))
+        label(ctx, s.label, font: "MarkerFelt-Wide", size: 15, center: .zero, color: rgb(0.08, 0.05, 0.1), maxWidth: 84)
         ctx.restoreGState()
     }
 
@@ -910,8 +913,8 @@ nonisolated enum CounterArt {
     }
 
     private static func label(_ ctx: CGContext, _ text: String, font: String, size: CGFloat, tracking: CGFloat = 0,
-                              center: CGPoint, color: CGColor) {
-        let path = Lettering(text, font: font, size: size, tracking: tracking).placed(at: center, fit: CGSize(width: 220, height: size * 1.4))
+                              center: CGPoint, color: CGColor, maxWidth: CGFloat = 220) {
+        let path = Lettering(text, font: font, size: size, tracking: tracking).placed(at: center, fit: CGSize(width: maxWidth, height: size * 1.4))
         ctx.saveGState()
         shadow(ctx, offset: CGSize(width: 0, height: 1), blur: 2, color: rgb(0, 0, 0, 0.55))
         fill(ctx, path, color)

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DABE00010000000000000001 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = DABE00010000000000000002 /* GoogleSignIn */; };
+		DABE00010000000000000004 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = DABE00010000000000000005 /* GoogleSignInSwift */; };
 		DAAD00010000000000000001 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = DAAD00010000000000000002 /* FacebookCore */; };
 		DAAA00010000000000000001 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = DAAA00010000000000000002 /* PostHog */; };
 		DADD00010000000000000001 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = DADD00010000000000000002 /* Auth */; };
@@ -35,9 +37,22 @@
 		7441B460305617DE007026EB /* kicklabUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kicklabUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		DAAF00010000000000000001 /* Artwork shader precision */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			additionalCompilerFlagsByRelativePath = {
+				"Effects/Metal/BallSkinSphere.metal" = "-fno-fast-math";
+			};
+			target = 7441B446305617DC007026EB /* kicklab */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		7441B449305617DC007026EB /* kicklab */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DAAF00010000000000000001 /* Artwork shader precision */,
+			);
 			path = kicklab;
 			sourceTree = "<group>";
 		};
@@ -59,6 +74,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DADD00010000000000000001 /* Auth in Frameworks */,
+				DABE00010000000000000001 /* GoogleSignIn in Frameworks */,
+				DABE00010000000000000004 /* GoogleSignInSwift in Frameworks */,
 				DAAA00010000000000000001 /* PostHog in Frameworks */,
 				DAAD00010000000000000001 /* FacebookCore in Frameworks */,
 			);
@@ -122,6 +139,8 @@
 			name = kicklab;
 			packageProductDependencies = (
 				DADD00010000000000000002 /* Auth */,
+				DABE00010000000000000002 /* GoogleSignIn */,
+				DABE00010000000000000005 /* GoogleSignInSwift */,
 				DAAA00010000000000000002 /* PostHog */,
 				DAAD00010000000000000002 /* FacebookCore */,
 			);
@@ -226,6 +245,7 @@
 				DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
 				DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */,
 				DADD00010000000000000003 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7441B448305617DC007026EB /* Products */;
@@ -1086,6 +1106,11 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
+			requirement = { kind = exactVersion; version = 10.1.0; };
+		};
 		DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/facebook/facebook-ios-sdk.git";
@@ -1110,6 +1135,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		DABE00010000000000000002 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		DABE00010000000000000005 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
 		DAAD00010000000000000002 /* FacebookCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;

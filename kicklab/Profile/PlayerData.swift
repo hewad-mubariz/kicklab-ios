@@ -28,6 +28,7 @@ nonisolated struct SavedJugglingResult: Codable, Equatable, Sendable {
     /// The session's best continuous streak, which is what ranks. Results saved by
     /// older builds have none and never rank.
     private(set) var streak: RankedStreakProposal? = nil
+    var personalBestStreak: Int { source == .recording ? streak?.count ?? 0 : 0 }
 
     init(id: UUID = UUID(), ownerID: UUID, touches: Int, duration: TimeInterval,
          source: Source, completedAt: Date = Date(), appVersion: String = "1.0", counterVersion: String = Self.currentCounterVersion) throws {
@@ -130,11 +131,12 @@ final class SupabasePlayerService: PlayerDataService {
     }
 
     func personalBest(userID: UUID) async throws -> Int {
-        struct Score: Decodable { let touch_count: Int }
+        struct Score: Decodable { let streak_touches: Int }
         let data = try await request("rest/v1/juggling_sessions", query: [
-            .init(name: "select", value: "touch_count"), .init(name: "score_status", value: "neq.rejected"),
-            .init(name: "order", value: "touch_count.desc"), .init(name: "limit", value: "1")], userID: userID)
-        return try JSONDecoder().decode([Score].self, from: data).first?.touch_count ?? 0
+            .init(name: "select", value: "streak_touches"), .init(name: "score_status", value: "neq.rejected"),
+            .init(name: "source", value: "eq.recording"), .init(name: "streak_touches", value: "gt.0"),
+            .init(name: "order", value: "streak_touches.desc"), .init(name: "limit", value: "1")], userID: userID)
+        return try JSONDecoder().decode([Score].self, from: data).first?.streak_touches ?? 0
     }
 
     func saveProfile(_ profile: PlayerProfile) async throws -> PlayerProfile {

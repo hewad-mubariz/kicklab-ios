@@ -329,7 +329,7 @@ struct SaveShareView: View {
         effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
         if subscriptions.isPro, version == .edited, edit.usesBallMaterial {
             do {
-                effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: summary.videoURL, track: BallEffectTrack(frames: (preparation.prepared ?? summary).renderTrack))
+                effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: summary.videoURL, track: BallEffectTrack(frames: (preparation.prepared ?? summary).renderTrack), history: summary.historyReplay)
             } catch is CancellationError { return }
             catch { statusMessage = "Couldn’t prepare source spin. \(error.localizedDescription)" }
             guard !Task.isCancelled else { return }
@@ -373,7 +373,7 @@ struct SaveShareView: View {
             soundtrack: ReplaySoundtrack(edit: edited ? edit : SessionEditState(style: .none, intensity: 0),
                                          touchTimes: summary.touchesMarked.map(\.time),
                                          milestones: allowedLook.overlays.milestoneFanfare),
-            clipAudio: edited ? edit.clipAudio : true)
+            clipAudio: edited ? edit.clipAudio : true, historyReplay: edit.scene == nil ? summary.historyReplay : nil)
         // Wait until burn-in finishes.
         do {
             while burnIn.isExporting {

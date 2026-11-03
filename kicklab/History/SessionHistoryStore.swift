@@ -15,6 +15,8 @@ final class SessionHistoryStore: ObservableObject {
     private var generation = UUID()
     private var cursor: SessionHistoryCursor?
     private var immediateReplays: [UUID: URL] = [:]
+    private var analysisSaves: [UUID: Task<Void, Never>] = [:]
+    private var analysisSaveTokens: [UUID: UUID] = [:]
 
     init(service: (any PlayerDataService)?, queue: JugglingResultQueue, library: SessionHistoryLibrary) {
         self.service = service; self.queue = queue; self.library = library
@@ -128,6 +130,41 @@ final class SessionHistoryStore: ObservableObject {
         catch { errorMessage = String(localized: "The replay could not be removed. Try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
     }
 
+    func saveReplayEdit(_ edit: HistoryReplayEdit, id: UUID, owner: UUID?) {
+        guard ownerID == owner, items.contains(where: { $0.id == id }) else { return }
+        do { try library.saveReplayEdit(edit, id: id, owner: owner) }
+        catch { errorMessage = String(localized: "Your latest replay edits couldn’t be saved. Check the free space on your phone.", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+    }
+
+    /// Root-owned writes finish even when the editor closes. Mask compression
+    /// and disk I/O stay off the UI thread and outside the small save journal.
+    func retainReplayAnalysis(_ summary: SessionSummary, id: UUID, owner: UUID?, prepared: Bool) {
+        guard ownerID == owner, let item = items.first(where: { $0.id == id }), !summary.renderTrack.isEmpty else { return }
+        let previous = analysisSaves[id], library = library
+        let token = UUID(); analysisSaveTokens[id] = token
+        analysisSaves[id] = Task { [weak self] in
+            defer {
+                if self?.analysisSaveTokens[id] == token {
+                    self?.analysisSaves[id] = nil; self?.analysisSaveTokens[id] = nil
+                }
+            }
+            await previous?.value
+            do {
+                try await ProtectedAccountData.waitUntilAvailable()
+                try await Task.detached(priority: .utility) {
+                    try library.saveReplayAnalysis(.init(summary: summary, prepared: prepared), for: item)
+                }.value
+            } catch is CancellationError { }
+            catch {
+                if self?.ownerID == owner {
+                    self?.errorMessage = String(localized: "Replay preparation couldn’t be saved. Check the free space on your phone.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                }
+            }
+        }
+    }
+
+    func waitForReplayAnalysis(id: UUID) async { await analysisSaves[id]?.value }
+
     func refresh() async {
         // A refresh supersedes an in-flight page, including its loading state.
         generation = UUID(); isLoading = false; cursor = nil; hasMore = false
@@ -154,7 +191,7 @@ final class SessionHistoryStore: ObservableObject {
             guard current == generation, !Task.isCancelled else { return }
             for var item in page.items {
                 let local = try library.session(id: item.id, owner: owner)
-                item.rankedProposal = local?.rankedProposal
+                item.rankedProposal = item.rankedProposal ?? local?.rankedProposal
                 item.touchReview = local?.touchReview
                 item.touchTimesMS = local?.touchTimesMS
                 try library.save(item)

@@ -240,7 +240,7 @@ struct TrainingProfileView: View {
 
     private var record: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Label("PERSONAL BEST", systemImage: "medal")
+            Label("BEST STREAK", systemImage: "medal")
                 .font(.caption.weight(.semibold))
                 .tracking(1)
                 .foregroundStyle(TrainingHomeStyle.accent(scheme))
@@ -251,7 +251,7 @@ struct TrainingProfileView: View {
                     .font(.callout)
                     .foregroundStyle(TrainingHomeStyle.muted(scheme))
             }
-            Text(personalBest > 0 ? "Juggling" : "Your first juggling session starts your record.")
+            Text(personalBest > 0 ? "Consecutive touches · recorded in app" : "Record your first juggling streak.")
                 .font(.subheadline)
                 .foregroundStyle(TrainingHomeStyle.muted(scheme))
         }
@@ -261,8 +261,8 @@ struct TrainingProfileView: View {
         .overlay(RoundedRectangle(cornerRadius: 24).strokeBorder(TrainingHomeStyle.line(scheme)))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(personalBest > 0
-            ? "Juggling personal best, \(personalBest) touches"
-            : "Juggling personal best. Your first juggling session starts your record.")
+            ? "Personal best streak, \(personalBest) consecutive touches"
+            : "Personal best streak. Record your first juggling streak.")
         .accessibilityIdentifier("profile-personal-best")
     }
 }

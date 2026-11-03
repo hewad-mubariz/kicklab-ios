@@ -20,10 +20,10 @@ struct AppUpdateNoticeTests {
     @Test func aNewerInstallableReleaseShowsOnceUntilDismissed() async {
         let update = notice(store: .init(version: "1.3.0", notes: "Crystal and fireworks.\nFixes.", minimumOS: "18.0"))
         await update.check()
-        #expect(update.showsBanner)
+        #expect(update.shouldPrompt)
         #expect(update.available?.headline == "Crystal and fireworks.")
         update.dismiss()
-        #expect(!update.showsBanner, "Not now hides that version's banner")
+        #expect(!update.shouldPrompt, "Not now dismisses that version's alert")
         #expect(update.available?.version == "1.3.0", "Settings still offers the update")
     }
 
@@ -31,7 +31,7 @@ struct AppUpdateNoticeTests {
         for (store, system) in [("1.2.0", "18.4"), ("1.1.0", "18.4"), ("1.3.0", "17.5")] {
             let update = notice(system: system, store: .init(version: store, notes: nil, minimumOS: "18.0"))
             await update.check()
-            #expect(!update.showsBanner, "\(store) on iOS \(system)")
+            #expect(!update.shouldPrompt, "\(store) on iOS \(system)")
             #expect(update.available == nil)
         }
     }
@@ -44,11 +44,11 @@ struct AppUpdateNoticeTests {
         let relaunched = AppUpdateNotice(installed: "1.2.0", systemVersion: "18.4", defaults: defaults,
                                          lookup: { _ in .init(version: "1.3.0", notes: nil, minimumOS: nil) })
         await relaunched.check()
-        #expect(!relaunched.showsBanner, "Dismissal survives a relaunch")
+        #expect(!relaunched.shouldPrompt, "Dismissal survives a relaunch")
         let next = AppUpdateNotice(installed: "1.2.0", systemVersion: "18.4", defaults: defaults,
                                    lookup: { _ in .init(version: "1.4.0", notes: nil, minimumOS: nil) })
         await next.check()
-        #expect(next.showsBanner, "A later version is announced again")
+        #expect(next.shouldPrompt, "A later version is announced again")
     }
 
     @Test func checksAtMostEverySixHours() async {

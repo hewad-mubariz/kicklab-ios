@@ -23,7 +23,7 @@ struct ExportOverlayLayer: View {
         }
         if settings.counter.enabled,
            let badge = ExportOverlayRenderer.image(style: settings.counter.style,
-                time: time, counter: timeline.state(at: time)) {
+                time: time, counter: timeline.state(at: time), customLabel: settings.counter.customLabel) {
             let rect = settings.counter.placement.rect(in: size)
             let style = settings.counter.style
             let milestone = settings.milestones ? Milestones.active(timeline.state(at: time)) : nil
@@ -118,6 +118,7 @@ struct ExportOverlayEditor: View {
                             .accessibilityIdentifier("counter-show")
                         // Placement is direct on the canvas above; only the look is chosen here.
                         CounterStyleGrid(item: item)
+                        CounterLabelField(item: item)
                         if let error { Text(error).font(.system(size: 12)).foregroundStyle(.orange) }
                     }
                     .padding(.horizontal, 20).padding(.bottom, 28)
@@ -211,7 +212,7 @@ struct ExportOverlayEditor: View {
             let url = media.url
             effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
             if edit.usesBallMaterial {
-                effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: ready.videoURL, track: BallEffectTrack(frames: ready.renderTrack))
+                effectTrack.surfaceMotion = try await BallSurfaceTimeline.prepare(source: ready.videoURL, track: BallEffectTrack(frames: ready.renderTrack), history: ready.historyReplay)
             }
             try Task.checkCancellation()
             let asset = AVURLAsset(url: url)

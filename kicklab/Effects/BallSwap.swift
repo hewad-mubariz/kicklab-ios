@@ -189,6 +189,11 @@ extension SessionEditState {
         intensity > 0 && (style != .none || lookChanges.values.contains { $0.effect != .none })
     }
 
+    /// Any run's ball is a lab skin, which Metal draws: its export needs the GPU even in the background.
+    nonisolated var usesLabSkin: Bool {
+        ballSkin.isLabSkin || lookChanges.values.contains { $0.ball.isLabSkin }
+    }
+
     /// Balls drawn as prints only where the source spin is ready; effects stay.
     nonisolated func withoutBallPrints() -> Self {
         var value = self

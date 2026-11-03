@@ -136,6 +136,11 @@ final class EditorPhoneCheckTests: XCTestCase {
     /// on the main thread delays.
     @MainActor
     func testReplayPaceWithABallPrint() async throws {
+        #if DEBUG
+        let gpuDrawsAtStart = BallSkinMetalRenderer.shared?.completedDrawsForReview ?? 0
+        note("pace_artwork_gpu_allowed", BallSkinMetalRenderer.isAllowed)
+        note("pace_thermal_start", ProcessInfo.processInfo.thermalState.rawValue)
+        #endif
         let bundle = Bundle(for: Self.self)
         let video = try XCTUnwrap(bundle.url(forResource: "juggling-eighteen", withExtension: "mov"))
         var effects = BallEffectTrack(frames: try await track(video))
@@ -175,6 +180,8 @@ final class EditorPhoneCheckTests: XCTestCase {
             note("pace_print_ms_p50_p95", String(format: "%.1f / %.1f", prints[prints.count / 2], prints[Int(Double(prints.count) * 0.95)]))
         }
         note("pace_prints", prints.count); note("pace_print_busy", view.printBusyCount); note("pace_print_dropped", view.printDroppedCount)
+        note("pace_artwork_gpu_draws", (BallSkinMetalRenderer.shared?.completedDrawsForReview ?? 0) - gpuDrawsAtStart)
+        note("pace_thermal_end", ProcessInfo.processInfo.thermalState.rawValue)
         #endif
     }
 

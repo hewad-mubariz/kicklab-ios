@@ -43,9 +43,23 @@ struct SessionSummary: Sendable {
     var visualTrackIsPositionsOnly = false
     var debugContacts: [TouchDebugEvent] = []
     var leaderboardTouchReview: LeaderboardTouchReview? = nil
+    var historyReplay: HistoryReplayContext? = nil
+    var savedBestStreak: RankedStreakProposal? = nil
     var renderTrack: [RecordedFrame] { visualTrack ?? track }
 
-    var isNewBest: Bool { touches > 0 && touches >= personalBest }
+    /// Imports without interruption evidence do not claim a continuous streak.
+    var bestStreak: RankedStreakProposal? {
+        guard duration.isFinite, duration > 0, duration <= 86400 else { return nil }
+        if let saved = savedBestStreak, saved.count <= touches,
+           saved.isValid(durationMS: Int((duration * 1000).rounded())) { return saved }
+        guard let review = leaderboardTouchReview,
+              var streak = RankedStreakProposal.suggest(touchTimes: touchesMarked.map(\.time),
+                  boundaries: review.streakBoundaries, duration: duration) else { return nil }
+        streak.count = min(streak.count, touches)
+        return streak.count > 0 ? streak : nil
+    }
+    var bestStreakLabel: String { bestStreak.map { $0.count.formatted() } ?? "—" }
+    var isNewBest: Bool { (bestStreak?.count ?? 0) > personalBest }
 
     var durationLabel: String {
         let total = max(0, Int(duration.rounded()))
@@ -108,10 +122,10 @@ struct SessionSummary: Sendable {
         return SessionSummary(
             touches: touches,
             duration: duration,
-            bestCombo: max(bestCombo, touches),
+            bestCombo: max(0, min(bestCombo, touches)),
             maxHeightMeters: maxH,
             avgHeightMeters: avgH,
-            personalBest: max(personalBest, touches),
+            personalBest: personalBest,
             videoURL: videoURL,
             touchesMarked: touchesMarked,
             track: track,
@@ -157,7 +171,14 @@ struct SessionSummary: Sendable {
 }
 
 enum JugglingRecords {
-    private static let bestKey = "kicklab.juggling.personalBest"
+    static let bestKey = "kicklab.juggling.bestStreak"
+
+    /// A legacy session total cannot be converted into a streak. Restore only
+    /// recorded sessions that retained explicit streak data, once per install.
+    static func migrateGuestBest(from sessions: [HistorySession], defaults: UserDefaults = .standard) {
+        guard defaults.object(forKey: bestKey) == nil else { return }
+        restoreGuestBest(sessions.filter { $0.ownerID == nil }.map(\.personalBestStreak).max() ?? 0, defaults: defaults)
+    }
 
     static var personalBest: Int {
         UserDefaults.standard.integer(forKey: bestKey)

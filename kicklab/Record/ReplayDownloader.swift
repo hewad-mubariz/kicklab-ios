@@ -76,7 +76,7 @@ final class ReplayDownloader: ObservableObject {
         }
         do {
             try await VideoBackgroundWork.shared.run(title: String(localized: "Saving your replay", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
-                requiresGPU: edit.usesEffects || edit.environment != .original || edit.scene != nil
+                requiresGPU: edit.usesEffects || edit.usesLabSkin || edit.environment != .original || edit.scene != nil
                     || (edit.usesBallMaterial && summary.needsVisualPreparation && preparation.prepared == nil)) {
                 try await self.performDownload(summary: summary, edit: edit, overlays: overlays,
                     sceneModel: sceneModel, preparation: preparation, distanceTimeline: distanceTimeline, choice: choice)
@@ -133,7 +133,7 @@ final class ReplayDownloader: ObservableObject {
                       lookChanges: edit.lookChanges, swapEffect: edit.swapEffect,
                       soundtrack: ReplaySoundtrack(edit: edit, touchTimes: summary.touchesMarked.map(\.time),
                                                    milestones: overlays.milestoneFanfare),
-                      clipAudio: edit.clipAudio)
+                      clipAudio: edit.clipAudio, historyReplay: edit.scene == nil ? summary.historyReplay : nil)
         while burnIn.isExporting {
             try await VideoWorkExecution.checkpoint()
             VideoWorkExecution.lease?.progress(burnIn.progress * 0.96, subtitle: String(localized: "Saving your replay", bundle: AppLanguage.bundle, locale: AppLanguage.locale))

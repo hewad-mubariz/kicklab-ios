@@ -1,0 +1,138 @@
+JUGGLE DUDE 1.2.0 (38) — TESTFLIGHT CHECKLIST
+
+Use the TestFlight build on iPhone 11 and iPhone 17. A locally installed Debug build
+is not a substitute: Meta measurement behaves differently in Release.
+Mark each case PASS / FAIL / NOT TESTED for each phone. Record the iOS version,
+build, test clip, steps and a screen recording for every failure.
+
+START HERE — RELEASE BLOCKERS
+[ ] Update over the existing app first: account, Pro access, sessions and saved edits remain.
+[ ] Open, close and relaunch the app repeatedly. No crash, blank page or stuck loader.
+[ ] Complete Google sign-in, relaunch, sign out, then sign into the SAME Google account.
+    The same profile, account history and subscription access must return.
+[ ] Complete Apple sign-in and email-link sign-in; cancellation and an expired email
+    link must leave the screen usable. Different Apple/Google emails may be separate
+    accounts; changing provider must never display another account's private history.
+[ ] Record a session, stop, play the replay, open the editor, save to Photos and play
+    the actual saved file. Verify video, count, timer and sound.
+[ ] History → Open editor: reopen that saved session, change its counter text/look,
+    export again, close/relaunch and verify the edit remains.
+[ ] Repeat with an imported clip. A second editor opening should reuse completed
+    saved analysis. Time initial preparation and reopening separately.
+[ ] Complete a TestFlight/sandbox trial or purchase. Verify Pro unlock, cancellation,
+    relaunch and Restore Purchases. Repeat signed in and as a guest where available.
+
+INSTALL / FIRST RUN / PRIVACY
+[ ] On a spare device or after preserving wanted local clips, test a fresh install.
+    Removing the app erases its local replay originals, analysis and edits.
+[ ] Camera permission: allow, deny, return through Settings. The UI remains usable.
+[ ] iPhone 11: opening the camera while the model prepares must not freeze controls.
+[ ] Tracking: the native prompt appears after first training, or the third launch
+    without training, at Home. It must not interrupt recording, editing or purchase.
+[ ] Check Allow and Ask App Not to Track on separate clean permission states.
+    Apple may suppress the prompt after a decision or because of device restrictions.
+[ ] Settings reflects the real tracking choice; changing it in iOS Settings updates
+    the app. Optional usage analytics remains an independent choice.
+[ ] EU/UK/Swiss or unknown App Store country: Meta stays off without Allow.
+    Verify real event delivery in Meta Events Manager after Allow; a prompt alone
+    does not prove delivery. No duplicate trial/subscription events on relaunch.
+[ ] Privacy and terms links open correctly.
+
+RECORDING / COUNTING / HISTORY
+[ ] Short and 3–5 minute sessions: record, stop, resume navigation, replay and save.
+[ ] Daylight, indoor light, fast touches, ball near shoes/body, ball briefly missing.
+    Record missed/extra counts separately from visual replacement defects.
+[ ] A session with multiple runs: total touches and BEST STREAK remain clearly
+    different. Personal best and leaderboard use consecutive streaks.
+[ ] Imported clips do not become eligible recording leaderboard results.
+[ ] Cancel an import or preparation and retry. No duplicate session or stuck progress.
+[ ] Relaunch offline: retained sessions and local replay editing remain accessible.
+[ ] Sign out and change accounts: guest and account libraries stay separate.
+[ ] Remove one replay: its score remains; its video/analysis/edit files are removed.
+    Other replays and copies already saved to Photos must remain.
+
+REPLAY CACHE / EDITING
+[ ] For one recording and one import, measure: first editor preparation, second open,
+    and open after force-close/relaunch. Reopening must not repeat completed analysis.
+[ ] Open at least 10 different sessions, then return to the first. Its retained analysis
+    should still work even if the temporary import cache has evicted old entries.
+[ ] Test a saved session from the older build. One necessary legacy preparation is
+    acceptable; subsequent openings should reuse it and keep the stored score.
+[ ] 4K, 1080p and 120/240 fps slow-motion sources: correct duration, playback speed,
+    touch timing, video orientation and audio after reopening.
+[ ] Shared gallery-style loader appears when work is actually needed; controls do
+    not flash briefly or show a stale progress state when reopening cached media.
+[ ] Counter text is below Milestones. Type “Ballkontakte”, clear it, reset it, paste
+    a long/multiline label, and dismiss the keyboard. No clipped or unreachable UI.
+[ ] Check all 12 counter styles. Preview and saved video use the selected label;
+    numbers, touch timing and leaderboard scores must not change when editing text.
+[ ] Drag, pinch and rotate counter/timer near every edge; seek and replay the clip.
+[ ] Milestones, fanfare, touch sounds, original-audio mute, Looks and My style persist.
+
+EXPORT MATRIX — BOTH EXPORT AND DOWNLOAD
+[ ] 1080p recording with original ball, counter/timer and original audio.
+[ ] 1080p import with a standard replacement ball, effects and touch/milestone sounds.
+[ ] Original-resolution 4K import with the same choices; compare to the editor.
+[ ] Slow-motion import; verify speed, sound and exact output duration.
+[ ] Try every new ball (Gold Polish, Prism, Wave, Night Pulse) and every new effect
+    (Crystal, Water, Liquid Spectrum); also check Neon, Galaxy and an existing skin.
+[ ] Switch between several balls/effects within one clip; seek, replay and export.
+[ ] Check the two previously shared problem originals in the same settings. Inspect
+    shoes/body crossings, fast motion, edges, black discs and missing/extra ball layers.
+[ ] Listen to the entire saved clip: no doubled audio, unexpected original sound,
+    missing touch sounds or drift near the end.
+[ ] During export, go Home, lock/unlock, and return to the app. Depending on iOS and
+    GPU availability work may pause; it must recover without black/corrupt frames or
+    reporting success before a playable file exists. Keep iOS 18 foreground for the
+    baseline, then exercise interruption/recovery separately.
+[ ] Cancel, retry, tap Download repeatedly, export twice, and change an edit before
+    exporting again. No duplicate action, stale output or permanently disabled button.
+[ ] Deny Photos access, then allow it; insufficient storage/offline errors must leave
+    the original session intact and allow a later retry.
+
+PROFILES / LEADERBOARD / LOCALIZATION
+[ ] Open player A, then B, then A quickly; also scroll and reopen details repeatedly.
+    Names, photos and initials must always belong to the selected player.
+[ ] Cold photo load, cached load, no photo, slow/offline network, upload/change/remove
+    own photo, sign out/in. No stale photo from another user or expired-image loop.
+[ ] New best-streak labels agree across Home, Profile, session details and leaderboard.
+[ ] English, German, Spanish, French and Brazilian Portuguese; light/dark appearance
+    and large accessibility text. Google/Apple/email actions stay reachable.
+[ ] Update notice: the candidate should only announce a genuinely newer compatible
+    App Store version. “Not now” stays dismissed for that version; Settings retains
+    the link. Do not expect the old Debug 1.3.0 preview to appear in TestFlight.
+
+IPHONE 11 PERFORMANCE / STABILITY
+Use identical clips and settings on both phones. Record clip duration, resolution,
+fps, battery/Low Power Mode, starting temperature, first preparation, warm reopening,
+export seconds and any pause. Compare cold and warm cases separately.
+[ ] 30-second 1080p clip: original ball and standard replacement ball.
+[ ] 30-second original 4K clip: same two exports.
+[ ] Slow-motion clip and a 3–5 minute recording; scrub and edit before export.
+[ ] Three consecutive exports: note heat, slowdown, memory termination or stuck UI.
+    Avoid interpreting a hot third export as a cold-phone performance comparison.
+
+ACCOUNT SAFETY / RECOVERY
+[ ] Google cancellation, offline sign-in and lost connection recover without a loop.
+[ ] Purchase cancellation/error does not grant access or break another sign-in choice.
+[ ] Use a disposable test account for account deletion. Cancel first, then confirm a
+    separate test deletion and verify that account's local data is cleared only after
+    server confirmation. Existing personal accounts must not be deleted for testing.
+
+BEFORE PUBLIC RELEASE / MARKETING
+[ ] No unresolved crash, data loss, wrong-account photo/history, broken login/purchase,
+    corrupt export, repeated full analysis for retained sessions, or blocking iPhone 11 freeze.
+[ ] Real Google sign-in and purchase/restore pass on the TestFlight candidate.
+[ ] App Store privacy answers reflect Meta before submitting for public App Review.
+[ ] Known ball-edge imperfections are documented with examples and an agreed threshold.
+[ ] Record every result; NOT TESTED is not PASS. Freeze features during this round;
+    fixes go into a new numbered candidate and affected cases are repeated.
+
+BUG REPORT
+Build / phone / iOS:
+Source clip (duration / resolution / fps):
+Account state / Pro state:
+Steps:
+Expected / actual:
+Always or intermittent:
+Screen recording / exported file:

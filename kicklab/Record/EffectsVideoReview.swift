@@ -44,6 +44,10 @@ struct EffectsVideoReview: View {
         let previousIdle = UIApplication.shared.isIdleTimerDisabled
         UIApplication.shared.isIdleTimerDisabled = true
         defer { UIApplication.shared.isIdleTimerDisabled = previousIdle }
+        if ProcessInfo.processInfo.arguments.contains("--ball-export-benchmark") {
+            await BallSkinExportBenchmark().run(source: url) { message = $0 }
+            return
+        }
         showShare = ProcessInfo.processInfo.arguments.contains("--effects-share")
         if let env = SessionDesignReview.argument("--effects-environment").flatMap(EffectEnvironment.init(rawValue:)) { edit.environment = env }
         if let style = SessionDesignReview.argument("--effects-style").flatMap(BallStyle.init(rawValue:)) { edit.style = style }

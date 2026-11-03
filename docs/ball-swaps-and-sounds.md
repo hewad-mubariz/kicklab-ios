@@ -183,6 +183,125 @@ A print takes 20 ms (p50) and 26 ms (p95) off the main thread there. A first ver
 started a print from the draw call fell to 21.7 frames a second; starting it on decode fixed
 that.
 
+### Optional artwork GPU rendering (2 November 2026)
+
+Normal artwork skins now try `BallSkinMetalRenderer` for their 144/256-pixel sphere surface.
+The existing CPU renderer remains the fallback when GPU access is unavailable, initialization
+or drawing fails, or the app backgrounds without a GPU lease. Access is checked again just
+before command submission. Normal skins do not acquire the Lab skins' mandatory-GPU export
+requirement. Geometry, coverage, blur, counting and detection are unchanged.
+
+The renderer serializes shared buffers, retains at most two artwork maps plus one output
+buffer (7.25 MiB), and copies each completed image before reusing the output. The shader has
+its own `-fno-fast-math` compiler option; other effects retain their existing compiler settings.
+The application lifecycle snapshot is installed at startup, so render workers never block
+waiting for the main thread to read application state.
+
+On the physical iPhone 11 Pro Max, 41 selected material, export, background-policy, swap and
+replay tests passed. New checks cover every artwork skin, both resolutions, timer/source
+poses, eviction, simulated failure and access loss before GPU submission. GPU/CPU comparisons
+permit at most 2/255 RGB error, 1/255 alpha error and 0.01/255 mean error.
+
+A paired real-replay check with Lava and Fire, both starting/ending at nominal thermal state,
+showed 20.6/26.6 ms ball-print p50/p95 on CPU and 20.4/26.7 ms with optional GPU rendering.
+Both held about 30 fps with no main-thread lateness above 16 ms. The candidate performed
+108 GPU surface draws; pose-cache hits and remaining rendering stages still contribute to
+the overall print cost. This scene shows no material overall speedup; the standalone sphere
+microbenchmark must not be presented as an equivalent playback/export improvement.
+Evidence is under `artifacts/ball-gpu-integration/`, including `pace-comparison.json`.
+
+A complete-export ABBA comparison on the same physical iPhone 11 Pro Max used the
+12.82-second `IMG_9094.MOV`, Arctic, no effect, 1080p with a 60 fps cap, original audio,
+and identical retained mask observations. Optimized device code (`-O`) took 26.918/26.644 s
+on CPU and 23.240/23.195 s with the GPU surface: means 26.781 versus 23.218 s,
+13.3% less export time (3.563 s saved). Each GPU arm completed 733 surface draws;
+CPU arms completed zero. Normal image work stayed CPU-only under the shipping lease.
+All arms started, ended and reported progress at nominal thermal state, with ten
+continuous nominal seconds required before each arm. Material backends were warmed
+outside timing and the pose-image cache cleared between arms.
+
+All four outputs have the same 769 frames, timestamps, 1080x1920 dimensions and
+12.821667-second duration. Encoded AAC matches the source exactly. CPU/GPU video SSIM
+is 0.996606; inspected frames, including the lowest-SSIM pair, look equivalent, but the
+encoded videos are not pixel-identical. This is one clip/skin/device export result.
+Detection was excluded; source-spin preparation was measured separately at 16.677 s.
+The retained masks came from the earlier RF384 audit, so this does not evaluate the
+phone's detection speed or tracking quality. Evidence: `artifacts/ball-gpu-export-iphone11/`.
+Repeat with debug launch arguments `--effects-video documents:INPUT.mov
+--ball-export-benchmark --effects-owned-track documents:TRACK.plist --effects-folder FRESH_FOLDER`.
+The diagnostic refuses an existing output folder and stops if the phone cannot cool.
+
+The physical phone's UI-test runner timed out enabling automation twice, before executing
+the Home test. A direct lifecycle check then prepared a 20-second artwork fixture in the
+foreground, launched its export, and activated Settings. The export completed while
+backgrounded with `gpuSupported=false`, `artworkGPUAllowed=false` and 24 background progress
+updates. Its saved video has all 600 frames at 30 fps, a 20-second duration and the Arctic
+print. This validates an already-prepared editor export, not every background workflow.
+An earlier cold-preparation attempt was interrupted before export progress; background
+source-motion preparation remains a separate unresolved check. No fix for that is claimed.
+The diagnostic fixture is 320x480 with a white ball centered at (160,240), radius 48,
+staged as `Documents/ball-gpu-background-input.mov` for the `artwork` review mode.
+
+## Reopening saved sessions (2 November 2026)
+
+History details now offer **Edit replay** beside Watch replay, and the original replay
+player offers the same action. Both reopen the existing editor with Download/export.
+The action is available only when the original video is still on this phone.
+
+New sessions save counted positions and precise touch timing in a small recovery journal.
+A separate, session-owned binary plist retains the complete source observations,
+including losslessly compressed ball masks and visual recoveries. Completed visual
+preparation replaces that snapshot, and source spin/light/exposure is retained alongside
+it, matched to the exact ball track. These files survive the temporary cache's eight-file
+limit and app/OS changes; they are not keyed to the executable timestamp. A later raw
+save or lighter-effect pass cannot overwrite a denser completed track. Original-frame-rate
+exports still upgrade a saved capped track when required. Imported history entries also
+correct the old recording-clock flag, including entries created by the first editor build.
+
+Each session saves exact looks, sounds and overlay layout after a short debounce, on
+leaving the editor and on backgrounding. These choices are separate from My style.
+Mask compression and persistence run off the UI thread in root-owned tasks. Removing a
+replay removes its editor data, analysis and spin; a small deletion marker blocks late
+writers from recreating them. Account deletion uses the existing scoped storage guard.
+
+The replay card now shows a source thumbnail and makes **Open editor** the primary
+action. **Watch original** is a secondary action. Opening a replay uses the same
+`ProcessingOverlay` as gallery imports, including progress, cancellation, cooling and
+foreground-processing messages. Saved analysis opens as soon as it is restored, without
+an artificial wait to finish the loader animation.
+
+Older sessions without editor data rebuild it once from their retained original. Saved
+touch times take priority when available; older entries without timing show a notice
+that replay timing was rebuilt. Earlier editing choices were never stored and cannot be
+recovered. Reopening or exporting does not add a session, change its score, resubmit it
+to the leaderboard or record a personal best. Returning from the editor leads back to
+the existing history entry.
+
+The retention revision passed all **16 editor tests on the physical iPhone 11 Pro Max**.
+The same real 12.8217-second 4K clip used by the GPU export audit had 1,472 prepared
+observations and 1,538 spin entries. Initial mask refinement and spin took **35.477 s**;
+saving the analysis took **0.324 s**. Three fresh loads of the session-owned artifacts took
+**0.4527, 0.4529 and 0.4525 s**, with **4,834,766 bytes** of editor data. Reopened mask bytes
+matched exactly. The benchmark deliberately supplied an unreadable original path during
+reload: neither video decoding nor the normal source-hash caches could satisfy it.
+These times exclude initial ball detection, video-player startup and export rendering;
+they measure preparation/reuse of the retained real track. Existing sessions created
+before this retention change may require one final preparation.
+
+The simulator passed 32 selected history/editor unit tests, skipping the two physical-only
+checks. UI coverage exercises both entry points, retained edits after app relaunch and
+another Download. Phone evidence: `artifacts/history-editor/retention-iphone11.xcresult`
+and `retention-benchmark.json`. Full Release/TestFlight qualification remains separate.
+
+The delayed-archive regression also exposed a camera transition problem:
+hiding the camera HUD while its full-screen editor was up left the glass Back control
+unresponsive on return. Keeping the already-covered HUD visible fixes that path. The
+camera-before-recording and delayed-archive/navigation checks now pass; the latter
+also verifies playback before archiving finishes and recovery after app termination.
+Evidence is under `artifacts/history-editor/`, including `iphone11-tests.xcresult`,
+`navigation-hud.xcresult`, and `summary.json`. These are targeted Debug checks, not the
+full Release/TestFlight qualification.
+
 ## Graphs on long sessions
 
 Ball Motion and Comet used to fit the whole clip into the graph, so a 433-touch session
@@ -327,8 +446,12 @@ translated into German, Spanish, French and Portuguese, the status line under th
 badge shows only progress or a retry, Sky Meter's NEW BEST! stays inside the graph, the Looks
 run line leaves out the clip's own ball, and replay ball prints are built off the main thread.
 The version is 1.2.0 (37); the What's New drafts are in
-[1.2.0-37-whats-new.txt](../benchmarks/releases/1.2.0-37-whats-new.txt). Nothing has been
-uploaded to TestFlight or App Store Connect, and the App Review notes are still to write.
+[1.2.0-37-whats-new.txt](../benchmarks/releases/1.2.0-37-whats-new.txt). Build 37 was uploaded
+to App Store Connect on 1 November 2026 from commit `8c330016`. All 86 selected editor and
+release regression tests passed on iOS 18, and the Release archive passed source and signing
+verification. TestFlight status and validation evidence are recorded in
+[20261101-testflight-1.2.0-37.json](../benchmarks/releases/20261101-testflight-1.2.0-37.json).
+App Store review and release have not been submitted; the App Review notes are still to write.
 Decided to keep: "TOUCHES" stays English in videos, the tool stays "Milestones", Lab Flame
 stays in this release.
 

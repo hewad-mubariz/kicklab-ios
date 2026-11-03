@@ -8,7 +8,7 @@ struct LeaderboardView: View {
     let onClose: () -> Void
     var onRecord: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("kicklab.juggling.personalBest") private var personalBest = 0
+    @AppStorage(JugglingRecords.bestKey) private var personalBest = 0
     @AppStorage("kicklab.profile.displayName") private var displayName = ""
     @Environment(\.colorScheme) private var scheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -181,7 +181,7 @@ struct LeaderboardView: View {
         .onReceive(player.leaderboardReview.$revision) { _ in openChecks = player.leaderboardReview.openChecks }
         .refreshable { await loadBoard(refresh: true); await player.leaderboardReview.refresh() }
         .sheet(isPresented: $showsRules) { LeaderboardRulesView() }
-        .sheet(item: $selectedEntry) { entry in LeaderboardPlayerDetailView(entry: entry, review: player.leaderboardReview) }
+        .sheet(item: $selectedEntry) { entry in LeaderboardPlayerDetailView(entry: entry, review: player.leaderboardReview).id(entry.id) }
         .sheet(item: $checking, onDismiss: { Task { await loadBoard(refresh: true) } }) { session in
             NavigationStack {
                 LeaderboardCorrectionView(sessionID: session.id, review: player.leaderboardReview, history: player.history)
@@ -333,7 +333,7 @@ struct LeaderboardView: View {
     /// A plain stack: there are few rows, and every one must exist for the trip to yours.
     private var rows: some View {
         VStack(spacing: 10) {
-            ForEach(Array(entries.dropFirst(3).enumerated()), id: \.element.rank) { index, entry in
+            ForEach(Array(entries.dropFirst(3).enumerated()), id: \.element.id) { index, entry in
                 row(entry, delay: revealing ? 0.45 + Double(min(index, 5)) * 0.07 : 0.05)
                     .sessionEntrance(appeared, order: min(index, 6) + 3, offset: -16)
             }

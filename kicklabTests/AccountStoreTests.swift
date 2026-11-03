@@ -64,17 +64,17 @@ final class AccountStoreTests: XCTestCase {
         XCTAssertFalse(account.isBusy)
     }
 
-    func testGoogleCancellationInvalidatesPendingEmailWithoutBypassingCooldown() async {
+    func testGoogleCancellationKeepsPendingEmailWithoutBypassingCooldown() async {
         let service = TestAccountService()
         let store = AccountStore(service: service)
         let sent = await store.sendEmailLink(to: "player@example.com")
         XCTAssertTrue(sent)
         let deadline = store.resendAfter
-        service.failure = ASWebAuthenticationSessionError(.canceledLogin)
+        service.failure = CancellationError()
 
         await store.signIn(.google)
 
-        XCTAssertNil(store.pendingEmail)
+        XCTAssertEqual(store.pendingEmail, "player@example.com")
         XCTAssertNil(store.user)
         XCTAssertNil(store.errorMessage)
         XCTAssertFalse(store.isBusy)

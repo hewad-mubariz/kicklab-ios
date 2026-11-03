@@ -8,6 +8,8 @@ struct LeaderboardEntry: Identifiable, Equatable {
     var isYou = false
     /// The player's picture once scores come from accounts; without one a placeholder shows.
     var photo: URL? = nil
+    var userID: UUID? = nil
+    var avatar: PlayerPhotoReference? = nil
     /// Set when a confirmed touch check scores this entry.
     var attemptID: UUID? = nil
     /// Old responses can still contain a review ID. Review presentation must also
@@ -38,7 +40,7 @@ struct LeaderboardEntry: Identifiable, Equatable {
     var averageRhythmLabel: String {
         averageRhythmPerMinute.map { String(localized: "\($0.formatted()) touches/min", bundle: AppLanguage.bundle, locale: AppLanguage.locale) } ?? String(localized: "Unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
-    var id: Int { rank }
+    var id: String { userID?.uuidString ?? "preview-\(isYou ? "you" : name)" }
 }
 
 enum LeaderboardJugglingHeight: String, CaseIterable {

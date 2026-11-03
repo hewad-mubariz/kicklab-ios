@@ -62,6 +62,7 @@ struct ProcessingOverlay: View {
         .sensoryFeedback(.success, trigger: model.finishedAt != nil) { _, finished in finished }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Processing your session, \(percent) percent. \(title)")
+        .accessibilityIdentifier("session-processing-overlay")
     }
 
     private var percent: Int { Int((min(1, max(0, stepIndex >= 4 ? 1 : progress)) * 100).rounded()) }

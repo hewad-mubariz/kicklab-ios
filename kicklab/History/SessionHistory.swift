@@ -15,10 +15,17 @@ nonisolated struct HistorySession: Codable, Equatable, Identifiable, Sendable {
     /// When each counted touch happened, kept on this phone so a correction can be worked out.
     var touchTimesMS: [Int]? = nil
 
+    var personalBestStreak: Int {
+        guard source == .recording, scoreStatus != "rejected", let streak = rankedProposal,
+              streak.isValid(durationMS: durationMS), streak.count <= touches else { return 0 }
+        return streak.count
+    }
+
     init(result: SavedJugglingResult, syncState: SyncState = .pending) {
         id = result.id; ownerID = result.ownerID; touches = result.touches
         durationMS = result.durationMS; source = result.source; completedAt = result.completedAt
         self.syncState = syncState
+        rankedProposal = result.streak
     }
 
     init(id: UUID, ownerID: UUID?, touches: Int, durationMS: Int, source: SavedJugglingResult.Source,
@@ -52,11 +59,12 @@ nonisolated struct HistorySession: Codable, Equatable, Identifiable, Sendable {
     }
 }
 
-/// A small recovery journal; no video bytes or analysis buffers are encoded.
+/// Recovery journal with compact editor positions; no video bytes or mask buffers.
 nonisolated struct SessionSaveRequest: Codable, Sendable {
     let item: HistorySession
     let result: SavedJugglingResult?
     let videoURL: URL
+    var replayData: HistoryReplayData? = nil
     var key: String { "\(item.ownerID?.uuidString ?? "guest")/\(item.id.uuidString)" }
 
     func persist(library: SessionHistoryLibrary, queue: JugglingResultQueue) throws -> HistorySession {
@@ -65,6 +73,7 @@ nonisolated struct SessionSaveRequest: Codable, Sendable {
         // The outbox becomes visible only after the history write. Recovery
         // must never downgrade a result already acknowledged by the server.
         if existing == nil { try library.save(item) }
+        if let replayData { try library.saveReplayData(replayData, for: item) }
         if let result, existing?.syncState != .synced, existing?.syncState != .syncFailed { try queue.save(result) }
         return existing ?? item
     }
@@ -84,7 +93,7 @@ struct SessionHistoryPage: Sendable {
 
     static func query(userID: UUID, before: SessionHistoryCursor?) -> [URLQueryItem] {
         var query: [URLQueryItem] = [
-            .init(name: "select", value: "id,user_id,touch_count,duration_ms,source,completed_at,score_status"),
+            .init(name: "select", value: "id,user_id,touch_count,duration_ms,source,completed_at,score_status,streak_touches,streak_start_ms,streak_end_ms"),
             .init(name: "user_id", value: "eq.\(userID.uuidString)"),
             .init(name: "order", value: "completed_at.desc,id.desc"),
             .init(name: "limit", value: "\(size + 1)")
@@ -104,6 +113,9 @@ struct SessionHistoryPage: Sendable {
             let source: SavedJugglingResult.Source
             let completed_at: String
             let score_status: String
+            let streak_touches: Int?
+            let streak_start_ms: Int?
+            let streak_end_ms: Int?
         }
         let rows = try JSONDecoder().decode([Row].self, from: data)
         let fractional = ISO8601DateFormatter()
@@ -114,9 +126,13 @@ struct SessionHistoryPage: Sendable {
                   let date = fractional.date(from: row.completed_at) ?? plain.date(from: row.completed_at) else {
                 throw PlayerDataError.requestFailed
             }
-            return HistorySession(id: row.id, ownerID: owner, touches: row.touch_count,
+            var item = HistorySession(id: row.id, ownerID: owner, touches: row.touch_count,
                 durationMS: row.duration_ms, source: row.source, completedAt: date,
                 syncState: .synced, scoreStatus: row.score_status)
+            if let count = row.streak_touches, let start = row.streak_start_ms, let end = row.streak_end_ms {
+                item.rankedProposal = .init(count: count, startMS: start, endMS: end)
+            }
+            return item
         }
         let last = rows.prefix(size).last
         let next = rows.count > size ? last.map { SessionHistoryCursor(timestamp: $0.completed_at, id: $0.id) } : nil
@@ -124,8 +140,8 @@ struct SessionHistoryPage: Sendable {
     }
 }
 
-/// Metadata is durable and account-scoped. Videos stay private on this device,
-/// outside temporary storage, with no raw analysis/mask buffers in history.
+/// The history list stays small and account-scoped. Private originals and compact
+/// editor-analysis sidecars live beside it, outside temporary cache storage.
 nonisolated struct SessionHistoryLibrary: Sendable {
     let root: URL
     private func folder(_ owner: UUID?) -> URL {
@@ -193,6 +209,7 @@ nonisolated struct SessionHistoryLibrary: Sendable {
     }
     func removeVideo(for item: HistorySession) throws {
         if let url = videoURL(for: item) { try FileManager.default.removeItem(at: url) }
+        try removeEditorData(for: item)
     }
     func removeAccount(_ owner: UUID) throws {
         let url = folder(owner)

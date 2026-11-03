@@ -63,7 +63,7 @@ struct SessionCompleteView: View {
             Text("Total Touches").font(.system(size: 13)).foregroundStyle(SessionStyle.secondary)
                 .padding(.top, -6)
             if summary.isNewBest {
-                Text("New Best!")
+                Text("New best streak!")
                     .font(.system(size: 12, weight: .semibold))
                     .padding(.horizontal, 14).padding(.vertical, 5)
                     .background(SessionStyle.deepGreen, in: RoundedRectangle(cornerRadius: 7))
@@ -81,7 +81,7 @@ struct SessionCompleteView: View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
             PostStatCard(icon: "stopwatch", iconColor: .white, title: "Duration", value: summary.durationLabel)
             PostStatCard(icon: "arrow.up.to.line", title: "Max Height", value: summary.maxHeightLabel)
-            PostStatCard(icon: "flame.fill", iconColor: Theme.streak, title: "Best Combo", value: "\(summary.bestCombo)")
+            PostStatCard(icon: "flame.fill", iconColor: Theme.streak, title: "Best streak", value: summary.bestStreakLabel)
             PostStatCard(icon: "chart.bar.fill", title: "Avg. Height", value: summary.avgHeightMeters.map { String(format: "%.1f m", $0) } ?? "—")
         }
     }
