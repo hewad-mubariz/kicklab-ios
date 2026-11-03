@@ -4,6 +4,9 @@ import XCTest
 
 final class RFVideoOnlySteadyStateTests: XCTestCase {
     @MainActor func testTenSecondRecordingOnBothLenses() async throws {
+        #if targetEnvironment(simulator)
+        throw XCTSkip("Requires physical front/back cameras and real 60 fps capture")
+        #else
         guard AVCaptureDevice.authorizationStatus(for: .video) == .authorized else { throw XCTSkip("Camera permission required") }
         let folder = URL.documentsDirectory.appendingPathComponent("RFValidation-video-only-steady")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -40,5 +43,6 @@ final class RFVideoOnlySteadyStateTests: XCTestCase {
             try JSONSerialization.data(withJSONObject: rows, options: [.prettyPrinted, .sortedKeys]).write(to: folder.appendingPathComponent("results.json"))
             camera.clearRecording(); camera.start(); try await wait { camera.canRecord }
         }
+        #endif
     }
 }

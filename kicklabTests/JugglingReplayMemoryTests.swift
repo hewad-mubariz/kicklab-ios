@@ -10,6 +10,18 @@ import XCTest
 final class JugglingReplayMemoryTests: XCTestCase {
     @MainActor
     func testReplayMemoryPhases() async throws {
+        let root = URL.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let defaultsName = "ReplayMemory-" + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: defaultsName))
+        defer {
+            try? FileManager.default.removeItem(at: root)
+            defaults.removePersistentDomain(forName: defaultsName)
+        }
+        let player = PlayerStore(service: nil, queue: .init(root: root), guestDefaults: defaults)
+        let subscriptions = SubscriptionStore(observeTransactions: false,
+            entitlementSource: ReplayMemoryEntitlements())
+        await subscriptions.refreshEntitlements()
+        XCTAssertTrue(subscriptions.isPro)
         let video = try XCTUnwrap(Bundle(for: type(of: self))
             .url(forResource: "juggling-eighteen", withExtension: "mov"))
         let frames = (0..<556).map { index in
@@ -42,11 +54,13 @@ final class JugglingReplayMemoryTests: XCTestCase {
         }
         try await settle("baseline")
         for cycle in 1...3 {
-            var host: UIHostingController<ReplayEffectsView>? = UIHostingController(rootView:
+            var host: UIHostingController<AnyView>? = UIHostingController(rootView: AnyView(
                 ReplayEffectsView(summary: summary, edit: .constant(.init(style: .fire, intensity: 0.8)),
                     stadiumPreview: StadiumPreviewModel(), overlays: .constant(ExportOverlaySettings()),
-                    onBack: {}))
-            weak var weakHost: UIHostingController<ReplayEffectsView>?
+                    onBack: {})
+                    .environmentObject(subscriptions)
+                    .environmentObject(player)))
+            weak var weakHost: UIHostingController<AnyView>?
             weakHost = host
             window.rootViewController = host
             try await settle("replay_\(cycle)", seconds: 4)
@@ -62,5 +76,13 @@ final class JugglingReplayMemoryTests: XCTestCase {
             "scope": "Physical footprint of real ReplayEffectsView, paused preview and artwork; synthetic track only to exercise rendering. No live capture or count validation."]
         try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys])
             .write(to: folder.appendingPathComponent("replay-phases.json"), options: .atomic)
+    }
+}
+
+@MainActor
+private struct ReplayMemoryEntitlements: LocalSubscriptionEntitlementSource {
+    func current() async -> LocalSubscriptionEntitlement? {
+        .init(plan: .monthly, validUntil: Date().addingTimeInterval(3600),
+              signedTransaction: nil, environment: nil)
     }
 }

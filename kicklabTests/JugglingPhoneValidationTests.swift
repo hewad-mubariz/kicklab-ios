@@ -2,12 +2,14 @@ import AVFoundation
 import XCTest
 @testable import kicklab
 
-/// Explicit local-fixture test. Uses the current native detector and contact
+/// Historical YOLOX local-fixture test. Uses that detector and contact
 /// verifier together, then exports Fire and Ice with the resulting track.
 /// File replay throughput is not live-camera FPS or a thermal endurance test.
 final class JugglingPhoneValidationTests: XCTestCase {
     @MainActor
     func testRecordedContactsAndEffectsOnPhone() async throws {
+        try XCTSkipUnless(Bundle.main.url(forResource: "KickLabYOLOXTinyFineTuned", withExtension: "mlmodelc") != nil,
+            "Historical YOLOX fixture requires its optional model; production ships RF-DETR")
         let folder = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("JugglingValidation-20261003", isDirectory: true)
         let video = Bundle(for: type(of: self)).url(forResource: "juggling-eighteen", withExtension: "mov")
