@@ -1,9 +1,10 @@
 JUGGLE DUDE 1.2.0 (38) — TEST RESULTS, 3 NOVEMBER 2026
 
 UPLOAD
-Signed Release archive uploaded successfully at 07:27 CET. Apple confirmed the
-package had begun processing. Browser authentication is needed to verify that
-processing completed, confirm availability for Early testers, and save What to Test.
+Signed Release archive uploaded successfully at 07:27 CET on 3 November 2026.
+App Store Connect now confirms processing completed. Build 1.2.0 (38) shows
+Testing for the existing Early testers internal group (3 testers, expires in
+90 days at verification). What to Test instructions were saved successfully.
 No public App Store review or external beta review was submitted.
 
 AUTOMATED RESULTS

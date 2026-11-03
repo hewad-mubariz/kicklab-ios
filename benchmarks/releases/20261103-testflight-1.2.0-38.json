@@ -9,10 +9,10 @@
   "upload_succeeded": true,
   "upload_completed_at": "2026-11-03T07:27:31+01:00",
   "processing_started": true,
-  "processing_complete": null,
-  "testing_group_confirmed": false,
-  "what_to_test_saved": false,
-  "browser_blocker": "App Store Connect redirects to login with authResult=FAILED. User sign-in requested.",
+  "processing_complete": true,
+  "testing_group_confirmed": true,
+  "what_to_test_saved": true,
+  "browser_blocker": null,
   "submitted_to_app_store_review": false,
   "submitted_to_external_beta_review": false,
   "archive_verification": {
@@ -90,9 +90,22 @@
   },
   "continued_test_runtime": "iOS 18.0",
   "storekit_simulator_issue": "iOS 26.5 SKTestSession reports SKInternalErrorDomain Code=3 while configuring local store; purchase call hangs. Retrying on iOS 18.0.",
-  "status": "uploaded; tester availability unconfirmed",
-  "app_store_connect_url": "https://appstoreconnect.apple.com/apps/6820780610/testflight/ios",
+  "status": "testing_internal",
+  "app_store_connect_url": "https://appstoreconnect.apple.com/teams/9b7830cc-2a57-43c6-813e-db0800261e24/apps/6820780610/testflight/ios/56caaaf4-7c11-4099-89dd-06b1e2887ccf",
   "internal_testing_requested_group": "Early testers",
-  "updated_at_utc": "2026-11-03T06:56:25.512583+00:00",
-  "proof": "upload.log: Upload succeeded / EXPORT SUCCEEDED at 2026-11-03 07:27:31 CET"
+  "updated_at_utc": "2026-11-03T08:01:21.164500+00:00",
+  "proof": "upload.log: Upload succeeded / EXPORT SUCCEEDED at 2026-11-03 07:27:31 CET",
+  "processing_confirmed_in_app_store_connect": true,
+  "build_id": "56caaaf4-7c11-4099-89dd-06b1e2887ccf",
+  "internal_testing": {
+    "group": "Early testers",
+    "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+    "existing_testers": 3,
+    "status": "Testing",
+    "expires_in_days_at_verification": 90
+  },
+  "proof_screenshots": [
+    "artifacts/releases/20261103-1.2.0-38/testflight-build-details.png",
+    "artifacts/releases/20261103-1.2.0-38/testflight-testing.png"
+  ]
 }
