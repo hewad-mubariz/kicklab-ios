@@ -8,7 +8,7 @@ final class HomeNavigationTests: XCTestCase {
     @MainActor
     func testTrainingHomeAndAppearancePersistence() {
         let app = XCUIApplication()
-        app.launchArguments = ["-kicklab.juggling.personalBest", "42"]
+        app.launchArguments = ["-kicklab.juggling.bestStreak", "42"]
         XCUIDevice.shared.orientation = .portrait
         app.launchArguments += ["-kicklab.welcome.completed", "YES"]
         app.launch()
@@ -18,7 +18,7 @@ final class HomeNavigationTests: XCTestCase {
         XCTAssertFalse(app.buttons["module-target-shooting"].exists)
         XCTAssertFalse(app.buttons["tab-home"].exists)
         XCTAssertEqual(app.descendants(matching: .any)["home-personal-best"].label,
-                       "Juggling personal best, 42 touches")
+                       "Personal best streak, 42 consecutive touches")
 
         app.buttons["home-profile"].tap()
         app.buttons["profile-settings"].tap()
@@ -51,13 +51,13 @@ final class HomeNavigationTests: XCTestCase {
     @MainActor
     func testProfileNameSaveCancelAndPersistence() {
         let app = XCUIApplication()
-        app.launchArguments = ["-kicklab.juggling.personalBest", "42"]
+        app.launchArguments = ["-kicklab.juggling.bestStreak", "42"]
         XCUIDevice.shared.orientation = .portrait
         app.launchArguments += ["-kicklab.welcome.completed", "YES"]
         app.launch()
         app.buttons["home-profile"].tap()
         XCTAssertEqual(app.descendants(matching: .any)["profile-personal-best"].label,
-                       "Juggling personal best, 42 touches")
+                       "Personal best streak, 42 consecutive touches")
         app.buttons["profile-edit-name"].tap()
         let field = app.textFields["profile-name-field"]
         XCTAssertTrue(field.waitForExistence(timeout: 3))
@@ -135,7 +135,7 @@ final class HomeNavigationTests: XCTestCase {
     @MainActor
     func testEmptyRecordAndAccessibilityLayout() {
         let app = XCUIApplication()
-        app.launchArguments = ["-kicklab.juggling.personalBest", "0",
+        app.launchArguments = ["-kicklab.juggling.bestStreak", "0",
                                "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
         XCUIDevice.shared.orientation = .portrait
         app.launchArguments += ["-kicklab.welcome.completed", "YES"]
@@ -150,14 +150,14 @@ final class HomeNavigationTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["profile-name"].waitForExistence(timeout: 3))
         let profileRecord = app.descendants(matching: .any)["profile-personal-best"]
         XCTAssertEqual(profileRecord.label,
-                       "Juggling personal best. Your first juggling session starts your record.")
+                       "Personal best streak. Record your first juggling streak.")
         for _ in 0..<4 where !app.buttons["profile-settings"].isHittable { app.swipeUp() }
         XCTAssertTrue(app.buttons["profile-settings"].isHittable)
         attach(app, name: "Profile - accessibility text")
         app.buttons["profile-close"].tap()
         let record = app.descendants(matching: .any)["home-personal-best"]
         for _ in 0..<6 where !record.isHittable { app.swipeUp() }
-        XCTAssertEqual(record.label, "Juggling personal best. Your first record starts here.")
+        XCTAssertEqual(record.label, "Personal best streak. Record your first juggling streak.")
         let importButton = app.buttons["home-import-video"]
         for _ in 0..<6 where !importButton.isHittable { app.swipeUp() }
         XCTAssertTrue(importButton.isHittable)

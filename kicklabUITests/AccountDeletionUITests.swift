@@ -13,7 +13,8 @@ final class AccountDeletionUITests: XCTestCase {
         app.buttons["profile-delete-account"].tap()
         app.alerts["Delete your account?"].buttons["Delete account"].tap()
         XCTAssertTrue(app.buttons["home-profile"].waitForExistence(timeout: 8))
-        XCTAssertTrue(app.otherElements["home-personal-best"].label.contains("Your first record"),
+        XCTAssertEqual(app.otherElements["home-personal-best"].label,
+                      "Personal best streak. Record your first juggling streak.",
                       "The deleted account's legacy count must not reappear as a guest record")
         app.buttons["home-profile"].tap()
         XCTAssertTrue(app.buttons["profile-sign-in"].waitForExistence(timeout: 5))
