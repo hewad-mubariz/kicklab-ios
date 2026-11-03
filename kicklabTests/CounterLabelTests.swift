@@ -15,6 +15,10 @@ final class CounterLabelTests: XCTestCase {
     }
 
     func testEmptyPastedAndMultilingualTextAreBoundedWithoutChangingScoring() {
+        XCTAssertNil(CounterLabel.saved("Touches"))
+        XCTAssertNil(CounterLabel.saved(" \n\t"))
+        XCTAssertNil(CounterLabel.saved("  Touches  "))
+        XCTAssertEqual(CounterLabel.saved("  Meine\nBallkontakte  "), "Meine Ballkontakte")
         XCTAssertEqual(CounterLabel.display(" \n\t"), "Touches")
         XCTAssertEqual(CounterLabel.display("  Meine\nBallkontakte \t"), "Meine Ballkontakte")
         XCTAssertEqual(CounterLabel.editable("Ö" + String(repeating: "ä", count: 30)), "Ö" + String(repeating: "ä", count: 23))

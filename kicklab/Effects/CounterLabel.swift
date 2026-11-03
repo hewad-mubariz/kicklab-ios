@@ -16,4 +16,10 @@ nonisolated enum CounterLabel {
         let value = editable(text ?? "").split(whereSeparator: \.isWhitespace).joined(separator: " ")
         return value.isEmpty ? defaultText : value
     }
+
+    /// An unchanged or cleared label is the default, not an edit needing Reset.
+    static func saved(_ text: String) -> String? {
+        let value = display(text)
+        return value == defaultText ? nil : value
+    }
 }

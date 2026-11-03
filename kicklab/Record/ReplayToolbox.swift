@@ -443,6 +443,8 @@ struct ReplayToolbox: View {
         }
         .opacity(counter.enabled ? 1 : 0.5)
         .disabled(!counter.enabled)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("counter-milestones-row")
         .padding(.horizontal, 16)
     }
 

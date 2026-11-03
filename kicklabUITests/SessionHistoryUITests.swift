@@ -86,6 +86,7 @@ final class SessionHistoryUITests: XCTestCase {
         #if targetEnvironment(simulator)
         let app = open("editable", appearance: "dark")
         let row = "history-session-00000000-0000-0000-0000-000000000001"
+        XCTAssertTrue(app.buttons[row].waitForStableFrame())
         app.buttons[row].tap()
         XCTAssertTrue(app.buttons["history-edit-replay"].waitForExistence(timeout: 10))
         attach(app, "Saved replay card with Open editor")
@@ -93,11 +94,38 @@ final class SessionHistoryUITests: XCTestCase {
         XCTAssertTrue(app.buttons["replay-customize"].waitForExistence(timeout: 20))
         app.buttons["replay-customize"].tap()
         app.buttons["replay-tool-counter"].tap()
-        let label = app.textFields["counter-text"]
+        let editLabel = app.buttons["counter-text-edit"]
+        XCTAssertTrue(editLabel.waitForStableFrame())
+        XCTAssertEqual(editLabel.value as? String, "Touches")
+        XCTAssertFalse(app.buttons["counter-text-reset"].exists)
+        let labelRow = app.otherElements["counter-text-row"]
+        let milestonesRow = app.otherElements["counter-milestones-row"]
+        XCTAssertEqual(labelRow.frame.height, milestonesRow.frame.height, accuracy: 1,
+                       "Counter text and Milestones should have the same compact row height")
+        attach(app, "Counter text — compact Edit row")
+        editLabel.tap()
+        let dialog = app.alerts["Counter text"]
+        // UIKit's alert bridge does not preserve the SwiftUI field identifier on iOS 18.
+        let label = dialog.textFields.firstMatch
         XCTAssertTrue(label.waitForExistence(timeout: 5))
         label.tap()
-        label.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 7) + "Ballkontakte\n")
+        label.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 7) + "Ballkontakte")
         XCTAssertEqual(label.value as? String, "Ballkontakte")
+        XCTAssertTrue(app.keyboards.firstMatch.exists)
+        XCTAssertLessThan(label.frame.maxY, app.keyboards.firstMatch.frame.minY,
+                          "Text entry must remain visible above the software keyboard")
+        attach(app, "Counter text — native editor above keyboard")
+        dialog.buttons["Cancel"].tap()
+        XCTAssertEqual(editLabel.value as? String, "Touches", "Cancel must discard the draft")
+        XCTAssertFalse(app.buttons["counter-text-reset"].exists)
+        editLabel.tap()
+        XCTAssertTrue(label.waitForExistence(timeout: 5))
+        label.tap()
+        label.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 7) + "Ballkontakte")
+        dialog.buttons["counter-text-save"].firstMatch.tap()
+        XCTAssertTrue(dialog.waitForNonExistence(timeout: 5))
+        XCTAssertEqual(editLabel.value as? String, "Ballkontakte")
+        XCTAssertTrue(app.buttons["counter-text-reset"].exists)
         attach(app, "Custom German counter label")
         let showCounter = app.switches["counter-show"]
         XCTAssertTrue(showCounter.waitForExistence(timeout: 5))
@@ -109,6 +137,7 @@ final class SessionHistoryUITests: XCTestCase {
         app.terminate()
 
         let restored = open("keep", appearance: "dark")
+        XCTAssertTrue(restored.buttons[row].waitForStableFrame())
         restored.buttons[row].tap()
         restored.buttons["history-watch-replay"].tap()
         XCTAssertTrue(restored.buttons["history-replay-edit"].waitForExistence(timeout: 5))
@@ -117,11 +146,12 @@ final class SessionHistoryUITests: XCTestCase {
         XCTAssertFalse(restored.buttons["replay-select-counter"].exists, "This session's counter choice must survive relaunch")
         restored.buttons["replay-customize"].tap()
         restored.buttons["replay-tool-counter"].tap()
-        let restoredLabel = restored.textFields["counter-text"]
-        XCTAssertTrue(restoredLabel.waitForExistence(timeout: 5))
+        let restoredLabel = restored.buttons["counter-text-edit"]
+        XCTAssertTrue(restoredLabel.waitForStableFrame())
         XCTAssertEqual(restoredLabel.value as? String, "Ballkontakte", "Label survives closing and relaunching")
         restored.buttons["counter-text-reset"].tap()
         XCTAssertEqual(restoredLabel.value as? String, "Touches")
+        XCTAssertFalse(restored.buttons["counter-text-reset"].exists)
         restored.buttons["replay-close-tools"].tap()
         attach(restored, "Reopened saved edit")
         XCTAssertTrue(restored.startReplayDownload())
