@@ -5,7 +5,13 @@ import XCTest
 
 @MainActor
 final class VisualInferenceBatchTests: XCTestCase {
-    private func detector() throws -> BallDetector { try BallDetector(resourceName:"KickLabYOLO26MotionSegmentation") }
+    private func detector() throws -> BallDetector {
+        // These opt-in batch experiments use the historical YOLO model contract.
+        // RF-DETR, the shipping model, does not support this batch path.
+        try XCTSkipUnless(Bundle.main.url(forResource: "KickLabYOLO26MotionSegmentation", withExtension: "mlmodelc") != nil,
+            "Batch experiment requires the optional YOLO26 motion model; production ships RF-DETR")
+        return try BallDetector(resourceName: "KickLabYOLO26MotionSegmentation")
+    }
     private func pixels(_ fixture:String, width:Int, height:Int) throws -> CVPixelBuffer {
         let url=try XCTUnwrap(Bundle(for:Self.self).url(forResource:fixture,withExtension:"jpg"))
         let image=try XCTUnwrap(UIImage(contentsOfFile:url.path)?.cgImage)
