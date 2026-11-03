@@ -31,7 +31,7 @@
     "CFBundleVersion": "38.2",
     "sha256": "6624e7566343570921939a87e27bb25fe1d8dc51c90c821917bea7531ee08580"
   },
-  "iphone17_status": "Not measured or updated: Xcode reports device unpaired/unavailable.",
+  "iphone17_status": "Paired successfully after the user accepted Trust. Installed in place and launched Release 1.2.0 (38.2). Device app inventory confirmed build 38.2; existing Juggle Dude data preserved. Temporary diagnostic app removed after retrieving its results.",
   "testflight_status": "Build 38 remains the existing TestFlight build. This fix is a local 38.2 development-signed Release build.",
   "source_sha256": {
     "kicklab/Effects/Metal/EffectResourcePreparation.swift": "ef7b96451453a460e87274f73d2d70103a6323fd6c451e3d1c18d7c2eba653ea",
@@ -41,5 +41,41 @@
     "kicklab/Record/EffectIcon.swift": "07137d3a9ac687c71b501ed48d2d5a797a4bed01505a21f917f438e3901b9024",
     "kicklabTests/CrystalPreparationTests.swift": "4c1eaf977ab67dc7475378ba7561e38e6d3a06b12abc05dd9c64acd8e986b087"
   },
-  "iphone11_status": "Installed in place and launched Release 1.2.0 (38.2). Device app inventory confirmed build 38.2; existing Juggle Dude data preserved."
+  "iphone11_status": "Installed in place and launched Release 1.2.0 (38.2). Device app inventory confirmed build 38.2; existing Juggle Dude data preserved.",
+  "iphone17_preparation_measurement": {
+    "background_ready_ms": 201.54095833368046,
+    "cached_read_main_ms": 4.166668077232316e-05,
+    "gpu": "Apple A19 Pro GPU",
+    "main_heartbeat_lateness_ms": [
+      2.7442083335627103,
+      1.0512916667648824,
+      1.0355000002091401,
+      1.0405000000828295,
+      1.0614166665545781,
+      1.1135000002395827,
+      1.0371666665305384,
+      1.0397083331481554,
+      1.0996250000898726,
+      1.0952916661990457,
+      1.0546666669979459,
+      1.2813749997731065,
+      1.039916666552017,
+      1.0393333330212045,
+      1.0360416670591803,
+      1.0579166662791977,
+      1.0596666668716352,
+      1.099916666855279,
+      1.0366666672707652,
+      1.0409999993426027,
+      1.0491666669549886,
+      1.4074583330439054
+    ],
+    "main_heartbeat_max_lateness_ms": 2.7442083335627103,
+    "os": "Version 27.0.1 (Build 24A446)",
+    "preview_level": 1,
+    "request_main_ms": 0.005875000169908162,
+    "scope": "Production preparation and renderer, isolated optimized app. Main-actor heartbeat during first setup; not the whole editor.",
+    "shared_identity": true,
+    "thermal_end": 0
+  }
 }
