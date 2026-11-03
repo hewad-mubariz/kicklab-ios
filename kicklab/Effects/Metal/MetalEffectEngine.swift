@@ -28,8 +28,10 @@ nonisolated final class MetalEffectEngine {
         let liquidSplat: MTLRenderPipelineState?
         let liquidShade: MTLRenderPipelineState?
         let library: MTLLibrary
+        let crystal: EffectResourcePreparation<CrystalLabRenderer>
 
-        init(libraryURL: URL? = nil, source: String? = nil) throws {
+        init(libraryURL: URL? = nil, source: String? = nil,
+             crystalPreparation: EffectResourcePreparation<CrystalLabRenderer>? = nil) throws {
             guard let device = MTLCreateSystemDefaultDevice(), let queue = device.makeCommandQueue() else {
                 throw Failure.unavailable("Metal is unavailable on this device.")
             }
@@ -40,6 +42,11 @@ nonisolated final class MetalEffectEngine {
             else if let bundled = device.makeDefaultLibrary() { library = bundled }
             else { throw Failure.unavailable("The effects shader library is missing.") }
             self.library = library
+            crystal = crystalPreparation ?? EffectResourcePreparation {
+                let renderer = try CrystalLabRenderer(device: device, library: library)
+                try renderer.warmUp(queue: queue)
+                return renderer
+            }
             func kernel(_ name: String) throws -> MTLComputePipelineState {
                 guard let f = library.makeFunction(name: name) else { throw Failure.unavailable("Missing effect shader: \(name)") }
                 return try device.makeComputePipelineState(function: f)
@@ -111,7 +118,6 @@ nonisolated final class MetalEffectEngine {
     private var labBackground: MTLTexture?
     private var labField: MTLTexture?
     private var water: WaterLabRenderer?
-    private var crystal: CrystalLabRenderer?
     /// Set by the editor's live preview: Crystal draws lighter there, saved videos in full.
     var livePreview = false
 
@@ -228,7 +234,8 @@ nonisolated final class MetalEffectEngine {
         }
         if let ice = frame.crystal, !frame.counter, frame.intensity > 0.005, frame.visibility > 0.005,
            source != nil || frame.labBackdrop != nil {
-            if crystal == nil { crystal = try? CrystalLabRenderer(device: device, library: resources.library) }
+            resources.crystal.prepare()
+            let crystal = try livePreview ? resources.crystal.resultIfReady?.get() : resources.crystal.waitUntilReady()
             if let crystal {
                 // Crystal refracts the picture behind it: the video with any replacement ball.
                 let background = try labBackground(frame, target: target, source: source, material: material,
@@ -237,6 +244,12 @@ nonisolated final class MetalEffectEngine {
                                    previewLevel: livePreview ? CrystalLabRenderer.previewLevel(device: device) : 0)
                 return
             }
+            // Never compile or wait on the UI drawing thread. Show the current video (including
+            // its ball material and grade) until preparation's callback requests another draw.
+            var waiting = frame
+            waiting.crystal = nil; waiting.style = 0
+            try encode(waiting, into: target, source: source, material: material, command: command)
+            return
         }
         if let splash = frame.water, !frame.counter, frame.intensity > 0.005, frame.visibility > 0.005,
            source != nil || frame.labBackdrop != nil {

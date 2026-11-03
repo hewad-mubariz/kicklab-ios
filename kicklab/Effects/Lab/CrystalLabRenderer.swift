@@ -5,7 +5,7 @@ import simd
 /// Crystal's footage renderer from the Effects Lab (accepted 1 November 2026), adapted to the
 /// effect engine's device, shader library and command buffer. One pass, clipped to the crystals,
 /// traces the closed ice meshes and refracts the picture behind them.
-nonisolated final class CrystalLabRenderer {
+nonisolated final class CrystalLabRenderer: @unchecked Sendable {
     let device: MTLDevice, pipeline: MTLRenderPipelineState
     let textures: IceTextures, geometry: IceGeometry
 
@@ -20,6 +20,34 @@ nonisolated final class CrystalLabRenderer {
         pipeline = try device.makeRenderPipelineState(descriptor: desc)
         textures = try IceTextures(device: device)
         geometry = try IceGeometry(device: device, prefix: "ice-fracture")
+    }
+
+    /// Exercise the first submission on a tiny off-screen target before publishing the renderer.
+    /// Pipelines, textures and geometry are immutable; each encode owns its per-frame buffers,
+    /// so the prepared renderer can be shared by the replay, picker and export engines.
+    func warmUp(queue: MTLCommandQueue) throws {
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .bgra8Unorm,
+            width: 48, height: 48, mipmapped: false)
+        descriptor.usage = [.shaderRead, .renderTarget]
+        guard let source = device.makeTexture(descriptor: descriptor),
+              let target = device.makeTexture(descriptor: descriptor), let command = queue.makeCommandBuffer() else {
+            throw NSError(domain: "Crystal", code: 5)
+        }
+        let clear = MTLRenderPassDescriptor()
+        clear.colorAttachments[0].texture = source
+        clear.colorAttachments[0].loadAction = .clear
+        clear.colorAttachments[0].storeAction = .store
+        clear.colorAttachments[0].clearColor = MTLClearColorMake(0.4, 0.4, 0.4, 1)
+        guard let encoder = command.makeRenderCommandEncoder(descriptor: clear) else {
+            throw NSError(domain: "Crystal", code: 6)
+        }
+        encoder.endEncoding()
+        let frame = CrystalFrame.make(time: 2, size: CGSize(width: 48, height: 48), strength: 1,
+            track: CrystalTrack(sample: { _ in SIMD4(24, 24, 6, 1) }, touchTimes: [1.8]))
+        try encode(frame: frame, source: source, target: target, command: command,
+                   previewLevel: Self.previewLevel(device: device))
+        command.commit(); command.waitUntilCompleted()
+        if let error = command.error { throw error }
     }
 
     /// The lab's clip: every crystal, puff and mote with its reach, around the ball.

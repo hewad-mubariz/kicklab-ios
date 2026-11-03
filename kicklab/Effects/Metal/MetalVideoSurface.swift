@@ -112,6 +112,7 @@ final class EffectVideoView: MTKView {
     /// Frames sent to the screen; the phone check reads the replay's pace from it.
     private(set) var presentedFrameCount = 0
     private var reportedError = false
+    private var requestedCrystalPreparation = false
     var onFailure: (String) -> Void = { _ in }
     #if DEBUG
     /// --preview-benchmark <seconds>: play from the start once the ball skin is
@@ -119,7 +120,7 @@ final class EffectVideoView: MTKView {
     private var benchmark: PreviewBenchmark?
     #endif
 
-    init() {
+    init(resources: MetalEffectEngine.Resources? = nil) {
         super.init(frame: .zero, device: MTLCreateSystemDefaultDevice())
         framebufferOnly = false
         colorPixelFormat = .bgra8Unorm
@@ -130,7 +131,7 @@ final class EffectVideoView: MTKView {
         backgroundColor = .black
         contentScaleFactor = min(2, traitCollection.displayScale)
         do {
-            let engine = try MetalEffectEngine()
+            let engine = try MetalEffectEngine(resources: resources)
             engine.livePreview = true
             self.engine = engine
             device = engine.device
@@ -174,6 +175,7 @@ final class EffectVideoView: MTKView {
     }
 
     func configure(player: AVPlayer, edit: SessionEditState, track: BallEffectTrack) {
+        prepareCrystalIfNeeded(edit)
         if self.edit != edit || self.track.surfaceMotion?.entries.count != track.surfaceMotion?.entries.count {
             dirty = true; requestedPixels = nil; setNeedsDisplay()
         }
@@ -216,6 +218,7 @@ final class EffectVideoView: MTKView {
     }
 
     func configure(image: CGImage, edit: SessionEditState, track: BallEffectTrack, time: Double) {
+        prepareCrystalIfNeeded(edit)
         if self.edit != edit || frameTime != time { dirty = true; setNeedsDisplay() }
         if self.edit != edit || self.track.touches != track.touches { swaps = BallSwapTimeline(edit: edit, touchTimes: track.touches) }
         if !edit.usesBallMaterial { dropPrints() }
@@ -227,6 +230,26 @@ final class EffectVideoView: MTKView {
                     options: [.SRGB: false, .origin: MTKTextureLoader.Origin.topLeft])
                 dirty = true
             } catch { report(error) }
+        }
+    }
+
+    private func prepareCrystalIfNeeded(_ edit: SessionEditState) {
+        guard !requestedCrystalPreparation, let engine,
+              edit.style == .crystal || edit.lookChanges.values.contains(where: { $0.effect == .crystal }) else { return }
+        requestedCrystalPreparation = true
+        engine.resources.crystal.prepare { [weak self] result in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                switch result {
+                case .success:
+                    self.dirty = true
+                    self.setNeedsDisplay() // Also refresh a paused still without another user action.
+                case .failure(let error):
+                    if self.edit.style == .crystal || self.edit.lookChanges.values.contains(where: { $0.effect == .crystal }) {
+                        self.report(error)
+                    }
+                }
+            }
         }
     }
 

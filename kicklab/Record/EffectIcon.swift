@@ -14,7 +14,11 @@ actor EffectIconStore {
         if let image = images[key] { return image }
         await solve(style)
         if let image = images[key] { return image }
-        if engine == nil { engine = try? MetalEffectEngine() }
+        if engine == nil {
+            engine = try? MetalEffectEngine()
+            // Start while the other icons draw, and share the result with the actual replay.
+            engine?.resources.crystal.prepare()
+        }
         guard let engine,
               let image = try? EffectIconRenderer.image(shaderStyle: style.shaderID, height: 192,
                   ball: BallSkinSphereRenderer.image(skin: skin, time: 1.4), engine: engine) else { return nil }

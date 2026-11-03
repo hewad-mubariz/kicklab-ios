@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-03",
+  "base_commit": "bb2acff723301903b5bf12e791cb4c36bfca98e3",
+  "change": "Prepare and warm Crystal off the main thread once per shared renderer resource set; preview draws video until ready, then redraws paused frames; icons and exports share immutable resources.",
+  "measurement_scope": "Production preparation and renderer, isolated optimized app. Main-actor heartbeat during first setup; not the whole editor.",
+  "before_first_setup_ms": 391.2379999528639,
+  "after_request_main_ms": 0.013833341654390097,
+  "after_background_ready_ms": 162.1220000088215,
+  "after_max_main_heartbeat_lateness_ms": 1.5620833453722298,
+  "shared_renderer_identity_verified": true,
+  "caution": "Before/after runs have different driver-cache states. These measurements demonstrate nonblocking setup, not a total setup-time speedup or full-editor frame-rate guarantee.",
+  "tests": {
+    "MetalEffectsTests": {
+      "passed": 19,
+      "result": "artifacts/crystal-first-use-20261103/metal-regressions.xcresult"
+    },
+    "CrystalPreparationTests": {
+      "passed": 4,
+      "result": "artifacts/crystal-first-use-20261103/preparation-verified.xcresult"
+    },
+    "ReplayMaterialLifecycleTests": {
+      "passed": 3,
+      "result": "artifacts/crystal-first-use-20261103/preparation-regressions.xcresult"
+    },
+    "initial_test_fixture_repair": "Paused-preview fixture originally used a single-channel grey UIImage rejected by MTKTextureLoader. Replaced with explicit RGB image; all four Crystal tests then passed."
+  },
+  "export_validation": "Exact output pixels matched the original full-quality Crystal encode for the regression scene. Crystal shader and ray/bounce counts unchanged.",
+  "release_build": {
+    "CFBundleIdentifier": "com.juggledude",
+    "CFBundleShortVersionString": "1.2.0",
+    "CFBundleVersion": "38.2",
+    "sha256": "6624e7566343570921939a87e27bb25fe1d8dc51c90c821917bea7531ee08580"
+  },
+  "iphone17_status": "Not measured or updated: Xcode reports device unpaired/unavailable.",
+  "testflight_status": "Build 38 remains the existing TestFlight build. This fix is a local 38.2 development-signed Release build.",
+  "source_sha256": {
+    "kicklab/Effects/Metal/EffectResourcePreparation.swift": "ef7b96451453a460e87274f73d2d70103a6323fd6c451e3d1c18d7c2eba653ea",
+    "kicklab/Effects/Lab/CrystalLabRenderer.swift": "acb5a7aaacfecd86bdc394bad1a90250020cdf1156d8d1d64b3cde2012a1bf44",
+    "kicklab/Effects/Metal/MetalEffectEngine.swift": "84aab189e91c54c8b7f95b8da89a7a2cebf61540e417225a615f7c2990ea0288",
+    "kicklab/Effects/Metal/MetalVideoSurface.swift": "cbf86cbef179e988c9d0ee99780796a2ffc9ebdf860f36330af37b64c0be8399",
+    "kicklab/Record/EffectIcon.swift": "07137d3a9ac687c71b501ed48d2d5a797a4bed01505a21f917f438e3901b9024",
+    "kicklabTests/CrystalPreparationTests.swift": "4c1eaf977ab67dc7475378ba7561e38e6d3a06b12abc05dd9c64acd8e986b087"
+  },
+  "iphone11_status": "Installed in place and launched Release 1.2.0 (38.2). Device app inventory confirmed build 38.2; existing Juggle Dude data preserved."
+}
