@@ -10,6 +10,8 @@ START HERE — RELEASE BLOCKERS
 [ ] Open, close and relaunch the app repeatedly. No crash, blank page or stuck loader.
 [ ] Complete Google sign-in, relaunch, sign out, then sign into the SAME Google account.
     The same profile, account history and subscription access must return.
+    Also try an ordinary Google account outside our developer/test-account setup,
+    so a restricted OAuth audience cannot silently block new customers.
 [ ] Complete Apple sign-in and email-link sign-in; cancellation and an expired email
     link must leave the screen usable. Different Apple/Google emails may be separate
     accounts; changing provider must never display another account's private history.
@@ -79,6 +81,7 @@ EXPORT MATRIX — BOTH EXPORT AND DOWNLOAD
 [ ] Switch between several balls/effects within one clip; seek, replay and export.
 [ ] Check the two previously shared problem originals in the same settings. Inspect
     shoes/body crossings, fast motion, edges, black discs and missing/extra ball layers.
+    Reference originals: IMG_9094.MOV and IMG_8649 2.mov in Downloads.
 [ ] Listen to the entire saved clip: no doubled audio, unexpected original sound,
     missing touch sounds or drift near the end.
 [ ] During export, go Home, lock/unlock, and return to the app. Depending on iOS and

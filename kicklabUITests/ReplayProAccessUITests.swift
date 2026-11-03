@@ -130,10 +130,14 @@ final class ReplayProAccessUITests: XCTestCase {
         let app = shot()
         app.buttons["shot-effects-customize"].tap()
         app.buttons["shot-tool-effects"].tap()
+        XCTAssertTrue(app.buttons["shot-effect-blueJet"].waitForStableFrame())
         app.buttons["shot-effect-blueJet"].tap()
         buy(app)
         XCTAssertTrue(app.buttons["shot-effect-blueJet"].waitForExistence(timeout: 8))
-        XCTAssertTrue(app.buttons["shot-effect-blueJet"].isSelected)
+        let applied = XCTNSPredicateExpectation(predicate: NSPredicate(format: "selected == true"),
+                                               object: app.buttons["shot-effect-blueJet"])
+        XCTAssertEqual(XCTWaiter.wait(for: [applied], timeout: 5), .completed,
+                       "The requested effect must apply when the purchase sheet finishes dismissing")
         assertNoProBadges(app)
         app.buttons["shot-tools-back"].tap()
         XCTAssertFalse(app.buttons["shot-tool-graph"].label.contains("Pro"))
@@ -150,7 +154,7 @@ final class ReplayProAccessUITests: XCTestCase {
         assertNoProBadges(app)
         XCTAssertFalse(app.buttons["pro-close"].exists)
         app.buttons["shot-close-tools"].tap()
-        XCTAssertTrue(app.buttons["shot-effects-save"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.otherElements["shot-effects-save"].buttons["replay-export"].waitForExistence(timeout: 5))
         attach(app, "Pro shot with requested effect and camera")
     }
 

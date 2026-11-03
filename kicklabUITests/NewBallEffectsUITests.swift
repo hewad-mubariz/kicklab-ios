@@ -15,7 +15,10 @@ final class NewBallEffectsUITests: ProReplayUITestCase {
         XCTAssertTrue(app.buttons["replay-customize"].waitForExistence(timeout: 20))
         app.buttons["replay-customize"].tap()
         app.buttons["replay-tool-ball"].tap()
+        XCTAssertTrue(app.buttons["ball-picker-chrome"].waitForStableFrame())
         app.buttons["ball-picker-chrome"].tap()
+        XCTAssertTrue(app.buttons["ball-picker-chrome"].isSelected,
+                      "The Chrome pick must take effect before leaving the ball panel")
         app.buttons["replay-tools-back"].tap()
         app.buttons["replay-tool-effects"].tap()
         XCTAssertFalse(app.buttons["effect-picker-shadow"].exists)
@@ -31,7 +34,11 @@ final class NewBallEffectsUITests: ProReplayUITestCase {
         picker.name = "Six new effects - native picker"; picker.lifetime = .keepAlways; add(picker)
         app.buttons["replay-tools-back"].tap()
         app.buttons["replay-tool-ball"].tap()
-        XCTAssertTrue(app.buttons["ball-picker-chrome"].isSelected)
+        XCTAssertTrue(app.buttons["ball-picker-chrome"].waitForStableFrame())
+        let selected = app.buttons.matching(NSPredicate(format: "selected == true"))
+            .allElementsBoundByIndex.map(\.identifier)
+        XCTAssertTrue(app.buttons["ball-picker-chrome"].isSelected,
+                      "Changing effects must preserve Chrome. Selected buttons: \(selected)")
         app.buttons["replay-close-tools"].tap()
         app.buttons["replay-play"].tap()
         XCTAssertEqual(app.buttons["replay-play"].label, "Pause video")

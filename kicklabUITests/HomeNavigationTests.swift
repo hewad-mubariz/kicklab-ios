@@ -26,7 +26,7 @@ final class HomeNavigationTests: XCTestCase {
         attach(app, name: "Profile settings - Light")
         app.navigationBars["Settings"].buttons.element(boundBy: 0).tap()
         app.buttons["profile-close"].tap()
-        XCTAssertTrue(app.buttons["home-import-video"].isHittable)
+        XCTAssertTrue(app.buttons["home-import-video"].waitForStableFrame())
         attach(app, name: "Training home - Light")
         app.buttons["home-profile"].tap()
         app.buttons["profile-settings"].tap()
@@ -84,7 +84,7 @@ final class HomeNavigationTests: XCTestCase {
         XCTAssertEqual(app.staticTexts["profile-name"].label,
                        originalName.isEmpty ? "Your profile" : originalName)
         app.buttons["profile-close"].tap()
-        XCTAssertTrue(app.buttons["module-juggling"].isHittable)
+        XCTAssertTrue(app.buttons["module-juggling"].waitForStableFrame())
     }
 
     @MainActor
