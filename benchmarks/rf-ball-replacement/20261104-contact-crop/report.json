@@ -1,0 +1,100 @@
+{
+  "date": "2026-11-04",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "base": "8acf125e plus uncommitted build 39 source",
+  "scope": "Mac experiment only. Production mask, coverage, footprint and CPU renderer compiled unchanged into scripts/ball-contact-crop. No app code changed. Not run on a phone.",
+  "artifacts": "artifacts/contact-crop-20261104",
+  "question": "Do zoomed crop masks at touches improve replacement edges?",
+  "zoomed_mask": {
+    "decision": "Not promoted. Sharper masks barely change what is drawn.",
+    "outlines": {
+      "dataset": "football-visible-real-008, 235 assistant-traced outlines, not blind reviewed",
+      "ship_rule_720p": {
+        "edge384": {
+          "overlap_median": [
+            89.7,
+            90.3
+          ],
+          "better": 5,
+          "worse": 3,
+          "same": 150
+        },
+        "edge288": {
+          "overlap_median": [
+            89.7,
+            90.4
+          ],
+          "better": 14,
+          "worse": 10,
+          "same": 126
+        }
+      },
+      "ball_40_90px_drawn_overlap_edge384": [
+        90.5,
+        90.6
+      ],
+      "ball_90px_plus_drawn_overlap_edge384": [
+        93.5,
+        93.5
+      ]
+    },
+    "IMG_9094_touches": {
+      "touches": 29,
+      "frames": 352,
+      "accepted": 348,
+      "model_calls": 761,
+      "centre_move_px_median": 0.0,
+      "centre_move_px_p90": 0.0,
+      "radius_change_px_p90": 0.0
+    },
+    "why": "The image-edge fit sets the final circle; the mask only bounds it. Halo and shoe crescent are unchanged in freeze frames."
+  },
+  "fake_blur": {
+    "finding": "When photographic calibration returns nothing, smear falls back to a box-stretch exposure guess. On sharp footage this blurs the print with no matching blur in the real ball, pulsing with ball speed.",
+    "box_exposure_ms": {
+      "IMG_9094": 4.37,
+      "IMG_8649": 1.8
+    },
+    "fast_vs_slow_sharpness": {
+      "IMG_9094": {
+        "real": 0.88,
+        "today": 0.14,
+        "no_smear": 0.87
+      },
+      "IMG_8649": {
+        "real": 0.8,
+        "today": 0.34,
+        "no_smear": 0.78
+      },
+      "IMG_1529": {
+        "real": 0.15,
+        "today": 0.27,
+        "no_smear": 0.76
+      },
+      "indoor1": {
+        "real": 0.11,
+        "today": 0.27,
+        "no_smear": 1.05
+      }
+    },
+    "measured_blur_rate_on_frames_with_3px_smear": {
+      "IMG_9094": "0/865",
+      "IMG_8649": "0/137",
+      "IMG_1529": "0/459",
+      "indoor1": "15/245"
+    },
+    "conclusion": "Removing smear is right on sharp clips and wrong on blurred ones. The existing edge blur detector cannot tell them apart: it finds none on IMG_1529, which has real blur. The real ball's own sharpness falloff with speed does separate these four clips (0.80 and above vs 0.15 and below)."
+  },
+  "not_fixed": [
+    "Halo on one side of the ball",
+    "Dark crescent at the shoe",
+    "Leg biting the edge"
+  ],
+  "limitations": [
+    "Four clips; the sharp/blurred split is a hypothesis until tested on more footage.",
+    "Sharpness is measured at 1080p on the Mac; the app's spin pass runs at 720p.",
+    "Sharpness compares a ball with itself between fast and slow frames; different prints are not compared.",
+    "IMG_8649 still pulses frame to frame (about 20%) with or without smear; cause unknown.",
+    "indoor1 ran without saved spin, so its print rotation differs from the app."
+  ]
+}
