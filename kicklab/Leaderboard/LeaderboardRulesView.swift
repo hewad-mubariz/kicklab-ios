@@ -25,7 +25,9 @@ struct LeaderboardRulesView: View {
                     group("HOW IT’S COUNTED") {
                         rule("Automatic", "After you join the leaderboard, sessions recorded in the app while signed in rank by their longest counted streak once synced. There is nothing to submit.", "bolt")
                         Divider()
-                        rule("Touches the counter isn’t sure of", "A possible touch that the counter cannot confirm is left out. Uncertain visibility alone does not end your streak.", "questionmark.circle")
+                        rule("Touches the counter isn’t sure of", "A possible touch that the counter cannot confirm is left out. Brief tracking misses and high kicks do not end a streak on their own.", "questionmark.circle")
+                        Divider()
+                        rule("Stay in view", "If fresh video observations cannot see a player for at least 2.5 seconds, a new streak starts when touches resume. Long gaps with too little analysis are checked in the saved video. If continuity still cannot be checked, runs on either side stay separate. Your total touches are kept.", "person.crop.rectangle")
                         Text("Automatic counts can miss touches or interruptions. Keep the ball and your body clearly visible.")
                             .font(.footnote).foregroundStyle(.secondary)
                         if LeaderboardRules.touchChecks { checkRules }

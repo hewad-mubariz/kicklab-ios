@@ -293,6 +293,27 @@ struct BallEffectsTests {
         #expect(BallReplacementFootprint.fit(pixels: replacementSource(uniform: true), sample: guide) == nil)
     }
 
+    @Test func finalReplacementObservationSurvivesArchiveRoundingOnlyWithAMask() throws {
+        let storedTime = 38.686
+        let displayTime = 38.6866666667
+        let track = BallEffectTrack(frames: [masked(storedTime, x: 540, y: 1152,
+            radius: 20, size: CGSize(width: 1080, height: 1920))])
+        let guide = try #require(track.replacementGuide(at: displayTime))
+        #expect(guide.center == track.replacementGuide(at: storedTime)?.center)
+        #expect(track.replacementGuide(at: storedTime + 0.0011) == nil)
+        #expect(track.replacementGuide(at: displayTime + 1.0 / 60) == nil)
+        let unmasked = BallEffectTrack(frames: [frame(storedTime)])
+        #expect(unmasked.replacementGuide(at: displayTime) == nil)
+        // The ordinary effects sample retains its existing endpoint fade.
+        #expect(track.sample(at: displayTime)?.confidence == unmasked.sample(at: displayTime)?.confidence)
+    }
+
+    @Test func roundedInteriorObservationStillInterpolatesTowardNextFrame() throws {
+        let track = BallEffectTrack(frames: [frame(1, x: 0.4), frame(1.02, x: 0.44)])
+        let guide = try #require(track.replacementGuide(at: 1.0009))
+        #expect(abs(guide.center.x - 0.4018) < 0.000001)
+    }
+
     @Test func replacementRejectsIsolatedPositionSpikeBeforeInterpolation() throws {
         let track = BallEffectTrack(frames: [frame(0, x: 0.4), frame(0.02, x: 0.52), frame(0.04, x: 0.41)])
         #expect(track.sample(at: 0.02)?.center.x == 0.52)

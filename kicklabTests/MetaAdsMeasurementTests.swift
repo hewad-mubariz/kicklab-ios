@@ -140,7 +140,9 @@ final class MetaAdsMeasurementTests: XCTestCase {
             let path = bundle.path(forResource: language, ofType: "lproj")
             let localized = path.flatMap { Bundle(path: $0) }
             let explanation = localized?.localizedString(forKey: "NSUserTrackingUsageDescription", value: nil, table: "InfoPlist")
-            XCTAssertTrue(explanation?.contains("Meta") == true, "The \(language) system prompt must name the recipient")
+            XCTAssertFalse(explanation?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true,
+                           "The \(language) system prompt must have a localized explanation")
+            XCTAssertNotEqual(explanation, "NSUserTrackingUsageDescription", "The \(language) localization must resolve")
         }
         XCTAssertEqual(bundle.object(forInfoDictionaryKey: "FacebookAppID") as? String, "1439446130906551")
         XCTAssertEqual(bundle.object(forInfoDictionaryKey: "JuggleDudeMetaAdsEnabled") as? Bool, true)

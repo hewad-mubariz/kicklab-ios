@@ -4,6 +4,14 @@ import XCTest
 
 @MainActor
 final class RFMaskCropRefinerTests: XCTestCase {
+    func testSkipOnlyCropsThatCannotPossiblyMeetTheExistingAcceptanceRule() {
+        XCTAssertTrue(RFMaskCropRefiner.canStillRepair(firstLook: true, requiresConsensus: false, candidates: 0, remainingCalls: 1))
+        XCTAssertFalse(RFMaskCropRefiner.canStillRepair(firstLook: true, requiresConsensus: true, candidates: 0, remainingCalls: 1))
+        XCTAssertFalse(RFMaskCropRefiner.canStillRepair(firstLook: false, requiresConsensus: false, candidates: 0, remainingCalls: 1))
+        XCTAssertTrue(RFMaskCropRefiner.canStillRepair(firstLook: false, requiresConsensus: true, candidates: 1, remainingCalls: 1))
+        XCTAssertTrue(RFMaskCropRefiner.canStillRepair(firstLook: false, requiresConsensus: true, candidates: 0, remainingCalls: 2))
+        XCTAssertFalse(RFMaskCropRefiner.canStillRepair(firstLook: false, requiresConsensus: true, candidates: 2, remainingCalls: 0))
+    }
     private func fixture() throws -> RecordedFrame {
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "rf-mask-crop-current", withExtension: "json"))
         let row = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]

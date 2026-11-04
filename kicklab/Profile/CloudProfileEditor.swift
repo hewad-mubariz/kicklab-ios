@@ -13,6 +13,9 @@ struct CloudProfilePhotoPicker: View {
                 Group {
                     if let data = avatarData, let image = UIImage(data: data) {
                         Image(uiImage: image).resizable().scaledToFill()
+                    } else if let profile = player.profile, let path = profile.avatarPath {
+                        PlayerAvatar(name: name == "Player" ? "" : name, isYou: true, size: 88,
+                                     reference: .init(playerID: profile.id, path: path))
                     } else { PlayerPlaceholder(name: name == "Player" ? "" : name, size: 88) }
                 }
                 .frame(width: 88, height: 88).clipShape(Circle())

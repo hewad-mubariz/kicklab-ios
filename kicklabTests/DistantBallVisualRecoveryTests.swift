@@ -76,7 +76,8 @@ final class DistantBallVisualRecoveryTests: XCTestCase {
         XCTAssertNil(recovered.replacementGuide(at:1.0011))
         XCTAssertNil(recovered.replacementGuide(at:1.03))
         let original=BallEffectTrack(frames:[frame(1)])
-        XCTAssertNil(original.replacementGuide(at:1.0009),"Preserve original-track sampling")
+        XCTAssertNotNil(original.replacementGuide(at:1.0009),"A fresh mask supports final timestamp rounding")
+        XCTAssertNil(original.replacementGuide(at:1.0011),"Do not extend a normal endpoint beyond rounding tolerance")
     }
 
     func testSustainedPolicyRequiresFreshEvidenceAndNeverExceedsOneAddedCall() {

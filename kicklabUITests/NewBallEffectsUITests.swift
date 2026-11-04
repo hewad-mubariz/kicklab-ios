@@ -20,6 +20,8 @@ final class NewBallEffectsUITests: ProReplayUITestCase {
         XCTAssertTrue(app.buttons["ball-picker-chrome"].isSelected,
                       "The Chrome pick must take effect before leaving the ball panel")
         app.buttons["replay-tools-back"].tap()
+        XCTAssertTrue(app.buttons["replay-tool-effects"].waitForStableFrame(),
+                      "Wait for the tool tray to settle before tapping Effects")
         app.buttons["replay-tool-effects"].tap()
         XCTAssertFalse(app.buttons["effect-picker-shadow"].exists)
         XCTAssertFalse(app.buttons["effect-picker-pixel"].exists)
@@ -33,6 +35,7 @@ final class NewBallEffectsUITests: ProReplayUITestCase {
         let picker = XCTAttachment(screenshot: app.screenshot())
         picker.name = "Six new effects - native picker"; picker.lifetime = .keepAlways; add(picker)
         app.buttons["replay-tools-back"].tap()
+        XCTAssertTrue(app.buttons["replay-tool-ball"].waitForStableFrame())
         app.buttons["replay-tool-ball"].tap()
         XCTAssertTrue(app.buttons["ball-picker-chrome"].waitForStableFrame())
         let selected = app.buttons.matching(NSPredicate(format: "selected == true"))

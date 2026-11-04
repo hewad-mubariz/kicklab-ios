@@ -256,7 +256,12 @@ final class VideoAnalyzer: ObservableObject {
         #if DEBUG
         if visualOnly { PreparationMemoryProbe.stage("dense_model_loading") }
         #endif
-        let detector = try BallDetector()
+        let reuseEnabled = !isFinalValidation && !VideoWorkExecution.isAnalysisStudy
+            && !ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache")
+            && !ProcessInfo.processInfo.arguments.contains("--disable-rf-prediction-reuse")
+        let predictionCache = reuseEnabled
+            ? RFFramePredictionReuse.shared.cache(for: sourceDigest + "|" + pipelineSignature) : nil
+        let detector = try BallDetector(predictionCache: predictionCache)
         #if DEBUG
         if visualOnly { PreparationMemoryProbe.stage("dense_inference") }
         #endif
@@ -498,6 +503,9 @@ final class VideoAnalyzer: ObservableObject {
             "model_cpu_only": detector.modelUsesCPUOnly ? 1 : 0,
             "model_switches": Double(detector.modelComputeSwitches),
             "model_reload_s": detector.modelReloadSeconds,
+            "reused_predictions": Double(detector.reusedPredictions),
+            "prediction_fingerprint_s": detector.predictionFingerprintSeconds,
+            "prediction_cache_bytes": Double(predictionCache?.retainedBytes ?? 0),
             "background_gpu": VideoWorkExecution.lease?.backgroundGPU == true ? 1 : 0,
             "thermal_wait_s": pacer.waitingSeconds,
             "thermal_peak_state": Double(pacer.peakThermalState),
@@ -529,6 +537,7 @@ final class VideoAnalyzer: ObservableObject {
             "mask_frames": Double(frames.filter { $0.ballMask != nil }.count),
             "all_mask_storage_bytes": Double(maskBytes),
             "mask_storage_bytes": Double(frames.reduce(0) { $0 + ($1.ballMask?.alpha.count ?? 0) })]
+        PreparationPerformance.record(visualOnly ? "dense_analysis" : "import_analysis", metrics)
         let modelName = detector.modelName
         let resultFollowRows = followRows
         let resultFrames = frames

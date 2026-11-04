@@ -40,8 +40,16 @@ nonisolated enum BallSurfaceMotion {
         func at(_ x: Double, _ y: Double) -> Double {
             let x=max(0,min(Double(width-1)-0.001,x)), y=max(0,min(Double(width-1)-0.001,y))
             let ix=Int(x), iy=Int(y), fx=x-Double(ix), fy=y-Double(iy)
+            // Patches come from finite, nonnegative source pixels. At an exact pixel
+            // centre the historical bilinear expression is precisely this sample.
+            if fx == 0, fy == 0 { return Double(values[iy*width+ix]) }
             return (Double(values[iy*width+ix])*(1-fx)+Double(values[iy*width+ix+1])*fx)*(1-fy)
                 + (Double(values[(iy+1)*width+ix])*(1-fx)+Double(values[(iy+1)*width+ix+1])*fx)*fy
+        }
+        func at(_ x: Int, _ y: Int) -> Double {
+            // Preserve the existing fractional upper-edge clamp, including pyramid borders.
+            guard x >= 0, y >= 0, x < width - 1, y < width - 1 else { return at(Double(x), Double(y)) }
+            return Double(values[y*width+x])
         }
         func pyramid() -> [Gray] {
             var result=[self]
@@ -51,7 +59,7 @@ nonisolated enum BallSurfaceMotion {
                 for y in 0..<w { for x in 0..<w {
                     var sum=0.0
                     for j in -1...1 {for i in -1...1 {
-                        sum += a.at(Double(x*2+i),Double(y*2+j))*Double((i==0 ? 2:1)*(j==0 ? 2:1))
+                        sum += a.at(x*2+i,y*2+j)*Double((i==0 ? 2:1)*(j==0 ? 2:1))
                     }}
                     pixels[y*w+x]=Float(sum/16)
                 }}
@@ -82,7 +90,7 @@ nonisolated enum BallSurfaceMotion {
             guard hypot(Double(x)-center,Double(y)-center) < radius*0.80 else {continue}
             var xx=0.0, yy=0.0, xy=0.0
             for j in -1...1 {for i in -1...1 {
-                let px=Double(x+i),py=Double(y+j)
+                let px=x+i,py=y+j
                 let gx=(image.at(px+1,py)-image.at(px-1,py))*0.5
                 let gy=(image.at(px,py+1)-image.at(px,py-1))*0.5
                 xx += gx*gx;yy += gy*gy;xy += gx*gy

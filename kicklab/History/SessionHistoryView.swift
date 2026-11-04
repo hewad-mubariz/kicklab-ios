@@ -278,6 +278,11 @@ private struct SessionHistoryDetail: View {
                             .font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))
                     }
 
+                    if let notice = item.touchReview?.visibilityNotice {
+                        Label(notice, systemImage: "info.circle")
+                            .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
+                            .accessibilityIdentifier("history-streak-visibility-notice")
+                    }
                     if store.library.videoURL(for: item) != nil {
                         Button("Remove replay from this phone", role: .destructive) { confirmsRemoval = true }
                             .font(.subheadline).frame(minHeight: 44)

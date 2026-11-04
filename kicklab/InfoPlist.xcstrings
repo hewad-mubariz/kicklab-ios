@@ -126,31 +126,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erlaube Juggle Dude, App-Aktivitäten und den Beginn eines Pro-Probeabos oder Abonnements mit Meta zu teilen, um Facebook- und Instagram-Werbung zu messen. Deine Trainingsvideos, Kontaktzahlen und Kontodaten werden nicht an Meta gesendet."
+            "value" : "Das hilft uns, die Wirkung unserer Werbung zu messen und sie zu verbessern."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow Juggle Dude to share app activity and Pro trial or subscription events with Meta to measure Facebook and Instagram ads. Your training videos, touch counts and account details are not sent to Meta."
+            "value" : "This helps us measure and improve our advertising."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permite que Juggle Dude comparta con Meta la actividad de la app y el inicio de pruebas o suscripciones Pro para medir los anuncios de Facebook e Instagram. Tus videos de entrenamiento, conteos de toques y datos de cuenta no se envían a Meta."
+            "value" : "Esto nos ayuda a medir y mejorar nuestra publicidad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autorise Juggle Dude à partager avec Meta l’activité de l’app et le début d’un essai ou d’un abonnement Pro pour mesurer les publicités Facebook et Instagram. Tes vidéos d’entraînement, ton nombre de jongles et tes données de compte ne sont pas envoyés à Meta."
+            "value" : "Cela nous aide à mesurer et à améliorer notre publicité."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permita que o Juggle Dude compartilhe com a Meta a atividade do app e o início de testes ou assinaturas Pro para medir anúncios do Facebook e do Instagram. Seus vídeos de treino, contagens de toques e dados da conta não são enviados à Meta."
+            "value" : "Isso nos ajuda a medir e melhorar nossa publicidade."
           }
         }
       }

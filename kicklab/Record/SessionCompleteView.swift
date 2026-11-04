@@ -29,6 +29,12 @@ struct SessionCompleteView: View {
                     VStack(spacing: 18) {
                         hero
                         statsGrid
+                        if let notice = summary.leaderboardTouchReview?.visibilityNotice {
+                            Label(notice, systemImage: "info.circle")
+                                .font(.footnote).foregroundStyle(SessionStyle.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .accessibilityIdentifier("session-streak-visibility-notice")
+                        }
                         milestones
                         VStack(spacing: 10) {
                             SessionAction(title: "Watch Replay & Effects", symbol: "arrow.right", trailingSymbol: true, action: onWatchEffects)

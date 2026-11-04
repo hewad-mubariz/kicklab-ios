@@ -189,10 +189,11 @@ nonisolated struct BallEffectTrack: Sendable {
         if index < samples.count, abs(samples[index].time-time) < 0.001 {
             return replacementObservation(at:index)
         }
-        // Recovery times use the existing millisecond archive clock. Honor the
-        // same fresh observation just after its rounded time, including at a
-        // segment endpoint. Do not change sampling of the original track.
-        if index > 0, recoverySamples[index-1], time-samples[index-1].time < 0.001 {
+        // Archive times use a millisecond clock. A final normal observation can
+        // round just below the video timestamp too; require its fresh mask before
+        // accepting that endpoint. Interior interpolation and effects stay unchanged.
+        if index > 0, time-samples[index-1].time < 0.001,
+           recoverySamples[index-1] || (index == samples.count && mask(at: time) != nil) {
             return replacementObservation(at:index-1)
         }
         guard index > 0, index < samples.count else { return nil }

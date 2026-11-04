@@ -143,14 +143,32 @@ nonisolated enum RFMaskCropRefiner {
         return roi.isEmpty || roi.isNull ? nil : roi
     }
 
+    /// Clip and deduplicate before loading the model. A final crop with no possible
+    /// partner cannot satisfy consensus and should not run an expensive prediction.
+    static func regions(_ request: Request, size: CGSize) -> [CGRect] {
+        var result = [CGRect]()
+        for context in RFMaskCropConsensus.contexts {
+            if let roi = region(request, size: size, context: context), !result.contains(roi) { result.append(roi) }
+        }
+        return result
+    }
+
+    static func canStillRepair(firstLook: Bool, requiresConsensus: Bool, candidates: Int, remainingCalls: Int) -> Bool {
+        guard remainingCalls > 0 else { return false }
+        return (firstLook && !requiresConsensus) || candidates + remainingCalls >= 2
+    }
+
     static func refine(source: URL, frames: [RecordedFrame],
+                       selectiveRead: Bool? = nil,
                        onProgress: (@Sendable (Double) -> Void)? = nil) async throws -> [RecordedFrame] {
         try await VideoAnalysisScheduler.shared.perform {
-            try await compute(source: source, frames: frames, onProgress: onProgress)
+            try await compute(source: source, frames: frames,
+                selectiveRead: selectiveRead ?? !ProcessInfo.processInfo.arguments.contains("--disable-sparse-crop-reader"),
+                onProgress: onProgress)
         }
     }
 
-    private static func compute(source: URL, frames: [RecordedFrame],
+    private static func compute(source: URL, frames: [RecordedFrame], selectiveRead: Bool,
                                 onProgress: (@Sendable (Double) -> Void)?) async throws -> [RecordedFrame] {
         try Task.checkCancellation()
         guard RFSmallModel(rawValue: BallDetector.configuredResourceName) != nil,
@@ -159,25 +177,31 @@ nonisolated enum RFMaskCropRefiner {
         defer { if scoped { source.stopAccessingSecurityScopedResource() } }
         let asset = AVURLAsset(url: source)
         guard let video = try await asset.loadTracks(withMediaType: .video).first else { return frames }
-        let composition = try await EffectVideoGeometry.composition(track: video, duration: asset.load(.duration), shortEdge: 720)
+        let duration = try await asset.load(.duration)
+        let composition = try await EffectVideoGeometry.composition(track: video, duration: duration, shortEdge: 720)
         let pending = requests(frames: frames, frameDuration: composition.frameDuration.seconds)
         guard !pending.isEmpty else { onProgress?(1); return frames }
-        let reader = try AVAssetReader(asset: asset)
-        let output = AVAssetReaderVideoCompositionOutput(videoTracks: [video], videoSettings:
-            [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
-        output.videoComposition = composition; output.alwaysCopiesSampleData = false; reader.add(output)
-        guard reader.startReading() else { throw reader.error ?? VideoSafetyPolicy.Failure.analysis }
-        defer { if reader.status == .reading { reader.cancelReading() } }
+        let reader = PreparationFrameReader(asset: asset, track: video, composition: composition,
+            duration: duration, times: pending.map(\.time),
+            selective: selectiveRead)
+        defer { reader.cancel() }
         var detector: BallDetector?
-        var result = frames, next = 0, failures = 0, attempted = 0
+        var result = frames, next = 0, failures = 0, attempted = 0, charged = 0, avoided = 0
+        var predictionSeconds = 0.0
         let callBudget = modelCallBudget(frameCount: frames.count)
         var acceptedTimes: [Double] = []
         var pacer = VideoAnalysisPacer()
         let started = ProcessInfo.processInfo.systemUptime
         defer {
+            PreparationPerformance.record("crop_repair", ["elapsed_s": ProcessInfo.processInfo.systemUptime - started,
+                "requests": Double(pending.count), "predictions": Double(attempted), "avoided": Double(avoided),
+                "accepted": Double(acceptedTimes.count), "failures": Double(failures), "prediction_s": predictionSeconds,
+                "decode_s": reader.readSeconds, "decoded_frames": Double(reader.decodedFrames), "readers": Double(reader.openedReaders),
+                "thermal_wait_s": pacer.waitingSeconds, "thermal_peak_state": Double(pacer.peakThermalState)])
             #if DEBUG
             let report: [String: Any] = ["source": source.lastPathComponent, "requests": pending.count,
                 "attempted": attempted, "model_call_budget": callBudget, "accepted_times": acceptedTimes, "failures": failures,
+                "avoided_dead_end_calls": avoided, "charged_call_slots": charged,
                 "elapsed_seconds": ProcessInfo.processInfo.systemUptime - started,
                 "input_frames": frames.count, "output_frames": result.count, "signature": signature]
             if let data = try? JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]) {
@@ -187,7 +211,7 @@ nonisolated enum RFMaskCropRefiner {
         }
         while next < pending.count {
             try await VideoWorkExecution.checkpoint(requiresGPU: true)
-            guard let sample = output.copyNextSampleBuffer() else { break }
+            guard let sample = try reader.nextSample() else { break }
             let time = sample.presentationTimeStamp.seconds
             while next < pending.count, pending[next].time < time - 0.003 { next += 1 }
             guard next < pending.count else { break }
@@ -197,27 +221,30 @@ nonisolated enum RFMaskCropRefiner {
             let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
             guard region(request, size: size) != nil else { continue }
             do {
-                if detector == nil { detector = try BallDetector() }
                 var candidates = [RFMaskCropConsensus.Candidate]()
                 var repair: BallMask?
-                var visited = [CGRect]()
-                for context in RFMaskCropConsensus.contexts {
-                    // Reserve enough looks for every remaining planned frame,
-                    // including both contexts for mandatory consensus. Extra
-                    // contexts cannot consume the tail of a long recording.
-                    let reserved = pending.dropFirst(next).reduce(0) { $0 + $1.minimumCalls }
-                    guard attempted < callBudget - reserved,
-                          let roi = region(request, size: size, context: context),
-                          !visited.contains(roi) else { continue }
-                    // Two identical clipped crops are not independent contexts.
-                    visited.append(roi)
+                let reserved = pending.dropFirst(next).reduce(0) { $0 + $1.minimumCalls }
+                let crops = regions(request, size: size)
+                let allowed = min(crops.count, max(0, callBudget - reserved - charged))
+                for look in 0..<allowed {
+                    guard canStillRepair(firstLook: look == 0, requiresConsensus: request.requiresConsensus,
+                                         candidates: candidates.count, remainingCalls: allowed - look) else {
+                        // Keep the old admission budget: avoiding an impossible call must
+                        // not redirect work to later frames or change accepted masks.
+                        avoided += allowed - look; charged += allowed - look
+                        break
+                    }
+                    if detector == nil { detector = try BallDetector() }
+                    let roi = crops[look]
                     let started = try await pacer.beginFrame { _ in }
-                    attempted += 1
+                    attempted += 1; charged += 1
+                    let predictionStarted = ProcessInfo.processInfo.systemUptime
                     let found = try autoreleasepool { try detector!.inferRFMaskCrop(pixels, roi: roi) }
+                    predictionSeconds += ProcessInfo.processInfo.systemUptime - predictionStarted
                     try await pacer.finishFrame(started: started)
                     if let candidate = RFMaskCropConsensus.candidate(found, guide: request.guide, roi: roi, size: size) {
                         candidates.append(candidate)
-                        if visited.count == 1, !request.requiresConsensus,
+                        if look == 0, !request.requiresConsensus,
                            let mask = RFMaskCropConsensus.conservativeAddition(candidate, guide: request.guide) {
                             repair = mask; break
                         }
@@ -243,7 +270,6 @@ nonisolated enum RFMaskCropRefiner {
                 if failures >= 3 { break }
             }
         }
-        if reader.status == .failed { throw reader.error ?? VideoSafetyPolicy.Failure.analysis }
         try Task.checkCancellation()
         onProgress?(1)
         return result.sorted { $0.time < $1.time }

@@ -19,13 +19,13 @@ import CoreVideo
 import Foundation
 import ImageIO
 
-nonisolated struct Detection {
+nonisolated struct Detection: Sendable {
     var score: Double
     /// Centre and size, normalised 0-1.
     var x, y, width, height: Double
 }
 
-nonisolated struct FrameDetections {
+nonisolated struct FrameDetections: Sendable {
     var ball: Detection?
     var person: Detection?
     var people: [Detection] = []
@@ -36,6 +36,10 @@ nonisolated struct FrameDetections {
 /// Each camera queue or video-analysis worker owns its detector exclusively.
 /// This mutable inference state is not shared between concurrent workers.
 nonisolated final class BallDetector {
+    private let predictionCache: RFFramePredictionCache?
+    private let predictionCacheModel: String
+    private(set) var reusedPredictions = 0
+    private(set) var predictionFingerprintSeconds = 0.0
     /// Layout of the model's single output.
     private enum Slot {
         static let ballScore = 0, ballBox = 1
@@ -293,11 +297,14 @@ nonisolated final class BallDetector {
     /// Why the last frame produced nothing, when it produced nothing.
     private(set) var lastError: String?
 
-    init(resourceName: String? = nil, modelURL: URL? = nil, rfResolution: RFInputResolution = RFDeviceProfile.current, useROI: Bool? = nil, useMarginalRetry: Bool? = nil, useDirectConfirmation: Bool? = nil) throws {
+    init(resourceName: String? = nil, modelURL: URL? = nil, rfResolution: RFInputResolution = RFDeviceProfile.current, useROI: Bool? = nil, useMarginalRetry: Bool? = nil, useDirectConfirmation: Bool? = nil,
+         predictionCache: RFFramePredictionCache? = nil) throws {
         let resource = resourceName ?? Self.configuredResourceName
         let rfModel = RFSmallModel(rawValue: resource)
         isRFDETR = rfModel != nil
         let studyURL = Self.rfInputStudyURL(rfModel)
+        self.predictionCache = rfModel != nil && modelURL == nil && studyURL == nil ? predictionCache : nil
+        predictionCacheModel = rfModel?.pipelineIdentity(resolution: rfResolution) ?? resource
         let usesSharedModel = rfModel == .fp16 && modelURL == nil && studyURL == nil
         guard let url = modelURL ?? studyURL ?? Bundle.main.url(forResource: resource, withExtension: "mlmodelc") else {
             throw NSError(domain: "KickLab", code: 1,
@@ -486,6 +493,7 @@ nonisolated final class BallDetector {
         }
         let input: MLFeatureProvider
         let out: MLFeatureProvider
+        var reusableInput: RFFramePredictionCache.Input?
         do {
             if let prepared {
                 input=prepared.input; out=prepared.output; contentRect=prepared.content
@@ -494,8 +502,25 @@ nonisolated final class BallDetector {
                 input = try makeInput(from: image)
                 let prepared = ProcessInfo.processInfo.systemUptime
                 lastPreprocessMS = (prepared - start) * 1000
+                // Only RF's stateless full-frame branch can reuse a prediction. All temporal
+                // association, motion compensation and counting still run on every source frame.
+                if predictionCache != nil, isRFDETR, !roiEnabled, !guardedRecoveryEnabled,
+                   !marginalRetryEnabled, !directConfirmationEnabled {
+                    let fingerprintStart = ProcessInfo.processInfo.systemUptime
+                    reusableInput = RFFramePredictionCache.input(input, sourceSize: lastInputSize)
+                    predictionFingerprintSeconds += ProcessInfo.processInfo.systemUptime - fingerprintStart
+                    let effectiveCPU = requestedModelCPUOnly || models.acceleratedLoadFailure != nil
+                    if let reusableInput, effectiveCPU == models.cpuOnly,
+                       let cached = predictionCache?.lookup(.init(input: reusableInput, model: predictionCacheModel,
+                            cpuOnly: models.cpuOnly, threshold: activeBallThreshold)) {
+                        reusedPredictions += 1; lastFollowCalls = 0; lastFollowKind = "exact_input_cache"
+                        lastInferenceMS = 0; lastError = nil
+                        return cached
+                    }
+                }
+                let predictionStart = ProcessInfo.processInfo.systemUptime
                 out = try predict(input)
-                lastInferenceMS = (ProcessInfo.processInfo.systemUptime - prepared) * 1000
+                lastInferenceMS = (ProcessInfo.processInfo.systemUptime - predictionStart) * 1000
             }
         } catch {
             lastError = error.localizedDescription
@@ -504,6 +529,10 @@ nonisolated final class BallDetector {
         if isRFDETR {
             do {
                 let decoded = try rfSeg.decode(out, sourceSize: lastInputSize, threshold: activeBallThreshold)
+                if let reusableInput {
+                    predictionCache?.store(decoded, for: .init(input: reusableInput, model: predictionCacheModel,
+                        cpuOnly: models.cpuOnly, threshold: activeBallThreshold))
+                }
                 lastError = nil
                 return decoded
             } catch { lastError = error.localizedDescription; throw error }

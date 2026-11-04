@@ -208,6 +208,7 @@ nonisolated final class BufferedTracking {
     let policy = RFAsyncPolicy()
     let counter: RFLiveConsumer
     private var people: ([Detection], Double)?
+    private(set) var streakVisibility = StreakVisibilityEvidence()
     private let tracker = RFBufferedPixelTrack()
     private var pending: [PacedFrame] = []
     private var replies: [Int: RFReply] = [:]
@@ -241,6 +242,7 @@ nonisolated final class BufferedTracking {
     nonisolated private func receive() throws {
         guard let result = worker.take() else { return }
         if let error = result.error { throw NSError(domain: error, code: 1) }
+        recordVisibility(result)
         events.append(["source_frame": result.frame.index, "source_seconds": result.frame.time,
             "prediction_ms": result.predictionMS, "preparation_ms": result.preparationMS,
             "inference_start_uptime": result.started, "completion_latency_ms": (result.completed-result.frame.due)*1000,
@@ -249,6 +251,14 @@ nonisolated final class BufferedTracking {
             lateReplies += 1; statuses[result.frame.index] = "late_result_discarded"
         } else { replies[result.frame.index] = result }
         maximumReplies = max(maximumReplies, replies.count)
+    }
+    private func recordVisibility(_ reply: RFReply) {
+        // Even a late reply describes real pixels at this source time. Record
+        // it before the counting deadline check; never inspect cached `people`.
+        let relative = Double(reply.frame.timestampMs)/1000-reply.frame.recordingStart
+        guard relative.isFinite, relative >= 0, relative <= 86_400 else { return }
+        streakVisibility.record(timeMS: Int((relative*1000).rounded()),
+            personVisible: reply.found.person != nil || !reply.found.people.isEmpty)
     }
     nonisolated private func processDue() throws {
         try receive()
@@ -421,6 +431,7 @@ nonisolated final class BufferedTracking {
         // recorded and discarded, never used to revise an already published row.
         if let final = worker.drain() {
             if let error = final.error { throw NSError(domain: error, code: 1) }
+            recordVisibility(final)
             lateReplies += 1
             events.append(["source_frame": final.frame.index, "source_seconds": final.frame.time,
                 "prediction_ms": final.predictionMS, "preparation_ms": final.preparationMS,
@@ -981,13 +992,36 @@ nonisolated final class LiveJugglingAnalysis {
             throw error
         }
     }
-    func finish(flush: Bool, wasActive: Bool) -> Result {
+    func finish(flush: Bool, wasActive: Bool, source: URL? = nil) -> Result {
         if let engine, wasActive {
             do { lastReport = try engine.finish(); try consumer.drain() }
             catch { failures.append(error.localizedDescription); consumer.queue.sync { core.markFailed() } }
         }
         try? consumer.drain()
-        let result = consumer.queue.sync { core.finish(flush: flush, wasActive: wasActive) }
+        var result = consumer.queue.sync { core.finish(flush: flush, wasActive: wasActive) }
+        if wasActive, let engine, let worker {
+            let verifier = SavedStreakVisibilityVerifier(source: source, worker: worker)
+            let assessment = engine.streakVisibility.assess(touchTimes: result.touches.map(\.time),
+                existingBoundaries: result.reviewEvidence.observations.filter { $0.kind.breaksStreak }.map(\.time),
+                recheck: verifier.check)
+            for decision in assessment.decisions {
+                result.reviewEvidence.append(time: Double(decision.timeMS)/1000, kind: decision.kind)
+            }
+            lastReport["streak_visibility"] = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(assessment)))
+            lastReport["streak_visibility_recheck_failure"] = verifier.failure
+            // Small local diagnostic for phone testing, independent of debug
+            // flags and the potentially truncated contact trace. No pixels.
+            if let source, let data = try? JSONEncoder().encode(assessment) {
+                let folder = URL.cachesDirectory.appendingPathComponent("StreakVisibility", isDirectory: true)
+                try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                try? data.write(to: folder.appendingPathComponent(source.deletingPathExtension().lastPathComponent+".json"), options: .atomic)
+                let files = (try? FileManager.default.contentsOfDirectory(at: folder,
+                    includingPropertiesForKeys: [.contentModificationDateKey])) ?? []
+                let sorted = files.sorted { ((try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast)
+                    > ((try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast) }
+                for old in sorted.dropFirst(20) { try? FileManager.default.removeItem(at: old) }
+            }
+        }
         let checks = consumer.queue.sync { core.recheckEvents }
         let latencies = consumer.queue.sync { core.notificationLatencies }
         if wasActive {

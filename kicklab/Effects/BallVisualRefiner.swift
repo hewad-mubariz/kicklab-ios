@@ -216,10 +216,16 @@ extension BallVisualRefiner {
         #if DEBUG
         PreparationMemoryProbe.stage("gap_repair")
         #endif
+        let gapStarted = ProcessInfo.processInfo.systemUptime
         let flow = try await BallMaskGapRefiner.refine(source: source, frames: frames) { onProgress?($0 * 0.5) }
+        PreparationPerformance.record("gap_repair", ["elapsed_s": ProcessInfo.processInfo.systemUptime - gapStarted,
+            "input_frames": Double(frames.count), "output_frames": Double(flow.count)])
         #if DEBUG
         PreparationMemoryProbe.stage("crop_repair")
         #endif
-        return try await RFMaskCropRefiner.refine(source: source, frames: flow) { onProgress?(0.5 + $0 * 0.5) }
+        let cropStarted = ProcessInfo.processInfo.systemUptime
+        let result = try await RFMaskCropRefiner.refine(source: source, frames: flow) { onProgress?(0.5 + $0 * 0.5) }
+        PreparationPerformance.record("crop_repair_total", ["elapsed_s": ProcessInfo.processInfo.systemUptime - cropStarted])
+        return result
     }
 }

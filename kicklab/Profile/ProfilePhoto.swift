@@ -84,7 +84,10 @@ struct PlayerAvatar: View {
             } else {
                 AsyncImage(url: remoteURL) { phase in
                     if let image = phase.image { image.resizable().scaledToFill() }
-                    else { PlayerPlaceholder(name: name, size: size) }
+                    else {
+                        PlayerPlaceholder(name: name, size: size,
+                                          isLoading: remoteURL != nil && phase.error == nil)
+                    }
                 }
                 .id(remoteURL)
             }
@@ -105,13 +108,7 @@ private struct CachedPlayerAvatar: View {
             if let image = photos.image(for: reference) ?? displayedImage {
                 Image(uiImage: image).resizable().scaledToFill()
             } else {
-                PlayerPlaceholder(name: name, size: size)
-                    .overlay(alignment: .bottomTrailing) {
-                        if photos.isLoading(reference) {
-                            ProgressView().controlSize(.mini).tint(.white)
-                                .padding(4).background(.black.opacity(0.6), in: .circle)
-                        }
-                    }
+                PlayerPlaceholder(name: name, size: size, isLoading: photos.isLoading(reference))
             }
         }
         .task(id: photos.identity(for: reference)) {
@@ -133,6 +130,7 @@ private struct CachedPlayerAvatar: View {
 struct PlayerPlaceholder: View {
     let name: String
     let size: CGFloat
+    var isLoading = false
 
     private static let colours: [Color] = [
         Color(red: 0.29, green: 0.4, blue: 0.14), Color(red: 0.25, green: 0.32, blue: 0.4),
@@ -152,12 +150,22 @@ struct PlayerPlaceholder: View {
         ZStack {
             if initials.isEmpty {
                 Circle().fill(Color(white: 0.9))
+            } else {
+                Circle().fill(LinearGradient(colors: [colour.mix(with: .white, by: 0.18), colour],
+                                             startPoint: .topLeading, endPoint: .bottomTrailing))
+            }
+            if isLoading {
+                // Use the avatar's centre, without a corner badge or initials
+                // underneath. Keep the same bounds throughout the request.
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .controlSize(size < 52 ? .small : .regular)
+                    .tint(initials.isEmpty ? Color(white: 0.35) : .white)
+            } else if initials.isEmpty {
                 ProfileMonolineMark()
                     .environment(\.colorScheme, .light)
                     .frame(width: size * 0.5, height: size * 0.5)
             } else {
-                Circle().fill(LinearGradient(colors: [colour.mix(with: .white, by: 0.18), colour],
-                                             startPoint: .topLeading, endPoint: .bottomTrailing))
                 Text(initials)
                     .font(TrainingHomeStyle.display(size * 0.46, relativeTo: .title))
                     .foregroundStyle(.white)

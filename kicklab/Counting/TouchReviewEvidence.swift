@@ -2,6 +2,7 @@ import Foundation
 
 nonisolated enum ContactReviewReason: String, Codable, Sendable {
     case handContact, heldBall, groundContact
+    case playerOutOfView, visibilityUnverified
     case lowContactUncertain, handsUncertain, bodyUncertain, playerUncertain, ballUncertain, continuityGap
 }
 

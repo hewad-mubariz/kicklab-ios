@@ -424,7 +424,7 @@ final class CameraSession: NSObject, ObservableObject {
         let wasActive = activeRecording === request
         activeRecording = nil
         let analysis = liveAnalysis.finish(flush: pipeline == .juggling && wasActive && didWriteFrames,
-                                           wasActive: wasActive)
+                                           wasActive: wasActive, source: url)
         if pipeline == .juggling, let url, didWriteFrames, !analysis.qualityFailed {
             Task.detached(priority: .utility) {
                 await CaptureSessionTimeline.persist(source: url, frames: ledger, analyzed: analysis.analyzed,

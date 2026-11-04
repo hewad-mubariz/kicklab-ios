@@ -22,7 +22,7 @@
 	<key>FacebookDisplayName</key>
 	<string>Juggle Dude</string>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>Allow Juggle Dude to share app activity and Pro trial or subscription events with Meta to measure Facebook and Instagram ads. Your training videos, touch counts and account details are not sent to Meta.</string>
+	<string>This helps us measure and improve our advertising.</string>
 	<key>FacebookAutoLogAppEventsEnabled</key>
 	<false/>
 	<!-- The SDK adds the advertising identifier only with Allow; SKAdNetwork needs no permission. -->

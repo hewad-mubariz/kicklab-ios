@@ -46,7 +46,7 @@ nonisolated final class RFAppCounterCore {
         let track: [RecordedFrame]
         let count: Int
         let diagnostics: [TouchDebugEvent]
-        let reviewEvidence: TouchReviewEvidence
+        var reviewEvidence: TouchReviewEvidence
         let trace: CounterTrace?
         let evidence: CaptureAnalysisEvidence?
         let analyzed: [RecordedFrameIdentity]

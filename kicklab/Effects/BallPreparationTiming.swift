@@ -22,7 +22,7 @@ nonisolated struct BallPreparationTiming: Codable, Sendable {
         #if DEBUG
         true
         #else
-        false
+        PreparationPerformance.enabled
         #endif
     }
 

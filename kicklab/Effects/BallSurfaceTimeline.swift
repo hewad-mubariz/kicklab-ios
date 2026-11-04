@@ -207,7 +207,7 @@ nonisolated struct BallSurfaceTimeline: Sendable {
     }
     #endif
 
-    fileprivate static func analyze(source: URL, track: BallEffectTrack) async throws -> Self {
+    static func analyze(source: URL, track: BallEffectTrack) async throws -> Self {
         let scoped=source.startAccessingSecurityScopedResource()
         defer {if scoped {source.stopAccessingSecurityScopedResource()}}
         let start=ProcessInfo.processInfo.systemUptime
@@ -275,6 +275,14 @@ nonisolated struct BallSurfaceTimeline: Sendable {
         }
         guard reader.status == .completed else {throw reader.error ?? NSError(domain:"KickLab.SurfaceMotion",code:2)}
         timing.totalSeconds = ProcessInfo.processInfo.systemUptime-start
+        if PreparationPerformance.enabled {
+            var metrics = timing.stages.mapValues(\.seconds)
+            metrics["elapsed_s"] = timing.totalSeconds
+            metrics["decoded_frames"] = Double(timing.decodedFrames)
+            metrics["rotation_pairs"] = Double(timing.rotationPairs)
+            metrics["accepted_pairs"] = Double(timing.acceptedPairs)
+            PreparationPerformance.record("ball_motion", metrics)
+        }
         return Self(entries:entries,elapsed:timing.totalSeconds,photographicExposure:exposure.estimate,
                     preparationTiming: timing.enabled ? timing : nil)
     }
