@@ -11,7 +11,7 @@ enum ReplayTool: String, Identifiable {
         case .timer: String(localized: "Timer", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .ball: String(localized: "Ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .effects: String(localized: "Effects", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        case .graph: String(localized: "Graph", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .graph: String(localized: "Analytics", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .sound: String(localized: "Sound", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .looks: String(localized: "Looks", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
@@ -29,6 +29,7 @@ struct ReplayToolbox: View {
     @Binding var milestoneSound: Bool
     @Binding var showGraph: Bool
     @Binding var includeGraph: Bool
+    @Binding var analyticsBackground: Bool
     @Binding var motionStyle: MotionStyle
     let motionSnapshot: MotionStyleSnapshot
     let sourceAspect: CGFloat
@@ -327,7 +328,8 @@ struct ReplayToolbox: View {
         case .effects: effectsPage
         case .timer: timerPage
         case .graph:
-            ReplayMotionPicker(style: $motionStyle, showGraph: $showGraph, includeGraph: $includeGraph, snapshot: motionSnapshot,
+            ReplayMotionPicker(style: $motionStyle, showGraph: $showGraph, includeGraph: $includeGraph,
+                               analyticsBackground: $analyticsBackground, snapshot: motionSnapshot,
                                sourceAspect: sourceAspect, isPlaying: isPlaying, onTogglePlayback: onTogglePlayback, showsProBadges: !isPro)
         case .counter: counterPage
         case .sound: ReplaySoundPage(edit: $edit, autoMuted: $autoMuted, onPreview: onPreviewSound)

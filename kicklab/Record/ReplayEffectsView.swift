@@ -109,7 +109,8 @@ struct ReplayEffectsView: View {
                             ReplayToolbox(counter: counterBinding, edit: lookBinding(\.edit),
                                           timer: timerBinding, milestones: $overlays.milestones,
                                           milestoneSound: $overlays.milestoneSound, showGraph: lookBinding(\.showGraph),
-                                          includeGraph: lookBinding(\.overlays.graph.enabled), motionStyle: lookBinding(\.overlays.graph.style),
+                                          includeGraph: lookBinding(\.overlays.graph.enabled), analyticsBackground: lookBinding(\.overlays.graph.background),
+                                          motionStyle: lookBinding(\.overlays.graph.style),
                                           motionSnapshot: motionTimeline.snapshot(at: currentTime, duration: duration),
                                           sourceAspect: sourceSize.width / max(1, sourceSize.height),
                                           isPlaying: isPlaying, onTogglePlayback: togglePlay, page: $toolPage,
@@ -149,7 +150,8 @@ struct ReplayEffectsView: View {
                                            time: currentTime, duration: duration,
                                            showGraph: showsTouchTools && displayedLook.showGraph && !effectiveOverlays.graph.enabled, showTime: false,
                                            motionStyle: motionStyle, motionTimeline: motionTimeline,
-                                           sourceAspect: sourceSize.width / max(1, sourceSize.height), showsTouchMetrics: showsTouchTools && subscriptions.isPro)
+                                           sourceAspect: sourceSize.width / max(1, sourceSize.height),
+                                           showsTouchMetrics: showsTouchTools && subscriptions.isPro && !effectiveOverlays.graph.enabled)
                                 .padding(.horizontal, 24).padding(.bottom, 10).allowsHitTesting(false)
                                 .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { playbackTop = $0 }
                                 .sessionEntrance(shown, order: 2)
@@ -436,7 +438,11 @@ struct ReplayEffectsView: View {
             // While customizing, the whole frame shrinks into the space above the panel,
             // so the ball is never hidden behind the tools.
             let lowerEdge = showToolbox ? panelTop : playbackTop
-            let editing = (showToolbox || effectiveOverlays.graph.enabled) && lowerEdge > chromeBottom + 120
+            // Simple analytics sit over the full-screen video like the readout. Whatever would reach the scrubber shrinks above it.
+            let reachesScrubber = effectiveOverlays.graph.enabled
+                && (geometry.size.height - size.height) / 2 + ExportMotionGraphRenderer.rect(style: motionStyle,
+                    background: effectiveOverlays.graph.background, in: size).maxY > playbackTop
+            let editing = (showToolbox || reachesScrubber) && lowerEdge > chromeBottom + 120
             let top = chromeBottom + 10, bottom = lowerEdge - 12
             let fit = editing ? min(1, (bottom - top) / size.height) : 1
             ZStack(alignment: .topLeading) {
@@ -446,8 +452,10 @@ struct ReplayEffectsView: View {
                     // Shade the footage before drawing the counter, so white stays white.
                     LinearGradient(stops: [.init(color: .black.opacity(0.4), location: 0),
                                           .init(color: .clear, location: 0.32),
-                                          .init(color: .clear, location: 0.56),
-                                          .init(color: .black.opacity(0.8), location: 1)],
+                                          .init(color: .clear, location: ExportMotionGraphRenderer.shadeStart),
+                                          // The black card is saved without this shade, so it leaves the footage bare here too.
+                                          .init(color: .black.opacity(effectiveOverlays.graph.enabled && effectiveOverlays.graph.background
+                                                                      ? 0 : ExportMotionGraphRenderer.shadeAlpha), location: 1)],
                                    startPoint: .top, endPoint: .bottom)
                         .allowsHitTesting(false)
                     ExportOverlayLayer(settings: effectiveOverlays,
@@ -460,7 +468,8 @@ struct ReplayEffectsView: View {
                     #endif
                     if effectiveOverlays.graph.enabled {
                         ExportMotionGraphLayer(style: motionStyle,
-                            snapshot: motionTimeline.snapshot(at: currentTime, duration: duration), size: size)
+                            snapshot: motionTimeline.snapshot(at: currentTime, duration: duration), size: size,
+                            background: effectiveOverlays.graph.background)
                             .allowsHitTesting(false)
                     }
                     // The timer is a sticker like the counter: tap it to move, pinch and twist it.

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Replay uses the full clip as its time axis; live capture uses the last six seconds.
+/// Replay shows a short clip whole and scrolls a long one; live capture uses the last six seconds.
 /// The vertical axis is relative image position, as in the Python presentation.
 nonisolated struct CaptureGraphLayout {
     struct Sample {

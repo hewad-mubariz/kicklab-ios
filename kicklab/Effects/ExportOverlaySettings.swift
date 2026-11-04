@@ -142,6 +142,20 @@ nonisolated struct ExportOverlayItem: Codable, Equatable, Sendable {
 nonisolated struct ExportGraphSettings: Codable, Equatable, Sendable {
     var enabled = false
     var style: MotionStyle = .ballMotion
+    /// The black card behind the panel; off shows the simple view, as on the replay.
+    var background = true
+
+    init(enabled: Bool = false, style: MotionStyle = .ballMotion, background: Bool = true) {
+        self.enabled = enabled; self.style = style; self.background = background
+    }
+
+    private enum CodingKeys: String, CodingKey { case enabled, style, background }
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        enabled = try values.decodeIfPresent(Bool.self, forKey: .enabled) ?? false
+        style = try values.decodeIfPresent(MotionStyle.self, forKey: .style) ?? .ballMotion
+        background = try values.decodeIfPresent(Bool.self, forKey: .background) ?? true
+    }
 }
 
 /// The elapsed-time sticker: its look and where it sits, moved, pinched and twisted like the counter.

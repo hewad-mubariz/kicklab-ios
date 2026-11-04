@@ -4,6 +4,7 @@ struct ReplayMotionPicker: View {
     @Binding var style: MotionStyle
     @Binding var showGraph: Bool
     @Binding var includeGraph: Bool
+    @Binding var analyticsBackground: Bool
     let snapshot: MotionStyleSnapshot
     let sourceAspect: CGFloat
     let isPlaying: Bool
@@ -25,12 +26,12 @@ struct ReplayMotionPicker: View {
 
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Include graph in saved video").font(.system(size: 12, weight: .semibold))
-                    Text("Save and share this style with your clip.")
+                    Text("Add analytics to saved video").font(.system(size: 12, weight: .semibold))
+                    Text("Ball motion, rhythm and touch interval, saved with your clip.")
                         .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
                 }
                 Spacer()
-                Toggle("Include graph in saved video", isOn: Binding(get: { includeGraph }, set: { included in
+                Toggle("Add analytics to saved video", isOn: Binding(get: { includeGraph }, set: { included in
                     includeGraph = included
                     if included { showGraph = true }
                 }))
@@ -38,6 +39,21 @@ struct ReplayMotionPicker: View {
                     .accessibilityIdentifier("motion-include-export")
             }
             .padding(.horizontal, 16)
+
+            if includeGraph {
+                HStack {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Show background").font(.system(size: 12, weight: .semibold))
+                        Text("Off shows the simple view, like the replay.")
+                            .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+                    }
+                    Spacer()
+                    Toggle("Show background", isOn: $analyticsBackground)
+                        .labelsHidden().fixedSize().tint(SessionStyle.mint)
+                        .accessibilityIdentifier("motion-analytics-background")
+                }
+                .padding(.horizontal, 16)
+            }
 
             VStack(spacing: 10) {
                 HStack(alignment: .center) {

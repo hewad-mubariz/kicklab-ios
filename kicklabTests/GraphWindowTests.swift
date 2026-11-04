@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import ImageIO
 import SwiftUI
@@ -68,6 +69,16 @@ struct GraphWindowTests {
                 "Very fast juggling still keeps eight seconds on screen")
     }
 
+    /// The replay's Ball Motion comes from the line alone; it must scroll exactly as a saved video does.
+    @Test func theReplayLineMatchesTheSavedLine() {
+        let long = session(touches: 60)
+        let timeline = MotionStyleTimeline(points: long.points, touchTimes: long.touches)
+        let line = timeline.graph(at: 30, duration: long.duration)
+        let saved = timeline.snapshot(at: 30, duration: long.duration).graph
+        #expect(line.scrolls && line.timeRange == saved.timeRange && line.verticalRange == saved.verticalRange)
+        #expect(line.samples.count == saved.samples.count)
+    }
+
     @Test func scrollingIsNoSlowerToDrawThanTheWholeClip() {
         let long = session(touches: 433)
         let timeline = MotionStyleTimeline(points: long.points, touchTimes: long.touches)
@@ -90,27 +101,65 @@ struct GraphWindowTests {
     }
 
     /// With GRAPH_SHOTS set, the saved-video graph card for Ball Motion and Comet at a few moments.
-    @Test func savesGraphFramesForReview() throws {
+    @Test func savesGraphFramesForReview() async throws {
         guard let folder = ProcessInfo.processInfo.environment["GRAPH_SHOTS"], !folder.isEmpty else { return }
         let long = session(touches: 433)
         let timeline = MotionStyleTimeline(points: long.points, touchTimes: long.touches)
+        func cost(_ content: some View) -> Double {
+            let start = ProcessInfo.processInfo.systemUptime
+            for _ in 0..<30 {
+                let renderer = ImageRenderer(content: content)
+                renderer.scale = 1080.0 / 342
+                _ = renderer.cgImage
+            }
+            return (ProcessInfo.processInfo.systemUptime - start) / 30 * 1000
+        }
+        let snapshot = timeline.snapshot(at: 120, duration: long.duration)
+        let lineOnly = MotionStyleGraph(style: .ballMotion, snapshot: snapshot).frame(width: 314, height: MotionStyle.ballMotion.height)
+        let panel = ExportMotionGraphCard(style: .ballMotion, snapshot: snapshot, sourceAspect: 9.0 / 16, background: true)
+        _ = cost(panel)
+        print("PANELCOST line \(cost(lineOnly)) ms, panel \(cost(panel)) ms per 1080p frame")
+        func save(_ image: CGImage, _ name: String) throws {
+            let url = URL(fileURLWithPath: folder).appendingPathComponent(name + ".png")
+            let destination = try #require(CGImageDestinationCreateWithURL(url as CFURL, "public.png" as CFString, 1, nil))
+            CGImageDestinationAddImage(destination, image, nil)
+            CGImageDestinationFinalize(destination)
+        }
         for style in [MotionStyle.ballMotion, .comet] {
             for (index, time) in [1.5, 6, 120, long.duration - 1].enumerated() {
-                let image = try #require(ExportMotionGraphRenderer.image(style: style,
-                    snapshot: timeline.snapshot(at: time, duration: long.duration), size: CGSize(width: 1080, height: 1920)))
-                let url = URL(fileURLWithPath: folder).appendingPathComponent("\(style.rawValue)-\(index).png")
-                let destination = try #require(CGImageDestinationCreateWithURL(url as CFURL, "public.png" as CFString, 1, nil))
-                CGImageDestinationAddImage(destination, image, nil)
-                CGImageDestinationFinalize(destination)
+                try save(try #require(ExportMotionGraphRenderer.image(style: style,
+                    snapshot: timeline.snapshot(at: time, duration: long.duration), size: CGSize(width: 1080, height: 1920), background: true)),
+                    "\(style.rawValue)-\(index)")
             }
+        }
+        // The replay's own readout on a long session: its line must run, not squeeze.
+        for (index, time) in [120.0, 124].enumerated() {
+            let renderer = ImageRenderer(content: CaptureMetrics(points: timeline.points, touchTimes: timeline.touches,
+                time: time, duration: long.duration, showTime: false, motionTimeline: timeline)
+                .padding(.horizontal, 24).frame(width: 440).background(.black))
+            renderer.scale = 2
+            try save(try #require(renderer.cgImage), "replay-readout-\(index)")
+        }
+        // The panel saved over real footage, through the real encoder.
+        let fixture = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures/juggling-eighteen.mov")
+        let footage = ProcessInfo.processInfo.environment["GRAPH_FOOTAGE"].map { URL(fileURLWithPath: $0) } ?? fixture
+        for background in [true, false] {
+            var settings = ExportOverlaySettings()
+            settings.graph.enabled = true
+            settings.graph.background = background
+            let output = try await BallStyleBurnIn.render(source: footage, track: [], style: .none, intensity: 0, shortEdge: 1080,
+                overlays: settings, motionTimeline: timeline)
+            defer { try? FileManager.default.removeItem(at: output) }
+            let generator = AVAssetImageGenerator(asset: AVURLAsset(url: output))
+            generator.appliesPreferredTrackTransform = true
+            generator.requestedTimeToleranceBefore = .zero; generator.requestedTimeToleranceAfter = .zero
+            try save(try await generator.image(at: CMTime(seconds: 6, preferredTimescale: 600)).image,
+                     background ? "saved-frame-black" : "saved-frame-simple")
         }
         // The same moment the old way, for comparison.
         let whole = MotionStyleSnapshot(timeline: MotionStyleTimeline(points: long.points, touchTimes: Array(long.touches.prefix(30))),
                                         time: 120, duration: long.duration)
-        let image = try #require(ExportMotionGraphRenderer.image(style: .ballMotion, snapshot: whole, size: CGSize(width: 1080, height: 1920)))
-        let destination = try #require(CGImageDestinationCreateWithURL(
-            URL(fileURLWithPath: folder).appendingPathComponent("ballMotion-whole-clip.png") as CFURL, "public.png" as CFString, 1, nil))
-        CGImageDestinationAddImage(destination, image, nil)
-        CGImageDestinationFinalize(destination)
+        try save(try #require(ExportMotionGraphRenderer.image(style: .ballMotion, snapshot: whole,
+            size: CGSize(width: 1080, height: 1920), background: true)), "ballMotion-whole-clip")
     }
 }

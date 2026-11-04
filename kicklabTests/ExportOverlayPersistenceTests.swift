@@ -65,6 +65,10 @@ final class ExportOverlayPersistenceTests: XCTestCase {
         let restored = try JSONDecoder().decode(ExportOverlaySettings.self, from: oldStyle)
         XCTAssertTrue(restored.graph.enabled)
         XCTAssertEqual(restored.graph.style, .ballMotion)
+        XCTAssertTrue(restored.graph.background, "Settings saved before the choice keep the background")
+        settings.graph.background = false
+        XCTAssertFalse(try JSONDecoder().decode(ExportOverlaySettings.self,
+            from: JSONEncoder().encode(settings)).graph.background)
     }
 
     func testTimerDefaultsOnForExistingUsersAndItsToggleSurvivesRelaunch() throws {

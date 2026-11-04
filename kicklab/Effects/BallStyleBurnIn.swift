@@ -249,7 +249,7 @@ final class BallStyleBurnIn: ObservableObject {
                 let graphImage: CGImage?
                 if let graphTimeline, let graph = overlays?.graph {
                     graphImage = await ExportMotionGraphRenderer.image(style: graph.style,
-                        snapshot: graphTimeline.snapshot(at: time, duration: seconds), size: size)
+                        snapshot: graphTimeline.snapshot(at: time, duration: seconds), size: size, background: graph.background)
                     guard graphImage != nil else { throw failure("Cannot render the motion graph.") }
                 } else { graphImage = nil }
                 try autoreleasepool {
@@ -336,6 +336,9 @@ final class BallStyleBurnIn: ObservableObject {
                             throw failure("Cannot draw the video overlays.")
                         }
                         context.translateBy(x: 0, y: size.height); context.scaleBy(x: 1, y: -1)
+                        if graphImage != nil, overlays?.graph.background == false {
+                            ExportMotionGraphRenderer.drawShade(in: context, size: size)
+                        }
                         if var overlays {
                             // A missing event timeline must not invent a count.
                             overlays.counter.enabled = overlays.counter.enabled && counter != nil
@@ -345,7 +348,7 @@ final class BallStyleBurnIn: ObservableObject {
                             ExportCounterRenderer.draw(in: context, size: size, state: counter.state(at: time))
                         }
                         if let graphImage, let graph = overlays?.graph {
-                            ExportMotionGraphRenderer.draw(graphImage, in: context, style: graph.style, size: size)
+                            ExportMotionGraphRenderer.draw(graphImage, in: context, style: graph.style, size: size, background: graph.background)
                         }
                         if let distanceTimeline {
                             BallDistanceBadgeRenderer.draw(in: context, size: size, state: distanceTimeline.state(at: time))

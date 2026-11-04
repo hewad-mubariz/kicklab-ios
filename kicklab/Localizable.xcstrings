@@ -29,6 +29,90 @@
         }
       }
     },
+    "Add analytics to saved video" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyse im gespeicherten Video zeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir análisis al video guardado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter les analyses à la vidéo enregistrée"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar análises ao vídeo salvo"
+          }
+        }
+      }
+    },
+    "Analytics" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyse"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análisis"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyses"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análises"
+          }
+        }
+      }
+    },
+    "Ball motion, rhythm and touch interval, saved with your clip." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ballbewegung, Rhythmus und Abstand zwischen den Kontakten, gespeichert mit deinem Clip."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movimiento del balón, ritmo y tiempo entre toques, guardados con tu clip."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mouvement du ballon, rythme et temps entre les jongles, enregistrés avec ton clip."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movimento da bola, ritmo e tempo entre toques, salvos com o seu clipe."
+          }
+        }
+      }
+    },
     "Edit": {
       "extractionState": "manual",
       "localizations": {
@@ -340,6 +424,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nenhum jogador ficou visível por pelo menos 2,5 segundos, então os toques antes e depois contam como sequências separadas. Seu total de toques é mantido."
+          }
+        }
+      }
+    },
+    "Off shows the simple view, like the replay." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aus zeigt die einfache Ansicht wie im Replay."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivado, muestra la vista simple, como en la repetición."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désactivé, affiche la vue simple, comme dans le replay."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desligado, mostra a visualização simples, como no replay."
           }
         }
       }
@@ -11433,34 +11545,6 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
-    "Include graph in saved video" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grafik ins gespeicherte Video übernehmen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Incluir la gráfica en el video guardado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inclure le graphique dans la vidéo enregistrée"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Incluir gráfico no vídeo salvo"
-          }
-        }
-      }
-    },
     "Include the timer in your replay and saved video." : {
       "localizations" : {
         "de" : {
@@ -20376,34 +20460,6 @@
         }
       }
     },
-    "Save and share this style with your clip." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sichere und teile diesen Stil mit deinem Clip."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guarda y comparte este estilo con tu clip."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enregistre et partage ce style avec ton clip."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Salve e compartilhe este estilo com seu clipe."
-          }
-        }
-      }
-    },
     "Save available video" : {
       "localizations" : {
         "de" : {
@@ -21782,6 +21838,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrar"
+          }
+        }
+      }
+    },
+    "Show background" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hintergrund zeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar fondo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher le fond"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar fundo"
           }
         }
       }

@@ -107,28 +107,16 @@ struct CaptureMetrics: View {
     var motionTimeline: MotionStyleTimeline? = nil
     var sourceAspect: CGFloat = 9.0 / 16.0
     var showsTouchMetrics = true
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        let snapshot = motionStyle == .ballMotion ? nil
-            : (motionTimeline ?? MotionStyleTimeline(points: points, touchTimes: touchTimes)).snapshot(at: time, duration: duration)
-        let graph = snapshot?.graph ?? CaptureGraphLayout(points: points, time: time, duration: duration)
+        // Replay brings the session's timeline, so a long session scrolls; live keeps its last six seconds.
+        let timeline = motionTimeline ?? (motionStyle == .ballMotion ? nil : MotionStyleTimeline(points: points, touchTimes: touchTimes))
+        let snapshot = motionStyle == .ballMotion ? nil : timeline?.snapshot(at: time, duration: duration)
+        let graph = snapshot?.graph ?? timeline?.graph(at: time, duration: duration)
+            ?? CaptureGraphLayout(points: points, time: time, duration: duration)
         VStack(alignment: .leading, spacing: 12) {
             if showGraph {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(motionStyle.title.uppercased()).font(.system(size: 10, weight: .medium)).tracking(1)
-                        Text(motionStyle.subtitle).font(.system(size: 10)).foregroundStyle(.white.opacity(0.65))
-                    }
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 4) {
-                        if let status = motionStyle.status(graph) {
-                            Text(status).font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(Color(cgColor: NormalCounterAppearance.lime))
-                        }
-                        Text(motionStyle.measure).font(.system(size: 9, weight: .medium)).foregroundStyle(.white.opacity(0.65))
-                    }
-                }
+                MotionGraphHeader(style: motionStyle, graph: graph)
                 Group {
                     if motionStyle == .ballMotion {
                         CaptureMotionGraph(layout: graph, touchTimes: touchTimes)
@@ -144,23 +132,61 @@ struct CaptureMetrics: View {
             }
             let rhythm = CaptureRhythm(touchTimes: touchTimes, at: time)
             HStack(spacing: 12) {
-                if showsTouchMetrics {
-                metric("RHYTHM", id: "rhythm", value: rhythm.perMinute.map { String(format: "%.0f", $0) } ?? "—",
-                       unit: rhythm.perMinute == nil ? nil : "/ min", alignment: .leading)
-                metric("TOUCH INTERVAL", id: "touch-interval", value: rhythm.intervalLabel, alignment: .leading)
-                }
+                if showsTouchMetrics { CaptureRhythmMetrics(rhythm: rhythm) }
                 if showTime {
-                    metric("TIME", id: "time", value: ExportPreviewTime.label(at: time), alignment: .trailing)
+                    CaptureMetricValue(title: "TIME", id: "time", value: ExportPreviewTime.label(at: time), alignment: .trailing)
                 }
             }
         }
         .foregroundStyle(.white)
     }
+}
 
-    private func metric(_ title: LocalizedStringKey, id: String, value: String, unit: LocalizedStringKey? = nil,
-                        alignment: HorizontalAlignment) -> some View {
+/// What a motion graph plots, and which way the ball is moving when it plots height.
+struct MotionGraphHeader: View {
+    let style: MotionStyle
+    let graph: CaptureGraphLayout
+
+    var body: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(style.title.uppercased()).font(.system(size: 10, weight: .medium)).tracking(1)
+                Text(style.subtitle).font(.system(size: 10)).foregroundStyle(.white.opacity(0.65))
+            }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 4) {
+                if let status = style.status(graph) {
+                    Text(status).font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Color(cgColor: NormalCounterAppearance.lime))
+                }
+                Text(style.measure).font(.system(size: 9, weight: .medium)).foregroundStyle(.white.opacity(0.65))
+            }
+        }
+    }
+}
+
+/// Rhythm and touch interval, the same under the replay and inside a saved video.
+struct CaptureRhythmMetrics: View {
+    let rhythm: CaptureRhythm
+
+    var body: some View {
+        CaptureMetricValue(title: "RHYTHM", id: "rhythm", value: rhythm.perMinute.map { String(format: "%.0f", $0) } ?? "—",
+                           unit: rhythm.perMinute == nil ? nil : "/ min", alignment: .leading)
+        CaptureMetricValue(title: "TOUCH INTERVAL", id: "touch-interval", value: rhythm.intervalLabel, alignment: .leading)
+    }
+}
+
+struct CaptureMetricValue: View {
+    let title: LocalizedStringKey
+    let id: String
+    let value: String
+    var unit: LocalizedStringKey? = nil
+    let alignment: HorizontalAlignment
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
         let isTime = id == "time"
-        return VStack(alignment: alignment, spacing: 6) {
+        VStack(alignment: alignment, spacing: 6) {
             Text(title).font(.system(size: 9, weight: .medium)).tracking(0.5)
                 .foregroundStyle(.white.opacity(0.72)).lineLimit(1).minimumScaleFactor(0.7)
             HStack(alignment: .firstTextBaseline, spacing: 4) {

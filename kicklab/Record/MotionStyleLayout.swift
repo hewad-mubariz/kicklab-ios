@@ -70,6 +70,12 @@ nonisolated struct MotionStyleTimeline: Equatable, Sendable {
         return min(1, max(0, (floorY - y) / (floorY - ceilingY)))
     }
 
+    /// The Ball Motion and Comet line at this moment, without the rest of a snapshot.
+    func graph(at time: Double, duration: Double?) -> CaptureGraphLayout {
+        CaptureGraphLayout(points: points, time: time, duration: duration,
+                           window: graphWindow, vertical: graphWindow == nil ? nil : graphVertical)
+    }
+
     func snapshot(at time: Double, duration: Double? = nil) -> MotionStyleSnapshot {
         MotionStyleSnapshot(timeline: self, time: time, duration: duration)
     }
@@ -153,8 +159,7 @@ nonisolated struct MotionStyleSnapshot {
     let bounce: Bounce?
 
     init(timeline: MotionStyleTimeline, time: Double, duration: Double?) {
-        graph = CaptureGraphLayout(points: timeline.points, time: time, duration: duration,
-                                   window: timeline.graphWindow, vertical: timeline.graphWindow == nil ? nil : timeline.graphVertical)
+        graph = timeline.graph(at: time, duration: duration)
         let now = graph.time
         touchTimes = timeline.touches
         played = timeline.touches.filter { $0 <= now }

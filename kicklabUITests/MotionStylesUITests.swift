@@ -112,6 +112,11 @@ final class MotionStylesUITests: ProReplayUITestCase {
         XCTAssertEqual(include.value as? String, "0")
         include.tap()
         XCTAssertEqual(include.value as? String, "1")
+        let background = app.switches["motion-analytics-background"]
+        XCTAssertTrue(background.waitForExistence(timeout: 3), "The background choice appears with the saved analytics")
+        XCTAssertEqual(background.value as? String, "1")
+        background.tap()
+        XCTAssertEqual(background.value as? String, "0")
         app.buttons["motion-style-comet"].tap()
         attach(app, "Include Comet graph in saved video")
         app.buttons["replay-close-tools"].tap()
