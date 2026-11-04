@@ -18,7 +18,8 @@ nonisolated struct BallSurfaceTimeline: Sendable {
     let elapsed: Double
     let acceptedCount: Int
     let preparationTiming: BallPreparationTiming?
-    /// Robust source-edge estimate; nil leaves the existing box-based estimate.
+    /// Seconds, from the source photograph. Zero means the real ball shows no blur. Nil, with too
+    /// little evidence to say, leaves the existing box-based estimate.
     let photographicExposure: Double?
     private let trusted: [Bool]
     /// `entries` orientations with short rejected runs bridged; see `bridged`.
@@ -228,6 +229,7 @@ nonisolated struct BallSurfaceTimeline: Sendable {
         defer {if reader.status == .reading {reader.cancelReading()}}
         var entries=[Entry](),pose=initial,previous:BallSurfaceMotion.Prepared?,previousTime:Double?
         var exposure = BallExposureCalibration(duration: duration.seconds, frameDuration: composition.frameDuration.seconds)
+        var estimator = BallExposureEstimator(frameDuration: composition.frameDuration.seconds)
         timing.record(.setup, since: start)
         while true {
             let scheduled = timing.enabled ? ProcessInfo.processInfo.systemUptime : 0
@@ -249,6 +251,13 @@ nonisolated struct BallSurfaceTimeline: Sendable {
                 let current = timing.measure(.pyramid, { BallSurfaceMotion.Prepared(patch) })
                 timing.fittedFrames += 1
                 var accepted=false
+                timing.measure(.exposure) {
+                    let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
+                    if let velocity = track.velocity(at: time, size: size) {
+                        estimator.observe(time: time, velocity: velocity, patch: patch,
+                                          radius: fitted.radii.reduce(0,+)/Double(fitted.radii.count))
+                    }
+                }
                 if exposure.shouldMeasure(at: time) {
                     let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
                     if let velocity = track.velocity(at: time, size: size),
@@ -283,7 +292,7 @@ nonisolated struct BallSurfaceTimeline: Sendable {
             metrics["accepted_pairs"] = Double(timing.acceptedPairs)
             PreparationPerformance.record("ball_motion", metrics)
         }
-        return Self(entries:entries,elapsed:timing.totalSeconds,photographicExposure:exposure.estimate,
+        return Self(entries:entries,elapsed:timing.totalSeconds,photographicExposure:exposure.estimate ?? estimator.estimate,
                     preparationTiming: timing.enabled ? timing : nil)
     }
 }
@@ -303,14 +312,14 @@ private actor BallSurfaceMotionCache {
         let signature = try JSONEncoder().encode(samples)
         // The source is owned by this immutable session. Match the actual ball
         // track, without invalidating completed spin on unrelated app rebuilds.
-        let historyKey = SessionAnalysisStore.digest(Data("saved-spin-v4-photo-exposure|".utf8) + signature)
+        let historyKey = SessionAnalysisStore.digest(Data("saved-spin-v5-ball-exposure|".utf8) + signature)
         if let history, let value = try? history.library.replayMotion(for: history.item, key: historyKey) {
             BallPreparationTiming.writeRequest(origin: "saved_session", key: historyKey, since: requestedAt,
                                                computation: value.preparationTiming)
             return value
         }
         let content = try SessionAnalysisStore.sourceDigest(source)
-        let requested = SessionAnalysisStore.digest(Data("spin-v4-photo-exposure|\(SessionAnalysisStore.pipelineSignature())|\(content)|".utf8) + signature)
+        let requested = SessionAnalysisStore.digest(Data("spin-v5-ball-exposure|\(SessionAnalysisStore.pipelineSignature())|\(content)|".utf8) + signature)
         let folder = URL.cachesDirectory.appendingPathComponent("SessionSpin-v3", isDirectory: true)
         let file = folder.appendingPathComponent(requested + ".json")
         func report(_ value: BallSurfaceTimeline, origin: String) -> BallSurfaceTimeline {
@@ -379,7 +388,7 @@ nonisolated struct StoredSurfaceTimeline: Codable, Sendable {
         preparationTiming = value.preparationTiming
     }
     var isValid: Bool {
-        elapsed.isFinite && (photographicExposure.map { $0.isFinite && $0 > 0 } ?? true)
+        elapsed.isFinite && (photographicExposure.map { $0.isFinite && $0 >= 0 } ?? true)
             && rows.allSatisfy { $0.time.isFinite && $0.q.count == 4 && $0.q.allSatisfy(\.isFinite) }
             && zip(rows,rows.dropFirst()).allSatisfy { $0.time < $1.time }
     }

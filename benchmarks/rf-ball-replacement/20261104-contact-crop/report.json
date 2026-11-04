@@ -96,5 +96,68 @@
     "Sharpness compares a ball with itself between fast and slow frames; different prints are not compared.",
     "IMG_8649 still pulses frame to frame (about 20%) with or without smear; cause unknown.",
     "indoor1 ran without saved spin, so its print rotation differs from the app."
-  ]
+  ],
+  "lab_scan": {
+    "clips_scanned": 50,
+    "usable": 44,
+    "judged_radius_25px_plus": 35,
+    "frame_rate_is_not_the_cause": {
+      "60fps": {
+        "sharp": 10,
+        "blurred": 4
+      },
+      "120fps": {
+        "sharp": 13,
+        "blurred": 6
+      }
+    },
+    "today_guess_vs_real_blur_rank_correlation": -0.04,
+    "sharp_clips_with_3px_fake_blur_today": "16/25",
+    "blurred_clips_under_1_5px_today": "3/10",
+    "corrections": [
+      "Fast vs slow sharpness (falloff) is too noisy across clips; along/across on fast frames replaces it.",
+      "IMG_1529 2.MOV is byte-identical to IMG_1529.MOV and has real blur at speed; it is not a sharp 60 fps sample."
+    ]
+  },
+  "exposure_estimate": {
+    "method": "Along/across gradient energy on the fastest frames, inverted through synthetic blur of the clip's own slow frames, divided by speed.",
+    "scoring_caveat": "The first score compared raw print and real ball values and was invalid: a no-blur Arctic print reads about 1.4 to 1.5. The score was changed after seeing results to normalize each ball to its own no-blur value. Treat as a lead, not validation.",
+    "known_issue": "One estimate exceeded a 60 fps frame and needs a clamp.",
+    "not_done": "Not ported to the app. Not run on a phone."
+  },
+  "app_code_results": {
+    "scope": "Real BallSurfaceTimeline.analyze and BallExposureEstimator on the Mac, 15 s of each clip. Not run on a phone.",
+    "edge384": {
+      "clips": 16,
+      "closer": {
+        "today": 4,
+        "new": 10,
+        "tie": 2
+      },
+      "median_miss": {
+        "today": 0.26,
+        "new": 0.13
+      },
+      "worst_miss": {
+        "today": 0.98,
+        "new": 0.4
+      }
+    },
+    "edge288": {
+      "clips": 16,
+      "closer": {
+        "today": 4,
+        "new": 9,
+        "tie": 3
+      },
+      "median_miss": {
+        "today": 0.27,
+        "new": 0.1
+      },
+      "worst_miss": {
+        "today": 0.96,
+        "new": 0.52
+      }
+    }
+  }
 }

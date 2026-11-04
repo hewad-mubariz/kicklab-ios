@@ -63,6 +63,74 @@ final class BallReplacementMotionBlurTests: XCTestCase {
         XCTAssertNil(mixed.estimate, "Changing/inconsistent source evidence must keep the established fallback")
     }
 
+    /// A printed ball: blobs of several sizes, so detail exists in every direction.
+    private func printed(_ seed: Int) -> BallSurfaceMotion.Gray {
+        let side = BallSurfaceMotion.side
+        var random = seed &* 2654435761 &+ 97
+        func next() -> Double { random = (random &* 1103515245 &+ 12345) & 0x7fffffff; return Double(random) / Double(0x7fffffff) }
+        let blobs = (0..<90).map { _ in (next() * Double(side), next() * Double(side), 2 + next() * 7, next() < 0.5 ? 0.15 : 0.9) }
+        var values = [Float](repeating: 0.55, count: side * side)
+        for y in 0..<side { for x in 0..<side { for b in blobs where hypot(Double(x) - b.0, Double(y) - b.1) < b.2 {
+            values[y * side + x] = Float(b.3)
+        } } }
+        return BallSurfaceMotion.Gray(width: side, values: values)
+    }
+    private func blurred(_ patch: BallSurfaceMotion.Gray, vertically length: Int) -> BallSurfaceMotion.Gray {
+        guard length > 1 else { return patch }
+        let side = patch.width
+        var values = patch.values
+        for y in 0..<side { for x in 0..<side {
+            var sum: Float = 0
+            for k in 0..<length { sum += patch.values[min(side - 1, max(0, y + k - length / 2)) * side + x] }
+            values[y * side + x] = sum / Float(length)
+        } }
+        return BallSurfaceMotion.Gray(width: side, values: values)
+    }
+    /// A clip of slow frames and fast vertical frames, the fast ones blurred by `blur` patch pixels.
+    private func estimate(blur: Int, fastSpeed: Double, frames: Int = 120, frameDuration: Double = 1.0 / 60) -> Double? {
+        var estimator = BallExposureEstimator(frameDuration: frameDuration)
+        let sharp = (0..<4).map(printed), moving = sharp.map { blurred($0, vertically: blur) }
+        for i in 0..<frames {
+            let fast = i % 4 == 0
+            estimator.observe(time: Double(i) / 60, velocity: CGVector(dx: 0, dy: fast ? fastSpeed : 40),
+                              patch: (fast ? moving : sharp)[(i / 4) % 4], radius: BallSurfaceMotion.radius)
+        }
+        return estimator.estimate
+    }
+
+    func testASharpBallAtSpeedGetsNoExposure() throws {
+        XCTAssertLessThan(try XCTUnwrap(estimate(blur: 0, fastSpeed: 1500)), 0.0008,
+                          "Sharp footage must not gain motion blur: at this speed that is under 1.2 pixels")
+    }
+
+    func testABlurredBallAtSpeedGivesItsExposure() throws {
+        let value = try XCTUnwrap(estimate(blur: 9, fastSpeed: 1500))
+        XCTAssertEqual(value, 9.0 / 1500, accuracy: 0.003)
+    }
+
+    func testMoreBlurGivesALongerExposureWithinTheFrame() throws {
+        let some = try XCTUnwrap(estimate(blur: 5, fastSpeed: 1500)), more = try XCTUnwrap(estimate(blur: 13, fastSpeed: 1500))
+        XCTAssertGreaterThan(more, some)
+        XCTAssertLessThanOrEqual(try XCTUnwrap(estimate(blur: 19, fastSpeed: 300)), 0.9 / 60, "Never longer than the frame")
+    }
+
+    func testTooFewFramesLeaveTheFallbackAndABarelyMovingBallGetsNone() throws {
+        XCTAssertNil(estimate(blur: 9, fastSpeed: 1500, frames: 40))
+        XCTAssertEqual(estimate(blur: 9, fastSpeed: 100), 0)
+    }
+
+    func testAnExposureOfZeroMeansNoSmearRatherThanTheBoxFallback() {
+        let size = CGSize(width: 720, height: 1280)
+        let frames = (0..<40).map { i in
+            RecordedFrame(time: Double(i) / 60, x: 0.3 + Double(i) / 60 * 0.3, y: 0.5,
+                width: 0.1 + (i % 2 == 0 ? 0.02 : 0), height: 72.0 / 1280, score: 1, smoothedX: 0, smoothedY: 0,
+                vy: 0, motion: .unknown, detected: true, person: nil)
+        }
+        var track = BallEffectTrack(frames: frames)
+        track.surfaceMotion = BallSurfaceTimeline(entries: [], elapsed: 0, photographicExposure: 0)
+        XCTAssertEqual(track.smear(at: 0.2, size: size), .zero)
+    }
+
     func testSemanticOwnershipDoesNotMakeMeasuredBlurOpaqueOrCoverTheFinger() {
         let width = 120
         let binary = (0..<(width * width)).map { i -> UInt8 in

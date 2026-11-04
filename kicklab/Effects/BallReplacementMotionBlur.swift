@@ -136,3 +136,96 @@ nonisolated struct BallExposureCalibration {
         return min(frameDuration, median)
     }
 }
+
+/// Exposure read from the real ball when its rim gives no measurement. Motion blur removes detail
+/// along the motion and leaves it across, whatever the ball's design or distance, so the ratio of the
+/// two on the fastest frames gives the blur length. The clip's own slowest frames, blurred here by known
+/// lengths, say what each ratio means for this ball. Scalars and a few patches survive a frame.
+nonisolated struct BallExposureEstimator {
+    private static let referenceCount = 12
+    private static let minimumObservations = 60
+    /// Slower than this at the clip's fastest, in 720p pixels per second, blur cannot show.
+    private static let minimumSpeed = 200.0
+    private static let lengths: [Double] = [0, 1, 2, 3, 4, 6, 8, 10, 13, 16, 20]
+
+    private let frameDuration: Double
+    private var observations: [(speed: Double, along: Double, pixelsPerPatch: Double)] = []
+    private var references: [(speed: Double, time: Double, patch: BallSurfaceMotion.Gray)] = []
+
+    init(frameDuration: Double) { self.frameDuration = frameDuration }
+
+    mutating func observe(time: Double, velocity: CGVector, patch: BallSurfaceMotion.Gray, radius: Double) {
+        let speed = hypot(velocity.dx, velocity.dy)
+        guard speed.isFinite, speed > 0, time.isFinite, radius > 0 else { return }
+        let ux = velocity.dx / speed, uy = velocity.dy / speed
+        if let along = Self.ratio(patch, ux: ux, uy: uy) {
+            observations.append((speed, along, radius / BallSurfaceMotion.radius))
+        }
+        // Keep the slowest frames, at most one from any moment: neighbours add no information.
+        if let near = references.firstIndex(where: { abs($0.time - time) < 0.1 }) {
+            if speed < references[near].speed { references[near] = (speed, time, patch) }
+        } else if references.count < Self.referenceCount {
+            references.append((speed, time, patch))
+        } else if let slowest = references.indices.max(by: { references[$0].speed < references[$1].speed }),
+                  speed < references[slowest].speed {
+            references[slowest] = (speed, time, patch)
+        }
+    }
+
+    /// Seconds. Zero when the real ball shows no blur; nil without enough frames to say.
+    var estimate: Double? {
+        guard observations.count >= Self.minimumObservations, !references.isEmpty,
+              frameDuration.isFinite, frameDuration > 0 else { return nil }
+        let sorted = observations.sorted { $0.speed < $1.speed }
+        let fast = sorted.suffix(max(10, sorted.count / 20))
+        func median(_ values: [Double]) -> Double { values.sorted()[values.count / 2] }
+        let speed = median(fast.map(\.speed))
+        guard speed >= Self.minimumSpeed else { return 0 }
+        let blur = length(forRatio: median(fast.map(\.along))) * median(fast.map(\.pixelsPerPatch))
+        return min(blur / speed, 0.9 * frameDuration)
+    }
+
+    private func length(forRatio value: Double) -> Double {
+        let curve = Self.lengths.map { length -> Double in
+            let logs = references.enumerated().compactMap { index, reference -> Double? in
+                let angle = Double(index % 4) * .pi / 4 + 0.2
+                return Self.ratio(reference.patch, ux: cos(angle), uy: sin(angle), blur: length).flatMap { $0 > 0 ? log($0) : nil }
+            }.sorted()
+            return logs.isEmpty ? 1 : exp(logs[logs.count / 2])
+        }
+        // Relative to the sharp end, so a ball that reads slightly off 1.0 when sharp still reads zero.
+        let target = value / max(curve[0], 1e-6)
+        for i in 1..<curve.count {
+            let a = curve[i - 1] / curve[0], b = curve[i] / curve[0]
+            if target >= a { return Self.lengths[i - 1] }
+            if target >= b { return Self.lengths[i - 1] + (a - target) / max(a - b, 1e-6) * (Self.lengths[i] - Self.lengths[i - 1]) }
+        }
+        return Self.lengths[Self.lengths.count - 1]
+    }
+
+    /// Gradient energy along (ux, uy) over energy across it, inside the ball, after an optional blur along it.
+    private static func ratio(_ patch: BallSurfaceMotion.Gray, ux: Double, uy: Double, blur: Double = 0) -> Double? {
+        let reach = BallSurfaceMotion.radius * 0.72, center = BallSurfaceMotion.center
+        let low = max(1, Int(center - reach)), high = min(patch.width - 2, Int(center + reach) + 1)
+        guard high > low else { return nil }
+        let steps = max(1, Int(blur.rounded(.up)))
+        func value(_ x: Int, _ y: Int) -> Double {
+            guard blur > 0 else { return Double(patch.values[y * patch.width + x]) }
+            var sum = 0.0
+            for k in 0..<steps {
+                let t = ((Double(k) + 0.5) / Double(steps) - 0.5) * blur
+                sum += patch.at(Double(x) + ux * t, Double(y) + uy * t)
+            }
+            return sum / Double(steps)
+        }
+        var along = 0.0, across = 0.0
+        for y in low...high { for x in low...high {
+            let dx = Double(x) - center, dy = Double(y) - center
+            guard dx * dx + dy * dy <= reach * reach else { continue }
+            let gx = value(x + 1, y) - value(x - 1, y), gy = value(x, y + 1) - value(x, y - 1)
+            let a = ux * gx + uy * gy, b = ux * gy - uy * gx
+            along += a * a; across += b * b
+        } }
+        return across > 0 ? along / across : nil
+    }
+}

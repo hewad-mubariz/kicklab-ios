@@ -8,6 +8,11 @@
 //   blur SOURCE PREPARED.plist SPIN.json|none OUTPUT_DIR [skin]
 //     Renders every frame with today's motion smear and with none, and measures print sharpness
 //     frame to frame against the real ball. Also writes a source | today | no smear comparison video.
+//   scan MODEL.mlpackage EDGE LIST.txt OUTPUT.json [max-seconds]
+//     For each video in LIST.txt, measures whether the real ball blurs at speed, on the app's 720 pixels.
+//   calibrate MODEL.mlpackage EDGE LIST.txt OUTPUT.json [max-seconds] [skin]
+//     Estimates each clip's exposure from the real ball, then draws the print with today's guess, none and
+//     the estimate, and compares its along/across sharpness with the real ball on the fastest frames.
 import AVFoundation
 import AppKit
 import CoreImage
@@ -393,7 +398,14 @@ enum Blur {
         let motion = try Clip.spin(args[4])
         var today = BallEffectTrack(frames: frames), sharp = today
         today.surfaceMotion = motion
-        sharp.surfaceMotion = BallSurfaceTimeline(entries: motion?.entries ?? [], elapsed: 0, photographicExposure: 0)
+        // With BLUR_USE_APP the third column is the app's own spin pass and exposure, not "no blur".
+        let useApp = ProcessInfo.processInfo.environment["BLUR_USE_APP"] != nil
+        if useApp {
+            sharp.surfaceMotion = try await BallSurfaceTimeline.analyze(source: source, track: today)
+            print("app exposure \(sharp.surfaceMotion?.photographicExposure.map { $0 * 1000 } ?? -1) ms"); fflush(stdout)
+        } else {
+            sharp.surfaceMotion = BallSurfaceTimeline(entries: motion?.entries ?? [], elapsed: 0, photographicExposure: 0)
+        }
         // Review the fastest moment of each run and the slowest moment after it: the two ends of any pulse.
         let review = frames.map { $0.time }.indices.filter { i in
             let t = frames[i].time, here = hypot(today.smear(at: t, size: CGSize(width: 1080, height: 1920)).dx, today.smear(at: t, size: CGSize(width: 1080, height: 1920)).dy)
@@ -453,7 +465,7 @@ enum Blur {
                     let width = Double(panelH) * size.width / size.height
                     ctx.draw(picture, in: CGRect(x: Double(i) * 540 + (540 - width) / 2, y: 0, width: width, height: Double(panelH)))
                 }
-                for (i, text) in ["Real ball", "Today", "No fake blur"].enumerated() {
+                for (i, text) in ["Real ball", "Today", useApp ? "New blur" : "No fake blur"].enumerated() {
                     let line = CTLineCreateWithAttributedString(NSAttributedString(string: text, attributes: [.font: NSFont.boldSystemFont(ofSize: 26), .foregroundColor: NSColor.white]))
                     ctx.textPosition = CGPoint(x: i * 540 + 14, y: panelH - 38); CTLineDraw(line, ctx)
                 }
@@ -473,6 +485,281 @@ enum Blur {
     }
 }
 
+// MARK: - Does the real ball blur at speed?
+
+enum Scan {
+    struct Row { let time: Double; let lap, xx, yy, xy: Double }
+
+    /// Laplacian variance and the gradient tensor inside the ball. The tensor lets sharpness be read
+    /// along and across the motion later, which does not depend on the ball's design or distance.
+    static func measure(_ p: CVPixelBuffer, center: CGPoint, radius: Double, time: Double) -> Row? {
+        CVPixelBufferLockBaseAddress(p, .readOnly); defer { CVPixelBufferUnlockBaseAddress(p, .readOnly) }
+        guard let base = CVPixelBufferGetBaseAddress(p)?.assumingMemoryBound(to: UInt8.self) else { return nil }
+        let w = CVPixelBufferGetWidth(p), h = CVPixelBufferGetHeight(p), stride = CVPixelBufferGetBytesPerRow(p)
+        func luma(_ x: Int, _ y: Int) -> Double {
+            let q = base + y * stride + x * 4
+            return 0.114 * Double(q[0]) + 0.587 * Double(q[1]) + 0.299 * Double(q[2])
+        }
+        let r = radius * 0.72, r2 = r * r
+        let x0 = max(1, Int(center.x - r)), x1 = min(w - 2, Int(center.x + r)), y0 = max(1, Int(center.y - r)), y1 = min(h - 2, Int(center.y + r))
+        guard x1 > x0 + 8, y1 > y0 + 8 else { return nil }
+        var n = 0.0, sum = 0.0, squares = 0.0, xx = 0.0, yy = 0.0, xy = 0.0
+        for y in y0...y1 { for x in x0...x1 {
+            let dx = Double(x) - center.x, dy = Double(y) - center.y
+            guard dx * dx + dy * dy <= r2 else { continue }
+            let c = luma(x, y), a = luma(x - 1, y), b = luma(x + 1, y), d = luma(x, y - 1), e = luma(x, y + 1)
+            let l = a + b + d + e - 4 * c, gx = (b - a) / 2, gy = (e - d) / 2
+            n += 1; sum += l; squares += l * l; xx += gx * gx; yy += gy * gy; xy += gx * gy
+        } }
+        guard n > 40 else { return nil }
+        return Row(time: time, lap: squares / n - (sum / n) * (sum / n), xx: xx / n, yy: yy / n, xy: xy / n)
+    }
+
+    static func median(_ v: [Double]) -> Double { v.isEmpty ? 0 : v.sorted()[v.count / 2] }
+
+    static func run(_ args: [String]) async throws {
+        let network = try await Network(package: args[2], edge: Int(args[3])!)
+        let list = try String(contentsOfFile: args[4], encoding: .utf8).split(separator: "\n").map(String.init)
+        let limit = args.count > 6 ? Double(args[6])! : 15
+        var results = [[String: Any]]()
+        let tilesFolder = ProcessInfo.processInfo.environment["SCAN_TILES"]
+        for path in list {
+            let started = ProcessInfo.processInfo.systemUptime
+            var result: [String: Any] = ["path": path]
+            do {
+                let (reader, out) = try await Clip.decoder(URL(fileURLWithPath: path), shortEdge: 720)
+                var frames = [RecordedFrame](), rows = [Row](), last = -Double.infinity, size = CGSize.zero, seen = 0
+                var crops = [Double: CGImage]()
+                while let sample = out.copyNextSampleBuffer() {
+                    let time = sample.presentationTimeStamp.seconds
+                    if time > limit { reader.cancelReading(); break }
+                    seen += 1
+                    guard time - last >= 1.0 / 62 else { continue }   // 60 Hz is enough to read speed.
+                    last = time
+                    try autoreleasepool {
+                        let pixels = CMSampleBufferGetImageBuffer(sample)!
+                        size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
+                        let found = try network.full(CIImage(cvPixelBuffer: pixels))
+                        guard let guide = guideFrame(found, time: time), guide.score >= 0.5 else { return }
+                        frames.append(guide)
+                        let radius = min(guide.width * size.width, guide.height * size.height) / 2
+                        if let row = measure(pixels, center: CGPoint(x: guide.x * size.width, y: guide.y * size.height), radius: radius, time: time) { rows.append(row) }
+                        if tilesFolder != nil, radius >= 15 {
+                            let side = radius * 3.2
+                            let box = CGRect(x: guide.x * size.width - side / 2, y: guide.y * size.height - side / 2, width: side, height: side)
+                                .integral.intersection(CGRect(origin: .zero, size: size))
+                            crops[time] = Clip.image(pixels).cropping(to: box)
+                        }
+                    }
+                }
+                result["size"] = [size.width, size.height]; result["frames_read"] = seen; result["ball_frames"] = frames.count
+                result["fps"] = last > 0 ? Double(seen) / max(0.001, min(limit, last)) : 0
+                let track = BallEffectTrack(frames: frames)
+                let scored = rows.compactMap { row -> (speed: Double, row: Row, along: Double)? in
+                    guard let v = track.velocity(at: row.time, size: size) else { return nil }
+                    let speed = hypot(v.dx, v.dy); guard speed > 0 else { return nil }
+                    let ux = v.dx / speed, uy = v.dy / speed
+                    let along = ux * ux * row.xx + 2 * ux * uy * row.xy + uy * uy * row.yy
+                    let across = uy * uy * row.xx - 2 * ux * uy * row.xy + ux * ux * row.yy
+                    return across > 0 ? (speed, row, along / across) : nil
+                }.sorted { $0.speed < $1.speed }
+                result["scored_frames"] = scored.count
+                if scored.count >= 60 {
+                    let k = max(10, scored.count / 20), slow = scored.prefix(k), fast = scored.suffix(k)
+                    result["speed_slow"] = median(slow.map(\.speed)); result["speed_fast"] = median(fast.map(\.speed))
+                    result["falloff"] = median(fast.map(\.row.lap)) / max(1e-6, median(slow.map(\.row.lap)))
+                    result["along_fast"] = median(fast.map(\.along)); result["along_slow"] = median(slow.map(\.along))
+                    result["radius"] = median(frames.map { min($0.width * size.width, $0.height * size.height) / 2 })
+                    result["box_exposure_ms"] = track.exposure(size: size) * 1000
+                    result["brightness_laplacian"] = median(scored.map(\.row.lap))
+                    if let tilesFolder {
+                        var picks = [Double]()
+                        for entry in scored.reversed() where picks.count < 6 && !picks.contains(where: { abs($0 - entry.row.time) < 0.12 }) && crops[entry.row.time] != nil {
+                            picks.append(entry.row.time)
+                        }
+                        let along = result["along_fast"] as! Double
+                        let name = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
+                        let ctx = CGContext(data: nil, width: 6 * 220, height: 220, bitsPerComponent: 8, bytesPerRow: 0, space: Clip.cs, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+                        ctx.interpolationQuality = .high
+                        for (i, t) in picks.enumerated() { ctx.draw(crops[t]!, in: CGRect(x: i * 220, y: 0, width: 220, height: 220)) }
+                        let label = String(format: "%@ %.0ffps along %.2f", String(name.prefix(16)), result["fps"] as! Double, along)
+                        let line = CTLineCreateWithAttributedString(NSAttributedString(string: label, attributes: [.font: NSFont.boldSystemFont(ofSize: 16), .foregroundColor: NSColor.yellow]))
+                        ctx.textPosition = CGPoint(x: 6, y: 200); CTLineDraw(line, ctx)
+                        try NSBitmapImageRep(cgImage: ctx.makeImage()!).representation(using: .jpeg, properties: [.compressionFactor: 0.9])!
+                            .write(to: URL(fileURLWithPath: tilesFolder).appendingPathComponent(String(format: "%03d.jpg", results.count)))
+                    }
+                }
+            } catch { result["error"] = "\(error)" }
+            result["seconds"] = ProcessInfo.processInfo.systemUptime - started
+            results.append(result)
+            try JSONSerialization.data(withJSONObject: results, options: [.sortedKeys, .prettyPrinted]).write(to: URL(fileURLWithPath: args[5]))
+            print("\(results.count)/\(list.count) \(URL(fileURLWithPath: path).lastPathComponent) falloff \(result["falloff"] ?? "-") along \(result["along_fast"] ?? "-")"); fflush(stdout)
+        }
+    }
+}
+
+// MARK: - Exposure from the real ball
+
+enum Calibrate {
+    /// A grey crop around the ball, kept from frames that may become the sharp reference.
+    struct Patch { let gray: [Float]; let side: Int; let radius: Double; let time: Double }
+    static let lengths: [Double] = [0, 1, 2, 3, 4, 6, 8, 10, 13, 16, 20]
+
+    static func patch(_ p: CVPixelBuffer, center: CGPoint, radius: Double, time: Double) -> Patch? {
+        CVPixelBufferLockBaseAddress(p, .readOnly); defer { CVPixelBufferUnlockBaseAddress(p, .readOnly) }
+        guard let base = CVPixelBufferGetBaseAddress(p)?.assumingMemoryBound(to: UInt8.self) else { return nil }
+        let w = CVPixelBufferGetWidth(p), h = CVPixelBufferGetHeight(p), stride = CVPixelBufferGetBytesPerRow(p)
+        let half = Int((radius * 0.72 + 12).rounded(.up)), side = half * 2 + 1
+        let x0 = Int(center.x) - half, y0 = Int(center.y) - half
+        guard x0 >= 0, y0 >= 0, x0 + side < w, y0 + side < h, radius >= 15 else { return nil }
+        var gray = [Float](repeating: 0, count: side * side)
+        for y in 0..<side { for x in 0..<side {
+            let q = base + (y0 + y) * stride + (x0 + x) * 4
+            gray[y * side + x] = 0.114 * Float(q[0]) + 0.587 * Float(q[1]) + 0.299 * Float(q[2])
+        } }
+        return Patch(gray: gray, side: side, radius: radius, time: time)
+    }
+
+    /// Along/across gradient energy after blurring by `length` along `angle`. No camera involved.
+    static func ratio(_ p: Patch, length: Double, angle: Double) -> Double? {
+        let n = p.side, ux = cos(angle), uy = sin(angle), steps = max(1, Int(length.rounded(.up)) * 2)
+        func at(_ x: Double, _ y: Double) -> Float {
+            let cx = max(0, min(Double(n) - 1.001, x)), cy = max(0, min(Double(n) - 1.001, y))
+            let ix = Int(cx), iy = Int(cy), fx = Float(cx - Double(ix)), fy = Float(cy - Double(iy))
+            let a = p.gray[iy * n + ix], b = p.gray[iy * n + ix + 1], c = p.gray[(iy + 1) * n + ix], d = p.gray[(iy + 1) * n + ix + 1]
+            return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy
+        }
+        let r = p.radius * 0.72, mid = Double(n / 2)
+        var blurred = [Float](repeating: 0, count: n * n)
+        let lo = max(1, Int(mid - r) - 1), hi = min(n - 2, Int(mid + r) + 1)
+        for y in lo...hi { for x in lo...hi {
+            var sum: Float = 0
+            for k in 0..<steps {
+                let t = length == 0 ? 0 : (Double(k) + 0.5) / Double(steps) - 0.5
+                sum += at(Double(x) + ux * t * length, Double(y) + uy * t * length)
+            }
+            blurred[y * n + x] = sum / Float(steps)
+        } }
+        var along = 0.0, across = 0.0
+        for y in (lo + 1)..<hi { for x in (lo + 1)..<hi {
+            let dx = Double(x) - mid, dy = Double(y) - mid
+            guard dx * dx + dy * dy <= r * r else { continue }
+            let gx = Double(blurred[y * n + x + 1] - blurred[y * n + x - 1]) / 2, gy = Double(blurred[(y + 1) * n + x] - blurred[(y - 1) * n + x]) / 2
+            let a = ux * gx + uy * gy, b = -uy * gx + ux * gy
+            along += a * a; across += b * b
+        } }
+        return across > 0 ? along / across : nil
+    }
+
+    /// How along/across falls with blur length on this clip's own sharpest frames.
+    static func curve(_ patches: [Patch]) -> [Double] {
+        lengths.map { length in
+            var logs = [Double]()
+            for (i, p) in patches.enumerated() {
+                if let r = ratio(p, length: length, angle: Double(i % 4) * .pi / 4 + 0.2), r > 0 { logs.append(log(r)) }
+            }
+            return logs.isEmpty ? 1 : exp(Scan.median(logs))
+        }
+    }
+    static func invert(_ curve: [Double], _ value: Double) -> Double {
+        // Relative to the sharp end, so a clip whose frames sit slightly off 1.0 still reads zero.
+        let target = value / max(curve[0], 1e-6)
+        for i in 1..<curve.count {
+            let a = curve[i - 1] / curve[0], b = curve[i] / curve[0]
+            if target >= a { return lengths[i - 1] }
+            if target >= b { return lengths[i - 1] + (a - target) / max(a - b, 1e-6) * (lengths[i] - lengths[i - 1]) }
+        }
+        return lengths.last!
+    }
+    static func along(_ row: Scan.Row, velocity v: CGVector) -> Double? {
+        let speed = hypot(v.dx, v.dy); guard speed > 0 else { return nil }
+        let ux = v.dx / speed, uy = v.dy / speed
+        let a = ux * ux * row.xx + 2 * ux * uy * row.xy + uy * uy * row.yy, b = uy * uy * row.xx - 2 * ux * uy * row.xy + ux * ux * row.yy
+        return b > 0 ? a / b : nil
+    }
+
+    static func run(_ args: [String]) async throws {
+        let network = try await Network(package: args[2], edge: Int(args[3])!)
+        let list = try String(contentsOfFile: args[4], encoding: .utf8).split(separator: "\n").map(String.init)
+        let limit = args.count > 6 ? Double(args[6])! : 15
+        let skin = args.count > 7 ? BallSkin(rawValue: args[7])! : .arctic
+        var results = [[String: Any]]()
+        for path in list {
+            var result: [String: Any] = ["path": path]
+            let (reader, out) = try await Clip.decoder(URL(fileURLWithPath: path), shortEdge: 720)
+            var frames = [RecordedFrame](), rows = [Scan.Row](), patches = [Patch](), last = -Double.infinity, size = CGSize.zero
+            while let sample = out.copyNextSampleBuffer() {
+                let time = sample.presentationTimeStamp.seconds
+                if time > limit { reader.cancelReading(); break }
+                guard time - last >= 1.0 / 62 else { continue }
+                last = time
+                try autoreleasepool {
+                    let pixels = CMSampleBufferGetImageBuffer(sample)!
+                    size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
+                    let found = try network.full(CIImage(cvPixelBuffer: pixels))
+                    guard let guide = guideFrame(found, time: time), guide.score >= 0.5 else { return }
+                    frames.append(guide)
+                    let radius = min(guide.width * size.width, guide.height * size.height) / 2
+                    let center = CGPoint(x: guide.x * size.width, y: guide.y * size.height)
+                    if let row = Scan.measure(pixels, center: center, radius: radius, time: time) { rows.append(row) }
+                    if let p = patch(pixels, center: center, radius: radius, time: time) { patches.append(p) }
+                }
+            }
+            let track = BallEffectTrack(frames: frames)
+            let scored = rows.compactMap { row -> (speed: Double, row: Scan.Row, along: Double)? in
+                guard let v = track.velocity(at: row.time, size: size), let a = along(row, velocity: v) else { return nil }
+                return (hypot(v.dx, v.dy), row, a)
+            }.sorted { $0.speed < $1.speed }
+            guard scored.count >= 60 else { result["skipped"] = "too little ball"; results.append(result); continue }
+            let k = max(10, scored.count / 20), slowTimes = Set(scored.prefix(scored.count / 4).map(\.row.time))
+            let fast = Array(scored.suffix(k)), fastTimes = Set(fast.map(\.row.time))
+            let reference = Array(patches.filter { slowTimes.contains($0.time) }.prefix(24))
+            let speed = Scan.median(fast.map(\.speed)), real = Scan.median(fast.map(\.along))
+            guard !reference.isEmpty else { result["skipped"] = "no reference"; results.append(result); continue }
+            let table = curve(reference), blur = invert(table, real)
+            let prototype = blur / max(speed, 1)
+            // The app's own spin pass: the exposure it stores, and the poses it would draw with.
+            let timeline = try await BallSurfaceTimeline.analyze(source: URL(fileURLWithPath: path), track: track)
+            let estimate = timeline.photographicExposure ?? 0
+            result["app_found_exposure"] = timeline.photographicExposure != nil
+            result["prototype_ms"] = prototype * 1000
+            let guess = track.exposure(size: size)
+            result["fps"] = Double(frames.count) / max(0.001, min(limit, last))
+            result["radius"] = Scan.median(frames.map { min($0.width * size.width, $0.height * size.height) / 2 })
+            result["speed_fast"] = speed; result["real_along"] = real; result["curve"] = table
+            result["blur_px"] = blur; result["estimate_ms"] = estimate * 1000; result["guess_ms"] = guess * 1000
+            // Draw the print three ways on the same fast frames and read it the same way as the real ball.
+            func drawn(_ exposure: Double?) -> BallEffectTrack {
+                var t = track
+                t.surfaceMotion = BallSurfaceTimeline(entries: timeline.entries, elapsed: 0, photographicExposure: exposure)
+                return t
+            }
+            let cases: [(String, BallEffectTrack)] = [("today", drawn(nil)), ("none", drawn(0)), ("estimate", drawn(estimate))]
+            var readings = [String: [Double]]()
+            let (second, secondOut) = try await Clip.decoder(URL(fileURLWithPath: path), shortEdge: 720)
+            while let sample = secondOut.copyNextSampleBuffer() {
+                let time = sample.presentationTimeStamp.seconds
+                if time > limit { second.cancelReading(); break }
+                guard fastTimes.contains(where: { abs($0 - time) < 0.0005 }) else { continue }
+                try autoreleasepool {
+                    let pixels = CMSampleBufferGetImageBuffer(sample)!
+                    guard let v = track.velocity(at: time, size: size) else { return }
+                    for (name, t) in cases {
+                        let d = try Clip.render(t, pixels, time: time, skin: skin, draw: true)
+                        guard let m = d.matte, let row = Scan.measure(d.pixels, center: m.footprint.center, radius: m.footprint.radius, time: time),
+                              let a = along(row, velocity: v) else { continue }
+                        readings[name, default: []].append(a)
+                    }
+                }
+            }
+            for (name, values) in readings { result["print_" + name] = Scan.median(values) }
+            results.append(result)
+            try JSONSerialization.data(withJSONObject: results, options: [.sortedKeys, .prettyPrinted]).write(to: URL(fileURLWithPath: args[5]))
+            print("\(results.count)/\(list.count) \(URL(fileURLWithPath: path).lastPathComponent) real \(real) est \(estimate * 1000) ms guess \(guess * 1000) ms"); fflush(stdout)
+        }
+    }
+}
+
 @main struct ContactCrop {
     static func main() async throws {
         let args = CommandLine.arguments
@@ -480,6 +767,8 @@ enum Blur {
         case "labels": try await Labels.run(args)
         case "clip": try await Clip.run(args)
         case "blur": try await Blur.run(args)
+        case "scan": try await Scan.run(args)
+        case "calibrate": try await Calibrate.run(args)
         default: fatalError("labels | clip")
         }
     }
