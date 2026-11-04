@@ -538,6 +538,7 @@ final class VideoAnalyzer: ObservableObject {
             "all_mask_storage_bytes": Double(maskBytes),
             "mask_storage_bytes": Double(frames.reduce(0) { $0 + ($1.ballMask?.alpha.count ?? 0) })]
         PreparationPerformance.record(visualOnly ? "dense_analysis" : "import_analysis", metrics)
+        if visualOnly { RFFramePredictionReuse.shared.release() }
         let modelName = detector.modelName
         let resultFollowRows = followRows
         let resultFrames = frames

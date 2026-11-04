@@ -51,16 +51,48 @@ final class RFFramePredictionCacheTests: XCTestCase {
         XCTAssertLessThan(reused.storageByteCount, mask.storageByteCount)
     }
 
-    func testMemoryBudgetEvictsOlderPredictionsAndCanBeCleared() throws {
+    func testMemoryBudgetKeepsEarlierPredictionsAndCanBeCleared() throws {
         let cache = RFFramePredictionCache(byteLimit: 600)
         let keys = try [key(0), key(1), key(2)]
         for key in keys { cache.store(FrameDetections(ball: nil, person: nil), for: key) }
-        XCTAssertNil(cache.lookup(keys[0]))
+        XCTAssertNotNil(cache.lookup(keys[0]))
         XCTAssertNotNil(cache.lookup(keys[1]))
-        XCTAssertNotNil(cache.lookup(keys[2]))
+        XCTAssertNil(cache.lookup(keys[2]))
         XCTAssertLessThanOrEqual(cache.retainedBytes, 600)
         cache.removeAll()
-        XCTAssertNil(cache.lookup(keys[2])); XCTAssertEqual(cache.retainedBytes, 0)
+        XCTAssertNil(cache.lookup(keys[0])); XCTAssertEqual(cache.retainedBytes, 0)
+    }
+
+    /// A clip over the budget used to reuse nothing: each second-pass miss evicted the next hit.
+    func testASecondPassOverAClipLargerThanTheBudgetStillReusesItsStart() throws {
+        let cache = RFFramePredictionCache(byteLimit: 900)
+        let counted = try (0..<6).map { try key(Float($0) * 2) }, inBetween = try (0..<6).map { try key(Float($0) * 2 + 1) }
+        for key in counted { cache.store(FrameDetections(ball: nil, person: nil), for: key) }
+        var hits = 0
+        for (hit, miss) in zip(counted, inBetween) {
+            if cache.lookup(hit) != nil { hits += 1 } else { cache.store(FrameDetections(ball: nil, person: nil), for: hit) }
+            if cache.lookup(miss) == nil { cache.store(FrameDetections(ball: nil, person: nil), for: miss) }
+        }
+        XCTAssertEqual(hits, 3)
+    }
+
+    func testAClipWithinTheBudgetReusesEveryCountedFrame() throws {
+        let cache = RFFramePredictionCache(byteLimit: 2_000)
+        let counted = try (0..<6).map { try key(Float($0) * 2) }, inBetween = try (0..<6).map { try key(Float($0) * 2 + 1) }
+        for key in counted { cache.store(FrameDetections(ball: nil, person: nil), for: key) }
+        var hits = 0
+        for (hit, miss) in zip(counted, inBetween) {
+            if cache.lookup(hit) != nil { hits += 1 }
+            if cache.lookup(miss) == nil { cache.store(FrameDetections(ball: nil, person: nil), for: miss) }
+        }
+        XCTAssertEqual(hits, 6)
+    }
+
+    func testReleasingDropsTheClipsPredictions() throws {
+        let owner = RFFramePredictionReuse(), key = try key()
+        owner.cache(for: "clip-a|model-v1").store(FrameDetections(ball: nil, person: nil), for: key)
+        owner.release()
+        XCTAssertNil(owner.cache(for: "clip-a|model-v1").lookup(key))
     }
 
     func testSourceOrPipelineChangeDoesNotReuseOtherClipPredictions() throws {

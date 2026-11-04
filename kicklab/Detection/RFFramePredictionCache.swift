@@ -2,6 +2,7 @@ import CoreGraphics
 import CoreML
 import CryptoKit
 import Foundation
+import UIKit
 
 /// Bounded memoization of the stateless RF prediction, before association or counting.
 /// A timestamp or a nearby mask is never a hit: the normalized tensor must match byte for byte.
@@ -23,8 +24,6 @@ nonisolated final class RFFramePredictionCache: @unchecked Sendable {
     private let lock = NSLock()
     private let byteLimit: Int
     private var entries: [Key: Entry] = [:]
-    private var order: [Key] = []
-    private var first = 0
     private var bytes = 0
     private var hits = 0
 
@@ -57,19 +56,17 @@ nonisolated final class RFFramePredictionCache: @unchecked Sendable {
         let cost = 256 + key.model.utf8.count + compact.people.count * 40 + (compact.ballMask?.storageByteCount ?? 0)
         guard cost <= byteLimit else { return }
         lock.lock(); defer { lock.unlock() }
-        guard entries[key] == nil else { return }
-        while bytes + cost > byteLimit, first < order.count {
-            if let old = entries.removeValue(forKey: order[first]) { bytes -= old.bytes }
-            first += 1
-        }
+        // Both passes read the clip in order, so evicting the oldest would drop what the second
+        // pass reaches next and a clip over the limit would reuse nothing. Once full, later
+        // frames run the model and the start of the clip is still reused.
+        guard entries[key] == nil, bytes + cost <= byteLimit else { return }
         entries[key] = Entry(detections: compact, bytes: cost)
-        order.append(key); bytes += cost
-        if first > 1024 { order.removeFirst(first); first = 0 }
+        bytes += cost
     }
 
     func removeAll() {
         lock.lock(); defer { lock.unlock() }
-        entries.removeAll(); order.removeAll(); first = 0; bytes = 0
+        entries.removeAll(); bytes = 0
     }
 
     var retainedBytes: Int { lock.lock(); defer { lock.unlock() }; return bytes }
@@ -82,6 +79,17 @@ nonisolated final class RFFramePredictionReuse: @unchecked Sendable {
     static let shared = RFFramePredictionReuse()
     private let lock = NSLock()
     private var current: (String, RFFramePredictionCache)?
+
+    init() {
+        NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification,
+                                               object: nil, queue: nil) { [weak self] _ in self?.release() }
+    }
+
+    /// The appearance pass has read what it needs, or the phone needs the memory.
+    func release() {
+        lock.lock(); defer { lock.unlock() }
+        current = nil
+    }
 
     func cache(for sourceAndPipeline: String) -> RFFramePredictionCache {
         lock.lock(); defer { lock.unlock() }
