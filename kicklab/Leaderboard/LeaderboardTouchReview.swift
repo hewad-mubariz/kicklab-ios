@@ -61,10 +61,10 @@ nonisolated struct LeaderboardTouchReview: Codable, Equatable, Sendable {
 
     var visibilityNotice: String? {
         if moments.contains(where: { $0.kind == .visibilityUnverified }) {
-            return String(localized: "A long tracking gap could not be checked. Streaks on either side are kept separate; all touches remain in your total.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            return String(localized: "Part of this session could not be checked, so streaks on either side are kept separate. All touches stay in your total.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
         if moments.contains(where: { $0.kind == .playerOutOfView }) {
-            return String(localized: "Streaks were separated after at least 2.5 seconds with no player detected. All touches remain in your total.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            return String(localized: "No player was visible for at least 2.5 seconds, so a new streak started. All touches stay in your total.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
         return nil
     }
@@ -87,7 +87,7 @@ nonisolated extension ContactReviewReason {
         case .heldBall: String(localized: "the ball was held", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .groundContact: String(localized: "the ball touched the ground", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .playerOutOfView: String(localized: "the player was out of view for at least 2.5 seconds", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        case .visibilityUnverified: String(localized: "continuity could not be checked across a long tracking gap", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .visibilityUnverified: String(localized: "part of the session could not be checked", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         default: String(localized: "a hand or arm touched the ball", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
@@ -97,7 +97,7 @@ nonisolated extension ContactReviewReason {
         case .heldBall: String(localized: "Ball hold detected", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .groundContact: String(localized: "Ground contact detected", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .playerOutOfView: String(localized: "Player out of view", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        case .visibilityUnverified: String(localized: "Streak continuity unclear", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .visibilityUnverified: String(localized: "Long tracking gap", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .lowContactUncertain: String(localized: "Foot contact unclear", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .handsUncertain: String(localized: "Hand position unclear", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .bodyUncertain: String(localized: "Contact area unclear", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
@@ -111,8 +111,8 @@ nonisolated extension ContactReviewReason {
         case .handContact: String(localized: "The counter found hand or arm contact. This splits the suggested streak. If it was a valid touch, the original can be checked.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .heldBall: String(localized: "The counter found a sustained hold. A catch or hold ends a streak. Review the footage if that looks wrong.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .groundContact: String(localized: "The counter found evidence of a ground bounce. This splits the suggested streak; a reviewer can correct a mistaken detection.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        case .playerOutOfView: String(localized: "Fresh video observations could not see a player for at least 2.5 seconds. Touches before and after this interval form separate streaks. Your total touches are kept.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        case .visibilityUnverified: String(localized: "A long tracking gap could not be resolved from the saved video. Runs on either side are kept separate. This does not mean the ball dropped, and your total touches are kept.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .playerOutOfView: String(localized: "No player was visible for at least 2.5 seconds, so touches before and after count as separate streaks. Your total touches are kept.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .visibilityUnverified: String(localized: "Part of the session could not be checked, even in the saved video, so streaks on either side stay separate. This does not mean the ball dropped, and your total touches are kept.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .lowContactUncertain: String(localized: "The ball was low, but the view did not clearly distinguish a foot touch from a ground bounce.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .handsUncertain: String(localized: "The hands or arms were hidden or too close to the ball to verify the contact. This is not proof of a hand touch.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .bodyUncertain: String(localized: "The counter could not confidently locate the body part making contact. The original may show a valid touch.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)

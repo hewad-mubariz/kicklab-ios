@@ -1,6 +1,34 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "A possible touch that the counter cannot confirm is left out. Brief tracking misses and high kicks do not end a streak on their own." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein möglicher Kontakt, den der Zähler nicht bestätigen kann, wird nicht gezählt. Kurze Tracking-Aussetzer und hohe Schüsse beenden eine Serie nicht von selbst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un posible toque que el contador no puede confirmar no se cuenta. Las pérdidas breves de seguimiento y los toques altos no terminan una racha por sí solos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un contact possible que le compteur ne peut pas confirmer n’est pas compté. De brèves pertes de suivi et les frappes hautes n’arrêtent pas une série à elles seules."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um possível toque que o contador não consegue confirmar fica de fora. Falhas breves de rastreamento e toques altos não encerram uma sequência por si só."
+          }
+        }
+      }
+    },
     "Edit": {
       "extractionState": "manual",
       "localizations": {
@@ -172,6 +200,258 @@
           "stringUnit": {
             "state": "translated",
             "value": "Texto do contador"
+          }
+        }
+      }
+    },
+    "Google could not complete sign-in. Please try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google konnte die Anmeldung nicht abschließen. Bitte versuche es noch einmal."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google no pudo completar el inicio de sesión. Inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google n’a pas pu terminer la connexion. Réessaie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Google não conseguiu concluir o login. Tente novamente."
+          }
+        }
+      }
+    },
+    "If no player is visible for at least 2.5 seconds, a new streak starts when touches resume. If part of a session cannot be checked, streaks on either side stay separate. Your total touches are kept." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn mindestens 2,5 Sekunden lang kein Spieler zu sehen ist, beginnt eine neue Serie, sobald die Kontakte weitergehen. Kann ein Teil des Trainings nicht geprüft werden, bleiben die Serien davor und danach getrennt. Deine Gesamtzahl an Kontakten bleibt erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si no se ve a ningún jugador durante al menos 2,5 segundos, empieza una racha nueva cuando vuelven los toques. Si no se puede comprobar una parte de la sesión, las rachas de antes y después siguen separadas. Tu total de toques se mantiene."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si aucun joueur n’est visible pendant au moins 2,5 secondes, une nouvelle série commence à la reprise des jongles. Si une partie de la séance ne peut pas être vérifiée, les séries avant et après restent séparées. Ton total de jongles est conservé."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se nenhum jogador ficar visível por pelo menos 2,5 segundos, uma nova sequência começa quando os toques recomeçam. Se não for possível verificar uma parte do treino, as sequências antes e depois ficam separadas. Seu total de toques é mantido."
+          }
+        }
+      }
+    },
+    "Long tracking gap" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lange Tracking-Lücke"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pausa larga en el seguimiento"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longue coupure du suivi"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longa falha no rastreamento"
+          }
+        }
+      }
+    },
+    "No player was visible for at least 2.5 seconds, so a new streak started. All touches stay in your total." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mindestens 2,5 Sekunden lang war kein Spieler zu sehen, daher begann eine neue Serie. Alle Kontakte zählen weiter zu deiner Gesamtzahl."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se vio a ningún jugador durante al menos 2,5 segundos, así que empezó una racha nueva. Todos los toques siguen en tu total."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun joueur n’a été visible pendant au moins 2,5 secondes, une nouvelle série a donc commencé. Tous les jongles restent dans ton total."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum jogador ficou visível por pelo menos 2,5 segundos, então uma nova sequência começou. Todos os toques continuam no seu total."
+          }
+        }
+      }
+    },
+    "No player was visible for at least 2.5 seconds, so touches before and after count as separate streaks. Your total touches are kept." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mindestens 2,5 Sekunden lang war kein Spieler zu sehen, daher zählen die Kontakte davor und danach als getrennte Serien. Deine Gesamtzahl an Kontakten bleibt erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se vio a ningún jugador durante al menos 2,5 segundos, así que los toques de antes y después cuentan como rachas separadas. Tu total de toques se mantiene."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun joueur n’a été visible pendant au moins 2,5 secondes : les jongles avant et après comptent donc comme des séries séparées. Ton total de jongles est conservé."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum jogador ficou visível por pelo menos 2,5 segundos, então os toques antes e depois contam como sequências separadas. Seu total de toques é mantido."
+          }
+        }
+      }
+    },
+    "part of the session could not be checked" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ein Teil des Trainings konnte nicht geprüft werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "no se pudo comprobar una parte de la sesión"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "une partie de la séance n’a pas pu être vérifiée"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "não foi possível verificar uma parte do treino"
+          }
+        }
+      }
+    },
+    "Part of the session could not be checked, even in the saved video, so streaks on either side stay separate. This does not mean the ball dropped, and your total touches are kept." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Teil des Trainings konnte auch im gespeicherten Video nicht geprüft werden, daher bleiben die Serien davor und danach getrennt. Das heißt nicht, dass der Ball heruntergefallen ist, und deine Gesamtzahl an Kontakten bleibt erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo comprobar una parte de la sesión, ni siquiera en el video guardado, así que las rachas de antes y después siguen separadas. Esto no significa que el balón haya caído, y tu total de toques se mantiene."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une partie de la séance n’a pas pu être vérifiée, même dans la vidéo enregistrée : les séries avant et après restent donc séparées. Cela ne veut pas dire que le ballon est tombé, et ton total de jongles est conservé."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar uma parte do treino, nem mesmo no vídeo salvo, então as sequências antes e depois continuam separadas. Isso não significa que a bola caiu, e seu total de toques é mantido."
+          }
+        }
+      }
+    },
+    "Part of this session could not be checked, so streaks on either side are kept separate. All touches stay in your total." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Teil dieses Trainings konnte nicht geprüft werden, daher bleiben die Serien davor und danach getrennt. Alle Kontakte zählen weiter zu deiner Gesamtzahl."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo comprobar una parte de esta sesión, así que las rachas de antes y después se mantienen separadas. Todos los toques siguen en tu total."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une partie de cette séance n’a pas pu être vérifiée : les séries avant et après restent donc séparées. Tous les jongles restent dans ton total."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível verificar uma parte deste treino, então as sequências antes e depois ficam separadas. Todos os toques continuam no seu total."
+          }
+        }
+      }
+    },
+    "Player out of view" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spieler nicht im Bild"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jugador fuera de cuadro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joueur hors champ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jogador fora do quadro"
           }
         }
       }
@@ -19828,6 +20108,34 @@
         }
       }
     },
+    "Stay in view" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bleib im Bild"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantente en cuadro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reste dans le champ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fique no quadro"
+          }
+        }
+      }
+    },
     "STRIKE" : {
       "localizations" : {
         "de" : {
@@ -23127,6 +23435,34 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "the player was out of view for at least 2.5 seconds" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "der Spieler war mindestens 2,5 Sekunden nicht im Bild"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "el jugador estuvo fuera de cuadro al menos 2,5 segundos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "le joueur était hors champ pendant au moins 2,5 secondes"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "o jogador ficou fora do quadro por pelo menos 2,5 segundos"
+          }
+        }
+      }
+    },
     "THE STREAK" : {
       "localizations" : {
         "de" : {
@@ -23295,6 +23631,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TOQUES"
+          }
+        }
+      }
+    },
+    "Touches" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontakte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toques"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jongles"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toques"
           }
         }
       }
