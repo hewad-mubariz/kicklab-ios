@@ -1,0 +1,428 @@
+{
+  "decision": "Do not promote this optical-flow mask transport into the dense preparation pipeline. Preserve current build and quality. No new phone build or TestFlight upload.",
+  "reason": "No IMG_1529 target passed the predeclared strict gate using either retained phone reference. Smaller patches accepted fewer frames under the existing repair gate, and every rejection would add cost before full-model fallback. This experiment does not establish any phone speedup.",
+  "scope": "320 held-out target evaluations in 5 reference cases from 3 existing development videos, each evaluated at 3 resolutions. Not 5 independent videos, not manual ground truth, not blind accuracy testing.",
+  "runtime": "macOS-26.7.2-arm64-arm-64bit",
+  "cases": [
+    {
+      "case": "1529-iphone11",
+      "targets": 64,
+      "timestampErrors": 0,
+      "reference256Exact": true,
+      "candidates": [
+        {
+          "dimension": 256,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 39.98913541727234,
+          "medianRecoverMilliseconds": 39.551874971948564,
+          "existingGate": {
+            "count": 14,
+            "withReference": 14,
+            "medianSoftIoU": 0.9332608757693197,
+            "minimumSoftIoU": 0.8919256285300702,
+            "maximumOmittedReferenceFraction": 0.10803785410400393
+          },
+          "strictGate": {
+            "count": 0,
+            "withReference": 0,
+            "medianSoftIoU": null,
+            "minimumSoftIoU": null,
+            "maximumOmittedReferenceFraction": null
+          }
+        },
+        {
+          "dimension": 128,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 31.597386065186583,
+          "medianRecoverMilliseconds": 30.999458365840837,
+          "existingGate": {
+            "count": 6,
+            "withReference": 6,
+            "medianSoftIoU": 0.9244825373677996,
+            "minimumSoftIoU": 0.9084995777271994,
+            "maximumOmittedReferenceFraction": 0.09069162044284097
+          },
+          "strictGate": {
+            "count": 0,
+            "withReference": 0,
+            "medianSoftIoU": null,
+            "minimumSoftIoU": null,
+            "maximumOmittedReferenceFraction": null
+          }
+        },
+        {
+          "dimension": 96,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 39.356626954031526,
+          "medianRecoverMilliseconds": 30.55433332337998,
+          "existingGate": {
+            "count": 5,
+            "withReference": 5,
+            "medianSoftIoU": 0.9176243257695674,
+            "minimumSoftIoU": 0.9129972478182387,
+            "maximumOmittedReferenceFraction": 0.0819943446327766
+          },
+          "strictGate": {
+            "count": 0,
+            "withReference": 0,
+            "medianSoftIoU": null,
+            "minimumSoftIoU": null,
+            "maximumOmittedReferenceFraction": null
+          }
+        }
+      ]
+    },
+    {
+      "case": "1529-iphone17",
+      "targets": 64,
+      "timestampErrors": 0,
+      "reference256Exact": true,
+      "candidates": [
+        {
+          "dimension": 256,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 39.27438867413002,
+          "medianRecoverMilliseconds": 38.46393749699928,
+          "existingGate": {
+            "count": 11,
+            "withReference": 11,
+            "medianSoftIoU": 0.9374441442399887,
+            "minimumSoftIoU": 0.9110688679778229,
+            "maximumOmittedReferenceFraction": 0.08893092069802534
+          },
+          "strictGate": {
+            "count": 0,
+            "withReference": 0,
+            "medianSoftIoU": null,
+            "minimumSoftIoU": null,
+            "maximumOmittedReferenceFraction": null
+          }
+        },
+        {
+          "dimension": 128,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 32.00255013052811,
+          "medianRecoverMilliseconds": 31.621333357179537,
+          "existingGate": {
+            "count": 4,
+            "withReference": 4,
+            "medianSoftIoU": 0.9540528553711032,
+            "minimumSoftIoU": 0.9202078429584067,
+            "maximumOmittedReferenceFraction": 0.0737748424195991
+          },
+          "strictGate": {
+            "count": 0,
+            "withReference": 0,
+            "medianSoftIoU": null,
+            "minimumSoftIoU": null,
+            "maximumOmittedReferenceFraction": null
+          }
+        },
+        {
+          "dimension": 96,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 30.572930332709802,
+          "medianRecoverMilliseconds": 30.158187524648383,
+          "existingGate": {
+            "count": 1,
+            "withReference": 1,
+            "medianSoftIoU": 0.9042076649078119,
+            "minimumSoftIoU": 0.9042076649078119,
+            "maximumOmittedReferenceFraction": 0.09088187398157002
+          },
+          "strictGate": {
+            "count": 0,
+            "withReference": 0,
+            "medianSoftIoU": null,
+            "minimumSoftIoU": null,
+            "maximumOmittedReferenceFraction": null
+          }
+        }
+      ]
+    },
+    {
+      "case": "9094-rf288",
+      "targets": 64,
+      "timestampErrors": 0,
+      "reference256Exact": true,
+      "candidates": [
+        {
+          "dimension": 256,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 42.60937630351691,
+          "medianRecoverMilliseconds": 40.17993749585003,
+          "existingGate": {
+            "count": 53,
+            "withReference": 53,
+            "medianSoftIoU": 0.9325679955894237,
+            "minimumSoftIoU": 0.7422748556595125,
+            "maximumOmittedReferenceFraction": 0.2577250807910795
+          },
+          "strictGate": {
+            "count": 12,
+            "withReference": 12,
+            "medianSoftIoU": 0.956675979598931,
+            "minimumSoftIoU": 0.9287990992010426,
+            "maximumOmittedReferenceFraction": 0.0689609040463494
+          }
+        },
+        {
+          "dimension": 128,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 34.1187148451354,
+          "medianRecoverMilliseconds": 32.71583330933936,
+          "existingGate": {
+            "count": 53,
+            "withReference": 53,
+            "medianSoftIoU": 0.9251559282500236,
+            "minimumSoftIoU": 0.7386876195338286,
+            "maximumOmittedReferenceFraction": 0.261304332970688
+          },
+          "strictGate": {
+            "count": 8,
+            "withReference": 8,
+            "medianSoftIoU": 0.954101642626358,
+            "minimumSoftIoU": 0.9251559282500236,
+            "maximumOmittedReferenceFraction": 0.07278501767553153
+          }
+        },
+        {
+          "dimension": 96,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 34.53845117383025,
+          "medianRecoverMilliseconds": 31.76679165335372,
+          "existingGate": {
+            "count": 51,
+            "withReference": 51,
+            "medianSoftIoU": 0.9228708497037025,
+            "minimumSoftIoU": 0.8030960554778446,
+            "maximumOmittedReferenceFraction": 0.19529533998778906
+          },
+          "strictGate": {
+            "count": 7,
+            "withReference": 7,
+            "medianSoftIoU": 0.9565967825217984,
+            "minimumSoftIoU": 0.9414557451352661,
+            "maximumOmittedReferenceFraction": 0.05790724936907044
+          }
+        }
+      ]
+    },
+    {
+      "case": "9094-rf384",
+      "targets": 64,
+      "timestampErrors": 0,
+      "reference256Exact": true,
+      "candidates": [
+        {
+          "dimension": 256,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 37.85927083754359,
+          "medianRecoverMilliseconds": 37.43681250489317,
+          "existingGate": {
+            "count": 53,
+            "withReference": 53,
+            "medianSoftIoU": 0.9388185693231793,
+            "minimumSoftIoU": 0.8655919735912542,
+            "maximumOmittedReferenceFraction": 0.13429199517239326
+          },
+          "strictGate": {
+            "count": 14,
+            "withReference": 14,
+            "medianSoftIoU": 0.9612558283179589,
+            "minimumSoftIoU": 0.9388218243190518,
+            "maximumOmittedReferenceFraction": 0.06112450677257594
+          }
+        },
+        {
+          "dimension": 128,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 30.861940106660768,
+          "medianRecoverMilliseconds": 30.580395832657814,
+          "existingGate": {
+            "count": 53,
+            "withReference": 53,
+            "medianSoftIoU": 0.9324401397192059,
+            "minimumSoftIoU": 0.8619058825993982,
+            "maximumOmittedReferenceFraction": 0.13790701868319732
+          },
+          "strictGate": {
+            "count": 12,
+            "withReference": 12,
+            "medianSoftIoU": 0.9582805433852102,
+            "minimumSoftIoU": 0.9400486157346253,
+            "maximumOmittedReferenceFraction": 0.05954253341117509
+          }
+        },
+        {
+          "dimension": 96,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 30.17066796292056,
+          "medianRecoverMilliseconds": 29.866458324249834,
+          "existingGate": {
+            "count": 53,
+            "withReference": 53,
+            "medianSoftIoU": 0.92495968092295,
+            "minimumSoftIoU": 0.8464871378312944,
+            "maximumOmittedReferenceFraction": 0.15276596446782428
+          },
+          "strictGate": {
+            "count": 10,
+            "withReference": 10,
+            "medianSoftIoU": 0.956960499609621,
+            "minimumSoftIoU": 0.9326407370684064,
+            "maximumOmittedReferenceFraction": 0.0665615367414961
+          }
+        }
+      ]
+    },
+    {
+      "case": "8649-rf384",
+      "targets": 64,
+      "timestampErrors": 0,
+      "reference256Exact": true,
+      "candidates": [
+        {
+          "dimension": 256,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 40.48800390864926,
+          "medianRecoverMilliseconds": 39.09968747757375,
+          "existingGate": {
+            "count": 16,
+            "withReference": 16,
+            "medianSoftIoU": 0.9633130616289539,
+            "minimumSoftIoU": 0.9239949818476723,
+            "maximumOmittedReferenceFraction": 0.0759896696241121
+          },
+          "strictGate": {
+            "count": 4,
+            "withReference": 4,
+            "medianSoftIoU": 0.9732185287225601,
+            "minimumSoftIoU": 0.9713826774113824,
+            "maximumOmittedReferenceFraction": 0.02762026075202524
+          }
+        },
+        {
+          "dimension": 128,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 33.56658919710753,
+          "medianRecoverMilliseconds": 32.22041667322628,
+          "existingGate": {
+            "count": 11,
+            "withReference": 11,
+            "medianSoftIoU": 0.9695746783650926,
+            "minimumSoftIoU": 0.951791236346499,
+            "maximumOmittedReferenceFraction": 0.044092103882289506
+          },
+          "strictGate": {
+            "count": 0,
+            "withReference": 0,
+            "medianSoftIoU": null,
+            "minimumSoftIoU": null,
+            "maximumOmittedReferenceFraction": null
+          }
+        },
+        {
+          "dimension": 96,
+          "attempts": 64,
+          "meanRecoverMilliseconds": 32.65017708508822,
+          "medianRecoverMilliseconds": 32.24816668080166,
+          "existingGate": {
+            "count": 8,
+            "withReference": 8,
+            "medianSoftIoU": 0.9677666267558993,
+            "minimumSoftIoU": 0.936839102741111,
+            "maximumOmittedReferenceFraction": 0.06131040563454444
+          },
+          "strictGate": {
+            "count": 0,
+            "withReference": 0,
+            "medianSoftIoU": null,
+            "minimumSoftIoU": null,
+            "maximumOmittedReferenceFraction": null
+          }
+        }
+      ]
+    }
+  ],
+  "files": {
+    "plan.json": "b8d6430a3304c021ea1ca2b1643373fa47025051ad69a02badb4e5cb48ec5793",
+    "Main.swift": "00f9debd815d102a87699d02c159033d0aefc51d0df99d93ee57cf3c61657747",
+    "MaskTransportProbe.swift": "74b9cb3cffd345c273e26dfdde0150d3d9f7d245a875d8f207184333db1047f7",
+    "Support.swift": "3797baa7c7fba3f7187c918007e3de480147de1ffc1b70ceb1c7c1e87c54a372"
+  },
+  "limitations": [
+    "Timing on Mac, recover() only, no phone/full-workflow extrapolation.",
+    "One timed recover call per target/config after three warmups per case/config; rotating order.",
+    "Selection deliberately includes motion, small balls and frame edges. Acceptance rates are for this sample, not whole videos.",
+    "Reference masks come from the existing full model; agreement does not prove correctness.",
+    "No reconstructed masks entered counting, exports or the installed app.",
+    "Strict thresholds were fixed before this run; no post-hoc threshold tuning."
+  ],
+  "nextStep": "A separate, purpose-built lightweight mask estimator evaluated against this same fixed reference set, then first-use end-to-end timing on both phones if quality passes. Keep full-model fallback; do not change counting from appearance experiments.",
+  "releaseRecommendation": "Keep the heavy replacement workflow in TestFlight. Retain validated sparse decoding and exact prediction reuse. Do not broadly market the heavy first-use workflow at the current measured delay. A public release of other functionality can be considered only with an explicit product decision about this feature.",
+  "visualReview": {
+    "artifact": "quality-comparison.png",
+    "findings": [
+      "Transported masks often cover less of the ball boundary than the retained reference. First two selected IMG_1529 examples show edge reduction.",
+      "At IMG_9094 8.679s the retained rf288 reference includes shoe pixels; the transported mask removes that spill. The worst disagreement metric therefore cannot be treated as proof of worse visible accuracy.",
+      "The strict-pass example still has modest contour differences. No actual replacement export or temporal stability validation was performed because the exact-clip acceptance gate failed."
+    ],
+    "decisionBasis": "Insufficient acceptance on IMG_1529 under the predeclared validation gates; no demonstrated phone/full-workflow benefit. Not a blanket assertion that all transported masks are inaccurate."
+  },
+  "sourceManifest": [
+    {
+      "id": "1529-iphone11",
+      "source": "/Users/hewadmubariz/Downloads/IMG_1529.MOV",
+      "sourceSHA256": "2d0fb34d3086b71a0e8412ec576e62deec1b4d2701f1a0b2170334325bcae798",
+      "frames": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/preparation-pipeline-20261103/iphone11-raw-visual.plist",
+      "framesSHA256": "17149c232d8c45c3db47313d2b35fca884ccc1cb84cd8f34eaf1815d050f417f",
+      "reference": "Fresh physical iPhone 11 CPU rf288 results retained from preceding measured run",
+      "possibleAnchorPairs": 1160
+    },
+    {
+      "id": "1529-iphone17",
+      "source": "/Users/hewadmubariz/Downloads/IMG_1529.MOV",
+      "sourceSHA256": "2d0fb34d3086b71a0e8412ec576e62deec1b4d2701f1a0b2170334325bcae798",
+      "frames": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/preparation-pipeline-20261103/iphone17-raw-visual.plist",
+      "framesSHA256": "b09a22eb2913b3a3705de857f845526fdd955933aa85186abce0a243b4238995",
+      "reference": "Fresh physical iPhone 17 GPU rf384 results retained from preceding measured run",
+      "possibleAnchorPairs": 1160
+    },
+    {
+      "id": "9094-rf288",
+      "source": "/Users/hewadmubariz/Downloads/IMG_9094.MOV",
+      "sourceSHA256": "f07d117527f2a3a4f4d7bb0530ad22ac516ad281c9b53af5db7e19fab7c2e38a",
+      "frames": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-pair-audit-20261102/problem-rf288/visual.plist",
+      "framesSHA256": "49ab8be4f14fdd3eef5cefc82a10c74c12980ba1cb8718d9a0713f1cfe1f0c7b",
+      "reference": "Retained native Mac rf288 raw predictions from previous paired clip audit",
+      "possibleAnchorPairs": 735
+    },
+    {
+      "id": "9094-rf384",
+      "source": "/Users/hewadmubariz/Downloads/IMG_9094.MOV",
+      "sourceSHA256": "f07d117527f2a3a4f4d7bb0530ad22ac516ad281c9b53af5db7e19fab7c2e38a",
+      "frames": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-pair-audit-20261102/problem-source/visual.plist",
+      "framesSHA256": "0456f4ae9e345b91e2b16b9f0d4084d3ceea06cf671561c070ae8d8ea1c53cca",
+      "reference": "Retained native Mac rf384 raw predictions from previous paired clip audit",
+      "possibleAnchorPairs": 735
+    },
+    {
+      "id": "8649-rf384",
+      "source": "/Users/hewadmubariz/Downloads/IMG_8649 2.mov",
+      "sourceSHA256": "a1267bb4e0223ace84cc2559d44cc7800b248ae18ad5725f1a10081403155218",
+      "frames": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-pair-audit-20261102/better-source/visual.plist",
+      "framesSHA256": "0cd1c46445698df20e29e0815d8254e9cf6048a8c94e6f4d2213d2d1b5f90695",
+      "reference": "Retained native Mac rf384 raw predictions from previous paired clip audit",
+      "possibleAnchorPairs": 1370
+    }
+  ],
+  "validation": {
+    "timestampErrors": 0,
+    "allFive256PixelReferenceComparisonsExact": true,
+    "targetCount": 320,
+    "candidateCallsExcludingWarmup": 960,
+    "qualityImageVisuallyInspected": true,
+    "comparisonImageVisuallyInspected": true
+  }
+}

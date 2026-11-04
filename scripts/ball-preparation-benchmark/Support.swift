@@ -1,7 +1,25 @@
 // CLI-only stand-ins for app lifecycle/cache services and decoded frame types.
 // Appearance algorithms, video decoding and rotation all use production sources.
 import Foundation
+nonisolated enum PreparationPerformance {
+    static let enabled = false
+    static func record(_ stage: String, _ metrics: [String: Double]) {}
+}
 import CoreGraphics
+nonisolated enum AppLanguage {
+    static let bundle = Bundle.main
+    static let locale = Locale(identifier: "en")
+}
+// The CLI calls analyzeForReview directly and has no session library. Keep the
+// app's cache-entry API type-checkable without pulling app persistence into this harness.
+nonisolated struct HistoryReplayContext: Sendable {
+    let library = BenchmarkHistoryLibrary()
+    let item = 0
+}
+nonisolated struct BenchmarkHistoryLibrary: Sendable {
+    func replayMotion(for item: Int, key: String) throws -> BallSurfaceTimeline? { nil }
+    func saveReplayMotion(_ value: BallSurfaceTimeline, for item: Int, key: String) throws {}
+}
 nonisolated enum MotionState: Int { case unknown, rising, falling }
 nonisolated struct PersonBox: Sendable { let x,y,width,height: Double }
 nonisolated struct BallStyleSample: Sendable {

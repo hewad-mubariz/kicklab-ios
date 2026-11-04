@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-03",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "base_commit": "8acf125e8570228b038ced0b7f03b303ddc41fa7",
+  "scope": "First source-timestamp visibility policy for new recorded leaderboard streaks. Total touch decisions unchanged.",
+  "release_build": {
+    "identifier": "com.juggledude",
+    "version": "1.2.0",
+    "build": "38.4",
+    "configuration": "Release",
+    "executable_sha256": "b573f2dbc6b5f8d299959f6680914772a10d79e0cf8dd1f00e6e620a9e38e469"
+  },
+  "devices": {
+    "iphone11": "Installed in place; launch succeeded; inventory confirmed 1.2.0 (38.4).",
+    "iphone17": "Installed in place; inventory confirmed 1.2.0 (38.4). First remote launch was temporarily denied by iOS preflight; signing and Developer Mode verified; next launch succeeded."
+  },
+  "automated_tests": {
+    "passed": 58,
+    "skipped": 2,
+    "failed": 0,
+    "new_visibility_tests": 14,
+    "result": "artifacts/streak-visibility-20261103/final.xcresult",
+    "skips": "Existing opt-in real-phone history replay cases, unavailable on simulator."
+  },
+  "policy": {
+    "fresh_absence_ms": 2500,
+    "max_source_sample_gap_ms": 600,
+    "minimum_absent_samples": 6,
+    "recheck_hz": 2,
+    "maximum_recheck_frames": 60,
+    "recheck_admission_budget_seconds": 6,
+    "rechecks_require_active_application": true,
+    "unresolved_gap": "Separate runs with visibilityUnverified explanation; do not call it a drop or departure."
+  },
+  "limitations": [
+    "Any visible person currently preserves visibility; this does not verify active-player identity with bystanders.",
+    "Ball-only disappearance and high kicks do not trigger this player-visibility rule.",
+    "Real-camera threshold accuracy and saved-video recheck latency on both phones still require the manual trial.",
+    "Existing scores and existing TestFlight build 38 are unchanged."
+  ],
+  "checklist": "benchmarks/releases/1.2.0-38.4-streak-visibility-testing.txt",
+  "build_notes": "Initial test run had one expected-version assertion to update and the Mac ran out of disk space. Only reproducible older build/index/module caches were cleared; final build and test run succeeded.",
+  "source_sha256": {
+    "kicklab/Counting/StreakVisibilityEvidence.swift": "610d614912190dd75202db4b88d646ce88847e5474cde8f1000f09991dd8c260",
+    "kicklab/Counting/TouchReviewEvidence.swift": "a852256f2378e2cb65ee0af59cdc03d2d40b2fc7b7cfa7e71a3aa789802eb773",
+    "kicklab/Detection/SavedStreakVisibilityVerifier.swift": "39b4a33f632f9ed54c0a5fc758a756544126c3fbbe7e8972373a1e71b79910a7",
+    "kicklab/Detection/RFBufferedLivePipeline.swift": "d385ddea7ea35d9e431d808761798435d2c97705b0b994d97c6afa8f82e63b26",
+    "kicklab/Detection/LiveJugglingAnalysis.swift": "b0668d93b4d5bac40a8447fc1c64b9d172beb4b6128acd6e4569986344914b2e",
+    "kicklab/Detection/CameraSession.swift": "814b27f5b119d3421416e3ffe38b060e3df356024a496776225aba525df4bf9b",
+    "kicklab/Leaderboard/LeaderboardTouchReview.swift": "dc3d1fd753a169dde0a166b958287835b1661e29ceb5a9bd8141a2204680e7ee",
+    "kicklab/Leaderboard/LeaderboardRulesView.swift": "5ae9beacc447af8043423b45c7202652f3afa5524f450f80593992cb01bfb998",
+    "kicklab/Profile/PlayerData.swift": "47d60d15be86a9da834494650c89e04487b695fba48c579ced9c57879f3929ab",
+    "kicklab/History/SessionHistoryView.swift": "fa19976cdad0fc349f33d4ddf70d1bda691d341bb3263945509ac919a2f5861c",
+    "kicklab/Record/SessionCompleteView.swift": "c6acf9b4abe2f0053429568470e9f61eb178fdf694b4428fd76c80a99a3521e5",
+    "kicklabTests/StreakVisibilityEvidenceTests.swift": "44d5d5d47afa81891427ff490a7e1b21f2aa9ee332d0191241c3f0d38e6cfb11",
+    "kicklabTests/RankedStreakProposalTests.swift": "2644b3056fac6afba39b380170e3c9b9a556f88e141785ceddd1e82bad6b521f"
+  }
+}

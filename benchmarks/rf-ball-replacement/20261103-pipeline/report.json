@@ -1,0 +1,143 @@
+{
+  "date": "2026-11-03",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "head": "8acf125e",
+  "installed_build": "1.2.0 (38.10)",
+  "timed_full_build": "1.2.0 (38.9)",
+  "artifact_folder": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/preparation-pipeline-20261103",
+  "source": {
+    "name": "IMG_1529.MOV",
+    "sha256": "2d0fb34d3086b71a0e8412ec576e62deec1b4d2701f1a0b2170334325bcae798",
+    "duration_seconds": 38.70333333333333,
+    "analysed_frames": 2322
+  },
+  "accepted": "Sparse reading for crop-mask repair with sequential fallback for dense requests. No model, threshold, frame cadence, thermal policy or spin algorithm change.",
+  "crop_nominal_paired_medians_seconds": {
+    "iphone11": {
+      "before": 53.95386897915159,
+      "after": 11.360595895850565
+    },
+    "iphone17": {
+      "before": 10.4305,
+      "after": 1.4995
+    }
+  },
+  "full_workflow_seconds": {
+    "iphone11": {
+      "import_seconds": 315.6304425833514,
+      "power_up_effect_preparation_seconds": 265.05928208335536,
+      "power_up_ball_preparation_seconds": 39.65828379167942,
+      "power_up_total_preparation_seconds": 304.7175658750348,
+      "power_up_repeat_same_editor_seconds": 0.164551958325319
+    },
+    "iphone17": {
+      "import_seconds": 71.742000249993,
+      "power_up_effect_preparation_seconds": 36.188291083330114,
+      "power_up_ball_preparation_seconds": 15.088772291666828,
+      "power_up_total_preparation_seconds": 51.27706337499694,
+      "power_up_repeat_same_editor_seconds": 0.10739479166659294
+    }
+  },
+  "experiments": [
+    {
+      "id": "stage-profile",
+      "status": "measured",
+      "evidence": [
+        "iphone11-stages.json",
+        "iphone17-stages.json"
+      ],
+      "finding": "11: inference and thermal waiting dominate dense preparation; crop stage has substantial non-prediction cost. 17: dense inference, crop decoding, outline and rotation dominate."
+    },
+    {
+      "id": "flat-rotation-solver",
+      "status": "not-promoted",
+      "evidence": [
+        "cpu-experiments.json"
+      ],
+      "finding": "Exact spin output; only about 1.2% lower median total on Mac, within observed variation."
+    },
+    {
+      "id": "reuse-outline-scratch",
+      "status": "not-promoted",
+      "evidence": [
+        "cpu-experiments.json"
+      ],
+      "finding": "Exact spin output; about 1.6% lower median total on Mac. Defer while larger bottlenecks remain."
+    },
+    {
+      "id": "selected-mask-graph",
+      "status": "rejected-no-speed-benefit",
+      "evidence": [
+        "iphone17-verified-selected-mask-probe.json",
+        "iphone11-verified-compatibility-graphs.json"
+      ],
+      "finding": "Selecting one mask before final matrix multiplication did not materially reduce inference time on either phone. The A13 GPU candidate still fails to load. Small GPU numeric changes do not justify a new model."
+    },
+    {
+      "id": "sparse-crop-reading",
+      "status": "enabled-in-local-build-38.9",
+      "evidence": [
+        "iphone11-crop-reader-comparison.json",
+        "iphone17-crop-reader-comparison.json",
+        "reader-quality-suite.json"
+      ],
+      "finding": "Alternating sequential/sparse/sparse/sequential: all repaired frames exactly equal. 11 median 53.954s to 11.361s; 17 median 10.430s to 1.500s. All thermal states nominal. 120 sampled source frames across five supplied videos retain identical timestamps and BGRA bytes."
+    },
+    {
+      "id": "model-backends",
+      "status": "rejected",
+      "finding": "Neural Engine is slower than current backend on both phones and changes predicted boxes, class scores and selected ball masks/queries. No production model policy change.",
+      "evidence": [
+        "iphone11-verified-backend-probe.json",
+        "iphone17-verified-backend-probe.json"
+      ]
+    },
+    {
+      "id": "a13-compatible-projections",
+      "status": "rejected",
+      "evidence": [
+        "iphone11-verified-compatibility-graphs.json"
+      ],
+      "finding": "Current 288px, nominal temperature: fixed function and explicit matmul still fail GPU loading. Convolution rewrite loads but takes 392.5ms versus paired CPU 71.9ms and changes predictions. CPU variants provide no material gain."
+    },
+    {
+      "id": "pipelined-ball-motion",
+      "status": "not-promoted-small-phone-gain",
+      "evidence": [
+        "pipelined-mac.json",
+        "iphone11-spin-pipeline-comparison.json",
+        "iphone17-spin-pipeline-comparison.json"
+      ],
+      "finding": "All motion/lighting/exposure outputs identical. Paired median: iPhone 11 39.94s to 39.48s (serious thermal); iPhone 17 13.96s to 12.89s (nominal). Mac gain does not translate to a substantial phone improvement. Warm retained footprint about 4 MiB higher; first reference peak includes startup allocations, not a fair memory comparison."
+    },
+    {
+      "id": "model-batching",
+      "status": "not-promoted-small-isolated-gain",
+      "evidence": [
+        "batch-mac.json",
+        "iphone11-batch-probe.json",
+        "iphone17-batch-probe.json"
+      ],
+      "finding": "All logical model-output tensor bytes equal for 24 real inputs in six passes per phone. At serious thermal state, 11 sequential varies 1.84\u20132.08s/24 inputs, batches around 1.72\u20131.78s; about 10% median benefit, less than Mac. 17 nominal 0.400s/24 to 0.346\u20130.353s. Integration would need batching only exact-cache misses, bounded pixels and fair thermal accounting. No production batching enabled."
+    }
+  ],
+  "remaining_problem": "First-use dense segmentation and thermal pacing still dominate iPhone 11. Current renderer acceleration does not accelerate its unsupported RF GPU inference. Existing-model backend/graph alternatives tested here do not provide a substantial safe speedup.",
+  "test_results": [
+    "iphone17-candidate-tests.json",
+    "iphone11-candidate-tests.json",
+    "iphone17-spin-probe-tests.json",
+    "iphone11-final-probes-tests.json",
+    "iphone17-batch-probe-tests.json",
+    "iphone17-quality-verified-tests.json",
+    "iphone11-quality-verified-tests.json"
+  ],
+  "limitations": [
+    "One full workflow run per phone per build; thermal conditions vary. Paired crop comparisons have four runs per phone, all nominal.",
+    "Tests invoke production pipeline methods, excluding Photos copying, picker animation and export encoding.",
+    "Five-clip timestamp/pixel equality is regression evidence, not a blind segmentation accuracy evaluation.",
+    "Other model candidates remain isolated; no training or installed-model replacement.",
+    "Report visual rendering was blocked by browser local-URL policy; static validation only."
+  ],
+  "uploaded": false,
+  "devices_restored_to_normal_launch": true
+}

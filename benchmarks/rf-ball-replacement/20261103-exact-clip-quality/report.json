@@ -1,0 +1,800 @@
+{
+  "source": "/Users/hewadmubariz/Downloads/IMG_1529.MOV",
+  "beforeBuild": "38.5",
+  "afterBuild": "38.9 (same normal preparation pipeline in 38.10)",
+  "scope": "Accepted preparation optimizations only. Full retained physical-phone masks and spin before/after. New native Mac renders use unchanged production geometry, coverage and CPU reference sphere renderer. Not historical phone export files; no claim about phone encoder/GPU parity. Fixed Volt skin reveals boundaries; trails, look changes and counters excluded.",
+  "phones": [
+    {
+      "coverageGridExactFrames": 2322,
+      "frames": 2322,
+      "framesWithoutReplacement": 0,
+      "geometryExactFrames": 2322,
+      "phone": "iphone11",
+      "pixelExactFrames": 2322,
+      "scope": "New controlled native Mac 1080p SDR renders, fixed Volt skin, production preparation inputs from actual phone builds 38.5/38.9; shared unchanged CPU reference material/coverage implementation. No trails, counters or look swaps. Source PTS preserved. Coverage sampled on 128x128 moving crop; final composite pixel equality compares every 1080x1920 BGRA pixel.",
+      "seconds": 187.37824125000043,
+      "encodedDecodedFramesExact": 2322,
+      "files": {
+        "before": {
+          "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/exact-clip-mask-quality-20261103/iphone11/before.mp4",
+          "sha256": "b7e460fd512657dbf513530f25b9f753f045f0d41179f94521f26b887c7e08eb",
+          "metadata": {
+            "codec_name": "h264",
+            "width": 1080,
+            "height": 1920,
+            "duration": "38.703333",
+            "nb_frames": "2322"
+          }
+        },
+        "after": {
+          "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/exact-clip-mask-quality-20261103/iphone11/after.mp4",
+          "sha256": "b679253eddc5cd8064c3402ddd65e33662011425924ab4732be5885115494b63",
+          "metadata": {
+            "codec_name": "h264",
+            "width": 1080,
+            "height": 1920,
+            "duration": "38.703333",
+            "nb_frames": "2322"
+          }
+        },
+        "replacement": {
+          "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/exact-clip-mask-quality-20261103/iphone11/replacement.mp4",
+          "sha256": "ed3d79db6aed01160c88641a777cead6a43c7a3d6fe95ae3b5589ee20bdfbde1",
+          "metadata": {
+            "codec_name": "h264",
+            "width": 1620,
+            "height": 1048,
+            "duration": "38.703333",
+            "nb_frames": "2322"
+          }
+        },
+        "masks": {
+          "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/exact-clip-mask-quality-20261103/iphone11/masks.mp4",
+          "sha256": "c22eb9570eb692e8827a34c618299794e6902fcd15699f88effba1f259015c2a",
+          "metadata": {
+            "codec_name": "h264",
+            "width": 1440,
+            "height": 1092,
+            "duration": "38.703333",
+            "nb_frames": "2322"
+          }
+        }
+      },
+      "sourceTimestampMatches": 2322
+    },
+    {
+      "coverageGridExactFrames": 2322,
+      "frames": 2322,
+      "framesWithoutReplacement": 0,
+      "geometryExactFrames": 2322,
+      "phone": "iphone17",
+      "pixelExactFrames": 2322,
+      "scope": "New controlled native Mac 1080p SDR renders, fixed Volt skin, production preparation inputs from actual phone builds 38.5/38.9; shared unchanged CPU reference material/coverage implementation. No trails, counters or look swaps. Source PTS preserved. Coverage sampled on 128x128 moving crop; final composite pixel equality compares every 1080x1920 BGRA pixel.",
+      "seconds": 190.67757895833347,
+      "encodedDecodedFramesExact": 2322,
+      "files": {
+        "before": {
+          "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/exact-clip-mask-quality-20261103/iphone17/before.mp4",
+          "sha256": "a44125e6c6530b4ed2fa20fa52344628a7cd0a1fc41515acc567ed9b0b1e91c8",
+          "metadata": {
+            "codec_name": "h264",
+            "width": 1080,
+            "height": 1920,
+            "duration": "38.703333",
+            "nb_frames": "2322"
+          }
+        },
+        "after": {
+          "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/exact-clip-mask-quality-20261103/iphone17/after.mp4",
+          "sha256": "1acb15fe3295372a1d82b5fdb38be0487a92e179c41c58a37024ce7cd14e28bd",
+          "metadata": {
+            "codec_name": "h264",
+            "width": 1080,
+            "height": 1920,
+            "duration": "38.703333",
+            "nb_frames": "2322"
+          }
+        },
+        "replacement": {
+          "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/exact-clip-mask-quality-20261103/iphone17/replacement.mp4",
+          "sha256": "bae0c884f2bdc7ddd887b1305a02e4c20d70a44c02ec0b357874e4617fc189eb",
+          "metadata": {
+            "codec_name": "h264",
+            "width": 1620,
+            "height": 1048,
+            "duration": "38.703333",
+            "nb_frames": "2322"
+          }
+        },
+        "masks": {
+          "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/exact-clip-mask-quality-20261103/iphone17/masks.mp4",
+          "sha256": "5460e2efd3f08abcafe94bd2a69240eae9efbb31a4e5101a63286c5710115db4",
+          "metadata": {
+            "codec_name": "h264",
+            "width": 1440,
+            "height": 1092,
+            "duration": "38.703333",
+            "nb_frames": "2322"
+          }
+        }
+      },
+      "sourceTimestampMatches": 2322
+    }
+  ],
+  "sourceTimestamps": {
+    "sourcePackets": 2324,
+    "composedFrames": 2322,
+    "sourcePtsRange": [
+      0.0,
+      38.736667
+    ],
+    "packetTimesAbsentFromComposition": [
+      [
+        38.736667,
+        "_D_"
+      ],
+      [
+        38.703333,
+        "_D_"
+      ]
+    ],
+    "compositionTimesAbsentFromPackets": []
+  },
+  "limitations": [
+    "This validates the accepted preparation changes on one supplied clip. It does not establish accuracy on other footage.",
+    "Saved frames are actual historical phone computations; the comparison videos are newly rendered on Mac with the shared CPU reference renderer, not downloaded historical phone exports.",
+    "Fixed Volt skin; no trail shaders, counters, look swaps, 4K export or live playback performance is tested here.",
+    "Original video contains no audio stream. Review videos are silent."
+  ],
+  "stageAudit": [
+    {
+      "phone": "iphone11",
+      "beforeTouchCount": 77,
+      "afterTouchCount": 77,
+      "rawToPreparedChangedFrames": 49,
+      "changes": [
+        {
+          "index": 114,
+          "time": 1.9,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 227,
+          "time": 3.783,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 377,
+          "time": 6.283,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 378,
+          "time": 6.3,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 422,
+          "time": 7.033,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 471,
+          "time": 7.85,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 489,
+          "time": 8.151,
+          "fields": [
+            "maskDecoderPixelSize",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 524,
+          "time": 8.735,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 525,
+          "time": 8.751,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 526,
+          "time": 8.768,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 620,
+          "time": 10.335,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 638,
+          "time": 10.635,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 648,
+          "time": 10.801,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 806,
+          "time": 13.435,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 828,
+          "time": 13.801,
+          "fields": [
+            "maskDecoderPixelSize",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 829,
+          "time": 13.818,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 867,
+          "time": 14.451,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 871,
+          "time": 14.518,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 876,
+          "time": 14.601,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 878,
+          "time": 14.635,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 880,
+          "time": 14.668,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 881,
+          "time": 14.685,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 882,
+          "time": 14.701,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 883,
+          "time": 14.718,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1042,
+          "time": 17.368,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1107,
+          "time": 18.451,
+          "fields": [
+            "maskDecoderPixelSize",
+            "maskHeight",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1301,
+          "time": 21.685,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1829,
+          "time": 30.486,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1876,
+          "time": 31.27,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1878,
+          "time": 31.303,
+          "fields": [
+            "maskDecoderPixelSize",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1879,
+          "time": 31.32,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1918,
+          "time": 31.97,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1979,
+          "time": 32.986,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1980,
+          "time": 33.003,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2028,
+          "time": 33.803,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2091,
+          "time": 34.853,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2227,
+          "time": 37.12,
+          "fields": [
+            "maskDecoderPixelSize",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2239,
+          "time": 37.32,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2240,
+          "time": 37.336,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2241,
+          "time": 37.353,
+          "fields": [
+            "maskDecoderPixelSize",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2243,
+          "time": 37.386,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2244,
+          "time": 37.403,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2246,
+          "time": 37.436,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2247,
+          "time": 37.453,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2248,
+          "time": 37.47,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2249,
+          "time": 37.486,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2251,
+          "time": 37.52,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2279,
+          "time": 37.986,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 2287,
+          "time": 38.12,
+          "fields": [
+            "maskDecoderPixelSize",
+            "maskHeight",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        }
+      ],
+      "note": "Within-pipeline crop refinement can change the raw model mask. Prepared BEFORE and AFTER optimization are exactly equal."
+    },
+    {
+      "phone": "iphone17",
+      "beforeTouchCount": 77,
+      "afterTouchCount": 77,
+      "rawToPreparedChangedFrames": 8,
+      "changes": [
+        {
+          "index": 0,
+          "time": 0.0,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 80,
+          "time": 1.333,
+          "fields": [
+            "maskDecoderPixelSize",
+            "maskHeight",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 134,
+          "time": 2.233,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 141,
+          "time": 2.35,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 363,
+          "time": 6.05,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 421,
+          "time": 7.016,
+          "fields": [
+            "maskDecoderPixelSize",
+            "maskHeight",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 482,
+          "time": 8.033,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        },
+        {
+          "index": 1355,
+          "time": 22.585,
+          "fields": [
+            "maskHeight",
+            "maskRect",
+            "maskWidth",
+            "packedAlpha"
+          ]
+        }
+      ],
+      "note": "Within-pipeline crop refinement can change the raw model mask. Prepared BEFORE and AFTER optimization are exactly equal."
+    }
+  ],
+  "guideCheck": [
+    {
+      "frames": 2322,
+      "missingDrawableGuide": [
+        {
+          "guideAtStoredTimeExists": true,
+          "index": 2321,
+          "maskExists": true,
+          "observationTime": 38.686,
+          "sourceTime": 38.68666666666667
+        }
+      ],
+      "phone": "iphone11"
+    },
+    {
+      "frames": 2322,
+      "missingDrawableGuide": [
+        {
+          "guideAtStoredTimeExists": true,
+          "index": 2321,
+          "maskExists": true,
+          "observationTime": 38.686,
+          "sourceTime": 38.68666666666667
+        }
+      ],
+      "phone": "iphone17"
+    }
+  ],
+  "visualReview": {
+    "samplesPerPhone": 35,
+    "selection": "Regular 2-second samples, fastest source-ball motions, start/end; selected before rendering. Six contact sheets visually inspected, plus full-size first/end/contact examples.",
+    "findings": [
+      {
+        "time": 31.186666666666667,
+        "phone": "iphone11",
+        "finding": "Fast kick: bottom portion of blurred original ball remains exposed under the replacement. The before/after images are pixel-identical; this is retained baseline quality, not a new regression."
+      },
+      {
+        "time": 38.68666666666667,
+        "phone": "both",
+        "finding": "Final displayed frame shows original ball. Native guide check confirms a mask exists but the replacement guide is nil 0.667 ms after the final rounded observation. Present in both versions."
+      }
+    ],
+    "motionValidation": "Full-frame pixel equality proves identical before/after temporal sequence in these controlled renders. No separate claim of watching every frame in real time."
+  },
+  "conclusion": "No quality loss from the accepted preparation optimizations on IMG_1529: every saved prepared frame/spin row and every controlled before/after 1080p rendered and decoded video frame matches. Existing edge/contact defects and one final-frame original-ball flash remain. Proposed new lightweight mask model is not implemented or covered.",
+  "changesDuringReview": "No app code, model, phone build, or source footage changed. Native review harness and artifacts only.",
+  "reviewSourceSHA256": {
+    "Main.swift": "c51d847f352b982c4685da65441a757fa00c8d7c3e8602133a341a1c1d08f165",
+    "Support.swift": "fe59cc0d947a7fc04f764995bf0a820311f30f4844953fce1243d97fb301eed7",
+    "GuideCheck.swift": "d5fac94ea00065e2e927a021e5551b4b7aa330921e85eb07977640f75d245eae",
+    "prepare.py": "744db347722a59da60629e6f0cc180cbe1db3f9820358258db0407f1599e298e",
+    "finalize.py": "3ebf203b5689e26cd32048592d2125bb0ea2bdb99dc364d1b3603f0c3237b7cf",
+    "run.sh": "55d8a3b76b1f85b7ac01625cd6c864019d26a1ca06cb7bb882e684bd072bf0ca"
+  },
+  "productionSourceSHA256": {
+    "kicklab/Effects/BallEffectTrack.swift": "c6840ea785c57b7df2eef734df6bdad482d2be2db85dd7f8b231d3e80ef09514",
+    "kicklab/Effects/BallReplacementCoverage.swift": "2832e5e35495fd419fb2cda9c07155076f2432e4319bf61ceb146404c5fdca06",
+    "kicklab/Effects/BallReplacementFootprint.swift": "a82820b1e22570e2e0f95b024c7a05b8860c545dbd7df846ba53e559bbc9cc0a",
+    "kicklab/Effects/BallSurfaceTimeline.swift": "f321377ff358c6fb9664055f370f6b9c728637c9ea3f0685a447651062de9059",
+    "kicklab/Effects/BallSurfaceMotion.swift": "ffee82c3d3a8536219ba44fbe116fc8c790baabf572053eea290f992a2a7e209",
+    "kicklab/Effects/BallMaterialRenderer.swift": "672264e67ec0c668eaed2289ca2734a9fa5425f8e71c2c6b1dbaee64c84b763a",
+    "kicklab/Effects/BallSkinSphereRenderer.swift": "56d8beaa984e8039fad20ed9b07c336e80a090d86e8e5e8538c7ceca4810879e",
+    "kicklab/Effects/EffectVideoGeometry.swift": "228791619b588a3e29ad68d82c839be17c2dc8eb2cbe4572e2889cb268b12a62",
+    "scripts/ball-preparation-benchmark/Frames.swift": "11b46365e7f9db3a82f42781f9113e0faa10c78e1d0c29ad9c6d93c93b093f2a"
+  }
+}

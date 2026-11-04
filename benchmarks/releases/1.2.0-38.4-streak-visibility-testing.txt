@@ -1,0 +1,53 @@
+Juggle Dude 1.2.0 (38.4) — streak visibility trial
+
+Use a NEW recording made inside the app. Existing saved scores are preserved.
+Judge the Best streak for this session, not an older all-time leaderboard best.
+The live counter continues showing total touches. Streak separation is finalized
+when you stop recording. Total touches and replay touch markers are unchanged.
+
+CHECK ON BOTH IPHONE 11 AND IPHONE 17
+[ ] Normal continuous juggling: no visibility notice and a plausible best streak.
+[ ] Brief loss of view (about 1–2 seconds) while continuing to juggle: should not
+    split for visibility alone. A separately detected catch/bounce still splits.
+[ ] Leave the view for 3–4 seconds, then resume: touches on either side should
+    be separate streaks, and a visibility explanation should appear.
+[ ] Repeat the longer departure twice: each gap separates runs; only the longest
+    run is the session best. All touches remain in the total.
+[ ] High kicks with your body visible: the gap between touches, or the ball going
+    offscreen, must not by itself end a streak.
+[ ] Keep training until the phone is warm: watch recording responsiveness and
+    time from Stop to the session summary, especially on the iPhone 11.
+[ ] Save, reopen History and Edit Replay: the saved best streak and visibility
+    explanation should remain consistent; re-editing must not recalculate a score.
+[ ] Leave the app immediately after Stop during an uncertain take: it must not
+    crash or lose the recording. An unfinished check may leave an explicit
+    unverified gap and separate the runs.
+
+IMPLEMENTED POLICY
+- Fresh successful detector results retain recording-relative source timestamps,
+  including results too late for live counting. No wall-clock absence timeout.
+- Six or more independent missing-person observations spanning at least 2.5 s,
+  with no sample gap above 600 ms, separate runs.
+- Cached boxes, failed inference, skipped frames and missing balls do not supply
+  negative player observations. Fresh visible-person evidence resets the window.
+- Unknown long intervals between contacts are checked in the saved original,
+  reusing the warm model after recording. No extra live inference is scheduled.
+- Rechecks sample at 2 Hz with a per-session limit of 60 frames and 6 s admission
+  time. One decode/inference already in progress may finish beyond that time.
+- New rechecks stop when the app is inactive, using its existing foreground/GPU
+  permission gate. The original remains saved if a check cannot finish.
+- If video is unavailable or the check cannot resolve continuity within the
+  budget, the app labels the gap unverified and keeps the runs separate. It does
+  not claim a drop or departure. Previous touches and session total remain.
+- Existing hold, hand and ground-contact rules still apply. New scores use
+  streak-v3; old scores and TestFlight build 38 are not rewritten.
+
+LIMITS OF THIS TRIAL
+The visibility check currently asks whether ANY person is detected. It is a
+conservative empty-view check, not identity verification: a bystander remaining
+in view can conceal the active player's departure. It also does not prove that
+an unseen ball stayed airborne. Test the threshold in real filming conditions
+before treating this as a final anti-cheat rule.
+
+Diagnostics: Library/Caches/StreakVisibility in the app container retains small
+reports for the last 20 sessions. No video pixels or uploads are added by this.

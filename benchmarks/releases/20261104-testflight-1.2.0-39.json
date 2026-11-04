@@ -1,0 +1,84 @@
+{
+  "version": "1.2.0",
+  "build": "39",
+  "uploaded_at": "2026-11-04T00:00:05+01:00",
+  "status": "uploaded_awaiting_testflight_verification",
+  "app_id": "6820780610",
+  "internal_group": "Early testers",
+  "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+  "external_beta_review_submitted": false,
+  "public_app_review_submitted": false,
+  "archive": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/releases/20261103-1.2.0-39/JuggleDude-1.2.0-39.xcarchive",
+  "validation": {
+    "version": "1.2.0",
+    "build": "39",
+    "status": "passed_after_targeted_rechecks",
+    "passed_distinct_tests": 1247,
+    "unit_and_integration_passes": 1232,
+    "ui_passes": 15,
+    "skipped_tests": 38,
+    "not_one_clean_full_run": true,
+    "initial_issues": [
+      {
+        "case": "DownloadChoiceTests/testFasterDownloadOfAFastClipKeepsTheOutlinedFramesAndTheOriginalKeepsThemAll()",
+        "failure": "Exceeded 120-second test runner limit",
+        "resolution": "Passed unchanged with 600-second allowance; no app code changed",
+        "result": "export-recheck.xcresult"
+      },
+      {
+        "case": "NewBallEffectsUITests/testAllSixEffectsAreSelectableAndBallSelectionSurvives()",
+        "failure": "Automated tap during tray animation opened Timer instead of Effects; recorded in UI hierarchy",
+        "resolution": "Test now waits for stable button geometry; all effects selections and retained skin pass",
+        "result": "picker-recheck.xcresult"
+      }
+    ],
+    "skips_note": "Unavailable physical-device, staged-video, calibration and other fixture-dependent cases are not counted as passes. Manual TestFlight checks remain in the checklist.",
+    "archive_verification": "archive-verification.json",
+    "frame_regression": "endpoint-quality/summary.json",
+    "phone_testing": "Prior exact-clip physical preparation measurements preserved; new endpoint fix verified with retained phone inputs and native CPU reference renders, not a fresh TestFlight GPU export on phones."
+  },
+  "archive_verification": {
+    "version": "1.2.0",
+    "build": "39",
+    "base_commit": "8acf125e8570228b038ced0b7f03b303ddc41fa7",
+    "source_snapshot": "source-manifest.json + source.patch + untracked-source/",
+    "archive": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/releases/20261103-1.2.0-39/JuggleDude-1.2.0-39.xcarchive",
+    "signature_verified": true,
+    "source_files_verified": 569,
+    "app_binary_sha256": "d5e4f4070aa169e2df235afe4cde6f1795f177ed4c1caff99f9041c0ff408b94",
+    "test_status": "see validation-summary.json (initial failures and targeted rechecks retained)",
+    "google_signin_and_font_verified": true,
+    "meta_release_configuration_verified": true,
+    "metal_library_present": true,
+    "counter_profile": "outdoor-balanced-v3-20261029",
+    "compilation": "Release with TOUCH_COUNTER_BETA; DEBUG modes absent",
+    "models": [
+      "RFDETRSmallRecovery040FP16.mlmodelc"
+    ],
+    "languages": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "pt-BR"
+    ],
+    "minimum_ios": "18.0",
+    "iphone_only": true,
+    "privacy_manifest": true,
+    "model_license": true,
+    "client_configurations_verified": true,
+    "editor_upgrade_sources_present": true,
+    "touch_review_disabled": true
+  },
+  "checklist": "benchmarks/releases/1.2.0-39-testing-checklist.txt",
+  "first_upload_attempt": "Expired Xcode Apple credentials after transfer. User reauthenticated; retry of same archive succeeded.",
+  "distribution_verification": {
+    "checked_at": "2026-11-04T00:11:09.111035+01:00",
+    "upload_accepted": true,
+    "processing_complete_confirmed": false,
+    "early_testers_availability_confirmed": false,
+    "what_to_test_saved_in_app_store_connect": false,
+    "what_to_test_source": "artifacts/releases/20261103-1.2.0-39/what-to-test.txt",
+    "blocker": "Chrome App Store Connect page is blank to native automation; browser DOM automation has a runtime error. Asked user to bring the TestFlight build list into view. No repeat upload needed."
+  }
+}
