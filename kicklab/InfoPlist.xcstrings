@@ -47,6 +47,42 @@
         }
       }
     },
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "Privacy - Microphone Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude nutzt das Mikrofon, um Ton zu deinen Videos aufzunehmen. Der Ton bleibt auf deinem iPhone, außer du exportierst oder teilst ein Video. Du kannst auch ohne Ton aufnehmen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude uses the microphone to record sound with your videos. Sound stays on your iPhone unless you export or share a video. You can record without it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude usa el micrófono para grabar el sonido de tus videos. El sonido se queda en tu iPhone, a menos que exportes o compartas un video. También puedes grabar sin sonido."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Juggle Dude utilise le micro pour enregistrer le son de tes vidéos. Le son reste sur ton iPhone, sauf si tu exportes ou partages une vidéo. Tu peux aussi filmer sans le son."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Juggle Dude usa o microfone para gravar o som dos seus vídeos. O som fica no seu iPhone, a menos que você exporte ou compartilhe um vídeo. Você também pode gravar sem som."
+          }
+        }
+      }
+    },
     "NSMotionUsageDescription" : {
       "comment" : "Privacy - Motion Usage Description",
       "extractionState" : "extracted_with_value",

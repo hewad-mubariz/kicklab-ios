@@ -3,6 +3,7 @@
 //  kicklab
 //
 
+import AVFoundation
 import SwiftUI
 import StoreKit
 
@@ -17,6 +18,10 @@ struct kicklabApp: App {
     @Environment(\.scenePhase) private var scenePhase
     init() {
         BallSkinMetalRenderer.observeApplication()
+        // Videos are heard in silent mode, like any video app. The default follows the ring
+        // switch, which made a recording's own sound vanish from every preview. Nothing is
+        // interrupted until something plays.
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
         Task.detached(priority: .utility) { try? VideoSafetyPolicy.cleanExpiredExports() }
         #if DEBUG
         let account = ProfileEditorReview.requested ? ProfileEditorReview.account() :

@@ -8,6 +8,8 @@
     <string>Ball Detection Debug</string>
     <key>NSCameraUsageDescription</key>
     <string>Show the camera preview and detect the ball. Wall-target sessions are recorded only when you tap Record.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Record sound with your test videos. You can record without it.</string>
     <key>NSLocalNetworkUsageDescription</key>
     <string>Show the live wall-targets view in a browser on your Mac, on the same Wi-Fi.</string>
     <key>NSBonjourServices</key>

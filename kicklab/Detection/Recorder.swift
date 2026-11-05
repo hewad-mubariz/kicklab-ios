@@ -83,6 +83,7 @@ final class Recorder {
     private var writer: AVAssetWriter?
     private var input: AVAssetWriterInput?
     private var adaptor: AVAssetWriterInputPixelBufferAdaptor?
+    private var sound: AVAssetWriterInput?
     private var startedAt: CMTime?
     private(set) var url: URL?
     private(set) var writtenFrames = 0
@@ -95,9 +96,11 @@ final class Recorder {
     ///
     /// `cameraPosition` tags the file's preferred transform so replay stays
     /// portrait for both back and front lenses (front also mirrored).
+    /// Without `soundSettings` (no microphone access) the file holds the picture only.
     func start(width: Int, height: Int,
                cameraPosition: AVCaptureDevice.Position = .back,
-               pixelsAreUpright: Bool = false) throws {
+               pixelsAreUpright: Bool = false,
+               soundSettings: [String: Any]? = nil) throws {
         stop(completion: nil)
         // Duration is chosen by the user; check the disk reserve before starting.
         try VideoSafetyPolicy.requireSpace(bytes: 0)
@@ -133,10 +136,17 @@ final class Recorder {
                           userInfo: [NSLocalizedDescriptionKey: "cannot add writer input"])
         }
         writer.add(input)
+        var sound: AVAssetWriterInput?
+        if let soundSettings {
+            let audio = AVAssetWriterInput(mediaType: .audio, outputSettings: soundSettings)
+            audio.expectsMediaDataInRealTime = true
+            if writer.canAdd(audio) { writer.add(audio); sound = audio }
+        }
 
         self.writer = writer
         self.input = input
         self.adaptor = adaptor
+        self.sound = sound
         self.startedAt = nil
         self.url = file
         self.writtenFrames = 0
@@ -180,6 +190,16 @@ final class Recorder {
         return identity
     }
 
+    /// Microphone audio from before the first frame is dropped, so sound and picture start
+    /// together. Audio the writer isn't ready for is skipped: sound never stops a recording.
+    @discardableResult
+    func appendSound(_ sample: CMSampleBuffer) -> Bool {
+        guard let writer, let sound, let startedAt, writer.status == .writing,
+              CMSampleBufferGetPresentationTimeStamp(sample) >= startedAt,
+              sound.isReadyForMoreMediaData else { return false }
+        return sound.append(sample)
+    }
+
     /// Seconds since the first appended frame.
     func elapsed(at time: CMTime) -> Double {
         guard let startedAt else { return 0 }
@@ -192,9 +212,11 @@ final class Recorder {
             return
         }
         let file = url
+        let sound = self.sound
         self.writer = nil
         self.input = nil
         self.adaptor = nil
+        self.sound = nil
         self.startedAt = nil
 
         guard writer.status == .writing else {
@@ -205,6 +227,7 @@ final class Recorder {
             return
         }
         input.markAsFinished()
+        sound?.markAsFinished()
         writer.finishWriting {
             if writer.status == .completed, let file { completion?(.success(file)) }
             else {

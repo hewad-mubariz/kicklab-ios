@@ -114,6 +114,7 @@ final class CameraSession: NSObject, ObservableObject {
     private var captureStats = CaptureCadenceSnapshot()
     private var captureStartSeconds: Double?
     private var capturePosition: AVCaptureDevice.Position = .back
+    private var soundSettings: [String: Any]? // captureQueue, nil records the picture only
     private var exposureDevice: AVCaptureDevice? // captureQueue
     private var exposureCap = CaptureExposureCap() // captureQueue
     private var reportedTooDark = false // captureQueue
@@ -138,6 +139,10 @@ final class CameraSession: NSObject, ObservableObject {
     private let liveAnalysis = LiveJugglingAnalysis()
     var liveEffectFrames: LiveEffectFrames { liveAnalysis.preview }
     private let recorder = Recorder()
+    /// The microphone is connected only while recording, so its indicator means a recording.
+    private let soundOutput = AVCaptureAudioDataOutput()
+    private var soundInput: AVCaptureDeviceInput? // sessionQueue
+    private var audioBeforeRecording: (AVAudioSession.Category, AVAudioSession.Mode, AVAudioSession.CategoryOptions)? // sessionQueue
     /// Enabled in normal capture; disabling it is a diagnostic comparison.
     var motionCompensationEnabled = true
     private var activeRecording: CaptureRequest?
@@ -337,9 +342,10 @@ final class CameraSession: NSObject, ObservableObject {
             #endif
             self.liveAnalysis.beginRecording()
             self.activeRecording = request
-            let beginCapture = {
+            let beginCapture = { (sound: [String: Any]?) in
                 guard !request.isCancelled else { return }
                 self.captureRecording = request
+                self.soundSettings = sound
                 self.liveBuffer = LiveAnalysisBuffer()
                 #if DEBUG && TOUCH_COUNTING_DEBUG
                 self.debugFrameRun = .init(profile: frameProfile)
@@ -355,14 +361,12 @@ final class CameraSession: NSObject, ObservableObject {
                 self.lastDebugCapturePublish = 0
                 #endif
             }
-            if self.pipeline == .videoOnly {
-                self.sessionQueue.async {
-                    guard !request.isCancelled else { return }
-                    self.holdsVideoOrientation = true
-                    self.captureQueue.async(execute: beginCapture)
-                }
-            } else {
-                self.captureQueue.async(execute: beginCapture)
+            self.sessionQueue.async {
+                guard !request.isCancelled else { return }
+                if self.pipeline == .videoOnly { self.holdsVideoOrientation = true }
+                // Connected before the first frame, so any preview hitch stays out of the video.
+                let sound = self.connectMicrophone()
+                self.captureQueue.async { beginCapture(sound) }
             }
             // isRecording becomes true when the first frame opens the writer.
         }
@@ -409,6 +413,7 @@ final class CameraSession: NSObject, ObservableObject {
                 self.sessionQueue.async {
                     self.holdsVideoOrientation = false
                     if self.pipeline == .videoOnly { self.updateCaptureOrientation() }
+                    self.disconnectMicrophone()
                 }
                 // Serial analysis work has completed before this cleanup runs.
                 self.queue.async {
@@ -499,11 +504,72 @@ final class CameraSession: NSObject, ObservableObject {
     }
 
     private func requestAccess() async -> Bool {
+        let camera: Bool
         switch AVCaptureDevice.authorizationStatus(for: .video) {
-        case .authorized: return true
-        case .notDetermined: return await AVCaptureDevice.requestAccess(for: .video)
-        default: return false
+        case .authorized: camera = true
+        case .notDetermined: camera = await AVCaptureDevice.requestAccess(for: .video)
+        default: camera = false
         }
+        // Sound is asked for once, beside the camera. A no still records, without sound.
+        if camera, AVCaptureDevice.authorizationStatus(for: .audio) == .notDetermined,
+           Bundle.main.object(forInfoDictionaryKey: "NSMicrophoneUsageDescription") != nil {
+            _ = await AVCaptureDevice.requestAccess(for: .audio)
+        }
+        return camera
+    }
+
+    /// Called on `sessionQueue` before a recording. Returns the writer's sound settings,
+    /// or nil to record the picture only, which a missing microphone never prevents.
+    private func connectMicrophone() -> [String: Any]? {
+        guard AVCaptureDevice.authorizationStatus(for: .audio) == .authorized,
+              let microphone = AVCaptureDevice.default(for: .audio) else { return nil }
+        let audio = AVAudioSession.sharedInstance()
+        if audioBeforeRecording == nil { audioBeforeRecording = (audio.category, audio.mode, audio.categoryOptions) }
+        do {
+            // Music from another app keeps playing, and is recorded with the touches.
+            try audio.setCategory(.playAndRecord, mode: .videoRecording,
+                                  options: [.mixWithOthers, .defaultToSpeaker, .allowBluetoothA2DP])
+            try audio.setActive(true)
+        } catch {
+            disconnectMicrophone()
+            return nil
+        }
+        session.beginConfiguration()
+        if soundInput == nil, let input = try? AVCaptureDeviceInput(device: microphone), session.canAddInput(input) {
+            session.addInput(input)
+            soundInput = input
+        }
+        if !session.outputs.contains(soundOutput), session.canAddOutput(soundOutput) {
+            soundOutput.setSampleBufferDelegate(self, queue: captureQueue)
+            session.addOutput(soundOutput)
+        }
+        session.commitConfiguration()
+        guard soundInput != nil, session.outputs.contains(soundOutput) else {
+            disconnectMicrophone()
+            return nil
+        }
+        return soundOutput.recommendedAudioSettingsForAssetWriter(writingTo: .mov) ?? [
+            AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: 44_100,
+            AVNumberOfChannelsKey: 1, AVEncoderBitRateKey: 96_000,
+        ]
+    }
+
+    /// Called on `sessionQueue` after a recording. Leaves the app's sound as it was before.
+    private func disconnectMicrophone() {
+        if let soundInput {
+            session.beginConfiguration()
+            session.removeInput(soundInput)
+            session.commitConfiguration()
+            self.soundInput = nil
+        }
+        guard let (category, mode, options) = audioBeforeRecording else { return }
+        audioBeforeRecording = nil
+        let audio = AVAudioSession.sharedInstance()
+        // A player that already took the sound over keeps it.
+        guard audio.category == .playAndRecord else { return }
+        // Inactive first, so restoring a category that doesn't mix never stops other apps' music.
+        try? audio.setActive(false, options: .notifyOthersOnDeactivation)
+        try? audio.setCategory(category, mode: mode, options: options)
     }
 
     /// Called on `sessionQueue`.
@@ -512,6 +578,8 @@ final class CameraSession: NSObject, ObservableObject {
 
         if session.inputs.isEmpty {
             session.sessionPreset = .hd1280x720
+            // Recording sets the app's sound itself, so music from another app keeps playing.
+            session.automaticallyConfiguresApplicationAudioSession = false
         }
 
         if let videoInput {
@@ -613,16 +681,20 @@ final class CameraSession: NSObject, ObservableObject {
     }
 }
 
-extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
+extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {
-        guard let request = captureRecording, !request.isCancelled else { return }
+        guard output !== soundOutput, let request = captureRecording, !request.isCancelled else { return }
         captureStats.captureDrops += 1
     }
 
     func captureOutput(_ output: AVCaptureOutput,
                        didOutput sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {
+        if output === soundOutput {
+            if let request = captureRecording, !request.isCancelled { recorder.appendSound(sampleBuffer) }
+            return
+        }
         // Preview frames too, so exposure has settled before recording starts.
         if let exposureDevice {
             exposureCap.observe(exposureDevice, at: CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer)))
@@ -645,7 +717,7 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
                 let w = CVPixelBufferGetWidth(pixels)
                 let h = CVPixelBufferGetHeight(pixels)
                 try recorder.start(width: w, height: h, cameraPosition: capturePosition,
-                                   pixelsAreUpright: pipeline == .videoOnly)
+                                   pixelsAreUpright: pipeline == .videoOnly, soundSettings: soundSettings)
                 captureStartSeconds = sourceTime
                 #if DEBUG
                 if let url = recorder.url { captureOpticsLog = CaptureOpticsLog(source: url) }

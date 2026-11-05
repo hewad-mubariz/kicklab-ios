@@ -4,6 +4,7 @@
     <key>CFBundleDisplayName</key><string>Power Shot Lab</string>
     <key>CFBundleName</key><string>Power Shot Lab</string>
     <key>NSCameraUsageDescription</key><string>Record power-shot experiments with camera geometry, ball observations and measurement diagnostics.</string>
+    <key>NSMicrophoneUsageDescription</key><string>Record sound with your test videos. You can record without it.</string>
     <key>ITSAppUsesNonExemptEncryption</key><false/>
     <key>UIFileSharingEnabled</key><true/>
     <key>LSSupportsOpeningDocumentsInPlace</key><true/>

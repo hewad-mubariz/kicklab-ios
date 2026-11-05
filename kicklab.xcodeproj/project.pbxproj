@@ -473,6 +473,7 @@
 				INFOPLIST_FILE = "config/KickLab-Debug-Info.plist";
 				INFOPLIST_KEY_CFBundleName = "Juggle Dude";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Juggle Dude uses the camera to record your sessions and count your touches. Videos are analysed on your iPhone and only leave it if you export or share them.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Juggle Dude uses the microphone to record sound with your videos. Sound stays on your iPhone unless you export or share a video. You can record without it.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Move your phone to look around the stadium preview.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Juggle Dude saves your juggling replays to Photos so you can share them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -529,6 +530,7 @@
 				INFOPLIST_FILE = "config/KickLab-Info.plist";
 				INFOPLIST_KEY_CFBundleName = "Juggle Dude";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Juggle Dude uses the camera to record your sessions and count your touches. Videos are analysed on your iPhone and only leave it if you export or share them.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Juggle Dude uses the microphone to record sound with your videos. Sound stays on your iPhone unless you export or share a video. You can record without it.";
 				INFOPLIST_KEY_NSMotionUsageDescription = "Move your phone to look around the stadium preview.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Juggle Dude saves your juggling replays to Photos so you can share them.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
