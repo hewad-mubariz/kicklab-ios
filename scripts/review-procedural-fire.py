@@ -89,7 +89,7 @@ def main():
 <video controls playsinline loop preload="metadata" poster="before-after.jpg" src="before-after.mp4"></video>
 <p><a href="before-after.mp4">Open comparison video</a> · <a href="fire.mp4">Open full-frame export</a></p>
 <div class="grid"><section><h2>Full input 4 export</h2><video controls playsinline loop preload="metadata" poster="fire.png" src="fire.mp4"></video></section>
-<section><h2>Approved appearance reference</h2><img src="../../design/fire-mockup/fire-input4-v1.png" alt="Generated Fire appearance concept on input 4"><p>This concept guides the appearance. It is not sampled by the renderer.</p></section></div>
+</div>
 <h2>Consecutive frames · 125 ms apart</h2><img src="motion-detail.jpg" alt="Eight successive frames showing evolving procedural fire">
 <p class="note">20 GPU/tracking tests passed; iPhone Release build passed. Video dimensions, frame count, duration and full decoding checked. The existing export mux trims approximately 0.1 seconds from the source audio tail; retained AAC payloads are unchanged. Physical-iPhone performance is not measured. <a href="verification.json">Validation details</a> · <a href="../../docs/procedural-fire.md">Implementation notes</a></p></main></html>''')
     print(json.dumps(report, indent=2))

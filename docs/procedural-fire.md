@@ -39,7 +39,7 @@ Review: [actual app export](../artifacts/fire-v7/fire.mp4) (original daylight, 8
 
 ## Fire v5 (superseded)
 
-Fire must be generated in code. The user rejected flame images, atlases and warped-image layers because their silhouettes move like cutouts. The approved [mockup](../design/fire-mockup/fire-input4-v1.png) remains an appearance reference, not a runtime asset. This pass supersedes the Fire implementation described in `reference-effects.md`; other effects retain their existing implementation.
+Fire must be generated in code. The user rejected flame images, atlases and warped-image layers because their silhouettes move like cutouts. An approved mockup guided the appearance and was never a runtime asset; it was removed with the other effect mockups on 4 November 2026. This pass supersedes the Fire implementation described in `reference-effects.md`; other effects retain their existing implementation.
 
 `EffectShaders.metal` rebuilds the earlier procedural flow. Each output point is traced backward through 32 steps of a time-varying curl field with buoyancy and limited inherited ball velocity. Fuel comes from the corresponding recorded ball position. Missing tracking intervals emit nothing. The field reconstructs 0.8 seconds of emission, so previous material stays in video space as the ball moves. Heat and density decay separately.
 
@@ -58,7 +58,7 @@ Live, replay, still rendering and video export share this code. Video time contr
 
 The tests cover deterministic pause/seek, temporal continuity, world-space birth positions, ball-path response (now explicitly including Fire), independence from person detections, missing-track handling, zero-intensity clearing and matching preview/export compositing. The iPhone Release build is checked; physical-device frame time and thermals have not been measured.
 
-The rejected image materials were removed during artifact cleanup. Their prompts remain in `design/fire-mockup/fire-material-prompts.md`; the approved mockup is retained as a visual reference. Effect-picker artwork is separate from the runtime renderer.
+The rejected image materials were removed during artifact cleanup. Their prompts and the approved mockup went with the other effect mockups on 4 November 2026. Effect-picker artwork is separate from the runtime renderer.
 
 To repeat the media checks and build the comparison:
 

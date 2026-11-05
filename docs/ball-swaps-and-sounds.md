@@ -452,8 +452,8 @@ release regression tests passed on iOS 18, and the Release archive passed source
 verification. TestFlight status and validation evidence are recorded in
 [20261101-testflight-1.2.0-37.json](../benchmarks/releases/20261101-testflight-1.2.0-37.json).
 App Store review and release have not been submitted; the App Review notes are still to write.
-Decided to keep: "TOUCHES" stays English in videos, the tool stays "Milestones", Lab Flame
-stays in this release.
+Decided to keep: "TOUCHES" stays English in videos, the tool stays "Milestones". Lab Flame
+was retired from the pickers and recipes on 4 November 2026; saved clips that use it still draw it.
 
 ## Not done
 

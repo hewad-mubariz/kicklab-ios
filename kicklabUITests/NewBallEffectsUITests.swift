@@ -25,7 +25,8 @@ final class NewBallEffectsUITests: ProReplayUITestCase {
         app.buttons["replay-tool-effects"].tap()
         XCTAssertFalse(app.buttons["effect-picker-shadow"].exists)
         XCTAssertFalse(app.buttons["effect-picker-pixel"].exists)
-        for style in ["labFlame", "glowTrail", "blueFlame", "emberWake", "flameRibbon", "heatPulse"] {
+        XCTAssertFalse(app.buttons["effect-picker-labFlame"].exists)
+        for style in ["glowTrail", "blueFlame", "emberWake", "flameRibbon", "heatPulse"] {
             let button = app.buttons["effect-picker-\(style)"]
             XCTAssertTrue(button.waitForExistence(timeout: 5))
             XCTAssertTrue(button.isHittable, "\(style) must fit in the effects panel")
@@ -33,7 +34,7 @@ final class NewBallEffectsUITests: ProReplayUITestCase {
             XCTAssertTrue(button.isSelected)
         }
         let picker = XCTAttachment(screenshot: app.screenshot())
-        picker.name = "Six new effects - native picker"; picker.lifetime = .keepAlways; add(picker)
+        picker.name = "Five new effects - native picker"; picker.lifetime = .keepAlways; add(picker)
         app.buttons["replay-tools-back"].tap()
         XCTAssertTrue(app.buttons["replay-tool-ball"].waitForStableFrame())
         app.buttons["replay-tool-ball"].tap()

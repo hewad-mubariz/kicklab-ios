@@ -1,5 +1,7 @@
 # Lab Flame
 
+Retired on 4 November 2026: it is no longer in the effect pickers or the Looks recipes. Its identifier and shader stay so saved clips that use it still draw it.
+
 Lab Flame (`labFlameFX` in `kicklab/Effects/Metal/EffectStudies.h`, style 11) is the warm flame with a clear ball. Fire (style 1) is a separate effect and is unchanged.
 
 ## v2 · living plume (11 October 2026)

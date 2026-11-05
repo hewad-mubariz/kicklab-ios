@@ -5,11 +5,24 @@ import Testing
 @testable import kicklab
 
 struct NewBallEffectsTests {
+    /// Lab Flame stays here though retired from the pickers: saved clips that use it still draw it.
     static let styles: [BallStyle] = [.labFlame, .glowTrail, .blueFlame, .emberWake, .flameRibbon, .heatPulse]
 
     private func observation(_ time: Double, x: Double = 0.5, y: Double = 0.5) -> RecordedFrame {
         .init(time: time, x: x, y: y, width: 0.15, height: 0.15, score: 0.9,
               smoothedX: x, smoothedY: y, vy: 0, motion: .unknown, detected: true, person: nil)
+    }
+
+    @Test func labFlameIsRetiredFromPickersAndRecipesButStillOpensInSavedClips() {
+        #expect(!BallStyle.selectableCases.contains(.labFlame))
+        for lightweight in [false, true] {
+            #expect(!LookRecipes.ladder(lightweight: lightweight).contains { $0.effect == .labFlame })
+        }
+        for recipe in [LookRecipes.lightLadder, LookRecipes.lightRotation, LookRecipes.lightMix] {
+            #expect(!recipe.contains { $0.effect == .labFlame })
+        }
+        // Saved edits keep the effect's name, so old clips still find it.
+        #expect(BallStyle(rawValue: "labFlame") == .labFlame)
     }
 
     @Test func heatPulseUsesConfirmedEventsAndRewindsWithoutInventingTouches() {

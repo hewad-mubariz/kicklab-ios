@@ -72,16 +72,16 @@ nonisolated enum LookRecipes {
     /// about 23 ms of GPU time per frame. Electric, Galaxy, Rainbow and Neon reach 31 to 46 ms there.
     static let lightLadder: [TouchLook] = [
         TouchLook(ball: .volt, effect: .glowTrail), TouchLook(ball: .lava, effect: .emberWake),
-        TouchLook(ball: .gold, effect: .labFlame), TouchLook(ball: .crimson, effect: .fire),
+        TouchLook(ball: .gold, effect: .heatPulse), TouchLook(ball: .crimson, effect: .fire),
         TouchLook(ball: .aurora, effect: .nature)
     ]
     static let lightRotation: [TouchLook] = [
         TouchLook(ball: .volt, effect: .emberWake), TouchLook(ball: .arctic, effect: .glowTrail),
-        TouchLook(ball: .crimson, effect: .labFlame)
+        TouchLook(ball: .crimson, effect: .fire)
     ]
     static let lightMix: [TouchLook] = [
         TouchLook(ball: .volt, effect: .glowTrail), TouchLook(ball: .lava, effect: .fire),
-        TouchLook(ball: .gold, effect: .labFlame), TouchLook(ball: .arctic, effect: .nature),
+        TouchLook(ball: .gold, effect: .emberWake), TouchLook(ball: .arctic, effect: .nature),
         TouchLook(ball: .chrome, effect: .heatPulse), TouchLook(ball: .crimson, effect: .emberWake),
         TouchLook(ball: .pearl, effect: .glowTrail), TouchLook(ball: .matrix, effect: .nature)
     ]

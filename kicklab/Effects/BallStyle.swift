@@ -34,7 +34,7 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
 
     /// Keep retired identifiers and shader IDs stable while removing them from all pickers.
     static var selectableCases: [BallStyle] {
-        allCases.filter { $0 != .shadow && $0 != .pixel }
+        allCases.filter { $0 != .shadow && $0 != .pixel && $0 != .labFlame }
     }
 
     var title: String {
