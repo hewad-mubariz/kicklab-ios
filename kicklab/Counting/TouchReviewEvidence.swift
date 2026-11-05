@@ -2,7 +2,7 @@ import Foundation
 
 nonisolated enum ContactReviewReason: String, Codable, Sendable {
     case handContact, heldBall, groundContact
-    case playerOutOfView, visibilityUnverified
+    case playerOutOfView, ballOutOfView, visibilityUnverified
     case lowContactUncertain, handsUncertain, bodyUncertain, playerUncertain, ballUncertain, continuityGap
 }
 
@@ -45,6 +45,14 @@ nonisolated struct TouchReviewEvidence: Sendable {
             else { kind = .bodyUncertain }
         }
         return append(time: event.time, kind: kind)
+    }
+
+    /// A later touch showed this floor call was wrong. Counted as a touch, only the
+    /// touch stands. Otherwise it stays on record as unsure, which never ends a streak.
+    mutating func overrule(groundContactAt time: Double, sameContact: Bool) {
+        guard let index = observations.lastIndex(where: { $0.time == time && $0.kind == .groundContact }) else { return }
+        if sameContact { observations.remove(at: index) }
+        else { observations[index] = .init(time: time, kind: .lowContactUncertain) }
     }
 
     @discardableResult

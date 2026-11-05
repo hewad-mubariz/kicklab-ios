@@ -504,9 +504,12 @@ struct RecordView: View {
                 CaptureSessionBadge(number: sessionNumber, recording: camera.isRecording,
                                     preparing: camera.isPreparingRecording)
             }.zIndex(1)
-            CaptureTouchCounter(count: controlState == .ready ? 0 : camera.touchCount, warn: camera.tooShaky)
+            CaptureTouchCounter(count: controlState == .ready ? 0 : camera.touchCount,
+                                warn: camera.tooShaky || camera.streakAbsence != nil)
                 .allowsHitTesting(false)
-            if let captureWarning {
+            if !camera.tooShaky, let absence = camera.streakAbsence {
+                CaptureStreakWarning(warning: absence).transition(.sessionDrop)
+            } else if let captureWarning {
                 Text(captureWarning).font(.caption.weight(.semibold)).foregroundStyle(Theme.warn)
                     .multilineTextAlignment(.center)
                     .transition(.sessionDrop)
@@ -514,6 +517,7 @@ struct RecordView: View {
         }
         .foregroundStyle(.white).padding(.horizontal, 24).padding(.top, 8)
         .animation(SessionMotion.snap, value: captureWarning)
+        .animation(SessionMotion.snap, value: camera.streakAbsence)
     }
 
     /// One capture warning at a time, in the same caption style; a shaking phone matters most.

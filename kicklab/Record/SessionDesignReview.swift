@@ -93,6 +93,10 @@ struct SessionDesignReview: View {
             case "motion-styles": MotionStylesDesignReview()
             case "capture-controls": CaptureDesignReview()
             case "capture-preparing": CaptureDesignReview(initialState: .warming)
+            case "capture-streak-warning":
+                CaptureDesignReview(initialState: .recording, streakWarning: .init(subject: .ball, secondsLeft: 2))
+            case "capture-streak-ended":
+                CaptureDesignReview(initialState: .recording, streakWarning: .init(subject: .player, secondsLeft: 0))
             case "counter": CounterDesignReview()
             case "effects": ReplayEffectsView(summary: Self.summary, edit: $edit, stadiumPreview: sceneModel, overlays: $overlays, onBack: {})
             case "rf-post-session": PostSessionFlowView(summary: Self.summary,

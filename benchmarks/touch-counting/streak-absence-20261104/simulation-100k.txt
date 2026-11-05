@@ -1,0 +1,37 @@
+touchesMissedByTheCounter VALID ended 0/100000 [:] missed 100000
+highKick VALID ended 0/100000 [:] missed 100000
+twoHighKicksInARow VALID ended 3/100000 ["ballOutOfView": 3] first seed 547741394 6917 ms, [ClosedRange(454...2105), ClosedRange(3940...6311)], 7.0 Hz, ball 0.75, person 0.97, strays 0.1/s, stalls 0.0, blind 0.0 [(key: "7.0 Hz ball 0.75", value: 2), (key: "8.0 Hz ball 0.75", value: 1)]
+ballHiddenByTheBody VALID ended 0/100000 [:] missed 100000
+playerAtTheEdgeOfFrame VALID ended 0/100000 [:] missed 100000
+phoneFallingBehind VALID ended 0/100000 [:] missed 100000
+liveDetectorBlind VALID ended 0/100000 [:] missed 100000
+savedVideoUnreadable VALID ended 0/100000 [:] missed 100000
+ballGone STOP ended 93784/100000 ["ballOutOfView": 93784] missed 6216
+playerAndBallGone STOP ended 100000/100000 ["playerOutOfView": 99992, "ballOutOfView": 8] 
+playerGoneBallInView STOP ended 99989/100000 ["playerOutOfView": 99989] missed 11
+
+MARGIN: wrong breaks per 100,000 valid sessions, by replies per second and ball detection rate
+highKick rates [0.3, 0.4, 0.5, 0.6, 0.75, 0.87, 1.0]
+  5.0 Hz [70, 70, 25, 25, 10, 0, 0]
+  7.0 Hz [150, 70, 35, 40, 0, 5, 0]
+  10.0 Hz [145, 55, 50, 10, 0, 0, 0]
+  15.0 Hz [120, 55, 30, 15, 0, 0, 0]
+  30.0 Hz [50, 0, 0, 0, 0, 0, 0]
+twoHighKicksInARow rates [0.3, 0.4, 0.5, 0.6, 0.75, 0.87, 1.0]
+  5.0 Hz [19185, 7575, 2835, 825, 65, 0, 0]
+  7.0 Hz [12025, 3985, 1240, 225, 5, 0, 0]
+  10.0 Hz [6380, 1530, 275, 45, 0, 0, 0]
+  15.0 Hz [1900, 280, 20, 5, 0, 0, 0]
+  30.0 Hz [25, 0, 0, 0, 0, 0, 0]
+ballHiddenByTheBody rates [0.3, 0.4, 0.5, 0.6, 0.75, 0.87, 1.0]
+  5.0 Hz [4450, 2035, 755, 305, 45, 0, 0]
+  7.0 Hz [3115, 1235, 455, 120, 5, 0, 0]
+  10.0 Hz [1970, 560, 115, 15, 0, 0, 0]
+  15.0 Hz [710, 120, 15, 0, 0, 0, 0]
+  30.0 Hz [90, 0, 0, 0, 0, 0, 0]
+touchesMissedByTheCounter rates [0.3, 0.4, 0.5, 0.6, 0.75, 0.87, 1.0]
+  5.0 Hz [6165, 720, 40, 0, 0, 0, 0]
+  7.0 Hz [1895, 45, 0, 0, 0, 0, 0]
+  10.0 Hz [245, 0, 0, 0, 0, 0, 0]
+  15.0 Hz [5, 0, 0, 0, 0, 0, 0]
+  30.0 Hz [0, 0, 0, 0, 0, 0, 0]

@@ -1,0 +1,5 @@
+Ball really gone: share of sessions that end the streak, by false boxes per second and how long it is gone
+  0.0/s (per 1000, tenths of a second gone) 37-45: 999 | 45-60: 999 | 60-100: 999 | 100-150: 999
+  0.1/s (per 1000, tenths of a second gone) 37-45: 981 | 45-60: 987 | 60-100: 993 | 100-150: 993
+  0.3/s (per 1000, tenths of a second gone) 37-45: 863 | 45-60: 902 | 60-100: 951 | 100-150: 961
+  0.6/s (per 1000, tenths of a second gone) 37-45: 606 | 45-60: 695 | 60-100: 826 | 100-150: 874

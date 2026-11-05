@@ -46,6 +46,8 @@ final class CameraSession: NSObject, ObservableObject {
     @MainActor @Published private(set) var cameraShift: Double = 0
     /// The camera is moving too much to count reliably.
     @MainActor @Published private(set) var tooShaky = false
+    /// The ball or player has been out of sight long enough to warn that the streak may end.
+    @MainActor @Published private(set) var streakAbsence: LiveAbsenceWarning?
     /// Even the longest capped shutter left the picture dark, so the camera's own
     /// (blurring) limit applies. Not enough light for a sharp ball; see CaptureExposureCap.
     @MainActor @Published private(set) var tooDark = false
@@ -273,6 +275,7 @@ final class CameraSession: NSObject, ObservableObject {
     @MainActor
     func reset() {
         touchCount = 0
+        streakAbsence = nil
         touchDiagnostic = nil
         #if DEBUG
         activePlayers = []; activePlayer = nil
@@ -304,6 +307,7 @@ final class CameraSession: NSObject, ObservableObject {
         recordedTrack = []
         recordingURL = nil
         touchCount = 0
+        streakAbsence = nil
         touchDiagnostic = nil
         #if DEBUG
         activePlayers = []; activePlayer = nil
@@ -491,6 +495,7 @@ final class CameraSession: NSObject, ObservableObject {
         lastTouchAt = nil
         cameraShift = 0
         tooShaky = false
+        streakAbsence = nil
     }
 
     private func requestAccess() async -> Bool {
@@ -796,6 +801,7 @@ extension CameraSession: AVCaptureVideoDataOutputSampleBufferDelegate {
             self.performance = snapshot.performance
             self.cameraShift = snapshot.shift
             self.tooShaky = snapshot.shaky
+            self.streakAbsence = snapshot.absence
             if let at = snapshot.touched {
                 self.lastTouchAt = at
                 self.lastTouchToken &+= 1

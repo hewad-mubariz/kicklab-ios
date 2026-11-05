@@ -7,8 +7,11 @@ struct CaptureDesignReview: View {
     @State private var lastAction = "Ready"
     @State private var closed = false
 
-    init(initialState: CaptureControlState = .ready) {
+    private let streakWarning: LiveAbsenceWarning?
+
+    init(initialState: CaptureControlState = .ready, streakWarning: LiveAbsenceWarning? = nil) {
         _state = State(initialValue: initialState)
+        self.streakWarning = streakWarning
     }
 
     var body: some View {
@@ -29,7 +32,8 @@ struct CaptureDesignReview: View {
                         CaptureSessionBadge(number: 1, recording: state == .recording,
                                             preparing: state == .preparing)
                     }.padding(.bottom, 18)
-                    CaptureTouchCounter(count: state == .recording ? 18 : 0)
+                    CaptureTouchCounter(count: state == .recording ? 18 : 0, warn: streakWarning != nil)
+                    if let streakWarning { CaptureStreakWarning(warning: streakWarning).padding(.top, 18) }
                     Text(lastAction).font(.caption2).foregroundStyle(.secondary)
                         .accessibilityIdentifier("capture-review-action")
                     Spacer()

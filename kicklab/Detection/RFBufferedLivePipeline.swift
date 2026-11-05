@@ -257,8 +257,11 @@ nonisolated final class BufferedTracking {
         // it before the counting deadline check; never inspect cached `people`.
         let relative = Double(reply.frame.timestampMs)/1000-reply.frame.recordingStart
         guard relative.isFinite, relative >= 0, relative <= 86_400 else { return }
-        streakVisibility.record(timeMS: Int((relative*1000).rounded()),
-            personVisible: reply.found.person != nil || !reply.found.people.isEmpty)
+        let timeMS = Int((relative*1000).rounded())
+        let personVisible = reply.found.person != nil || !reply.found.people.isEmpty
+        let ballVisible = reply.found.ball != nil || reply.candidateCount > 0
+        streakVisibility.record(timeMS: timeMS, personVisible: personVisible, ballVisible: ballVisible)
+        counter.recordVisibility(timeMS: timeMS, personVisible: personVisible, ballVisible: ballVisible)
     }
     nonisolated private func processDue() throws {
         try receive()
@@ -823,6 +826,7 @@ nonisolated final class RFLiveConsumer {
     private var outstanding = 0, peak = 0, processed = 0
     private var latest: LiveAnalysisUpdate?
     private var failure: Error?
+    private var absence = LiveAbsenceClock()
     var summary: [String: Int] {
         lock.lock(); defer { lock.unlock() }
         return ["processed": processed, "maximum_queue_depth": peak, "queue_capacity": 32, "outstanding": outstanding]
@@ -832,6 +836,7 @@ nonisolated final class RFLiveConsumer {
         preview.reset()
         lock.lock(); defer { lock.unlock() }
         outstanding = 0; peak = 0; processed = 0; latest = nil; failure = nil
+        absence = LiveAbsenceClock()
     }
     func submit(_ output: RFTrackedFrame) throws -> [String: Any] {
         lock.lock()
@@ -848,7 +853,7 @@ nonisolated final class RFLiveConsumer {
             do {
                 let update = try autoreleasepool { try self.process?(output) }
                 self.lock.lock()
-                if let update { self.latest = update }
+                if let update { self.latest = update; self.absence.counted(update.count) }
                 self.processed += 1
                 self.lock.unlock()
             } catch { self.lock.lock(); self.failure = error; self.lock.unlock() }
@@ -859,7 +864,13 @@ nonisolated final class RFLiveConsumer {
     func takeUpdate() throws -> LiveAnalysisUpdate? {
         lock.lock(); defer { lock.unlock() }
         if let failure { throw failure }
-        let result = latest; latest = nil; return result
+        var result = latest; latest = nil
+        if let liveTime = result?.liveTime, liveTime.isFinite { result?.absence = absence.warning(at: Int(liveTime*1000)) }
+        return result
+    }
+    func recordVisibility(timeMS: Int, personVisible: Bool, ballVisible: Bool) {
+        lock.lock(); defer { lock.unlock() }
+        absence.record(timeMS: timeMS, personVisible: personVisible, ballVisible: ballVisible)
     }
     func drain() throws {
         queue.sync {}

@@ -60,6 +60,48 @@ struct CaptureSessionBadge: View {
     }
 }
 
+/// Big enough to read from where the player stands, because they can't come to the phone to check.
+struct CaptureStreakWarning: View {
+    let warning: LiveAbsenceWarning
+
+    private var title: String {
+        switch warning.subject {
+        case .player: String(localized: "Player out of view", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .ball: String(localized: "Ball out of view", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        }
+    }
+    private var detail: String {
+        warning.secondsLeft > 0
+            ? String(localized: "Streak is about to end", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            : String(localized: "New streak when you continue", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Group {
+                if warning.secondsLeft > 0 {
+                    Text(warning.secondsLeft, format: .number).font(.system(size: 44, weight: .bold)).monospacedDigit()
+                        .contentTransition(.numericText(countsDown: true))
+                } else {
+                    Image(systemName: "arrow.counterclockwise").font(.system(size: 28, weight: .bold))
+                }
+            }
+            .foregroundStyle(Theme.warn).frame(minWidth: 40, minHeight: 48)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.system(size: 18, weight: .semibold))
+                Text(detail).font(.system(size: 14)).foregroundStyle(.white.opacity(0.85))
+            }
+            .lineLimit(2).minimumScaleFactor(0.8)
+        }
+        .foregroundStyle(.white).padding(.horizontal, 18).padding(.vertical, 8)
+        // Glass alone washes out against bright sky or a white shirt.
+        .background(.black.opacity(0.45), in: .capsule)
+        .appGlass(in: .capsule)
+        .allowsHitTesting(false)
+        .accessibilityElement(children: .combine).accessibilityIdentifier("capture-streak-warning")
+    }
+}
+
 struct CaptureTouchCounter: View {
     let count: Int
     var warn = false

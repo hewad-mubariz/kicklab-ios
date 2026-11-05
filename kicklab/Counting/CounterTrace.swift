@@ -45,7 +45,11 @@ nonisolated struct CounterTrace: Codable, Sendable {
 
     /// Reuses recorded hand verdicts, not Vision. Refuse missing evidence rather
     /// than assuming a new candidate is legal when evaluating a changed counter.
-    func replay() throws -> [Touch] {
+    func replay() throws -> [Touch] { try replayedCounter().touches }
+
+    /// The counter after replay, for what it decided beyond the touches, such as streak stops.
+    func replayedCounter(diagnoseContact: ((CounterDecision, BallObservation?) -> TouchDebugEvent?)? = nil,
+                         streakGroundEvidence: ((Int) -> GroundContactEvidence?)? = nil) throws -> StreamingCounter {
         guard [Self.currentRevision, "counter-v5", "counter-v6", "counter-v7", "counter-v8"].contains(revision) else { throw ReplayError.incompatibleRevision }
         guard complete, operations.last?.flush == true else { throw ReplayError.incomplete }
         let handChecks = decisions.filter { $0.value.handRejected != nil }
@@ -106,12 +110,13 @@ nonisolated struct CounterTrace: Codable, Sendable {
         } : nil
         let counter = StreamingCounter(config: config, rejectsHandContact: verifier, recordTrace: true,
                                        traceLimit: max(1, operations.count), footContactEvidence: footProvider,
-                                       allowsBodyContact: bodyVerifier,
+                                       allowsBodyContact: bodyVerifier, diagnoseContact: diagnoseContact,
                                        groundPolicy: revision == "counter-v5" ? .legacyCenter :
                                         (revision == "counter-v6" ? .observedBoundary :
                                             (revision == "counter-v7" ? .supportedBoundary :
                                                 (revision == "counter-v8" ? .plantedFeet : .corroboratedFeet))),
-                                       groundContactEvidence: groundProvider, handlingEvidence: handlingProvider)
+                                       groundContactEvidence: groundProvider, handlingEvidence: handlingProvider,
+                                       streakGroundEvidence: streakGroundEvidence)
         for (index, operation) in operations.enumerated() {
             operationIndex = index
             if operation.flush {
@@ -132,7 +137,7 @@ nonisolated struct CounterTrace: Codable, Sendable {
         guard counter.touches == touches, counter.traceSnapshot()?.decisions == decisions else {
             throw ReplayError.differentResult
         }
-        return counter.touches
+        return counter
     }
 }
 

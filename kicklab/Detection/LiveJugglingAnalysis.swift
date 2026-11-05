@@ -35,6 +35,7 @@ nonisolated struct LiveAnalysisUpdate {
     let vy: Double
     var players: [ActiveJugglerTracker.Player] = []
     var player: ActivePlayerSelection? = nil
+    var absence: LiveAbsenceWarning? = nil
 }
 
 /// Owns live inference and numeric session results. All methods run on the

@@ -1,0 +1,5 @@
+Other distinct floor stops: 29 still end a streak, 3 no longer do
+  body-gate-review-20261024/inputs/walkthrough-archive.plist  frame 4799  fall 1.11  touch before 500 ms  touch after 533 ms  unbroken juggling
+  img8878-review-20261027/counter-archive.plist  frame 355  fall 1.03  touch before 475 ms  touch after 417 ms  unbroken juggling
+  long-video-6500-20261104/mac-full/counter-archive.plist  frame 89854  fall 0.95  touch before 500 ms  touch after 500 ms  unbroken juggling
+274 session after the foot rule: 0 still end a streak, 29 no longer do

@@ -113,6 +113,90 @@
         }
       }
     },
+    "Ball out of view" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ball nicht im Bild"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balón fuera de cuadro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ballon hors champ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bola fora do quadro"
+          }
+        }
+      }
+    },
+    "New streak when you continue" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Serie, wenn du weitermachst"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Racha nueva cuando sigas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvelle série quand tu reprends"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nova sequência quando você continuar"
+          }
+        }
+      }
+    },
+    "Streak is about to end" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Serie endet gleich"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La racha está a punto de terminar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La série va se terminer"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A sequência está prestes a terminar"
+          }
+        }
+      }
+    },
     "Edit": {
       "extractionState": "manual",
       "localizations": {
@@ -316,30 +400,30 @@
         }
       }
     },
-    "If no player is visible for at least 2.5 seconds, a new streak starts when touches resume. If part of a session cannot be checked, streaks on either side stay separate. Your total touches are kept." : {
+    "If you or the ball are out of sight for at least 3 seconds, a new streak starts when touches resume. If part of a session cannot be checked, streaks on either side stay separate. Your total touches are kept." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wenn mindestens 2,5 Sekunden lang kein Spieler zu sehen ist, beginnt eine neue Serie, sobald die Kontakte weitergehen. Kann ein Teil des Trainings nicht geprüft werden, bleiben die Serien davor und danach getrennt. Deine Gesamtzahl an Kontakten bleibt erhalten."
+            "value" : "Wenn du oder der Ball mindestens 3 Sekunden lang nicht zu sehen seid, beginnt eine neue Serie, sobald die Kontakte weitergehen. Kann ein Teil des Trainings nicht geprüft werden, bleiben die Serien davor und danach getrennt. Deine Gesamtzahl an Kontakten bleibt erhalten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Si no se ve a ningún jugador durante al menos 2,5 segundos, empieza una racha nueva cuando vuelven los toques. Si no se puede comprobar una parte de la sesión, las rachas de antes y después siguen separadas. Tu total de toques se mantiene."
+            "value" : "Si no se te ve a ti o al balón durante al menos 3 segundos, empieza una racha nueva cuando vuelven los toques. Si no se puede comprobar una parte de la sesión, las rachas de antes y después siguen separadas. Tu total de toques se mantiene."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Si aucun joueur n’est visible pendant au moins 2,5 secondes, une nouvelle série commence à la reprise des jongles. Si une partie de la séance ne peut pas être vérifiée, les séries avant et après restent séparées. Ton total de jongles est conservé."
+            "value" : "Si toi ou le ballon n’êtes plus visibles pendant au moins 3 secondes, une nouvelle série commence à la reprise des jongles. Si une partie de la séance ne peut pas être vérifiée, les séries avant et après restent séparées. Ton total de jongles est conservé."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se nenhum jogador ficar visível por pelo menos 2,5 segundos, uma nova sequência começa quando os toques recomeçam. Se não for possível verificar uma parte do treino, as sequências antes e depois ficam separadas. Seu total de toques é mantido."
+            "value" : "Se você ou a bola ficarem fora de vista por pelo menos 3 segundos, uma nova sequência começa quando os toques recomeçam. Se não for possível verificar uma parte do treino, as sequências antes e depois ficam separadas. Seu total de toques é mantido."
           }
         }
       }
@@ -372,58 +456,58 @@
         }
       }
     },
-    "No player was visible for at least 2.5 seconds, so a new streak started. All touches stay in your total." : {
+    "No player was visible for at least 3 seconds, so a new streak started. All touches stay in your total." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mindestens 2,5 Sekunden lang war kein Spieler zu sehen, daher begann eine neue Serie. Alle Kontakte zählen weiter zu deiner Gesamtzahl."
+            "value" : "Mindestens 3 Sekunden lang war kein Spieler zu sehen, daher begann eine neue Serie. Alle Kontakte zählen weiter zu deiner Gesamtzahl."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se vio a ningún jugador durante al menos 2,5 segundos, así que empezó una racha nueva. Todos los toques siguen en tu total."
+            "value" : "No se vio a ningún jugador durante al menos 3 segundos, así que empezó una racha nueva. Todos los toques siguen en tu total."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucun joueur n’a été visible pendant au moins 2,5 secondes, une nouvelle série a donc commencé. Tous les jongles restent dans ton total."
+            "value" : "Aucun joueur n’a été visible pendant au moins 3 secondes, une nouvelle série a donc commencé. Tous les jongles restent dans ton total."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nenhum jogador ficou visível por pelo menos 2,5 segundos, então uma nova sequência começou. Todos os toques continuam no seu total."
+            "value" : "Nenhum jogador ficou visível por pelo menos 3 segundos, então uma nova sequência começou. Todos os toques continuam no seu total."
           }
         }
       }
     },
-    "No player was visible for at least 2.5 seconds, so touches before and after count as separate streaks. Your total touches are kept." : {
+    "No player was visible for at least 3 seconds, so touches before and after count as separate streaks. Your total touches are kept." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mindestens 2,5 Sekunden lang war kein Spieler zu sehen, daher zählen die Kontakte davor und danach als getrennte Serien. Deine Gesamtzahl an Kontakten bleibt erhalten."
+            "value" : "Mindestens 3 Sekunden lang war kein Spieler zu sehen, daher zählen die Kontakte davor und danach als getrennte Serien. Deine Gesamtzahl an Kontakten bleibt erhalten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se vio a ningún jugador durante al menos 2,5 segundos, así que los toques de antes y después cuentan como rachas separadas. Tu total de toques se mantiene."
+            "value" : "No se vio a ningún jugador durante al menos 3 segundos, así que los toques de antes y después cuentan como rachas separadas. Tu total de toques se mantiene."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucun joueur n’a été visible pendant au moins 2,5 secondes : les jongles avant et après comptent donc comme des séries séparées. Ton total de jongles est conservé."
+            "value" : "Aucun joueur n’a été visible pendant au moins 3 secondes : les jongles avant et après comptent donc comme des séries séparées. Ton total de jongles est conservé."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nenhum jogador ficou visível por pelo menos 2,5 segundos, então os toques antes e depois contam como sequências separadas. Seu total de toques é mantido."
+            "value" : "Nenhum jogador ficou visível por pelo menos 3 segundos, então os toques antes e depois contam como sequências separadas. Seu total de toques é mantido."
           }
         }
       }
@@ -23519,30 +23603,114 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
-    "the player was out of view for at least 2.5 seconds" : {
+    "the ball was out of sight for at least 3 seconds" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "der Spieler war mindestens 2,5 Sekunden nicht im Bild"
+            "value" : "der Ball war mindestens 3 Sekunden nicht im Bild"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "el jugador estuvo fuera de cuadro al menos 2,5 segundos"
+            "value" : "el balón estuvo fuera de cuadro al menos 3 segundos"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "le joueur était hors champ pendant au moins 2,5 secondes"
+            "value" : "le ballon était hors champ pendant au moins 3 secondes"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "o jogador ficou fora do quadro por pelo menos 2,5 segundos"
+            "value" : "a bola ficou fora do quadro por pelo menos 3 segundos"
+          }
+        }
+      }
+    },
+    "The ball was out of sight for at least 3 seconds, so a new streak started. All touches stay in your total." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Ball war mindestens 3 Sekunden lang nicht zu sehen, daher begann eine neue Serie. Alle Kontakte zählen weiter zu deiner Gesamtzahl."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El balón estuvo fuera de la vista durante al menos 3 segundos, así que empezó una racha nueva. Todos los toques siguen en tu total."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le ballon n’a pas été visible pendant au moins 3 secondes, une nouvelle série a donc commencé. Tous les jongles restent dans ton total."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A bola ficou fora de vista por pelo menos 3 segundos, então uma nova sequência começou. Todos os toques continuam no seu total."
+          }
+        }
+      }
+    },
+    "The ball was out of sight for at least 3 seconds, so touches before and after count as separate streaks. Your total touches are kept." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Ball war mindestens 3 Sekunden lang nicht zu sehen, daher zählen die Kontakte davor und danach als getrennte Serien. Deine Gesamtzahl an Kontakten bleibt erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El balón estuvo fuera de la vista durante al menos 3 segundos, así que los toques de antes y después cuentan como rachas separadas. Tu total de toques se mantiene."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le ballon n’a pas été visible pendant au moins 3 secondes : les jongles avant et après comptent donc comme des séries séparées. Ton total de jongles est conservé."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A bola ficou fora de vista por pelo menos 3 segundos, então os toques antes e depois contam como sequências separadas. Seu total de toques é mantido."
+          }
+        }
+      }
+    },
+    "the player was out of view for at least 3 seconds" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "der Spieler war mindestens 3 Sekunden nicht im Bild"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "el jugador estuvo fuera de cuadro al menos 3 segundos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "le joueur était hors champ pendant au moins 3 secondes"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "o jogador ficou fora do quadro por pelo menos 3 segundos"
           }
         }
       }

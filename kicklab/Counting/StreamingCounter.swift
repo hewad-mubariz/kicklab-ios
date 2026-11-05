@@ -31,6 +31,7 @@ nonisolated final class StreamingCounter {
     private let retainContactFrames: ((Int?) -> Void)?
     private let streakHandlingEvidence: ((Int, Int) -> BallHandlingEvidence?)?
     private var streakSchedule = StreakInterruptionSchedule()
+    private var groundCalls = StreakGroundCalls()
 
     private var stamps: [Int: Int] = [:]
     private var balls: [Int: BallObservation] = [:]
@@ -93,7 +94,9 @@ nonisolated final class StreamingCounter {
             if ball != nil { ball!.y -= self.cameraOffsets[decision.frameIndex] ?? 0 }
             guard let diagnostic = diagnoseContact(decision, ball) else { return }
             self.latestDiagnostic = diagnostic
-            var groundConfirmed = decision.plantedFeetConfirmed == true
+            // A contact whose foot was confirmed is not proof of the floor, the
+            // same test the check below uses. The counter's own verdict is unchanged.
+            var groundConfirmed = decision.plantedFeetConfirmed == true && decision.footConfirmed != true
             // The early floor gate rejects before asking for sustained pose
             // evidence. Obtain it separately for ranking, leaving the decision
             // and its exact-replay trace unchanged.
@@ -108,6 +111,13 @@ nonisolated final class StreamingCounter {
             if let observation = self.reviewEvidence.append(diagnostic, groundConfirmed: groundConfirmed),
                [.handContact, .heldBall, .groundContact].contains(observation.kind) {
                 self.streakSchedule.end(at: decision.timestampMs)
+                if observation.kind == .groundContact {
+                    // The ball can be missing on the contact frame; its size barely changes nearby.
+                    let nearby = (0...3).lazy.compactMap { self.balls[decision.frameIndex-$0] ?? self.balls[decision.frameIndex+$0] }.first
+                    self.groundCalls.add(.init(frameIndex: decision.frameIndex, timestampMs: decision.timestampMs, time: observation.time,
+                        fallBallHeights: nearby.flatMap { ball in decision.fall.map { $0/ball.height } },
+                        previousTouchMs: self.touches.last?.timestampMs))
+                }
             }
             #if DEBUG
             self.debugDiagnosticObserver?(diagnostic)
@@ -208,6 +218,9 @@ nonisolated final class StreamingCounter {
         guard var touch = machine.push(point) else { return nil }
         touch.y -= cameraOffsets[touch.frameIndex] ?? 0
         touches.append(touch)
+        for call in groundCalls.touch(frameIndex: touch.frameIndex, timestampMs: touch.timestampMs) {
+            reviewEvidence.overrule(groundContactAt: call.time, sameContact: call.sameContact)
+        }
         return touch
     }
 

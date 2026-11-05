@@ -1,0 +1,238 @@
+{
+ "cases": [
+  {
+   "video": "normal_juggling_2.mov",
+   "before": 600,
+   "after": 5990,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_2.mov",
+   "before": 5990,
+   "after": 11080,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_3.mov",
+   "before": 2080,
+   "after": 7410,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_3.mov",
+   "before": 7410,
+   "after": 12620,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_3.mov",
+   "before": 22750,
+   "after": 28100,
+   "expect": "keep"
+  },
+  {
+   "video": "juggling_second_ball_in_video.mov",
+   "before": 1250,
+   "after": 6700,
+   "expect": "keep"
+  },
+  {
+   "video": "juggling_second_ball_in_video.mov",
+   "before": 6700,
+   "after": 11900,
+   "expect": "keep"
+  },
+  {
+   "video": "juggling_second_ball_in_video.mov",
+   "before": 11900,
+   "after": 17390,
+   "expect": "keep"
+  },
+  {
+   "video": "raw-juggling.mov",
+   "before": 3840,
+   "after": 8960,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_8.mov",
+   "before": 36610,
+   "after": 41890,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_8.mov",
+   "before": 41890,
+   "after": 47500,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_8.mov",
+   "before": 47500,
+   "after": 52600,
+   "expect": "keep"
+  },
+  {
+   "video": "eighteen.mov",
+   "before": 5080,
+   "after": 10350,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_4.mov",
+   "before": 340,
+   "after": 5410,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_4.mov",
+   "before": 5410,
+   "after": 10910,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_5.mov",
+   "before": 980,
+   "after": 6010,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_5.mov",
+   "before": 6010,
+   "after": 11170,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_5.mov",
+   "before": 11170,
+   "after": 16260,
+   "expect": "keep"
+  },
+  {
+   "video": "juggling.mp4",
+   "before": 990,
+   "after": 6010,
+   "expect": "keep"
+  },
+  {
+   "video": "juggling.mp4",
+   "before": 6010,
+   "after": 11170,
+   "expect": "keep"
+  },
+  {
+   "video": "juggling.mp4",
+   "before": 11170,
+   "after": 16239,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_7.mov",
+   "before": 530,
+   "after": 5640,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_7.mov",
+   "before": 5640,
+   "after": 11050,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_7.mov",
+   "before": 11050,
+   "after": 16390,
+   "expect": "keep"
+  },
+  {
+   "video": "juggling_second_ball_very_far.mov",
+   "before": 5680,
+   "after": 10880,
+   "expect": "keep"
+  },
+  {
+   "video": "34dd.mov",
+   "before": 4150,
+   "after": 9460,
+   "expect": "keep"
+  },
+  {
+   "video": "nomral_juggling_6.mov",
+   "before": 12470,
+   "after": 17790,
+   "expect": "keep"
+  },
+  {
+   "video": "nomral_juggling_6.mov",
+   "before": 17790,
+   "after": 23360,
+   "expect": "keep"
+  },
+  {
+   "video": "nomral_juggling_6.mov",
+   "before": 23360,
+   "after": 28420,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_1.mov",
+   "before": 250,
+   "after": 5430,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_1.mov",
+   "before": 5430,
+   "after": 10830,
+   "expect": "keep"
+  },
+  {
+   "video": "low.mov",
+   "before": 125,
+   "after": 5250,
+   "expect": "keep"
+  },
+  {
+   "video": "low.mov",
+   "before": 5250,
+   "after": 10440,
+   "expect": "keep"
+  },
+  {
+   "video": "low.mov",
+   "before": 10440,
+   "after": 15740,
+   "expect": "keep"
+  },
+  {
+   "video": "normal_juggling_4.mov",
+   "before": 12160,
+   "after": 16600,
+   "expect": "end"
+  },
+  {
+   "video": "normal_juggling_8.mov",
+   "before": 28150,
+   "after": 32450,
+   "expect": "end"
+  },
+  {
+   "video": "walkthrough.mov",
+   "before": 56110,
+   "after": 60210,
+   "expect": "end"
+  },
+  {
+   "video": "walkthrough.mov",
+   "before": 128920,
+   "after": 133850,
+   "expect": "end"
+  },
+  {
+   "video": "left-the-room.mov",
+   "before": 10750,
+   "after": 20520,
+   "expect": "end"
+  }
+ ]
+}

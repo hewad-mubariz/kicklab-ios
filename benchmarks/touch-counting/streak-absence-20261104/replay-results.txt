@@ -1,0 +1,19 @@
+runs 219 clips 107 touches 15020 gaps>=3s 345 decisions 50
+by kind Counter({'ballOutOfView': 49, 'playerOutOfView': 1})
+second looks 50 overruled 0
+LABELLED: runs 76 clips 15 touches 3014 breaks 12 WRONG 0
+  real stops ended (clip, s): runs [(('normal_juggling_4', 11), 3), (('normal_juggling_4', 12), 4), (('normal_juggling_8', 28), 5)]
+LONG SESSION [(6844, [], [], 1, 0)]
+UNLABELLED clips with breaks:
+  digest-98c691e079 1 runs {'playerOutOfView@14': '1x gap 25.2-25.2'}
+  hands@baseline 1 runs {'ballOutOfView@50': '1x gap 5.0-5.0'}
+  hands@candidate-1 1 runs {'ballOutOfView@50': '1x gap 5.0-5.0'}
+  hands@candidate-2 1 runs {'ballOutOfView@50': '1x gap 5.0-5.0'}
+  hands@candidate-3 1 runs {'ballOutOfView@50': '1x gap 5.3-5.3'}
+  hands@final-replay 1 runs {'ballOutOfView@50': '1x gap 5.3-5.3'}
+  hands@full-pipeline 1 runs {'ballOutOfView@50': '1x gap 5.3-5.3'}
+  sparse-floor-bounces 1 runs {'ballOutOfView@68': '1x gap 11.5-11.5'}
+  trace.plist@latest-live-tier-run1 8 runs {'ballOutOfView@24': '8x gap 5.8-15.8'}
+  trace.plist@latest-live-tier-run2 6 runs {'ballOutOfView@24': '6x gap 15.8-15.8'}
+  trace.plist@latest-live-tier-run3 6 runs {'ballOutOfView@24': '6x gap 7.5-15.8'}
+  walkthrough 5 runs {'ballOutOfView@130': '5x gap 10.1-10.7', 'ballOutOfView@56': '5x gap 5.7-5.7'}

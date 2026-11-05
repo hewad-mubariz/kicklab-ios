@@ -14,9 +14,11 @@ nonisolated final class SavedStreakVisibilityVerifier {
     private(set) var failure: String?
     static let maximumFrames = 60
     static let maximumSeconds = 6.0
+    private let secondsAllowed: Double
 
-    init(source: URL?, worker: RFWorker) {
+    init(source: URL?, worker: RFWorker, secondsAllowed: Double = SavedStreakVisibilityVerifier.maximumSeconds) {
         self.worker = worker
+        self.secondsAllowed = secondsAllowed
         generator = source.map { AVAssetImageGenerator(asset: AVURLAsset(url: $0)) }
         generator?.appliesPreferredTrackTransform = true
         generator?.maximumSize = CGSize(width: 640, height: 640)
@@ -28,7 +30,7 @@ nonisolated final class SavedStreakVisibilityVerifier {
         guard let generator else { failure = "original_unavailable"; return [] }
         if started == nil { started = ProcessInfo.processInfo.systemUptime }
         var samples: [StreakVisibilityEvidence.Sample] = []
-        // Six independent empty samples spanning 2.5 s are required; a single
+        // Seven independent empty samples spanning 3 s are required; a single
         // failed decode or failed prediction is never an empty-camera sample.
         for target in stride(from: window.startMS+250, to: window.endMS, by: 500) {
             // Reuse the app's locked foreground/GPU permission snapshot. This
@@ -37,7 +39,7 @@ nonisolated final class SavedStreakVisibilityVerifier {
                 failure = "recheck_app_inactive"; break
             }
             guard attempts < Self.maximumFrames,
-                  ProcessInfo.processInfo.systemUptime-started! < Self.maximumSeconds,
+                  ProcessInfo.processInfo.systemUptime-started! < secondsAllowed,
                   ProcessInfo.processInfo.thermalState != .critical else {
                 failure = "recheck_budget_or_thermal_limit"; break
             }
@@ -62,7 +64,8 @@ nonisolated final class SavedStreakVisibilityVerifier {
                     let reply = worker.infer(frame, hint: nil, purpose: "streak_visibility")
                     guard reply.error == nil else { failure = "prediction_failed"; return nil }
                     return .init(timeMS: Int((actual.seconds*1000).rounded()),
-                                 personVisible: reply.found.person != nil || !reply.found.people.isEmpty)
+                                 personVisible: reply.found.person != nil || !reply.found.people.isEmpty,
+                                 ballVisible: reply.found.ball != nil || reply.candidateCount > 0)
                 } catch {
                     failure = "source_decode_failed"
                     return nil

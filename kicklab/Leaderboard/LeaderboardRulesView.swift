@@ -27,7 +27,7 @@ struct LeaderboardRulesView: View {
                         Divider()
                         rule("Touches the counter isn’t sure of", "A possible touch that the counter cannot confirm is left out. Brief tracking misses and high kicks do not end a streak on their own.", "questionmark.circle")
                         Divider()
-                        rule("Stay in view", "If no player is visible for at least 2.5 seconds, a new streak starts when touches resume. If part of a session cannot be checked, streaks on either side stay separate. Your total touches are kept.", "person.crop.rectangle")
+                        rule("Stay in view", "If you or the ball are out of sight for at least 3 seconds, a new streak starts when touches resume. If part of a session cannot be checked, streaks on either side stay separate. Your total touches are kept.", "person.crop.rectangle")
                         Text("Automatic counts can miss touches or interruptions. Keep the ball and your body clearly visible.")
                             .font(.footnote).foregroundStyle(.secondary)
                         if LeaderboardRules.touchChecks { checkRules }
