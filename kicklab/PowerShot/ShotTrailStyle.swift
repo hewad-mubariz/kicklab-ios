@@ -4,7 +4,7 @@ import simd
 
 /// Power Shot effects: one trail per shot, drawn along the whole flight behind the ball.
 /// Shader IDs 20–29 live in ShotTrails.h; juggling effects keep 1–16.
-nonisolated enum ShotTrailStyle: String, CaseIterable, Identifiable, Sendable {
+nonisolated enum ShotTrailStyle: String, CaseIterable, Identifiable, Codable, Sendable {
     case none, juggleFlame, blueJet, voltStrike, emberRush, limeRibbon, iceTrail, shockwave, fireTrail, glowTrail, pulseTrail
 
     var id: String { rawValue }

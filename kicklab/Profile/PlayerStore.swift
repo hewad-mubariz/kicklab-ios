@@ -66,6 +66,7 @@ nonisolated struct JugglingResultQueue: Sendable {
 @MainActor
 final class PlayerStore: ObservableObject {
     let history: SessionHistoryStore
+    let shots: SavedShotLibrary
     let leaderboardReview: LeaderboardReviewStore
     @Published private(set) var userID: UUID?
     @Published private(set) var profile: PlayerProfile?
@@ -106,6 +107,7 @@ final class PlayerStore: ObservableObject {
         self.archiveVideo = archiveVideo; self.syncRetryDelay = syncRetryDelay
         history = SessionHistoryStore(service: service, queue: queue,
             library: SessionHistoryLibrary(root: queue.root.appendingPathComponent("History", isDirectory: true)))
+        shots = SavedShotLibrary(root: queue.root.appendingPathComponent("Shots", isDirectory: true))
         monitor.pathUpdateHandler = { [weak self] path in
             guard path.status == .satisfied else { return }
             Task { @MainActor [weak self] in
@@ -186,11 +188,12 @@ final class PlayerStore: ObservableObject {
         }
         await activeSync?.value
         for task in saves { await task.value }
-        let queue = queue, library = history.library
+        let queue = queue, library = history.library, shots = shots
         do {
             let guestBest = try await Task.detached(priority: .utility) {
                 try queue.removeAccount(owner)
                 try library.removeAccount(owner)
+                try shots.removeAccount(owner)
                 return try library.sessions(owner: nil).map(\.personalBestStreak).max() ?? 0
             }.value
             JugglingRecords.restoreGuestBest(guestBest, defaults: guestDefaults)

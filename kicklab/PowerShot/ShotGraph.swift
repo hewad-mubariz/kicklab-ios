@@ -4,7 +4,7 @@ import SwiftUI
 /// graphical, the whole shot visible at once (what is still to come drawn faintly), lit up as
 /// the replay plays. Everything is read from the shot's own track and drawn from the playhead,
 /// so pausing, scrubbing and replaying are deterministic. Nothing claims a physical speed.
-nonisolated enum ShotGraphStyle: String, CaseIterable, Identifiable {
+nonisolated enum ShotGraphStyle: String, CaseIterable, Identifiable, Codable {
     case comet, ballMotion, kickPulse, rainbow, fireworks, tape
     var id: String { rawValue }
 

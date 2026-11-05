@@ -9,7 +9,9 @@ final class SavedShotPhaseUITests: XCTestCase {
         app.launchArguments = ["--ball-distance-design", "setup"]
         XCUIDevice.shared.orientation = .portrait
         app.launch()
-        XCTAssertTrue(app.buttons["ball-distance-saved-tests"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["ball-distance-saved-shots"].waitForExistence(timeout: 10))
+        app.buttons["ball-distance-saved-shots"].tap()
+        XCTAssertTrue(app.buttons["ball-distance-saved-tests"].waitForExistence(timeout: 5))
         app.buttons["ball-distance-saved-tests"].tap()
         let shot = app.buttons["saved-shot-37273B4C-10F3-4B37-A7EA-32126BECD806"]
         guard shot.waitForExistence(timeout: 5) else {

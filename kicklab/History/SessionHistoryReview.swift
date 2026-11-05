@@ -35,6 +35,17 @@ enum SessionHistoryReview {
                 }
             }
         }
+        if let path = SessionDesignReview.argument("--saved-shots-video") {
+            let shots = player.shots
+            Task {
+                for (index, source) in [SavedJugglingResult.Source.recording, .gallery].enumerated() {
+                    let copy = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".mp4")
+                    try? FileManager.default.copyItem(at: URL(fileURLWithPath: path), to: copy)
+                    _ = try? await shots.add(video: copy, id: UUID(), owner: nil, source: source,
+                                             completedAt: Date().addingTimeInterval(-Double(index) * 86400))
+                }
+            }
+        }
         return player
     }
 }

@@ -14,6 +14,8 @@ struct ShotEffectsReplayView: View {
     var holdAt: Double?
     /// Debug review only: open on this graph style.
     private var pinnedGraph: ShotGraphStyle?
+    /// Told when the player's choices change, so a saved shot reopens the way they left it.
+    var onLookChange: ((ShotReplayLook) -> Void)?
     let onClose: () -> Void
 
     @EnvironmentObject private var subscriptions: SubscriptionStore
@@ -97,6 +99,9 @@ struct ShotEffectsReplayView: View {
     @State private var chromeBottom: CGFloat = 0
     @State private var loopPreview = false
     @State private var player: AVPlayer?
+    /// The surface waits for this: attached to an item still loading, as a reopened shot
+    /// would be with no processing screen first, the item fails (AVFoundation -11800).
+    @State private var videoReady = false
     @State private var isPlaying = false
     @State private var currentTime = 0.0
     @State private var duration = 1.0
@@ -137,18 +142,22 @@ struct ShotEffectsReplayView: View {
     }
 
     init(video: URL, style: ShotTrailStyle = .glowTrail, trackCache: URL? = nil,
-         holdAt: Double? = nil, graph: ShotGraphStyle? = nil, onClose: @escaping () -> Void) {
-        self.init(style: style, trackCache: trackCache, holdAt: holdAt, graph: graph, onClose: onClose) { (video, nil) }
+         holdAt: Double? = nil, graph: ShotGraphStyle? = nil, look: ShotReplayLook? = nil,
+         onLookChange: ((ShotReplayLook) -> Void)? = nil, onClose: @escaping () -> Void) {
+        self.init(style: style, trackCache: trackCache, holdAt: holdAt, graph: graph, look: look,
+                  onLookChange: onLookChange, onClose: onClose) { (video, nil) }
     }
 
     init(style: ShotTrailStyle = .glowTrail, trackCache: URL? = nil, holdAt: Double? = nil, graph: ShotGraphStyle? = nil,
+         look savedChoices: ShotReplayLook? = nil, onLookChange: ((ShotReplayLook) -> Void)? = nil,
          onClose: @escaping () -> Void, prepare: @escaping @MainActor () async throws -> (URL, BallDistanceTimeline?)) {
         self.prepare = prepare
+        self.onLookChange = onLookChange
         pinnedGraph = graph
         self.trackCache = trackCache
         self.holdAt = holdAt
         self.onClose = onClose
-        _look = State(initialValue: ShotReplayLook(style: style))
+        _look = State(initialValue: savedChoices ?? ShotReplayLook(style: style))
         let cached = trackCache.map { FileManager.default.fileExists(atPath: $0.path) } ?? false
         _processing = State(initialValue: !cached)
     }
@@ -165,6 +174,11 @@ struct ShotEffectsReplayView: View {
         }
         .foregroundStyle(.white).preferredColorScheme(.dark)
         .task { await load() }
+        // A slider sends many changes, so this writes when it settles. Closing writes too.
+        .task(id: look) {
+            guard onLookChange != nil, (try? await Task.sleep(for: .milliseconds(400))) != nil else { return }
+            onLookChange?(look)
+        }
         .onDisappear { tearDown() }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("shot-effects")
@@ -330,7 +344,7 @@ struct ShotEffectsReplayView: View {
             let fit = editing ? max(0.1, min(1, (bottom - top) / fullSize.height)) : 1
             let size = CGSize(width: fullSize.width * fit, height: fullSize.height * fit)
             ZStack {
-                if let player {
+                if let player, videoReady {
                     ShotVideoSurface(player: player, style: showingSource || !hasBallTrack ? .none : style, intensity: intensity,
                                      track: track ?? BallEffectTrack(frames: []),
                                      plan: showingSource ? nil : plan, timeline: playbackTimeline,
@@ -349,7 +363,7 @@ struct ShotEffectsReplayView: View {
                         .allowsHitTesting(false)
                         .opacity(targetEdit != nil ? 0 : 1)
                 }
-                if player == nil || playbackError != nil {
+                if player == nil || !videoReady || playbackError != nil {
                     VStack(spacing: 10) {
                         if let playbackError { Text(playbackError).font(.subheadline).multilineTextAlignment(.center) }
                         else { ProgressView().tint(SessionStyle.mint); Text("Preparing video…").font(.subheadline) }
@@ -558,6 +572,8 @@ struct ShotEffectsReplayView: View {
         flight = ShotFlight.find(in: found, aspect: Double(sourceSize.width / max(1, sourceSize.height)))
         plan = nil
         rebuildPlan()
+        // A saved shot opens with its camera moves already placed.
+        if !camera.isEmpty { updateCameraMedia() }
         loadStill()
     }
 
@@ -649,6 +665,7 @@ struct ShotEffectsReplayView: View {
         } catch is CancellationError { return }
         catch {
             trackingProblem = error.localizedDescription
+            videoReady = true
             processing = false; shown = true
             return
         }
@@ -657,6 +674,7 @@ struct ShotEffectsReplayView: View {
         currentTime = min(duration, max(0, start))
         await player?.seek(to: CMTime(seconds: currentTime, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
         guard !Task.isCancelled else { return }
+        videoReady = true
         if processing {
             progress = 1; step = 4
             do { try await Task.sleep(for: .milliseconds(reduceMotion ? 300 : 1200)) }
@@ -814,6 +832,7 @@ struct ShotEffectsReplayView: View {
     }
 
     private func tearDown() {
+        onLookChange?(look)
         // The user-started save owns its background lease and survives leaving the editor.
         cameraTask?.cancel()
         frameIndexTask?.cancel()

@@ -25,7 +25,7 @@ nonisolated struct JugglingReplayLook: Equatable {
     }
 }
 
-nonisolated struct ShotReplayLook: Equatable {
+nonisolated struct ShotReplayLook: Equatable, Codable {
     var style: ShotTrailStyle = .glowTrail
     var intensity: Double = 1
     var graphStyle: ShotGraphStyle = .comet

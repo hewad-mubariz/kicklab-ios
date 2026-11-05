@@ -7,13 +7,17 @@ struct BallDistanceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
+    @EnvironmentObject private var player: PlayerStore
     @StateObject private var camera = CameraSession(pipeline: .videoOnly)
     @State private var showGallery = false
-    @State private var showSavedTests = false
+    @State private var showSavedShots = false
     @State private var galleryItem: PhotosPickerItem?
     @State private var editor: ShotEditorRequest?
     @State private var error: String?
     @State private var temporaryMedia: [URL] = []
+    /// An import the player leaves before it's tracked isn't kept; a recording always is.
+    @State private var openedImport: (id: UUID, owner: UUID?)?
+    @State private var shotNotSaved = false
     @State private var opensReplayAfterSave = false
     @State private var reviewRecording = false
 
@@ -29,7 +33,7 @@ struct BallDistanceView: View {
     private var isRecording: Bool { designState == nil ? camera.isRecording : reviewRecording }
     private var isBusy: Bool { isRecording || camera.isPreparingRecording || camera.isFinishingRecording }
     private var cameraShouldRun: Bool {
-        scenePhase == .active && !showGallery && !showSavedTests && editor == nil
+        scenePhase == .active && !showGallery && !showSavedShots && editor == nil
     }
     private var canRecord: Bool {
         designState == nil ? camera.canRecord : designState != "denied"
@@ -37,12 +41,8 @@ struct BallDistanceView: View {
     private var permissionDenied: Bool {
         designState == "denied" || camera.status == "camera permission denied"
     }
-    private var quality: String? {
-        if designState != nil { return "720p · 60 fps" }
-        let format = camera.capturePerformance
-        guard camera.isReady, format.selectedFPS > 0 else { return nil }
-        return "\(min(format.width, format.height))p · \(format.selectedFPS) fps"
-    }
+    /// Nothing to say once the camera is ready: the shutter is the next step.
+    private var showsGuidance: Bool { isBusy || permissionDenied || !canRecord }
 
     var body: some View {
         GeometryReader { geometry in
@@ -55,21 +55,19 @@ struct BallDistanceView: View {
                     HStack(alignment: .top, spacing: 24) {
                         VStack(alignment: .leading, spacing: 16) {
                             topBar
-                            qualityBadge
                             Spacer(minLength: 0)
                         }
                         VStack(spacing: 14) {
                             Spacer(minLength: 0)
-                            guidance
+                            if showsGuidance { guidance }
                             captureControls
                         }.frame(width: min(330, geometry.size.width * 0.43))
                     }.padding(.horizontal, 24).padding(.vertical, 12)
                 } else {
                     VStack(alignment: .leading, spacing: 0) {
                         topBar
-                        qualityBadge.padding(.top, 24)
                         Spacer(minLength: 20)
-                        guidance.padding(.bottom, 24)
+                        if showsGuidance { guidance.padding(.bottom, 24) }
                         captureControls.padding(.bottom, 10)
                         Text("Record your shot. Add your effects after.")
                             .font(.system(size: 11, weight: .medium)).foregroundStyle(.white.opacity(0.65))
@@ -83,9 +81,9 @@ struct BallDistanceView: View {
             matching: .videos, preferredItemEncoding: .current)
         .onChange(of: galleryItem) { _, _ in openImportIfReady() }
         .onChange(of: showGallery) { _, _ in openImportIfReady() }
-        .sheet(isPresented: $showSavedTests) { ShotRecordingsView(distanceTest: true) }
-        .fullScreenCover(item: $editor, onDismiss: removeTemporaryMedia) { request in
-            ShotEffectsReplayView(trackCache: request.trackCache, onClose: {
+        .sheet(isPresented: $showSavedShots) { SavedShotsView(library: player.shots, owner: player.userID) }
+        .fullScreenCover(item: $editor, onDismiss: finishEditor) { request in
+            ShotEffectsReplayView(trackCache: request.trackCache, onLookChange: request.onLookChange, onClose: {
                 editor = nil
             }, prepare: request.prepare)
         }
@@ -123,12 +121,14 @@ struct BallDistanceView: View {
     }
 
     private var topBar: some View {
-        HStack(spacing: 16) {
+        HStack(alignment: .top, spacing: 16) {
             Button { camera.stop(); dismiss() } label: {
                 Image(systemName: "chevron.left").font(.system(size: 18, weight: .medium))
                     .frame(width: 32, height: 32)
             }.appGlassButtonStyle().buttonBorderShape(.circle).disabled(isBusy)
                 .accessibilityLabel("Close Ball Distance").accessibilityIdentifier("ball-distance-close")
+                // Both sides share one width so the title stays centered.
+                .frame(width: 76, alignment: .leading)
             Spacer(minLength: 0)
             VStack(spacing: 5) {
                 Text("BALL DISTANCE").font(.system(size: 11, weight: .semibold)).tracking(1.8)
@@ -137,28 +137,24 @@ struct BallDistanceView: View {
                     .font(.system(size: 9, weight: .medium)).tracking(1).monospacedDigit()
                     .foregroundStyle(isRecording ? Color.red.opacity(0.95) : .white.opacity(0.65))
                     .accessibilityIdentifier("ball-distance-recording-status")
-            }
+            }.frame(minHeight: 44)
             Spacer(minLength: 0)
-            #if DEBUG
-            Button { showSavedTests = true } label: {
-                Image(systemName: "play.rectangle.on.rectangle")
-                    .font(.system(size: 18)).frame(width: 32, height: 32)
-            }.appGlassButtonStyle().buttonBorderShape(.circle).disabled(isBusy)
-                .accessibilityLabel("Saved tests").accessibilityIdentifier("ball-distance-saved-tests")
-            #else
-            Color.clear.frame(width: 44, height: 44).accessibilityHidden(true)
-            #endif
+            savedShotsButton.frame(width: 76, alignment: .trailing)
         }
     }
 
-    @ViewBuilder private var qualityBadge: some View {
-        if let quality {
-            Label(quality, systemImage: "video")
-                .font(.system(size: 11, weight: .medium)).foregroundStyle(.white.opacity(0.85))
-                .padding(.horizontal, 12).padding(.vertical, 8)
-                .background(.black.opacity(0.4), in: .capsule)
-                .accessibilityIdentifier("ball-distance-quality")
-        }
+    private var savedShotsButton: some View {
+        VStack(spacing: 5) {
+            Button { showSavedShots = true } label: {
+                Image(systemName: "clock.arrow.circlepath").font(.system(size: 18))
+                    .frame(width: 32, height: 32)
+            }.appGlassButtonStyle().buttonBorderShape(.circle)
+                .accessibilityLabel("Saved shots").accessibilityIdentifier("ball-distance-saved-shots")
+            Text("Saved").font(.system(size: 10, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
+                .accessibilityHidden(true)
+                // The word under the icon answers too, so a tap that lands on it is not lost.
+                .contentShape(.rect).onTapGesture { showSavedShots = true }
+        }.disabled(isBusy)
     }
 
     private var guidance: some View {
@@ -179,11 +175,6 @@ struct BallDistanceView: View {
                 Button("Open Settings") {
                     if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
                 }.tint(SessionStyle.mint)
-            } else if canRecord {
-                Label("Ready to record", systemImage: "checkmark.circle")
-                    .foregroundStyle(SessionStyle.mint).accessibilityIdentifier("ball-distance-ready")
-                Text("Frame your shot and tap Record. Choose your effects after.")
-                    .font(.system(size: 12)).foregroundStyle(.white.opacity(0.72))
             } else if camera.status == "camera unavailable" {
                 Label("Camera unavailable", systemImage: "camera")
                 Button("Try again") { camera.stop(); camera.start() }.tint(SessionStyle.mint)
@@ -250,7 +241,7 @@ struct BallDistanceView: View {
     private func openImportIfReady() {
         guard !showGallery, let item = galleryItem, editor == nil else { return }
         galleryItem = nil
-        beginProcessing {
+        beginProcessing(source: .gallery) {
             guard let movie = try await item.loadTransferable(type: PickedMovie.self) else {
                 throw CocoaError(.fileReadCorruptFile)
             }
@@ -269,17 +260,41 @@ struct BallDistanceView: View {
         opensReplayAfterSave = false
         temporaryMedia.append(video)
         camera.clearRecording()
-        beginProcessing { video }
+        beginProcessing(source: .recording) { video }
     }
 
-    private func beginProcessing(_ load: @escaping @MainActor () async throws -> URL) {
+    /// The shot is saved before the editor opens, so it's kept however the editor ends.
+    private func beginProcessing(source: SavedJugglingResult.Source, _ load: @escaping @MainActor () async throws -> URL) {
         guard editor == nil else { return }
         error = nil
         camera.stop()
-        editor = ShotEditorRequest(trackCache: nil) {
+        let library = player.shots, owner = player.userID, id = UUID(), completedAt = Date()
+        openedImport = source == .gallery ? (id, owner) : nil
+        editor = ShotEditorRequest(trackCache: library.trackURL(id: id, owner: owner), prepare: {
             try Task.checkCancellation()
-            // Plain recordings and imports carry no metre estimate into the editor.
-            return (try await load(), nil)
+            let video = try await load()
+            do {
+                let shot = try await library.add(video: video, id: id, owner: owner, source: source, completedAt: completedAt)
+                return (library.videoURL(for: shot), nil)
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                // Editing still works on the temporary file; the player hears it wasn't kept after.
+                shotNotSaved = true
+                return (video, nil)
+            }
+        }, onLookChange: { try? library.saveLook($0, id: id, owner: owner) })
+    }
+
+    private func finishEditor() {
+        removeTemporaryMedia()
+        if let openedImport, !FileManager.default.fileExists(atPath: player.shots.trackURL(id: openedImport.id, owner: openedImport.owner).path) {
+            try? player.shots.remove(id: openedImport.id, owner: openedImport.owner)
+        }
+        openedImport = nil
+        if shotNotSaved {
+            shotNotSaved = false
+            error = String(localized: "This shot couldn’t be saved on this phone, so it won’t appear in Saved shots.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 
@@ -293,4 +308,5 @@ struct ShotEditorRequest: Identifiable {
     let id = UUID()
     let trackCache: URL?
     let prepare: @MainActor () async throws -> (URL, BallDistanceTimeline?)
+    var onLookChange: ((ShotReplayLook) -> Void)? = nil
 }

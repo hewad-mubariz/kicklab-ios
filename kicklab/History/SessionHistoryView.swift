@@ -95,7 +95,7 @@ struct SessionHistoryContent: View {
                     LazyVStack(alignment: .leading, spacing: 24) {
                         ForEach(days, id: \.self) { day in
                             VStack(alignment: .leading, spacing: 10) {
-                                Text(dayLabel(day)).font(.caption.weight(.semibold)).tracking(1)
+                                Text(HistoryDayLabel.text(day)).font(.caption.weight(.semibold)).tracking(1)
                                     .foregroundStyle(TrainingHomeStyle.muted(scheme))
                                     .accessibilityAddTraits(.isHeader)
                                 ForEach(filtered.filter { Calendar.current.isDate($0.completedAt, inSameDayAs: day) }) { item in
@@ -133,12 +133,6 @@ struct SessionHistoryContent: View {
         .accessibilityIdentifier("session-history")
     }
 
-    private func dayLabel(_ day: Date) -> String {
-        if Calendar.current.isDateInToday(day) { return String(localized: "TODAY", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
-        if Calendar.current.isDateInYesterday(day) { return String(localized: "YESTERDAY", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
-        return day.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(AppLanguage.locale))
-            .uppercased(with: AppLanguage.locale)
-    }
     private func notice(_ text: String, symbol: String, retry: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Label(text, systemImage: symbol).font(.footnote)
@@ -218,37 +212,13 @@ private struct SessionHistoryDetail: View {
                     .background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 26))
 
                     HStack(spacing: 16) {
-                        stat("DURATION", value: item.durationLabel, symbol: "stopwatch")
-                        stat("SOURCE", value: item.sourceLabel, symbol: item.source == .recording ? "video" : "photo")
+                        HistoryStat(title: "DURATION", value: item.durationLabel, symbol: "stopwatch")
+                        HistoryStat(title: "SOURCE", value: item.sourceLabel, symbol: item.source == .recording ? "video" : "photo")
                     }
 
                     if let url = store.replayURL(for: item) {
-                        VStack(spacing: 16) {
-                            HStack(spacing: 16) {
-                                HistoryReplayThumbnail(url: url)
-                                    .frame(width: 72, height: 94).clipShape(.rect(cornerRadius: 12))
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text("Your replay").font(.headline)
-                                    Text("Continue editing or export another version.")
-                                        .font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))
-                                }
-                                Spacer(minLength: 0)
-                            }
-                            Button { showsEditor = true } label: {
-                                Label("Open editor", systemImage: "slider.horizontal.3")
-                                    .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
-                                    .foregroundStyle(scheme == .dark ? TrainingHomeStyle.buttonInk : .white)
-                            }
-                            .appGlassButtonStyle(prominent: true).tint(TrainingHomeStyle.accent(scheme))
-                            .accessibilityIdentifier("history-edit-replay")
-                            Button { showsReplay = true } label: {
-                                Label("Watch original", systemImage: "play")
-                                    .font(.subheadline.weight(.medium)).frame(maxWidth: .infinity, minHeight: 32)
-                            }
-                            .buttonStyle(.plain).foregroundStyle(TrainingHomeStyle.muted(scheme))
-                            .accessibilityIdentifier("history-watch-replay")
-                        }
-                        .padding(18).background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 22))
+                        HistoryReplayPanel(url: url, idPrefix: "history",
+                                           onEdit: { showsEditor = true }, onWatch: { showsReplay = true })
                     } else {
                         Label("Replay isn’t on this phone", systemImage: "video.slash")
                             .font(.headline)
@@ -315,7 +285,15 @@ private struct SessionHistoryDetail: View {
         .accessibilityIdentifier("history-detail")
     }
 
-    private func stat(_ title: LocalizedStringKey, value: String, symbol: String) -> some View {
+}
+
+struct HistoryStat: View {
+    let title: LocalizedStringKey
+    let value: String
+    let symbol: String
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label(title, systemImage: symbol).font(.caption2.weight(.semibold))
                 .foregroundStyle(TrainingHomeStyle.muted(scheme))
@@ -324,7 +302,54 @@ private struct SessionHistoryDetail: View {
     }
 }
 
-private struct HistoryVideoPlayer: View {
+/// The replay's poster, with Open editor and Watch original.
+struct HistoryReplayPanel: View {
+    let url: URL
+    let idPrefix: String
+    let onEdit: () -> Void
+    let onWatch: () -> Void
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        VStack(spacing: 16) {
+            HStack(spacing: 16) {
+                HistoryReplayThumbnail(url: url)
+                    .frame(width: 72, height: 94).clipShape(.rect(cornerRadius: 12))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Your replay").font(.headline)
+                    Text("Continue editing or export another version.")
+                        .font(.subheadline).foregroundStyle(TrainingHomeStyle.muted(scheme))
+                }
+                Spacer(minLength: 0)
+            }
+            Button(action: onEdit) {
+                Label("Open editor", systemImage: "slider.horizontal.3")
+                    .font(.headline).frame(maxWidth: .infinity, minHeight: 44)
+                    .foregroundStyle(scheme == .dark ? TrainingHomeStyle.buttonInk : .white)
+            }
+            .appGlassButtonStyle(prominent: true).tint(TrainingHomeStyle.accent(scheme))
+            .accessibilityIdentifier("\(idPrefix)-edit-replay")
+            Button(action: onWatch) {
+                Label("Watch original", systemImage: "play")
+                    .font(.subheadline.weight(.medium)).frame(maxWidth: .infinity, minHeight: 32)
+            }
+            .buttonStyle(.plain).foregroundStyle(TrainingHomeStyle.muted(scheme))
+            .accessibilityIdentifier("\(idPrefix)-watch-replay")
+        }
+        .padding(18).background(TrainingHomeStyle.panel(scheme), in: .rect(cornerRadius: 22))
+    }
+}
+
+enum HistoryDayLabel {
+    static func text(_ day: Date) -> String {
+        if Calendar.current.isDateInToday(day) { return String(localized: "TODAY", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        if Calendar.current.isDateInYesterday(day) { return String(localized: "YESTERDAY", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        return day.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(AppLanguage.locale))
+            .uppercased(with: AppLanguage.locale)
+    }
+}
+
+struct HistoryVideoPlayer: View {
     let url: URL
     let onEdit: () -> Void
     @State private var player: AVPlayer?

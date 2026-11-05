@@ -158,6 +158,63 @@ final class ReplayProAccessUITests: XCTestCase {
         attach(app, "Pro shot with requested effect and camera")
     }
 
+    func testSavedShotReopensWithItsProEffectAndCameraMove() throws {
+        #if !targetEnvironment(simulator)
+        throw XCTSkip("Reads a video from this Mac")
+        #endif
+        let fixture = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("kicklabTests/Fixtures/power-shot-2.5s.mp4").path
+        let app = XCUIApplication()
+        app.launchArguments = ["--history-review", "empty", "--ball-distance-design", "setup", "--saved-shots-video", fixture]
+        app.launch()
+        XCTAssertTrue(app.buttons["ball-distance-saved-shots"].waitForExistence(timeout: 10))
+        app.buttons["ball-distance-saved-shots"].tap()
+        let rows = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'saved-shot-'"))
+        if !rows.element(boundBy: 0).waitForExistence(timeout: 5) {
+            app.swipeDown()
+            XCTAssertTrue(rows.element(boundBy: 0).waitForExistence(timeout: 5))
+        }
+        rows.element(boundBy: 0).tap()
+        let open = app.buttons["saved-shot-edit-replay"]
+        XCTAssertTrue(open.waitForExistence(timeout: 5))
+        open.tap()
+        XCTAssertTrue(app.buttons["shot-effects-customize"].waitForExistence(timeout: 120))
+
+        app.buttons["shot-effects-customize"].tap()
+        XCTAssertTrue(app.buttons["shot-tool-effects"].waitForStableFrame())
+        app.buttons["shot-tool-effects"].tap()
+        XCTAssertTrue(app.buttons["shot-effect-blueJet"].waitForStableFrame())
+        app.buttons["shot-effect-blueJet"].tap()
+        buy(app)
+        let applied = XCTNSPredicateExpectation(predicate: NSPredicate(format: "selected == true"),
+                                                object: app.buttons["shot-effect-blueJet"])
+        XCTAssertEqual(XCTWaiter.wait(for: [applied], timeout: 8), .completed)
+        app.buttons["shot-tools-back"].tap()
+        XCTAssertTrue(app.buttons["shot-tool-camera"].waitForStableFrame())
+        app.buttons["shot-tool-camera"].tap()
+        XCTAssertTrue(app.buttons["shot-camera-move-impact"].waitForExistence(timeout: 5))
+        app.buttons["shot-camera-move-impact"].tap()
+        XCTAssertTrue(app.buttons["shot-camera-block-impact"].waitForExistence(timeout: 10))
+        app.buttons["shot-effects-close"].tap()
+
+        // Reopening rebuilds the camera move as the video opens, and the video must still play.
+        XCTAssertTrue(open.waitForExistence(timeout: 10))
+        open.tap()
+        XCTAssertTrue(app.buttons["shot-effects-customize"].waitForExistence(timeout: 30))
+        _ = XCTWaiter.wait(for: [XCTestExpectation(description: "settled")], timeout: 6)
+        attach(app, "Saved Pro shot reopened")
+        XCTAssertFalse(app.descendants(matching: .any)["shot-effects-problem"].exists, "Reopening should play")
+        app.buttons["shot-effects-customize"].tap()
+        XCTAssertTrue(app.buttons["shot-tool-camera"].waitForStableFrame())
+        app.buttons["shot-tool-camera"].tap()
+        XCTAssertTrue(app.buttons["shot-camera-block-impact"].waitForExistence(timeout: 10), "The camera move should come back")
+        app.buttons["shot-tools-back"].tap()
+        XCTAssertTrue(app.buttons["shot-tool-effects"].waitForStableFrame())
+        app.buttons["shot-tool-effects"].tap()
+        XCTAssertTrue(app.buttons["shot-effect-blueJet"].waitForStableFrame())
+        XCTAssertTrue(app.buttons["shot-effect-blueJet"].isSelected, "The paid effect should come back")
+    }
+
     private func assertNoProBadges(_ app: XCUIApplication) {
         XCTAssertFalse(app.descendants(matching: .any)["pro-style-badge"].firstMatch.exists)
         XCTAssertFalse(app.staticTexts["Pro"].exists)
