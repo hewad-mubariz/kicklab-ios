@@ -268,6 +268,7 @@ nonisolated final class BallDetector {
     var modelUsesCPUOnly: Bool { models.cpuOnly }
     var modelComputeSwitches: Int { models.switches }
     var modelReloadSeconds: Double { models.reloadSeconds }
+    var modelAccelerationUnavailable: Bool { models.acceleratedLoadFailure != nil }
     var modelComputeDescription: String {
         if models.acceleratedLoadFailure != nil { return "CPU (compatibility)" }
         if models.cpuOnly { return "CPU" }

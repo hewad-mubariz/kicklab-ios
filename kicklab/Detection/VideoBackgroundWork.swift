@@ -119,6 +119,7 @@ final class VideoBackgroundWork: ObservableObject {
     private struct Job {
         let task: BGTask
         let lease: VideoWorkLease
+        var subtitle: String
     }
     private var jobs: [String: Job] = [:]
 
@@ -212,15 +213,23 @@ final class VideoBackgroundWork: ObservableObject {
                     }
                     let lease = VideoWorkLease(allowed: true, cpuOnly: !gpu, backgroundGPU: gpu) { value, subtitle in
                         Task { @MainActor in
-                            guard value.isFinite, let job = self.jobs[identifier], !job.lease.isCancelled,
+                            guard value.isFinite, var job = self.jobs[identifier], !job.lease.isCancelled,
                                   let task = job.task as? BGContinuedProcessingTask else { return }
-                            task.progress.completedUnitCount = min(99, max(task.progress.completedUnitCount, Int64(value * 100)))
-                            task.updateTitle(title, subtitle: subtitle)
+                            let completed = Int64(min(0.99, max(0, value)) * 100)
+                            if completed > task.progress.completedUnitCount {
+                                task.progress.completedUnitCount = completed
+                            }
+                            if job.subtitle != subtitle {
+                                job.subtitle = subtitle
+                                self.jobs[identifier] = job
+                                task.updateTitle(title, subtitle: subtitle)
+                            }
                         }
                     }
                     task.progress.totalUnitCount = 100
                     task.expirationHandler = { lease.expire() }
-                    self.jobs[identifier] = Job(task: task, lease: lease)
+                    self.jobs[identifier] = Job(task: task, lease: lease,
+                        subtitle: String(localized: "Preparing your video", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                     pending.resolve(lease)
                 }
             }

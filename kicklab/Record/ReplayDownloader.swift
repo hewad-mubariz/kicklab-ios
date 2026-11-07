@@ -151,7 +151,8 @@ final class ReplayDownloader: ObservableObject {
                       clipAudio: edit.clipAudio, historyReplay: edit.scene == nil ? summary.historyReplay : nil)
         while burnIn.isExporting {
             try await VideoWorkExecution.checkpoint()
-            VideoWorkExecution.lease?.progress(burnIn.progress * 0.96, subtitle: String(localized: "Saving your replay", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
+            // The renderer owns Live Activity progress until it finishes. This
+            // UI polling loop must not overwrite its stage every 80 ms.
             phase = .exporting(burnIn.progress)
             #if DEBUG
             FinalTestCoordinator.shared.exportProgress(summary.videoURL, progress: burnIn.progress, saving: false)
@@ -167,6 +168,7 @@ final class ReplayDownloader: ObservableObject {
         #endif
         try await VideoWorkExecution.checkpoint()
         phase = .saving
+        VideoWorkExecution.lease?.progress(0.99, subtitle: String(localized: "Saving to Photos", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
         #if DEBUG
         FinalTestCoordinator.shared.exportProgress(summary.videoURL, progress: 1, saving: true)
         #endif

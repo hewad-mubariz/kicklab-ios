@@ -27,6 +27,9 @@ struct BackgroundVideoReview: View {
                 }
             }
             Text("\(model.backgroundUpdates) background updates").accessibilityIdentifier("background-video-updates")
+            Text(model.modelBackend).accessibilityIdentifier("background-video-model-backend")
+            Text(String(model.modelSwitches)).accessibilityIdentifier("background-video-model-switches")
+            Text(String(model.backgroundCPUUpdates)).accessibilityIdentifier("background-video-cpu-updates")
         }.task { await model.run() }
     }
 }
@@ -39,6 +42,9 @@ private final class BackgroundVideoReviewModel: ObservableObject {
     @Published var canContinueInBackground = false
     @Published var finishedInBackground = false
     @Published var startedInBackground = false
+    @Published var modelBackend = "Waiting"
+    @Published var modelSwitches = 0
+    @Published var backgroundCPUUpdates = 0
     private var startingThermalState = -1
     private let analyzer = VideoAnalyzer()
     private var previousProgress = 0.0
@@ -160,6 +166,12 @@ private final class BackgroundVideoReviewModel: ObservableObject {
 
     private func record(progress: Double, phase: String) {
         let background = UIApplication.shared.applicationState == .background
+        let metrics = analyzer.performance.isEmpty ? analyzer.profileMetrics : analyzer.performance
+        if let cpu = metrics["model_cpu_only"] { modelBackend = cpu == 1 ? "CPU" : "Accelerated" }
+        modelSwitches = Int(metrics["model_switches"] ?? 0)
+        if background && progress > previousProgress && phase == "Importing" && modelBackend == "CPU" {
+            backgroundCPUUpdates += 1
+        }
         if background && phase == "Done" { finishedInBackground = true }
         if background && progress > previousProgress && (phase == "Exporting" || phase == "Importing") { backgroundUpdates += 1 }
         previousProgress = progress
@@ -178,6 +190,8 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         }
         let value: [String: Any] = ["phase": phase, "progress": progress, "background": background,
             "backgroundUpdates": backgroundUpdates, "gpuSupported": gpuSupported,
+            "backgroundCPUUpdates": backgroundCPUUpdates, "modelSwitches": modelSwitches,
+            "modelBackend": modelBackend,
             "analysisFrames": analyzer.framesRead, "touches": analyzer.touchCount,
             "analysisCanContinueInBackground": analyzer.canContinueInBackground,
             "finishedInBackground": finishedInBackground,

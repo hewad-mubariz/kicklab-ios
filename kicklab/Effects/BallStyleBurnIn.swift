@@ -41,7 +41,9 @@ final class BallStyleBurnIn: ObservableObject {
                                               maxFrameRate: maxFrameRate, counter: counter, overlays: overlays,preserveFrameTimes:preserveFrameTimes, distanceTimeline: distanceTimeline, motionTimeline: motionTimeline,
                                               lookChanges: lookChanges, swapEffect: swapEffect, soundtrack: soundtrack,
                                               clipAudio: clipAudio, historyReplay: historyReplay) { p in
-                            VideoWorkExecution.lease?.progress(p, subtitle: p < 0.94 ? String(localized: "Rendering your video", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Finishing video", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
+                            // Leave room for the caller's Photos save; the lease
+                            // reaches 100% only after the entire job succeeds.
+                            VideoWorkExecution.lease?.progress(p * 0.96, subtitle: p < 0.94 ? String(localized: "Rendering your video", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : String(localized: "Finishing video", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                             await MainActor.run { self.progress = p; self.status = p < 0.94 ? "Rendering effects…" : "Finishing video…" }
                         }
                     }

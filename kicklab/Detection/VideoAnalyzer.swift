@@ -452,6 +452,8 @@ final class VideoAnalyzer: ObservableObject {
                 let profile: [String: Double] = [
                     "cpu_only": VideoWorkExecution.cpuOnly ? 1 : 0,
                     "model_cpu_only": detector.modelUsesCPUOnly ? 1 : 0,
+                    "model_acceleration_unavailable": detector.modelAccelerationUnavailable ? 1 : 0,
+                    "model_cpu_requested": VideoWorkExecution.modelCPUOnly ? 1 : 0,
                     "model_switches": Double(detector.modelComputeSwitches),
                     "model_reload_s": detector.modelReloadSeconds,
                     "background_gpu": VideoWorkExecution.lease?.backgroundGPU == true ? 1 : 0,
@@ -501,6 +503,8 @@ final class VideoAnalyzer: ObservableObject {
         let metrics: [String: Double] = [
             "cpu_only": VideoWorkExecution.cpuOnly ? 1 : 0,
             "model_cpu_only": detector.modelUsesCPUOnly ? 1 : 0,
+            "model_acceleration_unavailable": detector.modelAccelerationUnavailable ? 1 : 0,
+            "model_cpu_requested": VideoWorkExecution.modelCPUOnly ? 1 : 0,
             "model_switches": Double(detector.modelComputeSwitches),
             "model_reload_s": detector.modelReloadSeconds,
             "reused_predictions": Double(detector.reusedPredictions),
