@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-07",
+  "app": "com.juggledude.release120.preview",
+  "method": "Read-only application API check on direct launch, outside XCTest, without running video processing.",
+  "settingsChanged": false,
+  "devices": [
+    {
+      "device": "iphone17",
+      "hardware": "iPhone18,2",
+      "iOS": "27.0.1",
+      "lowPowerMode": false,
+      "backgroundRefreshStatusForPreviewApp": "available",
+      "thermalState": 0,
+      "backgroundGPUAvailable": false,
+      "appBuild": "50"
+    },
+    {
+      "device": "iphone11",
+      "hardware": "iPhone12,5",
+      "iOS": "27.2",
+      "lowPowerMode": false,
+      "backgroundRefreshStatusForPreviewApp": "available",
+      "thermalState": 0,
+      "backgroundGPUAvailable": false,
+      "appBuild": "50"
+    }
+  ],
+  "interpretation": "Low Power Mode is off and effective Background App Refresh is available on both phones. Both report nominal temperature and no background GPU support. This does not identify a device setting that would enable background GPU use.",
+  "references": [
+    "https://support.apple.com/101604",
+    "https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler/supportedresources",
+    "https://developer.apple.com/forums/thread/794072"
+  ]
+}

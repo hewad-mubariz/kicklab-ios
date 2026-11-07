@@ -45,6 +45,7 @@ private final class BackgroundVideoReviewModel: ObservableObject {
 
     func run() async {
         let mode = SessionDesignReview.argument("--background-video-review") ?? "import"
+        if mode == "capabilities" { record(progress: 0, phase: "Capabilities checked"); return }
         if mode == "photos" { status = "Ready"; return }
         let source = SessionDesignReview.fileURL(SessionDesignReview.argument("--background-video-source") ?? "documents:background-input.mov")
         do {
@@ -168,6 +169,13 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         let gpuSupported: Bool
         if #available(iOS 26.0, *) { gpuSupported = BGTaskScheduler.supportedResources.contains(.gpu) }
         else { gpuSupported = false }
+        let refreshStatus: String
+        switch UIApplication.shared.backgroundRefreshStatus {
+        case .available: refreshStatus = "available"
+        case .denied: refreshStatus = "denied"
+        case .restricted: refreshStatus = "restricted"
+        @unknown default: refreshStatus = "unknown"
+        }
         let value: [String: Any] = ["phase": phase, "progress": progress, "background": background,
             "backgroundUpdates": backgroundUpdates, "gpuSupported": gpuSupported,
             "analysisFrames": analyzer.framesRead, "touches": analyzer.touchCount,
@@ -176,6 +184,10 @@ private final class BackgroundVideoReviewModel: ObservableObject {
             "startedInBackground": startedInBackground,
             "thermalStart": startingThermalState,
             "thermalNow": ProcessInfo.processInfo.thermalState.rawValue,
+            "lowPowerMode": ProcessInfo.processInfo.isLowPowerModeEnabled,
+            "backgroundRefreshStatus": refreshStatus,
+            "osVersion": UIDevice.current.systemVersion,
+            "appBuild": Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown",
             "hardware": RFDeviceProfile.hardwareIdentifier,
             "detectorInputEdge": RFDeviceProfile.current.rawValue,
             "artworkGPUAllowed": BallSkinMetalRenderer.isAllowed,
