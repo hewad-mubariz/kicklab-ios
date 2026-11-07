@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Compare complete ThermalVideoReview runs with only foreground pose compute changed.
 
-Usage: compare-pose-study.py BASELINE_DIRECTORY CANDIDATE_DIRECTORY
+Usage: compare-pose-study.py BASELINE_DIRECTORY CANDIDATE_DIRECTORY [--accelerated-ball-model]
 Output parity is a regression check, not independently labelled accuracy.
 """
 import argparse
@@ -23,11 +23,18 @@ def differences(a, b, path=""):
     return [{"path": path, "baseline": a, "candidate": b}]
 
 
-def compare(baseline, candidate):
+def compare(baseline, candidate, accelerated_ball_model=False):
     spec = importlib.util.spec_from_file_location("accuracy", Path(__file__).with_name("compare-juggling-accuracy.py"))
     accuracy = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(accuracy)
-    reports = [accuracy.load_report(folder, False) for folder in (baseline, candidate)]
+    reports = [accuracy.load_report(folder, accelerated_ball_model) for folder in (baseline, candidate)]
+    for report in reports:
+        if any(s["application_state"] != 0 for s in report["samples"]):
+            raise ValueError("A foreground comparison must stay active throughout")
+        for sample in report["samples"]:
+            backend = sample.get("pipeline", {}).get("model_cpu_only")
+            if backend is not None and backend != int(not accelerated_ball_model):
+                raise ValueError("Ball model backend changed during the pose comparison")
     runs = [{r["id"]: r for r in report["runs"]} for report in reports]
     if runs[0].keys() != runs[1].keys():
         raise ValueError("Different clip sets")
@@ -45,6 +52,10 @@ def compare(baseline, candidate):
             raise ValueError("No pose requests and no explicit candidate provenance")
         clip = name.split("-", 1)[1]
         traces = [plistlib.loads((p / f"{clip}-trace.plist").read_bytes()) for p in (baseline, candidate)]
+        recoveries = [plistlib.loads((p / f"{clip}-recoveries.plist").read_bytes()) for p in (baseline, candidate)]
+        if any(traces[0].get(k) != traces[1].get(k) for k in
+               ("usesBodyVerifier", "usesGroundVerifier", "usesHandlingVerifier")):
+            raise ValueError("Contact verifier policy differs")
         trace_differences = {}
         for key in ("decisions", "diagnostics", "streakInterruptions"):
             diffs = differences(traces[0].get(key), traces[1].get(key))
@@ -61,6 +72,7 @@ def compare(baseline, candidate):
             "exact_contact_verdicts": verdicts[0] == verdicts[1],
             "exact_streak_boundaries": streaks[0] == streaks[1],
             "exact_counter_inputs": traces[0]["operations"] == traces[1]["operations"],
+            "exact_visual_recoveries": recoveries[0] == recoveries[1],
             "schedule": accuracy.compare_frame_schedule(baseline, candidate, clip, a["frames"]),
             "track": accuracy.compare_tracks(baseline, candidate, clip),
             "trace": trace_differences,
@@ -68,12 +80,15 @@ def compare(baseline, candidate):
             "performance": [ap, bp],
             "sample_thermal_states": [sorted({s["thermal"] for s in r["samples"]}) for r in reports],
             "sample_app_states": [sorted({s["application_state"] for s in r["samples"]}) for r in reports]})
-    return {"scope": "Foreground body-pose compute experiment; ball inference and image compute pinned to CPU. No export timing or independent accuracy labels.", "clips": result}
+    model_policy = "accelerated" if accelerated_ball_model else "CPU"
+    return {"scope": f"Foreground body-pose compute experiment; ball model {model_policy} in both arms, image compute CPU. No export timing or independent accuracy labels.", "clips": result}
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("baseline", type=Path)
     parser.add_argument("candidate", type=Path)
+    parser.add_argument("--accelerated-ball-model", action="store_true",
+                        help="Require accelerated ball inference in both arms, as on iPhone 17")
     args = parser.parse_args()
-    print(json.dumps(compare(args.baseline, args.candidate), indent=2))
+    print(json.dumps(compare(args.baseline, args.candidate, args.accelerated_ball_model), indent=2))
