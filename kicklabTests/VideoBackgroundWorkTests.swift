@@ -18,9 +18,9 @@ final class VideoBackgroundWorkTests: XCTestCase {
         defer { UIApplication.shared.isIdleTimerDisabled = previous }
         let value = try await VideoBackgroundWork.shared.run(title: "Compatibility test") {
             let lease = try XCTUnwrap(VideoWorkExecution.lease)
+            XCTAssertFalse(lease.backgroundGPU, "1.2 must not opt into the unvalidated background GPU path")
             if #unavailable(iOS 26.0) {
                 XCTAssertFalse(lease.canContinue)
-                XCTAssertFalse(lease.backgroundGPU)
             }
             if !lease.canContinue {
                 let awake = await MainActor.run { UIApplication.shared.isIdleTimerDisabled }

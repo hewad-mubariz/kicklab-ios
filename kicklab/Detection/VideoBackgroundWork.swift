@@ -95,6 +95,10 @@ nonisolated enum VideoWorkExecution {
 final class VideoBackgroundWork: ObservableObject {
     static let shared = VideoBackgroundWork()
     static var identifierPrefix: String { (Bundle.main.bundleIdentifier ?? "com.juggledude") + ".video." }
+    // 1.2 ships the CPU background path validated on both test iPhones. A
+    // supported-resource flag alone is not validation of the GPU pipeline.
+    // Keep that path disabled until it is tested on compatible hardware.
+    private static let backgroundGPUEnabled = false
     @Published var interruptedMessage: String?
     private let journal = VideoJobJournal(defaults: .standard)
     private var foregroundJobs = 0
@@ -185,8 +189,9 @@ final class VideoBackgroundWork: ObservableObject {
         // Older systems run the same job in the foreground. Checkpoints pause
         // it on backgrounding; the journal handles termination and retry.
         guard #available(iOS 26.0, *) else { return fallback }
-        let gpu = BGTaskScheduler.supportedResources.contains(.gpu)
-        // GPU-only effects wait for foreground on devices that cannot grant GPU access.
+        let gpu = Self.backgroundGPUEnabled && BGTaskScheduler.supportedResources.contains(.gpu)
+        // GPU-only effects wait for foreground while background GPU is disabled
+        // or the device cannot grant access.
         guard !requiresGPU || gpu else { return fallback }
         guard UIApplication.shared.applicationState != .background else { return fallback }
         return await withCheckedContinuation { continuation in
