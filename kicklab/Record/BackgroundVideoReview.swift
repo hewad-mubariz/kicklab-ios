@@ -14,6 +14,10 @@ struct BackgroundVideoReview: View {
             Text("Background video check").font(.title2)
             Text(model.status).accessibilityIdentifier("background-video-status")
             Text(String(model.progress)).accessibilityIdentifier("background-video-progress")
+            Text(model.canContinueInBackground ? "Allowed" : "Foreground only")
+                .accessibilityIdentifier("background-video-allowed")
+            Text(model.finishedInBackground ? "Finished in background" : "Not finished in background")
+                .accessibilityIdentifier("background-video-completion")
             if SessionDesignReview.argument("--background-video-review") == "photos" {
                 Button("Saved video") { showSaved = true }.accessibilityIdentifier("review-saved-video")
                 if showSaved {
@@ -30,6 +34,8 @@ private final class BackgroundVideoReviewModel: ObservableObject {
     @Published var status = "Starting"
     @Published var backgroundUpdates = 0
     @Published var progress = 0.0
+    @Published var canContinueInBackground = false
+    @Published var finishedInBackground = false
     private let analyzer = VideoAnalyzer()
     private var previousProgress = 0.0
 
@@ -56,13 +62,11 @@ private final class BackgroundVideoReviewModel: ObservableObject {
                 _ = try await BallSurfaceTimeline.prepare(source:source,track:BallEffectTrack(frames:frames))
             }
             if mode == "import" {
-                analyzer.analyse(url: source)
-                while analyzer.isRunning {
-                    record(progress: analyzer.progress, phase: "Importing")
-                    try await Task.sleep(for: .milliseconds(250))
+                // Match RecordView: one outer lease covers import, analysis and
+                // completion handling, including the final diagnostic write.
+                try await VideoBackgroundWork.shared.run(title: "Importing test video") {
+                    try await self.importVideo(source)
                 }
-                guard analyzer.status == "done" else { throw NSError(domain: "Review", code: 1,
-                    userInfo: [NSLocalizedDescriptionKey: analyzer.status]) }
             } else {
                 try await VideoBackgroundWork.shared.run(title: "Exporting test video") {
                     // Time for Home/Lock after a real background lease is granted.
@@ -120,6 +124,17 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         } catch { record(progress: 0, phase: "Failed: " + error.localizedDescription) }
     }
 
+    private func importVideo(_ source: URL) async throws {
+        analyzer.analyse(url: source)
+        while analyzer.isRunning {
+            record(progress: analyzer.progress, phase: "Importing")
+            try await Task.sleep(for: .milliseconds(250))
+        }
+        guard analyzer.status == "done" else { throw NSError(domain: "Review", code: 1,
+            userInfo: [NSLocalizedDescriptionKey: analyzer.status]) }
+        record(progress: 1, phase: "Done")
+    }
+
     nonisolated private static func artworkFrames() -> [RecordedFrame] {
         let alpha = (0..<10000).map { i -> UInt8 in
             hypot(Double(i%100)+0.5-50,Double(i/100)+0.5-50) < 48 ? 255 : 0
@@ -133,9 +148,11 @@ private final class BackgroundVideoReviewModel: ObservableObject {
 
     private func record(progress: Double, phase: String) {
         let background = UIApplication.shared.applicationState == .background
+        if background && phase == "Done" { finishedInBackground = true }
         if background && progress > previousProgress && (phase == "Exporting" || phase == "Importing") { backgroundUpdates += 1 }
         previousProgress = progress
         self.progress = progress
+        canContinueInBackground = analyzer.canContinueInBackground || VideoWorkExecution.lease?.canContinue == true
         status = phase
         let gpuSupported: Bool
         if #available(iOS 26.0, *) { gpuSupported = BGTaskScheduler.supportedResources.contains(.gpu) }
@@ -144,6 +161,7 @@ private final class BackgroundVideoReviewModel: ObservableObject {
             "backgroundUpdates": backgroundUpdates, "gpuSupported": gpuSupported,
             "analysisFrames": analyzer.framesRead, "touches": analyzer.touchCount,
             "analysisCanContinueInBackground": analyzer.canContinueInBackground,
+            "finishedInBackground": finishedInBackground,
             "artworkGPUAllowed": BallSkinMetalRenderer.isAllowed,
             "backgroundLeaseAllowed": VideoWorkExecution.lease?.canContinue ?? false,
             "time": Date().timeIntervalSince1970, "performance": analyzer.performance]

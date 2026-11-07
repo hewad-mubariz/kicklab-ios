@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-07",
+  "branch": "codex/1.2-background-notifications",
+  "version": "1.2.0",
+  "build": 48,
+  "app": "com.juggledude.release120.preview",
+  "device": {
+    "model": "iPhone 11 Pro Max",
+    "hardware": "iPhone12,5",
+    "iOS": "27.2",
+    "build": "24B119",
+    "backgroundGPU": false
+  },
+  "source": {
+    "name": "IMG_9094 2.MOV (1080p30 H.264 derivative)",
+    "sha256": "a7a17eea0a8cf15424062a5058e73c2947b0fd7c57fad2dd1001b5963a7a67d4",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationSeconds": 12.833333333333334,
+    "frames": 385
+  },
+  "model": {
+    "manifest": "config/RFDETRSmall-model.json",
+    "installedAndChecksumsVerified": true
+  },
+  "corrections": [
+    "Installed the ignored, manifest-pinned detector model into this isolated preview build.",
+    "Use the installed bundle identifier in continued-processing task IDs and permitted wildcard entries.",
+    "Require an accepted background grant and multiple progress updates; a pending frame after Home is insufficient."
+  ],
+  "shortBackgroundCheck": {
+    "minimizedSeconds": 25,
+    "progressUpdatesWhileMinimized": 10,
+    "completedFrames": 385,
+    "countedTouches": 29,
+    "passedUnitTests": 17,
+    "passedUITests": 1
+  },
+  "fullBackgroundCheck": {
+    "backgroundAtCompletion": true,
+    "finishedInBackground": true,
+    "phase": "Done",
+    "completedFrames": 385,
+    "countedTouches": 29,
+    "progressUpdatesWhileMinimized": 24,
+    "processingSeconds": 75.06572349998169,
+    "observedMinimizedWindowSeconds": 120,
+    "cpuImagePath": true,
+    "passedUITests": 1
+  },
+  "limits": [
+    "Saved local footage was analysed with the production VideoAnalyzer; PhotosPicker transfer and iCloud downloading were not exercised.",
+    "This validates one 12.83-second input, not an unlimited background duration or a counting-accuracy ground truth.",
+    "No force-quit recovery was added."
+  ],
+  "artifacts": [
+    "artifacts/release120/import-background-04.xcresult",
+    "artifacts/release120/import-background-complete-05.xcresult",
+    "artifacts/release120/import-complete-sample-a.json",
+    "artifacts/release120/import-complete-sample-b.json"
+  ]
+}

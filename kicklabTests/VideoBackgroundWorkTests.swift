@@ -4,6 +4,14 @@ import UIKit
 
 final class VideoBackgroundWorkTests: XCTestCase {
     @MainActor
+    func testContinuedProcessingIdentifierMatchesInstalledAppAndPermittedWildcard() throws {
+        let bundleID = try XCTUnwrap(Bundle.main.bundleIdentifier)
+        XCTAssertEqual(VideoBackgroundWork.identifierPrefix, bundleID + ".video.")
+        let permitted = try XCTUnwrap(Bundle.main.object(forInfoDictionaryKey: "BGTaskSchedulerPermittedIdentifiers") as? [String])
+        XCTAssertTrue(permitted.contains(VideoBackgroundWork.identifierPrefix + "*"))
+    }
+
+    @MainActor
     func testForegroundJobRestoresScreenSleepAfterSuccessAndFailure() async throws {
         let previous = UIApplication.shared.isIdleTimerDisabled
         UIApplication.shared.isIdleTimerDisabled = false

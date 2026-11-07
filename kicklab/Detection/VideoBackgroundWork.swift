@@ -94,6 +94,7 @@ nonisolated enum VideoWorkExecution {
 @MainActor
 final class VideoBackgroundWork: ObservableObject {
     static let shared = VideoBackgroundWork()
+    static var identifierPrefix: String { (Bundle.main.bundleIdentifier ?? "com.juggledude") + ".video." }
     @Published var interruptedMessage: String?
     private let journal = VideoJobJournal(defaults: .standard)
     private var foregroundJobs = 0
@@ -120,7 +121,9 @@ final class VideoBackgroundWork: ObservableObject {
     func run<T: Sendable>(title: String, requiresGPU: Bool = false,
                          operation: @escaping @Sendable () async throws -> T) async throws -> T {
         if VideoWorkExecution.lease != nil { return try await operation() }
-        let identifier = "com.juggledude.video." + UUID().uuidString
+        // Continued-processing identifiers must start with the submitting app's
+        // bundle ID, including separate preview and debug installations.
+        let identifier = Self.identifierPrefix + UUID().uuidString
         journal.begin(identifier, title: title)
         defer { journal.finish(identifier) }
         let lease = await acquire(identifier: identifier, title: title, requiresGPU: requiresGPU)

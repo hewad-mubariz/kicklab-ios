@@ -64,7 +64,7 @@
 	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>com.juggledude.video.*</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).video.*</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>

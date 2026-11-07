@@ -8,6 +8,11 @@ final class BackgroundVideoUITests: XCTestCase {
     func testImportMakesProgressAfterHome() throws { try exercise("import", backgroundSeconds: 25) }
 
     @MainActor
+    func testImportFinishesWithoutReopeningApp() throws {
+        try exercise("import", backgroundSeconds: 120, requiresBackgroundCompletion: true)
+    }
+
+    @MainActor
     func testGraphExportMakesProgressAfterHome() throws { try exercise("export", backgroundSeconds: 25) }
 
     @MainActor
@@ -37,7 +42,7 @@ final class BackgroundVideoUITests: XCTestCase {
     }
 
     @MainActor
-    private func exercise(_ mode: String, backgroundSeconds: TimeInterval) throws {
+    private func exercise(_ mode: String, backgroundSeconds: TimeInterval, requiresBackgroundCompletion: Bool = false) throws {
         #if targetEnvironment(simulator)
         throw XCTSkip("Continued processing requires a physical device")
         #endif
@@ -52,22 +57,34 @@ final class BackgroundVideoUITests: XCTestCase {
             // and processed frames, matching the user-facing import flow.
             let progress = app.staticTexts["background-video-progress"]
             let started = XCTNSPredicateExpectation(predicate: NSPredicate { object, _ in
+                if status.label.hasPrefix("Failed") { return true }
                 guard let element = object as? XCUIElement, let value = Double(element.label) else { return false }
                 return value > 0 && value < 1
             }, object: progress)
             XCTAssertEqual(XCTWaiter.wait(for: [started], timeout: 60), .completed)
+            XCTAssertFalse(status.label.hasPrefix("Failed"), status.label)
+            XCTAssertEqual(app.staticTexts["background-video-allowed"].label, "Allowed")
         } else {
             let preparing = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Preparing export'"), object: status)
             XCTAssertEqual(XCTWaiter.wait(for:[preparing],timeout:60),.completed)
         }
         XCUIDevice.shared.press(.home)
         XCTAssertTrue(app.wait(for: .runningBackground, timeout: 5))
-        Thread.sleep(forTimeInterval: backgroundSeconds)
+        var remaining = backgroundSeconds
+        while remaining > 0 {
+            let interval = min(30, remaining)
+            Thread.sleep(forTimeInterval: interval)
+            remaining -= interval
+        }
         app.activate()
         let updates = app.staticTexts["background-video-updates"]
         XCTAssertTrue(updates.waitForExistence(timeout: 10))
         let count = Int(updates.label.components(separatedBy: " ").first ?? "0") ?? 0
-        XCTAssertGreaterThan(count, 0, "The video must advance while backgrounded, not merely resume on return")
+        XCTAssertGreaterThan(count, 3, "The video must keep advancing while backgrounded, beyond a pending frame at Home")
+        if requiresBackgroundCompletion {
+            XCTAssertEqual(app.staticTexts["background-video-completion"].label, "Finished in background")
+            XCTAssertEqual(status.label, "Done", "Counting must finish before reopening the app")
+        }
         let done = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Done' OR label BEGINSWITH 'Failed'"), object: status)
         XCTAssertEqual(XCTWaiter.wait(for: [done], timeout: 300), .completed)
         XCTAssertEqual(status.label, "Done")
