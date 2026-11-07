@@ -32,6 +32,8 @@ final class ReplayDownloader: ObservableObject {
     /// The saved file's size and frame rate, such as "4K · 120 fps", for the toast.
     @Published private(set) var savedQuality = "1080p"
     private let burnIn = BallStyleBurnIn()
+    private var downloadTask: Task<Void, Error>?
+    private weak var activePreparation: SessionEffectsPreparation?
     /// What the last saved file shows; an edit after saving makes the next tap save again.
     private var savedLook: (SessionEditState, ExportOverlaySettings)?
 
@@ -55,6 +57,13 @@ final class ReplayDownloader: ObservableObject {
         phase = .idle
     }
 
+    func cancel() {
+        guard phase.isBusy, phase != .saving else { return }
+        downloadTask?.cancel()
+        activePreparation?.cancel()
+        burnIn.cancel()
+    }
+
     func download(summary: SessionSummary, edit: SessionEditState, overlays: ExportOverlaySettings,
                   sceneModel: StadiumPreviewModel, preparation: SessionEffectsPreparation,
                   distanceTimeline: BallDistanceTimeline? = nil, choice: ExportChoice? = nil) async {
@@ -74,13 +83,19 @@ final class ReplayDownloader: ObservableObject {
             let elapsed = analyticsStart.duration(to: .now)
             ProductAnalytics.shared.track(.exportFinished(activity, outcome, elapsed: Double(elapsed.components.seconds)))
         }
+        activePreparation = preparation
+        defer { downloadTask = nil; activePreparation = nil }
         do {
-            try await VideoBackgroundWork.shared.run(title: String(localized: "Saving your replay", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
-                requiresGPU: edit.usesEffects || edit.usesLabSkin || edit.environment != .original || edit.scene != nil
-                    || (edit.usesBallMaterial && summary.needsVisualPreparation && preparation.prepared == nil)) {
-                try await self.performDownload(summary: summary, edit: edit, overlays: overlays,
-                    sceneModel: sceneModel, preparation: preparation, distanceTimeline: distanceTimeline, choice: choice)
+            let task = Task {
+                try await VideoBackgroundWork.shared.run(title: String(localized: "Saving your replay", bundle: AppLanguage.bundle, locale: AppLanguage.locale),
+                    requiresGPU: edit.usesEffects || edit.usesLabSkin || edit.environment != .original || edit.scene != nil
+                        || (edit.usesBallMaterial && summary.needsVisualPreparation && preparation.prepared == nil)) {
+                    try await self.performDownload(summary: summary, edit: edit, overlays: overlays,
+                        sceneModel: sceneModel, preparation: preparation, distanceTimeline: distanceTimeline, choice: choice)
+                }
             }
+            downloadTask = task
+            try await withTaskCancellationHandler { try await task.value } onCancel: { task.cancel() }
             outcome = .completed
             #if DEBUG
             await FinalTestCoordinator.shared.exportFinished(summary.videoURL, output: savedURL, error: nil)
@@ -193,6 +208,7 @@ struct ReplayDownloadButton: View {
     let progress: Double
     let action: () -> Void
     var needsForeground = false
+    var onCancel: (() -> Void)?
     /// Set while a large or fast clip asks how to save: the circle splits into the two choices.
     var choices: (faster: ExportChoice, original: ExportChoice)?
     var onChoose: (ExportChoice) -> Void = { _ in }
@@ -215,6 +231,15 @@ struct ReplayDownloadButton: View {
                     .accessibilityIdentifier("replay-save-faster")
                     .transition(.sessionPop(from: .trailing))
             } else {
+                if phase.isBusy, phase != .saving, let onCancel {
+                    Button(action: onCancel) {
+                        Image(systemName: "xmark").font(.system(size: 13, weight: .semibold))
+                            .frame(width: 36, height: 44)
+                    }
+                    .buttonStyle(SessionPressStyle())
+                    .accessibilityLabel("Cancel export")
+                    .accessibilityIdentifier("replay-export-cancel")
+                }
                 downloadButton
                     .accessibilityIdentifier("replay-export")
                     .transition(.sessionPop(scale: 0.6))

@@ -29,6 +29,9 @@ struct TrainingHomeSettings: View {
                     LabeledContent("Language", value: AppLanguage.name(AppLanguage.current))
                 }
                 .accessibilityIdentifier("settings-language")
+                NavigationLink { NotificationSettingsView() } label: {
+                    Label("Notifications", systemImage: "bell")
+                }.accessibilityIdentifier("settings-notifications")
             }
             Section {
                 Toggle("Share usage analytics", isOn: Binding(

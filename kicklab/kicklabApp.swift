@@ -24,6 +24,12 @@ struct kicklabApp: App {
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
         Task.detached(priority: .utility) { try? VideoSafetyPolicy.cleanExpiredExports() }
         #if DEBUG
+        if Bundle.main.bundleIdentifier == "com.juggledude.release120.preview",
+           ProcessInfo.processInfo.arguments.contains("--reset-practice-notifications") {
+            for key in [PracticeNotifications.dailyKey, PracticeNotifications.exportsKey, PracticeNotifications.timeKey] {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+        }
         let account = ProfileEditorReview.requested ? ProfileEditorReview.account() :
             (AccountDeletionReview.requested ? AccountDeletionReview.account() :
             (SessionHistoryReview.requested ? AccountStore(service: nil) : AccountStore.live()))
@@ -72,7 +78,9 @@ struct kicklabApp: App {
             } else if ProcessInfo.processInfo.arguments.contains("--shot-geometry-capture") {
                 ShotGeometryCaptureView()
             } else {
-            if SessionDesignReview.argument("--background-video-review") != nil {
+            if ProcessInfo.processInfo.arguments.contains("--notification-review") {
+                NotificationReview()
+            } else if SessionDesignReview.argument("--background-video-review") != nil {
                 BackgroundVideoReview()
             } else if let path = SessionDesignReview.argument("--thermal-review") {
                 ThermalVideoReview(configurationURL: SessionDesignReview.fileURL(path))
@@ -137,6 +145,10 @@ struct kicklabApp: App {
             }
             .task(id: account.user?.id) { await player.useAccount(account.user) }
             .task(id: account.user?.id) { await subscriptions.useAccount(account.user?.id) }
+            .task(id: AppLanguage.current) {
+                VideoSaveCompletion.shared.configure()
+                await PracticeNotifications.shared.refresh()
+            }
             .task {
                 #if DEBUG
                 await ProfileEditorReview.refreshWhileReviewing(player)
@@ -154,6 +166,7 @@ struct kicklabApp: App {
                 Task { await MetaAdsMeasurement.shared.sceneChanged(isActive: phase == .active) }
                 if phase == .active {
                     AppLanguage.refresh()
+                    Task { await PracticeNotifications.shared.refresh() }
                     ProductAnalytics.shared.track(.appOpened)
                     Task { await AppUpdateNotice.shared.check() }
                 }

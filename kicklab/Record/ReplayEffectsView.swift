@@ -335,7 +335,7 @@ struct ReplayEffectsView: View {
                 .animation(SessionMotion.animation(SessionMotion.fade, reduceMotion: reduceMotion), value: saveChoices == nil)
             }
             ReplayDownloadButton(phase: downloader.phase, progress: downloader.progress, action: download,
-                                 needsForeground: downloader.needsForeground, choices: saveChoices,
+                                 needsForeground: downloader.needsForeground, onCancel: { downloader.cancel() }, choices: saveChoices,
                                  onChoose: { choice in saveChoices = nil; startDownload(choice) },
                                  onCancelChoice: { saveChoices = nil })
                 .accessibilityIdentifier("replay-export")

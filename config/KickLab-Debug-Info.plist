@@ -11,7 +11,7 @@
 	<string>312611098464-ut664skmcfjlg7nnck966cnfq9824a9v.apps.googleusercontent.com</string>
 	<key>GIDServerClientID</key>
 	<string>312611098464-dkqd08atv84ne68qpj772j4t0ivn8qus.apps.googleusercontent.com</string>
-	<!-- Meta ad measurement, approved for 1.2.0. Debug builds also need --enable-meta-install-measurement. -->
+	<!-- Meta ad measurement, approved for 1.2.0. Debug builds must explicitly enable install measurement. -->
 	<key>JuggleDudeMetaAdsEnabled</key>
 	<true/>
 	<key>FacebookAppID</key>

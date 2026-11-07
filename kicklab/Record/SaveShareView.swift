@@ -411,6 +411,7 @@ struct SaveShareView: View {
             let tag = version == .edited && allowedLook.edit.isEdited ? "Edited" : "Original"
             statusMessage = "Saved \(tag) to Photos (\(qualityLabel(quality)))."
             celebrateSave()
+            await VideoSaveCompletion.shared.saved()
         } catch {
             statusMessage = "Couldn’t save: \(error.localizedDescription)"
         }

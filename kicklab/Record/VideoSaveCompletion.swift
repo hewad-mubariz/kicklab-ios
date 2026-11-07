@@ -14,15 +14,17 @@ final class VideoSaveCompletion: NSObject, UNUserNotificationCenterDelegate {
         center.delegate = self
         center.setNotificationCategories([UNNotificationCategory(identifier: Self.category,
             actions: [UNNotificationAction(identifier: "open-photos", title: String(localized: "Open Photos", bundle: AppLanguage.bundle, locale: AppLanguage.locale), options: .foreground)],
-            intentIdentifiers: [])])
+            intentIdentifiers: []), UNNotificationCategory(identifier: PracticeNotifications.reminderCategory, actions: [], intentIdentifiers: [])])
     }
 
     /// Posts only when notifications are already allowed. Saving never asks for
     /// permission; the system's own progress shows background saves anyway.
     func saved() async {
-        guard UIApplication.shared.applicationState != .active else { return }
+        guard PracticeNotifications.shared.exportsEnabled,
+              UIApplication.shared.applicationState != .active else { return }
         let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-        guard [.authorized, .provisional, .ephemeral].contains(status) else { return }
+        guard PracticeNotifications.allows(status), PracticeNotifications.shared.exportsEnabled,
+              UIApplication.shared.applicationState != .active else { return }
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Video saved to Photos", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         content.body = String(localized: "Tap to open your video library.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)

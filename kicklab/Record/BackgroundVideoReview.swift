@@ -2,6 +2,7 @@
 import AVFoundation
 import BackgroundTasks
 import Combine
+import Photos
 import SwiftUI
 
 /// Physical-device verification: launch with a staged video, then press Home.
@@ -12,6 +13,7 @@ struct BackgroundVideoReview: View {
         VStack(spacing: 16) {
             Text("Background video check").font(.title2)
             Text(model.status).accessibilityIdentifier("background-video-status")
+            Text(String(model.progress)).accessibilityIdentifier("background-video-progress")
             if SessionDesignReview.argument("--background-video-review") == "photos" {
                 Button("Saved video") { showSaved = true }.accessibilityIdentifier("review-saved-video")
                 if showSaved {
@@ -27,6 +29,7 @@ struct BackgroundVideoReview: View {
 private final class BackgroundVideoReviewModel: ObservableObject {
     @Published var status = "Starting"
     @Published var backgroundUpdates = 0
+    @Published var progress = 0.0
     private let analyzer = VideoAnalyzer()
     private var previousProgress = 0.0
 
@@ -35,10 +38,22 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         if mode == "photos" { status = "Ready"; return }
         let source = SessionDesignReview.fileURL(SessionDesignReview.argument("--background-video-source") ?? "documents:background-input.mov")
         do {
-            if mode == "artwork" {
+            let frames: [RecordedFrame]
+            if let track = SessionDesignReview.argument("--background-video-track") {
+                let data = try Data(contentsOf: SessionDesignReview.fileURL(track))
+                let stored = try PropertyListDecoder().decode([StoredFrame].self, from: data)
+                guard StoredFrame.validated(stored) else { throw NSError(domain: "Invalid review track", code: 1) }
+                frames = stored.map(\.frame)
+            } else { frames = Self.artworkFrames() }
+            let shortEdge = SessionDesignReview.argument("--background-video-track") == nil ? 320 : 1080
+            if mode == "artwork-save" {
+                let permission = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+                guard permission == .authorized || permission == .limited else { throw NSError(domain: "Photos permission required", code: 1) }
+            }
+            if mode == "artwork" || mode == "artwork-save" {
                 // Match a prepared editor session: source-motion analysis finishes before Save.
                 record(progress:0,phase:"Preparing ball")
-                _ = try await BallSurfaceTimeline.prepare(source:source,track:BallEffectTrack(frames:Self.artworkFrames()))
+                _ = try await BallSurfaceTimeline.prepare(source:source,track:BallEffectTrack(frames:frames))
             }
             if mode == "import" {
                 analyzer.analyse(url: source)
@@ -58,11 +73,11 @@ private final class BackgroundVideoReviewModel: ObservableObject {
                         try await Task.sleep(for: .milliseconds(500))
                     }
                     let task = VideoWorkExecution.detached {
-                        if mode == "artwork" {
-                            // A staged 320x480, 20-second fixture with a white ball at (160,240), r=48.
+                        if mode == "artwork" || mode == "artwork-save" {
+                            // Use a staged real clip/track, or the 320x480 ball fixture.
                             // Exercise the real exporter after Home, including CPU-only background time.
-                            return try await BallStyleBurnIn.render(source:source,track:Self.artworkFrames(),style:.none,skin:.arctic,
-                                intensity:0,shortEdge:320,preserveFrameTimes:true) { value in
+                            return try await BallStyleBurnIn.render(source:source,track:frames,style:.none,skin:.arctic,
+                                intensity:0,shortEdge:shortEdge,preserveFrameTimes:true) { value in
                                     VideoWorkExecution.lease?.progress(0.2+value*0.8,subtitle:"Exporting artwork")
                                     await self.record(progress:value,phase:"Exporting")
                                 }
@@ -93,6 +108,12 @@ private final class BackgroundVideoReviewModel: ObservableObject {
                     let destination = URL.documentsDirectory.appendingPathComponent("background-export." + result.pathExtension)
                     try? FileManager.default.removeItem(at: destination)
                     try FileManager.default.moveItem(at: result, to: destination)
+                    if mode == "artwork-save" {
+                        try await PHPhotoLibrary.shared().performChanges {
+                            PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: destination)
+                        }
+                        await VideoSaveCompletion.shared.saved()
+                    }
                 }
             }
             record(progress: 1, phase: "Done")
@@ -114,6 +135,7 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         let background = UIApplication.shared.applicationState == .background
         if background && progress > previousProgress && (phase == "Exporting" || phase == "Importing") { backgroundUpdates += 1 }
         previousProgress = progress
+        self.progress = progress
         status = phase
         let gpuSupported: Bool
         if #available(iOS 26.0, *) { gpuSupported = BGTaskScheduler.supportedResources.contains(.gpu) }
