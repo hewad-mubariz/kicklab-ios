@@ -14,12 +14,23 @@ final class BackgroundVideoUITests: XCTestCase {
 
     @MainActor
     func testCountingContinuesAcrossHomeAndReturn() throws {
+        try exerciseHomeAndReturn(poseStudy: false)
+    }
+
+    @MainActor
+    func testPoseExperimentUsesCPUAfterHomeAndResumesAcceleration() throws {
+        try exerciseHomeAndReturn(poseStudy: true)
+    }
+
+    @MainActor
+    private func exerciseHomeAndReturn(poseStudy: Bool) throws {
         #if targetEnvironment(simulator)
         throw XCTSkip("Continued processing requires a physical device")
         #endif
         let app = XCUIApplication()
         app.launchArguments = ["--background-video-review", "import", "--analysis-ignore-cache",
-            "--background-video-report", "lifecycle-latest"]
+            "--background-video-report", poseStudy ? "pose-lifecycle" : "lifecycle-latest"]
+        if poseStudy { app.launchArguments += ["--pose-accelerated-study", "--pose-profile"] }
         app.launch()
         let status = app.staticTexts["background-video-status"]
         let backend = app.staticTexts["background-video-model-backend"]
@@ -27,6 +38,16 @@ final class BackgroundVideoUITests: XCTestCase {
         let started = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Accelerated' OR label == 'CPU'"), object: backend)
         XCTAssertEqual(XCTWaiter.wait(for: [started], timeout: 60), .completed)
         let foregroundBackend = backend.label
+        let poseAccelerated = app.staticTexts["background-video-pose-accelerated"]
+        let poseCPU = app.staticTexts["background-video-pose-cpu"]
+        if poseStudy {
+            let poseStarted = XCTNSPredicateExpectation(predicate: NSPredicate { object, _ in
+                guard let element = object as? XCUIElement else { return false }
+                return (Int(element.label) ?? 0) > 0
+            }, object: poseAccelerated)
+            XCTAssertEqual(XCTWaiter.wait(for: [poseStarted], timeout: 30), .completed)
+        }
+        let initialPoseCPU = Int(poseCPU.label) ?? 0
         XCTAssertEqual(app.staticTexts["background-video-allowed"].label, "Allowed")
         XCUIDevice.shared.press(.home)
         XCTAssertTrue(app.wait(for: .runningBackground, timeout: 5))
@@ -36,12 +57,21 @@ final class BackgroundVideoUITests: XCTestCase {
         XCTAssertEqual(status.label, "Importing", "Return before completion to exercise the switch back")
         let cpuUpdates = Int(app.staticTexts["background-video-cpu-updates"].label) ?? 0
         XCTAssertGreaterThan(cpuUpdates, 0, "Frames must actually advance on CPU while backgrounded")
+        let returnedPoseAccelerated = Int(poseAccelerated.label) ?? 0
+        if poseStudy {
+            XCTAssertGreaterThan(Int(poseCPU.label) ?? 0, initialPoseCPU,
+                                 "Pose must actually run on CPU after Home")
+        }
         let resumed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", foregroundBackend), object: backend)
         XCTAssertEqual(XCTWaiter.wait(for: [resumed], timeout: 30), .completed)
         let done = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Done' OR label BEGINSWITH 'Failed'"), object: status)
         XCTAssertEqual(XCTWaiter.wait(for: [done], timeout: 240), .completed)
         XCTAssertEqual(status.label, "Done")
         XCTAssertEqual(backend.label, foregroundBackend)
+        if poseStudy {
+            XCTAssertGreaterThan(Int(poseAccelerated.label) ?? 0, returnedPoseAccelerated,
+                                 "Pose acceleration must resume after returning")
+        }
         if foregroundBackend == "Accelerated" {
             XCTAssertGreaterThanOrEqual(Int(app.staticTexts["background-video-model-switches"].label) ?? 0, 2)
         }

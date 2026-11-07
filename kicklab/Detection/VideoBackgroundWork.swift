@@ -44,7 +44,7 @@ nonisolated enum VideoWorkExecution {
     /// Pin image/Vision work to CPU in both arms of an accuracy comparison,
     /// including when iOS declines a background lease. Only the model may vary.
     @TaskLocal static var accuracyComparison = false
-    static var isAnalysisStudy: Bool { accuracyComparison || foregroundAccelerationStudy || modelAccelerationStudy }
+    static var isAnalysisStudy: Bool { accuracyComparison || foregroundAccelerationStudy || modelAccelerationStudy || ContactPoseStudy.enabled }
     static var cpuOnly: Bool { accuracyComparison || (!foregroundAccelerationStudy && lease?.cpuOnly == true) }
     /// A normal video job follows its foreground/background lease. Explicit
     /// CPU comparison runs retain the old backend unless the candidate is selected.

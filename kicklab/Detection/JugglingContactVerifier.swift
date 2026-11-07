@@ -46,6 +46,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     private(set) var footCheckMS = 0.0
     var poseRequests: Int { observations.poseRequests }
     var poseCacheHits: Int { observations.poseCacheHits }
+    var poseProfile: [String: Double] { observations.poseProfile }
     private(set) var checkedContacts = 0
     private(set) var rejectedContacts = 0
     private(set) var lastCheckMS = 0.0
@@ -102,10 +103,14 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     func warmUp() { observations.warmUp() }
 
     func streakHandlingEvidence(now: Int, after lastTouchMs: Int) -> BallHandlingEvidence? {
-        StreakHoldVerifier.evidence(in: observations, now: now, after: lastTouchMs)
+        let scope = observations.beginPoseScope("streak_hold")
+        defer { observations.endPoseScope(scope) }
+        return StreakHoldVerifier.evidence(in: observations, now: now, after: lastTouchMs)
     }
 
     func streakGroundEvidence(at frameIndex: Int, timed: Bool) -> GroundContactEvidence? {
+        let scope = observations.beginPoseScope("streak_ground")
+        defer { observations.endPoseScope(scope) }
         // A ranking-only probe must not turn a transient Vision error into a
         // sticky failure of subsequent training touch checks.
         let previous = isDiagnosing
@@ -131,6 +136,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     /// Only a detected ball and usable pose at the candidate contact can satisfy
     /// the restricted experiment. Missing evidence never defaults to acceptance.
     func allowsBodyContact(at frameIndex: Int, policy: CountingPolicy.BodyContact) -> Bool {
+        let scope = observations.beginPoseScope("body")
+        defer { observations.endPoseScope(scope) }
         let previousPlayer = evidencePlayer
         evidencePlayer = previousPlayer ?? observations.selection(at: frameIndex)
         defer { evidencePlayer = previousPlayer }
@@ -421,6 +428,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     }
 
     func rejectsHandContact(at frameIndex: Int) -> Bool {
+        let scope = observations.beginPoseScope("hands")
+        defer { observations.endPoseScope(scope) }
         let previousPlayer = evidencePlayer
         evidencePlayer = previousPlayer ?? observations.selection(at: frameIndex)
         defer { evidencePlayer = previousPlayer }
@@ -464,6 +473,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     /// also inspect those blocked candidates so a body rejection is never
     /// mislabeled as a hand without actual hand evidence. No every-frame work.
     func diagnostic(for decision: CounterDecision, ball: BallObservation?) -> TouchDebugEvent {
+        let scope = observations.beginPoseScope("diagnostic")
+        defer { observations.endPoseScope(scope) }
         isDiagnosing = true
         defer { isDiagnosing = false }
         let hand = decision.handRejected == true ||
@@ -488,6 +499,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     /// Uses only frames already buffered when the counter requests a decision.
     /// Exact observed contact, confidence and bounded time/size guards precede Vision.
     func footEvidence(at frameIndex: Int) -> FootContactEvidence? {
+        let scope = observations.beginPoseScope("feet")
+        defer { observations.endPoseScope(scope) }
         let previousPlayer = evidencePlayer
         evidencePlayer = previousPlayer ?? observations.selection(at: frameIndex)
         defer { evidencePlayer = previousPlayer }
@@ -596,6 +609,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     }
 
     func groundEvidence(at frameIndex: Int, timed: Bool = false) -> GroundContactEvidence? {
+        let scope = observations.beginPoseScope("ground")
+        defer { observations.endPoseScope(scope) }
         let previousPlayer = evidencePlayer
         evidencePlayer = previousPlayer ?? observations.selection(at: frameIndex)
         defer { evidencePlayer = previousPlayer }
@@ -665,6 +680,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     /// Only proposals that passed the existing gates request this extra window.
     /// Reuses the same bounded images and cached poses, with no extra lookahead.
     func handlingEvidence(at frameIndex: Int) -> BallHandlingEvidence? {
+        let scope = observations.beginPoseScope("holding")
+        defer { observations.endPoseScope(scope) }
         let previousPlayer = evidencePlayer
         evidencePlayer = previousPlayer ?? observations.selection(at: frameIndex)
         defer { evidencePlayer = previousPlayer }

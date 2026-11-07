@@ -3,6 +3,19 @@ import UIKit
 @testable import kicklab
 
 final class VideoBackgroundWorkTests: XCTestCase {
+    func testPoseExperimentOnlyAcceleratesAnActiveUncancelledForegroundLease() {
+        XCTAssertFalse(ContactPoseStudy.canAccelerate(enabled: true, lease: nil))
+        let lease = VideoWorkLease(allowed: true, cpuOnly: true, backgroundGPU: false)
+        XCTAssertFalse(ContactPoseStudy.canAccelerate(enabled: false, lease: lease))
+        XCTAssertTrue(ContactPoseStudy.canAccelerate(enabled: true, lease: lease))
+        lease.setForeground(false)
+        XCTAssertFalse(ContactPoseStudy.canAccelerate(enabled: true, lease: lease))
+        lease.setForeground(true)
+        XCTAssertTrue(ContactPoseStudy.canAccelerate(enabled: true, lease: lease))
+        lease.expire()
+        XCTAssertFalse(ContactPoseStudy.canAccelerate(enabled: true, lease: lease))
+    }
+
     @MainActor
     func testContinuedProcessingIdentifierMatchesInstalledAppAndPermittedWildcard() throws {
         let bundleID = try XCTUnwrap(Bundle.main.bundleIdentifier)

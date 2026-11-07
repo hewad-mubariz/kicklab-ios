@@ -30,6 +30,8 @@ struct BackgroundVideoReview: View {
             Text(model.modelBackend).accessibilityIdentifier("background-video-model-backend")
             Text(String(model.modelSwitches)).accessibilityIdentifier("background-video-model-switches")
             Text(String(model.backgroundCPUUpdates)).accessibilityIdentifier("background-video-cpu-updates")
+            Text(String(model.poseAcceleratedRequests)).accessibilityIdentifier("background-video-pose-accelerated")
+            Text(String(model.poseCPURequests)).accessibilityIdentifier("background-video-pose-cpu")
         }.task { await model.run() }
     }
 }
@@ -45,6 +47,8 @@ private final class BackgroundVideoReviewModel: ObservableObject {
     @Published var modelBackend = "Waiting"
     @Published var modelSwitches = 0
     @Published var backgroundCPUUpdates = 0
+    @Published var poseAcceleratedRequests = 0
+    @Published var poseCPURequests = 0
     private var startingThermalState = -1
     private let analyzer = VideoAnalyzer()
     private var previousProgress = 0.0
@@ -169,6 +173,8 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         let metrics = analyzer.performance.isEmpty ? analyzer.profileMetrics : analyzer.performance
         if let cpu = metrics["model_cpu_only"] { modelBackend = cpu == 1 ? "CPU" : "Accelerated" }
         modelSwitches = Int(metrics["model_switches"] ?? 0)
+        poseAcceleratedRequests = Int(metrics["pose_accelerated_requests"] ?? 0)
+        poseCPURequests = Int(metrics["pose_cpu_requests"] ?? 0)
         if background && progress > previousProgress && phase == "Importing" && modelBackend == "CPU" {
             backgroundCPUUpdates += 1
         }
@@ -192,6 +198,8 @@ private final class BackgroundVideoReviewModel: ObservableObject {
             "backgroundUpdates": backgroundUpdates, "gpuSupported": gpuSupported,
             "backgroundCPUUpdates": backgroundCPUUpdates, "modelSwitches": modelSwitches,
             "modelBackend": modelBackend,
+            "poseAccelerationStudy": ContactPoseStudy.accelerationEnabled,
+            "poseAcceleratedRequests": poseAcceleratedRequests, "poseCPURequests": poseCPURequests,
             "analysisFrames": analyzer.framesRead, "touches": analyzer.touchCount,
             "analysisCanContinueInBackground": analyzer.canContinueInBackground,
             "finishedInBackground": finishedInBackground,

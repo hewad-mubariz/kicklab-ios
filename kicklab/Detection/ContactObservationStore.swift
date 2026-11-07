@@ -44,11 +44,27 @@ nonisolated final class ContactObservationStore {
     private(set) var lastError: String?
     private var warmed = false
     private let request = VNDetectHumanBodyPoseRequest()
+    private lazy var acceleratedRequest = VNDetectHumanBodyPoseRequest()
     private let handRequest = VNDetectHumanHandPoseRequest()
+    private var profileScope: String?
+    private var profiledIndices: Set<Int> = []
+    private(set) var poseProfile: [String: Double] = [:]
+
+    func beginPoseScope(_ name: String) -> String? {
+        let previous = profileScope
+        if ContactPoseStudy.enabled, previous == nil { profileScope = name }
+        return previous
+    }
+    func endPoseScope(_ previous: String?) { profileScope = previous }
+
+    private func profile(_ name: String, by value: Double = 1) {
+        guard ContactPoseStudy.enabled else { return }
+        poseProfile["pose_" + name, default: 0] += value
+    }
 
     init() {
         do {
-            try VisionComputePolicy.configure(request)
+            try VisionComputePolicy.configure(request, cpuOnly: ContactPoseStudy.accelerationEnabled || VideoWorkExecution.cpuOnly)
             try VisionComputePolicy.configure(handRequest)
         }
         catch { lastError = error.localizedDescription }
@@ -79,6 +95,8 @@ nonisolated final class ContactObservationStore {
         handPoseRequests = 0
         peakBufferedFrames = 0
         lastError = nil
+        poseProfile = [:]
+        profiledIndices = []
     }
 
     /// Called on the owning analysis queue during preparation, before capture
@@ -94,7 +112,12 @@ nonisolated final class ContactObservationStore {
               let pixels else { return }
         context.render(CIImage(color: .black).cropped(to: CGRect(x: 0, y: 0, width: 288, height: 512)), to: pixels)
         do {
-            try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request, handRequest])
+            if ContactPoseStudy.accelerationEnabled {
+                _ = try performBodyPose(pixels, profiling: false)
+                try VNImageRequestHandler(cvPixelBuffer: pixels).perform([handRequest])
+            } else {
+                try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request, handRequest])
+            }
             warmed = true
         } catch {
             lastError = error.localizedDescription
@@ -185,12 +208,22 @@ nonisolated final class ContactObservationStore {
     }
 
     func pose(for frame: Frame, recordErrors: Bool = true) -> Pose? {
-        if let cached = poseCache[frame.index] { poseCacheHits += 1; return cached }
+        let scope = profileScope ?? "unattributed"
+        if let cached = poseCache[frame.index] {
+            poseCacheHits += 1
+            profile(scope + "_cache_hits")
+            return cached
+        }
+        let start = ContactPoseStudy.enabled ? ProcessInfo.processInfo.systemUptime : 0
+        defer { if ContactPoseStudy.enabled { profile(scope + "_ms", by: (ProcessInfo.processInfo.systemUptime - start) * 1000) } }
+        profile(scope + "_requests")
+        if ContactPoseStudy.enabled {
+            profile(profiledIndices.insert(frame.index).inserted ? "unique_frames" : "recomputed_frames")
+        }
         return autoreleasepool {
             do {
                 poseRequests += 1
-                try VNImageRequestHandler(cvPixelBuffer: frame.pixels).perform([request])
-                let rawPoses = request.results ?? []
+                let rawPoses = try performBodyPose(frame.pixels)
                 let names: [(BodyJoint, VNHumanBodyPoseObservation.JointName)] = [
                     (.nose, .nose), (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
                     (.leftElbow, .leftElbow), (.rightElbow, .rightElbow),
@@ -231,6 +264,25 @@ nonisolated final class ContactObservationStore {
                 }
                 return nil
             }
+        }
+    }
+
+    private func performBodyPose(_ pixels: CVPixelBuffer, profiling: Bool = true) throws -> [VNHumanBodyPoseObservation] {
+        let accelerated = ContactPoseStudy.canAccelerate()
+        let selected = accelerated ? acceleratedRequest : request
+        do {
+            if profiling { profile(accelerated ? "accelerated_requests" : "cpu_requests") }
+            try VNImageRequestHandler(cvPixelBuffer: pixels).perform([selected])
+            return selected.results ?? []
+        } catch is CancellationError { throw CancellationError() }
+        catch {
+            // Foreground can end between selecting a request and submitting
+            // work. Retry the same pixels on CPU before caching any landmarks.
+            guard accelerated, !ContactPoseStudy.canAccelerate() else { throw error }
+            try Task.checkCancellation()
+            if profiling { profile("transition_retries"); profile("cpu_requests") }
+            try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request])
+            return request.results ?? []
         }
     }
 }

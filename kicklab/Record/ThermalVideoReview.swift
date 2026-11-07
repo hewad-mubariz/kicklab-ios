@@ -156,6 +156,8 @@ struct ThermalVideoReview: View {
                     "foreground_acceleration_study": VideoWorkExecution.foregroundAccelerationStudy,
                     "model_acceleration_study": VideoWorkExecution.modelAccelerationStudy,
                     "accuracy_comparison": VideoWorkExecution.accuracyComparison,
+                    "pose_profile": ContactPoseStudy.enabled,
+                    "pose_acceleration_study": ContactPoseStudy.accelerationEnabled,
                     "analysis_frame_limit": NSNull(),
                     "mask_limit_bytes": NSNull(),
                     "processing_overlay": showOverlay, "overlay_only": overlayOnly,

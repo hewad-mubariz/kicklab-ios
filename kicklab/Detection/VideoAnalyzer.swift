@@ -449,7 +449,7 @@ final class VideoAnalyzer: ObservableObject {
                                 plausibility.rejectedSize + plausibility.rejectedJump)
                 let fraction = min(1.0, analysedTime / total)
                 #if DEBUG
-                let profile: [String: Double] = [
+                var profile: [String: Double] = [
                     "cpu_only": VideoWorkExecution.cpuOnly ? 1 : 0,
                     "model_cpu_only": detector.modelUsesCPUOnly ? 1 : 0,
                     "model_acceleration_unavailable": detector.modelAccelerationUnavailable ? 1 : 0,
@@ -464,6 +464,7 @@ final class VideoAnalyzer: ObservableObject {
                     "contact_check_s": (contactVerifier?.totalCheckMS ?? 0) / 1000,
                     "counter_s": counterSeconds, "thermal_wait_s": pacer.waitingSeconds,
                     "peak_memory_mib": peakMemory]
+                profile.merge(contactVerifier?.poseProfile ?? [:]) { _, new in new }
                 #endif
                 await MainActor.run {
                     #if DEBUG
@@ -500,7 +501,7 @@ final class VideoAnalyzer: ObservableObject {
         func percentile(_ values: [Double], _ p: Double) -> Double {
             values.isEmpty ? 0 : values[min(values.count-1, Int(Double(values.count-1)*p))]
         }
-        let metrics: [String: Double] = [
+        var metrics: [String: Double] = [
             "cpu_only": VideoWorkExecution.cpuOnly ? 1 : 0,
             "model_cpu_only": detector.modelUsesCPUOnly ? 1 : 0,
             "model_acceleration_unavailable": detector.modelAccelerationUnavailable ? 1 : 0,
@@ -541,6 +542,7 @@ final class VideoAnalyzer: ObservableObject {
             "mask_frames": Double(frames.filter { $0.ballMask != nil }.count),
             "all_mask_storage_bytes": Double(maskBytes),
             "mask_storage_bytes": Double(frames.reduce(0) { $0 + ($1.ballMask?.alpha.count ?? 0) })]
+        metrics.merge(contactVerifier?.poseProfile ?? [:]) { _, new in new }
         PreparationPerformance.record(visualOnly ? "dense_analysis" : "import_analysis", metrics)
         if visualOnly { RFFramePredictionReuse.shared.release() }
         let modelName = detector.modelName
