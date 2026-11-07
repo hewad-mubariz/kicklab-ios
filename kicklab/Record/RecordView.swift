@@ -327,6 +327,9 @@ struct RecordView: View {
             bestCombo: importedVideo.touchCount, personalBest: sessionOwner == nil ? JugglingRecords.personalBest : player.personalBest,
             videoURL: url, touchesMarked: importedVideo.recordedTouches,
             track: importedVideo.recordedTrack, sessionNumber: JugglingSessionIdentity.begin())
+        #if DEBUG
+        ImportFlowAudit.counted(importedVideo)
+        #endif
         if !importedVideo.visualRecoveries.isEmpty { summary.visualTrack = importedVideo.renderTrack }
         summary.debugContacts = importedVideo.counterTrace?.diagnostics ?? []
         sessionNotice = nil
@@ -365,6 +368,9 @@ struct RecordView: View {
               !camera.isFinishingRecording, !showProcessing else { return }
         sessionOwner = account.user?.id
         resultID = UUID(); resultStartedAt = Date()
+        #if DEBUG
+        ImportFlowAudit.begin(pro: subscriptions.isPro)
+        #endif
         ProductAnalytics.shared.track(.importStarted)
         showProcessing = true
         processingProgress = 0.02
@@ -403,6 +409,9 @@ struct RecordView: View {
             throw CancellationError()
         }
         importedURL = movie.url
+        #if DEBUG
+        ImportFlowAudit.transferred(movie.url)
+        #endif
         importedVideo.analyse(url: movie.url)
         await importedVideo.waitUntilFinished()
         try Task.checkCancellation()

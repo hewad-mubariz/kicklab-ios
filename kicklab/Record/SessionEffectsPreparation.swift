@@ -53,6 +53,9 @@ final class SessionEffectsPreparation: ObservableObject {
         }
         let token = UUID(); generation = token
         isPreparing = true; progress = 0; error = nil
+        #if DEBUG
+        ImportFlowAudit.increment("effects_preparations")
+        #endif
         let hasOnlyPositions = summary.visualTrackIsPositionsOnly && summary.renderTrack.allSatisfy { $0.ballMask == nil }
         let task = VideoWorkExecution.detached { [weak self] in
             let progress: @Sendable (Double) -> Void = { [weak self] value in

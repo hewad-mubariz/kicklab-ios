@@ -133,6 +133,12 @@ final class SubscriptionStore: ObservableObject {
     deinit { updates?.cancel(); accountSync?.cancel(); localExpiry?.cancel(); renewalCheck?.cancel() }
 
     static func live(account: AccountStore) -> SubscriptionStore {
+        #if DEBUG
+        if ImportFlowAudit.enabled, SessionHistoryReview.requested,
+           ProcessInfo.processInfo.arguments.contains("--import-flow-pro") {
+            return SubscriptionStore(observeTransactions: false, entitlementSource: ImportFlowProFixture())
+        }
+        #endif
         if isFreeDebugBuild { return SubscriptionStore(observeTransactions: false) }
         guard let config = try? AccountConfiguration.load() else { return SubscriptionStore() }
         return SubscriptionStore(accountService: SupabaseSubscriptionService(config: config) { [weak account] id in

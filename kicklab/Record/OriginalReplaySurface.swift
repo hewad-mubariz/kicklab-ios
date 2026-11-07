@@ -34,7 +34,12 @@ final class OriginalReplayView: UIView {
         playerLayer.player = player
         readinessObservation = playerLayer.observe(\.isReadyForDisplay, options: [.initial, .new]) { [weak self] layer, _ in
             let ready = layer.isReadyForDisplay
-            Task { @MainActor [weak self] in self?.accessibilityValue = ready ? "Ready" : "Opening" }
+            Task { @MainActor [weak self] in
+                self?.accessibilityValue = ready ? "Ready" : "Opening"
+                #if DEBUG
+                if ready { ImportFlowAudit.mark("native_replay_ready_s") }
+                #endif
+            }
         }
         itemObservation = player.currentItem?.observe(\.status, options: [.initial, .new]) { [weak self] item, _ in
             guard item.status == .failed else { return }

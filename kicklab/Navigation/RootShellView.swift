@@ -114,7 +114,12 @@ struct RootShellView: View {
         .preferredColorScheme(preferredScheme)
         .tint(Theme.accent)
         .photosPicker(isPresented: $showImport, selection: $importedVideo, matching: .videos, preferredItemEncoding: .current)
-        .onChange(of: importedVideo) { _, _ in openImportedVideoIfReady() }
+        .onChange(of: importedVideo) { _, item in
+            #if DEBUG
+            if item != nil { ImportFlowAudit.selected() }
+            #endif
+            openImportedVideoIfReady()
+        }
         .onChange(of: showImport) { _, _ in openImportedVideoIfReady() }
         .fullScreenCover(item: $capture) { destination in
             switch destination.mode {

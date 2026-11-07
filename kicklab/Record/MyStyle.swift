@@ -67,8 +67,12 @@ final class MyStyleStore: ObservableObject {
     private let defaults: UserDefaults?
 
     init(defaults: UserDefaults? = ProcessInfo.processInfo.arguments.contains("--session-design") ? nil : .standard) {
+        #if DEBUG
+        self.defaults = ImportFlowAudit.enabled ? nil : defaults
+        #else
         self.defaults = defaults
-        if let data = defaults?.data(forKey: Self.key) {
+        #endif
+        if let data = self.defaults?.data(forKey: Self.key) {
             saved = try? JSONDecoder().decode(MyStyle.self, from: data)
         }
     }

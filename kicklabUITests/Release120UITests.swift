@@ -38,11 +38,11 @@ final class Release120UITests: XCTestCase {
         let exports = app.switches["notifications-exports"]
         XCTAssertTrue(exports.waitForExistence(timeout: 20))
         waitEnabled(exports)
-        exports.tap()
+        toggle(exports)
         allowSystemPrompt()
         let daily = app.switches["notifications-daily"]
         waitEnabled(daily)
-        daily.tap()
+        toggle(daily)
         waitEnabled(daily)
         app.buttons["notification-review-refresh"].tap()
         waitLabel(app.staticTexts["notification-review-pending"], "1 daily reminders")
@@ -56,7 +56,7 @@ final class Release120UITests: XCTestCase {
         waitLabel(app.staticTexts["notification-review-pending"], "1 daily reminders")
         XCTAssertEqual(app.switches["notifications-exports"].value as? String, "1")
         let persistedDaily = app.switches["notifications-daily"]
-        waitEnabled(persistedDaily); persistedDaily.tap(); waitEnabled(persistedDaily)
+        waitEnabled(persistedDaily); toggle(persistedDaily); waitEnabled(persistedDaily)
         app.buttons["notification-review-refresh"].tap()
         waitLabel(app.staticTexts["notification-review-pending"], "0 daily reminders")
 
@@ -87,6 +87,9 @@ final class Release120UITests: XCTestCase {
         XCTAssertTrue(delivered.waitForExistence(timeout: 20))
         let received = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label MATCHES '[1-9][0-9]* export alerts'"), object: delivered)
         XCTAssertEqual(XCTWaiter.wait(for: [received], timeout: 10), .completed)
+        let exportsOff = app.switches["notifications-exports"]
+        waitEnabled(exportsOff)
+        if exportsOff.value as? String == "1" { toggle(exportsOff); waitEnabled(exportsOff) }
     }
 
     @MainActor private func allowSystemPrompt() {
@@ -96,6 +99,10 @@ final class Release120UITests: XCTestCase {
         let allow = alert.buttons.matching(NSPredicate(format: "label == 'Allow' OR label == 'Allow Access to Add Photos' OR label == 'Allow Adding Photos' OR label == 'OK'")).firstMatch
         XCTAssertTrue(allow.exists, "Unexpected permission prompt: \(alert.debugDescription)")
         allow.tap()
+    }
+
+    @MainActor private func toggle(_ element: XCUIElement) {
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
     }
 
     @MainActor private func waitEnabled(_ element: XCUIElement) {

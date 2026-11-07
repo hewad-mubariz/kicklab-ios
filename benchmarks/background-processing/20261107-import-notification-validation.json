@@ -1,0 +1,238 @@
+{
+  "date": "2026-11-07",
+  "branch": "codex/1.2-background-notifications",
+  "build": "1.2.0 (62)",
+  "purpose": "Validate the real Photos picker \u2192 transfer \u2192 production count \u2192 native replay flow; then verify local notification delivery.",
+  "production_behavior": "Unchanged from build 61; additions are opt-in Debug diagnostics and test automation.",
+  "imports": {
+    "passed": 6,
+    "results": [
+      {
+        "device": "iphone17",
+        "fixture": "free-original",
+        "pro_fixture": false,
+        "duration_seconds": 39.465,
+        "size": [
+          720,
+          1280
+        ],
+        "fps": 59.926517486572266,
+        "source_bytes": 34946244,
+        "selection_to_ready_seconds": 34.532084833306726,
+        "transfer_seconds": 0.1844686249969527,
+        "count_seconds": 33.312706416647416,
+        "count_to_replay_seconds": 0.21094191662268713,
+        "touches": 56,
+        "frames": 1183,
+        "masks": 1052,
+        "model_calls": 1183,
+        "proxy_requests": 0,
+        "effect_preparations": 0,
+        "thermal_start": 0,
+        "thermal_finish": 0,
+        "thermal_wait_seconds": 0,
+        "report": "artifacts/release120/import-flow-62-iphone17-free-original.json"
+      },
+      {
+        "device": "iphone17",
+        "fixture": "pro-original",
+        "pro_fixture": true,
+        "duration_seconds": 39.465,
+        "size": [
+          720,
+          1280
+        ],
+        "fps": 59.926517486572266,
+        "source_bytes": 34946244,
+        "selection_to_ready_seconds": 48.93782375002047,
+        "transfer_seconds": 0.15378545835847035,
+        "count_seconds": 47.720011249999516,
+        "count_to_replay_seconds": 0.22959474998060614,
+        "touches": 56,
+        "frames": 1183,
+        "masks": 1052,
+        "model_calls": 1183,
+        "proxy_requests": 0,
+        "effect_preparations": 0,
+        "thermal_start": 0,
+        "thermal_finish": 0,
+        "thermal_wait_seconds": 0,
+        "report": "artifacts/release120/import-flow-62-iphone17-pro-original.json"
+      },
+      {
+        "device": "iphone17",
+        "fixture": "free-sdr",
+        "pro_fixture": false,
+        "duration_seconds": 12.821666666666667,
+        "size": [
+          1080,
+          1920
+        ],
+        "fps": 59.97223663330078,
+        "source_bytes": 23067822,
+        "selection_to_ready_seconds": 12.862310500000603,
+        "transfer_seconds": 0.1708986249868758,
+        "count_seconds": 11.66760374995647,
+        "count_to_replay_seconds": 0.22364112496143207,
+        "touches": 16,
+        "frames": 385,
+        "masks": 286,
+        "model_calls": 385,
+        "proxy_requests": 0,
+        "effect_preparations": 0,
+        "thermal_start": 0,
+        "thermal_finish": 0,
+        "thermal_wait_seconds": 0,
+        "report": "artifacts/release120/import-flow-62-iphone17-free-sdr.json"
+      },
+      {
+        "device": "iphone17",
+        "fixture": "pro-sdr",
+        "pro_fixture": true,
+        "duration_seconds": 12.821666666666667,
+        "size": [
+          1080,
+          1920
+        ],
+        "fps": 59.97223663330078,
+        "source_bytes": 23067822,
+        "selection_to_ready_seconds": 12.83839166664984,
+        "transfer_seconds": 0.15963787504006177,
+        "count_seconds": 11.621251291653607,
+        "count_to_replay_seconds": 0.27506033331155777,
+        "touches": 16,
+        "frames": 385,
+        "masks": 286,
+        "model_calls": 385,
+        "proxy_requests": 0,
+        "effect_preparations": 0,
+        "thermal_start": 0,
+        "thermal_finish": 0,
+        "thermal_wait_seconds": 0,
+        "report": "artifacts/release120/import-flow-62-iphone17-pro-sdr.json"
+      },
+      {
+        "device": "iphone11",
+        "fixture": "free-hdr52",
+        "pro_fixture": false,
+        "duration_seconds": 51.626666666666665,
+        "size": [
+          3840,
+          2160
+        ],
+        "fps": 119.94479370117188,
+        "source_bytes": 654557602,
+        "selection_to_ready_seconds": 263.776993208332,
+        "transfer_seconds": 0.4155308334156871,
+        "count_seconds": 259.8658002082957,
+        "count_to_replay_seconds": 1.1397763333516195,
+        "touches": 98,
+        "frames": 1549,
+        "masks": 1549,
+        "model_calls": 1549,
+        "proxy_requests": 0,
+        "effect_preparations": 0,
+        "thermal_start": 0,
+        "thermal_finish": 2,
+        "thermal_wait_seconds": 51.33903154206928,
+        "report": "artifacts/release120/import-flow-62-iphone11-free-hdr52.json"
+      },
+      {
+        "device": "iphone11",
+        "fixture": "pro-indoor19",
+        "pro_fixture": true,
+        "duration_seconds": 18.571666666666665,
+        "size": [
+          360,
+          640
+        ],
+        "fps": 29.937515258789062,
+        "source_bytes": 16324909,
+        "selection_to_ready_seconds": 115.43499487498775,
+        "transfer_seconds": 0.6806280832970515,
+        "count_seconds": 113.42115999991074,
+        "count_to_replay_seconds": 0.2730641666566953,
+        "touches": 15,
+        "frames": 556,
+        "masks": 475,
+        "model_calls": 556,
+        "proxy_requests": 0,
+        "effect_preparations": 0,
+        "thermal_start": 2,
+        "thermal_finish": 2,
+        "thermal_wait_seconds": 52.72657870827243,
+        "report": "artifacts/release120/import-flow-62-iphone11-pro-indoor19.json"
+      }
+    ],
+    "artifacts": [
+      "artifacts/release120/import-flow-62-iphone17.xcresult",
+      "artifacts/release120/import-flow-62-iphone11-final.xcresult"
+    ],
+    "confirmed": [
+      "All six runs opened a ready native replay with zero effect preparation or proxy requests.",
+      "Free access showed Pro when opening effects; controlled Pro access opened None without preparing an effect.",
+      "The 52-second iPhone 11 Photos item matched IMG_9064.MOV size, duration, dimensions and HLG transfer; 98 touches, 1549 model calls and 1549 retained masks matched the earlier production benchmark."
+    ],
+    "limitations": [
+      "Pro uses an ephemeral, Debug-preview-only entitlement fixture, not a real App Store purchase.",
+      "One run per access/clip case; timings include UI automation and different thermal states, so these are functional checks rather than a statistical speed comparison.",
+      "iPhone 11 reached serious thermal state and paused for 51.34 seconds in the HDR case; the following indoor case started hot.",
+      "iPhone 17 clips were already exported videos: a 39.465-second 720p60 clip and a 12.822-second 1080p60 BT.709 clip. Baked-in overlays are part of those inputs.",
+      "No controlled iCloud-only asset download, actual iOS 18 device, real purchase/restore flow, or long lock-screen endurance was tested."
+    ],
+    "automation_repairs": [
+      "A Photos tap during deceleration was swallowed on iPhone 11. Waiting for the scroll to settle resolved it; initial interrupted run is excluded.",
+      "A short inspection confirmed Photos handoff but stopped before counting finished; it is excluded from the results."
+    ]
+  },
+  "notifications": {
+    "export_finished": "Passed real iPhone 17 background render/save and new video-saved notification delivery.",
+    "daily": "Passed fresh real iPhone 17 delivery after clearing the earlier test reminder, relaunch persistence, time change and schedule disable.",
+    "artifact": "artifacts/release120/notifications-62-iphone17-final.xcresult",
+    "notes": [
+      "The first dry run tapped the SwiftUI switch label, not its thumb; no preference or permission request changed. Test hit targets were corrected.",
+      "The first daily check did not observe delivery in its single snapshot; a later read confirmed it. The diagnostic now refreshes delivery state, and the retest cleared the old alert before scheduling a fresh one with delivery tolerance.",
+      "Sleep Focus was enabled on the iPhone 17 and was left unchanged."
+    ],
+    "daily_artifact": "artifacts/release120/daily-delivery-62-iphone17.xcresult",
+    "daily_delivery_at": "2026-11-07T22:52:00Z",
+    "export_delivery_at": "2026-11-07T22:42:58Z",
+    "final_pending_requests": 0,
+    "final_preferences": {
+      "daily_enabled": false,
+      "exports_enabled": false,
+      "minute_of_day": 1080,
+      "system_permission": "authorized"
+    },
+    "export_background_updates": 33,
+    "export_finished_in_background": true,
+    "limits": [
+      "Local notifications were exercised, not APNs leaderboard-overtaken pushes.",
+      "Permission denial remains covered by logic tests; this run allowed permission on the physical phone.",
+      "Delivery was verified through the OS notification center; Sleep Focus was not changed."
+    ]
+  },
+  "regression": {
+    "tests_passed": 18,
+    "suites": {
+      "MyStyleTests": 5,
+      "ReplayAccessTests": 6,
+      "PracticeNotificationsTests": 7
+    },
+    "artifact": "artifacts/release120/import-notifications-62-unit.xcresult"
+  },
+  "cleanup": {
+    "isolated_review_histories": "Cleared on both phones; real session history and leaderboard were not used for test results.",
+    "iphone11_temp_files_removed": 3,
+    "iphone11_temp_bytes_removed": 1325440113,
+    "iphone11_cleanup_report": "artifacts/release120/import-flow-cleanup-iphone11.json",
+    "phone_ui": "Normal home restored on both phones; no Pro fixture launch flags remain.",
+    "photo_library": "Existing clips were read without alteration. The notification export test added one rendered test clip to Photos."
+  },
+  "remaining_priorities": [
+    "Three-minute footage with locked screen, repeated foreground/background transitions and Low Power Mode.",
+    "Real purchase, upgrade on an existing replay, restore and expiry.",
+    "Physical iOS 18 validation and iPhone 11 storage deletion UI.",
+    "Ball replacement quality/cost work and leaderboard push notifications remain separate, unfinished work."
+  ]
+}

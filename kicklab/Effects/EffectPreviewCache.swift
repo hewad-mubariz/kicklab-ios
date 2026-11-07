@@ -15,6 +15,9 @@ actor EffectPreviewCache {
     }
 
     func preparedURL(for source: URL) async throws -> URL {
+        #if DEBUG
+        await ImportFlowAudit.increment("proxy_requests")
+        #endif
         let storageAccess = try VideoStorageAccess.beginRead()
         defer { storageAccess.release() }
         if let task = pending[source] { return try await task.value }

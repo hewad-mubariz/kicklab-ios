@@ -107,6 +107,9 @@ struct kicklabApp: App {
             .task {
                 await subscriptions.refreshEntitlements()
                 #if DEBUG
+                if ProcessInfo.processInfo.arguments.contains("--import-flow-cleanup") {
+                    await ImportFlowAudit.cleanUp()
+                }
                 if let folder = SessionDesignReview.argument("--touch-contact-replay") {
                     await TouchContactReplay.run(folderName: folder)
                 }

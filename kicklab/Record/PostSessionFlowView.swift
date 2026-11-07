@@ -105,6 +105,9 @@ struct PostSessionFlowView: View {
             }
         }
         .onAppear {
+            #if DEBUG
+            if ImportFlowAudit.enabled { return }
+            #endif
             if recordsPersonalBest, let streak = summary.bestStreak { JugglingRecords.recordIfNeeded(streak.count, ownerID: ownerID) }
         }
         .onChange(of: draft) { _, _ in draftRevision += 1 }
