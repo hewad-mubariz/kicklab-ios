@@ -3,17 +3,32 @@ import UIKit
 @testable import kicklab
 
 final class VideoBackgroundWorkTests: XCTestCase {
-    func testPoseExperimentOnlyAcceleratesAnActiveUncancelledForegroundLease() {
-        XCTAssertFalse(ContactPoseStudy.canAccelerate(enabled: true, lease: nil))
+    func testProductionPoseFollowsForegroundWithoutGrantingBackgroundGPU() {
+        XCTAssertFalse(ContactPoseComputePolicy.canAccelerate(lease: nil))
         let lease = VideoWorkLease(allowed: true, cpuOnly: true, backgroundGPU: false)
-        XCTAssertFalse(ContactPoseStudy.canAccelerate(enabled: false, lease: lease))
-        XCTAssertTrue(ContactPoseStudy.canAccelerate(enabled: true, lease: lease))
+        XCTAssertTrue(ContactPoseComputePolicy.followsVideoLifecycle(lease: lease,
+            accuracyComparison: false, accelerationStudy: false))
+        XCTAssertTrue(ContactPoseComputePolicy.canAccelerate(lease: lease))
         lease.setForeground(false)
-        XCTAssertFalse(ContactPoseStudy.canAccelerate(enabled: true, lease: lease))
+        XCTAssertFalse(ContactPoseComputePolicy.canAccelerate(lease: lease))
         lease.setForeground(true)
-        XCTAssertTrue(ContactPoseStudy.canAccelerate(enabled: true, lease: lease))
+        XCTAssertTrue(ContactPoseComputePolicy.canAccelerate(lease: lease))
         lease.expire()
-        XCTAssertFalse(ContactPoseStudy.canAccelerate(enabled: true, lease: lease))
+        XCTAssertFalse(ContactPoseComputePolicy.canAccelerate(lease: lease))
+    }
+
+    func testPosePolicyPreservesLiveCameraAndExplicitCPUComparisons() {
+        XCTAssertFalse(ContactPoseComputePolicy.followsVideoLifecycle(lease: nil,
+            accuracyComparison: false, accelerationStudy: false), "No video lease means existing live-camera policy")
+        XCTAssertFalse(ContactPoseComputePolicy.followsVideoLifecycle(lease: nil,
+            accuracyComparison: false, accelerationStudy: true), "A diagnostic flag cannot pin the camera to CPU")
+        let lease = VideoWorkLease(allowed: true, cpuOnly: true, backgroundGPU: true)
+        XCTAssertFalse(ContactPoseComputePolicy.followsVideoLifecycle(lease: lease,
+            accuracyComparison: true, accelerationStudy: false))
+        XCTAssertTrue(ContactPoseComputePolicy.followsVideoLifecycle(lease: lease,
+            accuracyComparison: true, accelerationStudy: true))
+        lease.setForeground(false)
+        XCTAssertFalse(ContactPoseComputePolicy.canAccelerate(lease: lease), "Pose remains CPU even on a GPU-capable background lease")
     }
 
     @MainActor
@@ -62,6 +77,7 @@ final class VideoBackgroundWorkTests: XCTestCase {
                     XCTAssertTrue(VideoWorkExecution.isAnalysisStudy)
                     XCTAssertTrue(VideoWorkExecution.cpuOnly)
                     XCTAssertTrue(VideoWorkExecution.modelCPUOnly)
+                    XCTAssertFalse(ContactPoseComputePolicy.followsVideoLifecycle())
                     XCTAssertFalse(VideoWorkExecution.canAnalyzeInBackground)
                     VideoWorkExecution.$modelAccelerationStudy.withValue(true) {
                         XCTAssertTrue(VideoWorkExecution.cpuOnly)
@@ -101,10 +117,13 @@ final class VideoBackgroundWorkTests: XCTestCase {
         try await VideoWorkExecution.$lease.withValue(lease) {
             try await VideoWorkExecution.detached {
                 XCTAssertFalse(VideoWorkExecution.isAnalysisStudy)
+                XCTAssertTrue(ContactPoseComputePolicy.followsVideoLifecycle())
+                XCTAssertTrue(ContactPoseComputePolicy.canAccelerate())
                 XCTAssertTrue(VideoWorkExecution.followsModelLifecycle)
                 XCTAssertTrue(VideoWorkExecution.cpuOnly)
                 XCTAssertFalse(VideoWorkExecution.modelCPUOnly)
                 lease.setForeground(false)
+                XCTAssertFalse(ContactPoseComputePolicy.canAccelerate())
                 XCTAssertTrue(VideoWorkExecution.modelCPUOnly)
                 XCTAssertTrue(VideoWorkExecution.canAnalyzeInBackground)
                 lease.setForeground(true)

@@ -43,6 +43,8 @@ nonisolated final class ContactObservationStore {
     private(set) var peakBufferedFrames = 0
     private(set) var lastError: String?
     private var warmed = false
+    private let followsVideoLifecycle: Bool
+    private let requestUsesCPUOnly: Bool
     private let request = VNDetectHumanBodyPoseRequest()
     private lazy var acceleratedRequest = VNDetectHumanBodyPoseRequest()
     private let handRequest = VNDetectHumanHandPoseRequest()
@@ -63,8 +65,12 @@ nonisolated final class ContactObservationStore {
     }
 
     init() {
+        followsVideoLifecycle = ContactPoseComputePolicy.followsVideoLifecycle()
+        // Prepare a separate CPU request for video jobs. The automatic request
+        // is reused in foreground; neither switch discards cached landmarks.
+        requestUsesCPUOnly = followsVideoLifecycle || VideoWorkExecution.cpuOnly
         do {
-            try VisionComputePolicy.configure(request, cpuOnly: ContactPoseStudy.accelerationEnabled || VideoWorkExecution.cpuOnly)
+            try VisionComputePolicy.configure(request, cpuOnly: requestUsesCPUOnly)
             try VisionComputePolicy.configure(handRequest)
         }
         catch { lastError = error.localizedDescription }
@@ -112,7 +118,7 @@ nonisolated final class ContactObservationStore {
               let pixels else { return }
         context.render(CIImage(color: .black).cropped(to: CGRect(x: 0, y: 0, width: 288, height: 512)), to: pixels)
         do {
-            if ContactPoseStudy.accelerationEnabled {
+            if followsVideoLifecycle {
                 _ = try performBodyPose(pixels, profiling: false)
                 try VNImageRequestHandler(cvPixelBuffer: pixels).perform([handRequest])
             } else {
@@ -268,18 +274,19 @@ nonisolated final class ContactObservationStore {
     }
 
     private func performBodyPose(_ pixels: CVPixelBuffer, profiling: Bool = true) throws -> [VNHumanBodyPoseObservation] {
-        let accelerated = ContactPoseStudy.canAccelerate()
+        let accelerated = followsVideoLifecycle && ContactPoseComputePolicy.canAccelerate()
         let selected = accelerated ? acceleratedRequest : request
         do {
-            if profiling { profile(accelerated ? "accelerated_requests" : "cpu_requests") }
+            if profiling { profile(accelerated || !requestUsesCPUOnly ? "accelerated_requests" : "cpu_requests") }
             try VNImageRequestHandler(cvPixelBuffer: pixels).perform([selected])
             return selected.results ?? []
         } catch is CancellationError { throw CancellationError() }
         catch {
             // Foreground can end between selecting a request and submitting
             // work. Retry the same pixels on CPU before caching any landmarks.
-            guard accelerated, !ContactPoseStudy.canAccelerate() else { throw error }
+            guard accelerated, !ContactPoseComputePolicy.canAccelerate() else { throw error }
             try Task.checkCancellation()
+            if VideoWorkExecution.lease?.isCancelled == true { throw CancellationError() }
             if profiling { profile("transition_retries"); profile("cpu_requests") }
             try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request])
             return request.results ?? []

@@ -38,13 +38,14 @@ nonisolated final class VideoWorkLease: @unchecked Sendable {
 nonisolated enum VideoWorkExecution {
     @TaskLocal static var lease: VideoWorkLease?
     /// Full image/Vision acceleration remains diagnostic. Normal video jobs
-    /// accelerate only the model and retain their existing image-work policy.
+    /// accelerate the model and body pose, retaining the CPU image-work policy.
     @TaskLocal static var foregroundAccelerationStudy = false
     @TaskLocal static var modelAccelerationStudy = false
-    /// Pin image/Vision work to CPU in both arms of an accuracy comparison,
-    /// including when iOS declines a background lease. Only the model may vary.
+    /// Pin image/default Vision work to CPU in accuracy comparisons, including
+    /// when iOS declines a background lease. Study flags opt specific work in.
     @TaskLocal static var accuracyComparison = false
-    static var isAnalysisStudy: Bool { accuracyComparison || foregroundAccelerationStudy || modelAccelerationStudy || ContactPoseStudy.enabled }
+    // Observing pose timings must not disable normal analysis/prediction reuse.
+    static var isAnalysisStudy: Bool { accuracyComparison || foregroundAccelerationStudy || modelAccelerationStudy || ContactPoseStudy.accelerationEnabled }
     static var cpuOnly: Bool { accuracyComparison || (!foregroundAccelerationStudy && lease?.cpuOnly == true) }
     /// A normal video job follows its foreground/background lease. Explicit
     /// CPU comparison runs retain the old backend unless the candidate is selected.
