@@ -9,7 +9,7 @@ struct SessionHistoryView: View {
         NavigationStack {
             SessionHistoryContent(store: store)
                 .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItem(placement: .topBarLeading) {
                         Button("Close history", systemImage: "xmark") { dismiss() }
                             .labelStyle(.iconOnly).accessibilityIdentifier("history-close")
                     }
@@ -130,8 +130,10 @@ struct SessionHistoryContent: View {
         .navigationTitle("History").navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink { VideoStorageView(store: store) } label: { Image(systemName: "internaldrive") }
-                    .accessibilityLabel("Storage").accessibilityIdentifier("history-storage")
+                NavigationLink { VideoStorageView(store: store) } label: {
+                    Text("Manage storage").font(.subheadline.weight(.semibold))
+                }
+                .accessibilityIdentifier("history-storage")
             }
         }
         .refreshable { player.syncPending(); await store.refresh() }
