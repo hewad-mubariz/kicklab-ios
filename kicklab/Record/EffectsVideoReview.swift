@@ -29,8 +29,12 @@ struct EffectsVideoReview: View {
             } else {
                 VStack(spacing: 20) {
                     Text(message)
-                    ProgressView(value: analyzer.progress)
-                    Text("\(analyzer.framesRead) frames · \(analyzer.detections) detections")
+                    if ProcessInfo.processInfo.arguments.contains("--pipeline-cost-benchmark") {
+                        ProgressView()
+                    } else {
+                        ProgressView(value: analyzer.progress)
+                        Text("\(analyzer.framesRead) frames · \(analyzer.detections) detections")
+                    }
                 }.padding(30)
             }
         }
@@ -44,6 +48,10 @@ struct EffectsVideoReview: View {
         let previousIdle = UIApplication.shared.isIdleTimerDisabled
         UIApplication.shared.isIdleTimerDisabled = true
         defer { UIApplication.shared.isIdleTimerDisabled = previousIdle }
+        if ProcessInfo.processInfo.arguments.contains("--pipeline-cost-benchmark") {
+            await ImportedVideoPipelineBenchmark().run(source: url) { message = $0 }
+            return
+        }
         if ProcessInfo.processInfo.arguments.contains("--ball-export-benchmark") {
             await BallSkinExportBenchmark().run(source: url) { message = $0 }
             return
