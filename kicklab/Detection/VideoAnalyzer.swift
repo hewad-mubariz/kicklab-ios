@@ -478,7 +478,7 @@ final class VideoAnalyzer: ObservableObject {
                     self.progress = fraction
                     self.status = "analysing…"
                 }
-                VideoWorkExecution.lease?.progress(min(0.95, fraction), subtitle: String(localized: "Analysing your video", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
+                VideoWorkExecution.lease?.progress(VideoWorkProgress.analysisFraction(fraction), subtitle: String(localized: "Analysing your video", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                 onProgress?(fraction)
                 publishSeconds += ProcessInfo.processInfo.systemUptime - publishStart
             }

@@ -3,6 +3,27 @@ import UIKit
 @testable import kicklab
 
 final class VideoBackgroundWorkTests: XCTestCase {
+    func testLongVideoReportsSubPercentWorkThroughEndOfAnalysis() throws {
+        // The analyzer publishes every 15 frames. Even a full-day 30fps
+        // source must advance its reported work at each such publication.
+        for frameCount in [102_196.0, 24 * 60 * 60 * 30.0] {
+            for fraction in [0.03, 0.5, 0.95, 0.999] {
+                let previous = try XCTUnwrap(VideoWorkProgress.units(for: VideoWorkProgress.analysisFraction(fraction)))
+                let next = try XCTUnwrap(VideoWorkProgress.units(for: VideoWorkProgress.analysisFraction(fraction + 15 / frameCount)))
+                XCTAssertGreaterThan(next, previous)
+            }
+        }
+        XCTAssertLessThan(try XCTUnwrap(VideoWorkProgress.units(for: VideoWorkProgress.analysisFraction(1))), VideoWorkProgress.totalUnits)
+    }
+
+    func testBackgroundProgressRejectsInvalidValuesAndReservesCompletion() {
+        XCTAssertNil(VideoWorkProgress.units(for: .nan))
+        XCTAssertNil(VideoWorkProgress.units(for: .infinity))
+        XCTAssertEqual(VideoWorkProgress.units(for: -1), 0)
+        XCTAssertEqual(VideoWorkProgress.units(for: 2), 990_000)
+        XCTAssertEqual(VideoWorkProgress.analysisFraction(1), 0.95)
+    }
+
     func testProductionPoseFollowsForegroundWithoutGrantingBackgroundGPU() {
         XCTAssertFalse(ContactPoseComputePolicy.canAccelerate(lease: nil))
         let lease = VideoWorkLease(allowed: true, cpuOnly: true, backgroundGPU: false)

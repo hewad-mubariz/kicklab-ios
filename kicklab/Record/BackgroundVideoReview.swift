@@ -52,8 +52,25 @@ private final class BackgroundVideoReviewModel: ObservableObject {
     private var startingThermalState = -1
     private let analyzer = VideoAnalyzer()
     private var previousProgress = 0.0
+    private var startedAt = ProcessInfo.processInfo.systemUptime
+    private var lastJournalAt = -Double.infinity
+    private var lastJournalPhase = ""
+    private var lastJournalBackground = false
+    private var peakMemoryMiB = 0.0
+    private var diagnosticLease: VideoWorkLease?
 
     func run() async {
+        startedAt = ProcessInfo.processInfo.systemUptime
+        let previousIdle = UIApplication.shared.isIdleTimerDisabled
+        let previousBatteryMonitoring = UIDevice.current.isBatteryMonitoringEnabled
+        if ProcessInfo.processInfo.arguments.contains("--background-video-journal") {
+            UIApplication.shared.isIdleTimerDisabled = true
+            UIDevice.current.isBatteryMonitoringEnabled = true
+        }
+        defer {
+            UIApplication.shared.isIdleTimerDisabled = previousIdle
+            UIDevice.current.isBatteryMonitoringEnabled = previousBatteryMonitoring
+        }
         let mode = SessionDesignReview.argument("--background-video-review") ?? "import"
         if mode == "capabilities" { record(progress: 0, phase: "Capabilities checked"); return }
         if mode == "photos" { status = "Ready"; return }
@@ -145,6 +162,7 @@ private final class BackgroundVideoReviewModel: ObservableObject {
     }
 
     private func importVideo(_ source: URL) async throws {
+        diagnosticLease = VideoWorkExecution.lease
         startedInBackground = UIApplication.shared.applicationState == .background
         startingThermalState = ProcessInfo.processInfo.thermalState.rawValue
         analyzer.analyse(url: source)
@@ -194,6 +212,9 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         case .restricted: refreshStatus = "restricted"
         @unknown default: refreshStatus = "unknown"
         }
+        let elapsed = ProcessInfo.processInfo.systemUptime - startedAt
+        let memory = DetectorPerformance.memoryMB()
+        peakMemoryMiB = max(peakMemoryMiB, memory)
         let value: [String: Any] = ["phase": phase, "progress": progress, "background": background,
             "backgroundUpdates": backgroundUpdates, "gpuSupported": gpuSupported,
             "backgroundCPUUpdates": backgroundCPUUpdates, "modelSwitches": modelSwitches,
@@ -214,12 +235,41 @@ private final class BackgroundVideoReviewModel: ObservableObject {
             "detectorInputEdge": RFDeviceProfile.current.rawValue,
             "artworkGPUAllowed": BallSkinMetalRenderer.isAllowed,
             "backgroundLeaseAllowed": VideoWorkExecution.lease?.canContinue ?? false,
-            "time": Date().timeIntervalSince1970, "performance": analyzer.performance]
+            "time": Date().timeIntervalSince1970, "elapsedSeconds": elapsed,
+            "memoryMiB": memory, "peakMemoryMiB": peakMemoryMiB,
+            "batteryLevel": UIDevice.current.batteryLevel,
+            "batteryState": UIDevice.current.batteryState.rawValue,
+            "isCooling": analyzer.isCooling,
+            "systemExpired": diagnosticLease?.expiredBySystem ?? false,
+            "reportedProgressUnits": diagnosticLease?.reportedProgressUnits ?? 0,
+            "totalProgressUnits": VideoWorkProgress.totalUnits,
+            "failureDiagnostic": analyzer.failureDiagnostic,
+            "sourceDuration": analyzer.processingInfo?.duration ?? 0,
+            "metrics": metrics, "performance": analyzer.performance]
         if let data = try? JSONSerialization.data(withJSONObject: value, options: .prettyPrinted) {
             try? data.write(to: URL.documentsDirectory.appendingPathComponent("background-video-review.json"), options: .atomic)
             if let name = SessionDesignReview.argument("--background-video-report"), !name.isEmpty, name.count <= 80,
                name.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-") }) {
                 try? data.write(to: URL.documentsDirectory.appendingPathComponent("background-\(name).json"), options: .atomic)
+                // Append bounded snapshots instead of rewriting a growing array.
+                // This leaves evidence if a long physical-device run is interrupted.
+                if ProcessInfo.processInfo.arguments.contains("--background-video-journal"),
+                   elapsed - lastJournalAt >= 5 || phase != lastJournalPhase || background != lastJournalBackground {
+                    let journal = URL.documentsDirectory.appendingPathComponent("background-\(name).jsonl")
+                    if !FileManager.default.fileExists(atPath: journal.path) {
+                        FileManager.default.createFile(atPath: journal.path, contents: nil)
+                    }
+                    if let handle = try? FileHandle(forWritingTo: journal) {
+                        defer { try? handle.close() }
+                        if let row = try? JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]) {
+                            _ = try? handle.seekToEnd()
+                            try? handle.write(contentsOf: row + Data([10]))
+                        }
+                    }
+                    lastJournalAt = elapsed
+                    lastJournalPhase = phase
+                    lastJournalBackground = background
+                }
             }
         }
     }

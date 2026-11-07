@@ -1,0 +1,181 @@
+{
+  "source": {
+    "path": "/Users/hewadmubariz/Downloads/videoplayback.mov",
+    "bytes": 798158352,
+    "duration_seconds": 3406.5197916666666,
+    "width": 1920,
+    "height": 1080,
+    "fps_nominal": 30,
+    "frames_expected": 102196,
+    "video_codec": "h264",
+    "audio_streams": 0,
+    "sha256": "8a54cb73a4ba903e1748b572818125046072cde3159ad6a6a167d56a9e391f5d",
+    "comparison_to_52_second_clip": {
+      "previous_bytes": 654557602,
+      "previous_counted_frames": 1549,
+      "byte_ratio": 1.2193859632234476,
+      "counted_frame_ratio": 65.97546804389928
+    }
+  },
+  "scope": "Full source through production VideoAnalyzer and VideoBackgroundWork, staged locally; no Photos transfer, replay save or effects export in this test.",
+  "phone": "iPhone 17 Pro Max, iOS 27.0.1",
+  "baseline": {
+    "build": 63,
+    "pipeline_commit": "cc72ec77",
+    "only_changes": "Diagnostic logging and UI test",
+    "status": "cancelled while backgrounded",
+    "final_file": "attempt-build63/current.json",
+    "frames": 3990,
+    "partial_touches": 245,
+    "elapsed_seconds": 192.16236866667168,
+    "background_entered_seconds": 124.86,
+    "estimated_background_seconds_before_failure": 67.3,
+    "peak_sampled_memory_mib": 235.0958023071289,
+    "background_gpu": false,
+    "detector_edge": 384,
+    "accuracy_validated": false
+  },
+  "retry": {
+    "build": 64,
+    "change": "Progress resolution 100 -> 1000000 units; analysis scales 0...1 to 0...0.95 instead of capping last 5%; no inference/counting/mask changes",
+    "status": "Stopped at user request after collecting the 15-minute sample",
+    "unit_tests": {
+      "suite": "VideoBackgroundWorkTests",
+      "passed": 14,
+      "failed": 0
+    },
+    "five_minute_background_and_return": "Passed: background CPU advanced for the planned five-minute interval, then foreground acceleration resumed; no system expiration recorded",
+    "sample": {
+      "elapsedSeconds": 897.5474162083119,
+      "analysisFrames": 9030,
+      "touches": 573,
+      "progress": 0.08834999307394308,
+      "peakMemoryMiB": 263.90850830078125,
+      "memoryMiB": 263.90850830078125,
+      "batteryLevel": 0.4000000059604645,
+      "thermalNow": 2,
+      "source_seconds_analyzed_approximately": 301.0,
+      "mask_payload_mib": 43.00837802886963,
+      "thermal_wait_s": 412.71812170546036,
+      "thermal_wait_fraction": 0.45982876698479913,
+      "metrics": {
+        "background_gpu": 0,
+        "contact_buffer_s": 10.075716292660218,
+        "contact_check_s": 0.008294250292237848,
+        "counter_s": 120.7469540014281,
+        "cpu_only": 1,
+        "decode_s": 6.391791373840533,
+        "detector_s": 307.302458169288,
+        "inference_s": 248.71393025119323,
+        "mask_mib": 43.00837802886963,
+        "model_acceleration_unavailable": 0,
+        "model_cpu_only": 0,
+        "model_cpu_requested": 0,
+        "model_reload_s": 0.3891949167009443,
+        "model_switches": 2,
+        "motion_s": 30.556693875114433,
+        "peak_memory_mib": 261.76786041259766,
+        "pose_accelerated_requests": 6476,
+        "pose_body_cache_hits": 2448,
+        "pose_body_ms": 916.2055418710224,
+        "pose_body_requests": 94,
+        "pose_cpu_requests": 1907,
+        "pose_diagnostic_cache_hits": 25,
+        "pose_feet_cache_hits": 2297,
+        "pose_feet_ms": 6622.536916984245,
+        "pose_feet_requests": 482,
+        "pose_ground_cache_hits": 10798,
+        "pose_ground_ms": 98933.5398733383,
+        "pose_ground_requests": 6985,
+        "pose_hands_cache_hits": 2222,
+        "pose_holding_cache_hits": 5660,
+        "pose_streak_hold_cache_hits": 266,
+        "pose_streak_hold_ms": 13344.541792059317,
+        "pose_streak_hold_requests": 822,
+        "pose_unique_frames": 8383,
+        "preprocess_s": 47.85884237557184,
+        "thermal_wait_s": 412.71812170546036
+      }
+    },
+    "last_snapshot_before_stop": {
+      "elapsedSeconds": 989.3172720416333,
+      "analysisFrames": 10065,
+      "touches": 642,
+      "progress": 0.09847763128241525,
+      "peakMemoryMiB": 268.37725830078125,
+      "systemExpired": false
+    },
+    "segments": {
+      "foreground_initial": {
+        "start_elapsed_s": 15.55269758333452,
+        "end_elapsed_s": 117.8971865416388,
+        "frames": 1380,
+        "wall_seconds": 102.34448895830428,
+        "frames_per_second": 13.483872107292653,
+        "processing_seconds_per_minute_of_30fps_video": 133.4928116847447,
+        "thermal_start": 1,
+        "thermal_end": 2
+      },
+      "background": {
+        "start_elapsed_s": 124.78109454165678,
+        "end_elapsed_s": 419.8912373749772,
+        "frames": 1965,
+        "wall_seconds": 295.1101428333204,
+        "frames_per_second": 6.658530883195842,
+        "processing_seconds_per_minute_of_30fps_video": 270.32990183204925,
+        "thermal_start": 2,
+        "thermal_end": 2
+      },
+      "foreground_after_return": {
+        "start_elapsed_s": 450.028636916657,
+        "end_elapsed_s": 897.5474162083119,
+        "frames": 5010,
+        "wall_seconds": 447.51877929165494,
+        "frames_per_second": 11.195060926672097,
+        "processing_seconds_per_minute_of_30fps_video": 160.78519016466643,
+        "thermal_start": 2,
+        "thermal_end": 2
+      }
+    },
+    "ui_test_status": "Interrupted by SIGINT at user request; full-duration XCTest was not completed and must not be reported as passed",
+    "actual_background_cpu_updates": 133,
+    "model_compute_switches": 2
+  },
+  "caveats": [
+    "Running while charging initially; thermal state changes during tests.",
+    "A cancellation does not establish its cause; coarse progress is a hypothesis under test.",
+    "Partial throughput extrapolations are not completed-video timings.",
+    "This does not validate the challenger's particular app or iOS version."
+  ],
+  "apple_progress_documentation": "https://developer.apple.com/documentation/backgroundtasks/bgcontinuedprocessingtask",
+  "status": "Complete as a bounded performance sample; full-video completion not tested",
+  "branch": "codex/1.2-background-notifications",
+  "limitations": [
+    "Full 56m47s completion, final save/replay, and counting accuracy remain unverified.",
+    "The diagnostic uses the production analyzer and background lease, but bypasses Photos selection/transfer and does not create a session or export.",
+    "Fresh inference was forced. Counting model, all-frame 30fps policy, contact logic and retained masks were unchanged.",
+    "Build 63 measured a cancellation with a visible Task failed Live Activity; no system reason was logged. Coarse progress is a plausible contributor, not independently proven as the sole cause.",
+    "Build 64 was already warm, reached serious thermal pressure, and was unplugged during the run. It is not a controlled speed comparison with build 63 or a cool-device maximum-throughput benchmark.",
+    "The diagnostic screen, accessibility polling and telemetry add some overhead; no no-instrumentation control was run.",
+    "Partial touch totals are model estimates, not verified labels or full-video totals.",
+    "The old 4 November test was a different build; its retrieved last state remains incomplete at 89,655 frames."
+  ],
+  "cleanup": {
+    "phone": "iPhone 17 only",
+    "normal_preview_build": "1.2.0 (64)",
+    "temporary_source": "Documents/long-video-20261108.mov replaced with a verified zero-byte placeholder to clear the 798158352-byte test copy",
+    "original_download": "unchanged",
+    "large_model_result_caches": "none produced by this partial analysis; unrelated caches and data left intact",
+    "phone_test_and_host_monitor": "stopped"
+  },
+  "evidence": {
+    "root": "artifacts/release120/long-video-20261108",
+    "baseline_journal": "attempt-build63/phone-journal.jsonl",
+    "retry_journal": "attempt-build64/phone-journal.jsonl",
+    "sample": "attempt-build64/sample-15-minutes.json",
+    "stopped_snapshot": "attempt-build64/stopped-snapshot.json",
+    "baseline_ui": "iphone17-full.xcresult",
+    "retry_ui_interrupted": "iphone17-full64.xcresult",
+    "unit_tests": "progress-unit64.xcresult"
+  }
+}

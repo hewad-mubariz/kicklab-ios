@@ -16,6 +16,48 @@ final class BackgroundCountingComparisonUITests: XCTestCase {
         try compare([("foreground-3", false), ("background-3", true)])
     }
 
+    /// Full 56m47s source, with a five-minute Home interval during analysis.
+    /// The staged file bypasses Photos transfer; the production analyzer,
+    /// background lease, frame policy and mask retention remain unchanged.
+    @MainActor
+    func testLongVideoCountingAcrossBackground() throws {
+        #if targetEnvironment(simulator)
+        throw XCTSkip("Continued processing requires a physical device")
+        #endif
+        executionTimeAllowance = 10_800
+        let app = XCUIApplication()
+        app.launchArguments = ["--background-video-review", "import",
+            "--background-video-source", "documents:long-video-20261108.mov",
+            "--background-video-report", "iphone17-long-20261108",
+            "--background-video-journal", "--analysis-ignore-cache", "--pose-profile"]
+        app.launch()
+        let status = app.staticTexts["background-video-status"]
+        XCTAssertTrue(status.waitForExistence(timeout: 30))
+        let backend = app.staticTexts["background-video-model-backend"]
+        let started = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Accelerated' OR label == 'CPU'"), object: backend)
+        XCTAssertEqual(XCTWaiter.wait(for: [started], timeout: 90), .completed)
+        XCTAssertEqual(app.staticTexts["background-video-allowed"].label, "Allowed")
+        for _ in 0..<4 { Thread.sleep(forTimeInterval: 30) }
+        XCTAssertEqual(status.label, "Importing")
+        XCUIDevice.shared.press(.home)
+        XCTAssertTrue(app.wait(for: .runningBackground, timeout: 10))
+        for _ in 0..<10 { Thread.sleep(forTimeInterval: 30) }
+        app.activate()
+        XCTAssertTrue(status.waitForExistence(timeout: 20))
+        let returned = XCTAttachment(screenshot: app.screenshot())
+        returned.name = "Long video after five minutes in background"
+        returned.lifetime = .keepAlways; add(returned)
+        XCTAssertFalse(status.label.hasPrefix("Failed"), status.label)
+        XCTAssertGreaterThan(Int(app.staticTexts["background-video-cpu-updates"].label) ?? 0, 0)
+        let done = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Done' OR label BEGINSWITH 'Failed'"), object: status)
+        XCTAssertEqual(XCTWaiter.wait(for: [done], timeout: 10_000), .completed)
+        XCTAssertEqual(status.label, "Done")
+        XCTAssertEqual(app.staticTexts["background-video-progress"].label, "1.0")
+        let completed = XCTAttachment(screenshot: app.screenshot())
+        completed.name = "Long video complete"
+        completed.lifetime = .keepAlways; add(completed)
+    }
+
     @MainActor
     private func compare(_ runs: [(String, Bool)]) throws {
         #if targetEnvironment(simulator)

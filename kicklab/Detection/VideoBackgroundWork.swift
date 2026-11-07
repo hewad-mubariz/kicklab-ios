@@ -3,6 +3,21 @@ import Combine
 import Foundation
 import UIKit
 
+/// Preserve real sub-percent progress for long videos. Whole percentages can
+/// leave iOS seeing no advancement for minutes while frames are being counted.
+nonisolated enum VideoWorkProgress {
+    static let totalUnits: Int64 = 1_000_000
+    static func units(for fraction: Double) -> Int64? {
+        guard fraction.isFinite else { return nil }
+        return Int64(min(0.99, max(0, fraction)) * Double(totalUnits))
+    }
+    static func analysisFraction(_ fraction: Double) -> Double {
+        // Reserve finalization time by scaling the whole interval. Capping at
+        // 95% would stop reporting during the final 5% of a long analysis.
+        min(1, max(0, fraction)) * 0.95
+    }
+}
+
 /// A lease belongs to one user-requested job, never to unrelated camera work.
 nonisolated final class VideoWorkLease: @unchecked Sendable {
     let cpuOnly: Bool
@@ -11,6 +26,13 @@ nonisolated final class VideoWorkLease: @unchecked Sendable {
     private var allowed: Bool
     private var cancelled = false
     private var foreground = true
+    #if DEBUG
+    private var systemExpired = false
+    private var reportedUnits: Int64 = 0
+    var expiredBySystem: Bool { lock.withLock { systemExpired } }
+    var reportedProgressUnits: Int64 { lock.withLock { reportedUnits } }
+    func didReportProgress(_ units: Int64) { lock.withLock { reportedUnits = units } }
+    #endif
     private var cancelWorker: (@Sendable () -> Void)?
     private let report: @Sendable (Double, String) -> Void
 
@@ -22,8 +44,13 @@ nonisolated final class VideoWorkLease: @unchecked Sendable {
     var isCancelled: Bool { lock.withLock { cancelled } }
     var isForeground: Bool { lock.withLock { foreground } }
     func setForeground(_ value: Bool) { lock.withLock { foreground = value } }
-    func expire() {
-        let action = lock.withLock { cancelled = true; allowed = false; return cancelWorker }
+    func expire(fromSystem: Bool = false) {
+        let action = lock.withLock {
+            #if DEBUG
+            systemExpired = systemExpired || fromSystem
+            #endif
+            cancelled = true; allowed = false; return cancelWorker
+        }
         action?()
     }
     func onExpiration(_ action: @escaping @Sendable () -> Void) {
@@ -223,9 +250,12 @@ final class VideoBackgroundWork: ObservableObject {
                         Task { @MainActor in
                             guard value.isFinite, var job = self.jobs[identifier], !job.lease.isCancelled,
                                   let task = job.task as? BGContinuedProcessingTask else { return }
-                            let completed = Int64(min(0.99, max(0, value)) * 100)
+                            guard let completed = VideoWorkProgress.units(for: value) else { return }
                             if completed > task.progress.completedUnitCount {
                                 task.progress.completedUnitCount = completed
+                                #if DEBUG
+                                job.lease.didReportProgress(completed)
+                                #endif
                             }
                             if job.subtitle != subtitle {
                                 job.subtitle = subtitle
@@ -234,8 +264,8 @@ final class VideoBackgroundWork: ObservableObject {
                             }
                         }
                     }
-                    task.progress.totalUnitCount = 100
-                    task.expirationHandler = { lease.expire() }
+                    task.progress.totalUnitCount = VideoWorkProgress.totalUnits
+                    task.expirationHandler = { lease.expire(fromSystem: true) }
                     self.jobs[identifier] = Job(task: task, lease: lease,
                         subtitle: String(localized: "Preparing your video", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                     pending.resolve(lease)
@@ -259,7 +289,7 @@ final class VideoBackgroundWork: ObservableObject {
             job.task.expirationHandler = nil
             if #available(iOS 26.0, *), success,
                let task = job.task as? BGContinuedProcessingTask {
-                task.progress.completedUnitCount = 100
+                task.progress.completedUnitCount = task.progress.totalUnitCount
             }
             job.task.setTaskCompleted(success: success)
         }
