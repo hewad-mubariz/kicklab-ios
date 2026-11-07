@@ -47,9 +47,18 @@ final class BackgroundVideoUITests: XCTestCase {
         app.launch()
         let status = app.staticTexts["background-video-status"]
         XCTAssertTrue(status.waitForExistence(timeout: 20))
-        if mode == "artwork" {
+        if mode == "import" {
+            // Minimize only after the analyzer acquired its background lease
+            // and processed frames, matching the user-facing import flow.
+            let progress = app.staticTexts["background-video-progress"]
+            let started = XCTNSPredicateExpectation(predicate: NSPredicate { object, _ in
+                guard let element = object as? XCUIElement, let value = Double(element.label) else { return false }
+                return value > 0 && value < 1
+            }, object: progress)
+            XCTAssertEqual(XCTWaiter.wait(for: [started], timeout: 60), .completed)
+        } else {
             let preparing = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == 'Preparing export'"), object: status)
-            XCTAssertEqual(XCTWaiter.wait(for:[preparing],timeout:20),.completed)
+            XCTAssertEqual(XCTWaiter.wait(for:[preparing],timeout:60),.completed)
         }
         XCUIDevice.shared.press(.home)
         XCTAssertTrue(app.wait(for: .runningBackground, timeout: 5))

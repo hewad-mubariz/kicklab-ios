@@ -143,6 +143,7 @@ private final class BackgroundVideoReviewModel: ObservableObject {
         let value: [String: Any] = ["phase": phase, "progress": progress, "background": background,
             "backgroundUpdates": backgroundUpdates, "gpuSupported": gpuSupported,
             "analysisFrames": analyzer.framesRead, "touches": analyzer.touchCount,
+            "analysisCanContinueInBackground": analyzer.canContinueInBackground,
             "artworkGPUAllowed": BallSkinMetalRenderer.isAllowed,
             "backgroundLeaseAllowed": VideoWorkExecution.lease?.canContinue ?? false,
             "time": Date().timeIntervalSince1970, "performance": analyzer.performance]
