@@ -83,9 +83,10 @@ final class MyStyleStore: ObservableObject {
         defaults?.removeObject(forKey: Self.key)
     }
 
-    /// The starting edit for a new session: My style if there is one, else the editor default.
+    /// New sessions play the original immediately unless the person saved a My style.
+    /// Ball-following preparation starts only when that saved or selected look needs it.
     func startingEdit(touchCount: Int) -> SessionEditState {
-        saved?.edit(touchCount: touchCount) ?? SessionEditState(style: .glowTrail, intensity: 0.85)
+        saved?.edit(touchCount: touchCount) ?? SessionEditState(style: .none, intensity: 0.85)
     }
 }
 

@@ -73,7 +73,7 @@ struct MyStyleTests {
         defer { defaults.removePersistentDomain(forName: suite) }
         let first = MyStyleStore(defaults: defaults)
         #expect(first.saved == nil)
-        #expect(first.startingEdit(touchCount: 20) == SessionEditState(style: .glowTrail, intensity: 0.85))
+        #expect(first.startingEdit(touchCount: 20) == SessionEditState(style: .none, intensity: 0.85))
         first.save(MyStyle(edit: styled()))
         let relaunched = MyStyleStore(defaults: defaults)
         #expect(relaunched.saved == MyStyle(edit: styled()))
