@@ -18,6 +18,8 @@ struct BackgroundVideoReview: View {
                 .accessibilityIdentifier("background-video-allowed")
             Text(model.finishedInBackground ? "Finished in background" : "Not finished in background")
                 .accessibilityIdentifier("background-video-completion")
+            Text(model.startedInBackground ? "Started in background" : "Started in foreground")
+                .accessibilityIdentifier("background-video-start-state")
             if SessionDesignReview.argument("--background-video-review") == "photos" {
                 Button("Saved video") { showSaved = true }.accessibilityIdentifier("review-saved-video")
                 if showSaved {
@@ -36,6 +38,8 @@ private final class BackgroundVideoReviewModel: ObservableObject {
     @Published var progress = 0.0
     @Published var canContinueInBackground = false
     @Published var finishedInBackground = false
+    @Published var startedInBackground = false
+    private var startingThermalState = -1
     private let analyzer = VideoAnalyzer()
     private var previousProgress = 0.0
 
@@ -65,6 +69,11 @@ private final class BackgroundVideoReviewModel: ObservableObject {
                 // Match RecordView: one outer lease covers import, analysis and
                 // completion handling, including the final diagnostic write.
                 try await VideoBackgroundWork.shared.run(title: "Importing test video") {
+                    if let seconds = SessionDesignReview.argument("--background-video-start-delay").flatMap(Double.init),
+                       seconds > 0, seconds <= 30 {
+                        await self.record(progress: 0, phase: "Ready to count")
+                        try await Task.sleep(for: .seconds(seconds))
+                    }
                     try await self.importVideo(source)
                 }
             } else {
@@ -125,6 +134,8 @@ private final class BackgroundVideoReviewModel: ObservableObject {
     }
 
     private func importVideo(_ source: URL) async throws {
+        startedInBackground = UIApplication.shared.applicationState == .background
+        startingThermalState = ProcessInfo.processInfo.thermalState.rawValue
         analyzer.analyse(url: source)
         while analyzer.isRunning {
             record(progress: analyzer.progress, phase: "Importing")
@@ -162,11 +173,20 @@ private final class BackgroundVideoReviewModel: ObservableObject {
             "analysisFrames": analyzer.framesRead, "touches": analyzer.touchCount,
             "analysisCanContinueInBackground": analyzer.canContinueInBackground,
             "finishedInBackground": finishedInBackground,
+            "startedInBackground": startedInBackground,
+            "thermalStart": startingThermalState,
+            "thermalNow": ProcessInfo.processInfo.thermalState.rawValue,
+            "hardware": RFDeviceProfile.hardwareIdentifier,
+            "detectorInputEdge": RFDeviceProfile.current.rawValue,
             "artworkGPUAllowed": BallSkinMetalRenderer.isAllowed,
             "backgroundLeaseAllowed": VideoWorkExecution.lease?.canContinue ?? false,
             "time": Date().timeIntervalSince1970, "performance": analyzer.performance]
         if let data = try? JSONSerialization.data(withJSONObject: value, options: .prettyPrinted) {
             try? data.write(to: URL.documentsDirectory.appendingPathComponent("background-video-review.json"), options: .atomic)
+            if let name = SessionDesignReview.argument("--background-video-report"), !name.isEmpty, name.count <= 80,
+               name.allSatisfy({ $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-") }) {
+                try? data.write(to: URL.documentsDirectory.appendingPathComponent("background-\(name).json"), options: .atomic)
+            }
         }
     }
 }

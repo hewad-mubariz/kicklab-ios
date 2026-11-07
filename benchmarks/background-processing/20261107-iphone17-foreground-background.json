@@ -1,0 +1,185 @@
+{
+  "date": "2026-11-07",
+  "version": "1.2.0",
+  "build": 49,
+  "branch": "codex/1.2-background-notifications",
+  "device": {
+    "model": "iPhone 17 Pro Max",
+    "hardware": "iPhone18,2",
+    "iOS": "27.0.1",
+    "osBuild": "24A446"
+  },
+  "source": {
+    "name": "IMG_9094 2.MOV (1080p30 H.264 derivative)",
+    "sha256": "a7a17eea0a8cf15424062a5058e73c2947b0fd7c57fad2dd1001b5963a7a67d4",
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "durationSeconds": 12.833333333333334,
+    "frames": 385
+  },
+  "detectorInputEdge": 384,
+  "protocol": {
+    "order": [
+      "foreground-1",
+      "background-1",
+      "background-2",
+      "foreground-2",
+      "foreground-3",
+      "background-3"
+    ],
+    "freshAnalysisEveryRun": true,
+    "initialPairing": "ABBA",
+    "followUp": "One extra foreground/background pair because the first foreground run differed substantially from its repeat.",
+    "startDelaySeconds": 10,
+    "backgroundHoldSeconds": 90,
+    "timing": "VideoAnalyzer elapsed_s only; excludes the test start delay and the remaining idle wait.",
+    "execution": "Same production analyzer and background lease used by the importer; local staged video, no PhotosPicker transfer."
+  },
+  "runs": [
+    {
+      "run": "foreground-1",
+      "analysisSeconds": 29.423188125016168,
+      "modelCPUOnly": false,
+      "startedInBackground": false,
+      "finishedInBackground": false,
+      "backgroundProgressUpdates": 0,
+      "frames": 385,
+      "touches": 29,
+      "gpuSupported": false,
+      "thermalStart": 0,
+      "thermalEnd": 0,
+      "thermalPeak": 0,
+      "thermalWaitSeconds": 0,
+      "modelLoadMilliseconds": 377.1455417154357,
+      "inferenceSeconds": 13.609869416395668
+    },
+    {
+      "run": "background-1",
+      "analysisSeconds": 32.07302208332112,
+      "modelCPUOnly": true,
+      "startedInBackground": true,
+      "finishedInBackground": true,
+      "backgroundProgressUpdates": 25,
+      "frames": 385,
+      "touches": 29,
+      "gpuSupported": false,
+      "thermalStart": 0,
+      "thermalEnd": 0,
+      "thermalPeak": 0,
+      "thermalWaitSeconds": 0,
+      "modelLoadMilliseconds": 270.10712499031797,
+      "inferenceSeconds": 14.938240833231248
+    },
+    {
+      "run": "background-2",
+      "analysisSeconds": 30.928261000022758,
+      "modelCPUOnly": true,
+      "startedInBackground": true,
+      "finishedInBackground": true,
+      "backgroundProgressUpdates": 25,
+      "frames": 385,
+      "touches": 29,
+      "gpuSupported": false,
+      "thermalStart": 0,
+      "thermalEnd": 0,
+      "thermalPeak": 0,
+      "thermalWaitSeconds": 0,
+      "modelLoadMilliseconds": 48.03104168968275,
+      "inferenceSeconds": 14.700440374435857
+    },
+    {
+      "run": "foreground-2",
+      "analysisSeconds": 22.034118958341423,
+      "modelCPUOnly": false,
+      "startedInBackground": false,
+      "finishedInBackground": false,
+      "backgroundProgressUpdates": 0,
+      "frames": 385,
+      "touches": 29,
+      "gpuSupported": false,
+      "thermalStart": 0,
+      "thermalEnd": 0,
+      "thermalPeak": 0,
+      "thermalWaitSeconds": 0,
+      "modelLoadMilliseconds": 55.52641669055447,
+      "inferenceSeconds": 6.724857917113695
+    },
+    {
+      "run": "foreground-3",
+      "analysisSeconds": 22.442304208292626,
+      "modelCPUOnly": false,
+      "startedInBackground": false,
+      "finishedInBackground": false,
+      "backgroundProgressUpdates": 0,
+      "frames": 385,
+      "touches": 29,
+      "gpuSupported": false,
+      "thermalStart": 0,
+      "thermalEnd": 0,
+      "thermalPeak": 0,
+      "thermalWaitSeconds": 0,
+      "modelLoadMilliseconds": 323.8751249737106,
+      "inferenceSeconds": 6.7575249574147165
+    },
+    {
+      "run": "background-3",
+      "analysisSeconds": 33.08368183329003,
+      "modelCPUOnly": true,
+      "startedInBackground": true,
+      "finishedInBackground": true,
+      "backgroundProgressUpdates": 25,
+      "frames": 385,
+      "touches": 29,
+      "gpuSupported": false,
+      "thermalStart": 0,
+      "thermalEnd": 0,
+      "thermalPeak": 0,
+      "thermalWaitSeconds": 0,
+      "modelLoadMilliseconds": 296.8917499529198,
+      "inferenceSeconds": 15.137327041244134
+    }
+  ],
+  "summary": {
+    "foregroundMeanSeconds": 24.633203763883404,
+    "backgroundMeanSeconds": 32.02832163887797,
+    "foregroundRangeSeconds": [
+      22.034118958341423,
+      29.423188125016168
+    ],
+    "backgroundRangeSeconds": [
+      30.928261000022758,
+      33.08368183329003
+    ],
+    "backgroundExtraSecondsMean": 7.395117874994565,
+    "backgroundExtraPercentMean": 30.020934125658094,
+    "laterForegroundMeanSeconds": 22.238211583317025,
+    "backgroundExtraSecondsVersusLaterForeground": 9.790110055560945,
+    "backgroundExtraPercentVersusLaterForeground": 44.02381917665279,
+    "allBackgroundRunsFinishedWhileMinimized": true,
+    "allCounts": 29,
+    "allFrames": 385,
+    "allThermalStatesNominal": true
+  },
+  "gpuAvailability": {
+    "runtimeSupported": false,
+    "signedAppEntitlement": true,
+    "provisioningEntitlement": true,
+    "foregroundModelConfiguration": "CPU and GPU allowed",
+    "backgroundModelConfiguration": "CPU only",
+    "imageWorkCPUInBothModes": true,
+    "deviceWidePermanentUnsupportedClaim": false,
+    "appleReference": "https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler/supportedresources",
+    "appleStaffClarification": "https://developer.apple.com/forums/thread/794072"
+  },
+  "limits": [
+    "One 12.83-second clip, three runs per state; not a universal slowdown percentage.",
+    "The first foreground run was slower than two later foreground runs. Startup/warmup effects are a plausible explanation, not separately instrumented proof.",
+    "Matching touch counts do not establish identical segmentation or exported visual quality.",
+    "No ball replacement/export performance comparison is included."
+  ],
+  "artifacts": [
+    "artifacts/release120/iphone17-comparison-02.xcresult",
+    "artifacts/release120/iphone17-comparison-warm-03.xcresult"
+  ]
+}
