@@ -74,6 +74,7 @@ final class PlayerStore: ObservableObject {
     @Published private(set) var personalBest = 0
     @Published private(set) var pendingCount = 0
     @Published private(set) var isSaving = false
+    @Published private(set) var isManagingLocalStorage = false
     @Published var errorMessage: String?
     private let service: (any PlayerDataService)?
     private let queue: JugglingResultQueue
@@ -326,6 +327,50 @@ final class PlayerStore: ObservableObject {
             if owner == userID { personalBest = max(personalBest, item.personalBestStreak) }
             return startSave(request)
         } catch { errorMessage = String(localized: "This session could not be saved to history. Your current replay is still available.", bundle: AppLanguage.bundle, locale: AppLanguage.locale); return nil }
+    }
+
+    @discardableResult
+    func removeLocalSession(_ item: HistorySession, keepResult: Bool = false) async -> Bool {
+        guard !isManagingLocalStorage, item.ownerID == userID else { return false }
+        isManagingLocalStorage = true
+        defer { isManagingLocalStorage = false }
+        let key = "\(item.ownerID?.uuidString ?? "guest")/\(item.id.uuidString)"
+        await saveTasks[key]?.value
+        guard item.ownerID == userID else { return false }
+        let removed = await history.removeLocalData(for: item, deleteSession: !keepResult)
+        if removed, !keepResult, item.ownerID == nil {
+            let best = history.items.map(\.personalBestStreak).max() ?? 0
+            JugglingRecords.restoreGuestBest(best, defaults: guestDefaults)
+            personalBest = best
+        }
+        return removed
+    }
+
+    func clearVideoStorageCache(benchmarks: Bool = false) async {
+        guard !isManagingLocalStorage else { return }
+        isManagingLocalStorage = true
+        defer { isManagingLocalStorage = false }
+        for task in Array(saveTasks.values) { await task.value }
+        await history.clearStorageCache(benchmarks: benchmarks)
+    }
+
+    /// Called only when the entire new-session editor closes, never when navigating
+    /// to its export screen. A retained original must be byte-identical before cleanup.
+    func releaseSessionImport(id: UUID, owner: UUID?) {
+        let task = saveTasks["\(owner?.uuidString ?? "guest")/\(id.uuidString)"], library = history.library
+        Task {
+            await task?.value
+            while !Task.isCancelled {
+                do {
+                    try await VideoStorageMaintenance.run {
+                        try await Task.detached(priority: .utility) { try library.cleanupRetainedImport(id: id, owner: owner) }.value
+                    }
+                    return
+                } catch VideoStorageMaintenance.Failure.busy {
+                    try? await Task.sleep(for: .seconds(1))
+                } catch { return } // The manual storage cleanup can retry an I/O failure.
+            }
+        }
     }
 
     private func startSave(_ request: SessionSaveRequest) -> Task<Void, Never> {

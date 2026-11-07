@@ -9,6 +9,8 @@ final class SessionHistoryStore: ObservableObject {
     @Published private(set) var hasMore = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var videoRevision = 0
+    @Published private(set) var isManagingStorage = false
+    @Published private(set) var storageMessage: String?
     private let service: (any PlayerDataService)?
     private let queue: JugglingResultQueue
     let library: SessionHistoryLibrary
@@ -31,16 +33,17 @@ final class SessionHistoryStore: ObservableObject {
     func reloadLocal() {
         guard ProtectedAccountData.isAvailable else { return }
         do {
+            try library.reconcileLocalRemovals(owner: ownerID)
             var saved = try library.sessions(owner: ownerID)
             // Keep a newly finished session visible while its disk write runs.
-            for item in items where item.syncState == .saving && !saved.contains(where: { $0.id == item.id }) {
+            for item in items where item.syncState == .saving && !library.isLocallyDeleted(id: item.id, owner: item.ownerID) && !saved.contains(where: { $0.id == item.id }) {
                 saved.append(item)
             }
             for request in try library.pendingRequests(owner: ownerID) {
                 immediateReplays[request.item.id] = request.videoURL
             }
             if let ownerID {
-                for pending in try queue.pending(for: ownerID) where !saved.contains(where: { $0.id == pending.id }) {
+                for pending in try queue.pending(for: ownerID) where !library.isLocallyDeleted(id: pending.id, owner: ownerID) && !saved.contains(where: { $0.id == pending.id }) {
                     saved.append(HistorySession(result: pending))
                 }
             }
@@ -54,14 +57,14 @@ final class SessionHistoryStore: ObservableObject {
     }
 
     func showImmediately(_ item: HistorySession, videoURL: URL) {
-        guard item.ownerID == ownerID else { return }
+        guard item.ownerID == ownerID, !library.isLocallyDeleted(id: item.id, owner: item.ownerID) else { return }
         immediateReplays[item.id] = videoURL
         var ready = item; ready.syncState = .saving
         didPersist(ready)
     }
 
     func didPersist(_ item: HistorySession) {
-        guard item.ownerID == ownerID else { return }
+        guard item.ownerID == ownerID, !library.isLocallyDeleted(id: item.id, owner: ownerID) else { return }
         if item.syncState != .synced, items.contains(where: { $0.id == item.id && $0.syncState == .synced }) { return }
         items.removeAll { $0.id == item.id }
         items.append(item)
@@ -69,7 +72,7 @@ final class SessionHistoryStore: ObservableObject {
     }
 
     func replayURL(for item: HistorySession) -> URL? {
-        guard item.ownerID == ownerID else { return nil }
+        guard item.ownerID == ownerID, !library.isLocallyDeleted(id: item.id, owner: ownerID) else { return nil }
         if let saved = library.videoURL(for: item) { return saved }
         guard let source = immediateReplays[item.id], FileManager.default.fileExists(atPath: source.path) else { return nil }
         return source
@@ -92,6 +95,7 @@ final class SessionHistoryStore: ObservableObject {
     }
 
     func markRejected(_ result: SavedJugglingResult) async throws {
+        guard !library.isLocallyDeleted(id: result.id, owner: result.ownerID) else { return }
         let library = library
         let saved = try await Task.detached(priority: .utility) {
             var saved = try library.session(id: result.id, owner: result.ownerID) ?? HistorySession(result: result)
@@ -103,6 +107,7 @@ final class SessionHistoryStore: ObservableObject {
     }
 
     func markSynced(_ result: SavedJugglingResult) async throws {
+        guard !library.isLocallyDeleted(id: result.id, owner: result.ownerID) else { return }
         // Never replace a known moderation decision with a submission receipt.
         let library = library
         let saved = try await Task.detached(priority: .utility) {
@@ -124,10 +129,52 @@ final class SessionHistoryStore: ObservableObject {
         }
     }
 
+    @discardableResult
+    func removeLocalData(for item: HistorySession, deleteSession: Bool) async -> Bool {
+        guard ownerID == item.ownerID, !isManagingStorage else { return false }
+        isManagingStorage = true; errorMessage = nil; storageMessage = nil
+        defer { isManagingStorage = false }
+        do {
+            await analysisSaves[item.id]?.value
+            try await VideoStorageMaintenance.run {
+                guard self.ownerID == item.ownerID else { throw CancellationError() }
+                try await VideoStorageMaintenance.releaseCachedResults()
+                let library = self.library, files = VideoStorageFiles(library: self.library)
+                let source = self.replayURL(for: item)
+                try await Task.detached(priority: .utility) {
+                    if let source { try files.removeTemporaryCopies(of: source) }
+                    try files.clearSharedVideoCaches()
+                    if deleteSession { try library.removeLocalSession(item) }
+                    else { try library.removeVideo(for: item) }
+                }.value
+                self.immediateReplays[item.id] = nil
+                self.videoRevision += 1
+                self.items.removeAll { deleteSession && $0.id == item.id }
+                self.reloadLocal()
+            }
+            return true
+        } catch { errorMessage = error.localizedDescription; return false }
+    }
+
+    func clearStorageCache(benchmarks: Bool = false) async {
+        guard !isManagingStorage else { return }
+        isManagingStorage = true; errorMessage = nil; storageMessage = nil
+        defer { isManagingStorage = false }
+        do {
+            for task in Array(analysisSaves.values) { await task.value }
+            try await VideoStorageMaintenance.run {
+                try await VideoStorageMaintenance.releaseCachedResults()
+                let files = VideoStorageFiles(library: self.library)
+                try await Task.detached(priority: .utility) {
+                    if benchmarks { try files.clearBenchmarks() } else { try files.clearCaches() }
+                }.value
+            }
+            storageMessage = String(localized: "Storage cleared. Saved sessions are still available.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        } catch { errorMessage = error.localizedDescription }
+    }
+
     func removeVideo(for item: HistorySession) {
-        guard ownerID == item.ownerID else { return }
-        do { try library.removeVideo(for: item); videoRevision += 1 }
-        catch { errorMessage = String(localized: "The replay could not be removed. Try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
+        Task { await removeLocalData(for: item, deleteSession: false) }
     }
 
     func saveReplayEdit(_ edit: HistoryReplayEdit, id: UUID, owner: UUID?) {
@@ -190,6 +237,7 @@ final class SessionHistoryStore: ObservableObject {
             try await ProtectedAccountData.waitUntilAvailable()
             guard current == generation, !Task.isCancelled else { return }
             for var item in page.items {
+                if library.isLocallyDeleted(id: item.id, owner: owner) { continue }
                 let local = try library.session(id: item.id, owner: owner)
                 item.rankedProposal = item.rankedProposal ?? local?.rankedProposal
                 item.touchReview = local?.touchReview

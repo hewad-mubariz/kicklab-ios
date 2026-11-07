@@ -1,0 +1,65 @@
+{
+  "date": "2026-11-07",
+  "version": "1.2.0",
+  "build": 57,
+  "branch": "codex/1.2-background-notifications",
+  "installed_bundle": "com.juggledude.release120.preview",
+  "status": "Installed and normal UI restored on iPhone 11 Pro Max and iPhone 17 Pro Max.",
+  "user_controls": [
+    "History > session details > On this phone shows local file size.",
+    "Remove replay from this phone removes replay, edit/analysis/spin sidecars, matching temporary import copies and shared rebuildable video caches; keeps the result.",
+    "Delete session from this phone additionally removes its local history row and sidecars. A durable local marker prevents cloud refresh, queued results or late saves from recreating the local session.",
+    "Settings > Storage, also accessible from the History toolbar, shows saved-session and cached-file sizes with confirmed Clear cache.",
+    "Debug builds expose a separate, confirmed removal of known benchmark-file namespaces."
+  ],
+  "cleanup": [
+    "Cache clearing removes Library/Caches files, history analysis/spin caches, temporary exports, and temporary import copies proven byte-identical to retained originals. Keeps saved videos, compact counting records, edits, preferences and unsaved/unmatched sources.",
+    "New retained originals record their owned temporary source. Closing the session editor schedules byte-verified cleanup after saving and active video readers finish.",
+    "Atomic reader/maintenance admission prevents processing and cleanup from overlapping across actor boundaries. Cached in-memory results are released before deleting their files.",
+    "Session deletion waits for the video-copy task and analysis writes. Local deletion and replay-removal markers reject late copy/editor commits. Interrupted local deletion is reconciled on history reload.",
+    "File enumeration does not follow symlinks. Temporary-import deletion is limited to app-generated UUID movie names in the owned temporary directory."
+  ],
+  "scope": [
+    "Local device storage only; Photos and account/leaderboard results are preserved.",
+    "Other saved session videos and edits survive cache clearing; processing data may need rebuilding.",
+    "Deleting a session also clears shared transient video-processing caches; retained analyses of other sessions remain available.",
+    "No real user session was intentionally deleted by this task. UI tests use a separate library, cache root and guest-defaults suite."
+  ],
+  "validation": {
+    "debug_build": "artifacts/release120/storage-build57-ui-final.log",
+    "release_build": "artifacts/release120/storage-release-57.log",
+    "release_notes": "Compile-only unsigned Release build; only the separate Debug preview was installed.",
+    "unit_and_integration": {
+      "device": "iPhone 11 Pro Max",
+      "tests": 56,
+      "failures": 0,
+      "artifact": "artifacts/release120/storage-complete-unit-57.xcresult",
+      "suites": [
+        "VideoStorageTests (11)",
+        "SessionHistoryTests (19)",
+        "HistoryReplayEditorTests (14)",
+        "VideoBackgroundWorkTests (12)"
+      ]
+    },
+    "ui": {
+      "device": "iPhone 17 Pro Max",
+      "tests": 1,
+      "failures": 0,
+      "artifact": "artifacts/release120/storage-ui-iphone17-57-final.xcresult",
+      "coverage": [
+        "Cancel deletion retains session",
+        "Confirmed deletion removes isolated replay/session",
+        "Other sessions remain",
+        "Deletion persists across process relaunch",
+        "Storage cache confirmation clears isolated cache",
+        "Saved sessions remain accessible afterward"
+      ]
+    },
+    "iphone11_ui": "Runner failed before test steps: timed out enabling Apple UI automation mode. No successful iPhone 11 UI result is claimed.",
+    "initial_ui_repairs": [
+      "Changed destructive confirmations to alerts with explicit Cancel buttons after iOS 27 rendered confirmationDialog as a popover without a Cancel action.",
+      "Scoped the UI test selector to the first cache-confirmation alert button to handle duplicated UIKit accessibility wrappers."
+    ],
+    "screenshots": "artifacts/release120/storage-ui-iphone17-final-attachments"
+  }
+}

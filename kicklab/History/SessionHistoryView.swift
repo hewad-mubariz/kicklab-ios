@@ -128,6 +128,12 @@ struct SessionHistoryContent: View {
         .background(TrainingHomeStyle.background(scheme))
         .foregroundStyle(TrainingHomeStyle.ink(scheme))
         .navigationTitle("History").navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink { VideoStorageView(store: store) } label: { Image(systemName: "internaldrive") }
+                    .accessibilityLabel("Storage").accessibilityIdentifier("history-storage")
+            }
+        }
         .refreshable { player.syncPending(); await store.refresh() }
         .task(id: store.ownerID) { await store.refresh() }
         .accessibilityIdentifier("session-history")
@@ -193,6 +199,9 @@ private struct SessionHistoryDetail: View {
     @State private var showsEditor = false
     @State private var editAfterReplay = false
     @State private var confirmsRemoval = false
+    @State private var confirmsSessionDeletion = false
+    @State private var localBytes: Int64?
+    @Environment(\.dismiss) private var dismiss
     private var item: HistorySession? { store.items.first { $0.id == id } }
 
     var body: some View {
@@ -253,11 +262,21 @@ private struct SessionHistoryDetail: View {
                             .font(.footnote).foregroundStyle(TrainingHomeStyle.muted(scheme))
                             .accessibilityIdentifier("history-streak-visibility-notice")
                     }
+                    if let localBytes {
+                        LabeledContent("On this phone", value: ByteCountFormatter.string(fromByteCount: localBytes, countStyle: .file))
+                            .font(.subheadline).accessibilityIdentifier("history-storage-size")
+                    }
                     if store.library.videoURL(for: item) != nil {
                         Button("Remove replay from this phone", role: .destructive) { confirmsRemoval = true }
                             .font(.subheadline).frame(minHeight: 44)
                             .accessibilityIdentifier("history-remove-replay")
+                            .disabled(store.isManagingStorage || player.isManagingLocalStorage)
                     }
+                    Button("Delete session from this phone", role: .destructive) { confirmsSessionDeletion = true }
+                        .frame(minHeight: 44).accessibilityIdentifier("history-delete-session")
+                        .disabled(store.isManagingStorage || player.isManagingLocalStorage)
+                    if store.isManagingStorage || player.isManagingLocalStorage { ProgressView("Removing local files…") }
+                    if let error = store.errorMessage { Text(error).font(.footnote).foregroundStyle(.red) }
                 }
                 .frame(maxWidth: 560).padding(20).frame(maxWidth: .infinity)
                 .sheet(isPresented: $showsReplay, onDismiss: {
@@ -273,15 +292,32 @@ private struct SessionHistoryDetail: View {
                     }
                 }
                 .confirmationDialog("Remove this replay?", isPresented: $confirmsRemoval, titleVisibility: .visible) {
-                    Button("Remove replay", role: .destructive) { store.removeVideo(for: item) }
+                    Button("Remove replay", role: .destructive) { Task { await player.removeLocalSession(item, keepResult: true) } }
                 } message: {
-                    Text("The video will be removed from this app. Your session result and any copy in Photos will stay.")
+                    Text("The replay, its edits and cached processing data will be removed from this app. Your session result and any copy in Photos will stay.")
+                }
+                .alert("Delete this session from your phone?", isPresented: $confirmsSessionDeletion) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Delete session", role: .destructive) {
+                        Task { if await player.removeLocalSession(item) { dismiss() } }
+                    }
+                } message: {
+                    Text("Removes this session from this phone, including its replay, edits and processing data. This cannot be undone. Photos and results already saved to your account stay.")
                 }
             }
         }
         .background(TrainingHomeStyle.background(scheme))
         .foregroundStyle(TrainingHomeStyle.ink(scheme))
         .navigationTitle("Session details").navigationBarTitleDisplayMode(.inline)
+        .task(id: store.videoRevision) {
+            guard let item else { return }
+            let files = VideoStorageFiles(library: store.library)
+            let folder = store.library.root.appendingPathComponent(item.ownerID?.uuidString ?? "guest")
+            localBytes = try? await Task.detached(priority: .utility) {
+                try files.files(in: folder).filter { $0.lastPathComponent.hasPrefix(item.id.uuidString + ".") }
+                    .reduce(Int64(0)) { $0 + Int64((try? $1.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0) }
+            }.value
+        }
         .accessibilityIdentifier("history-detail")
     }
 

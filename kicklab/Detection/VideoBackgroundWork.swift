@@ -101,6 +101,8 @@ final class VideoBackgroundWork: ObservableObject {
     // Keep that path disabled until it is tested on compatible hardware.
     private static let backgroundGPUEnabled = false
     @Published var interruptedMessage: String?
+    @Published private(set) var activeOperations = 0
+    var isWorking: Bool { activeOperations > 0 }
     private let journal = VideoJobJournal(defaults: .standard)
     private var foregroundJobs = 0
     private var previousIdleTimerDisabled = false
@@ -127,6 +129,11 @@ final class VideoBackgroundWork: ObservableObject {
     func run<T: Sendable>(title: String, requiresGPU: Bool = false,
                          operation: @escaping @Sendable () async throws -> T) async throws -> T {
         if VideoWorkExecution.lease != nil { return try await operation() }
+        guard !VideoStorageMaintenance.isActive else { throw VideoStorageMaintenance.Failure.busy }
+        let storageAccess = try VideoStorageAccess.beginRead()
+        defer { storageAccess.release() }
+        activeOperations += 1
+        defer { activeOperations -= 1 }
         // Continued-processing identifiers must start with the submitting app's
         // bundle ID, including separate preview and debug installations.
         let identifier = Self.identifierPrefix + UUID().uuidString

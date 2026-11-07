@@ -7,8 +7,16 @@ import CoreMedia
 actor EffectPreviewCache {
     static let shared = EffectPreviewCache()
     private var pending: [URL: Task<URL, Error>] = [:]
+    private var running = Set<URL>()
+
+    func releaseCachedResults() throws {
+        guard running.isEmpty else { throw VideoStorageMaintenance.Failure.busy }
+        pending.removeAll()
+    }
 
     func preparedURL(for source: URL) async throws -> URL {
+        let storageAccess = try VideoStorageAccess.beginRead()
+        defer { storageAccess.release() }
         if let task = pending[source] { return try await task.value }
         let asset = AVURLAsset(url: source)
         guard let track = try await asset.loadTracks(withMediaType: .video).first else { return source }
@@ -22,6 +30,8 @@ actor EffectPreviewCache {
             try await BallStyleBurnIn.render(source: source, track: [], style: .none, intensity: 0, shortEdge: 1080)
         }
         pending[source] = task
+        running.insert(source)
+        defer { running.remove(source) }
         do { return try await task.value }
         catch { pending[source] = nil; throw error }
     }

@@ -189,6 +189,8 @@ extension SessionHistoryLibrary {
     }
 
     nonisolated func saveReplayAnalysis(_ value: HistoryReplayAnalysis, for item: HistorySession) throws {
+        let storageAccess = try VideoStorageAccess.beginRead()
+        defer { storageAccess.release() }
         guard value.isValid else { throw CocoaError(.coderInvalidValue) }
         let encoder = PropertyListEncoder(); encoder.outputFormat = .binary
         let data = try encoder.encode(value)
@@ -207,6 +209,8 @@ extension SessionHistoryLibrary {
     }
 
     nonisolated func saveReplayMotion(_ value: BallSurfaceTimeline, for item: HistorySession, key: String) throws {
+        let storageAccess = try VideoStorageAccess.beginRead()
+        defer { storageAccess.release() }
         let stored = StoredSurfaceTimeline(value)
         guard stored.isValid else { throw CocoaError(.coderInvalidValue) }
         try writeEditor(HistoryReplayMotion(key: key, timeline: stored),
@@ -236,7 +240,9 @@ extension SessionHistoryLibrary {
         try AccountDataGuard.write(owner: owner, root: root.deletingLastPathComponent()) {
             let id = String(url.lastPathComponent.prefix(36))
             let marker = url.deletingLastPathComponent().appendingPathComponent(id + ".editor-removed")
-            guard !FileManager.default.fileExists(atPath: marker.path) else { throw CancellationError() }
+            let deleted = url.deletingLastPathComponent().appendingPathComponent(id + ".session-removed")
+            guard !FileManager.default.fileExists(atPath: marker.path),
+                  !FileManager.default.fileExists(atPath: deleted.path) else { throw CancellationError() }
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
             try data.write(to: url, options: [.atomic, .completeFileProtection])
             var excluded = url

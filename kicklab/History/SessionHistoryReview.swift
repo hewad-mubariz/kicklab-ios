@@ -9,7 +9,8 @@ enum SessionHistoryReview {
         let root = URL.cachesDirectory.appendingPathComponent("SessionHistoryUIReview", isDirectory: true)
         if mode != "keep" { try? FileManager.default.removeItem(at: root) }
         let delay = min(60, max(0, Double(SessionDesignReview.argument("--history-save-delay") ?? "0") ?? 0))
-        let player = PlayerStore(service: nil, queue: .init(root: root), archiveVideo: { source, item, library in
+        let player = PlayerStore(service: nil, queue: .init(root: root),
+            guestDefaults: UserDefaults(suiteName: "SessionHistoryUIReview")!, archiveVideo: { source, item, library in
             if delay > 0 { try await Task.sleep(for: .seconds(delay)) }
             try await library.retainVideo(source, for: item)
         })
@@ -26,12 +27,12 @@ enum SessionHistoryReview {
                 if index == 0, let path = SessionDesignReview.argument("--history-review-video") {
                     if editable {
                         let summary = SessionSummary.make(touches: 2, duration: 1.5, bestCombo: 2, personalBest: 2,
-                            videoURL: URL(fileURLWithPath: path),
+                            videoURL: SessionDesignReview.fileURL(path),
                             touchesMarked: [.init(index: 1, time: 0.3, x: 0.5, y: 0.5), .init(index: 2, time: 1, x: 0.5, y: 0.5)], track: [])
                         try? player.history.library.saveReplayData(.init(summary: summary), for: item)
                         try? player.history.library.saveReplayEdit(.init(edit: .init(style: .none, intensity: 0), overlays: .init()), id: item.id, owner: nil)
                     }
-                    Task { await player.history.retainVideo(URL(fileURLWithPath: path), for: item) }
+                    Task { await player.history.retainVideo(SessionDesignReview.fileURL(path), for: item) }
                 }
             }
         }
@@ -40,11 +41,16 @@ enum SessionHistoryReview {
             Task {
                 for (index, source) in [SavedJugglingResult.Source.recording, .gallery].enumerated() {
                     let copy = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".mp4")
-                    try? FileManager.default.copyItem(at: URL(fileURLWithPath: path), to: copy)
+                    try? FileManager.default.copyItem(at: SessionDesignReview.fileURL(path), to: copy)
                     _ = try? await shots.add(video: copy, id: UUID(), owner: nil, source: source,
                                              completedAt: Date().addingTimeInterval(-Double(index) * 86400))
                 }
             }
+        }
+        if ProcessInfo.processInfo.arguments.contains("--storage-review-cache") {
+            let cache = VideoStorageFiles(library: player.history.library).cacheRoot
+            try? FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
+            try? Data(repeating: 1, count: 128 * 1024).write(to: cache.appendingPathComponent("fixture.bin"))
         }
         return player
     }

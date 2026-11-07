@@ -4,6 +4,7 @@ import UIKit
 
 struct TrainingHomeSettings: View {
     @Binding var appearance: String
+    @EnvironmentObject private var player: PlayerStore
     @ObservedObject private var analytics = ProductAnalytics.shared
     @ObservedObject private var updates = AppUpdateNotice.shared
     @ObservedObject private var adMeasurement = MetaAdsMeasurement.shared
@@ -29,6 +30,9 @@ struct TrainingHomeSettings: View {
                     LabeledContent("Language", value: AppLanguage.name(AppLanguage.current))
                 }
                 .accessibilityIdentifier("settings-language")
+                NavigationLink { VideoStorageView(store: player.history) } label: {
+                    Label("Storage", systemImage: "internaldrive")
+                }.accessibilityIdentifier("settings-storage")
                 NavigationLink { NotificationSettingsView() } label: {
                     Label("Notifications", systemImage: "bell")
                 }.accessibilityIdentifier("settings-notifications")

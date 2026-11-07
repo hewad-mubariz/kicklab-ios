@@ -234,6 +234,7 @@ struct RecordView: View {
             PostSessionFlowView(
                 summary: summary,
                 onFinished: {
+                    player.releaseSessionImport(id: resultID, owner: sessionOwner)
                     sessionSummary = nil
                     camera.clearRecording()
                     dismiss()
@@ -295,6 +296,7 @@ struct RecordView: View {
     #endif
 
     private func recordAnother() {
+        player.releaseSessionImport(id: resultID, owner: sessionOwner)
         sessionSummary = nil
         sessionNotice = nil
         camera.clearRecording()

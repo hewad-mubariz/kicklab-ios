@@ -30,6 +30,8 @@ final class SessionEffectsPreparation: ObservableObject {
     }
 
     private func prepare(_ summary: SessionSummary, dense: Bool, everyFrame: Bool = false) async throws -> SessionSummary {
+        let storageAccess = try VideoStorageAccess.beginRead()
+        defer { storageAccess.release() }
         if source != summary.videoURL { cancel(); prepared = nil; source = summary.videoURL }
         if let prepared, prepared.videoURL == summary.videoURL,
            covers(prepared, dense: dense, everyFrame: everyFrame) { return prepared }

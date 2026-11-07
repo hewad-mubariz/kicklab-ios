@@ -198,8 +198,12 @@ nonisolated struct BallSurfaceTimeline: Sendable {
     }
 
     static func prepare(source: URL, track: BallEffectTrack, history: HistoryReplayContext? = nil) async throws -> Self {
-        try await BallSurfaceMotionCache.shared.prepare(source:source,track:track,history:history)
+        let storageAccess = try VideoStorageAccess.beginRead()
+        defer { storageAccess.release() }
+        return try await BallSurfaceMotionCache.shared.prepare(source:source,track:track,history:history)
     }
+
+    static func releaseCachedResults() async throws { try await BallSurfaceMotionCache.shared.releaseCachedResults() }
 
     #if DEBUG
     /// Independent rotation measurement for paired pipeline reviews.
@@ -304,6 +308,10 @@ private actor BallSurfaceMotionCache {
     private var completed: [(String,BallSurfaceTimeline)] = []
     private var pending: [String:Task<BallSurfaceTimeline,Error>] = [:]
     private var tail: Task<BallSurfaceTimeline,Error>?
+    func releaseCachedResults() throws {
+        guard pending.isEmpty else { throw VideoStorageMaintenance.Failure.busy }
+        completed.removeAll(); tail = nil
+    }
 
     func prepare(source: URL,track: BallEffectTrack, history: HistoryReplayContext?) async throws -> BallSurfaceTimeline {
         let requestedAt = ProcessInfo.processInfo.systemUptime

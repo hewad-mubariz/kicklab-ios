@@ -76,6 +76,45 @@ final class SessionHistoryUITests: XCTestCase {
         XCTAssertTrue(restored.staticTexts["128"].exists)
     }
 
+    @MainActor
+    func testDeleteSessionRequiresConfirmationAndPersistsWithoutRemovingOtherSessions() {
+        #if targetEnvironment(simulator)
+        let app = open("filled", appearance: "dark")
+        #else
+        let app = open("filled", appearance: "dark", arguments: ["--history-review-video", "documents:background-input.mov"])
+        #endif
+        let removed = "history-session-00000000-0000-0000-0000-000000000001"
+        let kept = "history-session-00000000-0000-0000-0000-000000000002"
+        app.buttons[removed].tap()
+        let delete = app.buttons["history-delete-session"]
+        for _ in 0..<5 where !delete.isHittable { app.swipeUp() }
+        XCTAssertTrue(delete.isHittable)
+        delete.tap()
+        XCTAssertTrue(app.buttons["Delete session"].waitForExistence(timeout: 3))
+        app.buttons["Cancel"].tap()
+        XCTAssertTrue(app.staticTexts["128"].exists)
+        delete.tap(); app.buttons["Delete session"].tap()
+        XCTAssertTrue(app.buttons[kept].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons[removed].exists)
+        attach(app, "History after local session deletion")
+        app.terminate()
+        let reopened = open("keep", appearance: "light", arguments: ["--storage-review-cache"])
+        XCTAssertFalse(reopened.buttons[removed].exists)
+        XCTAssertTrue(reopened.buttons[kept].waitForExistence(timeout: 5))
+        reopened.buttons["history-storage"].tap()
+        XCTAssertTrue(reopened.buttons["storage-manage-sessions"].waitForExistence(timeout: 5))
+        attach(reopened, "Storage management — light")
+        let clear = reopened.buttons["storage-clear-cache"]
+        XCTAssertTrue(clear.waitForExistence(timeout: 5))
+        for _ in 0..<20 where !clear.isEnabled { Thread.sleep(forTimeInterval: 0.2) }
+        XCTAssertTrue(clear.isEnabled)
+        clear.tap(); reopened.alerts.buttons.matching(identifier: "storage-confirm-clear").firstMatch.tap()
+        XCTAssertTrue(reopened.staticTexts["storage-success"].waitForExistence(timeout: 10))
+        XCTAssertFalse(clear.isEnabled)
+        reopened.buttons["storage-manage-sessions"].tap()
+        XCTAssertTrue(reopened.buttons[kept].waitForExistence(timeout: 5))
+    }
+
     @MainActor private func attach(_ app: XCUIApplication, _ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)

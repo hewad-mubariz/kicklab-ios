@@ -19,6 +19,10 @@ actor SessionAnalysisStore {
     private(set) var memoryHits = 0
     private(set) var diskHits = 0
     private static let byteLimit = 128 * 1024 * 1024
+    func releaseCachedResults() throws {
+        guard pending.isEmpty else { throw VideoStorageMaintenance.Failure.busy }
+        last = nil
+    }
     nonisolated static let retainedMaskLimit = 128 * 1024 * 1024
 
     nonisolated static func canStore(_ frames: [RecordedFrame]) -> Bool {

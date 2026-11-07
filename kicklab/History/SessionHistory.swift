@@ -155,6 +155,7 @@ nonisolated struct SessionHistoryLibrary: Sendable {
     }
     func saveRequest(_ request: SessionSaveRequest) throws {
         try AccountDataGuard.write(owner: request.item.ownerID, root: root.deletingLastPathComponent()) {
+            try requireLocalSession(id: request.item.id, owner: request.item.ownerID)
             try FileManager.default.createDirectory(at: folder(request.item.ownerID), withIntermediateDirectories: true)
             try JSONEncoder().encode(request).write(to: requestPath(request.item), options: [.atomic, .completeFileProtection])
         }
@@ -171,15 +172,17 @@ nonisolated struct SessionHistoryLibrary: Sendable {
                 let data = try Data(contentsOf: file)
                 return try? JSONDecoder().decode(SessionSaveRequest.self, from: data)
             }
-            .filter { $0.item.ownerID == owner }
+            .filter { $0.item.ownerID == owner && !isLocallyDeleted(id: $0.item.id, owner: owner) }
     }
     func session(id: UUID, owner: UUID?) throws -> HistorySession? {
+        guard !isLocallyDeleted(id: id, owner: owner) else { return nil }
         let url = folder(owner).appendingPathComponent(id.uuidString + ".json")
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
         return try JSONDecoder().decode(HistorySession.self, from: Data(contentsOf: url))
     }
     func save(_ item: HistorySession) throws {
         try AccountDataGuard.write(owner: item.ownerID, root: root.deletingLastPathComponent()) {
+            try requireLocalSession(id: item.id, owner: item.ownerID)
             try FileManager.default.createDirectory(at: folder(item.ownerID), withIntermediateDirectories: true)
             try JSONEncoder().encode(item).write(to: folder(item.ownerID).appendingPathComponent(item.id.uuidString + ".json"),
                 options: [.atomic, .completeFileProtection])
@@ -194,22 +197,27 @@ nonisolated struct SessionHistoryLibrary: Sendable {
                 let data = try Data(contentsOf: file)
                 return try? JSONDecoder().decode(HistorySession.self, from: data)
             }
-            .filter { $0.ownerID == owner }
+            .filter { $0.ownerID == owner && !isLocallyDeleted(id: $0.id, owner: owner) }
             .sorted { $0.completedAt == $1.completedAt ? $0.id.uuidString > $1.id.uuidString : $0.completedAt > $1.completedAt }
     }
     func videoURL(for item: HistorySession) -> URL? {
+        guard !isLocallyDeleted(id: item.id, owner: item.ownerID) else { return nil }
         let url = videoPath(item)
         return FileManager.default.fileExists(atPath: url.path) ? url : nil
     }
     func retainVideo(_ source: URL, for item: HistorySession) async throws {
+        let storageAccess = try VideoStorageAccess.beginRead()
+        defer { storageAccess.release() }
         let destination = videoPath(item)
         try await Task.detached(priority: .utility) {
             try Self.copyVideo(source, to: destination, owner: item.ownerID, accountRoot: root.deletingLastPathComponent())
         }.value
     }
     func removeVideo(for item: HistorySession) throws {
-        if let url = videoURL(for: item) { try FileManager.default.removeItem(at: url) }
-        try removeEditorData(for: item)
+        try AccountDataGuard.write(owner: item.ownerID, root: root.deletingLastPathComponent()) {
+            try removeEditorData(for: item)
+            if let url = videoURL(for: item) { try FileManager.default.removeItem(at: url) }
+        }
     }
     func removeAccount(_ owner: UUID) throws {
         let url = folder(owner)
@@ -231,6 +239,15 @@ nonisolated struct SessionHistoryLibrary: Sendable {
         var excluded = partial
         var values = URLResourceValues(); values.isExcludedFromBackup = true
         try excluded.setResourceValues(values)
-        try AccountDataGuard.write(owner: owner, root: accountRoot) { try files.moveItem(at: partial, to: destination) }
+        try AccountDataGuard.write(owner: owner, root: accountRoot) {
+            let base = destination.deletingPathExtension()
+            guard !files.fileExists(atPath: base.appendingPathExtension("session-removed").path),
+                  !files.fileExists(atPath: base.appendingPathExtension("editor-removed").path) else { throw CancellationError() }
+            try files.moveItem(at: partial, to: destination)
+            let library = SessionHistoryLibrary(root: accountRoot.appendingPathComponent("History"))
+            if VideoStorageFiles(library: library).isImportedCopy(source) {
+                try Data(source.path.utf8).write(to: base.appendingPathExtension("import-source"), options: [.atomic, .completeFileProtection])
+            }
+        }
     }
 }
