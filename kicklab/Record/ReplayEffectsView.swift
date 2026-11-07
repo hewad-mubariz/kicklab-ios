@@ -30,6 +30,7 @@ struct ReplayEffectsView: View {
             .allowed(isPro: subscriptions.isPro)
     }
     private var displayedLook: JugglingReplayLook { committedLook }
+    private var playbackSelection: ReplayPlaybackSelection { .init(edit: displayedLook.edit) }
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Namespace private var glass
@@ -65,6 +66,8 @@ struct ReplayEffectsView: View {
     @State private var isScrubbing = false
     @State private var resumeAfterScrub = false
     @State private var setupTask: Task<Void, Never>?
+    @State private var setupGeneration = UUID()
+    @State private var playerUsesCompositor = false
     @State private var playbackError: String?
     @State private var motionSource: URL?
     @State private var surfaceMotionTask: Task<Void, Never>?
@@ -212,7 +215,12 @@ struct ReplayEffectsView: View {
             effectTrack = BallEffectTrack(frames: summary.renderTrack, touchTimes: summary.touchesMarked.map(\.time))
             prepareVisualEffects()
         }
-        .onChange(of: displayedLook.edit.scene) { _, _ in tearDownPlayer(); setUpPlayer() }
+        .onChange(of: playbackSelection) { old, next in
+            let position = old.scene == next.scene ? currentTime : nil
+            let resume = isPlaying
+            tearDownPlayer()
+            setUpPlayer(at: position, resume: resume)
+        }
         .onChange(of: displayedLook.edit.clipAudio) { _, on in player?.isMuted = !on }
         .onChange(of: overlays) { old, value in
             if old.graph.enabled != value.graph.enabled {
@@ -447,8 +455,16 @@ struct ReplayEffectsView: View {
             let fit = editing ? min(1, (bottom - top) / size.height) : 1
             ZStack(alignment: .topLeading) {
                 if let player {
-                    MetalVideoSurface(player: player, edit: renderedEdit, track: effectTrack) { playbackError = $0 }
-                        .transition(.opacity)
+                    if playerUsesCompositor {
+                        MetalVideoSurface(player: player, edit: renderedEdit, track: effectTrack) { playbackError = $0 }
+                            .frame(width: size.width, height: size.height)
+                            .accessibilityIdentifier("effects-replay-surface")
+                            .transition(.opacity)
+                    } else {
+                        OriginalReplaySurface(player: player) { playbackError = $0 }
+                            .frame(width: size.width, height: size.height)
+                            .transition(.opacity)
+                    }
                     // Shade the footage before drawing the counter, so white stays white.
                     LinearGradient(stops: [.init(color: .black.opacity(0.4), location: 0),
                                           .init(color: .clear, location: 0.32),
@@ -513,7 +529,11 @@ struct ReplayEffectsView: View {
                 if player == nil || playbackError != nil {
                     VStack(spacing: 10) {
                         if let playbackError { Text(playbackError).font(.subheadline).multilineTextAlignment(.center) }
-                        else { ProgressView().tint(SessionStyle.mint); Text("Preparing video…").font(.subheadline) }
+                        else {
+                            ProgressView().tint(SessionStyle.mint)
+                            Text(playbackSelection.usesCompositor ? "Preparing effects preview…" : "Opening your replay…")
+                                .font(.subheadline)
+                        }
                     }.padding(24).frame(width: size.width, height: size.height)
                     .transition(.opacity)
                 }
@@ -689,24 +709,30 @@ struct ReplayEffectsView: View {
 
     // MARK: - Player
 
-    private func setUpPlayer() {
+    private func setUpPlayer(at position: Double? = nil, resume: Bool = false) {
         guard player == nil, setupTask == nil else { return }
         playbackError = nil
+        let selection = playbackSelection
+        let token = UUID(); setupGeneration = token
         setupTask = Task {
+            defer { if setupGeneration == token { setupTask = nil } }
             do {
-                let media = try await stadiumPreview.media(summary: summary, selection: displayedLook.edit.scene)
+                let media = try await selection.media(summary: summary, sceneModel: stadiumPreview)
+                try Task.checkCancellation()
+                guard setupGeneration == token else { return }
                 let url = media.url
                 effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
                 motionSource = summary.videoURL
                 prepareVisualEffects()
                 try Task.checkCancellation()
                 let asset = AVURLAsset(url: url)
+                var loadedSize = CGSize(width: 9, height: 16)
                 if let track = try await asset.loadTracks(withMediaType: .video).first {
                     let natural = try await track.load(.naturalSize)
                     let transform = try await track.load(.preferredTransform)
-                    sourceSize = EffectVideoGeometry.displaySize(naturalSize: natural, transform: transform)
+                    loadedSize = EffectVideoGeometry.displaySize(naturalSize: natural, transform: transform)
                 }
-                duration = max(0.1, CMTimeGetSeconds(try await asset.load(.duration)))
+                let loadedDuration = max(0.1, CMTimeGetSeconds(try await asset.load(.duration)))
                 #if DEBUG
                 debugContacts = summary.debugContacts
                 if SessionDesignReview.argument("--rf-full-app-review") == nil,
@@ -725,15 +751,15 @@ struct ReplayEffectsView: View {
                 }
                 #endif
                 try Task.checkCancellation()
-                let item = AVPlayerItem(asset: asset)
-                if let videoTrack = try await asset.loadTracks(withMediaType: .video).first {
-                    item.videoComposition = try await EffectVideoGeometry.composition(track: videoTrack,
-                        duration: try await asset.load(.duration), shortEdge: 1080)
-                }
+                let item = try await selection.playerItem(asset: asset)
+                try Task.checkCancellation()
+                guard setupGeneration == token else { return }
                 let p = AVPlayer(playerItem: item)
                 p.isMuted = !displayedLook.edit.clipAudio
+                sourceSize = loadedSize; duration = loadedDuration
+                playerUsesCompositor = selection.usesCompositor
                 player = p
-                currentTime = max(0, duration - 1.0 / 30)
+                currentTime = min(max(0, position ?? (duration - 1.0 / 30)), duration)
                 #if DEBUG && TOUCH_COUNTING_DEBUG
                 if let hold = SessionDesignReview.argument("--touch-debug-hold").flatMap(Double.init), hold.isFinite {
                     currentTime = min(max(0, hold), duration)
@@ -741,6 +767,10 @@ struct ReplayEffectsView: View {
                 #endif
                 await p.seek(to: CMTime(seconds: currentTime, preferredTimescale: 600),
                              toleranceBefore: .zero, toleranceAfter: .zero)
+                try Task.checkCancellation()
+                guard setupGeneration == token else { return }
+                sounds.seek(to: currentTime)
+                if resume { p.play(); isPlaying = true }
                 let interval = CMTime(seconds: 1.0 / 60, preferredTimescale: 600)
                 #if DEBUG
                 FinalTestCoordinator.shared.replayOpened(summary.videoURL, duration: duration)
@@ -767,6 +797,7 @@ struct ReplayEffectsView: View {
                 }
             } catch is CancellationError { }
             catch {
+                guard setupGeneration == token else { return }
                 playbackError = String(localized: "Couldn’t open this video. \(error.localizedDescription)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
                 #if DEBUG
                 FinalTestCoordinator.shared.replayFailed(summary.videoURL, message: error.localizedDescription)
@@ -891,6 +922,7 @@ struct ReplayEffectsView: View {
     }
 
     private func tearDownPlayer() {
+        setupGeneration = UUID()
         surfaceMotionGeneration = UUID(); surfaceMotionError = nil
         surfaceMotionTask?.cancel(); surfaceMotionTask = nil; motionSource = nil
         setupTask?.cancel()

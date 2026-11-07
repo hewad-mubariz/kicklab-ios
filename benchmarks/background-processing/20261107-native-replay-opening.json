@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-07",
+  "branch": "codex/1.2-background-notifications",
+  "version": "1.2.0",
+  "build": 61,
+  "scope": "Juggling replay opening after import/counting; counting and final export algorithms are unchanged.",
+  "finding": "StadiumPreviewModel.media previously sent even a plain replay through EffectPreviewCache. For HDR sources that invokes a complete 1080p SDR proxy render before constructing the playback item.",
+  "change": {
+    "plain": "Original URL, AVPlayerItem without a video composition or video output, AVPlayerLayer. Counter, timer, graph and sound controls retain their existing paths.",
+    "effects": "A visual effect, replacement ball, environment or scene selects the existing composited preview. Removing the last video-pixel edit returns to native playback. Same-scene transitions retain playhead position and playing state.",
+    "access": "Routing uses the entitlement-resolved edit. Free juggling users stay native; Pro users without selected visual effects also stay native. Saved My style remains opt-in.",
+    "labels": [
+      "Opening your replay…",
+      "Preparing effects preview…"
+    ],
+    "rendering": "Explicit surface bounds and a 4096-pixel maximum drawable edge prevent oversized Metal textures during SwiftUI layout."
+  },
+  "validation": {
+    "device_unit": {
+      "device": "iPhone 11 Pro Max",
+      "passed": 17,
+      "failed": 0,
+      "result": "artifacts/release120/native-replay-61-unit.xcresult",
+      "suites": [
+        "ReplayPlaybackTests",
+        "ReplayMaterialLifecycleTests",
+        "ReplayAccessTests",
+        "RFEffectsPreparationTests"
+      ],
+      "hdr_source": "Existing Documents/pipeline-9064.mov: IMG_9064.MOV, 51.626667 s, 4K HLG, approximately 120 fps",
+      "native_first_frame_seconds": [
+        0.885569249978289,
+        0.3342036249814555
+      ],
+      "timing_scope": "Playback initialization, seek to 2 seconds and layer readiness; not an import/counting benchmark. No old-path timing measured; repeat may benefit from caches.",
+      "checks": [
+        "Original source retained",
+        "No video composition or custom video output on native item",
+        "Visible native HDR layer",
+        "Playback advances",
+        "Seek to 40 seconds",
+        "Existing mask preparation/access rules",
+        "Material slot teardown",
+        "Oversized drawable bound"
+      ]
+    },
+    "free_ui": {
+      "device": "iPhone 17 Pro Max",
+      "passed": 1,
+      "result": "artifacts/release120/native-replay-61-device-ui.xcresult",
+      "checks": [
+        "Native original HDR replay ready",
+        "Pro effects remain locked",
+        "Dismissing Pro leaves native replay active"
+      ],
+      "fixture": "Two-second stream-copy extract of IMG_9064.MOV; synthetic review counter values are not a counting result"
+    },
+    "effects_ui": {
+      "environment": "iOS 26.5 simulator, existing unrestricted TOUCH_COUNTING_DEBUG configuration only",
+      "passed": 1,
+      "result": "artifacts/release120/native-replay-61-bounded-v2-ui.xcresult",
+      "checks": [
+        "Native HDR replay",
+        "Select Fire and open existing effects preview",
+        "Select None and return to ready native surface"
+      ],
+      "note": "Paid UI routing tested with the existing unrestricted debug configuration. Local StoreKit purchase setup was unavailable; shipping entitlement code is unchanged."
+    }
+  },
+  "limitations": [
+    "No new end-to-end Photos import/counting benchmark was run.",
+    "SDR inputs already avoided the HDR proxy conversion; this does not claim the same startup savings for every clip.",
+    "Native HDR rendering looked overexposed in simulator screenshots; the physical iPhone 17 screenshots displayed correctly."
+  ]
+}

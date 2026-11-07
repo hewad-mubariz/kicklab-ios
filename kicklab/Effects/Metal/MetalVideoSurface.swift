@@ -123,6 +123,7 @@ final class EffectVideoView: MTKView {
     init(resources: MetalEffectEngine.Resources? = nil) {
         super.init(frame: .zero, device: MTLCreateSystemDefaultDevice())
         framebufferOnly = false
+        autoResizeDrawable = false
         colorPixelFormat = .bgra8Unorm
         isPaused = true
         enableSetNeedsDisplay = true
@@ -141,6 +142,18 @@ final class EffectVideoView: MTKView {
         } catch { report(error) }
     }
     required init(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // SwiftUI can briefly propose a very large surface while inserting the
+        // effects view. Never let that allocate a drawable beyond GPU limits.
+        let edge = max(bounds.width, bounds.height)
+        guard edge.isFinite, edge > 0, bounds.width > 0, bounds.height > 0 else { return }
+        let scale = min(contentScaleFactor, 4096 / edge)
+        let size = CGSize(width: max(1, floor(bounds.width * scale)),
+                          height: max(1, floor(bounds.height * scale)))
+        if drawableSize != size { drawableSize = size; dirty = true }
+    }
 
     private final class DisplayTarget: NSObject {
         weak var view: EffectVideoView?
