@@ -207,6 +207,9 @@
 					7441B446305617DC007026EB = {
 						CreatedOnToolsVersion = 26.6;
 						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
 							com.apple.AssociatedDomains = {
 								enabled = 1;
 							};

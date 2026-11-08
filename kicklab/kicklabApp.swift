@@ -148,12 +148,15 @@ struct kicklabApp: App {
             }
             .task(id: account.user?.id) { await player.useAccount(account.user) }
             .task(id: account.user?.id) { await subscriptions.useAccount(account.user?.id) }
+            .task(id: account.user?.id) { await RemotePracticeNotifications.shared.useAccount(account) }
             .task(id: AppLanguage.current) {
                 VideoSaveCompletion.shared.configure()
                 await PracticeNotifications.shared.refresh()
+                await RemotePracticeNotifications.shared.refresh()
             }
             .task {
                 #if DEBUG
+                await NotificationReview.scheduleTapCheckIfRequested()
                 await ProfileEditorReview.refreshWhileReviewing(player)
                 #endif
             }
@@ -170,6 +173,7 @@ struct kicklabApp: App {
                 if phase == .active {
                     AppLanguage.refresh()
                     Task { await PracticeNotifications.shared.refresh() }
+                    Task { await RemotePracticeNotifications.shared.refresh() }
                     ProductAnalytics.shared.track(.appOpened)
                     Task { await AppUpdateNotice.shared.check() }
                 }

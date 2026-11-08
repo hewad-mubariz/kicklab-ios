@@ -14,7 +14,8 @@ final class VideoSaveCompletion: NSObject, UNUserNotificationCenterDelegate {
         center.delegate = self
         center.setNotificationCategories([UNNotificationCategory(identifier: Self.category,
             actions: [UNNotificationAction(identifier: "open-photos", title: String(localized: "Open Photos", bundle: AppLanguage.bundle, locale: AppLanguage.locale), options: .foreground)],
-            intentIdentifiers: []), UNNotificationCategory(identifier: PracticeNotifications.reminderCategory, actions: [], intentIdentifiers: [])])
+            intentIdentifiers: []), UNNotificationCategory(identifier: PracticeNotifications.reminderCategory, actions: [], intentIdentifiers: []),
+            UNNotificationCategory(identifier: RemotePracticeNotifications.category, actions: [], intentIdentifiers: [])])
     }
 
     /// Posts only when notifications are already allowed. Saving never asks for
@@ -46,10 +47,24 @@ final class VideoSaveCompletion: NSObject, UNUserNotificationCenterDelegate {
         UIApplication.shared.open(URL(string: "photos-redirect://")!)
     }
 
-    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
-        guard response.notification.request.content.categoryIdentifier == "video-saved",
-              response.actionIdentifier == UNNotificationDefaultActionIdentifier || response.actionIdentifier == "open-photos" else { return }
-        await openPhotos()
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                            didReceive response: UNNotificationResponse,
+                                            withCompletionHandler completionHandler: @escaping @Sendable () -> Void) {
+        let category = response.notification.request.content.categoryIdentifier
+        let action = response.actionIdentifier
+        // The async Objective-C bridge can complete on a cooperative thread.
+        // UIKit's cold-launch state restoration requires completion on main.
+        // Copy only Sendable values before crossing to the main actor.
+        Task { @MainActor in
+            defer { completionHandler() }
+            if action == UNNotificationDefaultActionIdentifier,
+               [PracticeNotifications.reminderCategory, RemotePracticeNotifications.category].contains(category) {
+                PracticeNotificationNavigation.shared.openPractice()
+            } else if category == Self.category,
+                      action == UNNotificationDefaultActionIdentifier || action == "open-photos" {
+                self.openPhotos()
+            }
+        }
     }
 }
 
@@ -57,6 +72,12 @@ final class VideoSaveAppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         VideoSaveCompletion.shared.configure()
         return true
+    }
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        RemotePracticeNotifications.shared.receivedToken(deviceToken)
+    }
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        RemotePracticeNotifications.shared.registrationFailed()
     }
 }
 

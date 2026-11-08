@@ -3,6 +3,7 @@ import UIKit
 
 struct NotificationSettingsView: View {
     @ObservedObject private var notifications = PracticeNotifications.shared
+    @ObservedObject private var remote = RemotePracticeNotifications.shared
     @Environment(\.openURL) private var openURL
     @Environment(\.colorScheme) private var scheme
 
@@ -11,7 +12,7 @@ struct NotificationSettingsView: View {
             Section {
                 Toggle("Daily practice reminder", isOn: Binding(
                     get: { notifications.dailyEnabled },
-                    set: { value in Task { await notifications.setDailyEnabled(value) } }))
+                    set: { value in Task { await notifications.setDailyEnabled(value); await remote.refresh() } }))
                     .accessibilityIdentifier("notifications-daily")
                 if notifications.dailyEnabled {
                     DatePicker("Reminder time", selection: Binding(get: { reminderTime }, set: { date in
@@ -22,6 +23,21 @@ struct NotificationSettingsView: View {
                 }
             } footer: {
                 Text("One reminder each day for a short juggling session, at your chosen local time.")
+            }
+            Section {
+                Toggle("Training messages", isOn: Binding(get: { remote.enabled }, set: { value in
+                    Task { await remote.setEnabled(value); await notifications.refresh() }
+                }))
+                .accessibilityIdentifier("notifications-training-push")
+                .disabled(remote.isUpdating)
+            } footer: {
+                Text("Occasional practice invites from Juggle Dude, including when you use the app as a guest. Your daily reminder takes priority.")
+            }
+            if let error = remote.errorMessage {
+                Section {
+                    Text(error).foregroundStyle(.secondary)
+                    Button("Retry push connection") { Task { await remote.refresh() } }
+                }
             }
             Section {
                 Toggle("Export finished", isOn: Binding(
@@ -54,7 +70,7 @@ struct NotificationSettingsView: View {
         .background(TrainingHomeStyle.background(scheme))
         .navigationTitle(String(localized: "Notifications", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
         .navigationBarTitleDisplayMode(.inline)
-        .task { await notifications.refresh() }
+        .task { await notifications.refresh(); await remote.refresh() }
     }
 
     private var reminderTime: Date {

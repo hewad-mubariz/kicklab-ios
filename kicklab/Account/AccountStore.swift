@@ -127,6 +127,7 @@ final class AccountStore: ObservableObject {
             ProductAnalytics.shared.resetIdentity()
             deletedUserIDs.insert(id)
             user = nil; pendingEmail = nil; resendAfter = .distantPast
+            await RemotePracticeNotifications.shared.accountWasDeleted()
             completedCallbacks.removeAll()
             if !(await cleanup(id)) {
                 errorMessage = String(localized: "Your account was deleted. Some local replays couldn’t be removed. Reopen the app to retry; if they remain, remove the app to clear its local data.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)

@@ -4,9 +4,24 @@ import UserNotifications
 
 /// Exercises the real settings and OS scheduler on a dedicated preview install.
 struct NotificationReview: View {
+    /// A local fixture exercises the same category/delegate/navigation as the
+    /// real APNs message, without bypassing the server's daily delivery cap.
+    static func scheduleTapCheckIfRequested() async {
+        guard Bundle.main.bundleIdentifier == "com.juggledude.release120.preview",
+              ProcessInfo.processInfo.arguments.contains("--notification-tap-review") else { return }
+        let center = UNUserNotificationCenter.current()
+        guard PracticeNotifications.allows(await center.notificationSettings().authorizationStatus) else { return }
+        let content = UNMutableNotificationContent()
+        content.title = "Juggle Dude notification tap check"
+        content.body = "Test alert: tap to open juggling setup."
+        content.categoryIdentifier = RemotePracticeNotifications.category
+        try? await center.add(UNNotificationRequest(identifier: "juggledude.notification-tap-check",
+            content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 8, repeats: false)))
+    }
     @State private var pending = "Loading"
     @State private var delivered = "Loading"
     @State private var dailyDelivered = "Loading"
+    @State private var pushStatus = "Loading"
     var body: some View {
         NavigationStack {
             VStack {
@@ -14,6 +29,7 @@ struct NotificationReview: View {
                 Text(pending).accessibilityIdentifier("notification-review-pending")
                 Text(delivered).accessibilityIdentifier("notification-review-delivered")
                 Text(dailyDelivered).accessibilityIdentifier("notification-review-daily-delivered")
+                Text(pushStatus).font(.caption).accessibilityIdentifier("notification-review-push")
                 if Bundle.main.bundleIdentifier == "com.juggledude.release120.preview" {
                     Button("Schedule reminder about one minute from now") {
                         Task {
@@ -51,7 +67,13 @@ struct NotificationReview: View {
         pending = "\(requests.filter { $0.identifier == PracticeNotifications.reminderIdentifier }.count) daily reminders"
         delivered = "\(notifications.filter { $0.request.content.categoryIdentifier == "video-saved" }.count) export alerts"
         dailyDelivered = "\(notifications.filter { $0.request.content.categoryIdentifier == PracticeNotifications.reminderCategory }.count) daily alerts"
+        let remote = RemotePracticeNotifications.shared
+        let pushCount = notifications.filter { $0.request.content.categoryIdentifier == RemotePracticeNotifications.category }.count
+        pushStatus = "Apple: \(remote.registeredWithApple); server: \(remote.synchronized); \(pushCount) remote alerts"
         let value: [String: Any] = [
+            "remote": ["enabled": remote.enabled, "apple_registered": remote.registeredWithApple,
+                       "synchronized": remote.synchronized, "installation_id": remote.installationID?.uuidString ?? "none",
+                       "error": remote.errorMessage ?? "none"],
             "authorization": await center.notificationSettings().authorizationStatus.rawValue,
             "pending": requests.map { request -> [String: Any] in
                 let trigger = request.trigger as? UNCalendarNotificationTrigger

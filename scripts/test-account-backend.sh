@@ -31,4 +31,6 @@ psql -X -h "$test_dir" -p 55549 -d postgres -v ON_ERROR_STOP=1 \
   -f "$project_dir/supabase/tests/automatic_leaderboard_beta.sql" \
   -f "$project_dir/supabase/tests/profile_auth_names_before.sql" \
   -f "$project_dir/supabase/migrations/202611030001_profile_auth_names.sql" \
-  -f "$project_dir/supabase/tests/profile_auth_names.sql"
+  -f "$project_dir/supabase/tests/profile_auth_names.sql" \
+  -f "$project_dir/supabase/migrations/202611080001_remote_practice_push.sql" \
+  -f "$project_dir/supabase/tests/remote_practice_push.sql"

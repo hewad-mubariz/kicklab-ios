@@ -1,5 +1,14 @@
 project_id = "juggledude"
 
+[functions.push-installation]
+# Guest updates authenticate a random installation capability; optional account
+# JWTs are verified with Auth. No client can select a user ID or read tokens.
+verify_jwt = false
+
+[functions.send-practice-push]
+# Requires the dedicated server-only PUSH_SEND_SECRET, never an app/user key.
+verify_jwt = false
+
 [functions.delete-account]
 # The dashboard's gateway switch accepts only legacy HS256 tokens. This handler
 # validates the caller with Supabase Auth itself and never trusts decoded claims.

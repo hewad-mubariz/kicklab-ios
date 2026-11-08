@@ -21,6 +21,7 @@ struct RootShellView: View {
     @State private var showsUpdateAlert = false
     @ObservedObject private var updateNotice = AppUpdateNotice.shared
     @ObservedObject private var adMeasurement = MetaAdsMeasurement.shared
+    @ObservedObject private var notificationNavigation = PracticeNotificationNavigation.shared
     @Namespace private var zoom
     private var accountBest: Int { account.user == nil ? personalBest : player.personalBest }
 
@@ -32,6 +33,10 @@ struct RootShellView: View {
     /// The tracking question comes after a first finished training (or the third launch), on a calm home screen.
     private var canRequestAdPermission: Bool {
         homeIsReadyForNotice && adMeasurement.wantsPermission && !showsUpdateAlert
+    }
+
+    private var canOpenPracticeNotification: Bool {
+        homeIsReadyForNotice && !showsUpdateAlert && !adMeasurement.isRequesting
     }
 
     private var canShowUpdateAlert: Bool {
@@ -121,6 +126,8 @@ struct RootShellView: View {
             openImportedVideoIfReady()
         }
         .onChange(of: showImport) { _, _ in openImportedVideoIfReady() }
+        .onChange(of: notificationNavigation.pending, initial: true) { _, _ in openPracticeNotificationIfReady() }
+        .onChange(of: canOpenPracticeNotification) { _, _ in openPracticeNotificationIfReady() }
         .fullScreenCover(item: $capture) { destination in
             switch destination.mode {
             case .juggling:
@@ -179,6 +186,13 @@ struct RootShellView: View {
         guard !showImport, let item = importedVideo, capture == nil else { return }
         importedVideo = nil
         capture = HomeCapture(mode: .juggling, importedVideo: item)
+    }
+
+    private func openPracticeNotificationIfReady() {
+        guard canOpenPracticeNotification, notificationNavigation.pending != nil else { return }
+        notificationNavigation.consume()
+        // Opens setup; never starts recording or discards an active replay.
+        capture = HomeCapture(mode: .juggling)
     }
 }
 

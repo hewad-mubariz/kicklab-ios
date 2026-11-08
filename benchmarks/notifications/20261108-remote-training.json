@@ -1,0 +1,56 @@
+{
+  "date": "2026-11-08",
+  "branch": "codex/1.2-background-notifications",
+  "preview_build": "1.2.0 (68)",
+  "device": "iPhone 17 Pro Max",
+  "os": "iOS 27.0.1",
+  "recipient": "one opted-in guest installation",
+  "backend": {
+    "project": "shbdsjvpjdtqbiaevrxy",
+    "migration": "202611080001_remote_practice_push.sql",
+    "functions": [
+      "push-installation",
+      "send-practice-push"
+    ],
+    "remote_practice_apns_accepted": true,
+    "arrival": "user confirmed",
+    "duplicate": "blocked; accepted delivery was not resent",
+    "daily_limit": "blocked within 24 hours",
+    "unauthorized_sender": "401 operator_required"
+  },
+  "checks": {
+    "swift_notification_unit_tests": 13,
+    "deno_tests": 8,
+    "sql": "isolated PostgreSQL suite passed",
+    "phone_registration": "Apple and Supabase succeeded",
+    "cold_start_tap": {
+      "fixture": "local alert with same training-invite category",
+      "initial_result": "crash in async Objective-C notification completion bridge",
+      "fix": "explicit completion handler called on main actor",
+      "final_result": "passed; opened setup, recording not started",
+      "build": 68,
+      "focus": "off during passing tap check"
+    }
+  },
+  "limitations": [
+    "Production key configured but production/TestFlight delivery not tested",
+    "Signed-in account binding covered in backend/unit tests, physical recipient was a guest",
+    "No leaderboard event trigger, campaign UI, broadcast or remote schedule implemented"
+  ],
+  "local_evidence": "artifacts/release120/push-20261108",
+  "credential_rotation": {
+    "completed": true,
+    "reason": "Original private credentials appeared in diagnostic output; owner approved replacement and revocation",
+    "sandbox_key_id": "S9KD34Z9JK",
+    "production_key_id": "8FQZ6Z6DFA",
+    "old_apple_keys_revoked": [
+      "3G8M6KG8L8",
+      "C3P5X8AK76"
+    ],
+    "old_sender_secret": "401 operator_required",
+    "replacement_sender_secret": "200; daily_limit preserved",
+    "supabase_values": "All six stored digests matched replacement configuration",
+    "unrelated_apple_keys": "Preserved",
+    "new_apns_delivery": "Not sent again; 24-hour recipient limit preserved"
+  }
+}

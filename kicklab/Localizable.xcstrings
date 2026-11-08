@@ -1,6 +1,146 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Your notification choice is saved on this phone. Connect and retry to update push messages." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Auswahl ist auf diesem iPhone gespeichert. Verbinde dich mit dem Internet und versuche es erneut, um Push-Mitteilungen zu aktualisieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu preferencia está guardada en este iPhone. Conéctate y vuelve a intentarlo para actualizar las notificaciones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre choix est enregistré sur cet iPhone. Connectez-vous et réessayez pour mettre à jour les notifications."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sua preferência está salva neste iPhone. Conecte-se e tente novamente para atualizar as notificações."
+          }
+        }
+      }
+    },
+    "Couldn’t connect push notifications. Try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Push-Mitteilungen konnten nicht verbunden werden. Versuche es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron conectar las notificaciones. Inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion aux notifications impossible. Réessayez."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível conectar as notificações. Tente novamente."
+          }
+        }
+      }
+    },
+    "Retry push connection" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Push-Verbindung erneut versuchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar conexión de notificaciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer la connexion aux notifications"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tentar conexão de notificações novamente"
+          }
+        }
+      }
+    },
+    "Occasional practice invites from Juggle Dude, including when you use the app as a guest. Your daily reminder takes priority." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gelegentliche Trainingseinladungen von Juggle Dude, auch als Gast. Deine tägliche Erinnerung hat Vorrang."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invitaciones ocasionales de Juggle Dude para practicar, también si usas la app como invitado. Tu recordatorio diario tiene prioridad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Des invitations occasionnelles de Juggle Dude à vous entraîner, même sans compte. Votre rappel quotidien est prioritaire."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Convites ocasionais do Juggle Dude para treinar, mesmo usando o app como visitante. Seu lembrete diário tem prioridade."
+          }
+        }
+      }
+    },
+    "Training messages" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trainingsnachrichten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensajes de entrenamiento"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Messages d’entraînement"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mensagens de treino"
+          }
+        }
+      }
+    },
     "A possible touch that the counter cannot confirm is left out. Brief tracking misses and high kicks do not end a streak on their own." : {
       "localizations" : {
         "de" : {
