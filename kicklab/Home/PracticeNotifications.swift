@@ -6,7 +6,7 @@ import UserNotifications
 protocol PracticeNotificationClient {
     func authorization() async -> UNAuthorizationStatus
     func requestPermission() async throws
-    func setReminder(_ request: UNNotificationRequest?) async throws
+    func setReminders(_ requests: [UNNotificationRequest]) async throws
 }
 
 @MainActor
@@ -17,10 +17,18 @@ private struct SystemPracticeNotifications: PracticeNotificationClient {
     func requestPermission() async throws {
         _ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
     }
-    func setReminder(_ request: UNNotificationRequest?) async throws {
+    func setReminders(_ requests: [UNNotificationRequest]) async throws {
         let center = UNUserNotificationCenter.current()
-        if let request { try await center.add(request) }
-        else { center.removePendingNotificationRequests(withIdentifiers: [PracticeNotifications.reminderIdentifier]) }
+        // Also remove the previous daily schedule when upgrading an existing install.
+        let identifiers = PracticeNotifications.managedReminderIdentifiers
+        center.removePendingNotificationRequests(withIdentifiers: identifiers)
+        do {
+            for request in requests { try await center.add(request) }
+        } catch {
+            // A failed update must not leave only part of the weekly schedule active.
+            center.removePendingNotificationRequests(withIdentifiers: identifiers)
+            throw error
+        }
     }
 }
 
@@ -29,13 +37,18 @@ private struct SystemPracticeNotifications: PracticeNotificationClient {
 @MainActor
 final class PracticeNotifications: ObservableObject {
     static let shared = PracticeNotifications(defaults: .standard, client: SystemPracticeNotifications())
-    static let reminderIdentifier = "juggledude.daily-practice"
+    static let legacyReminderIdentifier = "juggledude.daily-practice"
+    // Keep the category and stored preference compatible with earlier 1.2 builds.
     static let reminderCategory = "daily-practice"
-    static let dailyKey = "juggledude.notifications.daily"
+    static let enabledKey = "juggledude.notifications.daily"
+    // Calendar weekday values: Sunday = 1, Monday = 2, Wednesday = 4.
+    static let reminderWeekdays = [2, 4, 1]
+    static let reminderIdentifiers = reminderWeekdays.map { "juggledude.practice.weekday-\($0)" }
+    static let managedReminderIdentifiers = [legacyReminderIdentifier] + reminderIdentifiers
     static let exportsKey = "juggledude.notifications.exports"
     static let timeKey = "juggledude.notifications.minute-of-day"
 
-    @Published private(set) var dailyEnabled: Bool
+    @Published private(set) var practiceEnabled: Bool
     @Published private(set) var exportsEnabled: Bool
     @Published private(set) var minuteOfDay: Int
     @Published private(set) var authorization: UNAuthorizationStatus = .notDetermined
@@ -49,7 +62,7 @@ final class PracticeNotifications: ObservableObject {
 
     init(defaults: UserDefaults, client: any PracticeNotificationClient) {
         self.defaults = defaults; self.client = client
-        dailyEnabled = defaults.bool(forKey: Self.dailyKey)
+        practiceEnabled = defaults.bool(forKey: Self.enabledKey)
         exportsEnabled = defaults.bool(forKey: Self.exportsKey)
         let saved = defaults.object(forKey: Self.timeKey) as? Int
         minuteOfDay = saved.flatMap { (0..<1440).contains($0) ? $0 : nil } ?? 18 * 60
@@ -60,8 +73,8 @@ final class PracticeNotifications: ObservableObject {
         [.authorized, .provisional, .ephemeral].contains(status)
     }
 
-    func setDailyEnabled(_ value: Bool) async {
-        dailyEnabled = value; defaults.set(value, forKey: Self.dailyKey)
+    func setPracticeEnabled(_ value: Bool) async {
+        practiceEnabled = value; defaults.set(value, forKey: Self.enabledKey)
         await synchronize(askPermission: value)
     }
 
@@ -79,18 +92,20 @@ final class PracticeNotifications: ObservableObject {
     /// Opening the app, changing language or returning from Settings never prompts.
     func refresh() async { await synchronize(askPermission: false) }
 
-    static func reminder(minuteOfDay: Int) -> UNNotificationRequest {
+    static func reminders(minuteOfDay: Int) -> [UNNotificationRequest] {
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Time for your 3-minute juggle", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         content.body = String(localized: "Grab your ball for a short practice session.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         content.sound = .default
         content.categoryIdentifier = reminderCategory
-        // Hour/minute only: follows the phone's local time rather than pinning
-        // the reminder to the time zone in which it was first enabled.
-        var components = DateComponents()
-        components.hour = minuteOfDay / 60; components.minute = minuteOfDay % 60
-        return UNNotificationRequest(identifier: reminderIdentifier, content: content,
-            trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true))
+        // No date or time zone: each weekday repeats at the phone's local time.
+        return zip(reminderWeekdays, reminderIdentifiers).map { weekday, identifier in
+            var components = DateComponents()
+            components.weekday = weekday
+            components.hour = minuteOfDay / 60; components.minute = minuteOfDay % 60
+            return UNNotificationRequest(identifier: identifier, content: content,
+                trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true))
+        }
     }
 
     private func synchronize(askPermission: Bool) async {
@@ -105,12 +120,12 @@ final class PracticeNotifications: ObservableObject {
                 self.errorMessage = nil
                 do {
                     self.authorization = await self.client.authorization()
-                    if ask, self.dailyEnabled || self.exportsEnabled, self.authorization == .notDetermined {
+                    if ask, self.practiceEnabled || self.exportsEnabled, self.authorization == .notDetermined {
                         try await self.client.requestPermission()
                         self.authorization = await self.client.authorization()
                     }
-                    let request = self.dailyEnabled && self.isAllowed ? Self.reminder(minuteOfDay: self.minuteOfDay) : nil
-                    try await self.client.setReminder(request)
+                    let requests = self.practiceEnabled && self.isAllowed ? Self.reminders(minuteOfDay: self.minuteOfDay) : []
+                    try await self.client.setReminders(requests)
                 } catch {
                     self.errorMessage = String(localized: "Couldn’t update notifications. Try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
                 }

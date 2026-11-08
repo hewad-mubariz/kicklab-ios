@@ -40,25 +40,25 @@ final class Release120UITests: XCTestCase {
         waitEnabled(exports)
         toggle(exports)
         allowSystemPrompt()
-        let daily = app.switches["notifications-daily"]
-        waitEnabled(daily)
-        toggle(daily)
-        waitEnabled(daily)
+        let practice = app.switches["notifications-practice"]
+        waitEnabled(practice)
+        toggle(practice)
+        waitEnabled(practice)
         app.buttons["notification-review-refresh"].tap()
-        waitLabel(app.staticTexts["notification-review-pending"], "1 daily reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
         XCTAssertTrue(app.datePickers["notifications-time"].exists)
         let settings = XCTAttachment(screenshot: app.screenshot())
         settings.name = "1.2 notification settings"; settings.lifetime = .keepAlways; add(settings)
-        // Persist across a real relaunch, then remove the daily test reminder.
+        // Persist across a real relaunch, then remove the weekly test reminders.
         app.terminate()
         app.launchArguments = ["--notification-review"]
         app.launch()
-        waitLabel(app.staticTexts["notification-review-pending"], "1 daily reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
         XCTAssertEqual(app.switches["notifications-exports"].value as? String, "1")
-        let persistedDaily = app.switches["notifications-daily"]
-        waitEnabled(persistedDaily); toggle(persistedDaily); waitEnabled(persistedDaily)
+        let persistedPractice = app.switches["notifications-practice"]
+        waitEnabled(persistedPractice); toggle(persistedPractice); waitEnabled(persistedPractice)
         app.buttons["notification-review-refresh"].tap()
-        waitLabel(app.staticTexts["notification-review-pending"], "0 daily reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "0 practice reminders")
 
         app.terminate()
         app.launchArguments = ["--background-video-review", "artwork-save",

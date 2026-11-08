@@ -20,7 +20,8 @@ struct NotificationReview: View {
     }
     @State private var pending = "Loading"
     @State private var delivered = "Loading"
-    @State private var dailyDelivered = "Loading"
+    private static let deliveryCheckIdentifier = "juggledude.practice-delivery-check"
+    @State private var practiceDelivered = "Loading"
     @State private var pushStatus = "Loading"
     var body: some View {
         NavigationStack {
@@ -28,24 +29,41 @@ struct NotificationReview: View {
                 NotificationSettingsView()
                 Text(pending).accessibilityIdentifier("notification-review-pending")
                 Text(delivered).accessibilityIdentifier("notification-review-delivered")
-                Text(dailyDelivered).accessibilityIdentifier("notification-review-daily-delivered")
+                Text(practiceDelivered).accessibilityIdentifier("notification-review-practice-delivered")
                 Text(pushStatus).font(.caption).accessibilityIdentifier("notification-review-push")
                 if Bundle.main.bundleIdentifier == "com.juggledude.release120.preview" {
-                    Button("Schedule reminder about one minute from now") {
+                    Button("Schedule a test reminder in 8 seconds") {
                         Task {
-                            let time = Calendar.current.dateComponents([.hour, .minute], from: Date().addingTimeInterval(90))
-                            guard let hour = time.hour, let minute = time.minute else { return }
-                            await PracticeNotifications.shared.setTime(hour: hour, minute: minute)
+                            // Check delivery on any weekday without altering the weekly schedule.
+                            guard PracticeNotifications.shared.practiceEnabled,
+                                  PracticeNotifications.shared.isAllowed,
+                                  let content = PracticeNotifications.reminders(minuteOfDay: 1080).first?.content else { return }
+                            try? await UNUserNotificationCenter.current().add(UNNotificationRequest(
+                                identifier: Self.deliveryCheckIdentifier, content: content,
+                                trigger: UNTimeIntervalNotificationTrigger(timeInterval: 8, repeats: false)))
                             await inspect()
                         }
                     }.accessibilityIdentifier("notification-review-soon")
+                    Button("Add legacy daily reminder for migration check") {
+                        Task {
+                            guard PracticeNotifications.shared.practiceEnabled,
+                                  let content = PracticeNotifications.reminders(minuteOfDay: 1080).first?.content else { return }
+                            let components = DateComponents(hour: 18, minute: 0)
+                            try? await UNUserNotificationCenter.current().add(UNNotificationRequest(
+                                identifier: PracticeNotifications.legacyReminderIdentifier, content: content,
+                                trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true)))
+                            await inspect(refresh: false)
+                        }
+                    }.accessibilityIdentifier("notification-review-legacy")
                     Button("Restore default reminder time") {
                         Task { await PracticeNotifications.shared.setTime(hour: 18, minute: 0); await inspect() }
                     }.accessibilityIdentifier("notification-review-default-time")
                     Button("Clear delivered test reminder") {
-                        UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: [PracticeNotifications.reminderIdentifier])
+                        let center = UNUserNotificationCenter.current()
+                        center.removePendingNotificationRequests(withIdentifiers: [Self.deliveryCheckIdentifier])
+                        center.removeDeliveredNotifications(withIdentifiers: PracticeNotifications.managedReminderIdentifiers + [Self.deliveryCheckIdentifier])
                         Task { await inspect(refresh: false) }
-                    }.accessibilityIdentifier("notification-review-clear-daily")
+                    }.accessibilityIdentifier("notification-review-clear-practice")
                 }
                 Button("Refresh notification check") { Task { await inspect() } }
                     .accessibilityIdentifier("notification-review-refresh")
@@ -64,9 +82,9 @@ struct NotificationReview: View {
         let center = UNUserNotificationCenter.current()
         let requests = await center.pendingNotificationRequests()
         let notifications = await center.deliveredNotifications()
-        pending = "\(requests.filter { $0.identifier == PracticeNotifications.reminderIdentifier }.count) daily reminders"
+        pending = "\(requests.filter { PracticeNotifications.managedReminderIdentifiers.contains($0.identifier) }.count) practice reminders"
         delivered = "\(notifications.filter { $0.request.content.categoryIdentifier == "video-saved" }.count) export alerts"
-        dailyDelivered = "\(notifications.filter { $0.request.content.categoryIdentifier == PracticeNotifications.reminderCategory }.count) daily alerts"
+        practiceDelivered = "\(notifications.filter { $0.request.content.categoryIdentifier == PracticeNotifications.reminderCategory }.count) practice alerts"
         let remote = RemotePracticeNotifications.shared
         let pushCount = notifications.filter { $0.request.content.categoryIdentifier == RemotePracticeNotifications.category }.count
         pushStatus = "Apple: \(remote.registeredWithApple); server: \(remote.synchronized); \(pushCount) remote alerts"
@@ -79,6 +97,7 @@ struct NotificationReview: View {
                 let trigger = request.trigger as? UNCalendarNotificationTrigger
                 return ["id": request.identifier, "title": request.content.title,
                         "hour": trigger?.dateComponents.hour ?? -1, "minute": trigger?.dateComponents.minute ?? -1,
+                        "weekday": trigger?.dateComponents.weekday ?? -1,
                         "next_delivery": trigger?.nextTriggerDate()?.ISO8601Format() ?? "none",
                         "repeats": trigger?.repeats ?? false]
             },

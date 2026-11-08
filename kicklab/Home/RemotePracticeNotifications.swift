@@ -123,7 +123,9 @@ final class RemotePracticeNotifications: ObservableObject {
                         secret: current.secret, revision: current.revision,
                         bundleId: Bundle.main.bundleIdentifier ?? "com.juggledude", environment: environment,
                         token: allowed ? self.deviceToken : nil, trainingEnabled: allowed,
-                        dailyReminderEnabled: self.defaults.bool(forKey: PracticeNotifications.dailyKey),
+                        // The existing server field suppresses remote practice invites
+                        // whenever local reminders are enabled, including this weekly schedule.
+                        dailyReminderEnabled: self.defaults.bool(forKey: PracticeNotifications.enabledKey),
                         locale: AppLanguage.current), accessToken: accessToken)
                     self.synchronized = !self.needsSync
                 } catch {

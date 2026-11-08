@@ -69,9 +69,9 @@ final class RemotePracticeNotificationsTests: XCTestCase {
         await enabling.value; await disabling.value
         XCTAssertFalse(store.enabled); XCTAssertNil(vault.value); XCTAssertTrue(client.requests.isEmpty)
     }
-    func testAccountDeletionDisablesAndDailyPreferenceIsSent() async {
+    func testAccountDeletionDisablesAndWeeklyReminderPreferenceSuppressesRemoteInvites() async {
         let vault = PushVaultStub(), client = PushClientStub(), platform = PushPlatformStub()
-        UserDefaults(suiteName: suite)!.set(true, forKey: PracticeNotifications.dailyKey)
+        UserDefaults(suiteName: suite)!.set(true, forKey: PracticeNotifications.enabledKey)
         let store = make(vault, client, platform)
         store.receivedToken(Data(repeating: 1, count: 32)); await store.setEnabled(true)
         XCTAssertTrue(client.requests.last!.dailyReminderEnabled)

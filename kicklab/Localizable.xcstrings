@@ -85,30 +85,30 @@
         }
       }
     },
-    "Occasional practice invites from Juggle Dude, including when you use the app as a guest. Your daily reminder takes priority." : {
+    "Occasional practice invites from Juggle Dude, including when you use the app as a guest. Your practice reminders take priority." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gelegentliche Trainingseinladungen von Juggle Dude, auch als Gast. Deine tägliche Erinnerung hat Vorrang."
+            "value" : "Gelegentliche Trainingseinladungen von Juggle Dude, auch als Gast. Deine Trainingserinnerungen haben Vorrang."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invitaciones ocasionales de Juggle Dude para practicar, también si usas la app como invitado. Tu recordatorio diario tiene prioridad."
+            "value" : "Invitaciones ocasionales de Juggle Dude para practicar, también si usas la app como invitado. Tus recordatorios de práctica tienen prioridad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Des invitations occasionnelles de Juggle Dude à vous entraîner, même sans compte. Votre rappel quotidien est prioritaire."
+            "value" : "Des invitations occasionnelles de Juggle Dude à vous entraîner, même sans compte. Vos rappels d’entraînement sont prioritaires."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Convites ocasionais do Juggle Dude para treinar, mesmo usando o app como visitante. Seu lembrete diário tem prioridade."
+            "value" : "Convites ocasionais do Juggle Dude para treinar, mesmo usando o app como visitante. Seus lembretes de treino têm prioridade."
           }
         }
       }
@@ -31341,36 +31341,36 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
-    "Daily practice reminder" : {
+    "Practice reminders" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Daily practice reminder"
+            "value" : "Practice reminders"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tägliche Trainingserinnerung"
+            "value" : "Trainingserinnerungen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recordatorio diario de práctica"
+            "value" : "Recordatorios de práctica"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rappel quotidien d’entraînement"
+            "value" : "Rappels d’entraînement"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lembrete diário de treino"
+            "value" : "Lembretes de treino"
           }
         }
       }
@@ -31409,36 +31409,36 @@
         }
       }
     },
-    "One reminder each day for a short juggling session, at your chosen local time." : {
+    "Three reminders a week: Monday, Wednesday and Sunday, at your chosen local time." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "One reminder each day for a short juggling session, at your chosen local time."
+            "value" : "Three reminders a week: Monday, Wednesday and Sunday, at your chosen local time."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eine tägliche Erinnerung für ein kurzes Jongliertraining zur gewählten Ortszeit."
+            "value" : "Drei Erinnerungen pro Woche: Montag, Mittwoch und Sonntag, zur gewählten Ortszeit."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un recordatorio diario para una breve sesión de toques, a la hora local que elijas."
+            "value" : "Tres recordatorios por semana: lunes, miércoles y domingo, a la hora local que elijas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un rappel par jour pour une courte séance de jongles, à l’heure locale de votre choix."
+            "value" : "Trois rappels par semaine : lundi, mercredi et dimanche, à l’heure locale de votre choix."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Um lembrete por dia para uma breve sessão de embaixadinhas, no horário local que você escolher."
+            "value" : "Três lembretes por semana: segunda, quarta e domingo, no horário local que você escolher."
           }
         }
       }

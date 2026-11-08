@@ -2,46 +2,50 @@ import XCTest
 
 /// Real OS delivery on the preview install. Start with both opt-ins off.
 final class NotificationDeliveryUITests: XCTestCase {
-    @MainActor func testDailyReminderDeliveryAndDisable() {
+    @MainActor func testWeeklyScheduleMigrationAndReminderDeliveryFixture() {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["--notification-review", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        let daily = app.switches["notifications-daily"]
-        XCTAssertTrue(daily.waitForExistence(timeout: 20))
-        waitEnabled(daily)
-        XCTAssertEqual(daily.value as? String, "0", "Preserve existing user opt-ins; this check expects them off")
-        app.buttons["notification-review-clear-daily"].tap()
-        waitLabel(app.staticTexts["notification-review-daily-delivered"], "0 daily alerts")
-        toggle(daily)
+        let practice = app.switches["notifications-practice"]
+        XCTAssertTrue(practice.waitForExistence(timeout: 20))
+        waitEnabled(practice)
+        XCTAssertEqual(practice.value as? String, "0", "Preserve existing user opt-ins; this check expects them off")
+        app.buttons["notification-review-clear-practice"].tap()
+        waitLabel(app.staticTexts["notification-review-practice-delivered"], "0 practice alerts")
+        toggle(practice)
         let alert = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.firstMatch
         if alert.waitForExistence(timeout: 3) {
             XCTAssertTrue(alert.buttons["Allow"].exists)
             alert.buttons["Allow"].tap()
         }
-        waitEnabled(daily)
+        waitEnabled(practice)
+        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
+        app.buttons["notification-review-legacy"].tap()
+        waitLabel(app.staticTexts["notification-review-pending"], "4 practice reminders")
+        app.buttons["notification-review-refresh"].tap()
+        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
         app.buttons["notification-review-soon"].tap()
-        waitLabel(app.staticTexts["notification-review-pending"], "1 daily reminders")
         XCUIDevice.shared.press(.home)
         XCTAssertTrue(app.wait(for: .runningBackground, timeout: 5))
-        // The repeating calendar trigger is 30–90 seconds away; iOS delivery
-        // is not an exact timer (this phone also has Sleep Focus enabled).
-        for _ in 0..<5 { Thread.sleep(forTimeInterval: 32) }
+        // A separate one-shot fixture checks the real reminder content/category
+        // on any day. The three production calendar requests are checked above.
+        Thread.sleep(forTimeInterval: 20)
         let delivered = XCTAttachment(screenshot: XCUIApplication(bundleIdentifier: "com.apple.springboard").screenshot())
-        delivered.name = "Daily reminder outside app"; delivered.lifetime = .keepAlways; add(delivered)
+        delivered.name = "Practice reminder delivery fixture outside app"; delivered.lifetime = .keepAlways; add(delivered)
         app.activate()
         app.buttons["notification-review-refresh"].tap()
-        waitLabel(app.staticTexts["notification-review-daily-delivered"], "1 daily alerts")
+        waitLabel(app.staticTexts["notification-review-practice-delivered"], "1 practice alerts")
         app.terminate(); app.launch()
-        waitLabel(app.staticTexts["notification-review-pending"], "1 daily reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
         app.buttons["notification-review-default-time"].tap()
-        waitEnabled(app.switches["notifications-daily"])
+        waitEnabled(app.switches["notifications-practice"])
         app.buttons["notification-review-refresh"].tap()
-        waitLabel(app.staticTexts["notification-review-pending"], "1 daily reminders")
-        toggle(app.switches["notifications-daily"])
-        waitEnabled(app.switches["notifications-daily"])
+        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
+        toggle(app.switches["notifications-practice"])
+        waitEnabled(app.switches["notifications-practice"])
         app.buttons["notification-review-refresh"].tap()
-        waitLabel(app.staticTexts["notification-review-pending"], "0 daily reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "0 practice reminders")
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = "Delivered reminder and disabled schedule"; shot.lifetime = .keepAlways; add(shot)
     }
