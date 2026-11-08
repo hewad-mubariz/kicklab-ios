@@ -1,0 +1,89 @@
+{
+  "version": "1.2.0",
+  "build": "77",
+  "status": "available_to_internal_testers",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "source_commit": "ef59b0f595190da267a6d47fbf479f030f49d2ef",
+  "upload_accepted": true,
+  "uploaded_at": "2026-11-08T22:43:52+01:00",
+  "processing_complete_confirmed": true,
+  "internal_group": "Early testers",
+  "group_id": "28332fea-2677-4f79-bcb2-c693963cbd99",
+  "internal_group_assigned": true,
+  "external_beta_review_submitted": false,
+  "public_app_review_submitted": false,
+  "archive_verification": {
+    "version": "1.2.0",
+    "build": "77",
+    "base_commit": "ef59b0f595190da267a6d47fbf479f030f49d2ef",
+    "source_snapshot": "source-manifest.json; clean tracked release source",
+    "archive": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/releases/20261108-1.2.0-77/JuggleDude-1.2.0-77.xcarchive",
+    "signature_verified": true,
+    "source_files_verified": 602,
+    "app_binary_sha256": "6bc5368ee5f1036fb435892d23a6081725b47f4fc58a3510a4953891bb1d4867",
+    "test_status": "86 targeted build-77 checks passed previously; distribution/manual qualification pending",
+    "google_signin_and_font_verified": true,
+    "meta_release_configuration_verified": true,
+    "metal_library_present": true,
+    "counter_profile": "outdoor-balanced-v3-20261029",
+    "compilation": "Release with TOUCH_COUNTER_BETA; DEBUG modes absent",
+    "models": [
+      "RFDETRSmallRecovery040FP16.mlmodelc"
+    ],
+    "languages": [
+      "de",
+      "en",
+      "es",
+      "fr",
+      "pt-BR"
+    ],
+    "minimum_ios": "18.0",
+    "iphone_only": true,
+    "privacy_manifest": true,
+    "model_license": true,
+    "client_configurations_verified": true,
+    "editor_upgrade_sources_present": true,
+    "touch_review_disabled": true,
+    "shoe_recovery_default": true,
+    "pose_model_verified": true,
+    "visibility_grace_ms": 3000,
+    "background_processing_identifiers_present": true
+  },
+  "upload_warnings": {
+    "kind": "missing_third_party_debug_symbols",
+    "frameworks": [
+      "MediaPipeTasksAudio.framework",
+      "MediaPipeTasksCommon.framework",
+      "MediaPipeTasksDecision.framework",
+      "MediaPipeTasksRetrieval.framework",
+      "MediaPipeTasksText.framework",
+      "MediaPipeTasksVision.framework"
+    ],
+    "impact": "May limit symbolication inside these third-party libraries; upload was accepted."
+  },
+  "manual_qualification": "Pending; user requested TestFlight upload before executing the new release plan.",
+  "screenshots": {
+    "date": "2026-11-04",
+    "directory": "marketing/app-store-20261104",
+    "preview": "marketing/app-store-20261104/contact-sheet-en.png",
+    "package": "marketing/app-store-20261104/Juggle-Dude-Store-Screenshots-20261104.zip",
+    "image_count": 50,
+    "locale_count": 10,
+    "dimensions": [
+      1320,
+      2868
+    ],
+    "uploaded_this_turn": false
+  },
+  "internal_testers": 3,
+  "what_to_test_saved_in_app_store_connect": true,
+  "distribution_verified_at": "2026-11-08T23:16:56.133490+01:00",
+  "app_id": "6820780610",
+  "build_id": "f9d094ab-b6c5-44b6-a64e-8fdded5c3b12",
+  "app_store_connect_url": "https://appstoreconnect.apple.com/apps/6820780610/testflight/ios/f9d094ab-b6c5-44b6-a64e-8fdded5c3b12",
+  "device_installation_from_testflight_confirmed": false,
+  "evidence_root": "artifacts/releases/20261108-1.2.0-77",
+  "confirmation_screenshot": "artifacts/releases/20261108-1.2.0-77/testflight-internal-ready.jpg",
+  "test_plan": "benchmarks/releases/1.2.0-77-test-plan.txt",
+  "what_to_test_source": "artifacts/releases/20261108-1.2.0-77/what-to-test.txt"
+}
