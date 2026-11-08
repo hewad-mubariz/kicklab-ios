@@ -1,0 +1,41 @@
+{
+  "status": "main_app_updated_in_place_and_launched_on_both_phones",
+  "version": "1.2.0",
+  "build": 74,
+  "bundle_identifier": "com.juggledude",
+  "display_name": "Juggle Dude",
+  "previous_main_build_both_phones": "39.24",
+  "source_candidate": "92fdb8ee",
+  "scope": "User requested replacing the main app after the separate preview install. In-place development install on both phones; no uninstall and no TestFlight upload.",
+  "counter_experiment": "Same recovery as preview 73, available in local Debug main installs; Release remains disabled pending local review.",
+  "configuration": "Debug, optimized device Swift, existing main Info plist and entitlements",
+  "build_log": "artifacts/release120/main-app-20261108/build.log",
+  "plist_cleanup": "Removed double-hyphen launch flag from an XML comment in the Release plist; property values unchanged.",
+  "binary_sha256": "01ac2495285f8f832510d97500c2e351a2b9ab341909add97af6489d1f1eac49",
+  "signature_verified": true,
+  "devices": {
+    "iphone11": {
+      "installed_version": "1.2.0",
+      "installed_build": "74",
+      "launched": true,
+      "running": true,
+      "history_files_before": 36,
+      "history_files_after": 36,
+      "missing_original_files": 0,
+      "changed_original_file_sizes": 0,
+      "preserved_bytes": 1262301338
+    },
+    "iphone17": {
+      "installed_version": "1.2.0",
+      "installed_build": "74",
+      "launched": true,
+      "running": true,
+      "history_files_before": 272,
+      "history_files_after": 272,
+      "missing_original_files": 0,
+      "changed_original_file_sizes": 0,
+      "preserved_bytes": 3528776053
+    }
+  },
+  "testflight_uploaded": false
+}

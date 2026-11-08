@@ -1,11 +1,11 @@
 import Foundation
 
-/// Local preview only until the phone accuracy/latency comparison is reviewed.
+/// Local Debug installs only until the phone accuracy/latency comparison is reviewed.
 nonisolated enum ShoeRecoveryPolicy {
     static let preferenceKey = "juggledude.preview.shoe-recovery"
     static var available: Bool {
         #if DEBUG
-        return Bundle.main.bundleIdentifier == "com.juggledude.release120.preview"
+        return ["com.juggledude", "com.juggledude.release120.preview"].contains(Bundle.main.bundleIdentifier ?? "")
         #else
         return false
         #endif

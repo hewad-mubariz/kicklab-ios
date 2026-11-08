@@ -376,5 +376,11 @@
     "Settings > Heel/toe recovery experiment switches the next recording/import between versions",
     "Import a clip, minimize/return, then try replay and export",
     "Review Storage and Notifications; automatic leaderboard rank-change alerts are still not enabled"
-  ]
+  ],
+  "follow_up_main_app": {
+    "build": 74,
+    "bundle": "com.juggledude",
+    "status": "Updated the existing main app on both phones at the user request; original session files retained.",
+    "report": "20261108-main-app-local-74.json"
+  }
 }
