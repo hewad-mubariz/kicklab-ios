@@ -1,0 +1,58 @@
+{
+  "status": "default_counter_installed_and_launched_on_both_phones",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "version": "1.2.0",
+  "build": 75,
+  "bundle_identifier": "com.juggledude",
+  "scope": "User requested the integrated heel/toe recovery as the normal default counter, without a user-facing toggle, for hands-on juggling review.",
+  "changes": [
+    "Enable recovery for main and preview app in Debug and Release",
+    "Remove counter experiment Settings section",
+    "Ignore retired preview preference, including a saved Off value",
+    "Keep automated A/B overrides internal to Debug benchmarks",
+    "Update analysis cache signature for the default recovery policy"
+  ],
+  "algorithm": "Same integrated heel/toe and visible-foot-v2 logic as build 74; no rule thresholds or models changed.",
+  "model_sha256": "4eaa5eb7a98365221087693fcc286334cf0858e2eb6e15b506aa4a7ecdcec4ad",
+  "model_source": "Verified preserved local model, copied to the leaderboard/editor checkout; the network installer rejected a different checksum.",
+  "validation": {
+    "device": "iPhone 11 Pro Max",
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "coverage": [
+      "Frozen contact proofs, future evidence and player-identity guards",
+      "Default recovery ignores old Off setting and includes bundled model",
+      "Analysis cache separates internal benchmark baseline",
+      "Home, Settings without recovery toggle, and leaderboard UI"
+    ],
+    "policy_checks": "Actual policy source also compiled and executed in Debug and Release on Mac. Release ignores internal benchmark Off preference and launch flag.",
+    "full_release_archive_built": false,
+    "artifact_directory": "artifacts/release120/default-counter-20261108"
+  },
+  "devices": {
+    "iphone11": {
+      "installed_version": "1.2.0",
+      "installed_build": "75",
+      "normal_launch_recovery_enabled": true,
+      "explicit_launch_flags": [],
+      "history_files_before": 36,
+      "history_files_after": 36,
+      "original_files_missing_or_changed_size": 0,
+      "preserved_bytes": 1262301338
+    },
+    "iphone17": {
+      "installed_version": "1.2.0",
+      "installed_build": "75",
+      "normal_launch_recovery_enabled": true,
+      "explicit_launch_flags": [],
+      "history_files_before": 272,
+      "history_files_after": 272,
+      "original_files_missing_or_changed_size": 0,
+      "preserved_bytes": 3528776053
+    }
+  },
+  "testflight_uploaded": false,
+  "remaining": "User live juggling review before deciding to keep the default for distribution.",
+  "binary_sha256": "d37d86a1328ca1f95f78b60ba044679b22bf6fe7a44cc1c5dd0490c56d3ffccb"
+}

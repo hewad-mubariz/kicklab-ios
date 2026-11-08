@@ -11,22 +11,11 @@ struct TrainingHomeSettings: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.colorScheme) private var scheme
     #if DEBUG
-    @AppStorage(ShoeRecoveryPolicy.preferenceKey) private var shoeRecovery = true
     @AppStorage(DebugOverlayPreferences.visibilityKey) private var showDebugOverlays = DebugOverlayPreferences.visibleByDefault
     #endif
 
     var body: some View {
         Form {
-            #if DEBUG
-            if ShoeRecoveryPolicy.available {
-                Section {
-                    Toggle("Heel/toe recovery experiment", isOn: $shoeRecovery)
-                        .accessibilityIdentifier("shoe-recovery-toggle")
-                } header: { Text("Counter preview") } footer: {
-                    Text("Adds heel and toe measurements to recover low touches. Applies to your next recording or import. Turn off to compare with the current counter. Phone speed and accuracy are still being tested.")
-                }
-            }
-            #endif
             Section("Appearance") {
                 Picker("Appearance", selection: $appearance) {
                     Text("System").tag("system")

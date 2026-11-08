@@ -40,15 +40,34 @@ final class ShoeContactRecoveryTests: XCTestCase {
         XCTAssertFalse(invalid.valid)
     }
     @MainActor
-    func testCounterCacheSeparatesExperimentFromCurrentRules() throws {
+    func testDefaultRecoveryIgnoresRetiredPreviewPreference() throws {
         try XCTSkipUnless(ShoeRecoveryPolicy.available)
-        let defaults = UserDefaults.standard, old = defaults.object(forKey: ShoeRecoveryPolicy.preferenceKey)
-        defer { defaults.set(old, forKey: ShoeRecoveryPolicy.preferenceKey) }
-        defaults.set(false, forKey: ShoeRecoveryPolicy.preferenceKey)
+        let defaults = UserDefaults.standard
+        let retiredKey = "juggledude.preview.shoe-recovery"
+        let previousRetired = defaults.object(forKey: retiredKey)
+        let previousBenchmark = defaults.object(forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+        defer {
+            defaults.set(previousRetired, forKey: retiredKey)
+            defaults.set(previousBenchmark, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+        }
+        defaults.removeObject(forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+        defaults.set(false, forKey: retiredKey)
+        XCTAssertTrue(ShoeRecoveryPolicy.enabled)
+        XCTAssertTrue(TouchCountingDebugProfile.arguments.contains("--visible-foot-recovery-v2"))
+        XCTAssertTrue(SessionAnalysisStore.pipelineSignature().contains("|shoe-recovery-v1|"))
+        XCTAssertNotNil(Bundle.main.url(forResource: "pose_landmarker_full", withExtension: "task"))
+    }
+
+    @MainActor
+    func testCounterCacheSeparatesRecoveryFromBenchmarkBaseline() throws {
+        try XCTSkipUnless(ShoeRecoveryPolicy.available)
+        let defaults = UserDefaults.standard, old = defaults.object(forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+        defer { defaults.set(old, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey) }
+        defaults.set(false, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
         let original = SessionAnalysisStore.pipelineSignature()
-        defaults.set(true, forKey: ShoeRecoveryPolicy.preferenceKey)
+        defaults.set(true, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
         XCTAssertNotEqual(original, SessionAnalysisStore.pipelineSignature())
-        defaults.set(false, forKey: ShoeRecoveryPolicy.preferenceKey)
+        defaults.set(false, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
         XCTAssertEqual(original, SessionAnalysisStore.pipelineSignature())
     }
 }
@@ -63,13 +82,13 @@ final class ShoeRecoveryPhoneTests: XCTestCase {
         throw XCTSkip("The real-model performance sample runs on physical phones")
         #endif
         let source = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "juggling-eighteen", withExtension: "mov"))
-        let defaults = UserDefaults.standard, old = defaults.object(forKey: ShoeRecoveryPolicy.preferenceKey)
+        let defaults = UserDefaults.standard, old = defaults.object(forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
         let idle = UIApplication.shared.isIdleTimerDisabled
         UIApplication.shared.isIdleTimerDisabled = true
-        defer { defaults.set(old, forKey: ShoeRecoveryPolicy.preferenceKey); UIApplication.shared.isIdleTimerDisabled = idle }
+        defer { defaults.set(old, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey); UIApplication.shared.isIdleTimerDisabled = idle }
         var rows: [[String: Any]] = []
         for enabled in [false, true] {
-            defaults.set(enabled, forKey: ShoeRecoveryPolicy.preferenceKey)
+            defaults.set(enabled, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
             // Each arm uses the real analyzer but bypasses persistent analysis reuse.
             let analyzer = VideoAnalyzer()
             let start = ProcessInfo.processInfo.systemUptime
@@ -105,11 +124,11 @@ extension ShoeRecoveryPhoneTests {
         throw XCTSkip("Physical-phone check")
         #endif
         let source = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "juggling-eighteen", withExtension: "mov"))
-        let defaults = UserDefaults.standard, old = defaults.object(forKey: ShoeRecoveryPolicy.preferenceKey)
+        let defaults = UserDefaults.standard, old = defaults.object(forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
         let idle = UIApplication.shared.isIdleTimerDisabled
         UIApplication.shared.isIdleTimerDisabled = true
-        defaults.set(true, forKey: ShoeRecoveryPolicy.preferenceKey)
-        defer { defaults.set(old, forKey: ShoeRecoveryPolicy.preferenceKey); UIApplication.shared.isIdleTimerDisabled = idle }
+        defaults.set(true, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+        defer { defaults.set(old, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey); UIApplication.shared.isIdleTimerDisabled = idle }
         let analyzer = VideoAnalyzer(), start = ProcessInfo.processInfo.systemUptime
         analyzer.analyse(url: source)
         await analyzer.waitUntilFinished()

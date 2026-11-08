@@ -13,11 +13,10 @@ final class ReleaseCandidateUITests: XCTestCase {
         app.buttons["home-profile"].tap()
         XCTAssertTrue(app.buttons["profile-settings"].waitForExistence(timeout: 5))
         app.buttons["profile-settings"].tap()
-        let recovery = app.switches["shoe-recovery-toggle"]
-        XCTAssertTrue(recovery.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["settings-storage"].exists)
+        XCTAssertTrue(app.buttons["settings-storage"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.switches["shoe-recovery-toggle"].exists)
         XCTAssertTrue(app.buttons["settings-notifications"].exists)
-        attach(app, "Combined 1.2 counter preview and settings")
+        attach(app, "Combined 1.2 settings with default counter")
         app.navigationBars["Settings"].buttons.element(boundBy: 0).tap()
         app.buttons["profile-close"].tap()
         let leaderboard = app.buttons["home-leaderboard"]

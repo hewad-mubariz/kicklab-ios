@@ -1,6 +1,6 @@
 import Foundation
 
-/// Numeric proof for the opt-in on-device heel/toe recovery experiment.
+/// Numeric proof for on-device heel/toe contact recovery.
 /// Same fixed predicate as low-contact-study/shoe_probe.py, evaluated again from
 /// the saved five observations rather than trusting a supplied acceptance flag.
 nonisolated struct ShoeContactProof: Codable, Equatable, Sendable {
