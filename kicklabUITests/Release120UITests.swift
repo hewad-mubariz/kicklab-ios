@@ -45,7 +45,7 @@ final class Release120UITests: XCTestCase {
         toggle(practice)
         waitEnabled(practice)
         app.buttons["notification-review-refresh"].tap()
-        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "0 practice reminders")
         XCTAssertTrue(app.datePickers["notifications-time"].exists)
         let settings = XCTAttachment(screenshot: app.screenshot())
         settings.name = "1.2 notification settings"; settings.lifetime = .keepAlways; add(settings)
@@ -53,7 +53,7 @@ final class Release120UITests: XCTestCase {
         app.terminate()
         app.launchArguments = ["--notification-review"]
         app.launch()
-        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "0 practice reminders")
         XCTAssertEqual(app.switches["notifications-exports"].value as? String, "1")
         let persistedPractice = app.switches["notifications-practice"]
         waitEnabled(persistedPractice); toggle(persistedPractice); waitEnabled(persistedPractice)

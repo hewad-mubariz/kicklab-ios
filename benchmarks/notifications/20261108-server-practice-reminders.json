@@ -1,0 +1,95 @@
+{
+  "date": "2026-11-08",
+  "branch": "codex/1.2-background-notifications",
+  "change": "One Practice reminders preference, with server-managed Monday/Wednesday/Sunday delivery and centrally editable messages.",
+  "supersedes": "20261108-weekly-practice.json describes the preceding local-schedule implementation.",
+  "schedule": {
+    "weekdays": ["Monday", "Wednesday", "Sunday"],
+    "time": "User-selected local time; default 18:00",
+    "time_zone": "Device time zone synchronized on registration/foreground refresh",
+    "opt_in_required": true,
+    "guests_supported": true,
+    "signed_in_players_supported": true,
+    "maximum_per_local_day": 1,
+    "maximum_per_local_iso_week": 3,
+    "late_backlog_skipped_after_minutes": 15,
+    "localizations": ["en", "de", "es", "fr", "pt-BR"]
+  },
+  "migration": {
+    "single_toggle": "Practice reminders",
+    "removed_toggle": "Training messages",
+    "existing_practice_opt_in_and_time_preserved": true,
+    "legacy_training_only_opt_in_does_not_enroll": true,
+    "old_local_daily_and_weekly_requests_cleared_before_server_enrollment": true,
+    "export_completion_notifications_remain_separate": true,
+    "old_clients_remain_legacy_until_updated": true
+  },
+  "validation": {
+    "ios": {
+      "status": "passed",
+      "configuration": "Debug preview 1.2.0 (70)",
+      "device": "iPhone 17 Pro simulator, iOS 26.5",
+      "unit_tests": 16,
+      "ui_tests": 1,
+      "result_bundle": "artifacts/release120/server-reminders-20261108/tests.xcresult"
+    },
+    "deno": {"passed": 13, "failed": 0},
+    "postgresql": "Full isolated account/push/schedule suite passed",
+    "deployed_database": "Schedule SQL assertions passed inside a rolled-back transaction; no test data persisted",
+    "checks": [
+      "Monday/Wednesday/Sunday progression and time-zone conversion",
+      "Berlin spring/autumn daylight saving changes and Auckland time zone",
+      "Central message copy and locale fallback",
+      "Preview does not reserve or send",
+      "Opt-out and delayed registration race protection",
+      "Duplicate, ambiguous outcome, weekly cap and stale backlog suppression",
+      "Legacy local schedules cleared; no duplicate Training messages toggle",
+      "Restricted database privileges and server-only sender authentication"
+    ]
+  },
+  "deployment": {
+    "project_ref": "shbdsjvpjdtqbiaevrxy",
+    "migration": "202611080002_scheduled_practice_reminders.sql applied through SQL Editor",
+    "functions": {
+      "push-installation": "Updated; deployment count advanced from 3 to 4",
+      "send-scheduled-practice": "Created; handler enforces the existing server-only sender credential"
+    },
+    "live_checks": {
+      "invalid_schedule_http_status": 400,
+      "unauthenticated_sender_http_status": 401,
+      "authenticated_preview_http_status": 200,
+      "vault_project_url_match": true,
+      "vault_sender_credential_hash_match": true,
+      "pg_net_preview_request_id": 6665,
+      "pg_net_preview_http_status": 200,
+      "pg_net_preview_timed_out": false
+    },
+    "scheduler": {
+      "enabled": true,
+      "cron_active": true,
+      "job_name": "juggledude-practice-reminders",
+      "job_id": 3,
+      "frequency": "Every minute; sends only when an opted-in server schedule is due",
+      "verified_successful_run_start_times_utc": [
+        "2026-11-08T17:44:00.018534+00:00",
+        "2026-11-08T17:45:00.051576+00:00",
+        "2026-11-08T17:46:00.014005+00:00"
+      ],
+      "server_opt_ins_at_verification": 0,
+      "legacy_installations_at_activation": 1,
+      "central_message_locales": 5
+    },
+    "operations": [
+      "supabase/ops/schedule-practice-reminders.sql",
+      "supabase/ops/practice-reminder-status.sql"
+    ]
+  },
+  "limitations": [
+    "Physical phones were not updated in this change; the new build must register before joining the server schedule.",
+    "No real APNs alert or broadcast was sent during deployment; new scheduled delivery and tap routing still need an end-to-end physical-device check.",
+    "Offline preference changes remain on the phone until registration can sync; server opt-out is not instantaneous while offline.",
+    "No automatic resend follows an ambiguous provider outcome; this favors avoiding duplicates over guaranteed delivery.",
+    "The current worker claims at most 50 installations per minute with 10 concurrent provider calls. Capacity must be revisited before large simultaneous cohorts exceed the 15-minute delivery window.",
+    "Server time zone updates when the app next synchronizes after travel; installations inactive for 90 days are skipped."
+  ]
+}

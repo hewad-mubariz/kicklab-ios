@@ -1,7 +1,7 @@
 import XCTest
 
 /// Dedicated preview only. Leaves the requested training opt-in enabled for
-/// the one-device APNs check; never enables a daily schedule or sends a push.
+/// the one-device APNs check. The server schedules the opted-in practice reminder.
 final class RemotePushUITests: XCTestCase {
     @MainActor func testNotificationTapOpensSetupFromTerminatedApp() {
         continueAfterFailure = false
@@ -35,7 +35,7 @@ final class RemotePushUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--notification-review", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
-        let toggle = app.switches["notifications-training-push"]
+        let toggle = app.switches["notifications-practice"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 25))
         XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: NSPredicate(format: "enabled == true"), object: toggle)], timeout: 30), .completed)
         if toggle.value as? String == "0" { toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap() }

@@ -1,3 +1,4 @@
+import type { DuePracticeBatch } from './scheduled-practice-push.ts';
 import { Claim, PushDatabase, PushError, PushProvider, Registration, hex, uuid } from './practice-push.ts';
 
 export class SupabasePushDatabase implements PushDatabase {
@@ -9,6 +10,7 @@ export class SupabasePushDatabase implements PushDatabase {
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
+      if (body.code==='22023') throw new PushError(400,'invalid_schedule');
       if (['42501','23505'].includes(body.code)) throw new PushError(403,'installation_rejected');
       throw new PushError(503,'push_unavailable');
     }
@@ -24,9 +26,18 @@ export class SupabasePushDatabase implements PushDatabase {
     return user.id;
   }
   async sync(r: Registration, hash: string, userID: string | null) {
+    if (r.delivery_mode === 'server') {
+      await this.rpc('sync_practice_installation', {p_id:r.installation_id,p_secret_hash:hash,p_revision:r.revision,
+        p_bundle_id:r.bundle_id,p_environment:r.environment,p_token:r.token,p_training_enabled:r.training_enabled,
+        p_locale:r.locale,p_user_id:userID,p_reminder_minute:r.reminder_minute,p_time_zone:r.time_zone});
+      return;
+    }
     await this.rpc('sync_push_installation', {p_id:r.installation_id,p_secret_hash:hash,p_revision:r.revision,
       p_bundle_id:r.bundle_id,p_environment:r.environment,p_token:r.token,p_training_enabled:r.training_enabled,
       p_daily_reminder_enabled:r.daily_reminder_enabled,p_locale:r.locale,p_user_id:userID});
+  }
+  claimDue(preview:boolean,installationID:string|null) {
+    return this.rpc<DuePracticeBatch>('claim_due_practice_reminders',{p_limit:50,p_preview:preview,p_installation_id:installationID});
   }
   claim(installationID:string,deliveryID:string,preview:boolean) {
     return this.rpc<Claim>('claim_practice_push',{p_installation_id:installationID,p_delivery_id:deliveryID,p_preview:preview});
@@ -42,7 +53,7 @@ export type APNsKey = {teamID:string;keyID:string;privateKey:string};
 export class ApplePushProvider implements PushProvider {
   private tokens = new Map<string,{value:string;created:number}>();
   private client?: Deno.HttpClient;
-  constructor(private keys: Record<string,APNsKey>, private fetcher?: typeof fetch, private now = () => Date.now()) {}
+  constructor(private keys: Record<string,APNsKey>, private fetcher?: typeof fetch, private now = () => Date.now(), private timeoutMs = 15000) {}
   close() { this.client?.close(); }
   private async authorization(environment:string) {
     const key = this.keys[environment];
@@ -66,7 +77,7 @@ export class ApplePushProvider implements PushProvider {
       method:'POST',headers:{authorization:`bearer ${authorization}`,'content-type':'application/json',
         'apns-topic':installation.bundle_id!,'apns-push-type':'alert','apns-priority':'10','apns-id':deliveryID,
         'apns-expiration':String(Math.floor(this.now()/1000)+3600),'apns-collapse-id':'training-invite'},
-      body:JSON.stringify(payload),signal:AbortSignal.timeout(15000),redirect:'error',
+      body:JSON.stringify(payload),signal:AbortSignal.timeout(this.timeoutMs),redirect:'error',
     };
     if (!this.fetcher) {
       this.client ??= Deno.createHttpClient({http1:false,http2:true}); options.client=this.client;
@@ -79,7 +90,7 @@ export class ApplePushProvider implements PushProvider {
   }
 }
 
-export function pushRuntime() {
+export function pushRuntime(providerTimeoutMs = 15000) {
   const keys = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}');
   const serviceKey = keys.default ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
   const teamID = Deno.env.get('APNS_TEAM_ID') ?? '';
@@ -90,7 +101,7 @@ export function pushRuntime() {
   }
   return {
     db:new SupabasePushDatabase(Deno.env.get('SUPABASE_URL')!,serviceKey),
-    provider:new ApplePushProvider(providerKeys), operatorSecret:Deno.env.get('PUSH_SEND_SECRET') ?? '',
+    provider:new ApplePushProvider(providerKeys,undefined,() => Date.now(),providerTimeoutMs), operatorSecret:Deno.env.get('PUSH_SEND_SECRET') ?? '',
     clientHash:async (req:Request) => {
       // Best-effort gateway rate limiting, not an authentication mechanism.
       // Raw IPs are never saved. Ownership still requires the installation secret.

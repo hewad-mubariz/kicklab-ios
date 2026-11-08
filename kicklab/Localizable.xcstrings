@@ -85,62 +85,6 @@
         }
       }
     },
-    "Occasional practice invites from Juggle Dude, including when you use the app as a guest. Your practice reminders take priority." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gelegentliche Trainingseinladungen von Juggle Dude, auch als Gast. Deine Trainingserinnerungen haben Vorrang."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invitaciones ocasionales de Juggle Dude para practicar, también si usas la app como invitado. Tus recordatorios de práctica tienen prioridad."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Des invitations occasionnelles de Juggle Dude à vous entraîner, même sans compte. Vos rappels d’entraînement sont prioritaires."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Convites ocasionais do Juggle Dude para treinar, mesmo usando o app como visitante. Seus lembretes de treino têm prioridade."
-          }
-        }
-      }
-    },
-    "Training messages" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trainingsnachrichten"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mensajes de entrenamiento"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Messages d’entraînement"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mensagens de treino"
-          }
-        }
-      }
-    },
     "A possible touch that the counter cannot confirm is left out. Brief tracking misses and high kicks do not end a streak on their own." : {
       "localizations" : {
         "de" : {

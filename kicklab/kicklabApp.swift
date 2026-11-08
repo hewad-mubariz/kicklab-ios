@@ -172,8 +172,10 @@ struct kicklabApp: App {
                 Task { await MetaAdsMeasurement.shared.sceneChanged(isActive: phase == .active) }
                 if phase == .active {
                     AppLanguage.refresh()
-                    Task { await PracticeNotifications.shared.refresh() }
-                    Task { await RemotePracticeNotifications.shared.refresh() }
+                    Task {
+                        await PracticeNotifications.shared.refresh()
+                        await RemotePracticeNotifications.shared.refresh()
+                    }
                     ProductAnalytics.shared.track(.appOpened)
                     Task { await AppUpdateNotice.shared.check() }
                 }

@@ -21,59 +21,34 @@ final class PracticeNotificationsTests: XCTestCase {
         XCTAssertTrue(client.reminders.isEmpty)
     }
 
-    func testEnablingPracticeSchedulesOnlyMondayWednesdaySundayAndTimeChangesReplaceThem() async throws {
+    func testEnablingPracticeRequestsPermissionAndStoresTimeWithoutSchedulingLocalDuplicates() async {
         let (store, client) = make()
         await store.setPracticeEnabled(true)
         XCTAssertEqual(client.permissionRequests, 1)
-        XCTAssertEqual(client.reminders.count, 3)
-        let identifiers = client.reminders.map(\.identifier)
-        XCTAssertEqual(Set(identifiers).count, 3)
-        var weekdays = Set<Int>()
-        for request in client.reminders {
-            let trigger = try XCTUnwrap(request.trigger as? UNCalendarNotificationTrigger)
-            XCTAssertTrue(trigger.repeats)
-            weekdays.insert(try XCTUnwrap(trigger.dateComponents.weekday))
-            XCTAssertEqual(trigger.dateComponents.hour, 18)
-            XCTAssertEqual(trigger.dateComponents.minute, 0)
-            XCTAssertNil(trigger.dateComponents.timeZone)
-            XCTAssertNil(trigger.dateComponents.day)
-            XCTAssertNil(trigger.dateComponents.month)
-            let next = try XCTUnwrap(trigger.nextTriggerDate())
-            XCTAssertEqual(Calendar.current.component(.weekday, from: next), trigger.dateComponents.weekday)
-        }
-        XCTAssertEqual(weekdays, [1, 2, 4])
+        XCTAssertTrue(store.practiceEnabled)
+        XCTAssertTrue(client.reminders.isEmpty)
         await store.setTime(hour: 7, minute: 35)
-        XCTAssertEqual(client.reminders.map(\.identifier), identifiers)
-        for request in client.reminders {
-            let trigger = try XCTUnwrap(request.trigger as? UNCalendarNotificationTrigger)
-            XCTAssertEqual(trigger.dateComponents.hour, 7)
-            XCTAssertEqual(trigger.dateComponents.minute, 35)
-        }
+        XCTAssertEqual(store.minuteOfDay, 7 * 60 + 35)
         await store.refresh()
-        XCTAssertEqual(client.reminders.count, 3)
+        XCTAssertTrue(client.reminders.isEmpty)
         XCTAssertEqual(client.permissionRequests, 1)
         await store.setPracticeEnabled(false)
         XCTAssertTrue(client.reminders.isEmpty)
         XCTAssertFalse(store.practiceEnabled)
     }
 
-    func testExistingDailyOptInMigratesToThreeWeeklyRemindersAtSavedTime() async throws {
+    func testExistingOptInKeepsSavedTimeWhileRemovingTheOldLocalSchedule() async throws {
         let defaults = UserDefaults(suiteName: suite)!
         defaults.set(true, forKey: "juggledude.notifications.daily")
         defaults.set(7 * 60 + 35, forKey: PracticeNotifications.timeKey)
         let client = NotificationClientStub(); client.status = .authorized
+        client.reminders = PracticeNotifications.reminders(minuteOfDay: 1080)
         let (store, _) = make(client)
         await store.refresh()
         XCTAssertTrue(store.practiceEnabled)
         XCTAssertEqual(client.permissionRequests, 0)
-        XCTAssertEqual(client.reminders.count, 3)
-        for request in client.reminders {
-            XCTAssertNotEqual(request.identifier, "juggledude.daily-practice")
-            let trigger = try XCTUnwrap(request.trigger as? UNCalendarNotificationTrigger)
-            XCTAssertNotNil(trigger.dateComponents.weekday)
-            XCTAssertEqual(trigger.dateComponents.hour, 7)
-            XCTAssertEqual(trigger.dateComponents.minute, 35)
-        }
+        XCTAssertTrue(client.reminders.isEmpty)
+        XCTAssertEqual(store.minuteOfDay, 7 * 60 + 35)
         let (reopened, _) = make(client)
         XCTAssertTrue(reopened.practiceEnabled)
         await reopened.setPracticeEnabled(false)
@@ -96,7 +71,7 @@ final class PracticeNotificationsTests: XCTestCase {
         let client = NotificationClientStub(); client.status = .authorized
         let (store, _) = make(client)
         await store.setPracticeEnabled(true)
-        XCTAssertEqual(client.reminders.count, 3)
+        XCTAssertTrue(client.reminders.isEmpty)
         client.status = .denied
         await store.refresh()
         XCTAssertTrue(store.practiceEnabled); XCTAssertFalse(store.isAllowed)
@@ -105,7 +80,7 @@ final class PracticeNotificationsTests: XCTestCase {
         XCTAssertEqual(client.permissionRequests, 0)
         client.status = .authorized
         await store.refresh()
-        XCTAssertEqual(client.reminders.count, 3)
+        XCTAssertTrue(client.reminders.isEmpty)
     }
 
     func testDisablingWhilePermissionDialogIsPendingWins() async {
@@ -133,7 +108,7 @@ final class PracticeNotificationsTests: XCTestCase {
         XCTAssertNotNil(store.errorMessage)
         client.failsScheduling = false
         await store.refresh()
-        XCTAssertNil(store.errorMessage); XCTAssertEqual(client.reminders.count, 3)
+        XCTAssertNil(store.errorMessage); XCTAssertTrue(client.reminders.isEmpty)
         XCTAssertEqual(client.permissionRequests, 1)
     }
 

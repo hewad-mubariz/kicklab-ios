@@ -31,10 +31,11 @@ export type Registration = {
   installation_id: string; secret: string; revision: number; bundle_id: string;
   environment: 'sandbox' | 'production'; token: string | null; training_enabled: boolean;
   daily_reminder_enabled: boolean; locale: string;
+  delivery_mode?: 'server'; reminder_minute?: number; time_zone?: string;
 };
 export function parseRegistration(input: Record<string, unknown>): Registration {
   const keys = ['installation_id','secret','revision','bundle_id','environment','token',
-    'training_enabled','daily_reminder_enabled','locale'];
+    'training_enabled','daily_reminder_enabled','locale','delivery_mode','reminder_minute','time_zone'];
   const pairs = new Set(['com.juggledude.release120.preview:sandbox', 'com.juggledude:production']);
   if (Object.keys(input).some(k => !keys.includes(k)) || !uuid(input.installation_id)
       || typeof input.secret !== 'string' || !/^[0-9a-f]{64}$/.test(input.secret)
@@ -45,6 +46,14 @@ export function parseRegistration(input: Record<string, unknown>): Registration 
   if (input.token != null && (typeof input.token !== 'string' || !/^[0-9a-f]{64,256}$/.test(input.token)
       || input.token.length % 2 !== 0)) throw new PushError(400,'invalid_registration');
   if (input.training_enabled && !input.token) throw new PushError(400,'missing_device_token');
+  const hasSchedule = ['delivery_mode','reminder_minute','time_zone'].some(k => k in input);
+  if (hasSchedule) {
+    if (input.delivery_mode !== 'server' || input.daily_reminder_enabled !== false
+        || !Number.isInteger(input.reminder_minute) || Number(input.reminder_minute) < 0 || Number(input.reminder_minute) > 1439
+        || typeof input.time_zone !== 'string' || input.time_zone.length > 80) throw new PushError(400,'invalid_schedule');
+    try { new Intl.DateTimeFormat('en', {timeZone: input.time_zone}); }
+    catch { throw new PushError(400,'invalid_schedule'); }
+  }
   return { ...input, token: input.training_enabled ? input.token : null } as Registration;
 }
 
@@ -68,8 +77,8 @@ const copy: Record<string, [string,string]> = {
   fr: ['C’est l’heure de vos 3 minutes de jongles','Prenez votre ballon pour une courte séance d’entraînement.'],
   'pt-BR': ['Hora de 3 minutos de embaixadinhas','Pegue sua bola para um treino rápido.'],
 };
-export function practicePayload(locale: string) {
-  const [title, body] = copy[locale] ?? copy.en;
+export function practicePayload(locale: string, message?: {title:string;body:string}) {
+  const [title, body] = message ? [message.title,message.body] : copy[locale] ?? copy.en;
   return { aps: { alert: { title, body }, sound: 'default', category: 'training-invite',
     'thread-id': 'training' }, juggle_route: 'practice', version: 1 };
 }
@@ -95,16 +104,20 @@ export function installationHandler(db: PushDatabase, clientHash: (req: Request)
   };
 }
 
+export async function requirePushOperator(req:Request,operatorSecret:string) {
+  const supplied = req.headers.get('Authorization')?.match(/^Bearer ([^\s]+)$/i)?.[1] ?? '';
+  if (operatorSecret.length < 32 || supplied.length > 512) throw new PushError(401,'operator_required');
+  // Compare fixed-length hashes without an early exit over the credential.
+  const a = await digest(supplied), b = await digest(operatorSecret);
+  let difference = 0; for (let i=0; i<a.length; i++) difference |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  if (difference !== 0) throw new PushError(401,'operator_required');
+}
+
 export function senderHandler(db: PushDatabase, provider: PushProvider, operatorSecret: string) {
   return async (req: Request): Promise<Response> => {
     if (req.method !== 'POST') return json({ error: 'method_not_allowed' },405);
     try {
-      const supplied = req.headers.get('Authorization')?.match(/^Bearer ([^\s]+)$/i)?.[1] ?? '';
-      if (operatorSecret.length < 32 || supplied.length > 512) throw new PushError(401,'operator_required');
-      // Compare fixed-length hashes without an early exit over the credential.
-      const a = await digest(supplied), b = await digest(operatorSecret);
-      let difference = 0; for (let i=0; i<a.length; i++) difference |= a.charCodeAt(i) ^ b.charCodeAt(i);
-      if (difference !== 0) throw new PushError(401,'operator_required');
+      await requirePushOperator(req,operatorSecret);
       const input = await readBody(req);
       if (Object.keys(input).some(k => !['installation_id','delivery_id','send'].includes(k))
           || !uuid(input.installation_id) || !uuid(input.delivery_id) || typeof input.send !== 'boolean') {

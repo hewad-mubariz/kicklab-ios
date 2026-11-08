@@ -6,7 +6,7 @@ import UserNotifications
 @MainActor
 protocol RemotePushPlatform {
     func authorization() async -> UNAuthorizationStatus
-    func requestPermission() async throws
+    func clearLocalReminders() async throws
     func register()
 }
 
@@ -15,8 +15,13 @@ private struct SystemRemotePushPlatform: RemotePushPlatform {
     func authorization() async -> UNAuthorizationStatus {
         await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
     }
-    func requestPermission() async throws {
-        _ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
+    func clearLocalReminders() async throws {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: PracticeNotifications.managedReminderIdentifiers)
+        let remaining = await center.pendingNotificationRequests()
+        guard !remaining.contains(where: { PracticeNotifications.managedReminderIdentifiers.contains($0.identifier) }) else {
+            throw PushRegistrationError.unavailable
+        }
     }
     func register() { UIApplication.shared.registerForRemoteNotifications() }
 }
@@ -25,7 +30,7 @@ private struct SystemRemotePushPlatform: RemotePushPlatform {
 /// Account binding is optional; the server verifies the account JWT itself.
 @MainActor
 final class RemotePracticeNotifications: ObservableObject {
-    static let enabledKey = "juggledude.notifications.remote-training"
+    static let legacyEnabledKey = "juggledude.notifications.remote-training"
     static let category = "training-invite"
     static let shared = RemotePracticeNotifications(defaults: .standard,
         vault: KeychainPushInstallationVault(),
@@ -45,38 +50,45 @@ final class RemotePracticeNotifications: ObservableObject {
     private var deviceToken: String?
     private var worker: Task<Void, Never>?
     private var needsSync = false
-    private var asksPermission = false
     private var requestsRegistration = false
 
     init(defaults: UserDefaults, vault: any PushInstallationVault,
          client: (any PushRegistrationClient)?, platform: any RemotePushPlatform) {
         self.defaults = defaults; self.vault = vault; self.client = client; self.platform = platform
-        enabled = defaults.bool(forKey: Self.enabledKey)
+        enabled = defaults.bool(forKey: PracticeNotifications.enabledKey)
+        defaults.removeObject(forKey: Self.legacyEnabledKey)
     }
 
     func useAccount(_ account: AccountStore) async {
         self.account = account
         await refresh()
     }
-    func setEnabled(_ value: Bool) async {
-        enabled = value; defaults.set(value, forKey: Self.enabledKey)
-        await synchronize(ask: value, register: value)
+    func refresh() async {
+        enabled = defaults.bool(forKey: PracticeNotifications.enabledKey)
+        await synchronize(register: enabled)
     }
-    func refresh() async { await synchronize(ask: false, register: enabled) }
     func receivedToken(_ data: Data) {
         deviceToken = data.map { String(format: "%02x", $0) }.joined()
         registeredWithApple = true
-        Task { await synchronize(ask: false, register: false) }
+        Task { await synchronize(register: false) }
     }
     func registrationFailed() {
         registeredWithApple = false; synchronized = false
         errorMessage = String(localized: "Couldn’t connect push notifications. Try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
     }
     /// Account deletion must not silently re-enrol the installation as a guest.
-    func accountWasDeleted() async { await setEnabled(false) }
+    func accountWasDeleted() async {
+        defaults.set(false, forKey: PracticeNotifications.enabledKey)
+        await refresh()
+    }
 
-    private func synchronize(ask: Bool, register: Bool) async {
-        needsSync = true; asksPermission = asksPermission || ask
+    private var reminderMinute: Int {
+        let value = defaults.object(forKey: PracticeNotifications.timeKey) as? Int
+        return value.flatMap { (0..<1440).contains($0) ? $0 : nil } ?? 18 * 60
+    }
+
+    private func synchronize(register: Bool) async {
+        needsSync = true
         requestsRegistration = requestsRegistration || register
         if let worker { await worker.value; return }
         isUpdating = true
@@ -84,15 +96,12 @@ final class RemotePracticeNotifications: ObservableObject {
             defer { self.worker = nil; self.isUpdating = false }
             while self.needsSync {
                 self.needsSync = false
-                let ask = self.asksPermission; self.asksPermission = false
                 let register = self.requestsRegistration; self.requestsRegistration = false
                 self.errorMessage = nil; self.synchronized = false
                 do {
-                    var permission = await self.platform.authorization()
-                    if ask, self.enabled, permission == .notDetermined {
-                        try await self.platform.requestPermission()
-                        permission = await self.platform.authorization()
-                    }
+                    self.enabled = self.defaults.bool(forKey: PracticeNotifications.enabledKey)
+                    let permission = await self.platform.authorization()
+                    try await self.platform.clearLocalReminders()
                     let allowed = self.enabled && PracticeNotifications.allows(permission)
                     if allowed, register { self.platform.register() }
                     var credential = try self.vault.load()
@@ -112,7 +121,7 @@ final class RemotePracticeNotifications: ObservableObject {
                     if allowed, let userID, let account = self.account {
                         accessToken = try await account.accessToken(for: userID)
                     } else { accessToken = nil }
-                    guard allowed == (self.enabled && PracticeNotifications.allows(permission)),
+                    guard allowed == (self.defaults.bool(forKey: PracticeNotifications.enabledKey) && PracticeNotifications.allows(permission)),
                           userID == self.account?.user?.id else { self.needsSync = true; continue }
                     #if DEBUG
                     let environment = "sandbox"
@@ -123,10 +132,10 @@ final class RemotePracticeNotifications: ObservableObject {
                         secret: current.secret, revision: current.revision,
                         bundleId: Bundle.main.bundleIdentifier ?? "com.juggledude", environment: environment,
                         token: allowed ? self.deviceToken : nil, trainingEnabled: allowed,
-                        // The existing server field suppresses remote practice invites
-                        // whenever local reminders are enabled, including this weekly schedule.
-                        dailyReminderEnabled: self.defaults.bool(forKey: PracticeNotifications.enabledKey),
-                        locale: AppLanguage.current), accessToken: accessToken)
+                        dailyReminderEnabled: false,
+                        locale: AppLanguage.current,
+                        reminderMinute: self.reminderMinute,
+                        timeZone: TimeZone.autoupdatingCurrent.identifier), accessToken: accessToken)
                     self.synchronized = !self.needsSync
                 } catch {
                     self.errorMessage = String(localized: "Your notification choice is saved on this phone. Connect and retry to update push messages.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)

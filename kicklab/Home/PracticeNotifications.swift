@@ -32,7 +32,7 @@ private struct SystemPracticeNotifications: PracticeNotificationClient {
     }
 }
 
-/// Preferences are opt-in and local to this device. Reconciliation is serialized
+/// The practice preference syncs to the server; exports remain local. Reconciliation is serialized
 /// so a slow permission response cannot restore a reminder the user switched off.
 @MainActor
 final class PracticeNotifications: ObservableObject {
@@ -90,8 +90,13 @@ final class PracticeNotifications: ObservableObject {
     }
 
     /// Opening the app, changing language or returning from Settings never prompts.
-    func refresh() async { await synchronize(askPermission: false) }
+    func refresh() async {
+        practiceEnabled = defaults.bool(forKey: Self.enabledKey)
+        await synchronize(askPermission: false)
+    }
 
+    #if DEBUG
+    /// Legacy schedule fixture for migration checks; production delivery is remote.
     static func reminders(minuteOfDay: Int) -> [UNNotificationRequest] {
         let content = UNMutableNotificationContent()
         content.title = String(localized: "Time for your 3-minute juggle", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
@@ -107,6 +112,8 @@ final class PracticeNotifications: ObservableObject {
                 trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true))
         }
     }
+
+    #endif
 
     private func synchronize(askPermission: Bool) async {
         needsSync = true; asksPermission = asksPermission || askPermission
@@ -124,8 +131,9 @@ final class PracticeNotifications: ObservableObject {
                         try await self.client.requestPermission()
                         self.authorization = await self.client.authorization()
                     }
-                    let requests = self.practiceEnabled && self.isAllowed ? Self.reminders(minuteOfDay: self.minuteOfDay) : []
-                    try await self.client.setReminders(requests)
+                    // Upgrading or opting out clears every previous local schedule.
+                    // The backend is the sole sender for practice reminders.
+                    try await self.client.setReminders([])
                 } catch {
                     self.errorMessage = String(localized: "Couldn’t update notifications. Try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
                 }

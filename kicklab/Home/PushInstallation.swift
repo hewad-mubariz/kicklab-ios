@@ -60,6 +60,9 @@ nonisolated struct PushRegistration: Encodable, Equatable, Sendable {
     let trainingEnabled: Bool
     let dailyReminderEnabled: Bool
     let locale: String
+    let reminderMinute: Int
+    let timeZone: String
+    let deliveryMode = "server"
 }
 
 @MainActor

@@ -17,21 +17,15 @@ struct NotificationSettingsView: View {
                 if notifications.practiceEnabled {
                     DatePicker("Reminder time", selection: Binding(get: { reminderTime }, set: { date in
                         let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
-                        Task { await notifications.setTime(hour: parts.hour ?? 18, minute: parts.minute ?? 0) }
+                        Task {
+                            await notifications.setTime(hour: parts.hour ?? 18, minute: parts.minute ?? 0)
+                            await remote.refresh()
+                        }
                     }), displayedComponents: .hourAndMinute)
                     .accessibilityIdentifier("notifications-time")
                 }
             } footer: {
                 Text("Three reminders a week: Monday, Wednesday and Sunday, at your chosen local time.")
-            }
-            Section {
-                Toggle("Training messages", isOn: Binding(get: { remote.enabled }, set: { value in
-                    Task { await remote.setEnabled(value); await notifications.refresh() }
-                }))
-                .accessibilityIdentifier("notifications-training-push")
-                .disabled(remote.isUpdating)
-            } footer: {
-                Text("Occasional practice invites from Juggle Dude, including when you use the app as a guest. Your practice reminders take priority.")
             }
             if let error = remote.errorMessage {
                 Section {

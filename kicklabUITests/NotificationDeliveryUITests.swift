@@ -2,11 +2,12 @@ import XCTest
 
 /// Real OS delivery on the preview install. Start with both opt-ins off.
 final class NotificationDeliveryUITests: XCTestCase {
-    @MainActor func testWeeklyScheduleMigrationAndReminderDeliveryFixture() {
+    @MainActor func testSinglePracticeSettingClearsLocalSchedulesAndDeliversTapFixture() {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["--notification-review", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
+        XCTAssertFalse(app.switches["notifications-training-push"].exists)
         let practice = app.switches["notifications-practice"]
         XCTAssertTrue(practice.waitForExistence(timeout: 20))
         waitEnabled(practice)
@@ -20,16 +21,16 @@ final class NotificationDeliveryUITests: XCTestCase {
             alert.buttons["Allow"].tap()
         }
         waitEnabled(practice)
-        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "0 practice reminders")
         app.buttons["notification-review-legacy"].tap()
-        waitLabel(app.staticTexts["notification-review-pending"], "4 practice reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "1 practice reminders")
         app.buttons["notification-review-refresh"].tap()
-        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "0 practice reminders")
         app.buttons["notification-review-soon"].tap()
         XCUIDevice.shared.press(.home)
         XCTAssertTrue(app.wait(for: .runningBackground, timeout: 5))
         // A separate one-shot fixture checks the real reminder content/category
-        // on any day. The three production calendar requests are checked above.
+        // on any day. Production delivery is remote; no local schedules remain.
         Thread.sleep(forTimeInterval: 20)
         let delivered = XCTAttachment(screenshot: XCUIApplication(bundleIdentifier: "com.apple.springboard").screenshot())
         delivered.name = "Practice reminder delivery fixture outside app"; delivered.lifetime = .keepAlways; add(delivered)
@@ -37,11 +38,11 @@ final class NotificationDeliveryUITests: XCTestCase {
         app.buttons["notification-review-refresh"].tap()
         waitLabel(app.staticTexts["notification-review-practice-delivered"], "1 practice alerts")
         app.terminate(); app.launch()
-        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "0 practice reminders")
         app.buttons["notification-review-default-time"].tap()
         waitEnabled(app.switches["notifications-practice"])
         app.buttons["notification-review-refresh"].tap()
-        waitLabel(app.staticTexts["notification-review-pending"], "3 practice reminders")
+        waitLabel(app.staticTexts["notification-review-pending"], "0 practice reminders")
         toggle(app.switches["notifications-practice"])
         waitEnabled(app.switches["notifications-practice"])
         app.buttons["notification-review-refresh"].tap()
