@@ -38,8 +38,7 @@ nonisolated final class LabSkinRenderer: @unchecked Sendable {
         }
         self.panels = panels
         // The licensed gold lighting environment, as the lab loads it: 1024 × 512 rgba16Float with mipmaps.
-        guard let url = Bundle.main.url(forResource: "gold-environment", withExtension: "bin") else { throw failure("Missing lighting environment") }
-        let data = try Data(contentsOf: url)
+        let data = try LabAssetData.load("gold-environment")
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba16Float, width: 1024, height: 512, mipmapped: true)
         descriptor.usage = .shaderRead
         let expected = (0..<descriptor.mipmapLevelCount).reduce(0) { $0 + max(1, 1024 >> $1) * max(1, 512 >> $1) * 8 }

@@ -1,4 +1,4 @@
-// Copied from the Effects Lab (Crystal, accepted 1 November 2026); only isolation is added for the app.
+// From the Effects Lab (Crystal, accepted 1 November 2026); geometry bytes are unchanged.
 import Foundation
 import Metal
 
@@ -11,10 +11,7 @@ nonisolated final class IceGeometry {
 
     init(device: MTLDevice, directory: URL? = nil, prefix: String = "ice") throws {
         func load(_ name: String, stride: Int) throws -> MTLBuffer {
-            guard let url = directory?.appendingPathComponent(name + ".bin") ?? Bundle.main.url(forResource: name, withExtension: "bin") else {
-                throw NSError(domain: "EffectLab", code: 2, userInfo: [NSLocalizedDescriptionKey: "Missing ice geometry: \(name)"])
-            }
-            let data = try Data(contentsOf: url)
+            let data = try LabAssetData.load(name, directory: directory)
             guard !data.isEmpty, data.count.isMultiple(of: stride),
                   let buffer = data.withUnsafeBytes({ device.makeBuffer(bytes: $0.baseAddress!, length: $0.count, options: .storageModeShared) }) else {
                 throw NSError(domain: "EffectLab", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid ice geometry: \(name)"])

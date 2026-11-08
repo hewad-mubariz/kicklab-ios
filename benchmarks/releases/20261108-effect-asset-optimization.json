@@ -1,0 +1,315 @@
+{
+  "date": "2026-11-08T23:44:27.437773+01:00",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "scope": "Lossless bundle storage for Gold/Crystal reflection maps and crystal geometry. No model, font, shader, JPEG, resolution or effect-quality changes.",
+  "baseline": "Local archived Release 1.2.0 (77)",
+  "codec": "Foundation NSData LZFSE, already used by ball material storage in the app",
+  "assets": [
+    {
+      "path": "kicklab/Effects/Lab/Skins/gold-environment.bin",
+      "original_bytes": 5592408,
+      "original_sha256": "a0196bc4e7722fb0a79c8c7368ec306d67bf9329b0b115e678fe8cbb04a4b852",
+      "compressed_path": "kicklab/Effects/Lab/Skins/gold-environment.bin.lzfse",
+      "compressed_bytes": 2630273,
+      "compressed_sha256": "66c757dc35b8a58b7d84b4014261972cfe1f5be875ba1b9ea34ac77d0b810233"
+    },
+    {
+      "path": "kicklab/Effects/Lab/Crystal/studio-environment.bin",
+      "original_bytes": 5592408,
+      "original_sha256": "f2c76c99ebc2a8d01314a5473b797a079b4297b451be3709411dc42ab1d30783",
+      "compressed_path": "kicklab/Effects/Lab/Crystal/studio-environment.bin.lzfse",
+      "compressed_bytes": 2210013,
+      "compressed_sha256": "dd9d7698f3c5a650ec922b007e9ab8fe0a29c79267c76b9bbe9328175cb823bd"
+    },
+    {
+      "path": "kicklab/Effects/Lab/Crystal/ice-fracture-triangles.bin",
+      "original_bytes": 2764800,
+      "original_sha256": "82f8d787850936079dd041958f0c398ec346d2b08f6c6044c18cb1071173cef7",
+      "compressed_path": "kicklab/Effects/Lab/Crystal/ice-fracture-triangles.bin.lzfse",
+      "compressed_bytes": 656551,
+      "compressed_sha256": "ad4830952bb31ac558326613dc0fc9b8a7816b5fea2044414c0b87c0dd05bde6"
+    },
+    {
+      "path": "kicklab/Effects/Lab/Crystal/ice-fracture-bvh.bin",
+      "original_bytes": 687792,
+      "original_sha256": "93c9624e1893a78a1cbd339c76c6f4081f87b82e44ea7ea6322a467b29917cb6",
+      "compressed_path": "kicklab/Effects/Lab/Crystal/ice-fracture-bvh.bin.lzfse",
+      "compressed_bytes": 260425,
+      "compressed_sha256": "07c0d92539fc74943b75e766a6dd3eb6292ac2ce7d42447169ae21952c1c3bf4"
+    }
+  ],
+  "affected_effect_resources_before_bytes": 16979060,
+  "affected_effect_resources_after_bytes": 8098914,
+  "asset_savings_bytes": 8880146,
+  "tests": {
+    "passed": 7,
+    "failed": 0,
+    "suites": [
+      "LabAssetStorageTests",
+      "CrystalPreparationTests"
+    ],
+    "result_bundle": "artifacts/effect-asset-optimization/asset-tests.xcresult",
+    "destination": "iOS 26.5 Simulator, 8BFD585D-A6E8-4F0D-9AA1-19B1DB8A9CE3"
+  },
+  "render_comparison": {
+    "frames": 36,
+    "pixel_identical": true,
+    "renderer": "Unmodified production Gold/surface/Crystal rendering code and Metal shaders; only resource loading changed. Mac harness provides the four skin enum cases.",
+    "gpu": "Apple M1 Max",
+    "coverage": "Gold, Prism, Wave and Night Pulse: 3 poses at 96 and 384px. Crystal: 3 times at 192 and 512px, full-quality and older-GPU preview settings.",
+    "before": "artifacts/effect-asset-optimization/renders-before",
+    "after": "artifacts/effect-asset-optimization/renders-after",
+    "frame_hashes": [
+      {
+        "height": 96,
+        "name": "goldPolish-96-0",
+        "pixel_sha256": "fc24a8ee450d3a8f8ec394016d1e779b515b79630f59d8f3ff459eceee92f44c",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "goldPolish-96-1",
+        "pixel_sha256": "fb74b6c53ff6ac0a4ec1d3f7cc7028f09d4bb639f22c6f4de1d20ddd56d14324",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "goldPolish-96-2",
+        "pixel_sha256": "a8518a659f1caec7dad02121f3bb69e4f5b5da769f89fba2fc2eab21b7b1f24c",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "prism-96-0",
+        "pixel_sha256": "71fa0cc5b18dfef5069315442d41e0f449f03c66efc712ea673ae76f44ce75e1",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "prism-96-1",
+        "pixel_sha256": "e36f8bb67bd3b1bb4f43c8528e477d1c9b0a22bf6a9c6c6d5c5b1bd25c0bde25",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "prism-96-2",
+        "pixel_sha256": "f689ca9ba511dd1e3cdbb79be548665c8903644f7e39168a46a5706ea0a394e6",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "wave-96-0",
+        "pixel_sha256": "8cbe85027d82c1fa2e7846db299b6dd5b72c8a7241400c82a5b259e2e05e64a2",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "wave-96-1",
+        "pixel_sha256": "c0bbefa3c335f57b2ef406893d1037c16da43e74bd60f79f3199d61deb07a557",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "wave-96-2",
+        "pixel_sha256": "2229d9282980c161eb8daa1ff543d7ffb2e0f6cb4bacffd7b8c24d66b77044ff",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "nightPulse-96-0",
+        "pixel_sha256": "9000a3a896dc9711ddbd772c1764ab3f8cc976abba9cff336f729737f2e9b0df",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "nightPulse-96-1",
+        "pixel_sha256": "f45a5b1c032d0750cf8a94529de7866e05bcccc39cd996f4167ccdd592779f4b",
+        "width": 96
+      },
+      {
+        "height": 96,
+        "name": "nightPulse-96-2",
+        "pixel_sha256": "9a9f46b6033158357d9954c3dd2b899d63a5abffae217e34cdec5dab3c1ed438",
+        "width": 96
+      },
+      {
+        "height": 384,
+        "name": "goldPolish-384-0",
+        "pixel_sha256": "f6c250c1b97b7319ec677755d4354fb8e061fa8b4b65a2aec7ba1343ee7423aa",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "goldPolish-384-1",
+        "pixel_sha256": "7f7ad6a85546415084493c558d3ed3cb72fcddd121623325ba334705d3709a36",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "goldPolish-384-2",
+        "pixel_sha256": "5be12af52c18b02ad5d5944177156cc8ea95f0353197aa49d95f0cf288d922cb",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "prism-384-0",
+        "pixel_sha256": "2fd622b9b3c4368016b997cb6b0647fa115491579949beaecd53624ab24bd223",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "prism-384-1",
+        "pixel_sha256": "666f3385b965f59e54c42ddd21d458b4da641b91bc24ea64943b343bdd1900b4",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "prism-384-2",
+        "pixel_sha256": "b30085cff54c5ab30f5b9cb5209d789cae0818ab504974079442f69efc694c5c",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "wave-384-0",
+        "pixel_sha256": "0d744d4aca2aa8612ca28b30104381f9e38269ee7a84a788317b52656ae7f86f",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "wave-384-1",
+        "pixel_sha256": "e2084a4d0a73e1ba4ea601e1f4e7be72b57e2abe364452d0bc22fa752966b54d",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "wave-384-2",
+        "pixel_sha256": "f808bbe3894679ac3e67215263ccf93317618d183b43f7b94d089d47e5c41732",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "nightPulse-384-0",
+        "pixel_sha256": "8c838064fd8082efb1fc2cae1e27497bacf49245cddc46274a34e13067e98465",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "nightPulse-384-1",
+        "pixel_sha256": "39fb68485227ac0375501303d4830f4ae3519a2a69a72bab667f6582ee1d6ab1",
+        "width": 384
+      },
+      {
+        "height": 384,
+        "name": "nightPulse-384-2",
+        "pixel_sha256": "24e13145871f63fdb2d26ace2b21f2db7355ec51cf3bfa3dc46161322715932d",
+        "width": 384
+      },
+      {
+        "height": 192,
+        "name": "crystal-192-0-0",
+        "pixel_sha256": "1a757fa121622b6e25c675a4e43db3aa043e682ce11b10487bdebd04060c5716",
+        "width": 192
+      },
+      {
+        "height": 192,
+        "name": "crystal-192-0-2",
+        "pixel_sha256": "ac3e2f2f04ccd9d8365d893a19e02693ad0114077654139f229a73890202a570",
+        "width": 192
+      },
+      {
+        "height": 192,
+        "name": "crystal-192-1-0",
+        "pixel_sha256": "0c2a93fc8dcc7acdd87d2dcef02080dbd95ef66480791a8ef10c9fa1614078a2",
+        "width": 192
+      },
+      {
+        "height": 192,
+        "name": "crystal-192-1-2",
+        "pixel_sha256": "3beb11e74ba7725b432f2c18a48c96c90ce75f80dc92a00bd9d33916d7274a8d",
+        "width": 192
+      },
+      {
+        "height": 192,
+        "name": "crystal-192-2-0",
+        "pixel_sha256": "8f2c6bd3ae4fc154082b0d6f1f080e3058d8bb7e156a92c166434471dd06dcfd",
+        "width": 192
+      },
+      {
+        "height": 192,
+        "name": "crystal-192-2-2",
+        "pixel_sha256": "81c8c6fe977ce85863314cee517073ef72dab41f3fa3e0bb66ca38a8ec130bc5",
+        "width": 192
+      },
+      {
+        "height": 512,
+        "name": "crystal-512-0-0",
+        "pixel_sha256": "84dfab5a35a5402cdff1f73411838baac887e34f5588aa7bc292804456d1888e",
+        "width": 512
+      },
+      {
+        "height": 512,
+        "name": "crystal-512-0-2",
+        "pixel_sha256": "0e74a20092d8cbb1bf6488cf22e872498a4b31618547608f15e69192520093b1",
+        "width": 512
+      },
+      {
+        "height": 512,
+        "name": "crystal-512-1-0",
+        "pixel_sha256": "42fc6eba8182a44a7175b9ff60ba3ad0d93c25d763abafd546cbc8361be9499b",
+        "width": 512
+      },
+      {
+        "height": 512,
+        "name": "crystal-512-1-2",
+        "pixel_sha256": "af8fbcc0dbc45d8516b46f8c7bb4efd82c4cf57c8b9ed54313cc8720763339f3",
+        "width": 512
+      },
+      {
+        "height": 512,
+        "name": "crystal-512-2-0",
+        "pixel_sha256": "515ce9388743dc9c88a72a48cbf584bb2525ce53eeb4bdb5d5a8233ed44d6fba",
+        "width": 512
+      },
+      {
+        "height": 512,
+        "name": "crystal-512-2-2",
+        "pixel_sha256": "cc356f4e043ae4b0e601993bb1a00efee39629f480014ae246771106898da451",
+        "width": 512
+      }
+    ]
+  },
+  "simulator_first_decode_ms": {
+    "gold-environment": 8.391416631639004,
+    "studio-environment": 6.983874947763979,
+    "ice-fracture-triangles": 2.4985000491142273,
+    "ice-fracture-bvh": 0.8915417129173875
+  },
+  "decode_cost_scope": "Mac-hosted Simulator first loads; not physical iPhone timings. Decompression happens at resource preparation, not per frame.",
+  "runtime_rendering": "Identical expanded bytes, GPU memory layout, mesh complexity, mip chains and render workload. No export-speed improvement claimed.",
+  "compressed_package_probe": {
+    "algorithm": "Python zlib level 9 for four changed asset streams, not Apple distribution",
+    "before_bytes": 5884089,
+    "after_bytes": 5731862,
+    "savings_bytes": 152227,
+    "caution": "Unpacked resource saving is not download-size saving; App Store download/install figures have not been measured."
+  },
+  "testflight_or_app_store_upload": false,
+  "release_archive_validation": {
+    "result": "ARCHIVE SUCCEEDED",
+    "path": "artifacts/effect-asset-optimization/JuggleDude-optimized.xcarchive/Products/Applications/Juggle Dude.app",
+    "bundle_identifier": "com.juggledude",
+    "version": "1.2.0",
+    "build": "77",
+    "minimum_ios": "18.0",
+    "before_uncompressed_app_bytes": 220792256,
+    "after_uncompressed_app_bytes": 211912158,
+    "saved_bytes": 8880098,
+    "before_executable_bytes": 49025168,
+    "after_executable_bytes": 49025168,
+    "no_raw_duplicates": true,
+    "packed_hashes_verified": true,
+    "shaders_jpegs_roots_models_byte_identical": true,
+    "distribution": "Local archive only; no upload or review submission.",
+    "codesign_deep_strict_verified": true
+  }
+}

@@ -1,4 +1,4 @@
-// Copied from the Effects Lab (Crystal, accepted 1 November 2026); only isolation is added for the app.
+// From the Effects Lab (Crystal, accepted 1 November 2026); texture bytes are unchanged.
 import Foundation
 import MetalKit
 
@@ -16,10 +16,7 @@ nonisolated final class IceTextures {
         normal = try load("ice-normal")
         detail = try load("ice-detail")
         roughness = try load("ice-roughness")
-        guard let url = directory?.appendingPathComponent("studio-environment.bin") ?? Bundle.main.url(forResource: "studio-environment", withExtension: "bin") else {
-            throw NSError(domain: "EffectLab", code: 4, userInfo: [NSLocalizedDescriptionKey: "Missing studio environment"])
-        }
-        let data = try Data(contentsOf: url)
+        let data = try LabAssetData.load("studio-environment", directory: directory)
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .rgba16Float, width: 1024, height: 512, mipmapped: true)
         descriptor.usage = .shaderRead
         let byteCount = (0..<descriptor.mipmapLevelCount).reduce(0) { $0 + max(1, 1024 >> $1) * max(1, 512 >> $1) * 8 }
