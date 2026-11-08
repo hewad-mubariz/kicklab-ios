@@ -2,7 +2,8 @@
   "images": [
     {
       "filename": "home-power-shot.png",
-      "idiom": "universal"
+      "idiom": "universal",
+      "compression-type": "lossy"
     }
   ],
   "info": {

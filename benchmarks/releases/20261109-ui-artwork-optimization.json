@@ -1,0 +1,342 @@
+{
+  "date": "2026-11-09T00:08:21.016342+01:00",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "baseline_commit": "9fc3fbcd1e7f04fe5f22fc5251a19cb4a142db75",
+  "scope": "Remove unreachable legacy HomeHeaderView, HomeBackdrop and ProfileHubView plus their three images. Keep full resolution for the two active home photos and enable Apple asset-catalog lossy compression. No active layout, model, counter, export-material or font changes.",
+  "photos": {
+    "names": [
+      "home-juggling",
+      "home-power-shot"
+    ],
+    "source_pixels_unchanged": true,
+    "source_files_unchanged": true,
+    "compression_type": "lossy",
+    "note": "Apple asset compiler performs the encoding; no runtime custom loader and no additional dependency."
+  },
+  "reference": "https://developer.apple.com/library/archive/documentation/Xcode/Reference/xcode_ref-Asset_Catalog_Format/ImageSetType.html",
+  "isolated_catalog_trials": {
+    "baseline": {
+      "catalog_bytes": 8534808,
+      "images": [
+        {
+          "Name": "avatar-player",
+          "SizeOnDisk": 1704604,
+          "Compression": "deepmap2",
+          "PixelWidth": 1254,
+          "PixelHeight": 1254
+        },
+        {
+          "Name": "home-juggling",
+          "SizeOnDisk": 1606962,
+          "Compression": "deepmap2",
+          "PixelWidth": 1024,
+          "PixelHeight": 1536
+        },
+        {
+          "Name": "home-power-shot",
+          "SizeOnDisk": 1591935,
+          "Compression": "deepmap2",
+          "PixelWidth": 1024,
+          "PixelHeight": 1536
+        },
+        {
+          "Name": "pitch-day",
+          "SizeOnDisk": 1830443,
+          "Compression": "deepmap2",
+          "PixelWidth": 941,
+          "PixelHeight": 1672
+        },
+        {
+          "Name": "pitch-night",
+          "SizeOnDisk": 1782461,
+          "Compression": "deepmap2",
+          "PixelWidth": 941,
+          "PixelHeight": 1672
+        }
+      ]
+    },
+    "lossy": {
+      "catalog_bytes": 4747752,
+      "images": [
+        {
+          "Name": "avatar-player",
+          "SizeOnDisk": 76478,
+          "Compression": "deepmap2",
+          "PixelWidth": 256,
+          "PixelHeight": 256
+        },
+        {
+          "Name": "home-juggling",
+          "SizeOnDisk": 1056829,
+          "Compression": "lzfse",
+          "PixelWidth": 1024,
+          "PixelHeight": 1536
+        },
+        {
+          "Name": "home-power-shot",
+          "SizeOnDisk": 1044573,
+          "Compression": "lzfse",
+          "PixelWidth": 1024,
+          "PixelHeight": 1536
+        },
+        {
+          "Name": "pitch-day",
+          "SizeOnDisk": 1317100,
+          "Compression": "lzfse",
+          "PixelWidth": 941,
+          "PixelHeight": 1672
+        },
+        {
+          "Name": "pitch-night",
+          "SizeOnDisk": 1234377,
+          "Compression": "lzfse",
+          "PixelWidth": 941,
+          "PixelHeight": 1672
+        }
+      ]
+    },
+    "gpu-best": {
+      "catalog_bytes": 9633016,
+      "images": [
+        {
+          "Name": "avatar-player",
+          "SizeOnDisk": 76478,
+          "Compression": "deepmap2",
+          "PixelWidth": 256,
+          "PixelHeight": 256
+        },
+        {
+          "Name": "home-juggling",
+          "SizeOnDisk": 1244752,
+          "Compression": "astc",
+          "PixelWidth": 1024,
+          "PixelHeight": 1536
+        },
+        {
+          "Name": "home-juggling",
+          "SizeOnDisk": 1056829,
+          "Compression": "lzfse",
+          "PixelWidth": 1024,
+          "PixelHeight": 1536
+        },
+        {
+          "Name": "home-power-shot",
+          "SizeOnDisk": 1108002,
+          "Compression": "astc",
+          "PixelWidth": 1024,
+          "PixelHeight": 1536
+        },
+        {
+          "Name": "home-power-shot",
+          "SizeOnDisk": 1044573,
+          "Compression": "lzfse",
+          "PixelWidth": 1024,
+          "PixelHeight": 1536
+        },
+        {
+          "Name": "pitch-day",
+          "SizeOnDisk": 1310297,
+          "Compression": "astc",
+          "PixelWidth": 941,
+          "PixelHeight": 1672
+        },
+        {
+          "Name": "pitch-day",
+          "SizeOnDisk": 1317100,
+          "Compression": "lzfse",
+          "PixelWidth": 941,
+          "PixelHeight": 1672
+        },
+        {
+          "Name": "pitch-night",
+          "SizeOnDisk": 1221762,
+          "Compression": "astc",
+          "PixelWidth": 941,
+          "PixelHeight": 1672
+        },
+        {
+          "Name": "pitch-night",
+          "SizeOnDisk": 1234377,
+          "Compression": "lzfse",
+          "PixelWidth": 941,
+          "PixelHeight": 1672
+        }
+      ]
+    }
+  },
+  "selected": "Lossy catalog compression for the two active photos; remove the three legacy assets entirely after verifying their callers are unused.",
+  "rejected": "gpu-best enlarged the unthinned catalogue by including extra renditions",
+  "quality": {
+    "method": "Decode the compiled iOS asset catalogues through CoreUI/AppKit; compare RGB images at native and representative display resolutions. Visual review of the paired images.",
+    "metrics": [
+      {
+        "name": "home-juggling",
+        "compared_size": [
+          1024,
+          1536
+        ],
+        "max_channel_delta": 9,
+        "mean_abs_channel_error": 2.7882762485080295,
+        "psnr_db": 37.415445862526695
+      },
+      {
+        "name": "home-juggling",
+        "compared_size": [
+          588,
+          696
+        ],
+        "max_channel_delta": 7,
+        "mean_abs_channel_error": 1.099951618578466,
+        "psnr_db": 44.99678333066341
+      },
+      {
+        "name": "home-juggling",
+        "compared_size": [
+          1632,
+          2448
+        ],
+        "max_channel_delta": 13,
+        "mean_abs_channel_error": 2.388879877931565,
+        "psnr_db": 38.56793229292743
+      },
+      {
+        "name": "home-power-shot",
+        "compared_size": [
+          1024,
+          1536
+        ],
+        "max_channel_delta": 9,
+        "mean_abs_channel_error": 2.731805589463976,
+        "psnr_db": 37.518647857363504
+      },
+      {
+        "name": "home-power-shot",
+        "compared_size": [
+          588,
+          696
+        ],
+        "max_channel_delta": 7,
+        "mean_abs_channel_error": 1.0857572914223161,
+        "psnr_db": 45.07771525608922
+      },
+      {
+        "name": "home-power-shot",
+        "compared_size": [
+          1632,
+          2448
+        ],
+        "max_channel_delta": 12,
+        "mean_abs_channel_error": 2.3323043320677943,
+        "psnr_db": 38.72463055357172
+      }
+    ],
+    "review_image": "artifacts/ui-artwork-optimization/home-artwork-comparison.png",
+    "lossless": false,
+    "assessment": "No visible loss of face, clothing, football, lighting or background detail in reviewed comparisons. Small channel-value differences from lossy encoding; no claim of pixel-identical photos.",
+    "review_image_note": "The two retained home photos, before and after compiled-catalog compression, at the same display scale."
+  },
+  "source_sha256": {
+    "kicklab/Assets.xcassets/home-juggling.imageset/Contents.json": "2cf17a43db7d0c86f31d5ba22feb6e89a51faebd0c14998c852c5663c0631ff7",
+    "kicklab/Assets.xcassets/home-power-shot.imageset/Contents.json": "42b5190e1495eb679ae876c69586125bfb0a01b543436a878953b07d3328bc02",
+    "kicklab/Navigation/TrainingHubViews.swift": "e74322fe383905566168cd3d0c6b8be25f6e852555eda90abb10058f1bf8e976"
+  },
+  "ui_tests": {
+    "initial_trial_passed": 2,
+    "initial_result": "artifacts/ui-artwork-optimization/ui-tests.xcresult",
+    "final_result": {
+      "passed": 2,
+      "failed": 0,
+      "result_bundle": "artifacts/ui-artwork-optimization/ui-final.xcresult",
+      "cases": [
+        "HomeNavigationTests/testTrainingHomeAndAppearancePersistence",
+        "ProPaywallNavigationUITests/testDirectPaywallReviewCanReturnHome"
+      ],
+      "destination": "iOS 26.5 Simulator, iPhone 17 Pro Max, 1320x2868",
+      "screenshots": [
+        "artifacts/ui-artwork-optimization/final-home-light.png",
+        "artifacts/ui-artwork-optimization/final-home-dark.png"
+      ]
+    }
+  },
+  "release_archive": {
+    "result": "ARCHIVE SUCCEEDED",
+    "path": "artifacts/ui-artwork-optimization/JuggleDude-cleaned.xcarchive/Products/Applications/Juggle Dude.app",
+    "version": "1.2.0",
+    "build": "77",
+    "minimum_ios": "18.0",
+    "before_uncompressed_app_bytes": 207238274,
+    "after_uncompressed_app_bytes": 200822770,
+    "saved_bytes": 6415504,
+    "before_assets_car_bytes": 28881816,
+    "after_assets_car_bytes": 22466312,
+    "before_executable_bytes": 49025168,
+    "after_executable_bytes": 49025168,
+    "active_photo_renditions": [
+      {
+        "Name": "home-juggling",
+        "SizeOnDisk": 1056829,
+        "Compression": "lzfse",
+        "PixelWidth": 1024,
+        "PixelHeight": 1536
+      },
+      {
+        "Name": "home-power-shot",
+        "SizeOnDisk": 1044573,
+        "Compression": "lzfse",
+        "PixelWidth": 1024,
+        "PixelHeight": 1536
+      }
+    ],
+    "unused_images_absent": true,
+    "unchanged_models_effects_font_resources": 31,
+    "file_size_deltas": {
+      "Assets.car": -6415504
+    },
+    "codesign_deep_strict_verified": true
+  },
+  "upload_or_submission": false,
+  "initial_resizing_trial": {
+    "original_pixels": [
+      1254,
+      1254
+    ],
+    "optimized_pixels": [
+      256,
+      256
+    ],
+    "uses_points": [
+      43,
+      58
+    ],
+    "largest_3x_use_pixels": 174,
+    "method": "Pillow LANCZOS resize; ICC profile retained; optimized PNG",
+    "pillow_version": "12.3.0",
+    "before_source_bytes": 2001329,
+    "after_source_bytes": 85497
+  },
+  "unused_assets_removed": [
+    {
+      "name": "avatar-player",
+      "previous_compiled_bytes": 1704604,
+      "previous_only_callers": [
+        "HomeHeaderView",
+        "ProfileHubView"
+      ]
+    },
+    {
+      "name": "pitch-day",
+      "previous_compiled_bytes": 1830443,
+      "previous_only_callers": [
+        "HomeBackdrop"
+      ]
+    },
+    {
+      "name": "pitch-night",
+      "previous_compiled_bytes": 1782461,
+      "previous_only_callers": [
+        "HomeBackdrop"
+      ]
+    }
+  ],
+  "unused_view_verification": "The three SwiftUI types have no instantiations in app or tests. Current HomeView has its own header, plain backgrounds and profile icon; current profile is TrainingProfileView. Removed only those unused types and images. Searches also cover generated camelCase image names."
+}

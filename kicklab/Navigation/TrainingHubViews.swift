@@ -125,43 +125,6 @@ struct ChallengesHubView: View {
     }
 }
 
-struct ProfileHubView: View {
-    let snapshot: HomeSnapshot
-    @Binding var appearance: String
-
-    var body: some View {
-        HubPage(title: "Profile", subtitle: "Your game. Your way.") {
-            HStack(spacing: 15) {
-                Image("avatar-player").resizable().scaledToFill()
-                    .frame(width: 58, height: 58).clipShape(Circle())
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(snapshot.displayName).font(.title2.bold())
-                    Text("Keep showing up.").font(.subheadline)
-                }
-                Spacer()
-            }
-            .padding(18).modifier(HomePanel())
-            VStack(alignment: .leading, spacing: 14) {
-                Label("Appearance", systemImage: "circle.lefthalf.filled").font(.headline)
-                Text("Same experience. Any time.").font(.subheadline)
-                Picker("Appearance", selection: $appearance) {
-                    Text("System").tag("system")
-                    Text("Light").tag("light")
-                    Text("Dark").tag("dark")
-                }
-                .pickerStyle(.segmented)
-                .accessibilityIdentifier("appearance-picker")
-            }
-            .padding(18).modifier(HomePanel())
-            VStack(alignment: .leading, spacing: 8) {
-                Label("Made for your practice", systemImage: "soccerball").font(.headline)
-                Text("Practice. Improve. Repeat.").font(.subheadline)
-            }
-            .padding(18).frame(maxWidth: .infinity, alignment: .leading).modifier(HomePanel())
-        }
-    }
-}
-
 private struct HubAction: View {
     let title: String
     let symbol: String
