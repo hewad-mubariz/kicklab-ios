@@ -1,0 +1,166 @@
+{
+  "date": "2026-11-08",
+  "branch": "codex/1.2-background-notifications",
+  "commit": "e07b1369ec08d1de988fb17cb55a1348b4ff1105",
+  "build": 68,
+  "source": {
+    "path": "/Users/hewadmubariz/Downloads/videoplayback.mov",
+    "bytes": 798158352,
+    "duration_seconds": 3406.5197916666666,
+    "width": 1920,
+    "height": 1080,
+    "fps_nominal": 30,
+    "frames_expected": 102196,
+    "video_codec": "h264",
+    "audio_streams": 0,
+    "sha256": "8a54cb73a4ba903e1748b572818125046072cde3159ad6a6a167d56a9e391f5d",
+    "comparison_to_52_second_clip": {
+      "previous_bytes": 654557602,
+      "previous_counted_frames": 1549,
+      "byte_ratio": 1.2193859632234476,
+      "counted_frame_ratio": 65.97546804389928
+    }
+  },
+  "device": "iPhone 17 Pro Max",
+  "os": "27.0.1",
+  "requested_scope": "Full video; nominal thermal start, unplugged, intended foreground",
+  "status": "interrupted; full completion not verified",
+  "preflight": {
+    "nominal_unplugged_confirmed_seconds": 52.696431374992244,
+    "battery_level_reported": 0.4,
+    "low_power_mode": false
+  },
+  "actual_scope": "Fresh production analysis and retained masks. No Photos transfer, saved replay or effects export. Brief background/lifecycle transitions occurred late in the run.",
+  "last_snapshot": {
+    "elapsedSeconds": 3088.600821250002,
+    "analysisFrames": 51930,
+    "progress": 0.5081332579468476,
+    "touches": 3445,
+    "thermalStart": 0,
+    "thermalNow": 1,
+    "batteryLevel": 0.20000000298023224,
+    "batteryState": 1,
+    "lowPowerMode": false,
+    "memoryMiB": 532.9866561889648,
+    "peakMemoryMiB": 574.3773498535156,
+    "modelBackend": "CPU",
+    "modelSwitches": 5,
+    "background": false,
+    "systemExpired": false,
+    "reportedProgressUnits": 482726,
+    "failureDiagnostic": "",
+    "time": 1794153319.3923059
+  },
+  "source_seconds_analyzed_approx": 1731.0,
+  "thermal_wait_seconds": 866.7990902496967,
+  "metrics": {
+    "decode_s": 37.1312999073416,
+    "pose_body_ms": 2818.2586248149164,
+    "model_cpu_requested": 1,
+    "pose_feet_ms": 23500.27787539875,
+    "pose_ground_requests": 41795,
+    "pose_streak_hold_requests": 4756,
+    "pose_ground_ms": 342996.1348318029,
+    "model_reload_s": 0.5464017916820012,
+    "pose_holding_cache_hits": 34073,
+    "background_gpu": 0,
+    "peak_memory_mib": 574.3929748535156,
+    "model_switches": 5,
+    "model_cpu_only": 1,
+    "pose_streak_hold_ms": 56473.526625777595,
+    "contact_check_s": 0.0735407923348248,
+    "thermal_wait_s": 866.7990902496967,
+    "pose_diagnostic_cache_hits": 41,
+    "cpu_only": 1,
+    "contact_buffer_s": 69.85002246295335,
+    "mask_mib": 260.4733238220215,
+    "detector_s": 1446.4297454951447,
+    "pose_unique_frames": 49474,
+    "pose_ground_cache_hits": 66423,
+    "pose_cpu_requests": 75,
+    "motion_s": 210.19193796103355,
+    "pose_accelerated_requests": 49399,
+    "counter_s": 432.4143486682442,
+    "pose_feet_requests": 2545,
+    "model_acceleration_unavailable": 0,
+    "pose_body_cache_hits": 8356,
+    "pose_hands_cache_hits": 13686,
+    "pose_feet_cache_hits": 9860,
+    "inference_s": 1080.6234890862834,
+    "preprocess_s": 285.21238895202987,
+    "pose_body_requests": 378,
+    "pose_streak_hold_cache_hits": 1640
+  },
+  "thermal_buckets_excluding_transition_intervals": {
+    "thermal_0_Accelerated_foreground_or_inactive": {
+      "wall_seconds": 47.154127624991816,
+      "frames": 1845,
+      "thermal_wait_seconds": 0,
+      "fps": 39.12700950960113
+    },
+    "thermal_1_Accelerated_foreground_or_inactive": {
+      "wall_seconds": 2519.2353032083483,
+      "frames": 44565,
+      "thermal_wait_seconds": 625.8595998320961,
+      "fps": 17.68989182679548
+    },
+    "thermal_2_Accelerated_foreground_or_inactive": {
+      "wall_seconds": 455.58067337499233,
+      "frames": 4665,
+      "thermal_wait_seconds": 226.3523175009177,
+      "fps": 10.239679320549664
+    },
+    "thermal_1_CPU_background": {
+      "wall_seconds": 15.52069245831808,
+      "frames": 15,
+      "thermal_wait_seconds": 1.6532969584222883,
+      "fps": 0.9664517250298956
+    }
+  },
+  "fifteen_minute_comparison": {
+    "new_elapsed_s": 897.9485119166202,
+    "new_frames": 17115,
+    "new_source_minutes": 9.508333333333333,
+    "old_elapsed_s": 897.5474162083119,
+    "old_frames": 9030,
+    "frames_ratio": 1.8953488372093024,
+    "new_thermal_wait_s": 209.98176858382067,
+    "old_thermal_wait_s": 412.71812170546036,
+    "new_thermal": 1,
+    "old_thermal": 2,
+    "caveat": "Old run included 5-minute background CPU interval; new run foreground only. Not an isolated thermal speedup."
+  },
+  "interruption_evidence": {
+    "last_update_berlin": "2026-11-08T16:55:19+01:00",
+    "phone_locked": true,
+    "live_activity": "Task failed; displayed Continue/Stop background confirmation with older 43% progress",
+    "app_process": "Not present in devicectl process listing while phone locked",
+    "matching_crash_or_jetsam_report": "None found yet",
+    "system_expiration_callback_recorded": false,
+    "root_cause": "Undetermined; do not attribute to memory, thermal state, GPU failure, or user cancellation without further evidence",
+    "device_log_collection": "Unavailable without local administrator authentication",
+    "pending_user_action": "Unlock and reopen the app to verify its state; wired power requested at 20% battery"
+  },
+  "caveats": [
+    "Nominal state lasted less than one minute after load began; most of the run was fair/elevated, with about eight minutes of serious/high thermal pressure.",
+    "The 15-minute comparison combines thermal and execution-mode differences; the previous run included five minutes of background CPU work.",
+    "Touch counts are partial model estimates, not accuracy-validated totals.",
+    "Peak memory is sampled, not a guaranteed process high-water mark.",
+    "No counting, model, mask or pacing implementation was changed for this run.",
+    "Host polling was stopped after detecting stale telemetry; the phone app was not force-terminated by that cleanup."
+  ],
+  "evidence_root": "artifacts/release120/long-video-normal-20261108",
+  "cleanup": {
+    "host_polling": "stopped",
+    "staged_test_video": "Retained in preview Documents/long-video-normal-20261108.mov pending user unlock/retry",
+    "original_download": "unchanged",
+    "app": "Not force-terminated after interruption"
+  },
+  "pilot": {
+    "scope": "Initial short sample began while charging; stopped after user requested an unplugged full run",
+    "elapsed_seconds": 203.9999409582815,
+    "frames": 4845,
+    "included_in_full_run_results": false,
+    "evidence": "artifacts/release120/long-video-normal-20261108/pilot-charging"
+  }
+}
