@@ -4,8 +4,8 @@ import Foundation
 /// inference must never be recorded as an absence, and a missing ball is never
 /// an absent player.
 nonisolated struct StreakVisibilityEvidence {
-    static let signature = "|streak-visibility-v3-grace5s"
-    static let graceMS = 5_000
+    static let signature = "|streak-visibility-v2"
+    static let graceMS = 3_000
     static let maximumSampleGapMS = 600
     static let maximumSamples = 60_000
     /// Readable saved frames an absence needs before it can end a streak.
@@ -145,7 +145,7 @@ nonisolated struct StreakVisibilityEvidence {
             let exposures = [start] + observed + [end]
             // Dense fresh negatives that did not reach the absence threshold
             // are a short miss, not an unresolved interval. This also prevents
-            // endpoint sampling from cutting a short departure at the grace limit.
+            // endpoint sampling from cutting a 2 s departure at a 3 s gap.
             let covered = zip(exposures, exposures.dropFirst()).allSatisfy { $1-$0 <= maximumSampleGapMS }
             return covered ? nil : Window(startMS: start, endMS: end)
         }
@@ -190,8 +190,9 @@ nonisolated struct LiveAbsenceWarning: Equatable, Sendable {
 /// The rule's clock, run as replies arrive. It takes the same detections and
 /// limits as `StreakVisibilityEvidence`, so the screen warns before the rule acts.
 nonisolated struct LiveAbsenceClock {
-    /// Warn during the final two seconds of the visibility grace period.
-    static let warnAfterMS = StreakVisibilityEvidence.graceMS - 2_000
+    /// Valid juggling rarely stays unseen this long: 3 warnings in 92 measured minutes,
+    /// against 11 at one second, most of them a player the detector briefly lost.
+    static let warnAfterMS = 1_500
 
     private struct Track {
         private var lastSighting: Int?, first: Int?, previous: Int?

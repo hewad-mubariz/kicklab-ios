@@ -22,77 +22,73 @@ final class LiveAbsenceClockTests: XCTestCase {
         var clock = LiveAbsenceClock()
         feed(&clock, from: 0, to: 1_000)
         clock.counted(1)
-        feed(&clock, from: 1_100, to: 4_000, ball: false)
-        XCTAssertNil(clock.warning(at: 4_000), "No warning before three seconds of absence")
-        feed(&clock, from: 4_100, to: 4_100, ball: false)
-        XCTAssertEqual(clock.warning(at: 4_100), .init(subject: .ball, secondsLeft: 2))
-        feed(&clock, from: 4_200, to: 5_100, ball: false)
-        XCTAssertEqual(clock.warning(at: 5_100), .init(subject: .ball, secondsLeft: 1))
-        feed(&clock, from: 5_200, to: 6_000, ball: false)
-        XCTAssertEqual(clock.warning(at: 6_000), .init(subject: .ball, secondsLeft: 1))
-        feed(&clock, from: 6_100, to: 6_100, ball: false)
-        XCTAssertEqual(clock.warning(at: 6_100), .init(subject: .ball, secondsLeft: 0))
-        feed(&clock, from: 6_200, to: 9_000, ball: false)
+        feed(&clock, from: 1_100, to: 2_500, ball: false)
+        XCTAssertNil(clock.warning(at: 2_500), "A moment out of sight is normal juggling")
+        feed(&clock, from: 2_600, to: 2_600, ball: false)
+        XCTAssertEqual(clock.warning(at: 2_600), .init(subject: .ball, secondsLeft: 2))
+        feed(&clock, from: 2_700, to: 3_100, ball: false)
+        XCTAssertEqual(clock.warning(at: 3_100), .init(subject: .ball, secondsLeft: 1))
+        feed(&clock, from: 3_200, to: 4_100, ball: false)
+        XCTAssertEqual(clock.warning(at: 4_100), .init(subject: .ball, secondsLeft: 0))
+        feed(&clock, from: 4_200, to: 9_000, ball: false)
         XCTAssertEqual(clock.warning(at: 9_000), .init(subject: .ball, secondsLeft: 0), "It stays until the ball is back")
     }
 
     func testACountedTouchClearsTheWarning() {
         var clock = LiveAbsenceClock()
         clock.counted(1)
-        feed(&clock, from: 0, to: 3_500, ball: false)
-        XCTAssertNotNil(clock.warning(at: 3_500))
+        feed(&clock, from: 0, to: 2_500, ball: false)
+        XCTAssertNotNil(clock.warning(at: 2_500))
         clock.counted(2)
-        XCTAssertNil(clock.warning(at: 3_500))
+        XCTAssertNil(clock.warning(at: 2_500))
     }
 
     func testTheSameTouchTotalDoesNotClearIt() {
         var clock = LiveAbsenceClock()
         clock.counted(3)
-        feed(&clock, from: 0, to: 3_500, ball: false)
+        feed(&clock, from: 0, to: 2_500, ball: false)
         clock.counted(3)
-        XCTAssertNotNil(clock.warning(at: 3_500))
+        XCTAssertNotNil(clock.warning(at: 2_500))
     }
 
     func testOneFalseDetectionDoesNotClearItButTwoCloseSightingsDo() {
         var clock = LiveAbsenceClock()
         clock.counted(1)
-        feed(&clock, from: 0, to: 4_000, ball: false)
-        feed(&clock, from: 4_100, to: 4_100, ball: true)
-        feed(&clock, from: 4_200, to: 4_800, ball: false)
-        XCTAssertNotNil(clock.warning(at: 4_800), "A lone box is not the ball coming back")
-        feed(&clock, from: 4_900, to: 5_000, ball: true)
-        XCTAssertNil(clock.warning(at: 5_000))
+        feed(&clock, from: 0, to: 2_000, ball: false)
+        feed(&clock, from: 2_100, to: 2_100, ball: true)
+        feed(&clock, from: 2_200, to: 2_800, ball: false)
+        XCTAssertNotNil(clock.warning(at: 2_800), "A lone box is not the ball coming back")
+        feed(&clock, from: 2_900, to: 3_000, ball: true)
+        XCTAssertNil(clock.warning(at: 3_000))
     }
 
     func testAPhoneFallingBehindIsNotAnAbsence() {
         var clock = LiveAbsenceClock()
         clock.counted(1)
-        feed(&clock, from: 0, to: 4_000, ball: false)
-        XCTAssertNil(clock.warning(at: 4_700), "No replies for 700 ms proves nothing")
-        feed(&clock, from: 4_700, to: 4_800, ball: false)
-        XCTAssertNil(clock.warning(at: 4_800), "The clock starts over after a gap, as the rule does")
+        feed(&clock, from: 0, to: 2_000, ball: false)
+        XCTAssertNil(clock.warning(at: 2_700), "No replies for 700 ms proves nothing")
+        feed(&clock, from: 2_700, to: 2_800, ball: false)
+        XCTAssertNil(clock.warning(at: 2_800), "The clock starts over after a gap, as the rule does")
     }
 
     func testAMissingPlayerComesBeforeAMissingBall() {
         var clock = LiveAbsenceClock()
         clock.counted(1)
-        feed(&clock, from: 0, to: 4_000, person: false, ball: false)
-        XCTAssertEqual(clock.warning(at: 4_000)?.subject, .player)
+        feed(&clock, from: 0, to: 2_000, person: false, ball: false)
+        XCTAssertEqual(clock.warning(at: 2_000)?.subject, .player)
     }
 
     func testTheSlowestRepliesTheRuleAcceptsStillCountDown() {
         var clock = LiveAbsenceClock()
         clock.counted(1)
-        feed(&clock, from: 0, to: 3_600, every: 600, ball: false)
-        XCTAssertEqual(clock.warning(at: 3_600)?.secondsLeft, 2)
-        feed(&clock, from: 4_200, to: 4_800, every: 600, ball: false)
-        XCTAssertEqual(clock.warning(at: 4_800)?.secondsLeft, 1)
-        feed(&clock, from: 5_400, to: 5_400, ball: false)
-        XCTAssertEqual(clock.warning(at: 5_400)?.secondsLeft, 0)
+        feed(&clock, from: 0, to: 2_400, every: 600, ball: false)
+        XCTAssertEqual(clock.warning(at: 2_400)?.secondsLeft, 1)
+        feed(&clock, from: 3_000, to: 3_000, ball: false)
+        XCTAssertEqual(clock.warning(at: 3_000)?.secondsLeft, 0)
     }
 
     private struct Case: Decodable {
-        let clip: String, expect: String, before: Int, after: Int, samples: String
+        let expect: String, before: Int, after: Int, samples: String
         var timeline: [StreakVisibilityEvidence.Sample] {
             var time = before
             return samples.split(separator: " ").map { entry in
@@ -107,8 +103,6 @@ final class LiveAbsenceClockTests: XCTestCase {
     func testRealRecordingsWarnBeforeEveryStopAndNotInValidJuggling() throws {
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "streak-absence-cases", withExtension: "json"))
         let cases = try JSONDecoder().decode(File.self, from: Data(contentsOf: url)).cases
-        let expectedURL = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "streak-absence-five-second-expectations", withExtension: "json"))
-        let expected = try JSONDecoder().decode([String: Bool].self, from: Data(contentsOf: expectedURL))
         var stops = 0, valid = 0, warnedInValid = 0
         for item in cases {
             var clock = LiveAbsenceClock()
@@ -126,9 +120,7 @@ final class LiveAbsenceClockTests: XCTestCase {
                 if warned { warnedInValid += 1 }
             } else {
                 stops += 1
-                let shouldEnd = try XCTUnwrap(expected["\(item.clip):\(item.before):\(item.after)"])
-                XCTAssertEqual(ended, shouldEnd, "Visibility grace at \(item.before)")
-                if shouldEnd { XCTAssertTrue(warned) }
+                XCTAssertTrue(ended, "No warning before the stop at \(item.before)")
             }
         }
         XCTAssertEqual(stops, 12); XCTAssertEqual(valid, 123)

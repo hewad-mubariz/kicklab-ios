@@ -45,19 +45,8 @@ final class StreakAbsenceSimulationTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(Double(ended)/Double(sessions), share, "\(scenario) ended \(ended) of \(sessions)", file: file, line: line)
     }
 
-    // The user-selected 5 s grace leaves more time for false boxes to reset the
-    // clock. The fixed noisy corpus measures 1291/1500 (86.1%), down from the
-    // previous 3 s policy's 90% floor. This is a documented tolerance trade-off,
-    // not a real-camera accuracy claim; clean exits must still always end below.
-    func testNoisyBallExitsMeetTheFiveSecondBaseline() { assertAlmostAlwaysEnds(.ballGone, atLeast: 0.85) }
-    func testClearBallExitsAlwaysEndAfterTheGracePeriod() {
-        for index in 0..<sessions {
-            var random = SeededGenerator(seed: UInt64(index)*7_919)
-            var gap = StreakScenario.ballGone.gap(using: &random)
-            gap.detector.straysPerSecond = 0
-            XCTAssertEqual(gap.assess(using: &random).decisions.map(\.kind), [.ballOutOfView], "seed \(index)")
-        }
-    }
+    // False boxes near the limit can hide a short exit, so the ball gets a lower bar.
+    func testABallThatIsReallyGoneEndsTheStreak() { assertAlmostAlwaysEnds(.ballGone, atLeast: 0.9) }
     func testAPlayerAndBallThatAreReallyGoneEndTheStreak() { assertAlmostAlwaysEnds(.playerAndBallGone, atLeast: 0.99) }
     func testAPlayerWhoIsReallyGoneEndsTheStreak() { assertAlmostAlwaysEnds(.playerGoneBallInView, atLeast: 0.99) }
 

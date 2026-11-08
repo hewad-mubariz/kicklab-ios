@@ -1,0 +1,55 @@
+{
+  "status": "three_second_visibility_rule_restored_and_installed",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "version": "1.2.0",
+  "build": 77,
+  "bundle_identifier": "com.juggledude",
+  "scope": "User requested undoing the five-second experiment and retaining the original three-second visibility policy.",
+  "restored_from": "f920d23a",
+  "supersedes": "20261108-five-second-grace-76.json",
+  "policy": {
+    "grace_ms": 3000,
+    "warning_after_ms": 1500,
+    "signature": "streak-visibility-v2",
+    "subjects": [
+      "player",
+      "ball"
+    ],
+    "saved_video_confirmation_retained": true,
+    "heel_toe_recovery_default": true,
+    "counter_toggle": false,
+    "hold_hand_ground_rules_changed": false,
+    "existing_scores_recalculated": false
+  },
+  "validation": {
+    "result": "Passed",
+    "passedTests": 86,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "totalTestCount": 86
+  },
+  "source_verification": "All production policy, translated text and tests changed by the five-second experiment exactly match build 75 source. Build number advanced to 77; historical benchmark evidence retained.",
+  "devices": {
+    "iphone11": {
+      "installed_build": "77",
+      "normal_launch_heel_toe_enabled": true,
+      "explicit_launch_flags": [],
+      "persistent_history_files_preserved": 36,
+      "preserved_bytes": 1262301338,
+      "missing_or_changed_session_sizes": 0,
+      "completed_import_cleanup_markers_removed": 0
+    },
+    "iphone17": {
+      "installed_build": "77",
+      "normal_launch_heel_toe_enabled": true,
+      "explicit_launch_flags": [],
+      "persistent_history_files_preserved": 282,
+      "preserved_bytes": 3835543479,
+      "missing_or_changed_session_sizes": 0,
+      "completed_import_cleanup_markers_removed": 0
+    }
+  },
+  "artifacts": "artifacts/release120/restore-three-second-grace-20261108",
+  "testflight_uploaded": false,
+  "binary_sha256": "818d7992facdbeb5d10230acefe83da548c96dc9e533443619f21bc1a6d9bdf8"
+}

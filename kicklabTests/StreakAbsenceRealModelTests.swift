@@ -40,15 +40,11 @@ final class StreakAbsenceRealModelTests: XCTestCase {
             let (result, failure) = assess(item, folder: folder, worker: worker, missed: .ball)
             print("STREAKMODEL keep ball", item.video, item.before, item.after, "ended", result.decisions.count, "overruled", result.absencesOverruled, "frames", result.recheckedFrames, failure ?? "")
             XCTAssertNil(failure, item.video)
-            if item.after-item.before < StreakVisibilityEvidence.graceMS+700 {
-                XCTAssertEqual(result.recheckedFrames, 0, item.video)
-            } else {
-                XCTAssertGreaterThanOrEqual(result.recheckedFrames, StreakVisibilityEvidence.secondLookFrames, item.video)
-            }
+            XCTAssertGreaterThanOrEqual(result.recheckedFrames, StreakVisibilityEvidence.secondLookFrames, item.video)
             XCTAssertTrue(result.decisions.isEmpty, "\(item.video) \(item.before): the model missed the ball for all of a real juggling stretch")
             saved += result.absencesOverruled
         }
-        XCTAssertEqual(saved, valid.filter { $0.after-$0.before >= StreakVisibilityEvidence.graceMS+700 }.count)
+        XCTAssertEqual(saved, valid.count)
     }
 
     @MainActor func testTheModelFindsThePlayerDuringRealJuggling() throws {
@@ -59,11 +55,7 @@ final class StreakAbsenceRealModelTests: XCTestCase {
             let (result, failure) = assess(item, folder: folder, worker: worker, missed: .playerAndBall)
             print("STREAKMODEL keep person", item.video, item.before, item.after, "kinds", result.decisions.map(\.kind.rawValue), "frames", result.recheckedFrames, failure ?? "")
             XCTAssertNil(failure, item.video)
-            if item.after-item.before < StreakVisibilityEvidence.graceMS+700 {
-                XCTAssertEqual(result.recheckedFrames, 0, item.video)
-            } else {
-                XCTAssertGreaterThanOrEqual(result.recheckedFrames, StreakVisibilityEvidence.secondLookFrames, item.video)
-            }
+            XCTAssertGreaterThanOrEqual(result.recheckedFrames, StreakVisibilityEvidence.secondLookFrames, item.video)
             XCTAssertFalse(result.decisions.contains { $0.kind == .playerOutOfView }, "\(item.video) \(item.before)")
         }
     }
@@ -76,11 +68,7 @@ final class StreakAbsenceRealModelTests: XCTestCase {
             let (result, failure) = assess(item, folder: folder, worker: worker, missed: .ball)
             print("STREAKMODEL end", item.video, item.before, item.after, "kinds", result.decisions.map(\.kind.rawValue), "overruled", result.absencesOverruled, "frames", result.recheckedFrames, failure ?? "")
             XCTAssertNil(failure, item.video)
-            if item.after-item.before < StreakVisibilityEvidence.graceMS {
-                XCTAssertTrue(result.decisions.isEmpty, "The labelled departure is now inside the grace period")
-            } else {
-                XCTAssertEqual(result.decisions.map(\.kind), [.ballOutOfView], "\(item.video) \(item.before)")
-            }
+            XCTAssertEqual(result.decisions.map(\.kind), [.ballOutOfView], "\(item.video) \(item.before)")
         }
     }
 }

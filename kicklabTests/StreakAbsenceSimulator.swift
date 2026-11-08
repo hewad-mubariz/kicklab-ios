@@ -158,14 +158,14 @@ enum StreakScenario: String, CaseIterable {
             detector.longestBlindMS = 5_000
             return .init(lengthMS: Int.random(in: 4_000...10_000, using: &random), detector: detector, savedVideo: .unreadable)
         case .ballGone:
-            let from = Int.random(in: 100...800, using: &random), out = Int.random(in: (StreakVisibilityEvidence.graceMS+700)...15_000, using: &random)
+            let from = Int.random(in: 100...800, using: &random), out = Int.random(in: 3_700...15_000, using: &random)
             return .init(lengthMS: from+out+Int.random(in: 100...800, using: &random), ballOut: [from...from+out], detector: detector)
         case .playerAndBallGone:
-            let from = Int.random(in: 100...800, using: &random), out = Int.random(in: (StreakVisibilityEvidence.graceMS+700)...15_000, using: &random)
+            let from = Int.random(in: 100...800, using: &random), out = Int.random(in: 3_700...15_000, using: &random)
             return .init(lengthMS: from+out+Int.random(in: 100...800, using: &random),
                          ballOut: [from...from+out], personOut: [from...from+out], detector: detector)
         case .playerGoneBallInView:
-            let from = Int.random(in: 100...800, using: &random), out = Int.random(in: (StreakVisibilityEvidence.graceMS+700)...15_000, using: &random)
+            let from = Int.random(in: 100...800, using: &random), out = Int.random(in: 3_700...15_000, using: &random)
             return .init(lengthMS: from+out+Int.random(in: 100...800, using: &random), personOut: [from...from+out], detector: detector)
         }
     }
