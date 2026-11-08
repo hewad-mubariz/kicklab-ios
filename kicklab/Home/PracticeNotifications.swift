@@ -47,6 +47,8 @@ final class PracticeNotifications: ObservableObject {
     static let managedReminderIdentifiers = [legacyReminderIdentifier] + reminderIdentifiers
     static let exportsKey = "juggledude.notifications.exports"
     static let timeKey = "juggledude.notifications.minute-of-day"
+    static let completedSessionKey = "juggledude.notifications.session-completed"
+    static let sessionPromptHandledKey = "juggledude.notifications.session-prompt-handled"
 
     @Published private(set) var practiceEnabled: Bool
     @Published private(set) var exportsEnabled: Bool
@@ -54,6 +56,10 @@ final class PracticeNotifications: ObservableObject {
     @Published private(set) var authorization: UNAuthorizationStatus = .notDetermined
     @Published private(set) var isUpdating = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var hasCompletedSession: Bool
+    @Published private(set) var sessionPromptHandled: Bool
+    @Published private(set) var isRequestingSessionPermission = false
+    @Published private(set) var presentedSessionPromptThisLaunch = false
     private let defaults: UserDefaults
     private let client: any PracticeNotificationClient
     private var worker: Task<Void, Never>?
@@ -64,6 +70,8 @@ final class PracticeNotifications: ObservableObject {
         self.defaults = defaults; self.client = client
         practiceEnabled = defaults.bool(forKey: Self.enabledKey)
         exportsEnabled = defaults.bool(forKey: Self.exportsKey)
+        hasCompletedSession = defaults.bool(forKey: Self.completedSessionKey)
+        sessionPromptHandled = defaults.bool(forKey: Self.sessionPromptHandledKey)
         let saved = defaults.object(forKey: Self.timeKey) as? Int
         minuteOfDay = saved.flatMap { (0..<1440).contains($0) ? $0 : nil } ?? 18 * 60
     }
@@ -71,6 +79,46 @@ final class PracticeNotifications: ObservableObject {
     var isAllowed: Bool { Self.allows(authorization) }
     static func allows(_ status: UNAuthorizationStatus) -> Bool {
         [.authorized, .provisional, .ephemeral].contains(status)
+    }
+
+    var shouldAskAfterSession: Bool {
+        hasCompletedSession && !sessionPromptHandled && defaults.object(forKey: Self.enabledKey) == nil
+    }
+
+    /// Completion only makes the question eligible. Home presents it after the replay closes.
+    func sessionCompleted() {
+        guard !hasCompletedSession else { return }
+        defaults.set(true, forKey: Self.completedSessionKey)
+        hasCompletedSession = true
+    }
+
+    func requestAfterSessionIfNeeded() async {
+        guard shouldAskAfterSession, !isRequestingSessionPermission else { return }
+        isRequestingSessionPermission = true
+        defer { isRequestingSessionPermission = false }
+        // Let an explicit Settings choice finish before considering the automatic prompt.
+        if let worker { await worker.value }
+        guard !Task.isCancelled, shouldAskAfterSession else { return }
+        authorization = await client.authorization()
+        guard !Task.isCancelled, shouldAskAfterSession else { return }
+        defaults.set(true, forKey: Self.sessionPromptHandledKey)
+        sessionPromptHandled = true
+        // A previous permission decision (for example, exports) is not a new practice opt-in.
+        guard authorization == .notDetermined else { return }
+        presentedSessionPromptThisLaunch = true
+        do {
+            try await client.requestPermission()
+            authorization = await client.authorization()
+            // A manual opt-out/account deletion while the dialog was open must win.
+            if defaults.object(forKey: Self.enabledKey) == nil {
+                defaults.set(isAllowed, forKey: Self.enabledKey)
+                practiceEnabled = isAllowed
+            }
+            // Record the OS answer even if its modal transition cancelled the Home task.
+            await refresh()
+        } catch {
+            errorMessage = String(localized: "Couldn’t update notifications. Try again.", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        }
     }
 
     func setPracticeEnabled(_ value: Bool) async {
@@ -89,7 +137,7 @@ final class PracticeNotifications: ObservableObject {
         await synchronize(askPermission: false)
     }
 
-    /// Opening the app, changing language or returning from Settings never prompts.
+    /// Ordinary refreshes never prompt; only Settings or the first-session flow may ask.
     func refresh() async {
         practiceEnabled = defaults.bool(forKey: Self.enabledKey)
         await synchronize(askPermission: false)

@@ -422,6 +422,7 @@ struct RecordView: View {
     }
 
     private func saveAccountResult(_ summary: SessionSummary, source: SavedJugglingResult.Source) {
+        PracticeNotifications.shared.sessionCompleted()
         if source == .recording {
             ProductAnalytics.shared.track(.trainingCompleted(.juggling, duration: summary.duration))
             MetaAdsMeasurement.shared.trainingCompleted()

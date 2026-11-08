@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-08",
+  "branch": "codex/1.2-background-notifications",
+  "change": "Ask for notifications after the first completed juggling recording or successfully counted import, once the player returns to Home.",
+  "behavior": {
+    "signup_required": false,
+    "extra_enrollment_screen": false,
+    "prompt": "Standard iOS notification permission dialog",
+    "allow": "Enables the existing server practice schedule automatically",
+    "schedule": "Monday, Wednesday and Sunday at the saved local time, default 18:00",
+    "deny": "Leaves practice reminders off; no repeated automatic request",
+    "existing_practice_choice": "Preserved, including opt-out and selected time",
+    "already_decided_system_permission": "Does not silently opt an export-only user into practice reminders",
+    "recording_or_replay": "Completion makes the prompt eligible; no dialog is shown until Home is active and clear of other flows",
+    "leaving_home": "Cancels presentation before the OS request starts without consuming the one-time opportunity",
+    "other_dialogs": "After the notification prompt appears, tracking and app-update prompts wait until another app launch"
+  },
+  "validation": {
+    "configuration": "Debug preview 1.2.0 (71)",
+    "bundle_identifier": "com.juggledude.release120.onboarding",
+    "device": "iPhone 17 Pro simulator, iOS 26.5",
+    "PracticeNotificationsTests": {"passed": 15, "failed": 0},
+    "RemotePracticeNotificationsTests": {"passed": 8, "failed": 0},
+    "NotificationOnboardingUITests": {
+      "passed": 1,
+      "failed": 0,
+      "checks": [
+        "No permission prompt on Home before a completed session",
+        "Native notification dialog on Home after persisted completion signal",
+        "Allow turns on practice without visiting a separate enrollment screen",
+        "Reminder time remains editable in Settings",
+        "An app-update notice does not appear after the permission prompt in the same launch",
+        "Update notice can appear on the next launch",
+        "Manual practice opt-out survives relaunch"
+      ]
+    },
+    "broader_tracking_tests": {
+      "passed": 11,
+      "failed": 1,
+      "failure": "testBundledSettingsKeepAutomaticCollectionOffAndTestsNeverMeasure expects JuggleDudeMetaAdsEnabled=true, whereas Release120Preview-Info.plist intentionally sets it false. No tracking implementation/configuration was changed."
+    },
+    "log": "artifacts/release120/session-notification-prompt-20261108/ios-tests.log",
+    "result_bundle": "artifacts/release120/session-notification-prompt-20261108/tests.xcresult"
+  },
+  "limitations": [
+    "The UI test supplies the persisted session-completion flag; it does not record or analyze a new video. The production hook is the existing successful session-summary path for both recordings and imports.",
+    "Physical phones were not installed or tested in this change.",
+    "No real APNs message was sent and no server configuration changed. Physical-device registration, scheduled delivery and tap routing still need the updated preview build."
+  ]
+}

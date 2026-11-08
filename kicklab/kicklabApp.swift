@@ -26,7 +26,8 @@ struct kicklabApp: App {
         #if DEBUG
         if Bundle.main.bundleIdentifier == "com.juggledude.release120.preview",
            ProcessInfo.processInfo.arguments.contains("--reset-practice-notifications") {
-            for key in [PracticeNotifications.enabledKey, PracticeNotifications.exportsKey, PracticeNotifications.timeKey] {
+            for key in [PracticeNotifications.enabledKey, PracticeNotifications.exportsKey, PracticeNotifications.timeKey,
+                        PracticeNotifications.completedSessionKey, PracticeNotifications.sessionPromptHandledKey] {
                 UserDefaults.standard.removeObject(forKey: key)
             }
         }

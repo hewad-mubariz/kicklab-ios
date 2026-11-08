@@ -22,6 +22,7 @@ struct RootShellView: View {
     @ObservedObject private var updateNotice = AppUpdateNotice.shared
     @ObservedObject private var adMeasurement = MetaAdsMeasurement.shared
     @ObservedObject private var notificationNavigation = PracticeNotificationNavigation.shared
+    @ObservedObject private var practiceNotifications = PracticeNotifications.shared
     @Namespace private var zoom
     private var accountBest: Int { account.user == nil ? personalBest : player.personalBest }
 
@@ -30,13 +31,21 @@ struct RootShellView: View {
         !showImport && !showsLeaderboard && !showsProfile && !showsHistory
     }
 
-    /// The tracking question comes after a first finished training (or the third launch), on a calm home screen.
+    private var canRequestPracticePermission: Bool {
+        homeIsReadyForNotice && practiceNotifications.shouldAskAfterSession &&
+        !showsUpdateAlert && !adMeasurement.isRequesting && notificationNavigation.pending == nil
+    }
+
+    /// Give the first-session notification question this launch; tracking can wait until another launch.
     private var canRequestAdPermission: Bool {
-        homeIsReadyForNotice && adMeasurement.wantsPermission && !showsUpdateAlert
+        homeIsReadyForNotice && adMeasurement.wantsPermission && !showsUpdateAlert &&
+        !practiceNotifications.shouldAskAfterSession && !practiceNotifications.isRequestingSessionPermission &&
+        !practiceNotifications.presentedSessionPromptThisLaunch
     }
 
     private var canOpenPracticeNotification: Bool {
-        homeIsReadyForNotice && !showsUpdateAlert && !adMeasurement.isRequesting
+        homeIsReadyForNotice && !showsUpdateAlert && !adMeasurement.isRequesting &&
+        !practiceNotifications.isRequestingSessionPermission
     }
 
     private var canShowUpdateAlert: Bool {
@@ -44,7 +53,9 @@ struct RootShellView: View {
         let trackingChoicePending = adMeasurement.isAvailable && adMeasurement.wantsPermission &&
             adMeasurement.authorizationStatus == .notDetermined
         return homeIsReadyForNotice && updateNotice.shouldPrompt &&
-            !adMeasurement.isRequesting && !trackingChoicePending
+            !adMeasurement.isRequesting && !trackingChoicePending &&
+            !practiceNotifications.shouldAskAfterSession && !practiceNotifications.isRequestingSessionPermission &&
+            !practiceNotifications.presentedSessionPromptThisLaunch
     }
 
     private var preferredScheme: ColorScheme? {
@@ -85,11 +96,18 @@ struct RootShellView: View {
             do { try await Task.sleep(for: .seconds(2)) } catch { return }
             TrackingModelPrewarm.runIfNeeded()
         }
+        .task(id: canRequestPracticePermission) {
+            guard canRequestPracticePermission else { return }
+            do { try await Task.sleep(for: .milliseconds(700)) } catch { return }
+            guard !Task.isCancelled, canRequestPracticePermission else { return }
+            await practiceNotifications.requestAfterSessionIfNeeded()
+            await RemotePracticeNotifications.shared.refresh()
+        }
         .task(id: canRequestAdPermission) {
             guard canRequestAdPermission, adMeasurement.isAvailable else { return }
             // Let the replay close first; cancel if a camera, sign-in, or sheet opens.
             do { try await Task.sleep(for: .milliseconds(700)) } catch { return }
-            guard !Task.isCancelled else { return }
+            guard !Task.isCancelled, canRequestAdPermission else { return }
             await MetaAdsMeasurement.shared.requestPermission()
         }
         .task(id: canShowUpdateAlert) {
