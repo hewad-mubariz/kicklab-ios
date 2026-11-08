@@ -117,5 +117,83 @@
   "interpretation": "The new pose model adds 9.4 MB. Executable code increased 33.2 MB, consistent with the new MediaPipe integration plus application changes; exact MediaPipe-only contribution requires a controlled comparison build. Extra framework directories alone grew only 0.325 MB.",
   "recommended_next_check": "Evaluate a narrower pose-only MediaPipe integration in an isolated build, measure the Release archive and validate actual pose/counting. Preserve required calculator registrations; do not blindly remove all_load. Savings are not yet proven.",
   "changes_made_to_app_code": false,
-  "screenshot_draft_work": "Paused at user request. Version 1.2.0 created in Prepare for Submission; no screenshots uploaded or review submission performed during this size audit."
+  "screenshot_draft_work": "Paused at user request. Version 1.2.0 created in Prepare for Submission; no screenshots uploaded or review submission performed during this size audit.",
+  "early_growth_36_to_39": {
+    "investigated_at": "2026-11-08T23:36:33.561701+01:00",
+    "bytes": 34578291,
+    "percent": 24.13613326316896,
+    "baseline_36": "Preserved historical size report; no fresh build 36 archive measurement.",
+    "build_37_bridge_bytes": 144021253,
+    "growth_36_to_37_bytes": 757663,
+    "growth_37_to_39_bytes": 33820628,
+    "categories_delta_bytes": {
+      "Gold and crystal lighting environment maps": 11184816,
+      "Meta ads measurement frameworks": 9784918,
+      "Crystal geometry and ice textures": 5794244,
+      "Google Sans font": 4974940,
+      "Application code, shaders, sign-in resources, translations and other files": 2839373
+    },
+    "top_level_deltas_37_to_39_bytes": {
+      "Frameworks": 9784918,
+      "studio-environment.bin": 5592408,
+      "gold-environment.bin": 5592408,
+      "GoogleSans-Regular.ttf": 4974940,
+      "ice-fracture-triangles.bin": 2764800,
+      "Juggle Dude": 1551728,
+      "ice-detail.jpg": 974261,
+      "ice-normal.jpg": 905442,
+      "ice-fracture-bvh.bin": 687792,
+      "ice-roughness.jpg": 461917,
+      "default.metallib": 227612,
+      "GoogleSignIn_GoogleSignIn.bundle": 203476,
+      "_CodeSignature": 51221,
+      "fr.lproj": 7077,
+      "de.lproj": 6803,
+      "pt-BR.lproj": 6742,
+      "es.lproj": 6658,
+      "GoogleSans-OFL.txt": 4488,
+      "Facebook_FacebookCore.bundle": 2622,
+      "GoogleUtilities_GoogleUtilities-UserDefaults.bundle": 1648,
+      "GoogleUtilities_GoogleUtilities-Environment.bundle": 1590,
+      "GTMSessionFetcher_GTMSessionFetcherCore.bundle": 1327,
+      "Facebook_FacebookAEM.bundle": 1248,
+      "GoogleUtilities_GoogleUtilities-Logger.bundle": 1203,
+      "GoogleSignIn_GoogleSignInSwift.bundle": 1086,
+      "AppAuth_AppAuthCore.bundle": 1082,
+      "AppAuth_AppAuth.bundle": 1074,
+      "GTMAppAuth_GTMAppAuth.bundle": 1064,
+      "Info.plist": 917,
+      "en.lproj": 545,
+      "PrivacyInfo.xcprivacy": 499,
+      "ice-fracture-roots.bin": 32
+    },
+    "audio_file_scan_builds_37_39_77": {
+      "37": [],
+      "39": [],
+      "77": []
+    },
+    "sound_implementation": "ReplaySoundSynth synthesizes PCM samples in code and caches them in memory; ReplaySoundPlayer creates AVAudioPCMBuffer values from those samples. No bundled replay sound recordings. Sound code is included in executable size, not independently isolated.",
+    "sound_sources": [
+      "kicklab/Effects/ReplaySounds.swift",
+      "kicklab/Record/ReplaySoundPlayer.swift"
+    ],
+    "google_font_usage": "Only app source match for the custom GoogleSans-Regular font is the Continue with Google button in kicklab/Account/SignInView.swift.",
+    "environment_format": "Two different 1024x512 RGBA16Float textures with complete precomputed mip chains, 5,592,408 bytes each; active in LabSkinRenderer and IceTextures.",
+    "frameworks_39_bytes": {
+      "FBAEMKit.framework": 1188229,
+      "FBSDKCoreKit.framework": 8219667,
+      "FBSDKCoreKit_Basics.framework": 377022
+    },
+    "unchanged_from_36_through_39_bytes": {
+      "detection_model": 62628867,
+      "ball_materials": 37187220,
+      "Assets.car": 28881816
+    },
+    "optimization_candidates_not_implemented": [
+      "Reduce font payload while preserving localized Google sign-in button rendering and branding requirements.",
+      "Evaluate smaller or more compact environment maps and crystal assets with visual comparisons.",
+      "Retain Meta measurement unless the owner changes the advertising requirement."
+    ],
+    "app_source_or_assets_changed": false
+  }
 }
