@@ -40,7 +40,8 @@
       "failure": "testBundledSettingsKeepAutomaticCollectionOffAndTestsNeverMeasure expects JuggleDudeMetaAdsEnabled=true, whereas Release120Preview-Info.plist intentionally sets it false. No tracking implementation/configuration was changed."
     },
     "log": "artifacts/release120/session-notification-prompt-20261108/ios-tests.log",
-    "result_bundle": "artifacts/release120/session-notification-prompt-20261108/tests.xcresult"
+    "result_bundle": "artifacts/release120/session-notification-prompt-20261108/tests.xcresult",
+    "result_bundle_status": "Incomplete: Xcode stalled during final log collection after all test cases finished. The owned xcodebuild process was terminated; the text log retains the individual test results."
   },
   "limitations": [
     "The UI test supplies the persisted session-completion flag; it does not record or analyze a new video. The production hook is the existing successful session-summary path for both recordings and imports.",
