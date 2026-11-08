@@ -1,0 +1,589 @@
+{
+  "date": "2026-11-08",
+  "branch": "codex/1.2-background-notifications",
+  "base_commit": "bab9576493d331b805e92c4db1e7ac82a016def8",
+  "status": "Completed physical-device investigation; no production model or compute policy change.",
+  "device": {
+    "name": "iPhone 11 Pro Max",
+    "hardware": "iPhone12,5",
+    "chip": "A13",
+    "os": "Version 27.2 (Build 24B119)"
+  },
+  "question": "Does fixing GPU loading make the current 288-pixel ball model faster than CPU on iPhone 11?",
+  "decision": {
+    "keep_production_cpu_fallback": true,
+    "promote_compatibility_model": false,
+    "reason": "The GPU is functional, but Core ML cannot prepare the original graph for it. An equivalent four-projection rewrite loads successfully with CPU+GPU enabled but is approximately 6.2x slower than the original CPU path. CPU+Neural Engine also runs slower.",
+    "compat_gpu_over_original_cpu_ratio": 6.178502128871813,
+    "original_ne_over_original_cpu_same_matrix_ratio": 6.224182297885901,
+    "next_useful_research": "Optimize the model graph for A13 or evaluate a more accelerator-friendly model, preserving count and mask quality; changing computeUnits alone did not help in these checks."
+  },
+  "diagnosis": {
+    "metal_control": {
+      "apple6": true,
+      "device": "Apple A13 GPU",
+      "passed": true
+    },
+    "fresh_runtime_error": "Espresso exception: \"Invalid state\": inner_product_kernel: Input blob type 0 and output blob type 1 don't match status=-5",
+    "error_source": "artifacts/rf-gpu-20261108/phone-console-2.log",
+    "default_function_does_not_fix_it": true,
+    "single_function_packaging_does_not_fix_it": true,
+    "low_precision_accumulation_does_not_fix_it": true,
+    "fast_prediction_specialization_does_not_fix_it": true,
+    "compatibility_change": "Rewrite four cross-attention value-projection linear operations to equivalent 1x1 convolutions with the same learned values. No training; no thresholds, preprocessing, model outputs or other application logic changed.",
+    "interpretation": "Fresh runtime logs reproduce the historical inner-product type mismatch. The rewrite removes the observed load blocker. This identifies a model/runtime compatibility problem; it does not fully characterize the private compiler defect.",
+    "ne_console_observation": "Neural Engine load emitted input-channel alignment warnings but completed. No fresh operator placement trace was captured."
+  },
+  "protocol": {
+    "input_edge": 288,
+    "frames": 12,
+    "warmups_per_variant": 2,
+    "source_video": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/data/v2/baseline-inputs-001/touch18.mov",
+    "source_video_sha256": "48549a3133216db7ba2fd74a61f915412c154ecea1091087fbbff05613c573e7",
+    "frame_extraction": "ffmpeg -hide_banner -loglevel error -i SOURCE -vf fps=1,scale=480:-1 -frames:v 12 -start_number 0 artifacts/rf-gpu-20261108/frames/frame-%02d.png",
+    "normalization_source": "kicklab/Detection/RFInputNormalization.swift",
+    "timing": "Synchronous MLModel.prediction wall time, excluding input normalization, output snapshot/comparison and model loading. Medians of 12 predictions; two warmups excluded. Model loading separately reported.",
+    "conditions": "All recorded trial start/end samples were foreground, nominal thermal (0), unplugged (battery_state 1), Low Power Mode disabled. CPU reference repeated at the end of both matrices.",
+    "parity": "Compare highest-scoring class-37 ball query score, its box and binary mask against original CPU on the same fixed frames. Threshold checks at score 0.4; mask logits threshold 0.",
+    "limits": [
+      "Small development sample; no independent accuracy labels or full-video counting/export benchmark.",
+      "Trials run sequentially, not randomized; CPU end repeats check short-run drift.",
+      "No sustained temperature or energy measurements.",
+      "cpuAndGPU and cpuAndNeuralEngine allow mixed execution; these are configuration timings, not evidence that every operation used an accelerator.",
+      "Parity is selected-ball output agreement, not all-tensor equality or proof of equal visual quality."
+    ]
+  },
+  "build": {
+    "toolchain": "Xcode 27.1 (27A9275)",
+    "configuration": "Debug with Swift -O / wholemodule",
+    "standalone_bundle": "com.juggledude.modelprobe.debug",
+    "deployment_target": "iOS 18.0",
+    "coremltools": "9.0"
+  },
+  "model_export": {
+    "source": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/kicklab/Models/RFDETRSmallRecovery040FP16.mlpackage",
+    "source_hashes": {
+      "Data/com.apple.CoreML/model.mlmodel": "e0c3e470cdb87c6abc5421641a915d3c0bcfca78c07fa1d6f077d3984aa4120c",
+      "Data/com.apple.CoreML/weights/weight.bin": "c8c1b8d5392397e5d67692879bb192c5d8e57c6673fdaa8a904b2ab73977e0cc",
+      "Manifest.json": "4494645218d0a70d0232d2dc860b52d084627b098b75d2333404b0db2609a8f0"
+    },
+    "coremltools": "9.0",
+    "function": "rf288",
+    "exports": [
+      {
+        "name": "RF288Single",
+        "changed_projections": [],
+        "files": {
+          "Data/com.apple.CoreML/model.mlmodel": "444bf1e419bf429567bb76dcf6f6203a34eeda732e9f8d7ca296c5e2b78a1398",
+          "Data/com.apple.CoreML/weights/weight.bin": "a9a04534d38906af2be06e63bd36f68473c5bf7fc8937b144ff8581c1dd5193f",
+          "Manifest.json": "c4ca93504e949d8b233be99c5f34d560f532cfbabd419aacf0c7f9f32d2934c0"
+        }
+      },
+      {
+        "name": "RF288Compat",
+        "changed_projections": [
+          "linear_83_cast_fp16",
+          "linear_93_cast_fp16",
+          "linear_103_cast_fp16",
+          "linear_113_cast_fp16"
+        ],
+        "files": {
+          "Data/com.apple.CoreML/model.mlmodel": "cde995015209c8aecd521ef7ca50a0ffaba6a7754f85d3f3ede73491c5e3a358",
+          "Data/com.apple.CoreML/weights/weight.bin": "a9a04534d38906af2be06e63bd36f68473c5bf7fc8937b144ff8581c1dd5193f",
+          "Manifest.json": "219ba5650b0b4f867e6a2ef4c89bcfa27e557a9c57ed45cd5e39d7e81bdded8c"
+        }
+      }
+    ],
+    "training": false,
+    "production_changed": false,
+    "note": "Same learned values. Repacking changes the weight file layout; phone parity is required."
+  },
+  "runs": [
+    {
+      "finished": "2026-11-08T18:18:10Z",
+      "input_edge": 288,
+      "metal_control": {
+        "apple6": true,
+        "device": "Apple A13 GPU",
+        "passed": true
+      },
+      "os": "Version 27.2 (Build 24B119)",
+      "scope": "12 fixed development video stills, two warmups; inference timings exclude input preparation and output comparison.",
+      "started": "2026-11-08T18:17:48Z",
+      "status": "completed",
+      "artifact": "artifacts/rf-gpu-20261108/phone-report.json",
+      "trials": [
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "load_ms": 836.6470416076481,
+          "median_ms": 61.42293749144301,
+          "parity": {
+            "max_box_delta": 0,
+            "max_score_delta": 0,
+            "minimum_mask_iou": 1,
+            "threshold_flips": []
+          },
+          "prediction_ms": [
+            63.26929165516049,
+            63.35199996829033,
+            63.09312500525266,
+            61.43674999475479,
+            61.48824992123991,
+            61.409124988131225,
+            61.400958336889744,
+            60.76454161666334,
+            61.32824998348951,
+            61.050083371810615,
+            61.50779174640775,
+            60.87204162031412
+          ],
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "completed",
+          "variant": "original-cpu"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "error": {
+            "code": 0,
+            "description": "`MLModelConfiguration`'s `.functionName` property must be `nil` unless the model type is ML Program.",
+            "details": "[\"NSLocalizedDescription\": `MLModelConfiguration`'s `.functionName` property must be `nil` unless the model type is ML Program.]",
+            "domain": "com.apple.CoreML",
+            "reason": ""
+          },
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "failed",
+          "variant": "original-gpu"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "error": {
+            "code": 0,
+            "description": "`MLModelConfiguration`'s `.functionName` property must be `nil` unless the model type is ML Program.",
+            "details": "[\"NSLocalizedDescription\": `MLModelConfiguration`'s `.functionName` property must be `nil` unless the model type is ML Program.]",
+            "domain": "com.apple.CoreML",
+            "reason": ""
+          },
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "failed",
+          "variant": "original-gpu-low-precision"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "error": {
+            "code": 0,
+            "description": "`MLModelConfiguration`'s `.functionName` property must be `nil` unless the model type is ML Program.",
+            "details": "[\"NSLocalizedDescription\": `MLModelConfiguration`'s `.functionName` property must be `nil` unless the model type is ML Program.]",
+            "domain": "com.apple.CoreML",
+            "reason": ""
+          },
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "failed",
+          "variant": "original-gpu-fast-prediction"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "error": {
+            "code": 0,
+            "description": "Failed to build the model execution plan using a model architecture file '/private/var/containers/Bundle/Application/4747749B-FCA7-44EB-8307-D32FBA289B02/RFModelProbe.app/RF288Single.mlmodelc/model.mil' with error code: -5.",
+            "details": "[\"NSLocalizedDescription\": Failed to build the model execution plan using a model architecture file '/private/var/containers/Bundle/Application/4747749B-FCA7-44EB-8307-D32FBA289B02/RFModelProbe.app/RF288Single.mlmodelc/model.mil' with error code: -5.]",
+            "domain": "com.apple.CoreML",
+            "reason": ""
+          },
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "failed",
+          "variant": "single-function-gpu"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "load_ms": 688.5879999026656,
+          "median_ms": 62.12037499062717,
+          "parity": {
+            "max_box_delta": 0.0006103515625,
+            "max_score_delta": 0.0012067510713930085,
+            "minimum_mask_iou": 0.9997686256362796,
+            "threshold_flips": []
+          },
+          "prediction_ms": [
+            63.225416699424386,
+            60.44024997390807,
+            60.56650006212294,
+            61.00945838261396,
+            62.287500011734664,
+            64.28391672670841,
+            63.99629160296172,
+            62.73095833603293,
+            62.18374997843057,
+            60.547666740603745,
+            62.05700000282377,
+            61.655124998651445
+          ],
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "completed",
+          "variant": "compat-cpu"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "load_ms": 916.0443333676085,
+          "median_ms": 379.5017500524409,
+          "parity": {
+            "max_box_delta": 0.00146484375,
+            "max_score_delta": 0.00575817602396711,
+            "minimum_mask_iou": 0.984375,
+            "threshold_flips": []
+          },
+          "prediction_ms": [
+            384.1768333222717,
+            391.9644166016951,
+            380.51904167514294,
+            382.00979167595506,
+            378.8422083016485,
+            375.96612505149096,
+            372.46037495788187,
+            381.29595830105245,
+            378.37208330165595,
+            377.52737500704825,
+            379.7145417192951,
+            379.28895838558674
+          ],
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "completed",
+          "variant": "compat-gpu"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "load_ms": 616.7287500575185,
+          "median_ms": 61.08695833245292,
+          "parity": {
+            "max_box_delta": 0,
+            "max_score_delta": 0,
+            "minimum_mask_iou": 1,
+            "threshold_flips": []
+          },
+          "prediction_ms": [
+            61.147666652686894,
+            61.08004169072956,
+            60.78945833723992,
+            61.24208343680948,
+            61.167416628450155,
+            61.268541612662375,
+            61.04724993929267,
+            61.03075004648417,
+            61.09387497417629,
+            60.53870834875852,
+            61.36404164135456,
+            60.78737508505583
+          ],
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "completed",
+          "variant": "original-cpu-repeat"
+        }
+      ]
+    },
+    {
+      "finished": "2026-11-08T18:19:22Z",
+      "input_edge": 288,
+      "metal_control": {
+        "apple6": true,
+        "device": "Apple A13 GPU",
+        "passed": true
+      },
+      "os": "Version 27.2 (Build 24B119)",
+      "scope": "12 fixed development video stills, two warmups; inference timings exclude input preparation and output comparison.",
+      "started": "2026-11-08T18:18:59Z",
+      "status": "completed",
+      "artifact": "artifacts/rf-gpu-20261108/phone-report-2.json",
+      "trials": [
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "load_ms": 741.6695000138134,
+          "median_ms": 63.183791644405574,
+          "parity": {
+            "max_box_delta": 0,
+            "max_score_delta": 0,
+            "minimum_mask_iou": 1,
+            "threshold_flips": []
+          },
+          "prediction_ms": [
+            63.1285416893661,
+            63.685250002890825,
+            61.321416636928916,
+            63.26258333865553,
+            62.624458339996636,
+            60.435625026002526,
+            60.74620829895139,
+            61.967416666448116,
+            63.296083360910416,
+            63.26695834286511,
+            63.239041599445045,
+            63.55262501165271
+          ],
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "completed",
+          "variant": "original-cpu"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "error": {
+            "code": 0,
+            "description": "This MLModel doesn't support the multi-function description sytnax.",
+            "details": "[\"NSLocalizedDescription\": This MLModel doesn't support the multi-function description sytnax.]",
+            "domain": "com.apple.CoreML",
+            "reason": ""
+          },
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "failed",
+          "variant": "original-gpu-default-function"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "load_ms": 10434.425374958664,
+          "median_ms": 393.26743746642023,
+          "parity": {
+            "max_box_delta": 0.0018310546875,
+            "max_score_delta": 0.007242794511923112,
+            "minimum_mask_iou": 0.984375,
+            "threshold_flips": []
+          },
+          "prediction_ms": [
+            391.9563334202394,
+            396.90520835574716,
+            397.0655417069793,
+            393.27733335085213,
+            392.73483329452574,
+            391.8256666511297,
+            391.7056249920279,
+            392.7107499912381,
+            394.0712083131075,
+            393.25754158198833,
+            394.32454167399555,
+            398.1471249135211
+          ],
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "completed",
+          "variant": "original-cpu-ne"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "error": {
+            "code": 0,
+            "description": "This MLModel doesn't support the multi-function description sytnax.",
+            "details": "[\"NSLocalizedDescription\": This MLModel doesn't support the multi-function description sytnax.]",
+            "domain": "com.apple.CoreML",
+            "reason": ""
+          },
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "failed",
+          "variant": "original-all"
+        },
+        {
+          "end": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "load_ms": 3.5332917468622327,
+          "median_ms": 61.038020765408874,
+          "parity": {
+            "max_box_delta": 0,
+            "max_score_delta": 0,
+            "minimum_mask_iou": 1,
+            "threshold_flips": []
+          },
+          "prediction_ms": [
+            60.5516666546464,
+            60.67337503191084,
+            60.956249944865704,
+            61.781791620887816,
+            62.25058331619948,
+            61.35320838075131,
+            61.27470836509019,
+            60.79812499228865,
+            60.66737498622388,
+            60.832166695035994,
+            61.140708392485976,
+            61.11979158595204
+          ],
+          "start": {
+            "battery_state": 1,
+            "foreground": true,
+            "low_power": false,
+            "thermal": 0
+          },
+          "status": "completed",
+          "variant": "original-cpu-repeat"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "frame_sha256": {
+      "frame-00.png": "bab34ed721899303472df5b31eb0838699fa4d3b1f36b2cf37e850ec9fd4ff4e",
+      "frame-01.png": "3857cefd66e8dd688806899c86bd295d427f67318045012bed7ef4afbf018a3d",
+      "frame-02.png": "d9471a0ab12db3526027bf5df9e631d976eebc917e12d5d20aab30e2fdcde669",
+      "frame-03.png": "ae51ccaaa7976c03ee045282a3aa35ff7a6e9a4fb8d2afe8ed8fa025e755cb0b",
+      "frame-04.png": "0e45a788d37909bd5541b3c845a0f5624bb647bdcb0b6420b0d0804d87c033ca",
+      "frame-05.png": "c5c106175b3cb90774ad2459fe69db8f749caf86ee91439e75687b80bc680cc5",
+      "frame-06.png": "a72bfeaa221ca4e989e620c486b347b09f7da85cb905a57e321005f74be5025f",
+      "frame-07.png": "8b59ebe7431db51dc94444c3f4a957caa57aa2b09af1114690049a5fb816ea66",
+      "frame-08.png": "c59abbfdd8554097c8879500fd47b19e8bb31e3da683f856f50aa61658928f46",
+      "frame-09.png": "e0572d0ee10da552fe4d1156ea0c4e776844cbceb480d9af1f82d84fd95c2585",
+      "frame-10.png": "8229924aa1891a32fc5b2f002b419460c03d7fe324f5ceec68f1a5df9f770fbd",
+      "frame-11.png": "39897c7beaf48decbe3362e2fe65f02140ad2065828c141150e199e65511e9b6"
+    },
+    "source_sha256": {
+      "scripts/rf-gpu-probe/Probe.swift": "38b4b7a0fffbcd158697dae1977f260290827acf65cdbf7285e55b6633ea2b93",
+      "scripts/rf-gpu-probe/project.rb": "e71164098af81f98d2999e5bf8247a340694cc268eb524876e4dc849a48e7eca",
+      "scripts/rf-gpu-probe/export_compat.py": "a008d4c1dd5ad940b8e044b3ec72829098e72c448a3e4798322c100ed0d0ed1c",
+      "kicklab/Detection/RFInputNormalization.swift": "5ba9acf65acafde02018d26e866b54c48de967a3a068c1a2a4867a93e3cb5ffc"
+    },
+    "artifact_sha256": {
+      "phone-report.json": "80cc0e1767a641240f0ffa66fe7a3e21d0e4e4d4e494a997e387f153ccc54e60",
+      "phone-report-2.json": "fb4f7cc0e27c7513319c81ead6df5e0f559a01f62306219c8f7d337efe6cc49b",
+      "phone-console-2.log": "afc6205bb6051b7d0bbf6c20a5985729fd9745cd8f37c4d4197754b7a54c4933"
+    },
+    "lab_rewrite_source": "/Users/hewadmubariz/Desktop/projects/kicklab-lab/src/kicklab_lab/rfdetr_gpu_compat.py",
+    "lab_rewrite_sha256": "06698206aae3a0ca6fb1a412b2bd05f043cf02b02916dc44ceccf5e19c01b4c3"
+  },
+  "historical_context": {
+    "reports": [
+      "/Users/hewadmubariz/Desktop/projects/kicklab-lab/benchmarks/v2/iphone11-gpu-compat-001.json",
+      "/Users/hewadmubariz/Desktop/projects/kicklab-lab/benchmarks/v2/iphone11-rf-shared-20261017.json",
+      "/Users/hewadmubariz/Desktop/projects/kicklab-lab/benchmarks/v2/iphone11-rf-backbone-20261017.json"
+    ],
+    "note": "Prior 384-pixel experiments found the same load blocker and slower compatible accelerator configurations. Current results above independently test the current pinned 288 function on the present OS."
+  },
+  "validation": {
+    "both_device_matrices_completed": true,
+    "pinned_model_check": "python3 scripts/install-rf-model.py --check: passed after experiments",
+    "normal_app_reopened": true,
+    "production_code_and_model_changed": false,
+    "iphone17_used": false
+  },
+  "reproduction": {
+    "export": "PYTHONPATH=/Users/hewadmubariz/Desktop/projects/kicklab-lab/src /Users/hewadmubariz/Desktop/projects/kicklab-lab/.venv/bin/python scripts/rf-gpu-probe/export_compat.py --source kicklab/Models/RFDETRSmallRecovery040FP16.mlpackage --output NEW_LAB_RUN_DIRECTORY",
+    "project": "ruby scripts/rf-gpu-probe/project.rb (uses the recorded experiment paths; adjust paths for a new run)",
+    "build": "xcodebuild build -project artifacts/rf-gpu-20261108/project/RFModelProbe.xcodeproj -scheme RFModelProbe -configuration Debug -destination id=DEVICE_UDID -derivedDataPath artifacts/rf-gpu-20261108/build -allowProvisioningUpdates -jobs 4",
+    "launch": "Install the built app with devicectl; run once without arguments, copy Documents/report.json, then run with --ne and copy the report again. Keep the app foreground. Console environment OS_ACTIVITY_DT_MODE=YES exposed the underlying Core ML error."
+  }
+}
