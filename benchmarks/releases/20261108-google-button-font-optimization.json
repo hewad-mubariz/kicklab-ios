@@ -1,0 +1,88 @@
+{
+  "date": "2026-11-08T23:55:14.832190+01:00",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "scope": "Subset the existing Google Sans font for the sign-in button; retain Latin coverage and all variation axes. No application logic, layout or registration changes.",
+  "fonttools_version": "4.68.0",
+  "font": {
+    "source_bytes": 4974940,
+    "output_bytes": 301056,
+    "source_sha256": "d0a87d835a944b8b40d0e82a5651bb59ab97b936a2aeed5946eb57e7b2a3a90a",
+    "output_sha256": "9c7522a9c5ac75ab322d2fd16f07e0b0be42621f251b7d9248edc0ddec66036a",
+    "retained_characters": 526,
+    "retained_glyphs": 1169,
+    "labels": {
+      "en": "Continue with Google",
+      "de": "Weiter mit Google",
+      "es": "Continuar con Google",
+      "fr": "Continuer avec Google",
+      "pt-BR": "Continuar com o Google"
+    },
+    "axes": [
+      [
+        "opsz",
+        17.0,
+        18.0,
+        18.0
+      ],
+      [
+        "wght",
+        400.0,
+        400.0,
+        700.0
+      ],
+      [
+        "GRAD",
+        -50.0,
+        0.0,
+        200.0
+      ]
+    ]
+  },
+  "saved_resource_bytes": 4673884,
+  "percent_reduction": 93.94855013326794,
+  "branding_reference": "https://developers.google.com/identity/branding-guidelines",
+  "license": "Bundled SIL OFL retained unchanged; the source license names no Reserved Font Names.",
+  "render_validation": {
+    "cases": 120,
+    "scope": "CoreText: all five localized labels at 17/22/34/48pt, weights 400/500/700, dark/light text.",
+    "missing_glyphs": 0,
+    "font_names_and_metrics_identical": true,
+    "pixel_identical_cases": 84,
+    "remaining_differences": "Small rasterization edge differences; inspected original/subset 17pt Medium images. All measured metrics identical. FontTools RecordingPen confirmed identical label glyph outline commands at 17pt and 18pt optical-size settings, weight 500, grade 0. No pixel-identical claim for every rendered label.",
+    "before": "artifacts/font-optimization/before",
+    "after": "artifacts/font-optimization/after"
+  },
+  "ui_validation": {
+    "passed": true,
+    "test": "SignInUITests/testLargeTextCanScrollToAllAccountActions",
+    "destination": "iOS 26.5 Simulator",
+    "result_bundle": "artifacts/font-optimization/sign-in-layout.xcresult"
+  },
+  "source_paths": [
+    "kicklab/Resources/GoogleSans-Regular.ttf",
+    "scripts/subset-google-button-font.py",
+    "scripts/verify-google-button-font.swift",
+    "docs/auth-setup.md"
+  ],
+  "limitations": "Adding a new language/label requires regenerating from the full original font. Broader Latin coverage is kept beyond the current five ASCII labels. App Store download size is not measured.",
+  "upload_or_submission": false,
+  "release_archive_validation": {
+    "result": "ARCHIVE SUCCEEDED",
+    "path": "artifacts/font-optimization/JuggleDude-optimized.xcarchive/Products/Applications/Juggle Dude.app",
+    "version": "1.2.0",
+    "build": "77",
+    "before_uncompressed_app_bytes": 211912158,
+    "after_uncompressed_app_bytes": 207238274,
+    "saved_bytes": 4673884,
+    "before_executable_bytes": 49025168,
+    "after_executable_bytes": 49025168,
+    "font_hash_matches_source": true,
+    "font_registration_unchanged": true,
+    "license_unchanged": true,
+    "unchanged_models_effects_shaders_resources_count": 29,
+    "file_size_deltas": {
+      "GoogleSans-Regular.ttf": -4673884
+    },
+    "codesign_deep_strict_verified": true
+  }
+}

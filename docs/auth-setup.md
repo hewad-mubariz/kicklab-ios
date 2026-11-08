@@ -35,9 +35,21 @@ welcome/Profile in light and dark modes, large text, auth state and counter/repl
 Debug 1.2.0 (38) was installed as an update on iPhone 17 Pro Max.
 Evidence: `artifacts/google-counter-label/verification.json` and the two `.xcresult` bundles.
 
-The Google Sans font is bundled unmodified from `google/fonts/ofl/googlesans`;
-its SIL Open Font License is included as `kicklab/Resources/GoogleSans-OFL.txt`.
-The button follows [Google’s custom-button guidelines](https://developers.google.com/identity/branding-guidelines).
+The Google Sans font comes from `google/fonts/ofl/googlesans`; its SIL Open Font License
+is included as `kicklab/Resources/GoogleSans-OFL.txt`. The app now bundles a Latin subset
+(301,056 bytes instead of 4,974,940) for its single use in the Google sign-in button. It
+retains Latin/extended-Latin characters, combining marks and punctuation, including every
+label in the five supported app languages. Original outlines, hinting, font names and all
+three variable axes (optical size, weight and grade) are retained. Font registration and
+the button's SwiftUI layout are unchanged. The button follows
+[Google’s custom-button guidelines](https://developers.google.com/identity/branding-guidelines).
+
+Reproduce the subset using `scripts/subset-google-button-font.py` with fonttools 4.68.0,
+the original full TTF (also preserved in the build 77 archive), and an output path. The
+script includes and checks every translated button label in `Localizable.xcstrings`.
+When adding a language or changing the label, rerun the script from the full font.
+`scripts/verify-google-button-font.swift` checks original/subset rendering and metrics
+at four sizes, three weights, light/dark colors and all five localized labels.
 
 References: [Google iOS setup](https://developers.google.com/identity/sign-in/ios/start-integrating),
 [Supabase ID-token sign-in](https://supabase.com/docs/reference/swift/auth-signinwithidtoken).
