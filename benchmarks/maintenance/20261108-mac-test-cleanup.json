@@ -1,0 +1,2187 @@
+{
+  "scope": "Mac only. User explicitly chose Mac only; no phone deletion.",
+  "status": "completed",
+  "free_bytes_before": 2153631744,
+  "cache_plan": [
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/invite-codes/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246259712
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 2107846656
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/cadence-corpus/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 236261376
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/brick-blast/kicklab/build/brick-tests/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 0
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/body-gate-review/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 236261376
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/floor-evidence-v18/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 236261376
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/revision2-iphone11/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/touchcounting-device/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 257376256
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/contact-evidence-v16/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 236261376
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 984924160
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 869404672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 146644992
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 748646400
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataUI/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 257388544
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 1304416256
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataLoc/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246259712
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/long-video-phone/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 604041216
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-look/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 701136896
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 159424512
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/revision2-iphone11/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 657457152
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 51617792
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDevice/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 699609088
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 60809216
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 750194688
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 3203072
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-fluids/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 701136896
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 2029789184
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 1152839680
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-iphone11/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-device-O/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246259712
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataUI/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1617920
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 685674496
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-look/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 62226432
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataArchive-37/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246259712
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-abvyfbxvmhuykmdbmhnnymnktnji/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 2605056
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/long-video-recovery-sim/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 1329086464
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 87437312
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDeviceTests/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246259712
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 46813184
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 790450176
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 100438016
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 750194688
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-look/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataUI/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 66818048
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataLoc/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 45699072
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab/build/counter-only-testflight/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 0
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008030/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 701136896
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008150/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 701136896
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-device-O/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 94040064
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-fluids/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1617920
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 1613049856
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 1341227008
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-look/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 513167360
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 44277760
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 63897600
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/localization-testflight/kicklab/build/localization-testflight/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 0
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-device-O/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDevice/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 877891584
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 1195868160
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/coreai-runtime-benchmark/kicklab/build/coreai-runtime/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 701136896
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 750194688
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 115126272
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-fluids/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataUI/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 315650048
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/history-editor/sim-build/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 756793344
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 53587968
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 1242910720
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 71888896
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/yolo26-iphone17-20261105/DerivedData/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDeviceTests/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-abvyfbxvmhuykmdbmhnnymnktnji/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 371462144
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 86650880
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/ball-preparation-20261105/DerivedData/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab/build/outdoor-contact-fix/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 254570496
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1617920
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008030/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 75145216
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-iphone11/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008150/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 75145216
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-device-O/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-audihxzbnpmdueedrzldbgvggpfo/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 750194688
+    },
+    {
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-bgdmwdnizilwgbgqighpjnnnmahg/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 750194688
+    },
+    {
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-crvelwoevnkefcdiyrvzxahutphz/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 688467968
+    },
+    {
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-abvyfbxvmhuykmdbmhnnymnktnji/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 750194688
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 53600256
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 57430016
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/build/touch-counter-testflight/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 0
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/build/live-counter-ui/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 236261376
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach-qa/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataReleaseValidation-37/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246259712
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-look/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 228700160
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataArchive-37/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/build/vision-revisions/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246251520
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008030/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDeviceTests/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008150/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 332070912
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 114061312
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 230612992
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-fluids/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 318922752
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 317931520
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/ball-replacement-consensus/20261019/build/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 236261376
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 65036288
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 87056384
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab/build/counter-only-testflight/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246251520
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab/build/counter-beta-validation/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246251520
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab/build/counter-only-validation/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 254541824
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 750194688
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 61198336
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 3203072
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008030/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008150/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-device-O/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 291860480
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/normalization-iphone11-20261105/DerivedData/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 115007488
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/localization-testflight/kicklab/build/localization-testflight/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246251520
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/localization-testflight/kicklab/build/localization-validation/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246251520
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/build/vision-compute-audit/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246251520
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 750194688
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 66228224
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1617920
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 66945024
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDeviceTests/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 317947904
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 750194688
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1617920
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/coreai-runtime-benchmark/kicklab/build/coreai-runtime/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 323178496
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataReleaseValidation-37/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1617920
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/history-editor/sim-build/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 225927168
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/yolo26-iphone17-20261105/DerivedData/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 114155520
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 105611264
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/ball-preparation-20261105/DerivedData/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/build/touch-counter-beta-tests/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 236261376
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/build/touch-counter-testflight/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 236261376
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/build/vision-integration-probe/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 246251520
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008030/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 228724736
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008150/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 228724736
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 225931264
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataReleaseValidation-37/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 100343808
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1617920
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 114225152
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 873226240
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 321314816
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1585152
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 315326464
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/normalization-iphone11-20261105/DerivedData/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 319041536
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataReleaseValidation-37/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 315645952
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/crystal-first-use-20261103/build/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/app-store-refresh-20261104/build/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 317972480
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 321331200
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 449900544
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/Build",
+      "kind": "Build",
+      "allocated_bytes_before": 788721664
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 228831232
+    },
+    {
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 321810432
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/Index.noindex",
+      "kind": "Index.noindex",
+      "allocated_bytes_before": 78540800
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/SourcePackages",
+      "kind": "SourcePackages",
+      "allocated_bytes_before": 258928640
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/ModuleCache.noindex",
+      "kind": "ModuleCache.noindex",
+      "allocated_bytes_before": 67596288
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/SDKStatCaches.noindex",
+      "kind": "SDKStatCaches.noindex",
+      "allocated_bytes_before": 1617920
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/CompilationCache.noindex",
+      "kind": "CompilationCache.noindex",
+      "allocated_bytes_before": 28672
+    },
+    {
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/SDKExplicitPrecompiledModules",
+      "kind": "SDKExplicitPrecompiledModules",
+      "allocated_bytes_before": 315752448
+    }
+  ],
+  "skipped": [],
+  "simulator_plan": [
+    {
+      "name": "Juggle Dude Efficient Replacement",
+      "udid": "CCA21F1E-2CBB-4269-A126-4BED8EA02E66",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+      "state": "Shutdown"
+    },
+    {
+      "name": "Long Video Recovery QA",
+      "udid": "D5F337D5-325D-4767-9ACF-99BFF0C34CE2",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max",
+      "state": "Shutdown"
+    },
+    {
+      "name": "Juggle Dude iOS 18 Compatibility",
+      "udid": "65230131-AC0E-4C01-86E5-60375526EDA3",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-18-0",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro-Max",
+      "state": "Shutdown"
+    },
+    {
+      "name": "Juggle Dude History Editor QA",
+      "udid": "75E105C6-19F8-4142-90EA-C38C485887A1",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+      "state": "Shutdown"
+    },
+    {
+      "name": "Juggle Dude Language QA",
+      "udid": "226B7C6D-BBD5-4243-BC73-A240E84A31FD",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+      "state": "Shutdown"
+    },
+    {
+      "name": "Juggle Dude Launch Demo",
+      "udid": "A91A7DC7-7378-40EF-9F8D-898886DFCF22",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+      "state": "Shutdown"
+    },
+    {
+      "name": "Kicklab Camera Controls 20261009",
+      "udid": "D8EDE96B-E64B-4D93-99D8-65358A56E577",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+      "state": "Shutdown"
+    },
+    {
+      "name": "Leaderboard Beta QA",
+      "udid": "99B8EBCF-D217-4C6A-B40F-1D5B227C17F7",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+      "state": "Shutdown"
+    },
+    {
+      "name": "RFMaskAB-Lab-20261024",
+      "udid": "52FF85AB-C2F1-4BA0-B2B7-DFDD4242C711",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+      "state": "Shutdown"
+    },
+    {
+      "name": "Juggle Dude Store Capture",
+      "udid": "ED2B414E-D1DB-4A14-8EA1-DF636D92F1FA",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max",
+      "state": "Shutdown"
+    },
+    {
+      "name": "Juggle Dude Store Refresh 20261104",
+      "udid": "C8EB773A-E2E0-48AA-8CAE-1614A38B3C01",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max",
+      "state": "Shutdown"
+    }
+  ],
+  "preserved": [
+    "All repository source and tests",
+    "Source/training media and model assets",
+    "Logs, .xcresult reports, screenshots and benchmark outputs",
+    "TestFlight .xcarchive and IPA files",
+    "Running simulators and unrelated projects",
+    "All phone apps and sessions"
+  ],
+  "operations": [
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/invite-codes/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/cadence-corpus/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/brick-blast/kicklab/build/brick-tests/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/body-gate-review/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/floor-evidence-v18/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/revision2-iphone11/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/touchcounting-device/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/contact-evidence-v16/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataUI/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataLoc/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/long-video-phone/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-look/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/revision2-iphone11/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDevice/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-fluids/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-iphone11/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-device-O/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataUI/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-look/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataArchive-37/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-abvyfbxvmhuykmdbmhnnymnktnji/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/long-video-recovery-sim/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDeviceTests/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-look/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataUI/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataLoc/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab/build/counter-only-testflight/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008030/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008150/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-device-O/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-fluids/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-look/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/localization-testflight/kicklab/build/localization-testflight/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-device-O/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDevice/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/coreai-runtime-benchmark/kicklab/build/coreai-runtime/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-fluids/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataUI/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/history-editor/sim-build/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/yolo26-iphone17-20261105/DerivedData/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDeviceTests/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-abvyfbxvmhuykmdbmhnnymnktnji/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/ball-preparation-20261105/DerivedData/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab/build/outdoor-contact-fix/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008030/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-iphone11/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008150/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-device-O/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-audihxzbnpmdueedrzldbgvggpfo/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-bgdmwdnizilwgbgqighpjnnnmahg/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-crvelwoevnkefcdiyrvzxahutphz/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-abvyfbxvmhuykmdbmhnnymnktnji/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/build/touch-counter-testflight/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/build/live-counter-ui/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach-qa/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataReleaseValidation-37/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-look/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataArchive-37/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/build/vision-revisions/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008030/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDeviceTests/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008150/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-audio-coach/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-fluids/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/build/visible-foot-recovery-20261105/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/ball-replacement-consensus/20261019/build/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab/build/counter-only-testflight/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab/build/counter-beta-validation/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-release/kicklab/build/counter-only-validation/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008030/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008150/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-device-O/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/normalization-iphone11-20261105/DerivedData/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/localization-testflight/kicklab/build/localization-testflight/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/localization-testflight/kicklab/build/localization-validation/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/build/vision-compute-audit/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataDeviceTests/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/coreai-runtime-benchmark/kicklab/build/coreai-runtime/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/v2-audio-coach/kicklab/build/v2-efficiency-tests/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataReleaseValidation-37/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/history-editor/sim-build/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/mask-reuse-20261105/DerivedData/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/yolo26-iphone17-20261105/DerivedData/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/ball-preparation-20261105/DerivedData/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/build/touch-counter-beta-tests/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/touch-counter-improvements/kicklab/build/touch-counter-testflight/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/vision-revision-comparison/kicklab/build/vision-integration-probe/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008030/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedData-cost-00008150/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/DerivedData/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataReleaseValidation-37/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/1-2-background-notifications/kicklab/build/release120/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/live-mask-benchmark/kicklab/build/live-mask-benchmark/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/TestDerivedData/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/normalization-iphone11-20261105/DerivedData/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/DerivedDataReleaseValidation-37/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/crystal-first-use-20261103/build/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/app-store-refresh-20261104/build/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/automatic-ground-contact/kicklab/build/ground-contact-lab/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-mac/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/rf-execution-20261105/WorkspaceDerivedData/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/Build",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/artifacts/ball-gpu-integration/final-build/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/Desktop/projects/kicklab/artifacts/app-store-preview-20261107/DerivedData-device/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/Index.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/SourcePackages",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/ModuleCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/SDKStatCaches.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/CompilationCache.noindex",
+      "status": "removed"
+    },
+    {
+      "type": "cache",
+      "path": "/Users/hewadmubariz/.codex/worktrees/ball-replacement-performance/kicklab/artifacts/branch-validation-20261105/DerivedData/SDKExplicitPrecompiledModules",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "Juggle Dude Efficient Replacement",
+      "udid": "CCA21F1E-2CBB-4269-A126-4BED8EA02E66",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "Long Video Recovery QA",
+      "udid": "D5F337D5-325D-4767-9ACF-99BFF0C34CE2",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "Juggle Dude iOS 18 Compatibility",
+      "udid": "65230131-AC0E-4C01-86E5-60375526EDA3",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "Juggle Dude History Editor QA",
+      "udid": "75E105C6-19F8-4142-90EA-C38C485887A1",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "Juggle Dude Language QA",
+      "udid": "226B7C6D-BBD5-4243-BC73-A240E84A31FD",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "Juggle Dude Launch Demo",
+      "udid": "A91A7DC7-7378-40EF-9F8D-898886DFCF22",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "Kicklab Camera Controls 20261009",
+      "udid": "D8EDE96B-E64B-4D93-99D8-65358A56E577",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "Leaderboard Beta QA",
+      "udid": "99B8EBCF-D217-4C6A-B40F-1D5B227C17F7",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "RFMaskAB-Lab-20261024",
+      "udid": "52FF85AB-C2F1-4BA0-B2B7-DFDD4242C711",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "Juggle Dude Store Capture",
+      "udid": "ED2B414E-D1DB-4A14-8EA1-DF636D92F1FA",
+      "status": "removed"
+    },
+    {
+      "type": "simulator",
+      "name": "Juggle Dude Store Refresh 20261104",
+      "udid": "C8EB773A-E2E0-48AA-8CAE-1614A38B3C01",
+      "status": "removed"
+    }
+  ],
+  "free_bytes_after": 42126925824,
+  "free_bytes_increase": 39973294080,
+  "verification": {
+    "verified_at": "2026-11-08T20:34:17.250854+00:00",
+    "removed_simulators_absent": 11,
+    "active_simulator_preserved": "8BFD585D-A6E8-4F0D-9AA1-19B1DB8A9CE3 (Booted)",
+    "release_reports_and_artifact_directories_preserved": true,
+    "model_integrity_checks_passed": true,
+    "cache_paths_recreated_by_development_tools": [
+      "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-abvyfbxvmhuykmdbmhnnymnktnji/Build",
+      "/Users/hewadmubariz/Library/Developer/Xcode/DerivedData/kicklab-abvyfbxvmhuykmdbmhnnymnktnji/Index.noindex"
+    ],
+    "note": "Recreated caches left alone; no builds or tests run to verify cleanup. Source changes were not made."
+  }
+}
