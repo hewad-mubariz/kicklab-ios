@@ -4,7 +4,7 @@ import Foundation
 /// A bounded second look at weak silhouettes, using the same RF model on a
 /// current-frame crop. This returns an appearance sidecar, never counter input.
 nonisolated enum RFMaskCropRefiner {
-    static let signature = "|rf-mask-crop-consensus-v3-long-gaps"
+    static let signature = "|rf-mask-crop-consensus-v4-unmasked-observations"
     // Count model calls, not just frames: agreement can need three contexts.
     static func modelCallBudget(frameCount: Int) -> Int {
         min(240, max(24, Int(ceil(Double(frameCount) * 0.4))))
@@ -35,7 +35,24 @@ nonisolated enum RFMaskCropRefiner {
             }
             return [low - 1, low].contains { occupied.indices.contains($0) && abs(occupied[$0] - time) < 0.003 }
         }
-        let short = BallMaskGapRefiner.requests(frames: frames, frameDuration: frameDuration).compactMap { gap -> Request? in
+        // A real box can have no decoded mask. It must not split a short gap
+        // into two unusable anchor pairs and permanently prevent a crop retry.
+        // Keep that observation in the result; only masked originals anchor work.
+        let anchors = frames.filter { $0.ballMask != nil }
+        let unmasked = frames.enumerated().filter {
+            $0.element.detected && $0.element.ballMask == nil && $0.element.time.isFinite
+        }.sorted { $0.element.time < $1.element.time }
+        func unmaskedIndex(at time: Double) -> Int? {
+            var low = 0, high = unmasked.count
+            while low < high {
+                let mid = (low + high) / 2
+                if unmasked[mid].element.time < time { low = mid + 1 } else { high = mid }
+            }
+            return [low - 1, low].filter { unmasked.indices.contains($0) }
+                .min { abs(unmasked[$0].element.time - time) < abs(unmasked[$1].element.time - time) }
+                .flatMap { abs(unmasked[$0].element.time - time) < 0.003 ? unmasked[$0].offset : nil }
+        }
+        let short = BallMaskGapRefiner.requests(frames: anchors, frameDuration: frameDuration).compactMap { gap -> Request? in
             guard !hasMask(at: gap.time) else { return nil }
             let a = gap.before, b = gap.after, f = gap.fraction
             func mix(_ x: Double, _ y: Double) -> Double { x + (y - x) * f }
@@ -44,9 +61,11 @@ nonisolated enum RFMaskCropRefiner {
                 smoothedX: mix(a.smoothedX, b.smoothedX), smoothedY: mix(a.smoothedY, b.smoothedY),
                 vy: 0, motion: .unknown, detected: true, person: nil,
                 usesBallMasks: true, isVisualMaskRepair: true)
-            return Request(time: gap.time, guide: guide, index: nil)
+            return Request(time: gap.time, guide: guide, index: unmaskedIndex(at: gap.time))
         }
-        let gaps = (short + longGaps(frames: frames, frameDuration: frameDuration).filter { !hasMask(at: $0.time) })
+        let longer = longGaps(frames: frames, frameDuration: frameDuration).filter { !hasMask(at: $0.time) }
+            .map { Request(time: $0.time, guide: $0.guide, index: unmaskedIndex(at: $0.time)) }
+        let gaps = (short + longer)
             .sorted { $0.time < $1.time }
         let areas = frames.map { $0.ballMask.map(area) ?? 0 }
         var unstable = [Request]()

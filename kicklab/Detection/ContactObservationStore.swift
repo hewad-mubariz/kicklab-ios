@@ -46,6 +46,8 @@ nonisolated final class ContactObservationStore {
     private let followsVideoLifecycle: Bool
     private let requestUsesCPUOnly: Bool
     private let request = VNDetectHumanBodyPoseRequest()
+    private let shoeExperiment = ShoeRecoveryPolicy.enabled
+    private lazy var revision2Session = LiveBodyPoseRevision2.Session()
     private lazy var acceleratedRequest = VNDetectHumanBodyPoseRequest()
     private let handRequest = VNDetectHumanHandPoseRequest()
     private var profileScope: String?
@@ -229,6 +231,14 @@ nonisolated final class ContactObservationStore {
         return autoreleasepool {
             do {
                 poseRequests += 1
+                if shoeExperiment, LiveBodyPoseRevision2.isPermitted,
+                   let poses = try? LiveBodyPoseRevision2.poses(in: frame.pixels, session: revision2Session), !poses.isEmpty {
+                    let selected = ActivePlayerPoseMatcher.index(in: poses, selection: frame.player)
+                    let result = selected.map { poses[$0] } ?? Pose()
+                    otherPoseCache[frame.index] = poses.enumerated().filter { $0.offset != selected }.map(\.element)
+                    poseCache[frame.index] = result
+                    return result
+                }
                 let rawPoses = try performBodyPose(frame.pixels)
                 let names: [(BodyJoint, VNHumanBodyPoseObservation.JointName)] = [
                     (.nose, .nose), (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),

@@ -5,6 +5,43 @@ import XCTest
 @testable import kicklab
 
 final class RFSegBridgeTests: XCTestCase {
+    func testChangingInputGeometryAndPixelsMatchesStatelessNormalization() throws {
+        let context = CIContext(options: [.useSoftwareRenderer: true, .cacheIntermediates: false])
+        for edge in [288, 384] {
+            let bridge = RFSegBridge(edge: edge)
+            for (iteration, size) in [(31, 47), (31, 47), (47, 31), (128, 128), (31, 47)].enumerated() {
+                var buffer: CVPixelBuffer?
+                XCTAssertEqual(CVPixelBufferCreate(kCFAllocatorDefault, size.0, size.1,
+                    kCVPixelFormatType_32BGRA, nil, &buffer), kCVReturnSuccess)
+                let source = try XCTUnwrap(buffer)
+                CVPixelBufferLockBaseAddress(source, [])
+                let sourceBytes = try XCTUnwrap(CVPixelBufferGetBaseAddress(source)).assumingMemoryBound(to: UInt8.self)
+                let sourceStride = CVPixelBufferGetBytesPerRow(source)
+                for y in 0..<size.1 { for x in 0..<size.0 {
+                    for c in 0..<3 {
+                        sourceBytes[y * sourceStride + x * 4 + c] = UInt8(truncatingIfNeeded: x * 37 + y * 13 + c * 47 + iteration * 71)
+                    }
+                    sourceBytes[y * sourceStride + x * 4 + 3] = 255
+                } }
+                CVPixelBufferUnlockBaseAddress(source, [])
+                let input = try bridge.input(image: CIImage(cvPixelBuffer: source), context: context)
+                let array = try XCTUnwrap(input.featureValue(for: "tensors")?.multiArrayValue)
+                let rendered = try XCTUnwrap(bridge.inputBufferForReview)
+                CVPixelBufferLockBaseAddress(rendered, .readOnly)
+                defer { CVPixelBufferUnlockBaseAddress(rendered, .readOnly) }
+                let pixels = try XCTUnwrap(CVPixelBufferGetBaseAddress(rendered)).assumingMemoryBound(to: UInt8.self)
+                var expected = [Float](repeating: 0, count: array.count)
+                expected.withUnsafeMutableBufferPointer {
+                    RFInputNormalization.normalizeBGRA(pixels, width: size.0, height: size.1,
+                        rowBytes: CVPixelBufferGetBytesPerRow(rendered), into: $0.baseAddress!, edge: edge)
+                }
+                let values = array.dataPointer.assumingMemoryBound(to: Float.self)
+                XCTAssertNil(expected.indices.first { expected[$0].bitPattern != values[$0].bitPattern },
+                    "Changing frames/crops must rebuild geometry when needed and preserve every tensor value")
+            }
+        }
+    }
+
     private final class WeakBuffer {
         weak var value: CVPixelBuffer?
         init(_ value: CVPixelBuffer) { self.value = value }

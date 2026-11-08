@@ -234,6 +234,12 @@ nonisolated struct FootContactEvidence: Codable, Equatable, Sendable {
     /// Versioned so historical numeric traces retain their original verdicts.
     var rejectsWeakBelowAnkle: Bool? = nil
     var candidateTimestampMs: Int { proposedContactMs ?? contact.timestampMs }
+    var shoeProof: ShoeContactProof? = nil
+    var confirmsVisibleFoot: Bool {
+        (shoeProof.map { $0.candidateMs == candidateTimestampMs && $0.valid } == true)
+            || (compactGroundEvidence?.contactMs == candidateTimestampMs
+                && compactGroundEvidence?.visibleFootProof != nil)
+    }
     var adjacentFootContactMs: Int? {
         guard allowsAdjacentFootContact == true, let ground = compactGroundEvidence else { return nil }
         let samples = (ground.compactFootSamples ?? ground.samples).map {
@@ -259,6 +265,7 @@ nonisolated struct FootContactEvidence: Codable, Equatable, Sendable {
             rejectsWeakBelowAnkle: rejectsWeakBelowAnkle == true)
             || confirmsShallowToeRebound
             || confirmsRaisedForefoot
+            || confirmsVisibleFoot
             || observedLegContactMs != nil || adjacentFootContactMs != nil
             || compactGroundEvidence?.confirmsCompactFootContact == true
     }

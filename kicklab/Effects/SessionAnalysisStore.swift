@@ -72,16 +72,14 @@ actor SessionAnalysisStore {
         let os = ProcessInfo.processInfo.operatingSystemVersionString
         let options = pipelineOptions(arguments:TouchCountingDebugProfile.arguments,defaults:.standard)
         // Increment when detector, composition geometry, counter or repair rules change.
-        return "analysis-v15-contact-evidence-v2|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)" + CountingPolicy.current.bodySignature + CountingPolicy.current.handlingSignature + TimedTrajectory.signature + GroundContactEvidence.signature + ActiveJugglerTracker.signature + PlayerGroundEstimate.signature + StreakInterruption.signature + ContactPoseComputePolicy.signature
+        return "analysis-v15-contact-evidence-v2|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)" + CountingPolicy.current.bodySignature + CountingPolicy.current.handlingSignature + TimedTrajectory.signature + GroundContactEvidence.signature + ActiveJugglerTracker.signature + PlayerGroundEstimate.signature + StreakInterruption.signature + ContactPoseComputePolicy.signature + ShoeRecoveryPolicy.signature
     }
 
     /// Experimental visual execution must not read or overwrite serial artifacts.
     /// Live counting provenance deliberately keeps the regular signature.
     nonisolated static func visualPipelineSignature() -> String {
         let base = pipelineSignature() + DistantBallVisualRecovery.signature() + RFMaskCropRefiner.signature
-        guard BallDetector.visualBatchSize(visualOnly:true) == 2 else { return base }
-        return base + (ProcessInfo.processInfo.arguments.contains("--visual-async2")
-            ? "|visual-async2-v1" : "|visual-batch2-v1")
+        return base + BallDetector.visualExecutionMode(visualOnly: true).cacheSuffix
     }
 
     /// Key effective settings, not how they were selected. A development launch

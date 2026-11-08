@@ -634,6 +634,7 @@ nonisolated final class TouchStateMachine {
                     || evidence.adjacentFootContactMs != nil
                     || evidence.confirmsShallowToeRebound
                     || evidence.confirmsRaisedForefoot
+                    || evidence.confirmsVisibleFoot
                     || (evidence.compactGroundEvidence?.contactMs == apex.timestampMs
                         && evidence.compactGroundEvidence?.confirmsCompactFootContact == true))
         }
@@ -804,7 +805,8 @@ nonisolated final class TouchStateMachine {
                    || $0.corroboratedFloorReboundMs != nil
                    || (config.rejectsDescendingFloorRebound == true
                        && MeasuredFootImpactRules.descendingFloorRebound($0) != nil) }) == true,
-               footEvidence?.confirmsAlignedLegGroundClearance != true {
+               footEvidence?.confirmsAlignedLegGroundClearance != true,
+               groundEvidence?.visibleFootProof == nil, groundEvidence?.shoeProof?.valid != true {
                 unliftedFloorRejectedFrame = apex.frameIndex
                 plantedFeetConfirmed = true
                 return reject(.groundBounce)
@@ -821,7 +823,7 @@ nonisolated final class TouchStateMachine {
                 // overturned, not a hip-relative artefact of pose jitter.
                 let jitterOnly = plantedFeetConfirmed == true && groundEvidence?.requiresMovingAnkleForRescue == true
                     && !(footEvidence.map { FootContactRules.ankleTravels($0)
-                        || $0.confirmsAlignedLegGroundClearance } ?? false)
+                        || $0.confirmsAlignedLegGroundClearance || $0.confirmsVisibleFoot } ?? false)
                     && !(config.recoversBriefToeLift == true
                         && groundEvidence.map(MeasuredFootImpactRules.briefToeLift) == true)
                 if footConfirmed != true || jitterOnly {
@@ -830,6 +832,11 @@ nonisolated final class TouchStateMachine {
             }
         }
 
+        if footEvidence?.confirmsVisibleFoot == true, plantedFeetConfirmed != nil {
+            // The resolved foot contact supersedes this candidate's coarse
+            // floor interpretation for both counting and streak diagnostics.
+            plantedFeetConfirmed = false
+        }
         bodyContactAllowed = allowsBodyContact?(apex.frameIndex)
         if bodyContactAllowed == false { return reject(.disallowedBodyContact) }
         handRejected = rejectsHandContact?(apex.frameIndex)

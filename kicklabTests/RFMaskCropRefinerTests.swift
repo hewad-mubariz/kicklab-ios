@@ -131,6 +131,57 @@ final class RFMaskCropRefinerTests: XCTestCase {
         XCTAssertNil(RFMaskCropConsensus.accepted([candidate], guide: f))
     }
 
+    func testDeadEndPredictionsAreSkippedButRecoverablePairsRemainEligible() {
+        XCTAssertTrue(RFMaskCropRefiner.canStillRepair(firstLook: true, requiresConsensus: false,
+            candidates: 0, remainingCalls: 1), "The established one-call addition remains available")
+        XCTAssertFalse(RFMaskCropRefiner.canStillRepair(firstLook: true, requiresConsensus: true,
+            candidates: 0, remainingCalls: 1), "One unique crop cannot establish consensus")
+        XCTAssertFalse(RFMaskCropRefiner.canStillRepair(firstLook: false, requiresConsensus: false,
+            candidates: 0, remainingCalls: 1), "Two unusable predictions make the last look futile")
+        XCTAssertTrue(RFMaskCropRefiner.canStillRepair(firstLook: false, requiresConsensus: true,
+            candidates: 1, remainingCalls: 1), "The last look can still complete a valid pair")
+        XCTAssertTrue(RFMaskCropRefiner.canStillRepair(firstLook: false, requiresConsensus: true,
+            candidates: 0, remainingCalls: 2), "An unusable first prediction must not suppress two later valid crops")
+        XCTAssertFalse(RFMaskCropRefiner.canStillRepair(firstLook: true, requiresConsensus: false,
+            candidates: 0, remainingCalls: 0))
+    }
+
+    func testSmallBallContextsAreDeduplicatedBeforeInference() throws {
+        let f = try fixture()
+        let small = RecordedFrame(time: f.time, x: 0.5, y: 0.5, width: 16.0 / 720,
+            height: 16.0 / 1280, score: 0.99, smoothedX: 0.5, smoothedY: 0.5,
+            vy: 0, motion: .unknown, detected: true, person: nil, ballMask: f.ballMask, usesBallMasks: true)
+        let request = RFMaskCropRefiner.Request(time: f.time, guide: small, index: 0, requiresConsensus: true)
+        let crops = RFMaskCropRefiner.regions(request, size: CGSize(width: 720, height: 1280))
+        XCTAssertEqual(crops, [CGRect(x: 296, y: 576, width: 128, height: 128)])
+        XCTAssertFalse(RFMaskCropRefiner.canStillRepair(firstLook: true, requiresConsensus: true,
+            candidates: 0, remainingCalls: crops.count))
+    }
+
+    func testBoxWithoutMaskDoesNotBlockRepairOrCreateADuplicateObservation() throws {
+        let f = try fixture()
+        func frame(_ index: Int) -> RecordedFrame {
+            RecordedFrame(time: Double(index) / 60, x: f.x, y: f.y, width: f.width, height: f.height,
+                score: f.score, smoothedX: f.x, smoothedY: f.y, vy: 0, motion: .unknown,
+                detected: true, person: nil, ballMask: index == 1 ? nil : f.ballMask, usesBallMasks: true)
+        }
+        let original = (0...2).map(frame)
+        let request = try XCTUnwrap(RFMaskCropRefiner.requests(frames: original, frameDuration: 1.0 / 60)
+            .first { abs($0.time - 1.0 / 60) < 0.003 })
+        XCTAssertEqual(request.index, 1, "Attach the recovered mask to the existing box, rather than append a duplicate timestamp")
+        XCTAssertNil(request.guide.ballMask, "A box is not silhouette evidence")
+        var result = original
+        result[try XCTUnwrap(request.index)].ballMask = f.ballMask
+        let before = BallEffectTrack(frames: original), after = BallEffectTrack(frames: result)
+        XCTAssertEqual(before.samples.map(\.time), after.samples.map(\.time))
+        XCTAssertEqual(before.samples.map(\.center), after.samples.map(\.center))
+        XCTAssertEqual(before.samples.map(\.boxSize), after.samples.map(\.boxSize))
+        XCTAssertNotNil(after.mask(at: 1.0 / 60))
+        XCTAssertNil(after.mask(at: 1.0 / 60 + 0.004), "Still cannot borrow a neighbouring exposure")
+        XCTAssertTrue(original[1].ballMask == nil, "The counting track remains untouched")
+        XCTAssertTrue(RFMaskCropRefiner.requests(frames: [original[1]], frameDuration: 1.0 / 60).isEmpty)
+    }
+
     func testConsensusCanRestoreMissingBallAndRemoveFalseFingerOwnership() throws {
         let f = try fixture(), rect = CGRect(x: 0.3, y: 0.3, width: 0.2, height: 0.2)
         var old = [UInt8](repeating: 255, count: 64 * 64)
@@ -172,6 +223,12 @@ final class RFMaskCropRefinerTests: XCTestCase {
         // The full planner retries them; flow-sized gaps keep their own path.
         let planned = RFMaskCropRefiner.requests(frames: frames, frameDuration: 1.0 / 60)
         XCTAssertEqual(planned.filter { $0.index == nil }.count, 10)
+        var boxOnly = frame(15); boxOnly.ballMask = nil
+        let withBox = (frames + [boxOnly]).sorted { $0.time < $1.time }
+        let boxRetry = try XCTUnwrap(RFMaskCropRefiner.requests(frames: withBox, frameDuration: 1.0 / 60)
+            .first { abs($0.time - boxOnly.time) < 0.003 })
+        XCTAssertEqual(boxRetry.index, withBox.firstIndex { $0.time == boxOnly.time },
+            "Long gaps must also update an existing unmasked observation instead of duplicating it")
         XCTAssertTrue(RFMaskCropRefiner.longGaps(frames: (0...30).filter { !(11...13).contains($0) }.map(frame), frameDuration: 1.0 / 60).isEmpty)
         // Too long to be the same flight, or a different object: no retries.
         XCTAssertTrue(RFMaskCropRefiner.longGaps(frames: (0...40).filter { !(3...30).contains($0) }.map(frame), frameDuration: 1.0 / 60).isEmpty)

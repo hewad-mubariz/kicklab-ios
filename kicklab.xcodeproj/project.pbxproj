@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DAC100010000000000000001 /* MediaPipeTasksVision in Frameworks */ = {isa = PBXBuildFile; productRef = DAC100010000000000000002; };
 		DABE00010000000000000001 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = DABE00010000000000000002 /* GoogleSignIn */; };
 		DABE00010000000000000004 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = DABE00010000000000000005 /* GoogleSignInSwift */; };
 		DAAD00010000000000000001 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = DAAD00010000000000000002 /* FacebookCore */; };
@@ -74,6 +75,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DADD00010000000000000001 /* Auth in Frameworks */,
+				DAC100010000000000000001 /* MediaPipeTasksVision in Frameworks */,
 				DABE00010000000000000001 /* GoogleSignIn in Frameworks */,
 				DABE00010000000000000004 /* GoogleSignInSwift in Frameworks */,
 				DAAA00010000000000000001 /* PostHog in Frameworks */,
@@ -138,6 +140,7 @@
 			);
 			name = kicklab;
 			packageProductDependencies = (
+				DAC100010000000000000002 /* MediaPipeTasksVision */,
 				DADD00010000000000000002 /* Auth */,
 				DABE00010000000000000002 /* GoogleSignIn */,
 				DABE00010000000000000005 /* GoogleSignInSwift */,
@@ -245,6 +248,7 @@
 			mainGroup = 7441B43E305617DC007026EB;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				DAC100010000000000000003 /* MediaPipeTasks */,
 				DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
 				DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */,
 				DADD00010000000000000003 /* XCRemoteSwiftPackageReference "supabase-swift" */,
@@ -453,7 +457,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = config/KickLab.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 39;
+				CURRENT_PROJECT_VERSION = 73;
 				DEVELOPMENT_TEAM = G276PSQ2LH;
 				ENABLE_PREVIEWS = YES;
 				EXCLUDED_SOURCE_FILE_NAMES = (
@@ -512,7 +516,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = config/KickLab.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 39;
+				CURRENT_PROJECT_VERSION = 73;
 				DEVELOPMENT_TEAM = G276PSQ2LH;
 				ENABLE_PREVIEWS = YES;
 				EXCLUDED_SOURCE_FILE_NAMES = (
@@ -1112,6 +1116,10 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		DAC100010000000000000003 = {isa = XCLocalSwiftPackageReference; relativePath = Vendor/MediaPipeTasks; };
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1142,6 +1150,7 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		DAC100010000000000000002 = {isa = XCSwiftPackageProductDependency; package = DAC100010000000000000003; productName = MediaPipeTasksVision; };
 		DABE00010000000000000002 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;

@@ -77,9 +77,17 @@ nonisolated final class BallDetector {
         batchModelCompatible && !roiEnabled && !guardedRecoveryEnabled && (marginalRetryEnabled || directConfirmationEnabled)
     }
 
-    /// Opt-in until paired device timing and output checks qualify this path.
-    nonisolated static func visualBatchSize(visualOnly: Bool, arguments: [String] = ProcessInfo.processInfo.arguments) -> Int {
-        visualOnly && (arguments.contains("--visual-batch2") || arguments.contains("--visual-async2")) && !arguments.contains("--visual-serial") ? 2 : 1
+    nonisolated static func visualExecutionMode(visualOnly: Bool,
+        arguments: [String] = ProcessInfo.processInfo.arguments,
+        hardwareIdentifier: String = RFDeviceProfile.hardwareIdentifier) -> RFVisualExecutionPolicy.Mode {
+        RFVisualExecutionPolicy.select(visualOnly: visualOnly,
+            isProductionRF: configuredResourceName(arguments: arguments, defaults: .standard) == productionResourceName,
+            hardwareIdentifier: hardwareIdentifier, arguments: arguments)
+    }
+
+    nonisolated static func visualBatchSize(visualOnly: Bool, arguments: [String] = ProcessInfo.processInfo.arguments,
+        hardwareIdentifier: String = RFDeviceProfile.hardwareIdentifier) -> Int {
+        visualExecutionMode(visualOnly: visualOnly, arguments: arguments, hardwareIdentifier: hardwareIdentifier).batchSize
     }
 
     enum BatchError: Error, Equatable { case unsupported, invalidFrames, outputCount, wrongDetector, consumed, outOfOrder }
@@ -131,11 +139,12 @@ nonisolated final class BallDetector {
             try Task.checkCancellation()
             let image=orientedImage(frame.pixels,portrait:false,orientation:nil)
             let provider=try makeInput(from:image)
-            guard let source=provider.featureValue(for:"image")?.multiArrayValue,
+            let featureName = isRFDETR ? "tensors" : "image"
+            guard let source=provider.featureValue(for:featureName)?.multiArrayValue,
                   source.dataType == .float32 else { throw BatchError.unsupported }
             let copy=try MLMultiArray(shape:source.shape,dataType:.float32)
             memcpy(copy.dataPointer,source.dataPointer,source.count*MemoryLayout<Float>.size)
-            inputs.append(try MLDictionaryFeatureProvider(dictionary:["image":MLFeatureValue(multiArray:copy)]))
+            inputs.append(try MLDictionaryFeatureProvider(dictionary:[featureName:MLFeatureValue(multiArray:copy)]))
             rects.append(contentRect)
         }
         try Task.checkCancellation()
@@ -339,7 +348,7 @@ nonisolated final class BallDetector {
         let arguments=ProcessInfo.processInfo.arguments
         let exportMetadata = model.modelDescription.metadata[.creatorDefinedKey] as? [String: String]
         let repairedExport = isMotionModel && exportMetadata?["precision"] == "p3_features_fp32"
-        batchModelCompatible = isMotionModel && repairedExport
+        batchModelCompatible = isRFDETR || (isMotionModel && repairedExport)
         directConfirmationEnabled = repairedExport && (useDirectConfirmation ?? !arguments.contains("--disable-ball-confirmation"))
         marginalRetryEnabled = repairedExport && (useMarginalRetry ?? !arguments.contains("--disable-marginal-retry"))
         // This repaired export uses the narrow retry, not the older experimental

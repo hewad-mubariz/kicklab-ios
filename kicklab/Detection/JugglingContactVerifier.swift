@@ -40,13 +40,15 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     private var handCache: [Int: Bool] = [:]
     private var bodyFailures: [Int: RestrictedTouchPolicy.Failure] = [:]
     private var alignedFootFrames: [Int: Int] = [:]
+    private let shoeRecovery = ShoeContactRecovery()
+    private var shoeNowMs = -1
     var handPoseRequests: Int { observations.handPoseRequests }
     private(set) var footChecks = 0
     private(set) var footRecoveries = 0
     private(set) var footCheckMS = 0.0
     var poseRequests: Int { observations.poseRequests }
     var poseCacheHits: Int { observations.poseCacheHits }
-    var poseProfile: [String: Double] { observations.poseProfile }
+    var poseProfile: [String: Double] { observations.poseProfile.merging(shoeRecovery.metrics) { _, new in new } }
     private(set) var checkedContacts = 0
     private(set) var rejectedContacts = 0
     private(set) var lastCheckMS = 0.0
@@ -75,6 +77,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
 
     func discardFrames() {
         observations.discardFrames()
+        shoeRecovery.discardFrames()
         #if DEBUG
         selectedPoseRecovery.retain([])
         #endif
@@ -88,6 +91,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     func reset() {
         discardFrames()
         observations.reset()
+        shoeRecovery.reset()
+        shoeNowMs = -1
         #if DEBUG
         selectedPoseRecovery.reset()
         #endif
@@ -122,6 +127,9 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     func store(_ pixels: CVPixelBuffer, frameIndex: Int, timestampMs: Int,
                ball: Detection?, orientLandscapeAsPortrait: Bool = true, player: ActivePlayerSelection? = nil) {
         guard lastError == nil else { return }
+        shoeNowMs = max(shoeNowMs, timestampMs)
+        shoeRecovery.store(pixels, timestampMs: timestampMs, ball: ball,
+                           orientLandscapeAsPortrait: orientLandscapeAsPortrait)
         observations.store(pixels, frameIndex: frameIndex, timestampMs: timestampMs,
                            ball: ball, orientLandscapeAsPortrait: orientLandscapeAsPortrait, player: player)
         let retained = Set(frames.map(\.index))
@@ -535,6 +543,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                 width: b.width, height: b.height, confidence: b.score, ankles: pose.ankles, hips: pose.hips))
         }
         var evidence = FootContactEvidence(before: samples[0], contact: samples[1], after: samples[2])
+        if VisibleFootRecoveryPolicy.enabled() { evidence.usesFourExposureWindow = true }
         if WeakLowFootPolicy.enabled() { evidence.rejectsWeakBelowAnkle = true }
         if usesSmallArcV23 { evidence.allowsShallowMeasuredApproach = true }
         if usesMeasuredFootV22 && MeasuredFootImpactPolicy.weakSupport() { evidence.corroboratesWeakSupport = true }
@@ -549,7 +558,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
             evidence.continuation = .init(timestampMs: later.timestampMs, ballX: b.x, ballY: b.y,
                 width: b.width, height: b.height, confidence: b.score, ankles: pose.ankles, hips: pose.hips)
         }
-        if usesMeasuredFootV22, !evidence.confirms {
+        if usesMeasuredFootV22, !evidence.confirms || VisibleFootRecoveryPolicy.enabled() {
             evidence.usesMeasuredFootProof = true
             evidence.compactGroundEvidence = groundEvidence(at: frameIndex, timed: true)
             if MeasuredReboundPolicy.confirmation() {
@@ -580,8 +589,32 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
             }
         }
         if !evidence.confirms, let measured = measuredAdjacentFoot(at: frameIndex) { evidence = measured }
+        if let proof = evidence.compactGroundEvidence?.visibleFootProof,
+           let aligned = observations.frames.first(where: { $0.timestampMs == proof.contact.timestampMs }),
+           !rejectsHandInWindow(at: frameIndex), !rejectsHandInWindow(at: aligned.index),
+           handlingEvidence(at: aligned.index)?.state != .held, lastError == nil {
+            alignedFootFrames[frameIndex] = aligned.index
+        } else if evidence.confirmsVisibleFoot {
+            evidence.compactGroundEvidence?.checksVisibleForefoot = nil
+        }
+        if let proof = shoeProof(at: frameIndex) {
+            evidence.shoeProof = proof
+            if let aligned = observations.frames.first(where: { $0.timestampMs == proof.impactMs }) {
+                alignedFootFrames[frameIndex] = aligned.index
+            }
+        }
         if evidence.confirms { footRecoveries += 1 }
         return evidence
+    }
+
+    private func shoeProof(at index: Int) -> ShoeContactProof? {
+        guard let time = observations.timestamp(at: index),
+              let proof = shoeRecovery.proof(at: time, through: shoeNowMs, player: observations.selection(at: index)),
+              let aligned = observations.frames.first(where: { $0.timestampMs == proof.impactMs }),
+              !rejectsHandInWindow(at: index), !rejectsHandInWindow(at: aligned.index),
+              handlingEvidence(at: index)?.state != .held,
+              handlingEvidence(at: aligned.index)?.state != .held, lastError == nil else { return nil }
+        return proof
     }
 
     private func measuredAdjacentFoot(at frameIndex: Int) -> FootContactEvidence? {
@@ -631,7 +664,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                 ankles: pose.ankles, hips: pose.hips)
         }
         let samples = views.compactMap(sample)
-        var evidence = GroundContactEvidence(contactMs: contact.timestampMs, samples: samples, checksBallBelowFeet: timed ? true : nil,
+        var evidence = GroundContactEvidence(shoeProof: shoeProof(at: frameIndex), contactMs: contact.timestampMs, samples: samples, checksBallBelowFeet: timed ? true : nil,
                      requiresLowBallCenter: requiresGroundHeightEvidence ? true : nil,
                      usesLocalImpactSize: usesContactEvidenceV16 ? true : nil,
                      requiresPositiveLowContact: requiresPositiveLowContact
@@ -650,6 +683,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                      allowsSettlingCompactRelease: usesVisibleFootV21 ? true : nil,
                      checksAdjacentCompactImpact: usesVisibleFootV21 ? true : nil)
         if usesMeasuredFootV22 {
+            if VisibleFootRecoveryPolicy.enabled() { evidence.checksVisibleForefoot = true }
+            if VisibleFootRecoveryPolicy.toePulse() { evidence.checksVisibleToePulse = true }
             if WeakLowFootPolicy.enabled() { evidence.requiresResolvedLowFoot = true }
             if GroundImpactEvidencePolicy.enabled() { evidence.requiresPlantedImpactEvidence = true }
             if UnliftedFloorReboundPolicy.enabled() { evidence.checksUnliftedFloorRebound = true }

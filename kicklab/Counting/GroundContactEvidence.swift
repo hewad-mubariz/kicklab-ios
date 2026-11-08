@@ -8,6 +8,7 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
         let ballX, ballY, width, height, confidence, imageAspect: Double
         let ankles, hips: [BodySide: PoseLandmark]
     }
+    var shoeProof: ShoeContactProof? = nil
     let contactMs: Int
     let samples: [Sample]
     var checksBallBelowFeet: Bool? = nil
@@ -81,12 +82,27 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
     /// Versioned separately so saved historical verdicts replay exactly.
     var checksCorroboratedFloorRebound: Bool? = nil
 
+    /// Real directed forefoot motion can contradict coarse ankle/floor geometry.
+    /// Nil preserves every historical verdict and its numeric replay.
+    var checksVisibleForefoot: Bool? = nil
+    var checksVisibleToePulse: Bool? = nil
+    var visibleFootProof: VisibleForefootContactRules.Proof? {
+        guard checksVisibleForefoot == true else { return nil }
+        let views=(compactFootSamples ?? samples).map {
+            FootContactRules.Sample(timestampMs:$0.timestampMs,ballX:$0.ballX,ballY:$0.ballY,
+                  width:$0.width,height:$0.height,confidence:$0.confidence,ankles:$0.ankles,hips:$0.hips)
+        }
+        return VisibleForefootContactRules.proof(views,proposedMs:contactMs)
+            ?? (checksVisibleToePulse == true ? VisibleToePulseRules.proof(views,proposedMs:contactMs) : nil)
+    }
+
     /// A moving foot beside the ball is not necessarily its source of lift.
     /// Require a measured drop/release below both ankles, a stable support
     /// foot, and no pre-impact ankle lift. A compact toe proof takes priority.
     /// Examine the adjacent actual minimum as smoothing can shift the proposal.
     var unliftedFloorReboundMs: Int? {
-        guard checksUnliftedFloorRebound == true, !confirmsCompactFootContact else { return nil }
+        guard checksUnliftedFloorRebound == true, !confirmsCompactFootContact,
+              visibleFootProof == nil else { return nil }
         let ordered = samples.sorted { $0.timestampMs < $1.timestampMs }
         guard Set(ordered.map(\.timestampMs)).count == ordered.count else { return nil }
         // Only look back from a smoothed proposal. A later low exposure must
@@ -157,7 +173,7 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
     /// stable support foot, and two views distinctly below both ankles.
     var corroboratedFloorReboundMs: Int? {
         guard checksCorroboratedFloorRebound == true else { return nil }
-        guard !confirmsCompactFootContact else { return nil }
+        guard !confirmsCompactFootContact, visibleFootProof == nil else { return nil }
         let all=samples.sorted { $0.timestampMs < $1.timestampMs }
         guard Set(all.map(\.timestampMs)).count == all.count else { return nil }
         func valid(_ p: PoseLandmark, _ confidence: Double) -> Bool {
@@ -327,6 +343,7 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
     static let signature = "|cadence-ground-v2"
 
     func confirmsGroundContact(corroboratingWeakAnkles: Bool, cadenceAware: Bool = false) -> Bool {
+        if visibleFootProof != nil { return false }
         if checksCompactFootContact == true && confirmsCompactFootContact { return false }
         return confirmsPlantedFeet(corroboratingWeakAnkles: corroboratingWeakAnkles)
             || (checksBallBelowFeet == true && confirmsBallBelowFeet)

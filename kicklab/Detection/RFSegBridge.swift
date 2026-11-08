@@ -12,6 +12,7 @@ nonisolated final class RFSegBridge {
     private var pixels: CVPixelBuffer?
     private var array: MLMultiArray?
     private var provider: MLFeatureProvider?
+    private var normalizationPlan: RFNormalizationPlan?
 
     init(edge: Int = RFInputNormalization.edge) { self.edge = edge }
 
@@ -35,10 +36,10 @@ nonisolated final class RFSegBridge {
         defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
         guard let base = CVPixelBufferGetBaseAddress(buffer) else { throw failure("RF pixels unavailable") }
         let stride = CVPixelBufferGetBytesPerRow(buffer)
-        RFInputNormalization.normalizeBGRA(base.assumingMemoryBound(to: UInt8.self)
+        normalize(base.assumingMemoryBound(to: UInt8.self)
             .advanced(by: Int(crop.minY) * stride + Int(crop.minX) * 4),
             width: Int(crop.width), height: Int(crop.height), rowBytes: stride,
-            into: array.dataPointer.assumingMemoryBound(to: Float.self), edge: edge)
+            into: array.dataPointer.assumingMemoryBound(to: Float.self))
         return provider
     }
 
@@ -112,9 +113,20 @@ nonisolated final class RFSegBridge {
         CVPixelBufferLockBaseAddress(pixels, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(pixels, .readOnly) }
         guard let base = CVPixelBufferGetBaseAddress(pixels) else { throw failure("RF pixels unavailable") }
-        RFInputNormalization.normalizeBGRA(base.assumingMemoryBound(to: UInt8.self), width: width,
-            height: height, rowBytes: CVPixelBufferGetBytesPerRow(pixels), into: array.dataPointer.assumingMemoryBound(to: Float.self), edge: edge)
+        normalize(base.assumingMemoryBound(to: UInt8.self), width: width, height: height,
+            rowBytes: CVPixelBufferGetBytesPerRow(pixels), into: array.dataPointer.assumingMemoryBound(to: Float.self))
         return provider
+    }
+
+    private func normalize(_ bytes: UnsafePointer<UInt8>, width: Int, height: Int, rowBytes: Int,
+                           into output: UnsafeMutablePointer<Float>) {
+        // Only dimensions/weights are cached; each call reads the current image.
+        // A crop can change dimensions or stride, so it must replace the plan.
+        if normalizationPlan?.width != width || normalizationPlan?.height != height
+            || normalizationPlan?.rowBytes != rowBytes {
+            normalizationPlan = RFNormalizationPlan(width: width, height: height, rowBytes: rowBytes, edge: edge)
+        }
+        normalizationPlan!.apply(bytes, into: output)
     }
 
     func decode(_ out: MLFeatureProvider, sourceSize: CGSize, threshold: Double,

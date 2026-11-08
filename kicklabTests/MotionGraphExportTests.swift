@@ -175,7 +175,9 @@ final class MotionGraphExportTests: XCTestCase {
         let black = try await brightness(background: true)
         let simple = try await brightness(background: false)
         XCTAssertEqual(black.above, simple.above, accuracy: 3, "Above both the footage is untouched")
-        XCTAssertLessThan(Double(black.inCard), Double(black.above) * 0.5, "The black card is drawn")
+        // A 35%-black card keeps the footage visible. Allow encoder/color-space rounding.
+        XCTAssertGreaterThan(Double(black.inCard), Double(black.above) * 0.55, "The card stays translucent")
+        XCTAssertLessThan(Double(black.inCard), Double(black.above) * 0.8, "The card still darkens its background")
         XCTAssertEqual(black.bottom, black.above, accuracy: 3, "Below the card the footage is untouched")
         XCTAssertLessThan(Double(simple.bottom), Double(simple.above) * 0.35, "The simple view brings the replay's shade")
     }

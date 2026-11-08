@@ -53,8 +53,8 @@ final class VisualInferenceBatchTests: XCTestCase {
         XCTAssertGreaterThan(detectedBalls, 0, "The comparison must include actual ball detections")
     }
 
-    func testBatchIsOptInAndNeverAppliesToCountedImports() {
-        XCTAssertEqual(BallDetector.visualBatchSize(visualOnly:true,arguments:[]),1)
+    func testExplicitBatchControlsNeverApplyToCountedImports() {
+        XCTAssertEqual(BallDetector.visualBatchSize(visualOnly:true,arguments:[],hardwareIdentifier:"iPhone12,5"),1)
         XCTAssertEqual(BallDetector.visualBatchSize(visualOnly:true,arguments:["--visual-batch2"]),2)
         XCTAssertEqual(BallDetector.visualBatchSize(visualOnly:false,arguments:["--visual-batch2"]),1)
         XCTAssertEqual(BallDetector.visualBatchSize(visualOnly:false,arguments:["--visual-async2"]),1)

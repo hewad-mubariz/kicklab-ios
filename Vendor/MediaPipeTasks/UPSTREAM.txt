@@ -1,0 +1,3 @@
+Google MediaPipeTasks 1.2.2. Unmodified package manifest and integration sources.
+Source: https://github.com/google-ai-edge/mediapipe/tree/5b6fea33b95a78ae3dc61f4ed96a2f7df85a672e
+Binaries downloaded by SwiftPM with upstream SHA-256 checksums.

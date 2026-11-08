@@ -172,8 +172,9 @@ final class VideoAnalyzer: ObservableObject {
         let lookupStart = ProcessInfo.processInfo.systemUptime
         let sourceDigest = try SessionAnalysisStore.sourceDigest(url)
         let pipelineSignature = SessionAnalysisStore.pipelineSignature()
-        let batchRequested = BallDetector.visualBatchSize(visualOnly:visualOnly) == 2
-        let asyncBatchRequested = batchRequested && ProcessInfo.processInfo.arguments.contains("--visual-async2")
+        let executionMode = BallDetector.visualExecutionMode(visualOnly: visualOnly)
+        let batchRequested = executionMode.batchSize == 2
+        let asyncBatchRequested = executionMode == .async2
         let visualSignature = SessionAnalysisStore.visualPipelineSignature()
         let recoveryRequested = DistantBallVisualRecovery.enabled()
         // A 60, 120 or 240 fps import is counted at 30 fps and keeps its own timestamps. The
@@ -309,8 +310,11 @@ final class VideoAnalyzer: ObservableObject {
             }
             if pendingSamples.isEmpty {
                 try Task.checkCancellation()
+                let canBatch = executionMode.canBatch(supported: batchEnabled,
+                    cpuOnly: detector.modelUsesCPUOnly || VideoWorkExecution.modelCPUOnly,
+                    thermal: ProcessInfo.processInfo.thermalState)
                 let readStart = ProcessInfo.processInfo.systemUptime
-                for _ in 0..<(batchEnabled ? 2 : 1) {
+                for _ in 0..<(canBatch ? 2 : 1) {
                     var next: CMSampleBuffer?
                     while next == nil, let sample=output.copyNextSampleBuffer() {
                         guard CMSampleBufferGetImageBuffer(sample) != nil else { continue }
@@ -326,7 +330,7 @@ final class VideoAnalyzer: ObservableObject {
                     if reader.status == .reading { continue }
                     break
                 }
-                if batchEnabled {
+                if canBatch {
                     do {
                         let inputs=pendingSamples.map {
                             (pixels:CMSampleBufferGetImageBuffer($0)!,time:$0.presentationTimeStamp.seconds)
