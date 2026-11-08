@@ -1,0 +1,148 @@
+{
+  "date": "2026-11-08",
+  "branch": "codex/1.2-background-notifications",
+  "version": "1.2.0",
+  "preview_build": 72,
+  "scope": "Add app-side leaderboard notification hooks and deploy preference registration. No leaderboard sender or rank trigger activated.",
+  "behavior": {
+    "setting": "Settings > Notifications > Leaderboard updates",
+    "default": "Off; first-session permission enrollment still enables practice only.",
+    "independent_preferences": true,
+    "leaderboard_only": "Retains APNs token without enrolling in the practice schedule.",
+    "guest": "Can save the setting; a future leaderboard sender must require a bound, eligible signed-in account.",
+    "sign_out": "The next registration removes account binding while preserving local preference.",
+    "account_deletion": "Disables both remote preferences and clears the server token.",
+    "permission_revocation": "Clears both effective server opt-ins and the token while retaining the local choices.",
+    "routing": "Default action on leaderboard-update opens the existing leaderboard; training-invite and daily-practice continue to open juggling setup.",
+    "active_work": "Pending notification navigation waits for recording, replay, import or other presented screens to close. It never starts a recording.",
+    "already_open": "Consumes a duplicate leaderboard destination if the leaderboard is already presented.",
+    "localizations": [
+      "en",
+      "de",
+      "es",
+      "fr",
+      "pt-BR"
+    ]
+  },
+  "backend_contract": {
+    "registration_fields": {
+      "leaderboard_enabled": "boolean",
+      "notification_routes_version": 1
+    },
+    "future_recipient_requirements": [
+      "leaderboard_enabled=true",
+      "notification_routes_version>=1",
+      "valid current token",
+      "user_id bound to an eligible leaderboard profile",
+      "matching APNs environment and bundle"
+    ],
+    "payload_example": {
+      "aps": {
+        "alert": {
+          "title": "Your leaderboard position changed",
+          "body": "Someone moved ahead of you. Tap to see the leaderboard."
+        },
+        "sound": "default",
+        "category": "leaderboard-update",
+        "thread-id": "leaderboard"
+      }
+    },
+    "unsupported_actions": "Unknown categories and dismissal do not navigate.",
+    "future_server_work": [
+      "Rank-change detection and eligibility",
+      "Duplicate suppression and notification frequency limits",
+      "Leaderboard delivery records and sender, using a separate collapse identifier from practice alerts"
+    ],
+    "old_client_behavior": "Legacy registration signatures still work. A newer legacy request clears unsupported leaderboard capability; an older revision cannot overwrite a newer preference."
+  },
+  "deployment": {
+    "project_ref": "shbdsjvpjdtqbiaevrxy",
+    "migration": "202611080003_leaderboard_push_hooks.sql",
+    "function": "push-installation",
+    "function_version": 5,
+    "function_status": "ACTIVE",
+    "migration_applied": true,
+    "live_registration_tests": [
+      {
+        "case": "missing-leaderboard-token",
+        "status": 400,
+        "body": {
+          "error": "missing_device_token"
+        }
+      },
+      {
+        "case": "both-disabled",
+        "status": 200,
+        "body": {
+          "saved": true
+        }
+      }
+    ],
+    "live_rpc_tests": "Passed assertions in rolled-back transaction: leaderboard-only retains token without practice; stale opt-in cannot overwrite opt-out; authenticated callers lack direct RPC privilege.",
+    "live_status": [
+      {
+        "hooks_present": true,
+        "installations": 1,
+        "leaderboard_opt_ins": 0,
+        "practice_scheduler_enabled": true
+      }
+    ],
+    "cleanup": "The one newly generated disabled installation used for HTTP verification was removed. Rolled-back RPC fixture left no data. Existing installation retained.",
+    "sent_notifications": 0,
+    "leaderboard_sender_activated": false,
+    "final_live_counts": [
+      {
+        "installations": 1,
+        "leaderboard_opt_ins": 0
+      }
+    ]
+  },
+  "validation": {
+    "ios_unit_tests": {
+      "passed": 27,
+      "failed": 0,
+      "suites": [
+        "PracticeNotificationsTests",
+        "RemotePracticeNotificationsTests"
+      ],
+      "log": "artifacts/release120/leaderboard-notification-hooks-20261108/ios-tests.log"
+    },
+    "ios_ui_tests": {
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "device": "iPhone 17 Pro simulator, iOS 26.5",
+      "configuration": "Debug preview 1.2.0 (72)",
+      "result": "artifacts/release120/leaderboard-notification-hooks-20261108/ui-final.xcresult",
+      "log": "artifacts/release120/leaderboard-notification-hooks-20261108/ui-final.log",
+      "checks": [
+        "Separate leaderboard preference persists after relaunch and leaves practice preference unchanged",
+        "Cold app launch from a leaderboard-category notification opens the existing leaderboard",
+        "Existing practice-category notification still opens juggling setup without starting a recording",
+        "Leaderboard setting switched off at the end of its UI test"
+      ],
+      "scope": "Local OS notification fixtures exercise the real category, delegate and root navigation; no APNs provider delivery in these UI checks."
+    },
+    "deno": {
+      "passed": 14,
+      "failed": 0,
+      "log": "artifacts/release120/leaderboard-notification-hooks-20261108/deno-tests.log"
+    },
+    "postgresql": "Full isolated scripts/test-account-backend.sh passed; reran legacy push and schedule suites after new migration, plus new leaderboard hook assertions.",
+    "initial_ui_attempts": "The simulator first expanded/hinted side swipe without executing the default action. SpringBoard logged: Hinting side swipe instead of executing action. After using the system Open action, the app opened welcome because OS launch does not inherit the old XCTest skip-welcome argument. The tests now complete welcome through the real UI before the cold launch. Production routing was not changed to bypass either behavior.",
+    "initial_result_bundle": "Xcode stalled collecting diagnostics after all tests finished; owned process stopped. Unit results retained in text log. Subsequent UI runs disable verbose failure diagnostics.",
+    "localization": "String catalog parses and includes both new strings in all five supported languages."
+  },
+  "limitations": [
+    "Physical phones and TestFlight were not updated during this change.",
+    "No real leaderboard APNs alert was sent; future sender still needs end-to-end provider verification.",
+    "Offline opt-outs/sign-outs reach the server on the next successful sync.",
+    "Hooks become available to users when they install the upcoming app build; current public installs do not gain app-side routes remotely."
+  ],
+  "source_sha256": {
+    "supabase/migrations/202611080003_leaderboard_push_hooks.sql": "0242534325d8a2dbe2aaa01d7a1b024265568accc7273977a06c5d8f5d303e33",
+    "supabase/functions/_shared/practice-push.ts": "5f2dfb14dd05d1f4b1195f15f0866be2a94c68b0d8352c48e7f27a58322bbfc8",
+    "supabase/functions/_shared/practice-push-runtime.ts": "ba08b36dbb7eb6817ef16e37d8b4858ac86161099e1268e207a096d1f780c073"
+  }
+}

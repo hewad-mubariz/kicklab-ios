@@ -15,7 +15,8 @@ final class VideoSaveCompletion: NSObject, UNUserNotificationCenterDelegate {
         center.setNotificationCategories([UNNotificationCategory(identifier: Self.category,
             actions: [UNNotificationAction(identifier: "open-photos", title: String(localized: "Open Photos", bundle: AppLanguage.bundle, locale: AppLanguage.locale), options: .foreground)],
             intentIdentifiers: []), UNNotificationCategory(identifier: PracticeNotifications.reminderCategory, actions: [], intentIdentifiers: []),
-            UNNotificationCategory(identifier: RemotePracticeNotifications.category, actions: [], intentIdentifiers: [])])
+            UNNotificationCategory(identifier: RemotePracticeNotifications.category, actions: [], intentIdentifiers: []),
+            UNNotificationCategory(identifier: AppNotificationNavigation.leaderboardCategory, actions: [], intentIdentifiers: [])])
     }
 
     /// Posts only when notifications are already allowed. Saving never asks for
@@ -57,10 +58,8 @@ final class VideoSaveCompletion: NSObject, UNUserNotificationCenterDelegate {
         // Copy only Sendable values before crossing to the main actor.
         Task { @MainActor in
             defer { completionHandler() }
-            if action == UNNotificationDefaultActionIdentifier,
-               [PracticeNotifications.reminderCategory, RemotePracticeNotifications.category].contains(category) {
-                PracticeNotificationNavigation.shared.openPractice()
-            } else if category == Self.category,
+            if AppNotificationNavigation.shared.receive(category: category, action: action) { return }
+            if category == Self.category,
                       action == UNNotificationDefaultActionIdentifier || action == "open-photos" {
                 self.openPhotos()
             }

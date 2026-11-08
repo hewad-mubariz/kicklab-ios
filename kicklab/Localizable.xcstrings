@@ -1,6 +1,74 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Leaderboard updates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leaderboard updates"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ranglisten-Updates"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizaciones de la clasificación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualités du classement"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atualizações do ranking"
+          }
+        }
+      }
+    },
+    "Get notified when your leaderboard position changes. Requires a signed-in leaderboard profile." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get notified when your leaderboard position changes. Requires a signed-in leaderboard profile."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erhalte eine Benachrichtigung, wenn sich deine Ranglistenposition ändert. Erfordert ein angemeldetes Ranglistenprofil."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recibe una notificación cuando cambie tu posición en la clasificación. Requiere iniciar sesión con un perfil de clasificación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recevez une notification lorsque votre position au classement change. Nécessite une connexion à un profil du classement."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receba uma notificação quando sua posição no ranking mudar. Requer um perfil conectado ao ranking."
+          }
+        }
+      }
+    },
     "Your notification choice is saved on this phone. Connect and retry to update push messages." : {
       "localizations" : {
         "de" : {

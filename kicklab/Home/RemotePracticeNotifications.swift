@@ -37,6 +37,7 @@ final class RemotePracticeNotifications: ObservableObject {
         client: (try? AccountConfiguration.load()).map { HTTPPushRegistrationClient(configuration: $0) },
         platform: SystemRemotePushPlatform())
     @Published private(set) var enabled: Bool
+    @Published private(set) var leaderboardEnabled: Bool
     @Published private(set) var isUpdating = false
     @Published private(set) var errorMessage: String?
     @Published private(set) var registeredWithApple = false
@@ -56,6 +57,7 @@ final class RemotePracticeNotifications: ObservableObject {
          client: (any PushRegistrationClient)?, platform: any RemotePushPlatform) {
         self.defaults = defaults; self.vault = vault; self.client = client; self.platform = platform
         enabled = defaults.bool(forKey: PracticeNotifications.enabledKey)
+        leaderboardEnabled = defaults.bool(forKey: PracticeNotifications.leaderboardKey)
         defaults.removeObject(forKey: Self.legacyEnabledKey)
     }
 
@@ -65,7 +67,8 @@ final class RemotePracticeNotifications: ObservableObject {
     }
     func refresh() async {
         enabled = defaults.bool(forKey: PracticeNotifications.enabledKey)
-        await synchronize(register: enabled)
+        leaderboardEnabled = defaults.bool(forKey: PracticeNotifications.leaderboardKey)
+        await synchronize(register: enabled || leaderboardEnabled)
     }
     func receivedToken(_ data: Data) {
         deviceToken = data.map { String(format: "%02x", $0) }.joined()
@@ -79,6 +82,7 @@ final class RemotePracticeNotifications: ObservableObject {
     /// Account deletion must not silently re-enrol the installation as a guest.
     func accountWasDeleted() async {
         defaults.set(false, forKey: PracticeNotifications.enabledKey)
+        defaults.set(false, forKey: PracticeNotifications.leaderboardKey)
         await refresh()
     }
 
@@ -100,9 +104,12 @@ final class RemotePracticeNotifications: ObservableObject {
                 self.errorMessage = nil; self.synchronized = false
                 do {
                     self.enabled = self.defaults.bool(forKey: PracticeNotifications.enabledKey)
+                    self.leaderboardEnabled = self.defaults.bool(forKey: PracticeNotifications.leaderboardKey)
+                    let wantsPractice = self.enabled, wantsLeaderboard = self.leaderboardEnabled
                     let permission = await self.platform.authorization()
                     try await self.platform.clearLocalReminders()
-                    let allowed = self.enabled && PracticeNotifications.allows(permission)
+                    let permitted = PracticeNotifications.allows(permission)
+                    let allowed = (wantsPractice || wantsLeaderboard) && permitted
                     if allowed, register { self.platform.register() }
                     var credential = try self.vault.load()
                     if allowed && self.deviceToken == nil { continue }
@@ -121,7 +128,8 @@ final class RemotePracticeNotifications: ObservableObject {
                     if allowed, let userID, let account = self.account {
                         accessToken = try await account.accessToken(for: userID)
                     } else { accessToken = nil }
-                    guard allowed == (self.defaults.bool(forKey: PracticeNotifications.enabledKey) && PracticeNotifications.allows(permission)),
+                    guard wantsPractice == self.defaults.bool(forKey: PracticeNotifications.enabledKey),
+                          wantsLeaderboard == self.defaults.bool(forKey: PracticeNotifications.leaderboardKey),
                           userID == self.account?.user?.id else { self.needsSync = true; continue }
                     #if DEBUG
                     let environment = "sandbox"
@@ -131,7 +139,8 @@ final class RemotePracticeNotifications: ObservableObject {
                     try await client.synchronize(PushRegistration(installationId: current.id,
                         secret: current.secret, revision: current.revision,
                         bundleId: Bundle.main.bundleIdentifier ?? "com.juggledude", environment: environment,
-                        token: allowed ? self.deviceToken : nil, trainingEnabled: allowed,
+                        token: allowed ? self.deviceToken : nil, trainingEnabled: wantsPractice && permitted,
+                        leaderboardEnabled: wantsLeaderboard && permitted,
                         dailyReminderEnabled: false,
                         locale: AppLanguage.current,
                         reminderMinute: self.reminderMinute,
@@ -148,9 +157,26 @@ final class RemotePracticeNotifications: ObservableObject {
 }
 
 @MainActor
-final class PracticeNotificationNavigation: ObservableObject {
-    static let shared = PracticeNotificationNavigation()
-    @Published private(set) var pending: UUID?
-    func openPractice() { pending = UUID() }
+final class AppNotificationNavigation: ObservableObject {
+    static let shared = AppNotificationNavigation()
+    static let leaderboardCategory = "leaderboard-update"
+    enum Destination: Equatable { case practice, leaderboard }
+    struct Request: Equatable {
+        let id = UUID()
+        let destination: Destination
+    }
+    @Published private(set) var pending: Request?
+    @discardableResult
+    func receive(category: String, action: String) -> Bool {
+        guard action == UNNotificationDefaultActionIdentifier else { return false }
+        let destination: Destination
+        switch category {
+        case PracticeNotifications.reminderCategory, RemotePracticeNotifications.category: destination = .practice
+        case Self.leaderboardCategory: destination = .leaderboard
+        default: return false
+        }
+        pending = Request(destination: destination)
+        return true
+    }
     func consume() { pending = nil }
 }

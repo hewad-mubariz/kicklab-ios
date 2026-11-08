@@ -35,4 +35,8 @@ psql -X -h "$test_dir" -p 55549 -d postgres -v ON_ERROR_STOP=1 \
   -f "$project_dir/supabase/migrations/202611080001_remote_practice_push.sql" \
   -f "$project_dir/supabase/tests/remote_practice_push.sql" \
   -f "$project_dir/supabase/migrations/202611080002_scheduled_practice_reminders.sql" \
-  -f "$project_dir/supabase/tests/scheduled_practice_reminders.sql"
+  -f "$project_dir/supabase/tests/scheduled_practice_reminders.sql" \
+  -f "$project_dir/supabase/migrations/202611080003_leaderboard_push_hooks.sql" \
+  -f "$project_dir/supabase/tests/remote_practice_push.sql" \
+  -f "$project_dir/supabase/tests/scheduled_practice_reminders.sql" \
+  -f "$project_dir/supabase/tests/leaderboard_push_hooks.sql"

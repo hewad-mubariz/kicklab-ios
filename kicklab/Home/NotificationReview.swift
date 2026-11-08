@@ -7,15 +7,19 @@ struct NotificationReview: View {
     /// A local fixture exercises the same category/delegate/navigation as the
     /// real APNs message, without bypassing the server's daily delivery cap.
     static func scheduleTapCheckIfRequested() async {
+        let leaderboard = ProcessInfo.processInfo.arguments.contains("--leaderboard-notification-tap-review")
         guard Bundle.main.bundleIdentifier == "com.juggledude.release120.preview",
-              ProcessInfo.processInfo.arguments.contains("--notification-tap-review") else { return }
+              leaderboard || ProcessInfo.processInfo.arguments.contains("--notification-tap-review") else { return }
         let center = UNUserNotificationCenter.current()
         guard PracticeNotifications.allows(await center.notificationSettings().authorizationStatus) else { return }
+        let fixtures = ["juggledude.notification-tap-check", "juggledude.leaderboard-tap-check"]
+        center.removePendingNotificationRequests(withIdentifiers: fixtures)
+        center.removeDeliveredNotifications(withIdentifiers: fixtures)
         let content = UNMutableNotificationContent()
-        content.title = "Juggle Dude notification tap check"
-        content.body = "Test alert: tap to open juggling setup."
-        content.categoryIdentifier = RemotePracticeNotifications.category
-        try? await center.add(UNNotificationRequest(identifier: "juggledude.notification-tap-check",
+        content.title = leaderboard ? "Juggle Dude leaderboard tap check" : "Juggle Dude notification tap check"
+        content.body = leaderboard ? "Test alert: tap to open the leaderboard." : "Test alert: tap to open juggling setup."
+        content.categoryIdentifier = leaderboard ? AppNotificationNavigation.leaderboardCategory : RemotePracticeNotifications.category
+        try? await center.add(UNNotificationRequest(identifier: leaderboard ? "juggledude.leaderboard-tap-check" : "juggledude.notification-tap-check",
             content: content, trigger: UNTimeIntervalNotificationTrigger(timeInterval: 8, repeats: false)))
     }
     @State private var pending = "Loading"

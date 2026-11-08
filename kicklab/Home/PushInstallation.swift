@@ -58,6 +58,8 @@ nonisolated struct PushRegistration: Encodable, Equatable, Sendable {
     let environment: String
     let token: String?
     let trainingEnabled: Bool
+    let leaderboardEnabled: Bool
+    let notificationRoutesVersion = 1
     let dailyReminderEnabled: Bool
     let locale: String
     let reminderMinute: Int

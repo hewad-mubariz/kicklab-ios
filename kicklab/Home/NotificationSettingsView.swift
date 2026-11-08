@@ -27,6 +27,14 @@ struct NotificationSettingsView: View {
             } footer: {
                 Text("Three reminders a week: Monday, Wednesday and Sunday, at your chosen local time.")
             }
+            Section {
+                Toggle("Leaderboard updates", isOn: Binding(
+                    get: { notifications.leaderboardEnabled },
+                    set: { value in Task { await notifications.setLeaderboardEnabled(value); await remote.refresh() } }))
+                    .accessibilityIdentifier("notifications-leaderboard")
+            } footer: {
+                Text("Get notified when your leaderboard position changes. Requires a signed-in leaderboard profile.")
+            }
             if let error = remote.errorMessage {
                 Section {
                     Text(error).foregroundStyle(.secondary)

@@ -32,7 +32,7 @@ private struct SystemPracticeNotifications: PracticeNotificationClient {
     }
 }
 
-/// The practice preference syncs to the server; exports remain local. Reconciliation is serialized
+/// Practice and leaderboard preferences sync to the server; exports remain local. Reconciliation is serialized
 /// so a slow permission response cannot restore a reminder the user switched off.
 @MainActor
 final class PracticeNotifications: ObservableObject {
@@ -46,12 +46,14 @@ final class PracticeNotifications: ObservableObject {
     static let reminderIdentifiers = reminderWeekdays.map { "juggledude.practice.weekday-\($0)" }
     static let managedReminderIdentifiers = [legacyReminderIdentifier] + reminderIdentifiers
     static let exportsKey = "juggledude.notifications.exports"
+    static let leaderboardKey = "juggledude.notifications.leaderboard"
     static let timeKey = "juggledude.notifications.minute-of-day"
     static let completedSessionKey = "juggledude.notifications.session-completed"
     static let sessionPromptHandledKey = "juggledude.notifications.session-prompt-handled"
 
     @Published private(set) var practiceEnabled: Bool
     @Published private(set) var exportsEnabled: Bool
+    @Published private(set) var leaderboardEnabled: Bool
     @Published private(set) var minuteOfDay: Int
     @Published private(set) var authorization: UNAuthorizationStatus = .notDetermined
     @Published private(set) var isUpdating = false
@@ -70,6 +72,7 @@ final class PracticeNotifications: ObservableObject {
         self.defaults = defaults; self.client = client
         practiceEnabled = defaults.bool(forKey: Self.enabledKey)
         exportsEnabled = defaults.bool(forKey: Self.exportsKey)
+        leaderboardEnabled = defaults.bool(forKey: Self.leaderboardKey)
         hasCompletedSession = defaults.bool(forKey: Self.completedSessionKey)
         sessionPromptHandled = defaults.bool(forKey: Self.sessionPromptHandledKey)
         let saved = defaults.object(forKey: Self.timeKey) as? Int
@@ -131,6 +134,11 @@ final class PracticeNotifications: ObservableObject {
         await synchronize(askPermission: value)
     }
 
+    func setLeaderboardEnabled(_ value: Bool) async {
+        leaderboardEnabled = value; defaults.set(value, forKey: Self.leaderboardKey)
+        await synchronize(askPermission: value)
+    }
+
     func setTime(hour: Int, minute: Int) async {
         guard (0..<24).contains(hour), (0..<60).contains(minute) else { return }
         minuteOfDay = hour * 60 + minute; defaults.set(minuteOfDay, forKey: Self.timeKey)
@@ -140,6 +148,7 @@ final class PracticeNotifications: ObservableObject {
     /// Ordinary refreshes never prompt; only Settings or the first-session flow may ask.
     func refresh() async {
         practiceEnabled = defaults.bool(forKey: Self.enabledKey)
+        leaderboardEnabled = defaults.bool(forKey: Self.leaderboardKey)
         await synchronize(askPermission: false)
     }
 
@@ -175,7 +184,7 @@ final class PracticeNotifications: ObservableObject {
                 self.errorMessage = nil
                 do {
                     self.authorization = await self.client.authorization()
-                    if ask, self.practiceEnabled || self.exportsEnabled, self.authorization == .notDetermined {
+                    if ask, self.practiceEnabled || self.exportsEnabled || self.leaderboardEnabled, self.authorization == .notDetermined {
                         try await self.client.requestPermission()
                         self.authorization = await self.client.authorization()
                     }

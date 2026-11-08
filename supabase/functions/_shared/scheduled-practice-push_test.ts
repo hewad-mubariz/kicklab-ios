@@ -27,6 +27,25 @@ Deno.test('server registration validates complete schedule and preserves legacy 
     let failed=false;try{parseRegistration({...registration,...extra});}catch{failed=true;}assert(failed);
   }
 });
+Deno.test('leaderboard capability keeps its token without practice and rejects partial contracts',async()=>{
+  const input={...registration,training_enabled:false,leaderboard_enabled:true,notification_routes_version:1};
+  const parsed=parseRegistration(input);
+  assertEquals(parsed.token,registration.token);assertEquals(parsed.training_enabled,false);
+  assertEquals(parseRegistration({...input,leaderboard_enabled:false}).token,null);
+  for(const extra of [{notification_routes_version:undefined},{notification_routes_version:2},{leaderboard_enabled:undefined},
+    {leaderboard_enabled:'yes'},{delivery_mode:undefined},{token:null}]) {
+    let failed=false;try{parseRegistration({...input,...extra});}catch{failed=true;}assert(failed);
+  }
+  let called=false;
+  const db=new SupabasePushDatabase('https://example.test','test-key',async(url,init)=>{
+    assert(String(url).endsWith('/sync_notification_installation'));
+    const body=JSON.parse(String(init?.body));
+    assertEquals(body.p_training_enabled,false);assertEquals(body.p_leaderboard_enabled,true);
+    assertEquals(body.p_notification_routes_version,1);assertEquals(body.p_user_id,id);
+    assertEquals(body.p_token,registration.token);called=true;return Response.json(true);
+  });
+  await db.sync(parsed,'hash',id);assert(called);
+});
 Deno.test('server schedule uses the new RPC with time, zone and verified owner',async()=>{
   let called=false;
   const db=new SupabasePushDatabase('https://example.test','test-key',async(url,init)=>{

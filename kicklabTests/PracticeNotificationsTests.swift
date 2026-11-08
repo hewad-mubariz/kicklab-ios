@@ -4,6 +4,36 @@ import UserNotifications
 
 @MainActor
 final class PracticeNotificationsTests: XCTestCase {
+    func testLeaderboardChoiceIsIndependentAndSurvivesRelaunch() async {
+        let client = NotificationClientStub()
+        let (store, _) = make(client)
+        XCTAssertFalse(store.leaderboardEnabled)
+        await store.setLeaderboardEnabled(true)
+        XCTAssertEqual(client.permissionRequests, 1)
+        XCTAssertFalse(store.practiceEnabled)
+        XCTAssertFalse(store.exportsEnabled)
+        XCTAssertTrue(client.reminders.isEmpty)
+        await store.setPracticeEnabled(true)
+        await store.setPracticeEnabled(false)
+        XCTAssertTrue(make(client).0.leaderboardEnabled)
+        await store.setLeaderboardEnabled(false)
+        XCTAssertFalse(make(client).0.leaderboardEnabled)
+    }
+
+    func testNotificationRoutesIgnoreDismissAndUnknownCategories() {
+        let navigation = AppNotificationNavigation()
+        XCTAssertFalse(navigation.receive(category: AppNotificationNavigation.leaderboardCategory, action: UNNotificationDismissActionIdentifier))
+        XCTAssertNil(navigation.pending)
+        XCTAssertTrue(navigation.receive(category: AppNotificationNavigation.leaderboardCategory, action: UNNotificationDefaultActionIdentifier))
+        XCTAssertEqual(navigation.pending?.destination, .leaderboard)
+        let pending = navigation.pending
+        XCTAssertFalse(navigation.receive(category: "unknown", action: UNNotificationDefaultActionIdentifier))
+        XCTAssertEqual(navigation.pending, pending)
+        navigation.consume()
+        XCTAssertNil(navigation.pending)
+        XCTAssertTrue(navigation.receive(category: RemotePracticeNotifications.category, action: UNNotificationDefaultActionIdentifier))
+        XCTAssertEqual(navigation.pending?.destination, .practice)
+    }
     private var suite = ""
     override func setUp() { super.setUp(); suite = "PracticeNotificationsTests." + UUID().uuidString }
     override func tearDown() { UserDefaults.standard.removePersistentDomain(forName: suite); super.tearDown() }

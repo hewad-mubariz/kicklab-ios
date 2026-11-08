@@ -21,7 +21,7 @@ struct RootShellView: View {
     @State private var showsUpdateAlert = false
     @ObservedObject private var updateNotice = AppUpdateNotice.shared
     @ObservedObject private var adMeasurement = MetaAdsMeasurement.shared
-    @ObservedObject private var notificationNavigation = PracticeNotificationNavigation.shared
+    @ObservedObject private var notificationNavigation = AppNotificationNavigation.shared
     @ObservedObject private var practiceNotifications = PracticeNotifications.shared
     @Namespace private var zoom
     private var accountBest: Int { account.user == nil ? personalBest : player.personalBest }
@@ -39,11 +39,12 @@ struct RootShellView: View {
     /// Give the first-session notification question this launch; tracking can wait until another launch.
     private var canRequestAdPermission: Bool {
         homeIsReadyForNotice && adMeasurement.wantsPermission && !showsUpdateAlert &&
+        notificationNavigation.pending == nil &&
         !practiceNotifications.shouldAskAfterSession && !practiceNotifications.isRequestingSessionPermission &&
         !practiceNotifications.presentedSessionPromptThisLaunch
     }
 
-    private var canOpenPracticeNotification: Bool {
+    private var canOpenNotification: Bool {
         homeIsReadyForNotice && !showsUpdateAlert && !adMeasurement.isRequesting &&
         !practiceNotifications.isRequestingSessionPermission
     }
@@ -53,6 +54,7 @@ struct RootShellView: View {
         let trackingChoicePending = adMeasurement.isAvailable && adMeasurement.wantsPermission &&
             adMeasurement.authorizationStatus == .notDetermined
         return homeIsReadyForNotice && updateNotice.shouldPrompt &&
+            notificationNavigation.pending == nil &&
             !adMeasurement.isRequesting && !trackingChoicePending &&
             !practiceNotifications.shouldAskAfterSession && !practiceNotifications.isRequestingSessionPermission &&
             !practiceNotifications.presentedSessionPromptThisLaunch
@@ -144,8 +146,8 @@ struct RootShellView: View {
             openImportedVideoIfReady()
         }
         .onChange(of: showImport) { _, _ in openImportedVideoIfReady() }
-        .onChange(of: notificationNavigation.pending, initial: true) { _, _ in openPracticeNotificationIfReady() }
-        .onChange(of: canOpenPracticeNotification) { _, _ in openPracticeNotificationIfReady() }
+        .onChange(of: notificationNavigation.pending, initial: true) { _, _ in openNotificationIfReady() }
+        .onChange(of: canOpenNotification) { _, _ in openNotificationIfReady() }
         .fullScreenCover(item: $capture) { destination in
             switch destination.mode {
             case .juggling:
@@ -206,11 +208,19 @@ struct RootShellView: View {
         capture = HomeCapture(mode: .juggling, importedVideo: item)
     }
 
-    private func openPracticeNotificationIfReady() {
-        guard canOpenPracticeNotification, notificationNavigation.pending != nil else { return }
+    private func openNotificationIfReady() {
+        guard let request = notificationNavigation.pending else { return }
+        if request.destination == .leaderboard && showsLeaderboard {
+            notificationNavigation.consume()
+            return
+        }
+        guard canOpenNotification else { return }
         notificationNavigation.consume()
-        // Opens setup; never starts recording or discards an active replay.
-        capture = HomeCapture(mode: .juggling)
+        // Wait for active work to close. A tap never starts recording or discards a replay.
+        switch request.destination {
+        case .practice: capture = HomeCapture(mode: .juggling)
+        case .leaderboard: showsLeaderboard = true
+        }
     }
 }
 

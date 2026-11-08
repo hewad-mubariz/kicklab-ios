@@ -109,6 +109,51 @@ final class RemotePracticeNotificationsTests: XCTestCase {
         XCTAssertTrue(client.requests.isEmpty)
     }
 
+    func testLeaderboardOnlyKeepsTokenWithoutEnrollingInPractice() async throws {
+        let vault = PushVaultStub(), client = PushClientStub(), platform = PushPlatformStub()
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.set(true, forKey: PracticeNotifications.leaderboardKey)
+        let store = make(vault, client, platform)
+        await store.refresh()
+        XCTAssertEqual(platform.registrations, 1)
+        XCTAssertTrue(client.requests.isEmpty)
+        store.receivedToken(Data(repeating: 1, count: 32)); await store.refresh()
+        let first = try XCTUnwrap(client.requests.last)
+        XCTAssertTrue(first.leaderboardEnabled); XCTAssertFalse(first.trainingEnabled)
+        XCTAssertNotNil(first.token); XCTAssertEqual(first.notificationRoutesVersion, 1)
+        let encoder = JSONEncoder(); encoder.keyEncodingStrategy = .convertToSnakeCase
+        let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: encoder.encode(first)) as? [String: Any])
+        XCTAssertEqual(payload["leaderboard_enabled"] as? Bool, true)
+        XCTAssertEqual(payload["notification_routes_version"] as? Int, 1)
+        await setPractice(true, on: store)
+        await setPractice(false, on: store)
+        XCTAssertNotNil(client.requests.last!.token)
+        XCTAssertTrue(client.requests.last!.leaderboardEnabled)
+        defaults.set(false, forKey: PracticeNotifications.leaderboardKey); await store.refresh()
+        XCTAssertNil(client.requests.last!.token)
+        XCTAssertFalse(client.requests.last!.leaderboardEnabled)
+        XCTAssertGreaterThan(client.requests.last!.revision, first.revision)
+    }
+
+    func testPermissionRevocationAndAccountDeletionDisableBothCategories() async {
+        let vault = PushVaultStub(), client = PushClientStub(), platform = PushPlatformStub()
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.set(true, forKey: PracticeNotifications.leaderboardKey)
+        let store = make(vault, client, platform)
+        store.receivedToken(Data(repeating: 1, count: 32)); await setPractice(true, on: store)
+        platform.status = .denied; await store.refresh()
+        XCTAssertTrue(store.leaderboardEnabled)
+        XCTAssertFalse(client.requests.last!.leaderboardEnabled)
+        XCTAssertFalse(client.requests.last!.trainingEnabled)
+        XCTAssertNil(client.requests.last!.token)
+        platform.status = .authorized; await store.refresh()
+        XCTAssertTrue(client.requests.last!.leaderboardEnabled)
+        await store.accountWasDeleted()
+        XCTAssertFalse(defaults.bool(forKey: PracticeNotifications.leaderboardKey))
+        XCTAssertFalse(store.leaderboardEnabled)
+        XCTAssertNil(client.requests.last!.token)
+    }
+
 }
 
 @MainActor private final class PushVaultStub: PushInstallationVault {

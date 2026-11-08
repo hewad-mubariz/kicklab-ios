@@ -26,6 +26,13 @@ export class SupabasePushDatabase implements PushDatabase {
     return user.id;
   }
   async sync(r: Registration, hash: string, userID: string | null) {
+    if (r.notification_routes_version === 1) {
+      await this.rpc('sync_notification_installation', {p_id:r.installation_id,p_secret_hash:hash,p_revision:r.revision,
+        p_bundle_id:r.bundle_id,p_environment:r.environment,p_token:r.token,p_training_enabled:r.training_enabled,
+        p_leaderboard_enabled:r.leaderboard_enabled,p_notification_routes_version:r.notification_routes_version,
+        p_locale:r.locale,p_user_id:userID,p_reminder_minute:r.reminder_minute,p_time_zone:r.time_zone});
+      return;
+    }
     if (r.delivery_mode === 'server') {
       await this.rpc('sync_practice_installation', {p_id:r.installation_id,p_secret_hash:hash,p_revision:r.revision,
         p_bundle_id:r.bundle_id,p_environment:r.environment,p_token:r.token,p_training_enabled:r.training_enabled,

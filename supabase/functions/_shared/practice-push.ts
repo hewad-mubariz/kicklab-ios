@@ -32,10 +32,12 @@ export type Registration = {
   environment: 'sandbox' | 'production'; token: string | null; training_enabled: boolean;
   daily_reminder_enabled: boolean; locale: string;
   delivery_mode?: 'server'; reminder_minute?: number; time_zone?: string;
+  leaderboard_enabled?: boolean; notification_routes_version?: 1;
 };
 export function parseRegistration(input: Record<string, unknown>): Registration {
   const keys = ['installation_id','secret','revision','bundle_id','environment','token',
-    'training_enabled','daily_reminder_enabled','locale','delivery_mode','reminder_minute','time_zone'];
+    'training_enabled','daily_reminder_enabled','locale','delivery_mode','reminder_minute','time_zone',
+    'leaderboard_enabled','notification_routes_version'];
   const pairs = new Set(['com.juggledude.release120.preview:sandbox', 'com.juggledude:production']);
   if (Object.keys(input).some(k => !keys.includes(k)) || !uuid(input.installation_id)
       || typeof input.secret !== 'string' || !/^[0-9a-f]{64}$/.test(input.secret)
@@ -45,7 +47,10 @@ export function parseRegistration(input: Record<string, unknown>): Registration 
       || !['en','de','es','fr','pt-BR'].includes(String(input.locale))) throw new PushError(400,'invalid_registration');
   if (input.token != null && (typeof input.token !== 'string' || !/^[0-9a-f]{64,256}$/.test(input.token)
       || input.token.length % 2 !== 0)) throw new PushError(400,'invalid_registration');
-  if (input.training_enabled && !input.token) throw new PushError(400,'missing_device_token');
+  const hasRoutes = 'leaderboard_enabled' in input || 'notification_routes_version' in input;
+  if (hasRoutes && (typeof input.leaderboard_enabled !== 'boolean' || input.notification_routes_version !== 1
+      || input.delivery_mode !== 'server')) throw new PushError(400,'invalid_notification_preferences');
+  if ((input.training_enabled || input.leaderboard_enabled === true) && !input.token) throw new PushError(400,'missing_device_token');
   const hasSchedule = ['delivery_mode','reminder_minute','time_zone'].some(k => k in input);
   if (hasSchedule) {
     if (input.delivery_mode !== 'server' || input.daily_reminder_enabled !== false
@@ -54,7 +59,7 @@ export function parseRegistration(input: Record<string, unknown>): Registration 
     try { new Intl.DateTimeFormat('en', {timeZone: input.time_zone}); }
     catch { throw new PushError(400,'invalid_schedule'); }
   }
-  return { ...input, token: input.training_enabled ? input.token : null } as Registration;
+  return { ...input, token: input.training_enabled || input.leaderboard_enabled === true ? input.token : null } as Registration;
 }
 
 export type Claim = { eligible: boolean; reason?: string; status?: string;
