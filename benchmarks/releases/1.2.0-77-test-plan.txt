@@ -1,0 +1,254 @@
+JUGGLE DUDE 1.2.0 — RELEASE TEST PLAN
+Prepared 8 November 2026. Baseline: local build 77, source ee1d7384.
+Branch: feature/leaderboard-editor-upgrade. Main app: com.juggledude.
+
+PURPOSE AND STATUS
+Validate the combined release before TestFlight, then validate the distribution
+build before public release or ads. This document is a plan, not a test result.
+Every unchecked case below is NOT RUN on this baseline unless evidence says
+otherwise. Historical successes guide the work; they do not qualify build 77.
+
+Build 77 has heel/toe recovery enabled by default with no user toggle, a 3-second
+visibility grace, and a warning after 1.5 seconds. Do not change these during a
+comparison. Existing scores are not recalculated by installing this build.
+Both main apps are installed: iPhone 11 Pro Max and iPhone 17 Pro Max. Minimum
+supported iOS is 18. Record the actual installed OS; do not infer it from model.
+
+Already established:
+- Build 77 passed 86 targeted automated streak/counter checks, with no failures.
+- Installation preserved the recorded session inventory on both phones.
+- Prior builds exercised import optimizations, background CPU processing,
+  storage controls and notification logic. These need combined-release checks.
+
+Unresolved release risks:
+- Live heel/toe benefit and sustained performance are not fully qualified. The
+  Mac IMG_9156 result (93 to 98) is not yet a verified phone accuracy result.
+- The sustained-grip rule needs both wrists; a one-handed hold can be missed.
+- The 56-minute import was interrupted; full completion is NOT verified.
+- Production APNs/scheduled reminder delivery and taps need device verification.
+- Automatic leaderboard rank-change notifications are not activated. App-side
+  preferences and routes alone do not mean that a rank-change sender exists.
+
+ORDER OF WORK
+1. Counter and streak integrity: first hands-on round, then both-phone accuracy.
+2. Import and background reliability: short, 52-second, then endurance tests.
+3. Editor/export quality, cache reuse and storage deletion.
+4. Notification delivery, accounts, purchases and release compatibility.
+5. Internal TestFlight validation, followed by a public-release decision.
+Fix a failed gate before expanding testing. Repeat affected cases plus a short
+record/import/export smoke check after a fix; record the new build and commit.
+
+FIRST HANDS-ON ROUND — ONE PHONE, ABOUT 30 MINUTES PLUS PROCESSING TIME
+Use whichever phone is available; repeat the same protocol on the other phone.
+User performs the juggling and reports visible problems. Agent reviews footage,
+labels contacts and interruptions, and compares them with app event timestamps.
+[ ] A. Record 3 minutes of normal juggling in clear light with player/ball visible.
+    Include a short, identifiable heel/toe section. Save, reopen and play replay.
+    Pass: no crash, lost recording, camera freeze or false streak break during
+    uninterrupted juggling. Judge count accuracy from footage, not memory.
+[ ] B. Record separate short attempts: a visible two-handed catch; a one-handed
+    catch held for 2 seconds; a ground bounce. Resume juggling after each.
+    Pass: the interrupted runs are separate; valid touches remain in the total.
+    The longest run, not the combined total, is the leaderboard candidate.
+[ ] C. Capture a roughly 2-second departure and a separate 4-second departure,
+    with no other visible interruption; inspect frame times in saved footage.
+    Pass: 2 seconds alone does not split; confirmed sustained absence at 4 seconds
+    does. A brief warning is not itself a final streak verdict. Avoid exactly
+    3 seconds in this manual check; test the boundary deterministically below.
+[ ] D. Repeat the 2-second departure returning with the ball visibly held in one
+    hand, then with two hands. Pass: an observed hold separates the runs even
+    though the absence alone was short. Treat a missed one-handed hold as a
+    recorded defect, not an assumed pass or a reason to lengthen the grace.
+
+P0 — COUNTING AND LEADERBOARD INTEGRITY
+Owner: user captures realistic examples; agent labels, replays and compares.
+[ ] C01. Label the 18.57-second fixture, IMG_9064, available IMG_9156 source and
+    at least 3 new live recordings: ordinary, low/heel/toe, and difficult light
+    or partial occlusion. Verify source availability before planning a run.
+    Record missed and extra contacts separately, not just the net final count.
+    Proposed accuracy gate: at least 95% precision AND recall on each clear-view
+    clip, with no regression against the previous counter on the same inputs.
+    Difficult clips are reported separately; never hide them in an average.
+[ ] C02. Compare recovery on/off only through internal benchmark controls using
+    identical frames/settings. Confirm benefit on labelled heel/toe contacts
+    without inventing hand, ground or held-ball touches. Keep the normal app's
+    default on and its UI free of an experiment toggle.
+[ ] C03. Review first-round interruptions frame by frame. Add high kicks, a ball
+    crossing the body, brief camera occlusion and a visible bystander. Visibility
+    is not player identity: document the bystander limitation explicitly.
+    Pass: no false join across a clearly observed stop and no false split in the
+    controlled uninterrupted samples. Detection gaps alone are not departures.
+[ ] C04. Run existing logical/replay suites around 1.5-second warning and 3-second
+    grace, stale callbacks, second-look verification and unreadable video. Use
+    timestamped fixtures to check either side of 3 seconds. Saved/reopened
+    results must retain the final decision and explanation.
+[ ] C05. Use labelled runs (for example 20 + catch + 10): expected total 30 and
+    best streak 20, if the footage really contains those contacts. Verify the
+    session best, personal best, weekly and all-time leaderboard independently.
+    Eligible signed-in recordings submit once; imports and guests do not submit
+    a ranked attempt. Relaunch/retry/offline recovery must not duplicate it.
+[ ] C06. On both phones, check live preview responsiveness, dropped-frame logs,
+    battery and thermal state through 3 minutes; extend to 10 minutes if stable.
+    No crash, recording loss or persistently unusable preview is acceptable.
+
+P0 — IMPORT, FOREGROUND/BACKGROUND AND RECOVERY
+Owner: agent measures; user keeps the requested app/device state during a run.
+Start unplugged at normal thermal state; record Low Power Mode and battery.
+Some heat during processing is expected; log it rather than discarding the run.
+[ ] I01. Import IMG_9064.MOV through the actual Photos/Files flow as a free user
+    and as Pro. Measure provider/video copy, counting, result saving and replay
+    opening separately. Counting-only use must not trigger effect preparation.
+    Pass: playable saved replay, usable result and no unnecessary Pro prompt.
+[ ] I02. Repeat on both phones: fully foreground; Home Screen during counting;
+    lock during counting; foreground -> background -> foreground several times.
+    Minimize once during picker/copy as a separate case. Check the saved result
+    and diagnostic events, not just an advancing Live Activity.
+    On supported iOS 26 continued-processing runs, verify granted work continues
+    with CPU fallback where needed. Test denied/deferred/expired work separately:
+    show an honest recoverable state, preserve input and avoid duplicate counts.
+    On iOS 18, verify graceful pause/recovery; do not promise unlimited background
+    execution. Background GPU support is not a release prerequisite.
+[ ] I03. Check progress and Live Activity: coherent phase, no repeated rendering/
+    saving label flicker, no premature completion, and final activity dismissal.
+    Cancel at copy/count/save boundaries and retry; no stuck job or orphaned temp
+    file. Test force-quit/relaunch separately: continuation is not guaranteed,
+    but the UI must reconcile interrupted work without corrupting saved sessions.
+[ ] I04. Repeat a matched 52-second foreground/background comparison on each
+    device. Use three runs per mode where practical and report median plus range.
+    Separate genuinely cold analysis from warm reuse. Record frame count, model
+    calls, mask coverage/reuse, CPU/GPU mode, peak sampled memory and thermal state.
+    Foreground and background need not have equal speed; each must retain quality
+    within the accuracy gate. Investigate unexplained count/event differences.
+    Proposed performance review trigger: over 20% slower than that phone's matched
+    prior baseline. Historical CPU-pinned/hot runs are not matched baselines.
+[ ] I05. Check local HD30, 1080p60, 4K30/60, slow-motion, portrait/rotated, HDR/HEVC,
+    variable-frame-rate and silent clips, using available real samples. Include
+    an iCloud-only asset, cancelled transfer and invalid/unsupported file.
+    Pass: correct orientation/duration/audio or a clear recoverable error; never
+    lose another session. Local analysis works without internet once input exists.
+[ ] I06. After shorter tests pass, complete videoplayback.mov on iPhone 17:
+    3406.52 seconds, 1080p30, H.264, about 798 MB, no audio. Start cool, retain
+    thermal/memory/progress logs, include a background transition and verify the
+    final saved result/replay. The earlier interrupted ~51% run is not a pass.
+    On iPhone 11, first qualify a 3- to 5-minute excerpt and recovery under memory
+    pressure. Full-length support remains unverified there until tested. Do not
+    advertise unrestricted long-video support from an excerpt or an ETA.
+
+P0/P1 — EDITOR, EXPORT QUALITY AND STORAGE
+Owner: agent collects comparable outputs; user judges appearance and usability.
+[ ] E01. Free user: record/import -> result -> plain replay promptly. No automatic
+    ball/effect preparation. Pro unlock from that session exposes the editor and
+    effects without losing the session or silently changing the count.
+[ ] E02. Use IMG_8649 and problematic IMG_9094 with the same replacement skins:
+    one light and one dark. Compare identical frames with the previous baseline
+    at feet/body overlaps, fast movement, motion blur, occlusion and the last frame.
+    Inspect exported playback too: no persistent double ball, frozen replacement,
+    black disc, large holes, end-frame flash or new temporal blinking regression.
+    Log timestamps and images for defects; do not judge only a still screenshot.
+[ ] E03. Export 1080p and original resolution through available save/export paths.
+    Verify duration, orientation, count, timer, selected Look/skin/text, original
+    audio and added sounds in the saved Photos file. No duplicated audio, missing
+    tail, corrupt file or success message before a playable file exists.
+[ ] E04. Repeat export foreground, minimized and locked. Counting success does not
+    prove effect-rendering success. Unsupported background rendering must pause
+    honestly and recover. Exercise cancellation, low storage and Photos permission
+    denial; retain source and edits, and offer a usable retry.
+[ ] E05. Reopen after save and after relaunch, then change only the skin. Confirm
+    usable saved analysis/masks are reused and only missing work is rebuilt. Log
+    model calls/preparation/cache hits; a fast cached run is not a cold speed win.
+    Different source/counter signature/settings must not reuse incompatible data.
+[ ] S01. With disposable sessions, test Manage Storage, delete-video versus
+    delete-session actions, confirmation/cancel, and clearing caches. Check actual
+    app-owned bytes released after cleanup settles. Photos originals and remote
+    scores must remain; unrelated local sessions and edits must still open.
+[ ] S02. Confirm incomplete/cancelled jobs leave no permanent duplicate video or
+    temporary cache. A retained session must rebuild cleared processing data when
+    needed. Never delete the user's real library to manufacture a clean benchmark.
+
+P1 — NOTIFICATIONS, ACCOUNT FLOWS AND COMPATIBILITY
+Owner: agent exercises isolated backend/test recipients; user checks real taps.
+[ ] N01. On a fresh-permission test installation, finish a recording and separately
+    an import, then return Home. Native permission prompt appears once, without
+    signup or extra enrollment, and does not interrupt recording/replay/dialogs.
+    Allow opts into practice; deny continues normally without repeated prompts.
+    Existing opt-outs, saved time and export-only permission choices stay intact.
+[ ] N02. Register guest and signed-in test installations. Verify server schedule
+    Mon/Wed/Sun at selected local time (default 18:00), timezone/DST handling,
+    locale fallback, cap of one/day and three/week, and no old local duplicate.
+    Test opt-out, account switching, offline preference sync and token refresh.
+    Document that an offline change cannot reach the server until reconnection.
+[ ] N03. Send only to a dedicated opted-in test installation. Verify actual
+    production-bundle APNs delivery, a due scheduled reminder and taps from warm,
+    cold and locked states. Practice opens juggling setup, never auto-records.
+    Repeat with Focus on/off; OS delivery/presentation delays are not app crashes.
+    Export completion must correspond to a real completed export.
+[ ] N04. Test leaderboard preference independence and route using fixtures.
+    Do not mark rank-change delivery passed: no automatic sender is active.
+    Decide to defer that promise or separately implement/test its sender before
+    advertising it. Never move real players' ranks to generate a test message.
+[ ] U01. Upgrade over the existing app: preserve account, sessions, edits, scores
+    and Pro access. On a separate test installation, cover onboarding, guest use,
+    camera/microphone/Photos permission denial and recovery through Settings.
+[ ] U02. Apple/Google/email sign-in, cancellation, expired link, sign-out and
+    sign-back-in. Correct profile/history/account ownership; no private data from
+    another account. Use test accounts for destructive account-deletion checks.
+[ ] U03. In TestFlight sandbox: purchase, cancellation, restore and relaunch,
+    including guest purchase and subsequent sign-in. Pro access matches entitlement
+    and does not depend on repeated payment. No real purchase required for tests.
+[ ] U04. Weekly/all-time leaderboard, profile images/names when switching players,
+    History/Manage Storage navigation, editor controls and saved styles. Smoke-test
+    all five supported languages, large text and VoiceOver on critical actions.
+[ ] U05. iOS 18 minimum-version smoke test plus actual installed OS on both phones.
+    Check API guards, recording/import/export and fallback progress UI. Simulator
+    checks alone do not qualify physical-device performance or background behavior.
+
+RELEASE GATES
+Local -> internal TestFlight:
+- Counting/streak P0 checks pass on both phones; heel/toe default has demonstrated
+  accuracy benefit without unacceptable live-performance regression.
+- Short import, lifecycle, replay and export checks pass on both phones.
+- No crash, data loss, cross-account data, corrupt saved video or false ranked
+  continuity in controlled interruption cases. Resolve the one-handed-hold defect
+  or explicitly decide/review ranked scope; do not silently waive it.
+- Build a Release archive with the same policy/model resources, correct version,
+  production entitlements and signed bundle. Confirm model hashes and absence of
+  debug-only flags. Build 77's local Debug checks do not substitute for this.
+
+Internal TestFlight -> public release / ads:
+- Install the distribution build as an upgrade and complete record/import/export,
+  background, production push and sandbox purchase/restore checks on both phones.
+- Complete notification opt-out and schedule tests; no broadcasts during testing.
+- Qualify long imports or communicate a deliberate tested limit in the product;
+  do not leave users on an indefinite failed/stuck flow.
+- Review reminder capacity for the planned audience: the current worker claims
+  at most 50 installations/minute with a 15-minute stale window. Simulate clustered
+  due times before scaling campaigns; do not load-test by sending real alerts.
+- Fix release blockers. Record every remaining limitation, affected device/OS and
+  release decision. NOT RUN and BLOCKED never count as PASS.
+
+Out of this release plan: ARKit tracking, voice coaching, Apple Watch, background
+replacement and experimental replacement models. Do not expand scope while
+qualifying this build. Automatic leaderboard alerts are deferred pending a sender.
+
+RESULT CARD — ONE PER TEST CASE, DEVICE AND BUILD
+ID / PASS, FAIL, NOT RUN or BLOCKED / date / tester:
+Build + commit / device + iOS / guest or account / free or Pro:
+Clip + checksum / duration / dimensions / fps / codec / HDR / source location:
+Fresh or reused analysis / foreground-background timeline / thermal / battery / LPM:
+Steps / expected / actual / total + best streak / labelled misses + extra touches:
+Copy time / counting time / replay open / effect preparation / render / Photos save:
+Memory / model calls / mask coverage + cache reuse / interruptions or retries:
+Evidence paths (logs, timestamps, screen recording, source, exported file):
+Defect + severity / fix commit / retest result / unresolved release decision:
+Store new result cards under benchmarks/releases/ and generated evidence under
+artifacts/release120/. Keep credentials, push tokens and private account data out
+of committed reports. Preserve failing source footage until the issue is resolved.
+
+BASELINE EVIDENCE (repository-relative paths)
+benchmarks/releases/20261108-restore-three-second-grace-77.json
+benchmarks/releases/20261108-default-counter-75.json
+benchmarks/background-processing/20261108-iphone17-normal-start-long-video.json
+benchmarks/background-processing/20261107-storage-management.json
+benchmarks/notifications/20261108-first-session-prompt.json
+benchmarks/notifications/20261108-server-practice-reminders.json
+benchmarks/notifications/20261108-leaderboard-hooks.json
