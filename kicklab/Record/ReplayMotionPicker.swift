@@ -1,8 +1,23 @@
 import SwiftUI
 
+/// Where the analytics go in the saved video. The replay always shows them; this is the one choice
+/// for the saved clip: none, the see-through card, or full width like the replay's own readout.
+enum AnalyticsPlacement: CaseIterable {
+    case off, card, full
+
+    init(included: Bool, background: Bool) { self = !included ? .off : background ? .card : .full }
+
+    var title: String {
+        switch self {
+        case .off: String(localized: "Off", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .card: String(localized: "Card", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .full: String(localized: "Full width", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        }
+    }
+}
+
 struct ReplayMotionPicker: View {
     @Binding var style: MotionStyle
-    @Binding var showGraph: Bool
     @Binding var includeGraph: Bool
     @Binding var analyticsBackground: Bool
     let snapshot: MotionStyleSnapshot
@@ -12,48 +27,30 @@ struct ReplayMotionPicker: View {
     var showsProBadges = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    private var placement: AnalyticsPlacement { AnalyticsPlacement(included: includeGraph, background: analyticsBackground) }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Show ball motion").font(.system(size: 14, weight: .semibold))
-                Spacer()
-                Toggle("Show ball motion", isOn: Binding(get: { showGraph }, set: { visible in
-                    showGraph = visible
-                    if !visible { includeGraph = false }
-                })).labelsHidden().fixedSize()
-                    .tint(SessionStyle.mint).accessibilityLabel("Show ball motion")
-            }.padding(.horizontal, 16)
+            // Short, so the video keeps its room above the panel while choosing.
+            Text("In your saved video").font(.system(size: 14, weight: .semibold))
+                .padding(.horizontal, 16)
 
-            HStack {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Add analytics to saved video").font(.system(size: 12, weight: .semibold))
-                    Text("Ball motion, rhythm and touch interval, saved with your clip.")
-                        .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+            HStack(spacing: 10) {
+                ForEach(AnalyticsPlacement.allCases, id: \.self) { option in
+                    Button {
+                        includeGraph = option != .off
+                        if option != .off { analyticsBackground = option == .card }
+                    } label: {
+                        AnalyticsPlacementOption(placement: option, style: style, selected: placement == option)
+                    }
+                    .buttonStyle(SessionPressStyle(scale: reduceMotion ? 1 : 0.97))
+                    .accessibilityLabel(option.title)
+                    .accessibilityAddTraits(placement == option ? .isSelected : [])
+                    .accessibilityIdentifier("analytics-placement-\(option)")
                 }
-                Spacer()
-                Toggle("Add analytics to saved video", isOn: Binding(get: { includeGraph }, set: { included in
-                    includeGraph = included
-                    if included { showGraph = true }
-                }))
-                    .labelsHidden().fixedSize().tint(SessionStyle.mint)
-                    .accessibilityIdentifier("motion-include-export")
             }
             .padding(.horizontal, 16)
-
-            if includeGraph {
-                HStack {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Show background").font(.system(size: 12, weight: .semibold))
-                        Text("Off shows the simple view, like the replay.")
-                            .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
-                    }
-                    Spacer()
-                    Toggle("Show background", isOn: $analyticsBackground)
-                        .labelsHidden().fixedSize().tint(SessionStyle.mint)
-                        .accessibilityIdentifier("motion-analytics-background")
-                }
-                .padding(.horizontal, 16)
-            }
+            .sensoryFeedback(.selection, trigger: placement)
 
             VStack(spacing: 10) {
                 HStack(alignment: .center) {
@@ -78,7 +75,6 @@ struct ReplayMotionPicker: View {
                 }
                 MotionStyleGraph(style: style, snapshot: snapshot, sourceAspect: sourceAspect)
                     .frame(height: 100)
-                    .opacity(showGraph ? 1 : 0.3)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("Motion preview")
                     .accessibilityValue(style.rawValue)
@@ -100,7 +96,7 @@ struct ReplayMotionPicker: View {
                     HStack(spacing: 10) {
                         ForEach(MotionStyle.allCases) { option in
                             Button {
-                                style = option; showGraph = true
+                                style = option
                             } label: {
                                 MotionStyleOption(style: option, selected: style == option)
                                     .overlay(alignment: .topTrailing) {
@@ -121,6 +117,63 @@ struct ReplayMotionPicker: View {
             }
         }
         .sensoryFeedback(.selection, trigger: style)
+    }
+}
+
+/// A small frame of footage showing where the analytics sit in the saved video, drawn with the chosen style.
+struct AnalyticsPlacementOption: View {
+    let placement: AnalyticsPlacement
+    let style: MotionStyle
+    var selected = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            footage
+                .frame(height: 34)
+                .clipShape(.rect(cornerRadius: 6))
+                .accessibilityHidden(true)
+            HStack(spacing: 4) {
+                Text(placement.title).font(.system(size: 11, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
+                Spacer(minLength: 0)
+                if selected {
+                    Image(systemName: "checkmark.circle.fill").font(.system(size: 12))
+                        .foregroundStyle(.black, SessionStyle.mint)
+                }
+            }
+        }
+        .padding(8).frame(maxWidth: .infinity)
+        .background(Color(red: 0.05, green: 0.075, blue: 0.077), in: .rect(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(selected ? SessionStyle.mint : .white.opacity(0.14), lineWidth: selected ? 1.3 : 0.5)
+        }
+        .foregroundStyle(.white).contentShape(.rect(cornerRadius: 14))
+    }
+
+    private var footage: some View {
+        // Sky over grass, so the see-through card reads as see-through.
+        LinearGradient(colors: [Color(red: 0.2, green: 0.3, blue: 0.38), Color(red: 0.13, green: 0.36, blue: 0.2)],
+                       startPoint: .top, endPoint: .bottom)
+            .overlay(alignment: .bottom) {
+                switch placement {
+                case .off:
+                    Image(systemName: "eye.slash").font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.5))
+                        .frame(maxHeight: .infinity)
+                case .card:
+                    graph.padding(3)
+                        .background(.black.opacity(0.35), in: .rect(cornerRadius: 4))
+                        .padding(4)
+                case .full:
+                    graph.padding(.horizontal, 3).padding(.top, 8).padding(.bottom, 3)
+                        .background(LinearGradient(colors: [.clear, .black.opacity(ExportMotionGraphRenderer.shadeAlpha)],
+                                                   startPoint: .top, endPoint: .bottom))
+                }
+            }
+    }
+
+    private var graph: some View {
+        MotionStyleGraph(style: style, snapshot: MotionStyleSample.preview(for: style)).frame(height: 14)
     }
 }
 

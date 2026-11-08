@@ -110,7 +110,8 @@ struct SessionDesignReview: View {
             case "share": SaveShareView(summary: Self.summary, edit: edit, sceneModel: sceneModel, overlays: $overlays, onRecordAnother: {}, onDone: {}, onBack: {})
             case "processing": ProcessingOverlay(progress: 0.65, stepIndex: 2)
             case "processing-large-video": ProcessingOverlay(progress: 0.35, stepIndex: 1, onCancel: {},
-                videoInfo: VideoProcessingInfo(size: CGSize(width: 2160, height: 3840), fps: 119.88, duration: 16))
+                videoInfo: VideoProcessingInfo(size: CGSize(width: 2160, height: 3840), fps: 119.88, duration: 16),
+                touchesSoFar: 23)
             case "processing-cooling": ProcessingOverlay(progress: 0.65, stepIndex: 2,
                 statusMessage: "Cooling down. Your video will continue automatically.", onCancel: {}, isPaused: true)
             case "processing-demo": ProcessingDemo()

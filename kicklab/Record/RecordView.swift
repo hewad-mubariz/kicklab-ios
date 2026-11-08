@@ -344,7 +344,8 @@ struct RecordView: View {
                 ? String(localized: "Keep Juggle Dude open. Processing resumes when you return.", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : nil
         return ProcessingOverlay(progress: processingProgress, stepIndex: processingStep,
                                  statusMessage: message, onCancel: cancel, isPaused: importedVideo.isCooling,
-                                 videoInfo: importedURL == nil ? nil : importedVideo.processingInfo)
+                                 videoInfo: importedURL == nil ? nil : importedVideo.processingInfo,
+                                 touchesSoFar: importedURL == nil ? nil : importedVideo.touchCount)
     }
 
     @MainActor

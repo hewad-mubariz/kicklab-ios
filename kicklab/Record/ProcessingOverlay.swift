@@ -12,6 +12,9 @@ struct ProcessingOverlay: View {
     /// Step names and coach's tips; Power Shot passes its own.
     var labels = ProcessingLabels.juggling
     var videoInfo: VideoProcessingInfo? = nil
+    /// The running count while an imported video is analysed, so a long wait shows what has
+    /// been found. The counter never takes a touch back; the final count can only add to it.
+    var touchesSoFar: Int? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
     @State private var model = BallPathModel()
@@ -90,7 +93,21 @@ struct ProcessingOverlay: View {
                     .transition(.blurReplace(.upUp))
             }
             .animation(.smooth(duration: 0.4), value: title)
+            if stepIndex < 4, let touchesSoFar {
+                touchCount(touchesSoFar)
+                    .padding(.top, 10)
+            }
         }
+    }
+
+    private func touchCount(_ count: Int) -> some View {
+        Text(String(localized: "\(count) touches so far", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(.white.opacity(0.9))
+            .monospacedDigit()
+            .contentTransition(.numericText(value: Double(count)))
+            .animation(.snappy(duration: 0.3), value: count)
+            .accessibilityIdentifier("processing-touches-so-far")
     }
 
     private func percentage(size: CGFloat) -> some View {

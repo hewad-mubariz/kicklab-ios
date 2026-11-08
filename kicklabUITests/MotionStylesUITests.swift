@@ -53,12 +53,7 @@ final class MotionStylesUITests: ProReplayUITestCase {
             XCTAssertTrue(button.waitForExistence(timeout: 4))
             XCTAssertTrue(button.isSelected, "Selection survives closing tools")
         }
-        let toggle = app.switches["Show ball motion"]
-        XCTAssertEqual(toggle.value as? String, "1")
-        toggle.tap()
-        XCTAssertEqual(toggle.value as? String, "0")
         app.buttons["replay-close-tools"].tap()
-        XCTAssertTrue(graph.waitForNonExistence(timeout: 4))
         app.buttons["replay-reset"].tap()
         XCTAssertTrue(graph.waitForExistence(timeout: 4))
         XCTAssertEqual(graph.value as? String, "ballMotion")
@@ -107,16 +102,18 @@ final class MotionStylesUITests: ProReplayUITestCase {
         XCTAssertTrue(app.buttons["replay-customize"].waitForExistence(timeout: 20))
         app.buttons["replay-customize"].tap()
         app.buttons["replay-tool-graph"].tap()
-        let include = app.switches["motion-include-export"]
-        XCTAssertTrue(include.waitForExistence(timeout: 5))
-        XCTAssertEqual(include.value as? String, "0")
-        include.tap()
-        XCTAssertEqual(include.value as? String, "1")
-        let background = app.switches["motion-analytics-background"]
-        XCTAssertTrue(background.waitForExistence(timeout: 3), "The background choice appears with the saved analytics")
-        XCTAssertEqual(background.value as? String, "1")
-        background.tap()
-        XCTAssertEqual(background.value as? String, "0")
+        let off = app.buttons["analytics-placement-off"]
+        let card = app.buttons["analytics-placement-card"]
+        let full = app.buttons["analytics-placement-full"]
+        XCTAssertTrue(off.waitForExistence(timeout: 5))
+        XCTAssertTrue(off.isSelected, "Nothing is added to the saved video until chosen")
+        attach(app, "Analytics placement - off")
+        card.tap()
+        XCTAssertTrue(card.isSelected)
+        attach(app, "Analytics placement - card")
+        full.tap()
+        XCTAssertTrue(full.isSelected)
+        XCTAssertFalse(card.isSelected)
         app.buttons["motion-style-comet"].tap()
         attach(app, "Include Comet graph in saved video")
         app.buttons["replay-close-tools"].tap()
@@ -125,13 +122,14 @@ final class MotionStylesUITests: ProReplayUITestCase {
         XCTAssertTrue(graph.label.contains("included in saved video"))
         app.buttons["replay-customize"].tap()
         app.buttons["replay-tool-graph"].tap()
-        XCTAssertTrue(app.buttons["motion-style-comet"].waitForExistence(timeout: 5))
-        XCTAssertEqual(include.value as? String, "1")
-        app.switches["Show ball motion"].tap()
-        XCTAssertEqual(app.switches["Show ball motion"].value as? String, "0")
-        XCTAssertEqual(include.value as? String, "0")
+        XCTAssertTrue(full.waitForExistence(timeout: 5))
+        XCTAssertTrue(full.isSelected, "The choice survives closing tools")
+        off.tap()
+        XCTAssertTrue(off.isSelected)
         app.buttons["replay-close-tools"].tap()
-        XCTAssertTrue(graph.waitForNonExistence(timeout: 4))
+        // The replay keeps its own graph; only the saved video loses it.
+        XCTAssertTrue(graph.waitForExistence(timeout: 4))
+        XCTAssertFalse(graph.label.contains("included in saved video"))
     }
 
     @MainActor

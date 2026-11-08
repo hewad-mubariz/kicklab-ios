@@ -64,7 +64,7 @@ nonisolated enum BallSwapEffect: String, CaseIterable, Identifiable, Hashable, S
     }
 
     /// Seconds the moment stays on screen after the touch.
-    static let duration = 0.5
+    static let duration = 0.7
 
     /// The sound each moment makes unless the person picks another. Every effect has its own.
     var defaultSound: BallSwapSound {
@@ -87,10 +87,10 @@ nonisolated enum BallSwapEffect: String, CaseIterable, Identifiable, Hashable, S
     func ballScale(age: Double) -> Double {
         let a = min(1, max(0, age))
         switch self {
-        case .pop: return 1 + 0.24 * sin(a * .pi) * (1 - a * 0.5)
-        case .halo: return 1 + 0.1 * sin(a * .pi)
-        case .flash: return 1 + 0.08 * max(0, 1 - a * 3)
-        case .shatter: return 1 - 0.12 * max(0, 1 - a * 4)
+        case .pop: return 1 + 0.34 * sin(a * .pi) * (1 - a * 0.5)
+        case .halo: return 1 + 0.15 * sin(a * .pi)
+        case .flash: return 1 + 0.12 * max(0, 1 - a * 3)
+        case .shatter: return 1 - 0.16 * max(0, 1 - a * 4)
         default: return 1
         }
     }
@@ -325,98 +325,125 @@ nonisolated enum BallSwapRenderer {
         return value - floor(value)
     }
     private static func ease(_ t: Double) -> Double { 1 - (1 - t) * (1 - t) }
+    /// Holds near full strength through the first part of the moment, then falls away, so the
+    /// change still reads at playback speed instead of fading as it starts.
+    private static func fade(_ t: Double) -> Double { let t = min(1, max(0, t)); return 1 - t * t }
 
-    /// Concentric filled discs stand in for a Gaussian glow without a blur pass.
-    private static func glow(_ ctx: CGContext, _ center: CGPoint, _ radius: CGFloat, _ rgb: SIMD3<Double>, _ alpha: Double) {
-        guard alpha > 0.002 else { return }
-        ctx.setBlendMode(.plusLighter)
-        for step in 0..<5 {
-            let t = Double(step) / 4
-            let r = radius * (0.35 + 0.65 * t)
-            ctx.setFillColor(color(rgb, alpha * 0.28 * (1 - t * 0.8)))
-            ctx.fillEllipse(in: CGRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
-        }
+    /// A soft disc that falls to nothing at `radius`: a Gaussian-like glow without a blur pass.
+    /// `profile` is the strength at each stop out from the centre.
+    private static func puff(_ ctx: CGContext, _ center: CGPoint, _ radius: CGFloat, _ rgb: SIMD3<Double>, _ alpha: Double,
+                             profile: [(location: CGFloat, strength: Double)], blend: CGBlendMode) {
+        guard alpha > 0.002, radius > 0,
+              let gradient = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB),
+                                        colors: profile.map { color(rgb, alpha * $0.strength) } as CFArray,
+                                        locations: profile.map(\.location)) else { return }
+        ctx.setBlendMode(blend)
+        ctx.drawRadialGradient(gradient, startCenter: center, startRadius: 0, endCenter: center, endRadius: radius, options: [])
         ctx.setBlendMode(.normal)
     }
 
-    private static func ring(_ ctx: CGContext, _ center: CGPoint, _ radius: CGFloat, width: CGFloat, _ rgb: SIMD3<Double>, _ alpha: Double) {
+    /// Light added around the ball; brightest over the inner third, as stacked discs were, without their rings.
+    private static func glow(_ ctx: CGContext, _ center: CGPoint, _ radius: CGFloat, _ rgb: SIMD3<Double>, _ alpha: Double) {
+        puff(ctx, center, radius, rgb, alpha, profile: [(0, 0.84), (0.35, 0.8), (0.6, 0.4), (0.85, 0.12), (1, 0)],
+             blend: .plusLighter)
+    }
+
+    /// A bright ring over a faint dark one, so a white ring still reads against a white wall or sky.
+    private static func ring(_ ctx: CGContext, _ center: CGPoint, _ radius: CGFloat, width: CGFloat, _ rgb: SIMD3<Double>,
+                             _ alpha: Double, backed: Bool = true) {
         guard alpha > 0.002, radius > 0 else { return }
+        let rect = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
+        if backed {
+            ctx.setBlendMode(.normal)
+            ctx.setStrokeColor(color(rgb * 0.25, alpha * 0.3))
+            ctx.setLineWidth(max(1.5, width * 2))
+            ctx.strokeEllipse(in: rect)
+        }
         ctx.setBlendMode(.plusLighter)
         ctx.setStrokeColor(color(rgb, alpha))
         ctx.setLineWidth(max(0.5, width))
-        ctx.strokeEllipse(in: CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2))
+        ctx.strokeEllipse(in: rect)
+        ctx.setBlendMode(.normal)
+    }
+
+    /// Strokes every segment as one path, so crossings don't double up.
+    private static func stroke(_ ctx: CGContext, _ segments: [(CGPoint, CGPoint)], width: CGFloat, _ color: CGColor,
+                               blend: CGBlendMode) {
+        ctx.setBlendMode(blend)
+        ctx.setStrokeColor(color)
+        ctx.setLineWidth(max(0.5, width))
+        for (start, end) in segments { ctx.move(to: start); ctx.addLine(to: end) }
+        ctx.strokePath()
         ctx.setBlendMode(.normal)
     }
 
     // MARK: - Effects
 
     private static func pop(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ age: Double, _ tint: SIMD3<Double>) {
-        let u = ease(age)
-        glow(ctx, c, r * (1.3 + 0.6 * u), mix(tint, white, 0.5), 0.5 * (1 - u))
-        ring(ctx, c, r * (1.05 + 1.3 * u), width: r * 0.12 * (1 - u) + 0.8, white, 0.9 * (1 - u))
+        let u = ease(age), f = fade(age)
+        glow(ctx, c, r * (1.5 + 1.1 * u), mix(tint, white, 0.5), 0.8 * f)
+        ring(ctx, c, r * (1.05 + 1.4 * u), width: r * 0.12 * (1 - u) + 0.8, mix(tint, white, 0.35), 0.7 * f)
+        ring(ctx, c, r * (1.05 + 2.3 * u), width: r * 0.2 * (1 - u) + 1, white, f)
     }
 
     private static func flash(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ age: Double, _ tint: SIMD3<Double>) {
-        let a = max(0, 1 - age * 1.6)
+        let a = max(0, 1 - age * 1.3), f = fade(age)
         ctx.setBlendMode(.plusLighter)
-        ctx.setFillColor(color(white, 0.95 * a * a))
-        let fr = r * (1.15 + 1.1 * age)
+        ctx.setFillColor(color(white, a * a))
+        let fr = r * (1.25 + 1.5 * age)
         ctx.fillEllipse(in: CGRect(x: c.x - fr, y: c.y - fr, width: fr * 2, height: fr * 2))
         ctx.setBlendMode(.normal)
-        glow(ctx, c, r * (2 + 1.4 * age), mix(tint, white, 0.3), 0.6 * (1 - age))
-        ring(ctx, c, r * (1 + 2.4 * ease(age)), width: 1.5, mix(tint, white, 0.6), 0.7 * (1 - age))
+        glow(ctx, c, r * (2.4 + 2 * age), mix(tint, white, 0.3), 0.85 * f)
+        ring(ctx, c, r * (1 + 3.4 * ease(age)), width: r * 0.1 * (1 - age) + 1.5, mix(tint, white, 0.6), 0.9 * f)
     }
 
     private static func burst(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ age: Double, _ tint: SIMD3<Double>, seed: Int) {
-        let u = ease(age), rays = 14
-        ctx.setBlendMode(.plusLighter)
-        ctx.setLineCap(.round)
-        for i in 0..<rays {
+        let u = ease(age), f = fade(age), rays = 16
+        let segments = (0..<rays).map { i -> (CGPoint, CGPoint) in
             let jitter = noise(seed, i) * 0.4 - 0.2
             let angle = Double(i) / Double(rays) * 2 * .pi + jitter
-            let length = r * (0.9 + 2.6 * u) * (0.75 + 0.5 * noise(seed, i + 40))
-            let inner = r * (1.05 + 1.6 * u)
+            let length = r * (1.2 + 3.6 * u) * (0.75 + 0.5 * noise(seed, i + 40))
+            let inner = r * (1.05 + 2.2 * u)
             let dx = cos(angle), dy = sin(angle)
-            let start = CGPoint(x: c.x + inner * dx, y: c.y + inner * dy)
-            let end = CGPoint(x: c.x + (inner + length * 0.6) * dx, y: c.y + (inner + length * 0.6) * dy)
-            let fade = (1 - u) * (1 - u)
-            ctx.setStrokeColor(color(tint, 0.8 * fade))
-            ctx.setLineWidth(r * 0.16 * (1 - u) + 0.6)
-            ctx.move(to: start); ctx.addLine(to: end); ctx.strokePath()
-            ctx.setStrokeColor(color(white, 0.9 * fade))
-            ctx.setLineWidth(r * 0.05 * (1 - u) + 0.4)
-            ctx.move(to: start); ctx.addLine(to: end); ctx.strokePath()
+            return (CGPoint(x: c.x + inner * dx, y: c.y + inner * dy),
+                    CGPoint(x: c.x + (inner + length * 0.6) * dx, y: c.y + (inner + length * 0.6) * dy))
         }
-        ctx.setBlendMode(.normal)
-        glow(ctx, c, r * 1.4, tint, 0.4 * (1 - u))
+        let width = r * 0.24 * (1 - u) + 0.9
+        ctx.setLineCap(.round)
+        // A dark line under each ray, so the rays also read on a bright background.
+        stroke(ctx, segments, width: width * 1.8, color(tint * 0.25, 0.3 * f), blend: .normal)
+        stroke(ctx, segments, width: width, color(tint, 0.95 * f), blend: .plusLighter)
+        stroke(ctx, segments, width: width * 0.35, color(white, f), blend: .plusLighter)
+        glow(ctx, c, r * 1.9, tint, 0.6 * f)
     }
 
     private static func ripple(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ age: Double, _ tint: SIMD3<Double>) {
         for k in 0..<3 {
-            let delay = Double(k) * 0.14
+            let delay = Double(k) * 0.12
             let u = min(1, max(0, (age - delay) / (1 - delay)))
             guard u > 0, u < 1 else { continue }
             let e = ease(u)
-            ring(ctx, c, r * (1 + 2.8 * e), width: r * 0.14 * (1 - e) + 0.8,
-                 k == 0 ? white : mix(tint, white, 0.35), (1 - e) * (k == 0 ? 0.9 : 0.6))
+            ring(ctx, c, r * (1 + 4 * e), width: r * 0.22 * (1 - e) + 1,
+                 k == 0 ? white : mix(tint, white, 0.35), fade(u) * (k == 0 ? 1 : 0.75))
         }
+        glow(ctx, c, r * 1.7, tint, 0.45 * fade(age))
     }
 
     private static func sparkle(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ age: Double, _ tint: SIMD3<Double>, seed: Int) {
-        let u = ease(age)
+        let u = ease(age), f = fade(age)
         ctx.setBlendMode(.plusLighter)
-        for i in 0..<18 {
+        for i in 0..<24 {
             let angle = noise(seed, i) * 2 * .pi
-            let speed = 1.6 + 2 * noise(seed, i + 100)
+            let speed = 2 + 2.6 * noise(seed, i + 100)
             let distance = r * (0.9 + speed * u)
-            let fall = r * 1.5 * u * u
+            let fall = r * 2 * u * u
             let p = CGPoint(x: c.x + cos(angle) * distance, y: c.y + sin(angle) * distance + fall)
-            let size = r * (0.12 + 0.14 * noise(seed, i + 200)) * (1 - u * 0.7)
-            let alpha = (1 - u) * (0.7 + 0.3 * sin(age * 50 + Double(i)))
+            let size = r * (0.2 + 0.2 * noise(seed, i + 200)) * (1 - u * 0.6)
+            let alpha = f * (0.75 + 0.25 * sin(age * 50 + Double(i)))
             star(ctx, p, size, i % 3 == 0 ? white : mix(tint, white, 0.4), alpha)
         }
         ctx.setBlendMode(.normal)
-        glow(ctx, c, r * 1.5, tint, 0.35 * (1 - u))
+        glow(ctx, c, r * 1.9, tint, 0.55 * f)
     }
 
     private static func star(_ ctx: CGContext, _ p: CGPoint, _ size: CGFloat, _ rgb: SIMD3<Double>, _ alpha: Double) {
@@ -434,46 +461,44 @@ nonisolated enum BallSwapRenderer {
     }
 
     private static func shatter(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ age: Double, _ tint: SIMD3<Double>, seed: Int) {
-        let u = ease(age), shards = 10
+        let u = ease(age), f = fade(age), shards = 12
         for i in 0..<shards {
             let angle = Double(i) / Double(shards) * 2 * .pi + noise(seed, i) * 0.5
-            let distance = r * (0.6 + 2.2 * u * (0.8 + 0.4 * noise(seed, i + 50)))
-            let fall = r * 1.2 * u * u
+            let distance = r * (0.6 + 3 * u * (0.8 + 0.4 * noise(seed, i + 50)))
+            let fall = r * 1.6 * u * u
             let p = CGPoint(x: c.x + cos(angle) * distance, y: c.y + sin(angle) * distance + fall)
             let spin = angle + u * (noise(seed, i + 90) - 0.5) * 9
-            let size = r * (0.3 + 0.25 * noise(seed, i + 130)) * (1 - 0.3 * u)
-            let alpha = pow(1 - u, 1.3)
+            let size = r * (0.38 + 0.3 * noise(seed, i + 130)) * (1 - 0.3 * u)
             ctx.saveGState()
             ctx.translateBy(x: p.x, y: p.y); ctx.rotate(by: spin)
-            ctx.setFillColor(color(mix(tint, white, 0.25), 0.9 * alpha))
+            ctx.setFillColor(color(mix(tint, white, 0.25), 0.95 * f))
             ctx.move(to: CGPoint(x: 0, y: -size))
             ctx.addLine(to: CGPoint(x: size * 0.8, y: size * 0.6))
             ctx.addLine(to: CGPoint(x: -size * 0.7, y: size * 0.5))
             ctx.closePath(); ctx.fillPath()
-            ctx.setStrokeColor(color(white, 0.7 * alpha)); ctx.setLineWidth(0.8)
+            ctx.setStrokeColor(color(white, 0.8 * f)); ctx.setLineWidth(max(0.8, r * 0.04))
             ctx.move(to: CGPoint(x: 0, y: -size)); ctx.addLine(to: CGPoint(x: size * 0.8, y: size * 0.6)); ctx.strokePath()
             ctx.restoreGState()
         }
-        glow(ctx, c, r * 1.3, white, 0.45 * max(0, 1 - age * 3))
+        glow(ctx, c, r * 1.7, white, 0.6 * max(0, 1 - age * 2.5))
     }
 
     private static func halo(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ age: Double, _ tint: SIMD3<Double>) {
         // Blooms out over the first half, then closes back onto the ball.
         let bloom = age < 0.5 ? ease(age * 2) : 1 - ease((age - 0.5) * 2) * 0.85
-        let radius = r * (1.1 + 1.0 * bloom)
+        let radius = r * (1.1 + 1.5 * bloom)
         let alpha = sin(age * .pi)
-        ctx.setBlendMode(.plusLighter)
         for step in 0..<6 {
             let t = Double(step) / 5
-            ring(ctx, c, radius * (1 + 0.18 * t), width: r * 0.22 * (1 - t) + 1,
-                 mix(tint, white, 0.3), alpha * 0.55 * (1 - t * 0.85))
+            // One dark backing under the band; one per ring would dim the rings inside it.
+            ring(ctx, c, radius * (1 + 0.18 * t), width: r * 0.3 * (1 - t) + 1.2,
+                 mix(tint, white, 0.3), alpha * 0.75 * (1 - t * 0.85), backed: step == 0)
         }
-        ctx.setBlendMode(.normal)
-        glow(ctx, c, r * 1.8, tint, 0.35 * alpha)
+        glow(ctx, c, r * 2.3, tint, 0.5 * alpha)
     }
 
     private static func pixel(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ age: Double, _ from: SIMD3<Double>, _ to: SIMD3<Double>, seed: Int) {
-        let u = ease(age), cells = 6
+        let u = ease(age), f = fade(age), cells = 6
         let block = r * 2.2 / CGFloat(cells)
         for row in 0..<cells { for col in 0..<cells {
             let lane = row * cells + col
@@ -481,59 +506,60 @@ nonisolated enum BallSwapRenderer {
             let oy = (CGFloat(row) + 0.5 - CGFloat(cells) / 2) * block
             let distance = hypot(ox, oy)
             guard distance < r * 1.15 else { continue }
-            let drift = 1 + u * (1.4 + 1.2 * noise(seed, lane))
+            let drift = 1 + u * (2 + 1.6 * noise(seed, lane))
             let p = CGPoint(x: c.x + ox * drift, y: c.y + oy * drift)
             let shade = noise(seed, lane + 300)
             let rgb = mix(mix(from, to, u), white, shade * 0.5)
-            let alpha = (1 - u) * (0.55 + 0.45 * noise(seed, lane + 600))
-            let size = block * (1 - u * 0.6)
+            let alpha = f * (0.7 + 0.3 * noise(seed, lane + 600))
+            let size = block * (1 - u * 0.5)
             ctx.setFillColor(color(rgb, alpha))
             ctx.fill(CGRect(x: p.x - size / 2, y: p.y - size / 2, width: size, height: size))
         } }
     }
 
     private static func smoke(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ age: Double, seed: Int) {
-        let u = ease(age)
-        for i in 0..<7 {
+        let u = ease(age), f = fade(age)
+        for i in 0..<9 {
             let angle = noise(seed, i) * 2 * .pi
-            let spread = r * (0.5 + 0.9 * u) * (0.5 + noise(seed, i + 30))
-            let rise = r * (0.4 + 1.9 * u) * (0.7 + 0.6 * noise(seed, i + 60))
+            let spread = r * (0.6 + 1.3 * u) * (0.5 + noise(seed, i + 30))
+            let rise = r * (0.5 + 2.6 * u) * (0.7 + 0.6 * noise(seed, i + 60))
             let p = CGPoint(x: c.x + cos(angle) * spread + sin(u * 6 + Double(i)) * r * 0.15,
                             y: c.y - rise + sin(angle) * spread * 0.4)
-            let radius = r * (0.4 + 0.5 * noise(seed, i + 90)) * (1 + 1.4 * u)
-            let alpha = 0.5 * (1 - u) * (1 - u)
-            for step in 0..<4 {
-                let t = Double(step) / 3, rr = radius * (0.45 + 0.55 * t)
-                ctx.setFillColor(color(SIMD3(0.92, 0.94, 0.97), alpha * 0.35 * (1 - t * 0.7)))
-                ctx.fillEllipse(in: CGRect(x: p.x - rr, y: p.y - rr, width: rr * 2, height: rr * 2))
-            }
+            let radius = r * (0.5 + 0.6 * noise(seed, i + 90)) * (1 + 1.7 * u)
+            puff(ctx, p, radius, SIMD3(0.92, 0.94, 0.97), 0.55 * f, profile: [(0, 1), (0.4, 0.75), (1, 0)], blend: .normal)
         }
     }
 
     private static func lightning(_ ctx: CGContext, _ c: CGPoint, _ r: CGFloat, _ age: Double, _ tint: SIMD3<Double>, seed: Int) {
-        let visible = max(0, 1 - age * 1.4)
+        let visible = max(0, 1 - age * 1.15)
         guard visible > 0 else { return }
-        let flicker = 0.55 + 0.45 * abs(sin(age * 46 + Double(seed)))
-        ctx.setBlendMode(.plusLighter)
-        ctx.setLineCap(.round); ctx.setLineJoin(.round)
-        for bolt in 0..<5 {
+        let flicker = 0.6 + 0.4 * abs(sin(age * 46 + Double(seed)))
+        let bolts = (0..<6).map { bolt -> [CGPoint] in
             let base = noise(seed, bolt) * 2 * .pi
-            let length = r * (1.6 + 1.2 * noise(seed, bolt + 20))
+            let length = r * (2.2 + 1.6 * noise(seed, bolt + 20))
             var points: [CGPoint] = [CGPoint(x: c.x + cos(base) * r * 0.95, y: c.y + sin(base) * r * 0.95)]
             for segment in 1...6 {
                 let t = Double(segment) / 6
-                let wobble = (noise(seed, bolt * 10 + segment) - 0.5) * r * 0.9
+                let wobble = (noise(seed, bolt * 10 + segment) - 0.5) * r
                 let angle = base + (noise(seed, bolt + 40) - 0.5) * 0.6
                 points.append(CGPoint(x: c.x + cos(angle) * (r + length * t) - sin(angle) * wobble,
                                       y: c.y + sin(angle) * (r + length * t) + cos(angle) * wobble))
             }
-            for (width, rgb, alpha) in [(r * 0.2, tint, 0.45), (r * 0.08, mix(tint, white, 0.6), 0.8), (r * 0.03, white, 1.0)] {
-                ctx.setStrokeColor(color(rgb, alpha * visible * flicker))
-                ctx.setLineWidth(max(0.5, width))
-                ctx.addLines(between: points); ctx.strokePath()
-            }
+            return points
+        }
+        ctx.setLineCap(.round); ctx.setLineJoin(.round)
+        // A dark line under the bolts first, so they also read on a bright background.
+        let passes: [(width: CGFloat, rgb: SIMD3<Double>, alpha: Double, blend: CGBlendMode)] = [
+            (r * 0.42, tint * 0.2, 0.3, .normal), (r * 0.28, tint, 0.5, .plusLighter),
+            (r * 0.11, mix(tint, white, 0.6), 0.85, .plusLighter), (r * 0.045, white, 1, .plusLighter)]
+        for pass in passes {
+            ctx.setBlendMode(pass.blend)
+            ctx.setStrokeColor(color(pass.rgb, pass.alpha * visible * flicker))
+            ctx.setLineWidth(max(0.5, pass.width))
+            for points in bolts { ctx.addLines(between: points) }
+            ctx.strokePath()
         }
         ctx.setBlendMode(.normal)
-        glow(ctx, c, r * 1.6, tint, 0.5 * visible * flicker)
+        glow(ctx, c, r * 2.1, tint, 0.65 * visible * flicker)
     }
 }

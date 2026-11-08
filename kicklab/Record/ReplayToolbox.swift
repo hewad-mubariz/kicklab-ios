@@ -27,7 +27,6 @@ struct ReplayToolbox: View {
     @Binding var timer: TimerOverlayItem
     @Binding var milestones: Bool
     @Binding var milestoneSound: Bool
-    @Binding var showGraph: Bool
     @Binding var includeGraph: Bool
     @Binding var analyticsBackground: Bool
     @Binding var motionStyle: MotionStyle
@@ -328,7 +327,7 @@ struct ReplayToolbox: View {
         case .effects: effectsPage
         case .timer: timerPage
         case .graph:
-            ReplayMotionPicker(style: $motionStyle, showGraph: $showGraph, includeGraph: $includeGraph,
+            ReplayMotionPicker(style: $motionStyle, includeGraph: $includeGraph,
                                analyticsBackground: $analyticsBackground, snapshot: motionSnapshot,
                                sourceAspect: sourceAspect, isPlaying: isPlaying, onTogglePlayback: onTogglePlayback, showsProBadges: !isPro)
         case .counter: counterPage

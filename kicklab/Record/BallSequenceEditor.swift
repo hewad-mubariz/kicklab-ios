@@ -381,7 +381,8 @@ struct SwapMomentPreview: View {
 
     private func draw(_ gc: GraphicsContext, size: CGSize, at seconds: Double) {
         let center = CGPoint(x: size.width / 2, y: size.height / 2)
-        let radius = size.width * 0.19
+        // Small enough that the moment's rings and rays stay inside the tile.
+        let radius = size.width * 0.15
         let age = seconds / BallSwapEffect.duration
         let incoming = seconds >= 0
         let scale = incoming && age < 1 ? effect.ballScale(age: age) : 1

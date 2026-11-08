@@ -25,7 +25,8 @@ struct ExportMotionGraphCard: View {
                 }
                 .padding(ExportMotionGraphRenderer.padding(background: true))
                 .frame(width: panelWidth, height: panelHeight, alignment: .top)
-                .background(.black.opacity(0.72), in: .rect(cornerRadius: 16))
+                // See-through, so the footage stays in view; just dark enough for the small labels on bright grass.
+                .background(.black.opacity(0.35), in: .rect(cornerRadius: 16))
             } else {
                 VStack(alignment: .leading, spacing: 12) {
                     MotionGraphHeader(style: style, graph: snapshot.graph)

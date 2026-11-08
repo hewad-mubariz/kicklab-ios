@@ -111,7 +111,7 @@ struct ReplayEffectsView: View {
                         if showToolbox {
                             ReplayToolbox(counter: counterBinding, edit: lookBinding(\.edit),
                                           timer: timerBinding, milestones: $overlays.milestones,
-                                          milestoneSound: $overlays.milestoneSound, showGraph: lookBinding(\.showGraph),
+                                          milestoneSound: $overlays.milestoneSound,
                                           includeGraph: lookBinding(\.overlays.graph.enabled), analyticsBackground: lookBinding(\.overlays.graph.background),
                                           motionStyle: lookBinding(\.overlays.graph.style),
                                           motionSnapshot: motionTimeline.snapshot(at: currentTime, duration: duration),
