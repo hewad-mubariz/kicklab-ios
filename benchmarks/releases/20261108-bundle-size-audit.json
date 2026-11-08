@@ -1,0 +1,121 @@
+{
+  "date": "2026-11-08T23:26:31.987193+01:00",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "basis": "Uncompressed archived Release app file sizes; decimal MB = 1,000,000 bytes. Not measured TestFlight download or installed-device storage.",
+  "build_36": {
+    "bytes": 143263590,
+    "source": "artifacts/releases/20261101-editor-1.2.0-37/bundle-size-comparison.json",
+    "fresh_measurement": false
+  },
+  "build_39": {
+    "bytes": 177841881,
+    "source": "artifacts/releases/20261103-1.2.0-39/JuggleDude-1.2.0-39.xcarchive/Products/Applications/Juggle Dude.app",
+    "fresh_measurement": true
+  },
+  "build_77": {
+    "bytes": 220792256,
+    "source": "artifacts/releases/20261108-1.2.0-77/JuggleDude-1.2.0-77.xcarchive/Products/Applications/Juggle Dude.app",
+    "fresh_measurement": true
+  },
+  "growth_39_to_77": {
+    "bytes": 42950375,
+    "percent": 24.150877598961067
+  },
+  "largest_changes": [
+    {
+      "name": "Juggle Dude",
+      "build_39_bytes": 15852528,
+      "build_77_bytes": 49025168,
+      "delta_bytes": 33172640
+    },
+    {
+      "name": "pose_landmarker_full.task",
+      "build_39_bytes": 0,
+      "build_77_bytes": 9398198,
+      "delta_bytes": 9398198
+    },
+    {
+      "name": "Frameworks",
+      "build_39_bytes": 9784918,
+      "build_77_bytes": 10109764,
+      "delta_bytes": 324846
+    },
+    {
+      "name": "fr.lproj",
+      "build_39_bytes": 134714,
+      "build_77_bytes": 146374,
+      "delta_bytes": 11660
+    },
+    {
+      "name": "es.lproj",
+      "build_39_bytes": 127303,
+      "build_77_bytes": 138741,
+      "delta_bytes": 11438
+    },
+    {
+      "name": "pt-BR.lproj",
+      "build_39_bytes": 126927,
+      "build_77_bytes": 137894,
+      "delta_bytes": 10967
+    },
+    {
+      "name": "de.lproj",
+      "build_39_bytes": 127420,
+      "build_77_bytes": 138334,
+      "delta_bytes": 10914
+    },
+    {
+      "name": "_CodeSignature",
+      "build_39_bytes": 67840,
+      "build_77_bytes": 74566,
+      "delta_bytes": 6726
+    },
+    {
+      "name": "MediaPipeTasks_MediaPipeTasksCommon.bundle",
+      "build_39_bytes": 0,
+      "build_77_bytes": 1510,
+      "delta_bytes": 1510
+    },
+    {
+      "name": "en.lproj",
+      "build_39_bytes": 4786,
+      "build_77_bytes": 5873,
+      "delta_bytes": 1087
+    },
+    {
+      "name": "Info.plist",
+      "build_39_bytes": 3052,
+      "build_77_bytes": 3247,
+      "delta_bytes": 195
+    },
+    {
+      "name": "embedded.mobileprovision",
+      "build_39_bytes": 13009,
+      "build_77_bytes": 13203,
+      "delta_bytes": 194
+    }
+  ],
+  "findings": {
+    "detector_bytes_unchanged": true,
+    "ball_material_bytes_unchanged": true,
+    "image_assets_bytes_unchanged": true,
+    "bundled_video_files": [],
+    "bundled_screenshot_or_benchmark_files": [],
+    "duplicate_files_over_1MB": [],
+    "mediapipe_common_dependencies": [
+      "CommonBinary",
+      "TaskGraphsBinary",
+      "Vision",
+      "Text",
+      "Audio",
+      "Retrieval",
+      "Decision"
+    ],
+    "all_load_in_final_linker": true,
+    "dependency_scope_source": "Vendor/MediaPipeTasks/Package.swift"
+  },
+  "interpretation": "The new pose model adds 9.4 MB. Executable code increased 33.2 MB, consistent with the new MediaPipe integration plus application changes; exact MediaPipe-only contribution requires a controlled comparison build. Extra framework directories alone grew only 0.325 MB.",
+  "recommended_next_check": "Evaluate a narrower pose-only MediaPipe integration in an isolated build, measure the Release archive and validate actual pose/counting. Preserve required calculator registrations; do not blindly remove all_load. Savings are not yet proven.",
+  "changes_made_to_app_code": false,
+  "screenshot_draft_work": "Paused at user request. Version 1.2.0 created in Prepare for Submission; no screenshots uploaded or review submission performed during this size audit."
+}
