@@ -46,12 +46,18 @@ final class StreakAbsenceFootageReplayTests: XCTestCase {
         }
     }
 
-    func testRealStopsEndTheStreakOnEveryRunOfTheClip() throws {
+    func testRecordedDeparturesRespectTheFiveSecondGrace() throws {
+        // Original labels describe physical stops under the previous 3 s policy.
+        // Eleven contain only 3.2–4.1 s of sustained absence; the remaining exit
+        // contains 8.9 s. Keep these frames and their original labels unchanged.
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "streak-absence-five-second-expectations", withExtension: "json"))
+        let expected = try JSONDecoder().decode([String: Bool].self, from: Data(contentsOf: url))
         let stops = try cases().filter { $0.expect == "end" }
         XCTAssertGreaterThanOrEqual(stops.count, 6)
         for item in stops {
             let result = assess(item)
-            XCTAssertFalse(result.decisions.isEmpty, "\(item.clip) \(item.before)-\(item.after): \(item.why)")
+            let ends = try XCTUnwrap(expected["\(item.clip):\(item.before):\(item.after)"])
+            XCTAssertEqual(!result.decisions.isEmpty, ends, "\(item.clip) \(item.before)-\(item.after): \(item.why)")
             XCTAssertTrue(Set(result.decisions.map(\.kind)).isSubset(of: [.ballOutOfView, .playerOutOfView]), "\(item.clip)")
         }
     }

@@ -15,21 +15,21 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     private func emptyVideo(_ window: StreakVisibilityEvidence.Window) -> [StreakVisibilityEvidence.Sample] {
         stride(from: window.startMS+250, to: window.endMS, by: 500).map { .init(timeMS: $0, personVisible: false, ballVisible: false) }
     }
-    private func assess(_ source: StreakVisibilityEvidence, touches: [Double] = [1, 2, 6, 7],
+    private func assess(_ source: StreakVisibilityEvidence, touches: [Double] = [1, 2, 8, 9],
                         boundaries: [Double] = [], recheck: (StreakVisibilityEvidence.Window) -> [StreakVisibilityEvidence.Sample] = { _ in [] }) -> StreakVisibilityEvidence.Assessment {
         source.assess(touchTimes: touches, existingBoundaries: boundaries, recheck: recheck)
     }
 
     func testSustainedFreshAbsenceSplitsRunsWithoutChangingTotal() throws {
-        let touches = [1.0, 2, 6, 7, 8]
-        let result = assess(evidence(samples(2_250...5_750, visible: false)), touches: touches, recheck: emptyVideo)
+        let touches = [1.0, 2, 8, 9, 10]
+        let result = assess(evidence(samples(2_250...7_750, visible: false)), touches: touches, recheck: emptyVideo)
         XCTAssertEqual(result.decisions.map(\.kind), [.playerOutOfView])
         XCTAssertEqual(result.secondLooks, 1)
         var review = TouchReviewEvidence()
         for cut in result.decisions { review.append(time: Double(cut.timeMS)/1000, kind: cut.kind) }
-        let persisted = try XCTUnwrap(LeaderboardTouchReview.make(evidence: review, touchTimes: touches, duration: 10))
+        let persisted = try XCTUnwrap(LeaderboardTouchReview.make(evidence: review, touchTimes: touches, duration: 12))
         let restored = try JSONDecoder().decode(LeaderboardTouchReview.self, from: JSONEncoder().encode(persisted))
-        let streak = RankedStreakProposal.suggest(touchTimes: touches, boundaries: restored.streakBoundaries, duration: 10)
+        let streak = RankedStreakProposal.suggest(touchTimes: touches, boundaries: restored.streakBoundaries, duration: 12)
         XCTAssertEqual(streak?.count, 3)
         XCTAssertEqual(touches.count, 5)
         XCTAssertEqual(restored, persisted)
@@ -57,22 +57,33 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
 
     // MARK: The limit
 
-    func testTheLimitIsThreeSeconds() {
-        XCTAssertEqual(StreakVisibilityEvidence.graceMS, 3_000)
+    func testFourSecondDepartureKeepsTheStreakForPlayerAndBall() {
+        for playerVisible in [false, true] {
+            let observations = samples(2_100...6_100, step: 100, visible: playerVisible, ball: false)
+                + samples(6_200...7_900, step: 100, visible: true)
+            let result = assess(evidence(observations)) { _ in
+                XCTFail("A four-second absence is inside the five-second grace period"); return []
+            }
+            XCTAssertTrue(result.decisions.isEmpty)
+        }
+    }
+
+    func testTheLimitIsFiveSeconds() {
+        XCTAssertEqual(StreakVisibilityEvidence.graceMS, 5_000)
     }
 
     func testPlayerMissingJustUnderTheLimitKeepsTheStreak() {
-        let observations = samples(2_100...5_000, step: 100, visible: false) + samples(5_100...6_000, step: 100, visible: true)
+        let observations = samples(2_100...7_000, step: 100, visible: false) + samples(7_100...8_000, step: 100, visible: true)
         XCTAssertTrue(assess(evidence(observations)).decisions.isEmpty)
     }
 
     func testPlayerMissingForTheLimitEndsTheStreak() {
-        let observations = samples(2_100...5_100, step: 100, visible: false) + samples(5_200...6_000, step: 100, visible: true)
+        let observations = samples(2_100...7_100, step: 100, visible: false) + samples(7_200...8_000, step: 100, visible: true)
         XCTAssertEqual(assess(evidence(observations), recheck: emptyVideo).decisions.map(\.kind), [.playerOutOfView])
     }
 
     func testPlayerSeenInTheSavedVideoOverrulesALiveMiss() {
-        let live = samples(2_100...5_900, step: 100, visible: false)
+        let live = samples(2_100...7_900, step: 100, visible: false)
         let result = assess(evidence(live)) { window in
             self.samples(window.startMS+250...window.endMS-1, step: 500, visible: true)
         }
@@ -81,20 +92,20 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     }
 
     func testUnreadableVideoNeverEndsAStreakForAMissingPlayer() {
-        let result = assess(evidence(samples(2_100...5_900, step: 100, visible: false))) { _ in [] }
+        let result = assess(evidence(samples(2_100...7_900, step: 100, visible: false))) { _ in [] }
         XCTAssertTrue(result.decisions.isEmpty)
         XCTAssertEqual(result.absencesOverruled, 1)
     }
 
     func testBallMissingJustUnderTheLimitKeepsTheStreak() {
-        let observations = samples(2_100...5_000, step: 100, visible: true, ball: false) + samples(5_100...6_000, step: 100, visible: true)
+        let observations = samples(2_100...7_000, step: 100, visible: true, ball: false) + samples(7_100...8_000, step: 100, visible: true)
         let result = assess(evidence(observations)) { _ in XCTFail("Under the limit needs no second look"); return [] }
         XCTAssertTrue(result.decisions.isEmpty)
     }
 
     func testBallMissingForTheLimitEndsTheStreakWhenTheVideoAgrees() {
         // Counted from 0.3 s after the touch, while the ball is sure to be in frame.
-        let observations = samples(2_100...5_400, step: 100, visible: true, ball: false) + samples(5_500...6_000, step: 100, visible: true)
+        let observations = samples(2_100...7_400, step: 100, visible: true, ball: false) + samples(7_500...8_000, step: 100, visible: true)
         let result = assess(evidence(observations)) { window in
             self.samples(window.startMS+250...window.endMS-1, step: 500, visible: true, ball: false)
         }
@@ -113,9 +124,9 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     }
 
     func testTheMomentsAroundATouchNeverCountAsMissing() {
-        // Nothing seen at all, but at 3.5 s from touch to touch only 2.9 s is really open.
-        let live = samples(2_050...5_450, step: 100, visible: true, ball: false)
-        let result = assess(evidence(live), touches: [2, 5.5]) { _ in XCTFail("Under the limit once the touches are set aside"); return [] }
+        // Nothing seen at all, but at 5.5 s from touch to touch only 4.9 s is really open.
+        let live = samples(2_050...7_450, step: 100, visible: true, ball: false)
+        let result = assess(evidence(live), touches: [2, 7.5]) { _ in XCTFail("Under the limit once the touches are set aside"); return [] }
         XCTAssertTrue(result.decisions.isEmpty)
     }
 
@@ -142,7 +153,7 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     }
 
     func testBallSeenInTheSavedVideoOverrulesALiveMiss() {
-        let live = samples(2_100...5_900, step: 100, visible: true, ball: false)
+        let live = samples(2_100...7_900, step: 100, visible: true, ball: false)
         let result = assess(evidence(live)) { window in
             self.samples(window.startMS+250...window.endMS-1, step: 500, visible: true, ball: true)
         }
@@ -151,14 +162,14 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     }
 
     func testUnreadableVideoNeverEndsAStreakForAMissingBall() {
-        let live = samples(2_100...5_900, step: 100, visible: true, ball: false)
+        let live = samples(2_100...7_900, step: 100, visible: true, ball: false)
         let result = assess(evidence(live)) { _ in [] }
         XCTAssertTrue(result.decisions.isEmpty)
         XCTAssertEqual(result.absencesOverruled, 1)
     }
 
     func testPartlyReadableVideoNeverEndsAStreakForAMissingBall() {
-        let live = samples(2_100...5_900, step: 100, visible: true, ball: false)
+        let live = samples(2_100...7_900, step: 100, visible: true, ball: false)
         let result = assess(evidence(live)) { window in
             Array(self.samples(window.startMS+250...window.endMS-1, step: 500, visible: true, ball: false).prefix(4))
         }
@@ -168,36 +179,36 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     func testSparseFramesCannotProveAMissingBall() {
         // A hot phone falling behind: the player is seen, the ball is not, and
         // the frames are too far apart to say anything.
-        let live = samples(2_100...5_900, step: 800, visible: true, ball: false)
+        let live = samples(2_100...7_900, step: 800, visible: true, ball: false)
         let result = assess(evidence(live)) { _ in XCTFail("Too little live evidence to look further"); return [] }
         XCTAssertTrue(result.decisions.isEmpty)
     }
 
     func testAlreadySeparatedRunsDoNotCheckTheBall() {
-        let live = samples(2_100...5_900, step: 100, visible: true, ball: false)
+        let live = samples(2_100...7_900, step: 100, visible: true, ball: false)
         let result = assess(evidence(live), boundaries: [3]) { _ in XCTFail("Already split by a hold/bounce"); return [] }
         XCTAssertTrue(result.decisions.isEmpty)
     }
 
     func testMissingBallEndsTheStreakButKeepsEveryTouchInTheTotal() throws {
-        let touches = [1.0, 2, 6, 7, 8]
-        let live = samples(2_100...5_900, step: 100, visible: true, ball: false)
+        let touches = [1.0, 2, 8, 9, 10]
+        let live = samples(2_100...7_900, step: 100, visible: true, ball: false)
         let result = assess(evidence(live), touches: touches) { window in
             self.samples(window.startMS+250...window.endMS-1, step: 500, visible: true, ball: false)
         }
         var review = TouchReviewEvidence()
         for cut in result.decisions { review.append(time: Double(cut.timeMS)/1000, kind: cut.kind) }
-        let persisted = try XCTUnwrap(LeaderboardTouchReview.make(evidence: review, touchTimes: touches, duration: 10))
+        let persisted = try XCTUnwrap(LeaderboardTouchReview.make(evidence: review, touchTimes: touches, duration: 12))
         let restored = try JSONDecoder().decode(LeaderboardTouchReview.self, from: JSONEncoder().encode(persisted))
         XCTAssertEqual(restored, persisted)
-        let streak = RankedStreakProposal.suggest(touchTimes: touches, boundaries: restored.streakBoundaries, duration: 10)
+        let streak = RankedStreakProposal.suggest(touchTimes: touches, boundaries: restored.streakBoundaries, duration: 12)
         XCTAssertEqual(streak?.count, 3)
         XCTAssertEqual(touches.count, 5)
         XCTAssertNotNil(restored.visibilityNotice)
     }
 
     func testPlayerLeavingIsReportedAsThePlayerEvenWhenTheBallIsGoneToo() {
-        let live = samples(2_100...5_900, step: 100, visible: false, ball: false)
+        let live = samples(2_100...7_900, step: 100, visible: false, ball: false)
         XCTAssertEqual(assess(evidence(live), recheck: emptyVideo).decisions.map(\.kind), [.playerOutOfView])
     }
 
@@ -215,11 +226,11 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     func testALoneFalseBallDetectionDoesNotRestartTheClock() {
         let strays = [29_580, 30_280, 31_150]
         for kept in strays.indices.map({ Array(strays.prefix($0+1)) }) {
-            let live = stride(from: 28_600, to: 32_000, by: 33).map { time in
+            let live = stride(from: 28_600, to: 34_000, by: 33).map { time in
                 StreakVisibilityEvidence.Sample(timeMS: time, personVisible: true,
                     ballVisible: kept.contains { abs($0-time) <= 16 })
             }
-            let result = assess(evidence(live), touches: [28, 32.1]) { window in
+            let result = assess(evidence(live), touches: [28, 34.1]) { window in
                 self.samples(window.startMS+250...window.endMS-1, step: 500, visible: true, ball: false)
             }
             XCTAssertEqual(result.decisions.map(\.kind), [.ballOutOfView], "\(kept)")
@@ -227,13 +238,13 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     }
 
     func testALoneFalsePersonDetectionDoesNotRestartTheClock() {
-        let source = evidence(samples(2_250...5_750, visible: false) + [.init(timeMS: 4_000, personVisible: true, ballVisible: true)])
+        let source = evidence(samples(2_250...7_750, visible: false) + [.init(timeMS: 4_000, personVisible: true, ballVisible: true)])
         XCTAssertEqual(assess(source, recheck: emptyVideo).decisions.map(\.kind), [.playerOutOfView])
     }
 
     func testTwoSightingsCloseTogetherMeanItIsReallyThere() {
         for spacing in [33, 100, 250, 500, 600] {
-            let live = samples(2_100...5_900, step: 100, visible: true, ball: false)
+            let live = samples(2_100...7_900, step: 100, visible: true, ball: false)
                 + [.init(timeMS: 4_050, personVisible: true, ballVisible: true),
                    .init(timeMS: 4_050+spacing, personVisible: true, ballVisible: true)]
             let result = assess(evidence(live)) { _ in XCTFail("Seen at \(spacing) ms apart"); return [] }
@@ -244,20 +255,20 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     /// Found by the simulation: a high kick with one sighting beside each touch
     /// looked like 3.5 s of nothing, because both sightings were alone.
     func testOneSightingBesideATouchCountsBecauseTheTouchProvesTheBall() {
-        let live = stride(from: 2_050, to: 5_500, by: 143).map { time in
-            StreakVisibilityEvidence.Sample(timeMS: time, personVisible: true, ballVisible: time == 2_193 || time == 5_197)
+        let live = stride(from: 2_050, to: 7_500, by: 143).map { time in
+            StreakVisibilityEvidence.Sample(timeMS: time, personVisible: true, ballVisible: time == 2_193 || time == 7_198)
         }
-        let result = assess(evidence(live), touches: [2, 5.5]) { window in
+        let result = assess(evidence(live), touches: [2, 7.5]) { window in
             self.samples(window.startMS+250...window.endMS-1, step: 500, visible: true, ball: false)
         }
         XCTAssertTrue(result.decisions.isEmpty)
     }
 
     func testAFalseSightingAwayFromTheTouchesStillDoesNotCount() {
-        let live = stride(from: 2_050, to: 7_000, by: 100).map { time in
+        let live = stride(from: 2_050, to: 9_000, by: 100).map { time in
             StreakVisibilityEvidence.Sample(timeMS: time, personVisible: true, ballVisible: time == 4_050)
         }
-        let result = assess(evidence(live), touches: [2, 7]) { window in
+        let result = assess(evidence(live), touches: [2, 9]) { window in
             self.samples(window.startMS+250...window.endMS-1, step: 500, visible: true, ball: false)
         }
         XCTAssertEqual(result.decisions.map(\.kind), [.ballOutOfView])
@@ -286,18 +297,18 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     func testRepliesAtEveryPhoneSpeedGiveTheSameAnswer() {
         for hz in [7, 10, 15, 20, 30, 60, 120] {
             let step = 1_000/hz
-            let leaves = stride(from: 2_100, to: 7_000, by: step).map {
-                StreakVisibilityEvidence.Sample(timeMS: $0, personVisible: true, ballVisible: $0 > 6_000)
+            let leaves = stride(from: 2_100, to: 9_000, by: step).map {
+                StreakVisibilityEvidence.Sample(timeMS: $0, personVisible: true, ballVisible: $0 > 8_000)
             }
-            let ended = assess(evidence(leaves), touches: [2, 7]) { window in
+            let ended = assess(evidence(leaves), touches: [2, 9]) { window in
                 self.samples(window.startMS+250...window.endMS-1, step: 500, visible: true, ball: false)
             }
             XCTAssertEqual(ended.decisions.map(\.kind), [.ballOutOfView], "\(hz) Hz")
 
-            let kept = stride(from: 2_100, to: 6_000, by: step).map {
+            let kept = stride(from: 2_100, to: 8_000, by: step).map {
                 StreakVisibilityEvidence.Sample(timeMS: $0, personVisible: true, ballVisible: $0 > 4_500)
             }
-            XCTAssertTrue(assess(evidence(kept), touches: [2, 6]).decisions.isEmpty, "\(hz) Hz")
+            XCTAssertTrue(assess(evidence(kept), touches: [2, 8]).decisions.isEmpty, "\(hz) Hz")
         }
     }
 
@@ -312,13 +323,13 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
 
     func testEveryRuleSentenceIsTranslated() throws {
         let sentences = [
-            "If you or the ball are out of sight for at least 3 seconds, a new streak starts when touches resume. If part of a session cannot be checked, streaks on either side stay separate. Your total touches are kept.",
-            "No player was visible for at least 3 seconds, so a new streak started. All touches stay in your total.",
-            "No player was visible for at least 3 seconds, so touches before and after count as separate streaks. Your total touches are kept.",
-            "The ball was out of sight for at least 3 seconds, so a new streak started. All touches stay in your total.",
-            "The ball was out of sight for at least 3 seconds, so touches before and after count as separate streaks. Your total touches are kept.",
-            "the player was out of view for at least 3 seconds",
-            "the ball was out of sight for at least 3 seconds",
+            "If you or the ball are out of sight for at least 5 seconds, a new streak starts when touches resume. If part of a session cannot be checked, streaks on either side stay separate. Your total touches are kept.",
+            "No player was visible, so a new streak started. All touches stay in your total.",
+            "No player was visible, so touches before and after count as separate streaks. Your total touches are kept.",
+            "The ball was out of sight, so a new streak started. All touches stay in your total.",
+            "The ball was out of sight, so touches before and after count as separate streaks. Your total touches are kept.",
+            "the player was out of view",
+            "the ball was out of sight",
             "Ball out of view"]
         for language in ["de", "es", "fr", "pt-BR"] {
             let path = try XCTUnwrap(Bundle.main.path(forResource: language, ofType: "lproj"), language)
@@ -327,7 +338,7 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
                 let translated = bundle.localizedString(forKey: sentence, value: "MISSING", table: nil)
                 XCTAssertNotEqual(translated, "MISSING", "\(language): \(sentence)")
                 XCTAssertNotEqual(translated, sentence, "\(language): \(sentence)")
-                if sentence.contains("3 seconds") { XCTAssertTrue(translated.contains("3"), "\(language): \(translated)") }
+                if sentence.contains("5 seconds") { XCTAssertTrue(translated.contains("5"), "\(language): \(translated)") }
                 XCTAssertFalse(translated.contains("2,5"), "\(language): \(translated)")
             }
         }
@@ -341,7 +352,7 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     }
 
     func testLateAndOutOfOrderCallbacksUseSourceTime() {
-        let observations = samples(2_250...5_750, visible: true)
+        let observations = samples(2_250...7_750, visible: true)
         // Delivering the same frames in reverse order represents arbitrary
         // callback delay; only source timestamps are part of the policy.
         let normal = assess(evidence(observations))
@@ -352,22 +363,22 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
 
     func testNoInferenceIsUnknownAndSavedVisibleFramesRecoverTheRun() {
         let result = assess(evidence([])) { window in
-            XCTAssertEqual(window, .init(startMS: 2_000, endMS: 6_000))
-            return self.samples(2_250...5_750, step: 500, visible: true)
+            XCTAssertEqual(window, .init(startMS: 2_000, endMS: 8_000))
+            return self.samples(2_250...7_750, step: 500, visible: true)
         }
         XCTAssertEqual(result.recheckWindows, 1)
         XCTAssertTrue(result.decisions.isEmpty, "Analysis lag must not cut a visible run")
     }
 
     func testSavedFramesCanConfirmARealDepartureDuringAnalysisGap() {
-        let result = assess(evidence([])) { _ in self.samples(2_250...5_750, step: 500, visible: false) }
+        let result = assess(evidence([])) { _ in self.samples(2_250...7_750, step: 500, visible: false) }
         XCTAssertEqual(result.decisions.map(\.kind), [.playerOutOfView])
-        XCTAssertEqual(result.recheckedFrames, 8)
+        XCTAssertEqual(result.recheckedFrames, 12)
     }
 
     func testStaleOrSparseNegativeResultsCannotProveDeparture() {
-        let source = evidence(samples(2_250...5_250, step: 1_000, visible: false))
-        let result = assess(source) { _ in self.samples(2_500...5_500, step: 500, visible: true) }
+        let source = evidence(samples(2_250...7_250, step: 1_000, visible: false))
+        let result = assess(source) { _ in self.samples(2_500...7_500, step: 500, visible: true) }
         XCTAssertEqual(result.recheckWindows, 1)
         XCTAssertTrue(result.decisions.isEmpty)
     }
@@ -376,8 +387,8 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
         let result = assess(evidence([]))
         XCTAssertEqual(result.decisions.map(\.kind), [.visibilityUnverified])
         XCTAssertTrue(result.decisions[0].kind.breaksStreak)
-        let score = RankedStreakProposal.suggest(touchTimes: [1, 2, 6, 7],
-            boundaries: result.decisions.map { Double($0.timeMS)/1000 }, duration: 8)
+        let score = RankedStreakProposal.suggest(touchTimes: [1, 2, 8, 9],
+            boundaries: result.decisions.map { Double($0.timeMS)/1000 }, duration: 10)
         XCTAssertEqual(score?.count, 2)
     }
 
@@ -387,22 +398,22 @@ final class StreakVisibilityEvidenceTests: XCTestCase {
     }
 
     func testRepeatedDeparturesEachSeparateRuns() {
-        let source = evidence(samples(2_250...5_750, visible: false) + samples(7_250...10_750, visible: false))
-        let result = assess(source, touches: [1, 2, 6, 7, 11, 12, 13], recheck: emptyVideo)
+        let source = evidence(samples(2_250...7_750, visible: false) + samples(9_250...14_750, visible: false))
+        let result = assess(source, touches: [1, 2, 8, 9, 15, 16, 17], recheck: emptyVideo)
         XCTAssertEqual(result.decisions.count, 2)
-        let score = RankedStreakProposal.suggest(touchTimes: [1, 2, 6, 7, 11, 12, 13],
-            boundaries: result.decisions.map { Double($0.timeMS)/1000 }, duration: 15)
+        let score = RankedStreakProposal.suggest(touchTimes: [1, 2, 8, 9, 15, 16, 17],
+            boundaries: result.decisions.map { Double($0.timeMS)/1000 }, duration: 20)
         XCTAssertEqual(score?.count, 3)
     }
 
     func testDuplicatesCannotSupplyIndependentAbsenceEvidence() {
         let source = evidence(Array(repeating: .init(timeMS: 2_250, personVisible: false, ballVisible: false), count: 40)
-            + Array(repeating: .init(timeMS: 5_250, personVisible: false, ballVisible: false), count: 40))
+            + Array(repeating: .init(timeMS: 7_250, personVisible: false, ballVisible: false), count: 40))
         XCTAssertEqual(assess(source).decisions.map(\.kind), [.visibilityUnverified])
     }
 
     func testFreshVisibleObservationsResetAbsenceGrace() {
-        let source = evidence(samples(2_250...5_750, visible: false)
+        let source = evidence(samples(2_250...7_750, visible: false)
             + [.init(timeMS: 3_900, personVisible: true, ballVisible: true), .init(timeMS: 4_100, personVisible: true, ballVisible: true)])
         XCTAssertTrue(assess(source).decisions.isEmpty)
     }

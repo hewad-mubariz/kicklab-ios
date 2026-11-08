@@ -1,0 +1,89 @@
+{
+  "status": "installed_and_launched_on_both_phones",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "version": "1.2.0",
+  "build": 76,
+  "bundle_identifier": "com.juggledude",
+  "policy": {
+    "previous_grace_ms": 3000,
+    "grace_ms": 5000,
+    "warning_after_ms": 3000,
+    "signature": "streak-visibility-v3-grace5s",
+    "subjects": [
+      "player",
+      "ball"
+    ],
+    "hold_hand_ground_rules_changed": false,
+    "heel_toe_default_enabled": true,
+    "existing_scores_recalculated": false
+  },
+  "ui": "Rules updated in all five app languages. Historical interruption descriptions omit a duration, preserving accuracy for decisions made under earlier limits.",
+  "validation": {
+    "initial": {
+      "passedTests": 86,
+      "failedTests": 1,
+      "skippedTests": 0,
+      "totalTestCount": 87
+    },
+    "initial_failure": "The old three-second noisy-ball-exit target of 90% was not met: five-second policy measured 1291/1500 (86.1%).",
+    "resolution": "Documented an 85% five-second noisy regression floor, plus a new independent requirement that all 1500 clear ball exits split. Production algorithm changed only the visibility grace and warning delay.",
+    "final_simulation": {
+      "result": "Passed",
+      "passedTests": 15,
+      "failedTests": 0,
+      "skippedTests": 0,
+      "totalTestCount": 15
+    },
+    "passed_coverage": [
+      "Five-second boundary and four-second grace",
+      "Two-second warning countdown",
+      "Saved-video rechecks and sparse/callback evidence",
+      "Hold/ground interruption and best-streak scoring",
+      "Translations and old saved interruption reasons"
+    ],
+    "recorded_detection_replay": {
+      "valid_juggling_cases": 123,
+      "incorrect_splits": 0,
+      "previous_stop_cases": 12,
+      "now_inside_grace": 11,
+      "long_stop_still_splits": 1,
+      "short_absences_ms": [
+        3267,
+        4100
+      ],
+      "long_ball_absence_ms": 8932
+    },
+    "synthetic_noisy_ball_exits": {
+      "ended": 1291,
+      "total": 1500,
+      "share": 0.8606666666666667
+    },
+    "synthetic_clear_ball_exits": {
+      "ended": 1500,
+      "total": 1500
+    },
+    "real_camera_accuracy_claim": false,
+    "artifact_directory": "artifacts/release120/five-second-grace-20261108"
+  },
+  "devices": {
+    "iphone11": {
+      "installed_build": "76",
+      "launched_normally": true,
+      "persistent_history_files_preserved": 36,
+      "missing_or_changed_session_sizes": 0,
+      "preserved_bytes": 1262301338,
+      "completed_import_cleanup_markers_removed": 0
+    },
+    "iphone17": {
+      "installed_build": "76",
+      "launched_normally": true,
+      "persistent_history_files_preserved": 282,
+      "missing_or_changed_session_sizes": 0,
+      "preserved_bytes": 3835543479,
+      "completed_import_cleanup_markers_removed": 1
+    }
+  },
+  "testflight_uploaded": false,
+  "remaining": "User live review. Longer grace is more forgiving but misses more off-camera interruptions; one-handed hold detection remains limited.",
+  "binary_sha256": "1f2e8da1335e28e7dd5bf048fc8d313468ec7696b37512a09c14ff959170e2d5"
+}

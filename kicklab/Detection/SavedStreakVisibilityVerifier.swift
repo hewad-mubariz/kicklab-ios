@@ -30,8 +30,8 @@ nonisolated final class SavedStreakVisibilityVerifier {
         guard let generator else { failure = "original_unavailable"; return [] }
         if started == nil { started = ProcessInfo.processInfo.systemUptime }
         var samples: [StreakVisibilityEvidence.Sample] = []
-        // Seven independent empty samples spanning 3 s are required; a single
-        // failed decode or failed prediction is never an empty-camera sample.
+        // Independent observations must span the visibility grace period. A failed
+        // decode or prediction is never an empty-camera sample.
         for target in stride(from: window.startMS+250, to: window.endMS, by: 500) {
             // Reuse the app's locked foreground/GPU permission snapshot. This
             // worker may own a GPU model; do not start new work after Home/lock.
