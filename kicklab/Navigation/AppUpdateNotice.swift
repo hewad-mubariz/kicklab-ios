@@ -22,15 +22,15 @@ final class AppUpdateNotice: ObservableObject {
 
     static let shared: AppUpdateNotice = {
         #if DEBUG
-        // UI tests and screenshots: --app-update-preview announces a made-up next version.
+        // UI tests and screenshots: simulate an older install seeing the approved 1.2 release draft.
         if ProcessInfo.processInfo.arguments.contains("--app-update-preview") {
             let defaults = UserDefaults(suiteName: "kicklab.app-update-preview")!
             // Reopening the preview should respect Not now, just like a real release.
             if ProcessInfo.processInfo.arguments.contains("--app-update-preview-reset") {
                 defaults.removePersistentDomain(forName: "kicklab.app-update-preview")
             }
-            return AppUpdateNotice(installed: "1.2.0", defaults: defaults, lookup: { _ in
-                Release(version: "1.3.0", notes: "Crystal ice, a fireworks show and four new balls.", minimumOS: nil)
+            return AppUpdateNotice(installed: "1.1.0", defaults: defaults, lookup: { _ in
+                Release(version: "1.2.0", notes: String(localized: "Faster video imports, an upgraded replay editor, refreshed leaderboards, and practice reminders. Plus new ball styles, effects, and easier storage management.", bundle: AppLanguage.bundle, locale: AppLanguage.locale), minimumOS: "18.0")
             })
         }
         #endif

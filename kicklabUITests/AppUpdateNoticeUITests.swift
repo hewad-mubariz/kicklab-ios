@@ -9,7 +9,7 @@ final class AppUpdateNoticeUITests: XCTestCase {
         app.launch()
         let alert = app.alerts["Update available"]
         XCTAssertTrue(alert.waitForExistence(timeout: 15))
-        XCTAssertTrue(alert.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Juggle Dude 1.3.0 is here")).firstMatch.exists)
+        XCTAssertTrue(alert.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Juggle Dude 1.2.0 is here")).firstMatch.exists)
         XCTAssertTrue(alert.buttons["Update"].exists)
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "Native update alert"; shot.lifetime = .keepAlways; add(shot)
         if let folder = ProcessInfo.processInfo.environment["BALL_PAGE_SHOTS"], !folder.isEmpty {

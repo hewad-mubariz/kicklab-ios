@@ -1,0 +1,24 @@
+Juggle Dude 1.2.0 - approved What's New draft, 9 November 2026
+Status: local draft only; not uploaded, submitted for review or published.
+This is the current release copy, superseding the build 37 and 38 What's New drafts.
+
+Copy each language's paragraph into its App Store What's New field without the
+language heading. Keep the paragraph on the first line: the update alert displays
+the first line of the published release notes beneath the version title.
+The Debug preview uses these same translations; production still reads Apple's
+public App Store lookup. TestFlight uploads do not activate the update alert.
+
+ENGLISH (en-US, en-GB, en-AU, en-CA)
+Faster video imports, an upgraded replay editor, refreshed leaderboards, and practice reminders. Plus new ball styles, effects, and easier storage management.
+
+GERMAN (de-DE)
+Schnellere Videoimporte, ein verbesserter Replay-Editor, überarbeitete Bestenlisten und Trainingserinnerungen. Dazu neue Ball-Designs, Effekte und eine einfachere Speicherverwaltung.
+
+SPANISH (es-ES)
+Importación de vídeos más rápida, un editor de repeticiones mejorado, clasificaciones renovadas y recordatorios de práctica. Además, nuevos diseños de balón, efectos y una gestión del almacenamiento más sencilla.
+
+FRENCH (fr-FR)
+Des importations de vidéos plus rapides, un éditeur de replay amélioré, des classements repensés et des rappels d’entraînement. Avec de nouveaux styles de ballon, des effets et une gestion du stockage simplifiée.
+
+BRAZILIAN PORTUGUESE (pt-BR)
+Importação de vídeos mais rápida, editor de replays aprimorado, rankings renovados e lembretes de treino. Além de novos visuais para a bola, efeitos e uma gestão mais fácil do armazenamento.

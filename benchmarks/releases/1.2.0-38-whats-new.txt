@@ -1,4 +1,6 @@
 Juggle Dude 1.2.0 (38) - What's New and App Review notes (draft, not uploaded)
+Historical build 38 snapshot. Current release copy: 1.2.0-whats-new.txt.
+The App Review notes below also describe the older build.
 
 WHAT'S NEW
 

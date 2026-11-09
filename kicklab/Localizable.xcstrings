@@ -15533,6 +15533,42 @@
       "comment" : "Debug, lab or unused screen; not shown in release builds.",
       "shouldTranslate" : false
     },
+    "Faster video imports, an upgraded replay editor, refreshed leaderboards, and practice reminders. Plus new ball styles, effects, and easier storage management." : {
+      "comment" : "Approved 1.2.0 release-note draft for the Debug update preview. Production reads the published App Store notes.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faster video imports, an upgraded replay editor, refreshed leaderboards, and practice reminders. Plus new ball styles, effects, and easier storage management."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schnellere Videoimporte, ein verbesserter Replay-Editor, überarbeitete Bestenlisten und Trainingserinnerungen. Dazu neue Ball-Designs, Effekte und eine einfachere Speicherverwaltung."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importación de vídeos más rápida, un editor de repeticiones mejorado, clasificaciones renovadas y recordatorios de práctica. Además, nuevos diseños de balón, efectos y una gestión del almacenamiento más sencilla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Des importations de vidéos plus rapides, un éditeur de replay amélioré, des classements repensés et des rappels d’entraînement. Avec de nouveaux styles de ballon, des effets et une gestion du stockage simplifiée."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importação de vídeos mais rápida, editor de replays aprimorado, rankings renovados e lembretes de treino. Além de novos visuais para a bola, efeitos e uma gestão mais fácil do armazenamento."
+          }
+        }
+      }
+    },
     "New features and fixes are ready." : {
       "localizations" : {
         "de" : {
