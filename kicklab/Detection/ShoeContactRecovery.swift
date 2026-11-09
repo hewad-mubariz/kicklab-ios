@@ -7,7 +7,7 @@ import UIKit
 /// Failure or missing/late landmarks only removes auxiliary evidence, never the
 /// established ball counter. No image or model output leaves the device.
 nonisolated final class ShoeContactRecovery {
-    private let enabled = ShoeRecoveryPolicy.enabled
+    private var enabled = ShoeRecoveryPolicy.enabled
     private var landmarker: PoseLandmarker?
     private var failed = false
     private var latestMs = -1
@@ -39,6 +39,9 @@ nonisolated final class ShoeContactRecovery {
     func discardFrames() { samples.removeAll(keepingCapacity: true) }
     func reset() {
         discardFrames(); landmarker = nil; failed = false; latestMs = -1
+        // Camera warmup can precede the debug choice. Latch it at the next run,
+        // never during inference; disabling also releases the previous model.
+        enabled = ShoeRecoveryPolicy.enabled
         calls = 0; errors = 0; milliseconds = 0; proofRequests = 0; proofs = 0
         loadMS = 0; inferenceMS = 0; maxInferenceMS = 0; framesWithPose = 0
         memoryBeforeLoad = nil; memoryAfterLoad = nil

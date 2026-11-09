@@ -81,6 +81,7 @@ nonisolated final class RFAppCounterCore {
     private var analyzedIdentities: [RecordedFrameIdentity] = []
     private var analysisEvaluations: [CaptureAnalysisEvidence.Evaluation] = []
     private var capturePipelineSignature: String?
+    private var preparedCounterSignature: String?
     private var recordingStartSeconds: Double = 0
     private var cadence = LiveAnalysisCadence()
     private var retainedMaskBytes = 0
@@ -105,6 +106,7 @@ nonisolated final class RFAppCounterCore {
         let baseline = DetectorPerformance.memoryMB()
         let started = ProcessInfo.processInfo.systemUptime
         let signature = SessionAnalysisStore.pipelineSignature()
+        let counterSignature = SessionAnalysisStore.pipelineSignature(shoeRecoveryEnabled: false)
         let loaded = RFFrameMetrics(compute: worker.computeDescription)
         guard !request.isCancelled else { return false }
         // RF model warmed on its owning worker before this call.
@@ -122,6 +124,8 @@ nonisolated final class RFAppCounterCore {
         plausibility = BallPlausibility(policy: loaded.plausibilityPolicy)
         contactVerifier = verifier
         capturePipelineSignature = signature == SessionAnalysisStore.pipelineSignature() ? signature : nil
+        preparedCounterSignature = counterSignature == SessionAnalysisStore.pipelineSignature(shoeRecoveryEnabled: false)
+            ? counterSignature : nil
         trackingBaselineMB = baseline
         trackingPreparationMS = (ProcessInfo.processInfo.systemUptime - started) * 1000
         return true
@@ -133,6 +137,7 @@ nonisolated final class RFAppCounterCore {
         contactVerifier = nil
         evidence = nil
         capturePipelineSignature = nil
+        preparedCounterSignature = nil
     }
 
     func resetCounter() {
@@ -146,6 +151,7 @@ nonisolated final class RFAppCounterCore {
     }
 
     func beginRecording() {
+        let signature = SessionAnalysisStore.pipelineSignature()
         if let detector {
             performanceMonitor.loaded(model: detector.modelName, baselineMB: trackingBaselineMB,
                                       milliseconds: trackingPreparationMS, computeBackend: detector.modelComputeDescription)
@@ -159,6 +165,12 @@ nonisolated final class RFAppCounterCore {
         verifier?.reset()
         evidence?.reset()
         counter = ContactCounterFactory.make(verifier: counterEvidence, config: counterConfig)
+        // A debug model choice made after camera warmup is applied by reset().
+        // Keep reuse provenance only when every other prepared setting matches.
+        let actualSignature = SessionAnalysisStore.pipelineSignature(
+            shoeRecoveryEnabled: verifier?.shoePerformance.enabled ?? ShoeRecoveryPolicy.enabled)
+        capturePipelineSignature = preparedCounterSignature == SessionAnalysisStore.pipelineSignature(shoeRecoveryEnabled: false)
+            && signature == actualSignature ? signature : nil
         #if DEBUG
         if let files = finalTestFiles {
             counter.debugDiagnosticObserver = { [weak self] event in

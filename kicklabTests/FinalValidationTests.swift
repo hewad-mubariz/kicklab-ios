@@ -12,6 +12,20 @@ final class FinalValidationTests: XCTestCase {
         XCTAssertEqual(restored.id, old.id)
         XCTAssertNil(restored.livePerformance)
         XCTAssertNil(restored.capture)
+        XCTAssertNil(restored.shoeRecoveryEnabled)
+        XCTAssertNil(restored.analysisShoeRecoveryEnabled)
+        XCTAssertEqual(restored.toeRecoveryLabel, "Toe: unrecorded")
+    }
+
+    func testReportsKeepLiveAndFreshAnalysisModesSeparately() throws {
+        var report = makeReport()
+        report.shoeRecoveryEnabled = false
+        report.analysisShoeRecoveryEnabled = true
+        let restored = try JSONDecoder().decode(FinalTestReport.self, from: JSONEncoder().encode(report))
+        XCTAssertEqual(restored.toeRecoveryLabel, "Toe: Off")
+        XCTAssertEqual(restored.analysisShoeRecoveryEnabled, true)
+        report.shoeRecoveryEnabled = true
+        XCTAssertEqual(report.toeRecoveryLabel, "Toe: On")
     }
 
     func testCompletedPipelineStillNeedsIndependentVisualReview() {

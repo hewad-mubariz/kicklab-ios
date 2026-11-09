@@ -26,8 +26,7 @@ struct kicklabApp: App {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--outdoor-validation") {
             UserDefaults.standard.set(true, forKey: DebugOverlayPreferences.visibilityKey)
-            // Restore the normal counter for field measurements after earlier A/B runs.
-            UserDefaults.standard.removeObject(forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+            // Preserve the chosen debug toe mode across field-test launches.
         }
         if Bundle.main.bundleIdentifier == "com.juggledude.release120.preview",
            ProcessInfo.processInfo.arguments.contains("--reset-practice-notifications") {

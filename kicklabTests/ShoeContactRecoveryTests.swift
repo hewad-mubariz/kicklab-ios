@@ -65,10 +65,67 @@ final class ShoeContactRecoveryTests: XCTestCase {
         defer { defaults.set(old, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey) }
         defaults.set(false, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
         let original = SessionAnalysisStore.pipelineSignature()
+        let baselineArguments = TouchCountingDebugProfile.arguments
+        XCTAssertTrue(baselineArguments.contains("--visible-foot-recovery-v2"))
+        XCTAssertTrue(ShoeRecoveryPolicy.usesVisionRevision2)
+        XCTAssertTrue(original.contains("|shoe-recovery-off|visible-foot-v2|pose-r2-"))
         defaults.set(true, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
         XCTAssertNotEqual(original, SessionAnalysisStore.pipelineSignature())
+        XCTAssertEqual(baselineArguments, TouchCountingDebugProfile.arguments,
+                       "The comparison must not change ordinary counter rules")
+        XCTAssertEqual(original, SessionAnalysisStore.pipelineSignature(shoeRecoveryEnabled: false),
+                       "A choice after warmup must retain the other prepared pipeline settings")
         defaults.set(false, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
         XCTAssertEqual(original, SessionAnalysisStore.pipelineSignature())
+    }
+
+    @MainActor
+    func testDebugChoiceLatchesAtRunResetAndOffDoesNoPoseWork() throws {
+        try XCTSkipUnless(ShoeRecoveryPolicy.available && ShoeRecoveryPolicy.launchOverride == nil)
+        let defaults = UserDefaults.standard
+        let old = defaults.object(forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+        defer { defaults.set(old, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey) }
+        let source = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "juggling-eighteen", withExtension: "mov"))
+        let asset = AVURLAsset(url: source)
+        let reader = try AVAssetReader(asset: asset)
+        let track = try XCTUnwrap(asset.tracks(withMediaType: .video).first)
+        let output = AVAssetReaderTrackOutput(track: track, outputSettings: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+        ])
+        reader.add(output)
+        XCTAssertTrue(reader.startReading())
+        defer { reader.cancelReading() }
+        let sample = try XCTUnwrap(output.copyNextSampleBuffer())
+        let pixels = try XCTUnwrap(CMSampleBufferGetImageBuffer(sample))
+
+        defaults.set(false, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+        let recovery = ShoeContactRecovery()
+        defaults.set(true, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+        recovery.store(pixels, timestampMs: 0, ball: nil, orientLandscapeAsPortrait: false)
+        XCTAssertFalse(recovery.performance.enabled, "Do not change an in-flight run")
+        XCTAssertEqual(recovery.performance.calls, 0)
+        XCTAssertEqual(recovery.performance.loadMS, 0)
+
+        // Same object as camera warmup: Record resets it using the new choice.
+        recovery.reset()
+        recovery.store(pixels, timestampMs: 0, ball: nil, orientLandscapeAsPortrait: false)
+        XCTAssertTrue(recovery.performance.enabled)
+        XCTAssertEqual(recovery.performance.calls, 1)
+        XCTAssertEqual(recovery.performance.errors, 0)
+        XCTAssertGreaterThan(recovery.performance.loadMS, 0)
+        defaults.set(false, forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+        recovery.store(pixels, timestampMs: 33, ball: nil, orientLandscapeAsPortrait: false)
+        XCTAssertEqual(recovery.performance.calls, 2, "An active On run keeps its mode")
+
+        recovery.reset()
+        recovery.store(pixels, timestampMs: 0, ball: nil, orientLandscapeAsPortrait: false)
+        XCTAssertFalse(recovery.performance.enabled)
+        XCTAssertEqual(recovery.performance.calls, 0)
+        XCTAssertEqual(recovery.performance.errors, 0)
+        XCTAssertEqual(recovery.performance.totalMS, 0)
+        XCTAssertEqual(recovery.performance.loadMS, 0)
+        XCTAssertNil(recovery.performance.appMemoryBeforeLoadMiB)
+        XCTAssertNil(recovery.performance.appMemoryAfterLoadMiB)
     }
 }
 

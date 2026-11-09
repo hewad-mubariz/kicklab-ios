@@ -6,10 +6,11 @@ extension View {
     @ViewBuilder
     func debugRuntimeOverlay(performance: DetectorPerformanceSnapshot? = nil,
                              capture: CaptureCadenceSnapshot? = nil, recording: Bool = false,
+                             settingsLocked: Bool = false,
                              touches: Int? = nil, elapsed: Double = 0,
                              topInset: CGFloat = 64, onOpenTests: (() -> Void)? = nil) -> some View {
         #if DEBUG
-        modifier(DebugRuntimeOverlay(performance: performance, capture: capture, recording: recording,
+        modifier(DebugRuntimeOverlay(performance: performance, capture: capture, recording: recording, settingsLocked: settingsLocked,
                                      touches: touches, elapsed: elapsed,
                                      topInset: topInset, onOpenTests: onOpenTests))
         #else
@@ -36,6 +37,7 @@ private struct DebugRuntimeOverlay: ViewModifier {
     let performance: DetectorPerformanceSnapshot?
     let capture: CaptureCadenceSnapshot?
     let recording: Bool
+    let settingsLocked: Bool
     let touches: Int?
     let elapsed: Double
     let topInset: CGFloat
@@ -45,7 +47,7 @@ private struct DebugRuntimeOverlay: ViewModifier {
     func body(content: Content) -> some View {
         content.overlay(alignment: .topTrailing) {
             if visible {
-                DebugRuntimeHUD(performance: performance, capture: capture, recording: recording,
+                DebugRuntimeHUD(performance: performance, capture: capture, recording: recording, settingsLocked: settingsLocked,
                                 touches: touches, elapsed: elapsed, onOpenTests: onOpenTests)
                     .padding(.top, topInset).padding(.trailing, 12)
             }
@@ -97,6 +99,7 @@ private struct DebugRuntimeHUD: View {
     let performance: DetectorPerformanceSnapshot?
     let capture: CaptureCadenceSnapshot?
     let recording: Bool
+    let settingsLocked: Bool
     let touches: Int?
     let elapsed: Double
     let onOpenTests: (() -> Void)?
@@ -106,6 +109,7 @@ private struct DebugRuntimeHUD: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(DebugOverlayPreferences.visibilityKey) private var visible = DebugOverlayPreferences.visibleByDefault
     @AppStorage("debug.touchOutlines") private var showTouchOutlines = true
+    @AppStorage(ShoeRecoveryPolicy.benchmarkPreferenceKey) private var toeRecoveryEnabled = true
     @State private var expanded = true
     @State private var observing = false
 
@@ -136,7 +140,8 @@ private struct DebugRuntimeHUD: View {
             }
             if expanded {
                 Text(RFSmallModel(rawValue: BallDetector.configuredResourceName)?.displayName ?? BallDetector.configuredResourceName)
-                Text("Counter · heel/toe recovery \(ShoeRecoveryPolicy.enabled ? "on" : "off")")
+                Text("Toe recovery · \(activeToeRecovery ? "On" : "Off")")
+                    .accessibilityIdentifier("debug-toe-recovery")
                 Text("Thermal: \(monitor.thermal)")
                     .foregroundStyle(monitor.thermal == "nominal" ? .green : monitor.thermal == "fair" ? .yellow : .red)
                     .accessibilityIdentifier("debug-thermal-state")
@@ -152,7 +157,7 @@ private struct DebugRuntimeHUD: View {
                     if let live = performance.live {
                         Text("Full frame avg \(live.meanFrameMS, specifier: "%.0f") · p95 \(performance.liveP95MS, specifier: "%.0f") ms")
                         if let pose = live.shoePose {
-                            Text("Pose Full · CPU · \(pose.meanInferenceMS, specifier: "%.1f") ms/call")
+                            Text("Pose Full · CPU\(pose.enabled ? "" : " · Off") · \(pose.meanInferenceMS, specifier: "%.1f") ms/call")
                                 .accessibilityIdentifier("debug-pose-cost")
                             Text("Pose \(pose.calls) calls · \(pose.errors) errors · max \(pose.maxInferenceMS, specifier: "%.0f") ms")
                             Text("Pose load \(pose.loadMS, specifier: "%.0f") ms · work \(pose.totalMS / 1000, specifier: "%.1f")s")
@@ -181,7 +186,12 @@ private struct DebugRuntimeHUD: View {
         .onAppear { observe(scenePhase == .active) }
         .onChange(of: scenePhase) { _, phase in observe(phase == .active) }
         .onDisappear { observe(false) }
-        .sheet(isPresented: $showTests) { FinalTestPanel() }
+        .sheet(isPresented: $showTests) { FinalTestPanel(settingsLocked: settingsLocked || recording) }
+    }
+
+    private var activeToeRecovery: Bool {
+        if recording, let enabled = performance?.live?.shoePose?.enabled { return enabled }
+        return ShoeRecoveryPolicy.available && (ShoeRecoveryPolicy.launchOverride ?? toeRecoveryEnabled)
     }
 
     private func savedFPS(_ stats: CaptureCadenceSnapshot) -> Double {

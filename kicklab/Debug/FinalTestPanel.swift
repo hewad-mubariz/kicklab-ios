@@ -2,7 +2,9 @@
 import SwiftUI
 
 struct FinalTestPanel: View {
+    var settingsLocked = false
     @ObservedObject private var tests = FinalTestCoordinator.shared
+    @AppStorage(ShoeRecoveryPolicy.benchmarkPreferenceKey) private var toeRecoveryEnabled = true
     @Environment(\.dismiss) private var dismiss
     @State private var notes = ""
     @State private var expected = ""
@@ -11,12 +13,25 @@ struct FinalTestPanel: View {
         NavigationStack {
             Form {
                 Section("Duration ladder") {
+                    Toggle("Toe recovery (MediaPipe)", isOn: Binding(
+                        get: { ShoeRecoveryPolicy.launchOverride ?? toeRecoveryEnabled },
+                        set: { toeRecoveryEnabled = $0 }))
+                        .disabled(settingsLocked || tests.busy || tests.analysisRunning
+                                  || !ShoeRecoveryPolicy.available || ShoeRecoveryPolicy.launchOverride != nil)
+                        .accessibilityIdentifier("final-test-toe-recovery")
+                    Text("On adds the heel/toe pose model. Off skips it. The ball detector, Apple Vision and existing contact rules stay the same. Applies to the next recording or fresh analysis.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    if settingsLocked || tests.busy || tests.analysisRunning {
+                        Text("Finish the current run before changing this setting.").font(.caption)
+                    } else if ShoeRecoveryPolicy.launchOverride != nil {
+                        Text("The launch command fixes this mode. Reopen from the app icon to use the switch.").font(.caption)
+                    }
                     Text("Choose a duration, then record in the camera. It stops at the target. Keep the player and ball visible; include both feet, knees, head and chest, plus deliberate hand catches and ground bounces.")
                         .font(.footnote)
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 85))]) {
                         ForEach(FinalTestReport.durations, id: \.self) { seconds in
                             Button(FinalTestCoordinator.label(seconds)) { tests.arm(seconds); dismiss() }
-                                .buttonStyle(.bordered).disabled(tests.busy || tests.analysisRunning)
+                                .buttonStyle(.bordered).disabled(settingsLocked || tests.busy || tests.analysisRunning)
                                 .accessibilityIdentifier("final-test-arm-\(seconds)")
                         }
                     }
@@ -24,17 +39,20 @@ struct FinalTestPanel: View {
                     if tests.armedSeconds != nil { Button("Disarm", role: .cancel) { tests.disarm() } }
                 }
                 Section("Outdoor measurements") {
-                    Text("The current heel/toe counter stays enabled. The camera overlay shows touches, heat, app memory, battery, FPS, frame drops and MediaPipe Full pose cost on CPU.")
+                    Text("The camera overlay shows the active toe mode, touches, heat, app memory, battery, FPS, frame drops and MediaPipe Full pose cost on CPU. Off runs should show zero MediaPipe calls.")
                     Text("Reports keep one-second samples and exact final pose totals. Pose work is already included in full-frame time. Memory around pose initialization is a whole-app change, not model-only RAM.")
                         .font(.caption).foregroundStyle(.secondary)
                     Text("Start with 30 seconds to check framing, then try 3, 10 and 30 minutes. Keep lighting and movement similar when comparing phones; let each phone return to Normal thermal state between comparisons.")
                         .font(.caption)
                 }
                 if let report = tests.report {
-                    Section("\(FinalTestCoordinator.label(report.targetSeconds)) · \(report.verdict)") {
+                    Section("\(FinalTestCoordinator.label(report.targetSeconds)) · \(report.toeRecoveryLabel) · \(report.verdict)") {
                         Text("\(report.build) · \(report.started.formatted())").font(.caption)
                         Text("Peak \(report.peakMemoryMiB, specifier: "%.0f") MiB · worst thermal: \(report.worstThermal)")
                         Text("Live: \(report.liveTouches.map(String.init) ?? "—") · fresh analysis: \(report.analyzedTouches.map(String.init) ?? "—")")
+                        if let enabled = report.analysisShoeRecoveryEnabled {
+                            Text("Fresh analysis · Toe: \(enabled ? "On" : "Off")").font(.caption)
+                        }
                         if let pose = report.livePerformance?.shoePose {
                             VStack(alignment: .leading, spacing: 5) {
                                 Text("Pose Full · CPU\(pose.enabled ? "" : " · disabled")").font(.headline)
@@ -101,7 +119,7 @@ struct FinalTestPanel: View {
                             tests.select(report); notes = report.notes; expected = report.expectedTouches.map(String.init) ?? ""
                         } label: {
                             VStack(alignment: .leading) {
-                                Text("\(FinalTestCoordinator.label(report.targetSeconds)) · \(report.verdict)")
+                                Text("\(FinalTestCoordinator.label(report.targetSeconds)) · \(report.toeRecoveryLabel) · \(report.verdict)")
                                 Text(report.started.formatted()).font(.caption).foregroundStyle(.secondary)
                             }
                         }.disabled(tests.busy || tests.analysisRunning)

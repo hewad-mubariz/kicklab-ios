@@ -71,6 +71,7 @@ final class FinalTestCoordinator: ObservableObject {
             build: build, device: "\(UIDevice.current.model) (\(Self.hardwareModel))", os: UIDevice.current.systemVersion,
             model: RFSmallModel(rawValue: BallDetector.configuredResourceName)?.displayName ?? BallDetector.configuredResourceName,
             pipeline: SessionAnalysisStore.pipelineSignature())
+        report?.shoeRecoveryEnabled = ShoeRecoveryPolicy.enabled
         guard openFiles(id) else { return nil }
         files?.ensureJournal("live-contacts.jsonl")
         self.camera = camera
@@ -95,6 +96,7 @@ final class FinalTestCoordinator: ObservableObject {
         let stats = camera.capturePerformance
         report?.liveTouches = camera.touchCount
         report?.livePerformance = performance
+        if let enabled = performance?.shoePose?.enabled { report?.shoeRecoveryEnabled = enabled }
         report?.capture = stats
         let target = Double(report?.targetSeconds ?? 0)
         let status = camera.recordingError != nil ? "failed" : (stats.duration + 0.1 >= target ? "completed" : "short")
@@ -216,6 +218,10 @@ final class FinalTestCoordinator: ObservableObject {
         report?.analysisDirectory = attempt
         report?.analysisBuild = "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") ?? "?") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") ?? "?"))"
         report?.analysisPipeline = SessionAnalysisStore.pipelineSignature()
+        report?.analysisShoeRecoveryEnabled = ShoeRecoveryPolicy.enabled
+        analysisFiles.save(["build": report?.analysisBuild ?? "unknown",
+                            "pipeline": report?.analysisPipeline ?? "unknown",
+                            "toeRecovery": ShoeRecoveryPolicy.enabled ? "on" : "off"], as: "settings.json")
         analysisFiles.ensureJournal("analysis-contacts.jsonl")
         analyzer.finalTestFiles = analysisFiles
         stage("analysis", status: "running", detail: "Fresh saved-pixel analysis; cache bypassed. Live score stays unchanged.")

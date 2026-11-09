@@ -28,6 +28,8 @@ nonisolated struct FinalTestReport: Codable, Sendable, Identifiable {
     var expectedTouches: Int?
     var liveTouches: Int?
     var analyzedTouches: Int?
+    var shoeRecoveryEnabled: Bool?
+    var analysisShoeRecoveryEnabled: Bool?
     var livePerformance: LivePerformanceSummary?
     var capture: CaptureCadenceSnapshot?
     var analysisBuild: String?
@@ -40,6 +42,11 @@ nonisolated struct FinalTestReport: Codable, Sendable, Identifiable {
     var peakMemoryMiB = 0.0
     var worstThermal = "nominal"
     var storageError: String?
+
+    var toeRecoveryLabel: String {
+        guard let enabled = livePerformance?.shoePose?.enabled ?? shoeRecoveryEnabled else { return "Toe: unrecorded" }
+        return enabled ? "Toe: On" : "Toe: Off"
+    }
 
     var verdict: String {
         if storageError != nil || stages.values.contains(where: { ["failed", "interrupted", "short"].contains($0.status) })
