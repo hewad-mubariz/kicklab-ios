@@ -21,7 +21,7 @@ nonisolated enum TouchCountingDebugProfile {
     static var arguments: [String] {
         let base = TouchCountingBetaProfile.enabledForBuild
             ? TouchCountingBetaProfile.flags : resolve(ProcessInfo.processInfo.arguments)
-        return base + (ShoeRecoveryPolicy.usesVisibleFootRecoveryV2 ? ["--visible-foot-recovery-v2"] : [])
+        return base + (ContactRecoveryPolicy.usesVisibleFootRecoveryV2 ? ["--visible-foot-recovery-v2"] : [])
     }
     // The guided field tests include 15-minute recordings at 30 analysis FPS.
     // Keep the same bounded 20-minute numeric journal in the field-test beta.
@@ -64,8 +64,8 @@ nonisolated enum TouchCountingDebugProfile {
                 "counterConfig": config ?? NSNull(),
                 "workerInterleaving": RFWorkerAdmissionPolicy.enabled(),
                 "adjacentFootEvidence": AdjacentFootEvidencePolicy.enabled(),
-                "shoeRecovery": ShoeRecoveryPolicy.enabled,
-                "shoeRecoverySignature": ShoeRecoveryPolicy.signature,
+                "shoeRecovery": false,
+                "contactRecoverySignature": ContactRecoveryPolicy.signature,
                 "lateImpactEvidence": ContactRecheckPolicy.usesLateApproach(),
                 "groundImpactEvidence": GroundImpactEvidencePolicy.enabled(),
                 "unliftedFloorRebound": UnliftedFloorReboundPolicy.enabled(),

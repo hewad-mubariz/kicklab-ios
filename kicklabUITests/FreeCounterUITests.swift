@@ -61,39 +61,34 @@ final class FreeCounterUITests: XCTestCase {
             .appendingPathComponent("kicklabTests/Fixtures/juggling-eighteen.mov").path
         let app = XCUIApplication()
         app.launchArguments = ["--session-design", "motion-replay", "--session-video", fixture,
-                               "-debug.overlaysVisible", "YES"]
+                               "-debug.overlaysVisible", "YES", "--shoe-recovery-on",
+                               "-juggledude.benchmark.shoe-recovery", "YES"]
         app.launch()
         XCTAssertTrue(app.buttons["debug-final-tests"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["debug-thermal-state"].exists)
         app.buttons["debug-final-tests"].tap()
-        let toeSwitch = app.switches["final-test-toe-recovery"]
-        XCTAssertTrue(toeSwitch.waitForExistence(timeout: 5))
-        XCTAssertTrue(toeSwitch.isEnabled)
-        let toeControl = toeSwitch.switches.firstMatch.exists ? toeSwitch.switches.firstMatch : toeSwitch
-        if toeSwitch.value as? String == "0" { toeControl.tap() }
-        toeControl.tap()
-        XCTAssertEqual(toeSwitch.value as? String, "0")
+        XCTAssertTrue(app.buttons["final-test-arm-30"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.switches["final-test-toe-recovery"].exists)
         for seconds in [30, 60, 120, 180, 300, 600, 900, 1200, 1500, 1800] {
             XCTAssertTrue(app.buttons["final-test-arm-\(seconds)"].waitForExistence(timeout: 5))
         }
-        attach(app, "Final validation duration ladder with toe recovery off")
+        attach(app, "Final validation duration ladder without auxiliary pose model")
         for _ in 0..<3 where !app.buttons["final-test-arm-1800"].isHittable { app.swipeUp() }
         app.buttons["final-test-arm-1800"].tap()
         XCTAssertTrue(app.staticTexts["Test armed: 30 min"].waitForExistence(timeout: 5))
-        XCTAssertEqual(app.staticTexts["debug-toe-recovery"].label, "Toe recovery · Off")
+        XCTAssertFalse(app.staticTexts["debug-toe-recovery"].exists)
+        XCTAssertFalse(app.staticTexts["debug-pose-cost"].exists)
         app.buttons["debug-final-tests"].tap()
         app.buttons["Disarm"].tap()
         app.buttons["Done"].tap()
         app.terminate()
         app.launch()
         XCTAssertTrue(app.buttons["debug-final-tests"].waitForExistence(timeout: 20))
-        XCTAssertEqual(app.staticTexts["debug-toe-recovery"].label, "Toe recovery · Off")
+        XCTAssertFalse(app.staticTexts["debug-toe-recovery"].exists)
         app.buttons["debug-final-tests"].tap()
-        XCTAssertTrue(toeSwitch.waitForExistence(timeout: 5))
-        XCTAssertEqual(toeSwitch.value as? String, "0", "The debug choice survives an icon launch")
-        toeControl.tap()
+        XCTAssertTrue(app.buttons["final-test-arm-30"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.switches["final-test-toe-recovery"].exists)
         app.buttons["Done"].tap()
-        XCTAssertEqual(app.staticTexts["debug-toe-recovery"].label, "Toe recovery · On")
     }
 
     private func attach(_ app: XCUIApplication, _ name: String) {

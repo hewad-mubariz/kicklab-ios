@@ -1,7 +1,7 @@
 import Foundation
 
-/// Cumulative timings for the auxiliary MediaPipe Full pose model. Its time is
-/// already inside contact buffering / full-frame work; never add it twice.
+/// Legacy diagnostic schema for saved MediaPipe field tests. Current runs emit
+/// the zero/disabled default; this type does not load or execute a model.
 nonisolated struct ShoePosePerformance: Codable, Sendable {
     var enabled = false
     var calls = 0

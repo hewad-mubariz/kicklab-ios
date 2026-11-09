@@ -6,9 +6,9 @@ struct TouchCountingBetaProfileTests {
     private final class Resources {}
 
     /// This fixture was captured on iPhone 17 during the validated debug runs,
-    /// before the Release profile existed. Compare actual factory output and
-    /// pipeline identity, not just the intended list of enabled switches.
-    @Test func releaseBetaMatchesMeasuredDeviceBaseline() throws {
+    /// before the Release profile existed. Keep that factory baseline plus the
+    /// later visible-foot refinement, which does not require the auxiliary model.
+    @Test func releaseBetaKeepsMeasuredBaselineAndVisibleFootRefinement() throws {
         #if TOUCH_COUNTER_BETA
         #expect(TouchCountingBetaProfile.enabledForBuild)
         #expect(!TouchCountingDebugProfile.enabledForBuild)
@@ -18,7 +18,7 @@ struct TouchCountingBetaProfileTests {
         let args = TouchCountingDebugProfile.arguments
         let harness: Set<String> = ["--session-design", "--rf-full-app-review", "--touch-debug-hold"]
         let measured = try #require(reference["effectiveFlags"] as? [String])
-        #expect(Set(args) == Set(measured).subtracting(harness))
+        #expect(Set(args) == Set(measured).subtracting(harness).union(["--visible-foot-recovery-v2"]))
         let policy = CountingPolicy.current
         #expect(policy.body.rawValue == reference["bodyPolicy"] as? String)
         #expect(policy.handling.rawValue == reference["handlingPolicy"] as? String)

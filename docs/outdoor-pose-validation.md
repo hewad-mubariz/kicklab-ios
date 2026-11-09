@@ -1,73 +1,85 @@
-# Outdoor session and pose-cost checks
+# Outdoor session checks after removing the auxiliary pose model
 
-Use the main Juggle Dude local Debug build, with optimized (`-O`) device app code.
-Launch once with `--outdoor-validation` to persistently show the existing debug
-overlay. The debug toe choice is preserved across launches and defaults to On.
-Release builds always enable the normal heel/toe model and expose no
-test UI, launch switch or counter toggle.
+Build 84 removes MediaPipe Full, its SDK/linker anchors, model-only heel/toe
+proofs and the debug On/Off switch. The retired preference and launch flags
+cannot enable it. The model file is also excluded from target membership so a
+copy left in another checkout cannot accidentally ship.
 
-In the camera, tap **Session tests · 30s–30min**, choose **Toe recovery (MediaPipe)**
-On or Off beside the duration ladder, select a duration, then press the
-normal Record button. The available durations are 30 seconds, 1, 2, 3, 5, 10, 15,
-20, 25 and 30 minutes. The existing coordinator stops against recorded-video time.
-Manual stop still works, and a short attempt stays marked as short. Collapse the
-overlay by tapping its header; restore a closed overlay in Profile → Settings →
-Show debug overlays.
+The existing RF-DETR ball detector, lazy Apple Vision contact poses (revision 2
+with CPU fallback), visible-foot recovery v2, small-arc/adjacent-foot rules,
+hand-hold and floor-bounce rejection, three-second visibility grace, and live
+count/mask reuse remain. The current analysis signature uses the former model-Off
+identity. Saved model-On evidence cannot match; old diagnostic reports still
+show their original mode and costs. Historical numeric shoe proofs are ignored
+when decoding evidence for the current counter. Saved session results and videos
+are not deleted or rewritten.
 
-This is a model-only comparison. Off skips MediaPipe Full inference and shoe
-proofs; visible-foot recovery v2, Apple Vision revision 2/fallback and all other
-counter rules stay enabled. The mode is latched when Record resets the counter,
-even if camera warmup happened before the switch changed. The prior pose model
-is released on reset. The switch is disabled during recording setup, recording,
-finalization and guided analysis. Explicit `--shoe-recovery-on/off` benchmark
-launches lock the switch until a normal icon launch.
+## Measurements behind the removal
 
-Each report and its history row identify the live toe mode. Fresh analysis stores
-its own mode separately, including `settings.json` in every retained analysis
-attempt, so replaying the same source with a different mode does not relabel the
-live result. On/Off analysis signatures remain separate, while a model choice
-after warmup preserves mask/count reuse provenance if all other settings match.
+Two separate five-minute sessions on iPhone 17 Pro Max, 1.2.0 build 83:
 
-The overlay shows touch count and elapsed/target time, process memory/peak,
-thermal state, battery/Low Power state, ball-detector latency and backend,
-analysis/saved FPS, camera/writer drops, analysis replacements and retained mask
-bytes. Pose fields specifically refer to **MediaPipe Full on CPU**, separately
-from the lazy Apple Vision body/hand requests in the detector log.
+| Metric | Model On | Model Off |
+| --- | ---: | ---: |
+| Extra model calls | 9,001 | 0 |
+| Analysis FPS | 29.98 | 29.92 |
+| Counting-stage average | 20.48 ms | 13.05 ms |
+| App median / peak footprint | 396 / 479 MiB | 312 / 391 MiB |
+| Thermal state | Normal | Normal |
+| Counted touches | 257 | 214 |
 
-Pose measurements include model initialization time, inference calls/errors,
-average and maximum inference latency, frames with a valid 33-point pose,
-total pose work and supported contact checks. Supported checks are not necessarily
-additional counted touches. Calls that throw are included in attempted-call time.
-The footprint before/after initialization is a whole-process observation, not
-isolated model RAM. The existing ball detector, camera buffers and other work
-can affect it. These timings are wall-clock work measurements, not CPU utilization
-or isolated pose energy. Pose work is already inside contact-buffer/full-frame
-timings and must not be added again.
+The observed 36% reduction is counting-stage wall-clock work, not total pipeline
+latency, CPU utilization or isolated energy. The ball-detector worker overlaps
+the counting worker. Different performances/exposure prevent an accuracy claim
+from the counts. Battery readings were coarse (50 to 45 versus 45 to 45).
+The Off source had a 675 ms startup frame gap and 30 reported capture drops near
+startup; none accrued later. Both sources copied with matching SHA-256 hashes
+and fully decoded. Evidence is under the local ignored artifact directory
+`artifacts/outdoor-pose-runs/iphone17-20261109/`, including
+`on-off-comparison.json` and both complete session folders.
+
+## Running the duration ladder
+
+Use the main Juggle Dude local Debug build, with optimized (`-O`) device code.
+Launch once with `--outdoor-validation` to persistently show the debug overlay.
+In the camera, tap **Session tests · 30s–30min**, choose a duration, then press
+Record. Available durations are 30 seconds, 1, 2, 3, 5, 10, 15, 20, 25 and 30
+minutes. Auto-stop uses recorded-video time. Manual stop still works; a short
+attempt stays marked short. Restore a hidden overlay in Profile → Settings →
+Show debug overlays. Release builds expose no test panel or counter toggle.
+
+The overlay keeps touch count, elapsed/target time, process memory/peak, thermal
+state, battery/Low Power state, ball-detector latency/backend, analysis/saved
+FPS, camera/writer drops, analysis replacements and retained mask bytes.
+The label “Counter stage” excludes the separately measured ball detector.
 
 Each armed run retains evidence under Documents/FinalValidation/<run UUID>:
 
-- `report.json`: device, build, target, stages, exact final capture and pose totals.
-  It also includes `shoeRecoveryEnabled` and `analysisShoeRecoveryEnabled` when recorded.
-- `samples.jsonl`: one-second thermal, footprint, battery, free disk, FPS, touch
-  count and cumulative pose snapshots.
-- `live-performance.json`: final stage totals and pose snapshot after counter flush.
-- `detector.csv`: periodic detector timings plus cumulative `shoe_*` columns.
-- `live-contacts.jsonl` and `live-touches.json`: contact decisions and confirmed touches.
-- `capture.json` and retained `source.mov`: saved frame cadence and original recording.
+- `report.json`: device/build, target, stages, final metrics and review notes.
+- `samples.jsonl`: one-second thermal, footprint, battery, FPS and touch samples.
+- `live-performance.json`: final cumulative stage totals after counter flush.
+- `detector.csv`: periodic detector and counter timing samples.
+- `live-contacts.jsonl` and `live-touches.json`: decisions and touch timestamps.
+- `capture.json` and `source.mov`: capture cadence and original recording.
 
-Reports and originals can be shared from the same test panel. Existing reports
-remain readable when the new optional fields are absent. No telemetry upload is
-added. Extra retained test videos consume storage independently of ordinary history.
+Legacy `shoeRecoveryEnabled`, `analysisShoeRecoveryEnabled`, `shoePose` and
+`shoe_*` diagnostic fields remain readable. New runs report Off/zero; these are
+schema compatibility only, with no auxiliary model object or per-frame work.
+Reports and originals remain shareable from the panel. Extra retained test
+videos consume storage independently of ordinary history.
 
-Start with 30 seconds for framing and audio; then 3, 10 and 30 minutes as useful.
-For a device comparison, begin at Normal thermal state with similar lighting,
-framing and movement, and note charging and Low Power status. A longer run tells
-us about thermal changes, lost analysis frames and memory growth. It does not
-prove touch accuracy without a manual count/review. Comparing different outdoor
-performances also cannot isolate the model's incremental energy or accuracy;
-controlled saved-video comparisons remain the stronger follow-up for that.
+For comparisons, begin unplugged at Normal thermal state with similar lighting,
+framing and movement. A long run reveals thermal changes and memory growth, but
+accuracy still requires manual counting. The duration-ladder UI test arms and
+disarms 30 minutes; it does not claim a real 30-minute capture.
 
-Validation covers the duration ladder through 30 minutes, old report decoding,
-cumulative counters without double-counting, real pose inference/reset and normal
-heel/toe rules. The UI test selects and disarms 30 minutes; it does not claim to
-have completed a real 30-minute outdoor capture.
+## Build 84 verification
+
+All 80 selected code/UI checks pass, including report compatibility, retired
+model-proof rejection, unchanged base counter rules, cache identity, long-session
+mask reuse and duration controls. The signed optimized Debug device app shrank
+from 244,594,059 to 186,430,843 bytes (58,163,216 bytes removed). These are local
+uncompressed Debug bundles, not App Store download sizes. Bundle inspection finds
+zero auxiliary model/SDK files and zero MediaPipe exported symbols (4,759 before).
+The installed iPhone 17 launch report confirms build 84, model Off and an exact
+match to the ON field recording's remaining counter configuration. Build/test
+and installation evidence is under `artifacts/remove-aux-pose/`.

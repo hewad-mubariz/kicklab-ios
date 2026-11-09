@@ -806,7 +806,7 @@ nonisolated final class TouchStateMachine {
                    || (config.rejectsDescendingFloorRebound == true
                        && MeasuredFootImpactRules.descendingFloorRebound($0) != nil) }) == true,
                footEvidence?.confirmsAlignedLegGroundClearance != true,
-               groundEvidence?.visibleFootProof == nil, groundEvidence?.shoeProof?.valid != true {
+               groundEvidence?.visibleFootProof == nil {
                 unliftedFloorRejectedFrame = apex.frameIndex
                 plantedFeetConfirmed = true
                 return reject(.groundBounce)

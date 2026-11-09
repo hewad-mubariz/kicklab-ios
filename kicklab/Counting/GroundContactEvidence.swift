@@ -8,7 +8,6 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
         let ballX, ballY, width, height, confidence, imageAspect: Double
         let ankles, hips: [BodySide: PoseLandmark]
     }
-    var shoeProof: ShoeContactProof? = nil
     let contactMs: Int
     let samples: [Sample]
     var checksBallBelowFeet: Bool? = nil

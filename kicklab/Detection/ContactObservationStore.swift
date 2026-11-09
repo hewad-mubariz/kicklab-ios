@@ -46,7 +46,7 @@ nonisolated final class ContactObservationStore {
     private let followsVideoLifecycle: Bool
     private let requestUsesCPUOnly: Bool
     private let request = VNDetectHumanBodyPoseRequest()
-    private let usesVisionRevision2 = ShoeRecoveryPolicy.usesVisionRevision2
+    private let usesVisionRevision2 = ContactRecoveryPolicy.usesVisionRevision2
     private lazy var revision2Session = LiveBodyPoseRevision2.Session()
     private lazy var acceleratedRequest = VNDetectHumanBodyPoseRequest()
     private let handRequest = VNDetectHumanHandPoseRequest()

@@ -71,7 +71,7 @@ final class FinalTestCoordinator: ObservableObject {
             build: build, device: "\(UIDevice.current.model) (\(Self.hardwareModel))", os: UIDevice.current.systemVersion,
             model: RFSmallModel(rawValue: BallDetector.configuredResourceName)?.displayName ?? BallDetector.configuredResourceName,
             pipeline: SessionAnalysisStore.pipelineSignature())
-        report?.shoeRecoveryEnabled = ShoeRecoveryPolicy.enabled
+        report?.shoeRecoveryEnabled = false
         guard openFiles(id) else { return nil }
         files?.ensureJournal("live-contacts.jsonl")
         self.camera = camera
@@ -218,10 +218,10 @@ final class FinalTestCoordinator: ObservableObject {
         report?.analysisDirectory = attempt
         report?.analysisBuild = "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") ?? "?") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") ?? "?"))"
         report?.analysisPipeline = SessionAnalysisStore.pipelineSignature()
-        report?.analysisShoeRecoveryEnabled = ShoeRecoveryPolicy.enabled
+        report?.analysisShoeRecoveryEnabled = false
         analysisFiles.save(["build": report?.analysisBuild ?? "unknown",
                             "pipeline": report?.analysisPipeline ?? "unknown",
-                            "toeRecovery": ShoeRecoveryPolicy.enabled ? "on" : "off"], as: "settings.json")
+                            "toeRecovery": "off"], as: "settings.json")
         analysisFiles.ensureJournal("analysis-contacts.jsonl")
         analyzer.finalTestFiles = analysisFiles
         stage("analysis", status: "running", detail: "Fresh saved-pixel analysis; cache bypassed. Live score stays unchanged.")

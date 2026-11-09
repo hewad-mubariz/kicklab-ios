@@ -2,8 +2,7 @@ import CoreVideo
 import Foundation
 
 /// Inspect contacts and bounded inter-contact streak probes using a shared
-/// cache of small images. Vision contact poses are lazy; the auxiliary shoe model
-/// runs on stored analysis frames, not preview/camera frames. A suspected floor
+/// cache of small images. Vision contact poses are lazy. A suspected floor
 /// contact may reuse three buffered views to establish approach and separation
 /// at a foot; the same poses also serve the hand veto. Uncertain/missing
 /// pose is not evidence of a hand; the trajectory gates still decide the touch.
@@ -41,16 +40,15 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     private var handCache: [Int: Bool] = [:]
     private var bodyFailures: [Int: RestrictedTouchPolicy.Failure] = [:]
     private var alignedFootFrames: [Int: Int] = [:]
-    private let shoeRecovery = ShoeContactRecovery()
-    private var shoeNowMs = -1
     var handPoseRequests: Int { observations.handPoseRequests }
     private(set) var footChecks = 0
     private(set) var footRecoveries = 0
     private(set) var footCheckMS = 0.0
     var poseRequests: Int { observations.poseRequests }
     var poseCacheHits: Int { observations.poseCacheHits }
-    var poseProfile: [String: Double] { observations.poseProfile.merging(shoeRecovery.metrics) { _, new in new } }
-    var shoePerformance: ShoePosePerformance { shoeRecovery.performance }
+    var poseProfile: [String: Double] { observations.poseProfile }
+    /// Historical report schema: the auxiliary model has been removed.
+    var shoePerformance: ShoePosePerformance { .init() }
     private(set) var checkedContacts = 0
     private(set) var rejectedContacts = 0
     private(set) var lastCheckMS = 0.0
@@ -79,7 +77,6 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
 
     func discardFrames() {
         observations.discardFrames()
-        shoeRecovery.discardFrames()
         #if DEBUG
         selectedPoseRecovery.retain([])
         #endif
@@ -93,8 +90,6 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     func reset() {
         discardFrames()
         observations.reset()
-        shoeRecovery.reset()
-        shoeNowMs = -1
         #if DEBUG
         selectedPoseRecovery.reset()
         #endif
@@ -129,9 +124,6 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     func store(_ pixels: CVPixelBuffer, frameIndex: Int, timestampMs: Int,
                ball: Detection?, orientLandscapeAsPortrait: Bool = true, player: ActivePlayerSelection? = nil) {
         guard lastError == nil else { return }
-        shoeNowMs = max(shoeNowMs, timestampMs)
-        shoeRecovery.store(pixels, timestampMs: timestampMs, ball: ball,
-                           orientLandscapeAsPortrait: orientLandscapeAsPortrait)
         observations.store(pixels, frameIndex: frameIndex, timestampMs: timestampMs,
                            ball: ball, orientLandscapeAsPortrait: orientLandscapeAsPortrait, player: player)
         let retained = Set(frames.map(\.index))
@@ -599,24 +591,8 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
         } else if evidence.confirmsVisibleFoot {
             evidence.compactGroundEvidence?.checksVisibleForefoot = nil
         }
-        if let proof = shoeProof(at: frameIndex) {
-            evidence.shoeProof = proof
-            if let aligned = observations.frames.first(where: { $0.timestampMs == proof.impactMs }) {
-                alignedFootFrames[frameIndex] = aligned.index
-            }
-        }
         if evidence.confirms { footRecoveries += 1 }
         return evidence
-    }
-
-    private func shoeProof(at index: Int) -> ShoeContactProof? {
-        guard let time = observations.timestamp(at: index),
-              let proof = shoeRecovery.proof(at: time, through: shoeNowMs, player: observations.selection(at: index)),
-              let aligned = observations.frames.first(where: { $0.timestampMs == proof.impactMs }),
-              !rejectsHandInWindow(at: index), !rejectsHandInWindow(at: aligned.index),
-              handlingEvidence(at: index)?.state != .held,
-              handlingEvidence(at: aligned.index)?.state != .held, lastError == nil else { return nil }
-        return proof
     }
 
     private func measuredAdjacentFoot(at frameIndex: Int) -> FootContactEvidence? {
@@ -666,7 +642,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
                 ankles: pose.ankles, hips: pose.hips)
         }
         let samples = views.compactMap(sample)
-        var evidence = GroundContactEvidence(shoeProof: shoeProof(at: frameIndex), contactMs: contact.timestampMs, samples: samples, checksBallBelowFeet: timed ? true : nil,
+        var evidence = GroundContactEvidence(contactMs: contact.timestampMs, samples: samples, checksBallBelowFeet: timed ? true : nil,
                      requiresLowBallCenter: requiresGroundHeightEvidence ? true : nil,
                      usesLocalImpactSize: usesContactEvidenceV16 ? true : nil,
                      requiresPositiveLowContact: requiresPositiveLowContact

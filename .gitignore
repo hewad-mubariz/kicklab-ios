@@ -46,5 +46,5 @@ supabase/.temp/
 # PostHog project configuration; template in config/PostHogConfig.example.plist
 kicklab/Analytics/PostHogConfig.plist
 
-# Pinned downloadable pose-model binary.
+# Retired experiment model; must stay outside the app source/resources.
 kicklab/Models/pose_landmarker_full.task

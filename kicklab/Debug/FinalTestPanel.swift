@@ -4,7 +4,6 @@ import SwiftUI
 struct FinalTestPanel: View {
     var settingsLocked = false
     @ObservedObject private var tests = FinalTestCoordinator.shared
-    @AppStorage(ShoeRecoveryPolicy.benchmarkPreferenceKey) private var toeRecoveryEnabled = true
     @Environment(\.dismiss) private var dismiss
     @State private var notes = ""
     @State private var expected = ""
@@ -13,19 +12,6 @@ struct FinalTestPanel: View {
         NavigationStack {
             Form {
                 Section("Duration ladder") {
-                    Toggle("Toe recovery (MediaPipe)", isOn: Binding(
-                        get: { ShoeRecoveryPolicy.launchOverride ?? toeRecoveryEnabled },
-                        set: { toeRecoveryEnabled = $0 }))
-                        .disabled(settingsLocked || tests.busy || tests.analysisRunning
-                                  || !ShoeRecoveryPolicy.available || ShoeRecoveryPolicy.launchOverride != nil)
-                        .accessibilityIdentifier("final-test-toe-recovery")
-                    Text("On adds the heel/toe pose model. Off skips it. The ball detector, Apple Vision and existing contact rules stay the same. Applies to the next recording or fresh analysis.")
-                        .font(.caption).foregroundStyle(.secondary)
-                    if settingsLocked || tests.busy || tests.analysisRunning {
-                        Text("Finish the current run before changing this setting.").font(.caption)
-                    } else if ShoeRecoveryPolicy.launchOverride != nil {
-                        Text("The launch command fixes this mode. Reopen from the app icon to use the switch.").font(.caption)
-                    }
                     Text("Choose a duration, then record in the camera. It stops at the target. Keep the player and ball visible; include both feet, knees, head and chest, plus deliberate hand catches and ground bounces.")
                         .font(.footnote)
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 85))]) {
@@ -39,8 +25,8 @@ struct FinalTestPanel: View {
                     if tests.armedSeconds != nil { Button("Disarm", role: .cancel) { tests.disarm() } }
                 }
                 Section("Outdoor measurements") {
-                    Text("The camera overlay shows the active toe mode, touches, heat, app memory, battery, FPS, frame drops and MediaPipe Full pose cost on CPU. Off runs should show zero MediaPipe calls.")
-                    Text("Reports keep one-second samples and exact final pose totals. Pose work is already included in full-frame time. Memory around pose initialization is a whole-app change, not model-only RAM.")
+                    Text("The camera overlay shows touches, heat, app memory, battery, FPS, frame drops and retained masks. The extra heel/toe model has been removed.")
+                    Text("Reports keep one-second samples and final counter timings. Counting-stage time excludes the separate ball-detector stage; the two workers overlap. Memory is measured for the whole app.")
                         .font(.caption).foregroundStyle(.secondary)
                     Text("Start with 30 seconds to check framing, then try 3, 10 and 30 minutes. Keep lighting and movement similar when comparing phones; let each phone return to Normal thermal state between comparisons.")
                         .font(.caption)

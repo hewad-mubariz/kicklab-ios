@@ -62,7 +62,7 @@ actor SessionAnalysisStore {
         return try encoder.encode(frames.map(StoredFrame.init))
     }
 
-    nonisolated static func pipelineSignature(shoeRecoveryEnabled: Bool? = nil) -> String {
+    nonisolated static func pipelineSignature() -> String {
         let resource = BallDetector.configuredResourceName
         let model = Bundle.main.url(forResource: resource, withExtension: "mlmodelc")
         let date = model.flatMap { try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate }
@@ -72,7 +72,7 @@ actor SessionAnalysisStore {
         let os = ProcessInfo.processInfo.operatingSystemVersionString
         let options = pipelineOptions(arguments:TouchCountingDebugProfile.arguments,defaults:.standard)
         // Increment when detector, composition geometry, counter or repair rules change.
-        return "analysis-v15-contact-evidence-v2|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)" + CountingPolicy.current.bodySignature + CountingPolicy.current.handlingSignature + TimedTrajectory.signature + GroundContactEvidence.signature + ActiveJugglerTracker.signature + PlayerGroundEstimate.signature + StreakInterruption.signature + ContactPoseComputePolicy.signature + ShoeRecoveryPolicy.signature(enabled: shoeRecoveryEnabled ?? ShoeRecoveryPolicy.enabled)
+        return "analysis-v15-contact-evidence-v2|\(resource)|\(date?.timeIntervalSince1970 ?? 0)|\(binaryDate?.timeIntervalSince1970 ?? 0)|\(os)|\(options)" + CountingPolicy.current.bodySignature + CountingPolicy.current.handlingSignature + TimedTrajectory.signature + GroundContactEvidence.signature + ActiveJugglerTracker.signature + PlayerGroundEstimate.signature + StreakInterruption.signature + ContactPoseComputePolicy.signature + ContactRecoveryPolicy.signature
     }
 
     /// Experimental visual execution must not read or overwrite serial artifacts.
