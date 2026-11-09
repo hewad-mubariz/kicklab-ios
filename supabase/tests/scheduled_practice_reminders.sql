@@ -8,11 +8,18 @@ begin
   assert not has_table_privilege('authenticated','private.practice_reminder_copy','SELECT');
   assert private.next_practice_reminder('2026-11-08 17:01+00',1080,'Europe/Berlin')=monday;
   assert private.next_practice_reminder(monday,1080,'Europe/Berlin')='2026-11-11 17:00+00';
-  assert private.next_practice_reminder('2026-11-11 17:00+00',1080,'Europe/Berlin')='2026-11-15 17:00+00';
-  assert private.next_practice_reminder('2026-11-15 17:00+00',1080,'Europe/Berlin')='2026-11-16 17:00+00';
-  assert private.next_practice_reminder('2026-03-28 20:00+00',1080,'Europe/Berlin')='2026-03-29 16:00+00';
-  assert private.next_practice_reminder('2026-10-24 20:00+00',1080,'Europe/Berlin')='2026-10-25 17:00+00';
+  assert private.next_practice_reminder('2026-11-11 17:00+00',1080,'Europe/Berlin')='2026-11-15 13:00+00';
+  assert private.next_practice_reminder('2026-11-15 13:00+00',1080,'Europe/Berlin')='2026-11-16 17:00+00';
+  assert private.next_practice_reminder('2026-03-28 20:00+00',1080,'Europe/Berlin')='2026-03-29 12:00+00';
+  assert private.next_practice_reminder('2026-10-24 20:00+00',1080,'Europe/Berlin')='2026-10-25 13:00+00';
   assert private.next_practice_reminder('2026-11-08 10:00+00',1080,'Pacific/Auckland')='2026-11-09 05:00+00';
+  -- Custom weekday times remain intact, while Sunday is always 14:00 local.
+  assert private.next_practice_reminder('2026-11-11 06:35+00',455,'Europe/Berlin')='2026-11-15 13:00+00';
+  assert private.next_practice_reminder('2026-11-15 13:00+00',455,'Europe/Berlin')='2026-11-16 06:35+00';
+  assert private.next_practice_reminder('2026-11-15 12:59:59+00',1080,'Europe/Berlin')='2026-11-15 13:00+00';
+  assert private.next_practice_reminder('2026-11-14 22:00+00',1080,'Pacific/Auckland')='2026-11-15 01:00+00';
+  assert private.next_practice_reminder('2026-11-14 22:00+00',1080,'Asia/Kolkata')='2026-11-15 08:30+00';
+  assert private.next_practice_reminder('2026-11-14 22:00+00',1080,'America/New_York')='2026-11-15 19:00+00';
   perform public.sync_practice_installation(i,h,1,'com.juggledude.release120.preview','sandbox',repeat('b',64),true,'de',null,1080,'Europe/Berlin');
   select next_practice_at into previous_time from private.push_installations where id=i;
   perform public.sync_practice_installation(i,h,2,'com.juggledude.release120.preview','sandbox',repeat('b',64),true,'de',null,1080,'Europe/Berlin');
@@ -47,7 +54,7 @@ begin
   assert jsonb_array_length(result->'deliveries')=0;
   result:=public.claim_due_practice_reminders(50,false,i,'2026-11-11 17:00+00');
   assert jsonb_array_length(result->'deliveries')=1;
-  result:=public.claim_due_practice_reminders(50,false,i,'2026-11-15 17:00+00');
+  result:=public.claim_due_practice_reminders(50,false,i,'2026-11-15 13:00+00');
   assert jsonb_array_length(result->'deliveries')=1;
   assert (select count(*)=3 from private.push_deliveries where installation_id=i);
   result:=public.claim_due_practice_reminders(50,false,i,'2026-11-16 17:00+00');

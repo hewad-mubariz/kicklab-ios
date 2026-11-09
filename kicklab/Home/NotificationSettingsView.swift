@@ -15,7 +15,7 @@ struct NotificationSettingsView: View {
                     set: { value in Task { await notifications.setPracticeEnabled(value); await remote.refresh() } }))
                     .accessibilityIdentifier("notifications-practice")
                 if notifications.practiceEnabled {
-                    DatePicker("Reminder time", selection: Binding(get: { reminderTime }, set: { date in
+                    DatePicker("Weekday reminder time", selection: Binding(get: { reminderTime }, set: { date in
                         let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
                         Task {
                             await notifications.setTime(hour: parts.hour ?? 18, minute: parts.minute ?? 0)
@@ -25,7 +25,7 @@ struct NotificationSettingsView: View {
                     .accessibilityIdentifier("notifications-time")
                 }
             } footer: {
-                Text("Three reminders a week: Monday, Wednesday and Sunday, at your chosen local time.")
+                Text("Monday and Wednesday at your chosen time (6 PM by default), plus Sunday at 2 PM. All times are local.")
             }
             Section {
                 Toggle("Leaderboard updates", isOn: Binding(

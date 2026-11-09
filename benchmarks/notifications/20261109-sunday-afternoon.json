@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-09",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "build": 86,
+  "schedule": {
+    "Monday": "18:00 default; existing custom weekday time preserved",
+    "Wednesday": "18:00 default; existing custom weekday time preserved",
+    "Sunday": "14:00",
+    "time_zone": "Last synchronized named device time zone; DST-aware",
+    "frequency": "Three reminders per week"
+  },
+  "deployment": {
+    "project_ref": "shbdsjvpjdtqbiaevrxy",
+    "organization": "rkznfmzakzjbusabvulk",
+    "migration": "supabase/migrations/202611090001_sunday_afternoon_reminders.sql",
+    "sha256": "76f8c7c976aeef187e679129368587d4f58820f1c3796945ec0f7b6a3a1cf729",
+    "applied": true,
+    "method": "Supabase SQL Editor",
+    "reminders_enabled": true,
+    "cron_active": true,
+    "server_opt_ins_before": 2,
+    "old_sunday_times_after": 0
+  },
+  "validation": {
+    "isolated_postgresql_suite": "passed",
+    "queued_sunday_migration": "passed",
+    "expired_sunday_avoids_late_delivery": "passed",
+    "weekday_opt_out_legacy_preservation": "passed",
+    "live_read_only_schedule": "Monday/Wednesday 18:00; Sunday 14:00 Europe/Berlin",
+    "live_spring_dst": true,
+    "live_autumn_dst": true,
+    "live_custom_weekday": true,
+    "device_build": "Debug 1.2.0 (86) succeeded",
+    "settings_locales": [
+      "en",
+      "de",
+      "es",
+      "fr",
+      "pt-BR"
+    ],
+    "proof": "artifacts/sunday-reminders/deployed-schedule.png"
+  },
+  "limitations": [
+    "No APNs test alert was sent; this verifies scheduling, not physical delivery.",
+    "Existing main-app development push registration/signing mismatch is outside this timing change.",
+    "Time zone changes reach the server on the next successful app synchronization."
+  ],
+  "app_store_uploaded": false,
+  "phones": {
+    "iphone17": {
+      "installed": true,
+      "launched": true,
+      "build": 86
+    },
+    "iphone11": {
+      "installed": true,
+      "launched": true,
+      "build": 86
+    }
+  }
+}

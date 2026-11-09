@@ -31811,70 +31811,70 @@
         }
       }
     },
-    "Reminder time" : {
+    "Weekday reminder time" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reminder time"
+            "value" : "Weekday reminder time"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erinnerungszeit"
+            "value" : "Erinnerungszeit unter der Woche"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hora del recordatorio"
+            "value" : "Hora del recordatorio entre semana"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Heure du rappel"
+            "value" : "Heure des rappels en semaine"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Horário do lembrete"
+            "value" : "Horário do lembrete nos dias úteis"
           }
         }
       }
     },
-    "Three reminders a week: Monday, Wednesday and Sunday, at your chosen local time." : {
+    "Monday and Wednesday at your chosen time (6 PM by default), plus Sunday at 2 PM. All times are local." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Three reminders a week: Monday, Wednesday and Sunday, at your chosen local time."
+            "value" : "Monday and Wednesday at your chosen time (6 PM by default), plus Sunday at 2 PM. All times are local."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Drei Erinnerungen pro Woche: Montag, Mittwoch und Sonntag, zur gewählten Ortszeit."
+            "value" : "Montag und Mittwoch zur gewählten Zeit (standardmäßig 18 Uhr), außerdem Sonntag um 14 Uhr. Alle Zeiten sind Ortszeiten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tres recordatorios por semana: lunes, miércoles y domingo, a la hora local que elijas."
+            "value" : "Lunes y miércoles a la hora que elijas (18:00 de forma predeterminada), y domingo a las 14:00. Todas las horas son locales."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trois rappels par semaine : lundi, mercredi et dimanche, à l’heure locale de votre choix."
+            "value" : "Lundi et mercredi à l’heure choisie (18 h par défaut), ainsi que dimanche à 14 h. Toutes les heures sont locales."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Três lembretes por semana: segunda, quarta e domingo, no horário local que você escolher."
+            "value" : "Segunda e quarta no horário escolhido (18h por padrão), e domingo às 14h. Todos os horários são locais."
           }
         }
       }
