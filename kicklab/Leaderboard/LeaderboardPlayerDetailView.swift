@@ -19,7 +19,7 @@ struct LeaderboardPlayerDetailView: View {
                             Text("Rank #\(entry.rank)").foregroundStyle(.secondary)
                         }
                     }
-                    if entry.showsProBadge {
+                    if entry.isPro {
                         HStack(spacing: 7) {
                             ProMembershipBadge()
                             Text(ProMembershipBadge.title).font(.subheadline.weight(.semibold))
