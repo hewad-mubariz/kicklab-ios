@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-09",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "base_commit": "46841abd",
+  "format": "shared LZFSE maps with reversible spatial and colour predictors",
+  "previous_app_bytes": 188358354,
+  "new_app_bytes": 171278307,
+  "app_saving_bytes": 17080047,
+  "previous_artwork_bytes": 37187220,
+  "new_artwork_bytes": 20083815,
+  "unchanged_lab_resource_bytes": 8098914,
+  "previous_total_skin_effect_resources": 45286134,
+  "new_total_skin_effect_resources": 28182729,
+  "unique_maps": 29,
+  "color_maps": 14,
+  "seam_maps": 5,
+  "normal_maps": 10,
+  "original_decoded_sha256": {
+    "arctic": "0cfc5a56262e53972b960d63d3b193b92b5f90aa1481840a2c5bbba3cd0a7d26",
+    "aurora": "ea7baa1bef3e2986ad8f4e7340d4efa64fb6d72031fdf6f597f127a284e22f96",
+    "chrome": "44857dd39affc0f1e955e3c368ad38fcf5c14c9582984e9ffeba9f375ad5fcb9",
+    "classic": "91d67f71a7652b1342080c4079c607583bc206c3a9a67ebb7b798816a16c3b5c",
+    "crimson": "704118e1a0e76a5dc8bf80ab26b3dbb60125a5deaed6541cf819485851677269",
+    "galaxy": "59155730d1831ef6973c131543a1ff459d8e96ef86541ece9181f6c249e695a3",
+    "gold": "3a4910b6b610b01b8a3f6c4d1fb49302a1c7a8aebd7cfda83708bc9ed02d63c5",
+    "graffiti": "4364f0ed1bf27581a35439f5e1b2a48c1facdc7245e93036e7e234acdb136427",
+    "lava": "aed2c95d63aaca61a4bae3e108fcb57d67c7cf720495e5ec3924432d160d432e",
+    "matrix": "e90e54bfa75f35812b15188149801648f4d29ebeea460bed32124999bc07d1fb",
+    "metal": "855e1f8f07085904ab94b9f32c6e7808a2dbe6d9e5c44adcc02bc41c88762bd8",
+    "pearl": "e836f15ba260f7acd6fecc46791af4523d686707c52d4c07a4578d92f8c25b01",
+    "stealth": "9843c2cc78585cb5013c184a71cd36b72f9fec783f1dcdf6a1b3c500a19464fb",
+    "volt": "d6eba85df361869e9b251dce61ea93e409e882599b67c8dd17a75340e335d113"
+  },
+  "decoded_materials_exactly_equal": true,
+  "pixel_identical_cpu_frames": 112,
+  "sizes_tested": [
+    144,
+    256
+  ],
+  "orientations_per_skin": 4,
+  "cpu_cache_bytes": 14680064,
+  "mac_optimized_warm_file_loads": {
+    "hardware": "Apple M1 Max",
+    "old": {
+      "median_ms": 5.768041650298983,
+      "max_ms": 7.260916638188064,
+      "loads_per_material": 10
+    },
+    "new": {
+      "median_ms": 11.506562528666109,
+      "max_ms": 13.850791729055345,
+      "loads_per_material": 10
+    }
+  },
+  "tests": {
+    "platform": "iOS 26.5 Simulator",
+    "BallMaterialStorageTests": 4,
+    "BallCollectionTests": 3,
+    "BallSkinMetalTests": 3,
+    "failures": 0
+  },
+  "archive": "artifacts/ball-material-storage/JuggleDude-shared-materials.xcarchive/Products",
+  "signed_archive_verified": true,
+  "all_model_files_and_metal_library_byte_identical": true,
+  "asset_catalog_changed_only_build_metadata": true,
+  "packer_unpack_repack_byte_identical": true,
+  "phone_benchmark": null,
+  "download_size_measured": false,
+  "remote_asset_delivery_implemented": false
+}

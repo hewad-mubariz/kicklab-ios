@@ -20,7 +20,7 @@ Both raster sources were generated with the built-in image-generation tool, usin
 From the repository root:
 
 ```sh
-swiftc -O kicklab/Effects/BallSkin.swift kicklab/Effects/BallCollectionMaterial.swift kicklab/Effects/BallSkinSphereRenderer.swift scripts/review-ball-collection.swift -o /tmp/juggledude-review-ball-collection
+swiftc -O kicklab/Effects/BallSkin.swift kicklab/Effects/BallCollectionMaterial.swift kicklab/Effects/BallMaterialStorage.swift kicklab/Effects/BallSkinSphereRenderer.swift scripts/review-ball-collection.swift -o /tmp/juggledude-review-ball-collection
 JUGGLE_DUDE_BAKE_MATERIALS="$PWD/kicklab/Resources/BallMaterials" JUGGLE_DUDE_SURFACE_SOURCES="$PWD/design/ball-collection-01/material-sources" KICKLAB_BALL_MATERIALS_DIR="$PWD/kicklab/Resources/BallMaterials" JUGGLE_DUDE_PRINT_SOURCES="$PWD/resource-backups/20261010-shipping-cleanup/BallMaterialSources" /tmp/juggledude-review-ball-collection artifacts/ball-collection-02
 ```
 
@@ -45,3 +45,5 @@ JUGGLE_DUDE_BAKE_SKINS=classic,stealth,matrix,gold,arctic,crimson,galaxy,chrome,
 ```
 
 Omit `JUGGLE_DUDE_BAKE_SKINS` to rebuild every material used by the selected review sheet. The `before` and `after` sheets in `artifacts/ball-catalog-detail` compare the same production-renderer pose. Tests exercise rotation/seek determinism, concurrent material eviction, transparent edges, encoded video export for all 14 skins, contour preservation and Free/Pro access.
+
+The shipping catalog now stores the same decoded bytes as shared, losslessly packed maps. The baker still writes `.jdmaterial` sources; see [the storage workflow](../../../docs/ball-material-storage.md) for packing and verification.

@@ -7,11 +7,7 @@ import simd
 /// Prepared offline at 1024 × 512, then sampled by the shared sphere renderer.
 /// RGB stores unlit colour; the fourth channel stores seam distance, not opacity.
 nonisolated enum BallCollectionMaterial {
-    struct Artwork {
-        let rgba: [UInt8]
-        /// Object-space surface normals. They rotate with the print, not the studio light.
-        let normals: [UInt8]
-    }
+    typealias Artwork = BallMaterialStorage.Artwork
 
     static func artwork(skin: BallSkin, width: Int, height: Int,
                         panelSites: [SIMD3<Float>]) -> Artwork? {
@@ -32,17 +28,14 @@ nonisolated enum BallCollectionMaterial {
             return artwork
         }
         #endif
-        var url = Bundle.main.url(forResource: skin.materialResource, withExtension: "jdmaterial")
-            ?? Bundle.main.url(forResource: skin.materialResource, withExtension: "jdmaterial", subdirectory: "BallMaterials")
+        var directory: URL?
         #if os(macOS)
-        if let directory = ProcessInfo.processInfo.environment["KICKLAB_BALL_MATERIALS_DIR"] {
-            url = URL(fileURLWithPath: directory).appendingPathComponent(skin.materialResource + ".jdmaterial")
+        if let path = ProcessInfo.processInfo.environment["KICKLAB_BALL_MATERIALS_DIR"] {
+            directory = URL(fileURLWithPath: path)
         }
         #endif
-        guard let url, let compressed = NSData(contentsOf: url),
-              let data = try? compressed.decompressed(using: .lzfse), data.length == width * height * 7 else { return nil }
-        let bytes = [UInt8](data as Data), split = width * height * 4
-        return Artwork(rgba: Array(bytes[..<split]), normals: Array(bytes[split...]))
+        return BallMaterialStorage.load(resource: skin.materialResource, width: width, height: height,
+                                        directory: directory)
     }
 
     #if os(macOS)

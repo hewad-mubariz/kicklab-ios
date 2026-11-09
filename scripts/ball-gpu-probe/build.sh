@@ -28,5 +28,5 @@ xcrun swiftc -O -whole-module-optimization -D DEBUG -parse-as-library \
     kicklab/Effects/BallEffectTrack.swift kicklab/Effects/BallReplacementCoverage.swift \
     kicklab/Effects/BallReplacementMotionBlur.swift kicklab/Effects/EffectVideoGeometry.swift \
     kicklab/Effects/BallReplacementBackground.swift kicklab/Effects/BallMaterialRenderer.swift \
-    "$PROBE_BUILD/BallSkinSphereRenderer.swift" kicklab/Effects/BallSkin.swift kicklab/Effects/BallCollectionMaterial.swift \
+    "$PROBE_BUILD/BallSkinSphereRenderer.swift" kicklab/Effects/BallSkin.swift kicklab/Effects/BallCollectionMaterial.swift kicklab/Effects/BallMaterialStorage.swift \
     -o "$PROBE_BUILD/probe"

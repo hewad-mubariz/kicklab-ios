@@ -1,0 +1,224 @@
+{
+  "height" : 512,
+  "maps" : {
+    "043e238a765f7cfbc62596a50e53c8ffb6b188a99357b0ebede251725d67589f" : {
+      "channels" : 1,
+      "filter" : 0,
+      "greenDifference" : false
+    },
+    "1202e18e32e0fc62838eb51128efa7f8869f234e142ed214827fe20932cd3d9d" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "2086e113f240362b3815fd3f6a890fd9378b65b96c1f12c02dd9ea9dff700f2e" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : true
+    },
+    "222e9cf147008000eb7f1c391dde6cfea4b02cfad83337f9f09c68c4eb8ebb6a" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : true
+    },
+    "231715e057ab517826ca7d6fab314e9992d34bcffc6cda4a5bf1f3dedfa22f7d" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : true
+    },
+    "376fe2caad243ca191bfaa0c1ae48d254e8a0c1fe3ddb69f9733b981698d45d3" : {
+      "channels" : 1,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "40c2def5c1c3b411de923dcf22211bd05f9bf71db1c18cb90b7fabffc00aa0cb" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : true
+    },
+    "49bab12662faea3d6fa2f5d8f3326ff970f5f7f4942c42345b0e94467839ad2f" : {
+      "channels" : 3,
+      "filter" : 0,
+      "greenDifference" : true
+    },
+    "5656284e7bc5dd22b878c4ce885769d1854ded0de06561536eb685ce6c7dfecd" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "5b9bdd97de7cd7ec7e448c4c6b61a26f69f97ed9bef448f16e67814bdbbfea74" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "5d4804fc79b6b6471d3c41671bad0f64c9d65075d06e62f7f9f63087ee3bde50" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "6000d6b90c7077035adefd4e0d9465ee4121ca68ed103d804aa7086905c8443b" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "68a3664d3e7bc1fb2534f541b1efaed00645372537c3b7519849681a28544519" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "6ecf078769abd1eeb01d90705b18c505bedec13b367983dbae10d7b825a5998c" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "765219e623c827cf766a9d0a75551c8929f262df21efe731f7088abf2184f4f8" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : false
+    },
+    "8f3e5cd8985aab3d21cc4aa98a609ba4bb19a413cfb341c618edf1298dd8629d" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : false
+    },
+    "96684e8986360c350a64bed42f2d55cd6da4546783fba3eabd1de672d8baf462" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "a807b635efa274eb0211520113add743ab52bce1e77064d824c0919c8d12f1d2" : {
+      "channels" : 1,
+      "filter" : 3,
+      "greenDifference" : false
+    },
+    "b7a9ca2c395a77cb8fcf490a2f56fb952fdb31a8705efd622b6eca55f49c9332" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : true
+    },
+    "bcc4c3f00890fe62d6c98e6a17f67d7353959a3ec0831f87d6ae41d2d9b5d329" : {
+      "channels" : 1,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "bd063616e4fc506936a2f7372ff1dbfff5235bdf9e05240abeecf131f0b1581b" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : true
+    },
+    "be65cb0b810ea50e755800b106e9facb926315f2bd12d7cc34aeb1663cad656b" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : true
+    },
+    "cb079ee9540051d758a9b96179142a564009f98b61594468da718c845976f47b" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : true
+    },
+    "cd7e18ec2a383ef4c7cc1fa83598e7340357d8c4562d6343e047e044552c0f40" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : true
+    },
+    "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae" : {
+      "channels" : 1,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "dd8e82092940ef01ccbe8a77cd31a9729e900bf9e26aae8a6fcd17cbbf9c481f" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : true
+    },
+    "de0428c6cf0a0b9145194eb433b9b5fdbe68db1a549017aa5711217dca0e5196" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : true
+    },
+    "f894e96a784981bc90ba40d2a31dfeb0b9ed9fe4910ceb0e01addc68257000f4" : {
+      "channels" : 3,
+      "filter" : 1,
+      "greenDifference" : false
+    },
+    "fe5c3917d84149e26e1158387e130c34bd25113e1513c06d57fc74b4e7eb926b" : {
+      "channels" : 3,
+      "filter" : 3,
+      "greenDifference" : true
+    }
+  },
+  "materials" : {
+    "ball-skin-arctic" : {
+      "color" : "bd063616e4fc506936a2f7372ff1dbfff5235bdf9e05240abeecf131f0b1581b",
+      "normal" : "f894e96a784981bc90ba40d2a31dfeb0b9ed9fe4910ceb0e01addc68257000f4",
+      "seam" : "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae"
+    },
+    "ball-skin-aurora" : {
+      "color" : "de0428c6cf0a0b9145194eb433b9b5fdbe68db1a549017aa5711217dca0e5196",
+      "normal" : "96684e8986360c350a64bed42f2d55cd6da4546783fba3eabd1de672d8baf462",
+      "seam" : "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae"
+    },
+    "ball-skin-chrome" : {
+      "color" : "dd8e82092940ef01ccbe8a77cd31a9729e900bf9e26aae8a6fcd17cbbf9c481f",
+      "normal" : "765219e623c827cf766a9d0a75551c8929f262df21efe731f7088abf2184f4f8",
+      "seam" : "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae"
+    },
+    "ball-skin-classic" : {
+      "color" : "be65cb0b810ea50e755800b106e9facb926315f2bd12d7cc34aeb1663cad656b",
+      "normal" : "96684e8986360c350a64bed42f2d55cd6da4546783fba3eabd1de672d8baf462",
+      "seam" : "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae"
+    },
+    "ball-skin-crimson" : {
+      "color" : "cd7e18ec2a383ef4c7cc1fa83598e7340357d8c4562d6343e047e044552c0f40",
+      "normal" : "96684e8986360c350a64bed42f2d55cd6da4546783fba3eabd1de672d8baf462",
+      "seam" : "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae"
+    },
+    "ball-skin-galaxy" : {
+      "color" : "cb079ee9540051d758a9b96179142a564009f98b61594468da718c845976f47b",
+      "normal" : "8f3e5cd8985aab3d21cc4aa98a609ba4bb19a413cfb341c618edf1298dd8629d",
+      "seam" : "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae"
+    },
+    "ball-skin-gold" : {
+      "color" : "b7a9ca2c395a77cb8fcf490a2f56fb952fdb31a8705efd622b6eca55f49c9332",
+      "normal" : "765219e623c827cf766a9d0a75551c8929f262df21efe731f7088abf2184f4f8",
+      "seam" : "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae"
+    },
+    "ball-skin-graffiti" : {
+      "color" : "fe5c3917d84149e26e1158387e130c34bd25113e1513c06d57fc74b4e7eb926b",
+      "normal" : "96684e8986360c350a64bed42f2d55cd6da4546783fba3eabd1de672d8baf462",
+      "seam" : "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae"
+    },
+    "ball-skin-lava" : {
+      "color" : "49bab12662faea3d6fa2f5d8f3326ff970f5f7f4942c42345b0e94467839ad2f",
+      "normal" : "68a3664d3e7bc1fb2534f541b1efaed00645372537c3b7519849681a28544519",
+      "seam" : "a807b635efa274eb0211520113add743ab52bce1e77064d824c0919c8d12f1d2"
+    },
+    "ball-skin-matrix" : {
+      "color" : "222e9cf147008000eb7f1c391dde6cfea4b02cfad83337f9f09c68c4eb8ebb6a",
+      "normal" : "6ecf078769abd1eeb01d90705b18c505bedec13b367983dbae10d7b825a5998c",
+      "seam" : "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae"
+    },
+    "ball-skin-metal" : {
+      "color" : "5b9bdd97de7cd7ec7e448c4c6b61a26f69f97ed9bef448f16e67814bdbbfea74",
+      "normal" : "6000d6b90c7077035adefd4e0d9465ee4121ca68ed103d804aa7086905c8443b",
+      "seam" : "043e238a765f7cfbc62596a50e53c8ffb6b188a99357b0ebede251725d67589f"
+    },
+    "ball-skin-pearl" : {
+      "color" : "2086e113f240362b3815fd3f6a890fd9378b65b96c1f12c02dd9ea9dff700f2e",
+      "normal" : "5656284e7bc5dd22b878c4ce885769d1854ded0de06561536eb685ce6c7dfecd",
+      "seam" : "bcc4c3f00890fe62d6c98e6a17f67d7353959a3ec0831f87d6ae41d2d9b5d329"
+    },
+    "ball-skin-stealth" : {
+      "color" : "40c2def5c1c3b411de923dcf22211bd05f9bf71db1c18cb90b7fabffc00aa0cb",
+      "normal" : "1202e18e32e0fc62838eb51128efa7f8869f234e142ed214827fe20932cd3d9d",
+      "seam" : "d9f145edcf9fe6831b6a7f663c90e34647cad35dbb50a6f7892efe29cdb85fae"
+    },
+    "ball-skin-volt" : {
+      "color" : "231715e057ab517826ca7d6fab314e9992d34bcffc6cda4a5bf1f3dedfa22f7d",
+      "normal" : "5d4804fc79b6b6471d3c41671bad0f64c9d65075d06e62f7f9f63087ee3bde50",
+      "seam" : "376fe2caad243ca191bfaa0c1ae48d254e8a0c1fe3ddb69f9733b981698d45d3"
+    }
+  },
+  "version" : 1,
+  "width" : 1024
+}

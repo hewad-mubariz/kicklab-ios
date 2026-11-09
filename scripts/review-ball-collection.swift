@@ -1,4 +1,4 @@
-// Compile with BallSkin.swift, BallCollectionMaterial.swift and BallSkinSphereRenderer.swift.
+// Compile with BallSkin.swift, BallCollectionMaterial.swift, BallMaterialStorage.swift and BallSkinSphereRenderer.swift.
 // Runs the production renderer at picker/export sizes without loading a video or app account.
 import AppKit
 import Foundation
