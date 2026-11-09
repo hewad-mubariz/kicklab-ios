@@ -272,7 +272,7 @@ private struct PennantSlot: View {
                 .buttonStyle(.plain)
                 .sensoryFeedback(.impact(weight: .light), trigger: pushes)
                 .accessibilityLabel("Rank \(entry.rank), \(entry.isYou ? String(localized: "you", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : entry.name), \(entry.touches) touches")
-                .accessibilityValue(entry.isPro ? ProMembershipBadge.title : "")
+                .accessibilityValue(entry.showsProBadge ? ProMembershipBadge.title : "")
                 .accessibilityIdentifier("leaderboard-pennant-\(entry.rank)")
                 .proMembershipExplanation(id: "leaderboard-pro-\(entry.rank)")
             } else {
@@ -515,7 +515,7 @@ private struct PennantCloth: View {
                     .font(.system(size: first ? 15 : 14, weight: .semibold))
                     .lineLimit(1).minimumScaleFactor(0.7)
                     .contentTransition(.opacity)
-                if entry.isPro { ProMembershipBadge(size: 14) }
+                if entry.showsProBadge { ProMembershipBadge(size: 14) }
             }
             .padding(.horizontal, 10)
             HStack(spacing: 2) {

@@ -5,7 +5,7 @@ final class ProMembershipUITests: XCTestCase {
 
     @MainActor func testProBadgeExplainsMembershipWithoutOpeningScoreDetails() {
         let app = XCUIApplication()
-        app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-preview", "mixed",
+        app.launchArguments = ["-kicklab.welcome.completed", "YES", "--verified-pro-badges", "--leaderboard-preview", "mixed",
                                "-kicklab.appearance", "dark", "-AppleLanguages", "(en)"]
         app.launch()
         XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 15))

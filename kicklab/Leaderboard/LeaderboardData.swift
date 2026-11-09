@@ -26,6 +26,16 @@ struct LeaderboardEntry: Identifiable, Equatable {
     var isPreview = false
     /// Apple-verified membership supplied by the leaderboard, never the local debug unlock.
     var isPro = false
+    /// Temporary design review: show the mark on every player in local builds.
+    /// Release still uses verified membership; UI checks can exercise that path too.
+    static var previewsAllProBadges: Bool {
+        #if DEBUG
+        !ProcessInfo.processInfo.arguments.contains("--verified-pro-badges")
+        #else
+        false
+        #endif
+    }
+    var showsProBadge: Bool { isPro || Self.previewsAllProBadges }
     var backspinLabel: String { backspinRPM.map { "\($0) rpm" } ?? String(localized: "Unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
     var heightLabel: String { typicalHeight?.rawValue ?? String(localized: "Unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
     var streakDurationLabel: String {

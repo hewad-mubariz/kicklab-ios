@@ -81,7 +81,11 @@ private struct ProMembershipExplanation: ViewModifier {
         .alert(ProMembershipBadge.title, isPresented: $showsExplanation) {
             Button("OK", role: .cancel) { }
         } message: {
-            Text("This player has an active Juggle Dude Pro subscription. Membership does not affect rankings.")
+            if LeaderboardEntry.previewsAllProBadges {
+                Text(verbatim: "Badge preview for all players. Actual membership is unchanged.")
+            } else {
+                Text("This player has an active Juggle Dude Pro subscription. Membership does not affect rankings.")
+            }
         }
     }
 }

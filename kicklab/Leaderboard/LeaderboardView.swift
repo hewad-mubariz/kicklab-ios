@@ -588,7 +588,7 @@ struct LeaderboardRow: View {
     /// Whole phrases joined by full stops, so each language keeps its own word order.
     private var spokenRow: String {
         var rank = String(localized: "Rank \(entry.rank), \(lit ? String(localized: "you") : entry.name), \(entry.touches) touches", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        if entry.isPro { rank += ", " + ProMembershipBadge.title }
+        if entry.showsProBadge { rank += ", " + ProMembershipBadge.title }
         if entry.hasConfirmedTouchCheck { rank += ", " + String(localized: "confirmed by a reviewer", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
         let stats = String(localized: "Streak duration \(entry.streakDurationLabel), average rhythm \(entry.averageRhythmLabel)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         return [rank, review, stats, chase].compactMap { $0 }.joined(separator: ". ")
@@ -612,7 +612,7 @@ struct LeaderboardRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(alignment: .firstTextBaseline, spacing: 5) {
                     Text(lit ? String(localized: "You", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : entry.name).font(.body.weight(.semibold)).lineLimit(1)
-                    if entry.isPro { ProMembershipBadge() }
+                    if entry.showsProBadge { ProMembershipBadge() }
                     if entry.hasConfirmedTouchCheck {
                         // Only a score a reviewer confirmed carries the seal.
                         Image(systemName: "checkmark.seal.fill").font(.caption)
