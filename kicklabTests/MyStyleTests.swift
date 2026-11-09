@@ -67,13 +67,24 @@ struct MyStyleTests {
         #expect(edit.swapEffect == .pop && edit.swapSoundChoice == nil && edit.touchSound == .none)
     }
 
+    @Test func newSessionsShowGlowTrailOnlyForPro() throws {
+        let suite = "my-style-tests-\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let look = JugglingReplayLook(edit: MyStyleStore(defaults: defaults).startingEdit(touchCount: 20),
+                                      overlays: .init(), showGraph: true)
+        let pro = look.allowed(isPro: true).edit, free = look.allowed(isPro: false).edit
+        #expect(pro.style == .glowTrail && ReplayPlaybackSelection(edit: pro).usesCompositor)
+        #expect(free.style == .none && !free.requiresVisualTrack && !ReplayPlaybackSelection(edit: free).usesCompositor)
+    }
+
     @Test func storeKeepsTheStyleAcrossLaunchesAndCanForgetIt() throws {
         let suite = "my-style-tests-\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
         let first = MyStyleStore(defaults: defaults)
         #expect(first.saved == nil)
-        #expect(first.startingEdit(touchCount: 20) == SessionEditState(style: .none, intensity: 0.85))
+        #expect(first.startingEdit(touchCount: 20) == SessionEditState(style: .glowTrail, intensity: 0.85))
         first.save(MyStyle(edit: styled()))
         let relaunched = MyStyleStore(defaults: defaults)
         #expect(relaunched.saved == MyStyle(edit: styled()))

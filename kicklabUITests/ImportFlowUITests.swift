@@ -38,10 +38,17 @@ final class ImportFlowUITests: XCTestCase {
         let selectionShot = XCTAttachment(screenshot: app.screenshot())
         selectionShot.name = name + " after selection"; selectionShot.lifetime = .keepAlways; add(selectionShot)
         let original = app.descendants(matching: .any)["original-replay-surface"].firstMatch
-        XCTAssertTrue(original.waitForExistence(timeout: 420), app.debugDescription)
-        let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'Ready'"), object: original)
-        XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 15), .completed)
-        XCTAssertFalse(app.descendants(matching: .any)["effects-replay-surface"].firstMatch.exists)
+        let effects = app.descendants(matching: .any)["effects-replay-surface"].firstMatch
+        if pro {
+            // Pro sessions open on Glow Trail, so the effects preview is what appears.
+            XCTAssertTrue(effects.waitForExistence(timeout: 420), app.debugDescription)
+            XCTAssertFalse(original.exists)
+        } else {
+            XCTAssertTrue(original.waitForExistence(timeout: 420), app.debugDescription)
+            let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == 'Ready'"), object: original)
+            XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 15), .completed)
+            XCTAssertFalse(effects.exists)
+        }
         let timing = XCTAttachment(string: "Photos tile: \(label)\nTap to observed ready: \(ProcessInfo.processInfo.systemUptime - start)s\nPro fixture: \(pro)")
         timing.name = name + " timing"; timing.lifetime = .keepAlways; add(timing)
         let shot = XCTAttachment(screenshot: app.screenshot())
@@ -49,8 +56,11 @@ final class ImportFlowUITests: XCTestCase {
         app.buttons["replay-customize"].tap()
         app.buttons["replay-tool-effects"].tap()
         if pro {
-            XCTAssertTrue(app.buttons["effect-picker-none"].waitForExistence(timeout: 10))
-            XCTAssertTrue(app.buttons["effect-picker-none"].isSelected)
+            XCTAssertTrue(app.buttons["effect-picker-glowTrail"].waitForExistence(timeout: 10))
+            XCTAssertTrue(app.buttons["effect-picker-glowTrail"].isSelected)
+            // None still returns to the native replay.
+            app.buttons["effect-picker-none"].tap()
+            XCTAssertTrue(original.waitForExistence(timeout: 10))
         } else {
             XCTAssertTrue(app.buttons["pro-close"].waitForExistence(timeout: 10))
             app.buttons["pro-close"].tap()

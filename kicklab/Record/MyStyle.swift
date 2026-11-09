@@ -87,10 +87,10 @@ final class MyStyleStore: ObservableObject {
         defaults?.removeObject(forKey: Self.key)
     }
 
-    /// New sessions play the original immediately unless the person saved a My style.
-    /// Ball-following preparation starts only when that saved or selected look needs it.
+    /// New sessions start from My style, else Glow Trail. Free replays drop the trail through
+    /// `JugglingReplayLook.allowed(isPro:)`, so they still open plain with no ball preparation.
     func startingEdit(touchCount: Int) -> SessionEditState {
-        saved?.edit(touchCount: touchCount) ?? SessionEditState(style: .none, intensity: 0.85)
+        saved?.edit(touchCount: touchCount) ?? SessionEditState(style: .glowTrail, intensity: 0.85)
     }
 }
 

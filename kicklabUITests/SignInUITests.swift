@@ -117,8 +117,8 @@ final class SignInUITests: XCTestCase {
         for appearance in ["Light", "Dark", "System"] {
             app.buttons["home-profile"].tap()
             app.buttons["profile-settings"].tap()
-            app.segmentedControls["appearance-picker"].buttons[appearance].tap()
-            XCTAssertTrue(app.segmentedControls["appearance-picker"].buttons[appearance].isSelected)
+            app.buttons["appearance-\(appearance.lowercased())"].tap()
+            XCTAssertTrue(app.buttons["appearance-\(appearance.lowercased())"].isSelected)
             app.navigationBars["Settings"].buttons.element(boundBy: 0).tap()
             app.buttons["profile-sign-in"].tap()
             XCTAssertTrue(app.buttons["signin-apple"].waitForExistence(timeout: 3))

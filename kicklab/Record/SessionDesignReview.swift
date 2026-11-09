@@ -133,6 +133,8 @@ struct SessionDesignReview: View {
                                                 trail: Self.argument("--shot-style").flatMap(ShotTrailStyle.init(rawValue:)) ?? .limeRibbon)
             case "powershot-data": PowerShotDataConceptView(screen: Self.argument("--concept") ?? "flight",
                                                             scenePath: Self.argument("--shot-scene"))
+            case "settings", "settings-light":
+                NavigationStack { TrainingHomeSettings(appearance: .constant(screen == "settings" ? "dark" : "light")) }
             case "paywall":
                 if closedPaywall { ContentView() }
                 else { ProPaywallView { closedPaywall = true } }
@@ -149,7 +151,7 @@ struct SessionDesignReview: View {
             default: PostSessionFlowView(summary: Self.summary, onFinished: {}, onRecordAnother: {}, recordsPersonalBest: false)
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(screen == "settings-light" ? .light : .dark)
     }
 }
 
