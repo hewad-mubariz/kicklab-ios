@@ -272,7 +272,9 @@ private struct PennantSlot: View {
                 .buttonStyle(.plain)
                 .sensoryFeedback(.impact(weight: .light), trigger: pushes)
                 .accessibilityLabel("Rank \(entry.rank), \(entry.isYou ? String(localized: "you", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : entry.name), \(entry.touches) touches")
+                .accessibilityValue(entry.isPro ? ProMembershipBadge.title : "")
                 .accessibilityIdentifier("leaderboard-pennant-\(entry.rank)")
+                .proMembershipExplanation(id: "leaderboard-pro-\(entry.rank)")
             } else {
                 hanging(nil)
                     .accessibilityElement(children: .ignore)
@@ -508,11 +510,14 @@ private struct PennantCloth: View {
             .frame(height: first ? 58 : 50)
             // A lit lower edge, as if embroidered.
             .shadow(color: .white.opacity(0.35), radius: 0, y: 1)
-            Text(entry.isYou ? String(localized: "You", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : entry.name)
-                .font(.system(size: first ? 15 : 14, weight: .semibold))
-                .lineLimit(1).minimumScaleFactor(0.7)
-                .padding(.horizontal, 10)
-                .contentTransition(.opacity)
+            HStack(spacing: 4) {
+                Text(entry.isYou ? String(localized: "You", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : entry.name)
+                    .font(.system(size: first ? 15 : 14, weight: .semibold))
+                    .lineLimit(1).minimumScaleFactor(0.7)
+                    .contentTransition(.opacity)
+                if entry.isPro { ProMembershipBadge(size: 14) }
+            }
+            .padding(.horizontal, 10)
             HStack(spacing: 2) {
                 if first { Image(systemName: "laurel.leading").font(.system(size: 20, weight: .medium)).opacity(0.65) }
                 Text(score.formatted())

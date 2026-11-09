@@ -486,7 +486,7 @@ final class PlayerStore: ObservableObject {
             LeaderboardEntry(rank: row.rank, name: row.displayName, touches: row.touches,
                 isYou: row.isYou, userID: row.userID,
                 avatar: row.avatarPath.map { .init(playerID: row.userID, path: $0) }, attemptID: row.attemptID, sessionID: row.sessionID,
-                streakDurationMS: row.streakDurationMS, countryCode: row.countryCode)
+                streakDurationMS: row.streakDurationMS, countryCode: row.countryCode, isPro: row.isPro == true)
         }
         return (board.entries.map(entry), board.aroundMe.map(entry))
     }

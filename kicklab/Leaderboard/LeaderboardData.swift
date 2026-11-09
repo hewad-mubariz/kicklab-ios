@@ -24,6 +24,8 @@ struct LeaderboardEntry: Identifiable, Equatable {
     var backspinRPM: Int? = nil
     var typicalHeight: LeaderboardJugglingHeight? = nil
     var isPreview = false
+    /// Apple-verified membership supplied by the leaderboard, never the local debug unlock.
+    var isPro = false
     var backspinLabel: String { backspinRPM.map { "\($0) rpm" } ?? String(localized: "Unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
     var heightLabel: String { typicalHeight?.rawValue ?? String(localized: "Unavailable", bundle: AppLanguage.bundle, locale: AppLanguage.locale) }
     var streakDurationLabel: String {

@@ -63,7 +63,10 @@ struct RankedPlayer: Decodable, Sendable {
     var streakDurationMS: Int? = nil
     /// The session that ranks, on your own row only.
     var sessionID: UUID? = nil
+    /// Only the server can grant public membership; older responses omit it.
+    var isPro: Bool? = nil
     enum CodingKeys: String, CodingKey {
+        case isPro = "is_pro"
         case rank, touches, userID = "user_id", displayName = "display_name", countryCode = "country_code"
         case avatarPath = "avatar_path", isYou = "is_you"
         case attemptID = "attempt_id", streakDurationMS = "streak_duration_ms", sessionID = "session_id"

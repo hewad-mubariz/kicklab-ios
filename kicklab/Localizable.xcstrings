@@ -1,6 +1,64 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Pro member" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pro-Mitglied"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miembro Pro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Membre Pro"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Membro Pro"
+          }
+        }
+      }
+    },
+    "This player has an active Juggle Dude Pro subscription. Membership does not affect rankings." : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Person hat ein aktives Juggle Dude Pro-Abo. Die Mitgliedschaft hat keinen Einfluss auf die Rangliste."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este jugador tiene una suscripción activa a Juggle Dude Pro. La membresía no afecta a la clasificación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce joueur possède un abonnement Juggle Dude Pro actif. L’abonnement n’influence pas le classement."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este jogador tem uma assinatura ativa do Juggle Dude Pro. A assinatura não afeta a classificação."
+          }
+        }
+      }
+    },
     "Touch sounds" : {
       "localizations" : {
         "de" : {

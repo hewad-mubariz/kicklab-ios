@@ -41,4 +41,7 @@ psql -X -h "$test_dir" -p 55549 -d postgres -v ON_ERROR_STOP=1 \
   -f "$project_dir/supabase/tests/sunday_reminders_before.sql" \
   -f "$project_dir/supabase/migrations/202611090001_sunday_afternoon_reminders.sql" \
   -f "$project_dir/supabase/tests/sunday_reminders_after.sql" \
-  -f "$project_dir/supabase/tests/scheduled_practice_reminders.sql"
+  -f "$project_dir/supabase/tests/scheduled_practice_reminders.sql" \
+  -f "$project_dir/supabase/migrations/202611090002_leaderboard_pro_badges.sql" \
+  -f "$project_dir/supabase/tests/automatic_leaderboard_beta.sql" \
+  -f "$project_dir/supabase/tests/leaderboard_pro_badges.sql"

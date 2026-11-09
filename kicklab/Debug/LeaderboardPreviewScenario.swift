@@ -90,7 +90,7 @@ enum LeaderboardPreviewScenario: String, CaseIterable, Identifiable {
                        height: LeaderboardJugglingHeight? = nil) -> LeaderboardEntry {
         .init(rank: rank, name: name, touches: touches, isYou: you,
               streakDurationMS: duration.map { max(1, $0) * 1000 }, countryCode: country,
-              backspinRPM: spin, typicalHeight: height, isPreview: true)
+              backspinRPM: spin, typicalHeight: height, isPreview: true, isPro: [1, 4, 5].contains(rank))
     }
 }
 #endif

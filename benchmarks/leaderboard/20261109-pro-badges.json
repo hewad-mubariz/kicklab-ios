@@ -1,0 +1,33 @@
+{
+  "version": "1.2.0",
+  "build": "87",
+  "serverMigration": "202611090002_leaderboard_pro_badges",
+  "deployed": true,
+  "livePublicAPI": [
+    {
+      "period": "week",
+      "totalPlayers": 0,
+      "returnedRows": 0,
+      "proBadges": 0,
+      "membershipBooleansPresent": true,
+      "purchaseDataExposed": false,
+      "privateSessionIDsExposed": false
+    },
+    {
+      "period": "all_time",
+      "totalPlayers": 6,
+      "returnedRows": 6,
+      "proBadges": 0,
+      "membershipBooleansPresent": true,
+      "purchaseDataExposed": false,
+      "privateSessionIDsExposed": false
+    }
+  ],
+  "liveRankingUnchanged": true,
+  "installedAndLaunched": [
+    "iPhone 11 Pro Max",
+    "iPhone 17 Pro Max"
+  ],
+  "swiftAndUITestsPassed": 7,
+  "localBackendSuite": "passed"
+}

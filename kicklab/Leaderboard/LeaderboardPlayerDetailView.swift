@@ -19,6 +19,13 @@ struct LeaderboardPlayerDetailView: View {
                             Text("Rank #\(entry.rank)").foregroundStyle(.secondary)
                         }
                     }
+                    if entry.isPro {
+                        HStack(spacing: 7) {
+                            ProMembershipBadge()
+                            Text(ProMembershipBadge.title).font(.subheadline.weight(.semibold))
+                        }
+                        .proMembershipExplanation(id: "leaderboard-detail-pro")
+                    }
                     if let code = entry.countryCode, let country = ProfileCountry.named(code) {
                         LabeledContent("Country", value: "\(country.flag) \(country.name)")
                     }
