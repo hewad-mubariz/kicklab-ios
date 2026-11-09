@@ -80,8 +80,6 @@ final class ProPaywallNavigationUITests: XCTestCase {
         for feature in ["effects", "balls", "looks", "sounds", "analytics", "counters"] {
             XCTAssertTrue(app.descendants(matching: .any)["pro-feature-\(feature)"].exists, feature)
         }
-        XCTAssertTrue(app.descendants(matching: .any)["pro-feature-sounds"].label.hasSuffix("new"))
-        XCTAssertFalse(app.descendants(matching: .any)["pro-feature-effects"].label.hasSuffix("new"))
         attach(app, "Pro tools")
         let invite = app.buttons["pro-redeem-invite"]
         for _ in 0..<3 where !invite.isHittable { app.swipeUp() }

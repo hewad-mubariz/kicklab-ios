@@ -67,8 +67,6 @@ nonisolated struct ProOffer {
 nonisolated enum ProFeature: String, CaseIterable, Identifiable {
     case effects, balls, looks, sounds, analytics, counters
     var id: String { rawValue }
-    /// New in 1.2, so the paywall tags them.
-    var isNew: Bool { self == .looks || self == .sounds }
     var title: String {
         switch self {
         case .effects: String(localized: "Effects", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
