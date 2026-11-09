@@ -1,0 +1,243 @@
+{
+  "date": "2026-11-09",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "baseline_commit": "844694b",
+  "purpose": "Reduce MediaPipe linkage size without changing the pose model, counter rules, or replacement resources.",
+  "measurement": "Sum of archived Release app file bytes (decimal MB); not App Store download size.",
+  "app": {
+    "CFBundleIdentifier": "com.juggledude",
+    "CFBundleShortVersionString": "1.2.0",
+    "CFBundleVersion": "77",
+    "MinimumOSVersion": "18.0"
+  },
+  "baseline_archive": "artifacts/ui-artwork-optimization/JuggleDude-cleaned.xcarchive",
+  "optimized_archive": "artifacts/mediapipe-linkage-optimization/JuggleDude-conservative.xcarchive",
+  "archive_result": {
+    "baseline_app_bytes": 200822770,
+    "optimized_app_bytes": 199564962,
+    "saved_bytes": 1257808,
+    "baseline_executable_bytes": 49025168,
+    "optimized_executable_bytes": 47767360,
+    "size_changes": [
+      {
+        "path": "Juggle Dude",
+        "before": 49025168,
+        "after": 47767360,
+        "delta": -1257808
+      }
+    ]
+  },
+  "reduction_percent": 0.6263273830950544,
+  "total_reduction_since_uploaded_build77_bytes": 21227294,
+  "kept_change": {
+    "package": "-ObjC retains Objective-C classes and categories instead of global -all_load.",
+    "app_target": "Force-load only MediaPipeTaskGraphs_library.a in every app configuration to retain calculator/graph registration constructors.",
+    "binaries": "Unmodified Google MediaPipeTasks 1.2.2 with original checksums and full pose model.",
+    "runtime": "CPU delegate, video mode, one pose, 0.5 thresholds, no pose segmentation masks; unchanged."
+  },
+  "rejected_variant": {
+    "description": "Force-load graph archive without -ObjC.",
+    "preliminary_executable_saving_bytes": 6449304,
+    "result": "Compiles, but actual pose graph initialization throws NSInvalidArgumentException: -[__NSCFConstantString cppString]: unrecognized selector.",
+    "adopted": false
+  },
+  "no_force_variant": {
+    "preliminary_executable_bytes": 21608416,
+    "adopted": false,
+    "note": "Link-only size probe; no runtime validation and required graph registrations would not be forced. Not a viable claimed saving."
+  },
+  "verification": {
+    "debug_baseline_tests_passed": 7,
+    "debug_optimized_tests_passed": 8,
+    "real_video_fixture": "kicklabTests/Fixtures/juggling-eighteen.mov",
+    "real_video_window_seconds": 4,
+    "pose_comparison": {
+      "identical": true,
+      "frames": 20,
+      "landmarks_per_frame": 33,
+      "values_per_landmark": 5,
+      "max_absolute_difference": 0.0,
+      "baseline_sha256": "30fce058711d0ee989da4a48e93d58da470a19390b88612da37f15a3393f026e",
+      "conservative_sha256": "30fce058711d0ee989da4a48e93d58da470a19390b88612da37f15a3393f026e"
+    },
+    "production_recovery_calls": 20,
+    "production_recovery_errors": 0,
+    "heel_toe_frozen_rule_tests_passed": 6,
+    "ui_test": "HomeNavigationTests/testTrainingHomeAndAppearancePersistence",
+    "release_inference": {
+      "status": "passed",
+      "tests": 1,
+      "configuration": "Release, arm64 iOS 26.5 simulator, ENABLE_TESTABILITY=YES, ONLY_ACTIVE_ARCH=YES",
+      "pose_comparison": {
+        "identical_to_debug_baseline": true,
+        "frames": 20,
+        "max_absolute_difference": 0.0,
+        "sha256": "30fce058711d0ee989da4a48e93d58da470a19390b88612da37f15a3393f026e"
+      },
+      "test_scope": "Only MediaPipeLinkageTests compiled into the test bundle; shipping app sources and Release optimization unchanged. Temporary test-source exclusions were restored.",
+      "setup_notes": [
+        "The pinned SDK supplies an arm64-only simulator binary, so the universal Release simulator attempt could not link x86_64.",
+        "Existing unrelated tests reference DEBUG-only app helpers and cannot compile in Release; isolated this test instead of changing them."
+      ]
+    },
+    "release_archive_succeeded": true,
+    "codesign_deep_strict": "passed",
+    "archive_link_flags": [
+      {
+        "output": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/release120/DerivedDataArchive-77/Build/Intermediates.noindex/ArchiveIntermediates/JuggleDude/InstallationBuildProductsLocation/Applications/Juggle Dude.app/Juggle Dude",
+        "all_load": false,
+        "objc": true,
+        "force_load": "/Users/hewadmubariz/Desktop/projects/kicklab-ball-swaps/build/release120/DerivedDataArchive-77/Build/Intermediates.noindex/ArchiveIntermediates/JuggleDude/BuildProductsPath/Release-iphoneos/MediaPipeTaskGraphs_library.a"
+      }
+    ],
+    "unchanged_protected_resources": [
+      {
+        "path": "ball-skin-classic.jdmaterial",
+        "bytes": 2717484,
+        "sha256": "2f1821d7f3e9fdb2dcff27a961719d91acd3a97bac908e12edaff02e3ddb8306"
+      },
+      {
+        "path": "ball-skin-volt.jdmaterial",
+        "bytes": 3005620,
+        "sha256": "ed4f3094736f6217f2b83fd2de37cf0a3cc4e6d388677349393ea55a99fb7645"
+      },
+      {
+        "path": "default.metallib",
+        "bytes": 553744,
+        "sha256": "ab8286247d4dec83a473df2b9e9d49f04f1faada02beb16ed723fa2826d2e9be"
+      },
+      {
+        "path": "ball-skin-chrome.jdmaterial",
+        "bytes": 2517177,
+        "sha256": "d8a20372dae2c4906e4fcd5977feca6bb50660d9e74c255536196d52561445a4"
+      },
+      {
+        "path": "ball-skin-matrix.jdmaterial",
+        "bytes": 2689525,
+        "sha256": "0cc3f59464a662cf4f7e999a54eb7c4ac20543ac9621eaaada8352bc808f1b35"
+      },
+      {
+        "path": "studio-environment.bin.lzfse",
+        "bytes": 2210013,
+        "sha256": "dd9d7698f3c5a650ec922b007e9ab8fe0a29c79267c76b9bbe9328175cb823bd"
+      },
+      {
+        "path": "ice-fracture-triangles.bin.lzfse",
+        "bytes": 656551,
+        "sha256": "ad4830952bb31ac558326613dc0fc9b8a7816b5fea2044414c0b87c0dd05bde6"
+      },
+      {
+        "path": "ball-skin-crimson.jdmaterial",
+        "bytes": 2981187,
+        "sha256": "178f8760517a8cca3ed400baaedacb4fe314f0eb4f7c8fa7c5c76683f5f65878"
+      },
+      {
+        "path": "ball-skin-metal.jdmaterial",
+        "bytes": 1340523,
+        "sha256": "10043154c7c648d505324a485ff31a5cac8abbd4bacfb606f3ec8aaa1625bf7b"
+      },
+      {
+        "path": "ice-fracture-bvh.bin.lzfse",
+        "bytes": 260425,
+        "sha256": "07c0d92539fc74943b75e766a6dd3eb6292ac2ce7d42447169ae21952c1c3bf4"
+      },
+      {
+        "path": "GoogleSans-Regular.ttf",
+        "bytes": 301056,
+        "sha256": "9c7522a9c5ac75ab322d2fd16f07e0b0be42621f251b7d9248edc0ddec66036a"
+      },
+      {
+        "path": "ball-skin-galaxy.jdmaterial",
+        "bytes": 2728764,
+        "sha256": "2d6c396ec455b93e41bbf96c2de14767b53988dee05c3e101f2dd01889a55dac"
+      },
+      {
+        "path": "ball-skin-stealth.jdmaterial",
+        "bytes": 2424709,
+        "sha256": "c8c82adb893bea2c1f84c146fbdaa6321f6a0a3425207803b38b20f52044488e"
+      },
+      {
+        "path": "ball-skin-aurora.jdmaterial",
+        "bytes": 2953560,
+        "sha256": "c4ecbe50ffade950ca987a042f0b4528f14741dd1c1aa519bfece2696b884d04"
+      },
+      {
+        "path": "ball-skin-arctic.jdmaterial",
+        "bytes": 2904702,
+        "sha256": "1bc46184d10ae4735d0c62f1eebc8cf7c2e3a50dff3b36dadda31a0a34be5eeb"
+      },
+      {
+        "path": "pose_landmarker_full.task",
+        "bytes": 9398198,
+        "sha256": "4eaa5eb7a98365221087693fcc286334cf0858e2eb6e15b506aa4a7ecdcec4ad"
+      },
+      {
+        "path": "ball-skin-lava.jdmaterial",
+        "bytes": 2880194,
+        "sha256": "80eafaabb6b897f30e6c3dc9149090fb5df1409fc8854d7a0cf3d4b5c6ea12f3"
+      },
+      {
+        "path": "ball-skin-pearl.jdmaterial",
+        "bytes": 2196779,
+        "sha256": "48326c912b4cf7575d65c460402548c7baf9bcafc3f07a17443ccfba920d6704"
+      },
+      {
+        "path": "ball-skin-graffiti.jdmaterial",
+        "bytes": 3056668,
+        "sha256": "6297e7cfb90f7c865a095634d1713e009a653b5554c62acc29bf8273636d51cd"
+      },
+      {
+        "path": "ball-skin-gold.jdmaterial",
+        "bytes": 2790328,
+        "sha256": "7014e740d8e593d4db5b04e57acace9b03840b45e6490caa3cd39064020bdd0c"
+      },
+      {
+        "path": "gold-environment.bin.lzfse",
+        "bytes": 2630273,
+        "sha256": "66c757dc35b8a58b7d84b4014261972cfe1f5be875ba1b9ea34ac77d0b810233"
+      },
+      {
+        "path": "GoogleSignIn_GoogleSignIn.bundle/Roboto-Bold.ttf",
+        "bytes": 127744,
+        "sha256": "594d74a49e307be7cc9e1ee5f1023684e6820cf11bcc968bee590391e1ad5a5a"
+      },
+      {
+        "path": "RFDETRSmallRecovery040FP16.mlmodelc/metadata.json",
+        "bytes": 7909,
+        "sha256": "3f69fc32d21d1bfd4376e2034dcde3d3ddda57d826970aadbd1bc35ceffbb4d0"
+      },
+      {
+        "path": "RFDETRSmallRecovery040FP16.mlmodelc/model.mil",
+        "bytes": 755595,
+        "sha256": "90bb56b9de721e793e1baa244841fbda5bcd0dc005b22e45ad1ee20f50d96a0e"
+      },
+      {
+        "path": "RFDETRSmallRecovery040FP16.mlmodelc/coremldata.bin",
+        "bytes": 352,
+        "sha256": "2fd63d26cc1ce66091d59ab985c7891ffc3cf88cdc2ba212221ef89ec98d6306"
+      },
+      {
+        "path": "RFDETRSmallRecovery040FP16.mlmodelc/weights/weight.bin",
+        "bytes": 61864768,
+        "sha256": "c8c1b8d5392397e5d67692879bb192c5d8e57c6673fdaa8a904b2ab73977e0cc"
+      },
+      {
+        "path": "RFDETRSmallRecovery040FP16.mlmodelc/analytics/coremldata.bin",
+        "bytes": 243,
+        "sha256": "afb728c60d9e737b12f3e2ac6ed7eed70f955ad4afc077c7f7070ce62f984bba"
+      }
+    ],
+    "result_bundles": {
+      "baseline": "artifacts/mediapipe-linkage-optimization/baseline-fixed.xcresult",
+      "optimized_debug": "artifacts/mediapipe-linkage-optimization/conservative.xcresult",
+      "optimized_release": "artifacts/mediapipe-linkage-optimization/release-isolated-inference.xcresult"
+    }
+  },
+  "limitations": [
+    "Inference comparison is on the iOS 26.5 simulator; not a new phone speed or accuracy benchmark.",
+    "This reduces executable size, not model calls or inference workload.",
+    "Larger safe savings would require a separately maintained narrower SDK build and broader validation.",
+    "No upload, App Store submission, or physical-phone installation performed."
+  ],
+  "artifacts": "artifacts/mediapipe-linkage-optimization/"
+}

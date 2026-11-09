@@ -1,3 +1,14 @@
-Google MediaPipeTasks 1.2.2. Unmodified package manifest and integration sources.
+Google MediaPipeTasks 1.2.2. Unmodified binary downloads and integration sources.
 Source: https://github.com/google-ai-edge/mediapipe/tree/5b6fea33b95a78ae3dc61f4ed96a2f7df85a672e
 Binaries downloaded by SwiftPM with upstream SHA-256 checksums.
+
+Local manifest change: use -ObjC instead of global -all_load. Every kicklab app
+configuration in kicklab.xcodeproj force-loads MediaPipeTaskGraphs_library.a from
+BUILT_PRODUCTS_DIR. Both settings are required: the first retains Objective-C
+helper categories; the second retains C++ calculator/graph registrations.
+SwiftPM rejects Xcode build-setting substitutions in unsafeFlags, so the archive
+path belongs in the consuming app target, not this package manifest.
+
+Keep the upstream model and binaries unchanged. Any SDK/linkage change must pass
+MediaPipeLinkageTests with actual video inference; merely linking or launching
+the app is insufficient because ShoeContactRecovery can fall back after errors.

@@ -453,6 +453,13 @@
 		7441B46B305617DE007026EB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-Xlinker",
+					"-force_load",
+					"-Xlinker",
+					"$(BUILT_PRODUCTS_DIR)/MediaPipeTaskGraphs_library.a",
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = config/KickLab.entitlements;
@@ -512,6 +519,13 @@
 		7441B46C305617DE007026EB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-Xlinker",
+					"-force_load",
+					"-Xlinker",
+					"$(BUILT_PRODUCTS_DIR)/MediaPipeTaskGraphs_library.a",
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = config/KickLab.entitlements;
@@ -737,6 +751,13 @@
 		BADD00010000000000000002 /* PowerShotDebug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-Xlinker",
+					"-force_load",
+					"-Xlinker",
+					"$(BUILT_PRODUCTS_DIR)/MediaPipeTaskGraphs_library.a",
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "";
@@ -891,6 +912,13 @@
 		BCDB00010000000000000002 /* TouchCountingDebug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-Xlinker",
+					"-force_load",
+					"-Xlinker",
+					"$(BUILT_PRODUCTS_DIR)/MediaPipeTaskGraphs_library.a",
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "";
@@ -1022,6 +1050,13 @@
 		BDDB00010000000000000002 /* BallDetectionDebug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-Xlinker",
+					"-force_load",
+					"-Xlinker",
+					"$(BUILT_PRODUCTS_DIR)/MediaPipeTaskGraphs_library.a",
+				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "";

@@ -100,14 +100,11 @@ let package = Package(
                 .copy("PrivacyInfo.xcprivacy"),
             ],
             linkerSettings: [
-                // Note: -all_load is required to prevent the Apple linker
-                // from stripping C++ static calculator registration
-                // constructors (REGISTER_CALCULATOR) in
-                // MediaPipeTaskGraphsBinary. Downstream libraries wrapping
-                // MediaPipeTasks in a remote SPM package must reference this
-                // package by branch/revision or local path due to Apple's
-                // .unsafeFlags restriction.
-                .unsafeFlags(["-Xlinker", "-all_load"]),
+                // Preserve Objective-C classes and helper categories. The app
+                // target force-loads only MediaPipeTaskGraphs_library.a to keep
+                // its static calculator registrations. Do not replace this with
+                // ordinary dead stripping: pose initialization would fail.
+                .unsafeFlags(["-Xlinker", "-ObjC"]),
                 .linkedLibrary("c++"),
                 // Required by MPPSqliteVectorStore in MediaPipeTasksRetrieval.
                 .linkedLibrary("sqlite3"),
