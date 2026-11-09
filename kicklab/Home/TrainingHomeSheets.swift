@@ -136,7 +136,8 @@ struct TrainingHomeSettings: View {
     }
 }
 
-/// A settings row title beside a plain accent icon in a fixed-width slot, so every row lines up.
+/// A settings row title beside a plain icon in the text colour, like the Profile rows, in a
+/// fixed-width slot so every row lines up.
 private struct SettingsLabel: View {
     let title: LocalizedStringKey
     let symbol: String
@@ -152,8 +153,8 @@ private struct SettingsLabel: View {
             Text(title)
         } icon: {
             Image(systemName: symbol)
-                .font(.system(size: 17, weight: .medium))
-                .foregroundStyle(TrainingHomeStyle.accent(scheme))
+                .font(.system(size: 19))
+                .foregroundStyle(TrainingHomeStyle.ink(scheme))
                 .frame(width: 30, height: 30)
         }
     }
