@@ -136,10 +136,11 @@ struct TrainingHomeSettings: View {
     }
 }
 
-/// A settings row title beside a lime icon tile, so every row lines up.
+/// A settings row title beside a plain accent icon in a fixed-width slot, so every row lines up.
 private struct SettingsLabel: View {
     let title: LocalizedStringKey
     let symbol: String
+    @Environment(\.colorScheme) private var scheme
 
     init(_ title: LocalizedStringKey, symbol: String) {
         self.title = title
@@ -151,10 +152,9 @@ private struct SettingsLabel: View {
             Text(title)
         } icon: {
             Image(systemName: symbol)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(TrainingHomeStyle.buttonInk)
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(TrainingHomeStyle.accent(scheme))
                 .frame(width: 30, height: 30)
-                .background(TrainingHomeStyle.lime, in: .rect(cornerRadius: 8))
         }
     }
 }
