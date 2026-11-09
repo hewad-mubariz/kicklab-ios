@@ -2,6 +2,27 @@ import XCTest
 @testable import kicklab
 
 final class LivePerformanceTests: XCTestCase {
+    func testPoseSnapshotsStayCumulativeAndAreNotAddedTwice() throws {
+        var totals = LivePerformanceSummary()
+        let first = ShoePosePerformance(enabled: true, calls: 1, totalMS: 40, loadMS: 30, inferenceMS: 10)
+        let second = ShoePosePerformance(enabled: true, calls: 3, totalMS: 60, loadMS: 30, inferenceMS: 30)
+        for pose in [first, second] {
+            totals.observe(.init(totalMS: 100, motionMS: 0, contactBufferMS: 60, counterMS: 10,
+                poseRequests: 0, handPoseRequests: 0, poseCacheHits: 0, shoePose: pose),
+                inference: 20, preprocessing: 0, detector: 20)
+        }
+        XCTAssertEqual(totals.totalMS, 200)
+        XCTAssertEqual(totals.shoePose?.calls, 3)
+        XCTAssertEqual(totals.shoePose?.totalMS, 60)
+        XCTAssertEqual(totals.shoePose?.meanInferenceMS, 10)
+        var legacy = try JSONSerialization.jsonObject(with: JSONEncoder().encode(totals)) as! [String: Any]
+        legacy.removeValue(forKey: "shoePose")
+        let restored = try JSONDecoder().decode(LivePerformanceSummary.self,
+            from: JSONSerialization.data(withJSONObject: legacy))
+        XCTAssertNil(restored.shoePose)
+        XCTAssertEqual(restored.totalMS, 200)
+    }
+
     func testStageTotalsIncludeContactStallsWithoutDoubleCountingCumulativePoseRequests() {
         var totals = LivePerformanceSummary()
         XCTAssertEqual(totals.meanFrameMS, 0)

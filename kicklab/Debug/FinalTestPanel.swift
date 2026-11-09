@@ -23,11 +23,34 @@ struct FinalTestPanel: View {
                     Text(tests.message).font(.footnote)
                     if tests.armedSeconds != nil { Button("Disarm", role: .cancel) { tests.disarm() } }
                 }
+                Section("Outdoor measurements") {
+                    Text("The current heel/toe counter stays enabled. The camera overlay shows touches, heat, app memory, battery, FPS, frame drops and MediaPipe Full pose cost on CPU.")
+                    Text("Reports keep one-second samples and exact final pose totals. Pose work is already included in full-frame time. Memory around pose initialization is a whole-app change, not model-only RAM.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Text("Start with 30 seconds to check framing, then try 3, 10 and 30 minutes. Keep lighting and movement similar when comparing phones; let each phone return to Normal thermal state between comparisons.")
+                        .font(.caption)
+                }
                 if let report = tests.report {
                     Section("\(FinalTestCoordinator.label(report.targetSeconds)) · \(report.verdict)") {
                         Text("\(report.build) · \(report.started.formatted())").font(.caption)
                         Text("Peak \(report.peakMemoryMiB, specifier: "%.0f") MiB · worst thermal: \(report.worstThermal)")
                         Text("Live: \(report.liveTouches.map(String.init) ?? "—") · fresh analysis: \(report.analyzedTouches.map(String.init) ?? "—")")
+                        if let pose = report.livePerformance?.shoePose {
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text("Pose Full · CPU\(pose.enabled ? "" : " · disabled")").font(.headline)
+                                Text("\(pose.calls) calls · \(pose.framesWithPose) frames with a pose · \(pose.errors) errors")
+                                Text("Inference avg \(pose.meanInferenceMS, specifier: "%.1f") ms · max \(pose.maxInferenceMS, specifier: "%.1f") ms")
+                                Text("Model load \(pose.loadMS, specifier: "%.0f") ms · total pose work \(pose.totalMS / 1000, specifier: "%.2f") seconds")
+                                Text("\(pose.proofs) supported contact checks / \(pose.proofRequests) checks (not extra counted touches)")
+                                if let delta = pose.observedLoadMemoryDeltaMiB {
+                                    Text("Observed app change at pose load: \(delta, specifier: "%+.1f") MiB")
+                                }
+                            }.font(.caption)
+                        }
+                        if let capture = report.capture {
+                            Text("\(capture.width)×\(capture.height) · \(capture.selectedFPS) fps · \(capture.writtenFrames) saved / \(capture.analysedFrames) analyzed frames").font(.caption)
+                            Text("Drops: camera \(capture.captureDrops), writer \(capture.writerDrops); analysis replaced \(capture.analysisReplaced)").font(.caption)
+                        }
                         ForEach(FinalTestReport.stageNames, id: \.self) { name in
                             if let stage = report.stages[name] {
                                 VStack(alignment: .leading, spacing: 3) {

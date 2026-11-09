@@ -66,12 +66,12 @@ final class FreeCounterUITests: XCTestCase {
         XCTAssertTrue(app.buttons["debug-final-tests"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["debug-thermal-state"].exists)
         app.buttons["debug-final-tests"].tap()
-        for seconds in [30, 60, 120, 180, 300, 600, 900] {
+        for seconds in [30, 60, 120, 180, 300, 600, 900, 1200, 1500, 1800] {
             XCTAssertTrue(app.buttons["final-test-arm-\(seconds)"].waitForExistence(timeout: 5))
         }
         attach(app, "Final validation duration ladder")
-        app.buttons["final-test-arm-900"].tap()
-        XCTAssertTrue(app.staticTexts["Test armed: 15 min"].waitForExistence(timeout: 5))
+        app.buttons["final-test-arm-1800"].tap()
+        XCTAssertTrue(app.staticTexts["Test armed: 30 min"].waitForExistence(timeout: 5))
         app.buttons["debug-final-tests"].tap()
         app.buttons["Disarm"].tap()
         app.buttons["Done"].tap()

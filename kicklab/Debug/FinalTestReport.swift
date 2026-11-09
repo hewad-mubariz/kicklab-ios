@@ -3,7 +3,7 @@ import Foundation
 
 /// Test evidence is separate from product history and never grants a ranked score.
 nonisolated struct FinalTestReport: Codable, Sendable, Identifiable {
-    static let durations = [30, 60, 120, 180, 300, 600, 900]
+    static let durations = [30, 60, 120, 180, 300, 600, 900, 1200, 1500, 1800]
     static let stageNames = ["recording", "video", "analysis", "replay", "export"]
     static let reviewNames = ["Touch accuracy", "Replay counter / timer", "Export counter / timer", "Performance"]
     struct Stage: Codable, Sendable {
@@ -28,6 +28,8 @@ nonisolated struct FinalTestReport: Codable, Sendable, Identifiable {
     var expectedTouches: Int?
     var liveTouches: Int?
     var analyzedTouches: Int?
+    var livePerformance: LivePerformanceSummary?
+    var capture: CaptureCadenceSnapshot?
     var analysisBuild: String?
     var analysisPipeline: String?
     var originalVideoName: String?

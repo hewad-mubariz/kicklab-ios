@@ -11,6 +11,7 @@ nonisolated struct LiveFramePerformance: Sendable {
     let poseRequests: Int
     let handPoseRequests: Int
     let poseCacheHits: Int
+    var shoePose: ShoePosePerformance? = nil
 }
 
 /// Cumulative work, not recording wall time. Sampling this once a second keeps
@@ -30,6 +31,7 @@ nonisolated struct LivePerformanceSummary: Codable, Sendable {
     var poseRequests = 0
     var handPoseRequests = 0
     var poseCacheHits = 0
+    var shoePose: ShoePosePerformance?
 
     var meanFrameMS: Double { frames > 0 ? totalMS / Double(frames) : 0 }
 
@@ -49,6 +51,7 @@ nonisolated struct LivePerformanceSummary: Codable, Sendable {
         poseRequests = frame.poseRequests
         handPoseRequests = frame.handPoseRequests
         poseCacheHits = frame.poseCacheHits
+        shoePose = frame.shoePose
     }
 }
 
@@ -118,7 +121,7 @@ nonisolated final class DetectorPerformance {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             let url = directory.appendingPathComponent("detector-\(UUID().uuidString).csv")
             let header = "# model=\(model),load_ms=\(milliseconds),baseline_app_mb=\(baselineMB),compute=\(computeBackend)\n" +
-                "uptime_s,inference_ms,preprocess_ms,detector_total_ms,p95_total_ms,processed_fps,app_mb,peak_observed_app_mb,capture_drops,thermal,recording,live_frame_ms,live_p95_ms,motion_ms,contact_buffer_ms,counter_ms,pose_requests,hand_pose_requests,pose_cache_hits\n"
+                "uptime_s,inference_ms,preprocess_ms,detector_total_ms,p95_total_ms,processed_fps,app_mb,peak_observed_app_mb,capture_drops,thermal,recording,live_frame_ms,live_p95_ms,motion_ms,contact_buffer_ms,counter_ms,pose_requests,hand_pose_requests,pose_cache_hits,shoe_calls,shoe_errors,shoe_load_ms,shoe_inference_total_ms,shoe_work_total_ms,shoe_max_inference_ms,shoe_frames_with_pose\n"
             try Data(header.utf8).write(to: url)
             handle = try FileHandle(forWritingTo: url)
             try handle?.seekToEnd()
@@ -132,6 +135,8 @@ nonisolated final class DetectorPerformance {
     func droppedFrame() { snapshot.captureDrops += 1 }
 
     func recordLiveFlush(milliseconds: Double) { liveSummary.flushMS += milliseconds }
+
+    func recordFinalPose(_ pose: ShoePosePerformance?) { liveSummary.shoePose = pose }
 
     func finish() {
         try? handle?.synchronize()
@@ -178,7 +183,7 @@ nonisolated final class DetectorPerformance {
             @unknown default: snapshot.thermal = "unknown"
             }
             #if DEBUG
-            let row = "\(now),\(inferenceMS),\(preprocessMS),\(totalMS),\(snapshot.p95MS),\(snapshot.processedFPS),\(snapshot.memoryMB),\(snapshot.peakMemoryMB),\(snapshot.captureDrops),\(snapshot.thermal),\(recording),\(live?.totalMS ?? 0),\(snapshot.liveP95MS),\(live?.motionMS ?? 0),\(live?.contactBufferMS ?? 0),\(live?.counterMS ?? 0),\(live?.poseRequests ?? 0),\(live?.handPoseRequests ?? 0),\(live?.poseCacheHits ?? 0)\n"
+            let row = "\(now),\(inferenceMS),\(preprocessMS),\(totalMS),\(snapshot.p95MS),\(snapshot.processedFPS),\(snapshot.memoryMB),\(snapshot.peakMemoryMB),\(snapshot.captureDrops),\(snapshot.thermal),\(recording),\(live?.totalMS ?? 0),\(snapshot.liveP95MS),\(live?.motionMS ?? 0),\(live?.contactBufferMS ?? 0),\(live?.counterMS ?? 0),\(live?.poseRequests ?? 0),\(live?.handPoseRequests ?? 0),\(live?.poseCacheHits ?? 0),\(live?.shoePose?.calls ?? 0),\(live?.shoePose?.errors ?? 0),\(live?.shoePose?.loadMS ?? 0),\(live?.shoePose?.inferenceMS ?? 0),\(live?.shoePose?.totalMS ?? 0),\(live?.shoePose?.maxInferenceMS ?? 0),\(live?.shoePose?.framesWithPose ?? 0)\n"
             try? handle?.write(contentsOf: Data(row.utf8))
             #endif
         }

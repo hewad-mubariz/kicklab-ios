@@ -6,9 +6,11 @@ extension View {
     @ViewBuilder
     func debugRuntimeOverlay(performance: DetectorPerformanceSnapshot? = nil,
                              capture: CaptureCadenceSnapshot? = nil, recording: Bool = false,
+                             touches: Int? = nil, elapsed: Double = 0,
                              topInset: CGFloat = 64, onOpenTests: (() -> Void)? = nil) -> some View {
         #if DEBUG
         modifier(DebugRuntimeOverlay(performance: performance, capture: capture, recording: recording,
+                                     touches: touches, elapsed: elapsed,
                                      topInset: topInset, onOpenTests: onOpenTests))
         #else
         self
@@ -34,6 +36,8 @@ private struct DebugRuntimeOverlay: ViewModifier {
     let performance: DetectorPerformanceSnapshot?
     let capture: CaptureCadenceSnapshot?
     let recording: Bool
+    let touches: Int?
+    let elapsed: Double
     let topInset: CGFloat
     let onOpenTests: (() -> Void)?
     @AppStorage(DebugOverlayPreferences.visibilityKey) private var visible = DebugOverlayPreferences.visibleByDefault
@@ -41,7 +45,8 @@ private struct DebugRuntimeOverlay: ViewModifier {
     func body(content: Content) -> some View {
         content.overlay(alignment: .topTrailing) {
             if visible {
-                DebugRuntimeHUD(performance: performance, capture: capture, recording: recording, onOpenTests: onOpenTests)
+                DebugRuntimeHUD(performance: performance, capture: capture, recording: recording,
+                                touches: touches, elapsed: elapsed, onOpenTests: onOpenTests)
                     .padding(.top, topInset).padding(.trailing, 12)
             }
         }
@@ -54,6 +59,8 @@ private final class DebugRuntimeMonitor: ObservableObject {
     @Published private(set) var memory = 0.0
     @Published private(set) var peak = 0.0
     @Published private(set) var thermal = "nominal"
+    @Published private(set) var batteryPercent: Int?
+    @Published private(set) var lowPower = false
     private var users = 0
     private var sampling: Task<Void, Never>?
 
@@ -65,6 +72,9 @@ private final class DebugRuntimeMonitor: ObservableObject {
                 guard let self else { return }
                 self.memory = DetectorPerformance.memoryMB()
                 self.peak = max(self.peak, self.memory)
+                let battery = UIDevice.current.batteryLevel
+                self.batteryPercent = battery >= 0 ? Int((battery * 100).rounded()) : nil
+                self.lowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
                 switch ProcessInfo.processInfo.thermalState {
                 case .nominal: self.thermal = "nominal"
                 case .fair: self.thermal = "fair"
@@ -87,6 +97,8 @@ private struct DebugRuntimeHUD: View {
     let performance: DetectorPerformanceSnapshot?
     let capture: CaptureCadenceSnapshot?
     let recording: Bool
+    let touches: Int?
+    let elapsed: Double
     let onOpenTests: (() -> Void)?
     @ObservedObject private var tests = FinalTestCoordinator.shared
     @State private var showTests = false
@@ -124,23 +136,35 @@ private struct DebugRuntimeHUD: View {
             }
             if expanded {
                 Text(RFSmallModel(rawValue: BallDetector.configuredResourceName)?.displayName ?? BallDetector.configuredResourceName)
-                Text("Counter V9 · completed rise")
+                Text("Counter · heel/toe recovery \(ShoeRecoveryPolicy.enabled ? "on" : "off")")
                 Text("Thermal: \(monitor.thermal)")
                     .foregroundStyle(monitor.thermal == "nominal" ? .green : monitor.thermal == "fair" ? .yellow : .red)
                     .accessibilityIdentifier("debug-thermal-state")
                 Text("App peak \(monitor.peak, specifier: "%.0f") MiB")
+                if let battery = monitor.batteryPercent {
+                    Text("Battery \(battery)%\(monitor.lowPower ? " · Low Power" : "")")
+                }
                 if recording, let performance, let capture {
-                    Text("Model: \(performance.computeBackend)")
-                    Text("Analysis \(performance.processedFPS, specifier: "%.1f") fps · infer \(performance.inferenceMS, specifier: "%.0f") ms")
+                    Text("Touches \(touches ?? 0) · \(recordingClock)")
+                        .accessibilityIdentifier("debug-live-touches")
+                    Text("Ball \(performance.computeBackend) · \(performance.inferenceMS, specifier: "%.0f") ms")
+                    Text("Analysis \(performance.processedFPS, specifier: "%.1f") fps · \(performance.live?.frames ?? capture.analysedFrames) frames")
                     if let live = performance.live {
                         Text("Full frame avg \(live.meanFrameMS, specifier: "%.0f") · p95 \(performance.liveP95MS, specifier: "%.0f") ms")
+                        if let pose = live.shoePose {
+                            Text("Pose Full · CPU · \(pose.meanInferenceMS, specifier: "%.1f") ms/call")
+                                .accessibilityIdentifier("debug-pose-cost")
+                            Text("Pose \(pose.calls) calls · \(pose.errors) errors · max \(pose.maxInferenceMS, specifier: "%.0f") ms")
+                            Text("Pose load \(pose.loadMS, specifier: "%.0f") ms · work \(pose.totalMS / 1000, specifier: "%.1f")s")
+                        }
                     }
                     Text("Saved \(savedFPS(capture), specifier: "%.1f") / target \(capture.selectedFPS) fps")
                     Text("Drops camera \(capture.captureDrops) · writer \(capture.writerDrops)")
                     Text("Analysis replaced \(capture.analysisReplaced)")
+                    Text("Retained masks \(Double(performance.retainedMaskBytes) / 1_048_576, specifier: "%.1f") MiB")
                 }
                 if let target = tests.armedSeconds { Text("Test armed: \(FinalTestCoordinator.label(target))") }
-                Button("Final tests · 30s–15min") { onOpenTests?(); showTests = true }
+                Button("Session tests · 30s–30min") { onOpenTests?(); showTests = true }
                     .accessibilityIdentifier("debug-final-tests")
                 Toggle("Touch outlines", isOn: $showTouchOutlines)
                     .toggleStyle(.button)
@@ -162,6 +186,17 @@ private struct DebugRuntimeHUD: View {
 
     private func savedFPS(_ stats: CaptureCadenceSnapshot) -> Double {
         stats.duration > 0 ? Double(max(0, stats.writtenFrames - 1)) / stats.duration : 0
+    }
+
+    private func clock(_ seconds: Double) -> String {
+        let value = max(0, Int(seconds))
+        return String(format: "%d:%02d", value / 60, value % 60)
+    }
+
+    private var recordingClock: String {
+        let current = clock(elapsed)
+        guard let report = tests.report, report.stages["recording"]?.status == "running" else { return current }
+        return current + " / " + clock(Double(report.targetSeconds))
     }
 
     private func observe(_ active: Bool) {

@@ -54,6 +54,7 @@ nonisolated final class RFAppCounterCore {
         let timeOrigin: Double
         let frameCount: Int
         let qualityFailed: Bool
+        var livePerformance: LivePerformanceSummary? = nil
     }
 
     private let performanceMonitor = DetectorPerformance()
@@ -207,11 +208,12 @@ nonisolated final class RFAppCounterCore {
         let evidence = wasActive && signature == SessionAnalysisStore.pipelineSignature()
             ? signature.map { CaptureAnalysisEvidence(version: 1, pipelineSignature: $0,
                                                      evaluations: analysisEvaluations) } : nil
+        performanceMonitor.recordFinalPose(contactVerifier?.shoePerformance)
         let result = Result(touches: touches, track: track, count: count, diagnostics: diagnostics,
             reviewEvidence: wasActive ? counter.reviewEvidence.relative(to: recordingStartSeconds) : TouchReviewEvidence(),
             trace: trace, evidence: evidence, analyzed: analyzedIdentities,
             timeOrigin: recordingStartSeconds, frameCount: wasActive ? frameIndex : 0,
-            qualityFailed: qualityFailed)
+            qualityFailed: qualityFailed, livePerformance: wasActive ? performanceMonitor.liveSummary : nil)
         #if DEBUG
         if wasActive { finalTestFiles?.save(performanceMonitor.liveSummary, as: "live-performance.json") }
         #endif
@@ -323,7 +325,7 @@ nonisolated final class RFAppCounterCore {
             live: LiveFramePerformance(totalMS: (ProcessInfo.processInfo.systemUptime - frameStarted) * 1000,
                 motionMS: motionMS, contactBufferMS: contactBufferMS, counterMS: counterMS,
                 poseRequests: contactVerifier?.poseRequests ?? 0, handPoseRequests: contactVerifier?.handPoseRequests ?? 0,
-                poseCacheHits: contactVerifier?.poseCacheHits ?? 0))
+                poseCacheHits: contactVerifier?.poseCacheHits ?? 0, shoePose: contactVerifier?.shoePerformance))
         performance.analysisTargetFPS = 30
         performance.analysisIdle = cadence.isIdle
         performance.retainedMaskBytes = retainedMaskBytes

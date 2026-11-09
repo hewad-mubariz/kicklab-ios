@@ -88,11 +88,14 @@ final class FinalTestCoordinator: ObservableObject {
         stage("recording", status: "running", detail: "Finishing writer and live analysis.")
     }
 
-    func captureFinished(_ camera: CameraSession, trace: CounterTrace?, timeOrigin: Double, touches: [RecordedTouch]) {
+    func captureFinished(_ camera: CameraSession, trace: CounterTrace?, timeOrigin: Double, touches: [RecordedTouch],
+                         performance: LivePerformanceSummary? = nil) {
         guard self.camera === camera, let id = report?.id, let files else { return }
         restoreIdleTimer()
         let stats = camera.capturePerformance
         report?.liveTouches = camera.touchCount
+        report?.livePerformance = performance
+        report?.capture = stats
         let target = Double(report?.targetSeconds ?? 0)
         let status = camera.recordingError != nil ? "failed" : (stats.duration + 0.1 >= target ? "completed" : "short")
         stage("recording", status: status, detail: camera.recordingError ?? (status == "short" ? "Stopped before target duration." : "Target duration reached."),
@@ -327,6 +330,7 @@ final class FinalTestCoordinator: ObservableObject {
         let order = ["nominal", "fair", "serious", "critical", "unknown"]
         if (order.firstIndex(of: thermal) ?? 4) > (order.firstIndex(of: report.worstThermal) ?? 4) { self.report?.worstThermal = thermal }
         let performance = camera?.performance
+        if let live = performance?.live { self.report?.livePerformance = live }
         var stats = camera?.capturePerformance
         if let camera { stats?.analysedFrames = camera.processedFrames }
         let free = (try? FileManager.default.attributesOfFileSystem(forPath: Self.root.path)[.systemFreeSize] as? NSNumber)?.doubleValue ?? 0

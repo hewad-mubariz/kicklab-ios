@@ -4,6 +4,16 @@ import XCTest
 
 #if DEBUG
 final class FinalValidationTests: XCTestCase {
+    func testDurationLadderReachesThirtyMinutesAndOldReportsStillLoad() throws {
+        XCTAssertEqual(FinalTestReport.durations, [30, 60, 120, 180, 300, 600, 900, 1200, 1500, 1800])
+        let old = makeReport()
+        let data = try JSONEncoder().encode(old)
+        let restored = try JSONDecoder().decode(FinalTestReport.self, from: data)
+        XCTAssertEqual(restored.id, old.id)
+        XCTAssertNil(restored.livePerformance)
+        XCTAssertNil(restored.capture)
+    }
+
     func testCompletedPipelineStillNeedsIndependentVisualReview() {
         var report = makeReport()
         for name in FinalTestReport.stageNames {

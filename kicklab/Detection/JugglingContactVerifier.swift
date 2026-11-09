@@ -2,7 +2,8 @@ import CoreVideo
 import Foundation
 
 /// Inspect contacts and bounded inter-contact streak probes using a shared
-/// cache of small images. No pose inference runs in preview or on every camera frame. A suspected floor
+/// cache of small images. Vision contact poses are lazy; the auxiliary shoe model
+/// runs on stored analysis frames, not preview/camera frames. A suspected floor
 /// contact may reuse three buffered views to establish approach and separation
 /// at a foot; the same poses also serve the hand veto. Uncertain/missing
 /// pose is not evidence of a hand; the trajectory gates still decide the touch.
@@ -49,6 +50,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     var poseRequests: Int { observations.poseRequests }
     var poseCacheHits: Int { observations.poseCacheHits }
     var poseProfile: [String: Double] { observations.poseProfile.merging(shoeRecovery.metrics) { _, new in new } }
+    var shoePerformance: ShoePosePerformance { shoeRecovery.performance }
     private(set) var checkedContacts = 0
     private(set) var rejectedContacts = 0
     private(set) var lastCheckMS = 0.0

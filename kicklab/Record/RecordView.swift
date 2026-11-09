@@ -114,7 +114,7 @@ struct RecordView: View {
         }
         .statusBarHidden(false)
         .debugRuntimeOverlay(performance: camera.performance, capture: camera.capturePerformance,
-                             recording: camera.isRecording)
+                             recording: camera.isRecording, touches: camera.touchCount, elapsed: camera.recordingElapsed)
         .preferredColorScheme(.dark)
         .onAppear {
             if galleryItem == nil, processingReviewPath == nil { camera.start() }

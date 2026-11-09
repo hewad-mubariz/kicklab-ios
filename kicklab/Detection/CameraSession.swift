@@ -483,7 +483,7 @@ final class CameraSession: NSObject, ObservableObject {
             }
             #if DEBUG
             FinalTestCoordinator.shared.captureFinished(self, trace: analysis.trace, timeOrigin: analysis.timeOrigin,
-                touches: analysis.touches)
+                touches: analysis.touches, performance: analysis.livePerformance)
             #endif
             if self.wantsPreparedPreview { self.prepareTracking() }
         }

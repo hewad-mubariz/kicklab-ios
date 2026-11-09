@@ -24,6 +24,11 @@ struct kicklabApp: App {
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
         Task.detached(priority: .utility) { try? VideoSafetyPolicy.cleanExpiredExports() }
         #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--outdoor-validation") {
+            UserDefaults.standard.set(true, forKey: DebugOverlayPreferences.visibilityKey)
+            // Restore the normal counter for field measurements after earlier A/B runs.
+            UserDefaults.standard.removeObject(forKey: ShoeRecoveryPolicy.benchmarkPreferenceKey)
+        }
         if Bundle.main.bundleIdentifier == "com.juggledude.release120.preview",
            ProcessInfo.processInfo.arguments.contains("--reset-practice-notifications") {
             for key in [PracticeNotifications.enabledKey, PracticeNotifications.exportsKey, PracticeNotifications.timeKey,

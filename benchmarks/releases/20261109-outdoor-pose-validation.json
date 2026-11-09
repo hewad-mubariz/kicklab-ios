@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-09",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "base_commit": "59ed98dc",
+  "version": "1.2.0",
+  "build": "77",
+  "bundle_id": "com.juggledude",
+  "durations_seconds": [
+    30,
+    60,
+    120,
+    180,
+    300,
+    600,
+    900,
+    1200,
+    1500,
+    1800
+  ],
+  "counter_policy_changed": false,
+  "model_weights_changed": false,
+  "pose_backend": "MediaPipe Full / CPU",
+  "device_app_optimization": "-O, existing Debug iphoneos target setting",
+  "tests": {
+    "unit_tests_passed": 14,
+    "ui_tests_passed": 1,
+    "real_video_landmarks_unchanged_from_previous_run": true,
+    "pose_lifecycle_landmarks_unchanged_from_previous_run": true
+  },
+  "devices": {
+    "iphone17": {
+      "installed_main_app": true,
+      "launched_with_outdoor_overlay": true
+    },
+    "iphone11": {
+      "installed_main_app": true,
+      "launched_with_outdoor_overlay": true
+    }
+  },
+  "completed_outdoor_session": false,
+  "physical_phone_pose_cost_measured": false,
+  "memory_measurement": "Whole process footprint; before/after pose initialization is observational, not isolated pose RAM",
+  "timing_measurement": "Cumulative model load, inference and pose work; already included in full-frame/contact-buffer time",
+  "files": "Documents/FinalValidation/<run UUID>",
+  "notes": [
+    "Initial attempt to force whole-module optimization globally crashed Swift while compiling the external IssueReporting dependency. Final build uses existing optimized iphoneos app target settings and passes signing.",
+    "No TestFlight upload. Existing app data preserved by installing the same bundle identifier."
+  ]
+}
