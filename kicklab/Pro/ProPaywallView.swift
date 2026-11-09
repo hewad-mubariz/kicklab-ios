@@ -1,7 +1,7 @@
 import SwiftUI
 import StoreKit
 
-/// Juggle Dude Pro, the "Pro Pass" direction: the juggler cut out over a lime slash, the Pro
+/// Juggle Dude Pro, the "Pro Pass" direction: a football touch over a lime slash, the Pro
 /// tools with their editor previews, then the plans.
 ///
 /// Built with App Review in mind: an always-visible close button, the billed price as the
@@ -132,7 +132,7 @@ struct ProPaywallView: View {
         .accessibilityAction(.escape, close)
     }
 
-    /// Just the headline and the juggler, so a big phone shows the tools, plans and button
+    /// Just the headline and the hero, so a big phone shows the tools, plans and button
     /// without scrolling; taller screens give the photo the rest.
     private func heroHeight(_ proxy: GeometryProxy) -> CGFloat {
         let screen = proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
@@ -308,8 +308,7 @@ private struct ProNotice: Identifiable {
 
 // MARK: - Hero
 
-/// The photo dimmed behind, a lime slash sweeping down, the juggler cut out in front of it
-/// and the headline on the left.
+/// A compact boot-and-ball cutout over the existing lime slash, beside the headline.
 private struct ProPassHero: View {
     let appeared: Bool
     let topInset: CGFloat
@@ -319,24 +318,16 @@ private struct ProPassHero: View {
         GeometryReader { geometry in
             let w = geometry.size.width
             let h = geometry.size.height
-            // The photo is 2:3 with the juggler centred; place them at two-thirds across.
-            let photo = CGSize(width: w * 1.22, height: w * 1.22 * 1.5)
-            let origin = CGPoint(x: w * 0.73 - photo.width / 2, y: topInset - photo.height * 0.08)
+            // Keep the touch in the short hero's open right side, above the tool tiles.
+            let photo = CGSize(width: w * 0.42, height: w * 0.42 * 1.5)
+            let origin = CGPoint(x: w * 0.64, y: topInset - 14)
             ZStack(alignment: .topLeading) {
-                layer(w, h) {
-                    Image("home-juggling").resizable()
-                        .frame(width: photo.width, height: photo.height)
-                        .saturation(0.75).brightness(-0.25)
-                        .scaleEffect(appeared || reduceMotion ? 1 : 1.08)
-                        .animation(reduceMotion ? nil : .easeOut(duration: 2.6), value: appeared)
-                        .offset(x: origin.x, y: origin.y)
-                }
                 ProSlash()
                     .fill(LinearGradient(colors: [ProPass.lime, ProPass.lime.opacity(0.7)], startPoint: .top, endPoint: .bottom))
                     .scaleEffect(x: 1, y: appeared || reduceMotion ? 1 : 0, anchor: .top)
                     .animation(reduceMotion ? SessionMotion.fade : .spring(response: 0.55, dampingFraction: 0.82).delay(0.12), value: appeared)
                 layer(w, h) {
-                    Image("pro-hero-player").resizable()
+                    Image("pro-hero-action").resizable()
                         .frame(width: photo.width, height: photo.height)
                         .shadow(color: .black.opacity(0.5), radius: 16, x: -8, y: 10)
                         .offset(x: origin.x, y: origin.y + (appeared || reduceMotion ? 0 : 22))
@@ -386,7 +377,7 @@ private struct ProPassHero: View {
     }
 }
 
-/// A broad lime brush-slash behind the juggler, with a thin echo beside it.
+/// A broad lime brush-slash behind the hero image, with a thin echo beside it.
 private struct ProSlash: Shape {
     func path(in rect: CGRect) -> Path {
         let w = rect.width, h = rect.height
