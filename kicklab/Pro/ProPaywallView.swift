@@ -1,8 +1,8 @@
 import SwiftUI
 import StoreKit
 
-/// Juggle Dude Pro, the "Pro Pass" direction: the juggler cut out over a lime slash, a touch
-/// counter that ticks up along its motion line, then the plans.
+/// Juggle Dude Pro: compact, static previews of real ball skins above the
+/// headline and plans. The paywall never initializes the effects renderer.
 ///
 /// Built with App Review in mind: an always-visible close button, the billed price as the
 /// strongest price, renewal terms beside the button, and Restore, Terms and Privacy links.
@@ -11,11 +11,9 @@ struct ProPaywallView: View {
     var onUnlocked: (() -> Void)? = nil
     @State private var deliveredUnlock = false
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var plan = ProPlan.yearly
     @State private var appeared = false
     @State private var trackedView = false
-    @State private var touches = 0
     @EnvironmentObject private var subscriptions: SubscriptionStore
     @EnvironmentObject private var account: AccountStore
     @Environment(\.openURL) private var openURL
@@ -29,8 +27,7 @@ struct ProPaywallView: View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(spacing: 0) {
-                    ProPassHero(appeared: appeared, touches: touches, topInset: proxy.safeAreaInsets.top)
-                        .frame(height: heroHeight(proxy))
+                    ProPassHero(appeared: appeared, topInset: proxy.safeAreaInsets.top)
                     VStack(spacing: 12) {
                         features
                         Text("Recording, basic replays and basic export stay free.")
@@ -85,7 +82,6 @@ struct ProPaywallView: View {
                         links
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, -34)
                     .padding(.bottom, max(12, proxy.safeAreaInsets.bottom))
                 }
                 .frame(maxWidth: 560)
@@ -129,13 +125,6 @@ struct ProPaywallView: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("pro-paywall")
         .accessibilityAction(.escape, close)
-    }
-
-    /// The hero takes whatever the plans and terms leave, so tall phones fill the screen
-    /// and small ones scroll.
-    private func heroHeight(_ proxy: GeometryProxy) -> CGFloat {
-        let screen = proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
-        return max(400, screen - 474)
     }
 
     private var closeButton: some View {
@@ -236,13 +225,7 @@ struct ProPaywallView: View {
         guard !appeared else { return }
         try? await Task.sleep(for: .milliseconds(60))
         appeared = true
-        guard !reduceMotion else { touches = 5; return }
-        // The counter ticks up as the motion line draws toward the ball.
-        try? await Task.sleep(for: .milliseconds(900))
-        for count in 1...5 {
-            withAnimation(.snappy(duration: 0.2)) { touches = count }
-            try? await Task.sleep(for: .milliseconds(230))
-        }
+
     }
 
     private func buy() {
@@ -314,165 +297,73 @@ private struct ProNotice: Identifiable {
 
 // MARK: - Hero
 
-/// The photo dimmed behind, a lime slash sweeping down, the juggler cut out in front of it,
-/// the headline on the left and a touch counter with its motion line running to the ball.
+/// Intrinsic vertical layout keeps every preview above the text and purchase
+/// choices, including on short screens and with larger accessibility text.
 private struct ProPassHero: View {
     let appeared: Bool
-    let touches: Int
     let topInset: CGFloat
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        GeometryReader { geometry in
-            let w = geometry.size.width
-            let h = geometry.size.height
-            // The photo is 2:3 with the juggler centred; place them at two-thirds across.
-            let photo = CGSize(width: w * 1.22, height: w * 1.22 * 1.5)
-            let origin = CGPoint(x: w * 0.73 - photo.width / 2, y: topInset - photo.height * 0.08)
-            let ball = CGPoint(x: origin.x + photo.width * 0.62, y: origin.y + photo.height * 0.525)
-            ZStack(alignment: .topLeading) {
-                layer(w, h) {
-                    Image("home-juggling").resizable()
-                        .frame(width: photo.width, height: photo.height)
-                        .saturation(0.75).brightness(-0.25)
-                        .scaleEffect(appeared || reduceMotion ? 1 : 1.08)
-                        .animation(reduceMotion ? nil : .easeOut(duration: 2.6), value: appeared)
-                        .offset(x: origin.x, y: origin.y)
-                }
-                ProSlash()
-                    .fill(LinearGradient(colors: [ProPass.lime, ProPass.lime.opacity(0.7)], startPoint: .top, endPoint: .bottom))
-                    .scaleEffect(x: 1, y: appeared || reduceMotion ? 1 : 0, anchor: .top)
-                    .animation(reduceMotion ? SessionMotion.fade : .spring(response: 0.55, dampingFraction: 0.82).delay(0.12), value: appeared)
-                layer(w, h) {
-                    Image("pro-hero-player").resizable()
-                        .frame(width: photo.width, height: photo.height)
-                        .shadow(color: .black.opacity(0.5), radius: 16, x: -8, y: 10)
-                        .offset(x: origin.x, y: origin.y + (appeared || reduceMotion ? 0 : 22))
-                        .opacity(appeared ? 1 : 0)
-                        .animation(reduceMotion ? SessionMotion.fade : .spring(response: 0.6, dampingFraction: 0.8).delay(0.22), value: appeared)
-                }
-                // Legible headline on the left, and a soft fade into the page below.
-                LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .leading, endPoint: UnitPoint(x: 0.6, y: 0.5))
-                LinearGradient(stops: [.init(color: .clear, location: 0.55), .init(color: ProPass.background, location: 0.97)],
-                               startPoint: .top, endPoint: .bottom)
-                ProMotionLine(start: CGPoint(x: 92, y: h * 0.72), end: CGPoint(x: ball.x - 22, y: ball.y + 4), progress: Double(touches) / 5)
-                    .opacity(appeared ? 1 : 0)
-                headline
-                    .padding(.leading, 20)
-                    .padding(.top, topInset + 26)
-                ProTouchBadge(touches: touches)
-                    .position(x: 52, y: h * 0.72)
-                    .sessionEntrance(appeared, order: 4, scale: 0.6)
-            }
-            .frame(width: w, height: h, alignment: .topLeading)
-            .clipped()
-        }
-    }
-
-    /// A full-size layer whose content can sit anywhere without changing the hero's size.
-    private func layer<Content: View>(_ w: CGFloat, _ h: CGFloat, @ViewBuilder content: () -> Content) -> some View {
-        Color.clear.frame(width: w, height: h).overlay(alignment: .topLeading, content: content)
-    }
-
-    private var headline: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: 14) {
             Text("JUGGLE DUDE \(Text("PRO").foregroundColor(ProPass.lime))")
                 .font(.caption.weight(.heavy)).tracking(1.6)
-                .sessionEntrance(appeared, order: 1, offset: -10)
-            VStack(alignment: .leading, spacing: -14) {
-                Text("MAKE EVERY")
-                Text("REPLAY YOURS")
+                .padding(.horizontal, 44)
+                .sessionEntrance(appeared, order: 1, offset: -8)
+            ProSkinShowcase()
+                .frame(height: 104)
+                .sessionEntrance(appeared, order: 2, offset: 10)
+            VStack(spacing: 8) {
+                VStack(spacing: -9) {
+                    Text("MAKE EVERY")
+                    Text("REPLAY YOURS")
+                }
+                .font(ProPass.display(44))
+                .lineLimit(1).minimumScaleFactor(0.7)
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(.isHeader)
+                Text("Effects, overlays and\nshot camera tools.")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.white.opacity(0.8))
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .font(ProPass.display(58))
-            .shadow(color: .black.opacity(0.4), radius: 8, y: 2)
-            .transformEffect(CGAffineTransform(a: 1, b: 0, c: -0.16, d: 1, tx: 8, ty: 0))
-            .padding(.top, 12)
-            .sessionEntrance(appeared, order: 2, offset: -14)
-            .accessibilityElement(children: .combine)
-            .accessibilityAddTraits(.isHeader)
-            Text("Effects, overlays and\nshot camera tools.")
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.white.opacity(0.85))
-                .padding(.top, 2)
-                .sessionEntrance(appeared, order: 3, offset: -8)
+            .multilineTextAlignment(.center)
+            .sessionEntrance(appeared, order: 3, offset: 8)
         }
-    }
-}
-
-/// A broad lime brush-slash behind the juggler, with a thin echo beside it.
-private struct ProSlash: Shape {
-    func path(in rect: CGRect) -> Path {
-        let w = rect.width, h = rect.height
-        var path = Path()
-        path.move(to: CGPoint(x: w * 0.8, y: h * 0.05))
-        path.addLine(to: CGPoint(x: w * 1.06, y: h * 0.05))
-        path.addLine(to: CGPoint(x: w * 0.76, y: h * 0.84))
-        path.addLine(to: CGPoint(x: w * 0.6, y: h * 0.84))
-        path.closeSubpath()
-        path.move(to: CGPoint(x: w * 1.04, y: h * 0.3))
-        path.addLine(to: CGPoint(x: w * 1.04, y: h * 0.38))
-        path.addLine(to: CGPoint(x: w * 0.84, y: h * 0.86))
-        path.addLine(to: CGPoint(x: w * 0.8, y: h * 0.86))
-        path.closeSubpath()
-        return path
-    }
-}
-
-private struct ProTouchBadge: View {
-    let touches: Int
-
-    var body: some View {
-        VStack(spacing: -4) {
-            Text(String(format: "%02d", touches))
-                .font(ProPass.display(40))
-                .contentTransition(.numericText(value: Double(touches)))
-                .padding(.top, 6)
-            Text("TOUCHES").font(.system(size: 9, weight: .heavy)).tracking(1)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 24)
+        .padding(.top, topInset + 16)
+        .padding(.bottom, 22)
+        .background {
+            LinearGradient(colors: [Color(red: 0.055, green: 0.095, blue: 0.065), ProPass.background],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
         }
-        .frame(width: 68, height: 68)
-        .background(.black.opacity(0.55), in: .rect(cornerRadius: 12))
-        .overlay { RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.75), lineWidth: 1.5) }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(touches) touches")
+        .accessibilityIdentifier("pro-hero")
     }
 }
 
-/// The juggle as a lime motion line: one hop per touch, drawn as the counter ticks.
-private struct ProMotionLine: View {
-    let start: CGPoint
-    let end: CGPoint
-    let progress: Double
-
+/// 256px lossless snapshots from the production renderer: no material decoding,
+/// model, Metal setup, timer, video playback or continuously animated preview.
+private struct ProSkinShowcase: View {
     var body: some View {
-        let path = Self.hops(from: start, to: end)
         ZStack {
-            path.trim(from: 0, to: progress)
-                .stroke(ProPass.lime.opacity(0.35), style: StrokeStyle(lineWidth: 7, lineCap: .round, lineJoin: .round))
-                .blur(radius: 5)
-            path.trim(from: 0, to: progress)
-                .stroke(ProPass.lime, style: StrokeStyle(lineWidth: 2.6, lineCap: .round, lineJoin: .round))
-            Circle().fill(ProPass.lime)
-                .frame(width: 9, height: 9)
-                .shadow(color: ProPass.lime, radius: 6)
-                .position(start)
+            RadialGradient(colors: [ProPass.lime.opacity(0.15), .clear],
+                           center: .center, startRadius: 12, endRadius: 145)
+                .frame(width: 290, height: 290)
+                .scaleEffect(x: 1, y: 104.0 / 290.0)
+                .frame(width: 290, height: 104)
+            ProSquiggle()
+                .stroke(ProPass.lime.opacity(0.32), style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
+                .frame(width: 276, height: 45)
+            HStack(spacing: 24) {
+                Image("pro-skin-stealth").resizable().scaledToFit()
+                    .frame(width: 68, height: 68).offset(y: 9)
+                Image("pro-skin-gold").resizable().scaledToFit()
+                    .frame(width: 84, height: 84)
+                Image("pro-skin-volt").resizable().scaledToFit()
+                    .frame(width: 68, height: 68).offset(y: 9)
+            }
         }
-        .animation(.easeOut(duration: 0.22), value: progress)
-        .allowsHitTesting(false)
         .accessibilityHidden(true)
-    }
-
-    private static func hops(from start: CGPoint, to end: CGPoint) -> Path {
-        var path = Path()
-        path.move(to: start)
-        let count = 5
-        for index in 0..<count {
-            let t0 = CGFloat(index) / CGFloat(count), t1 = CGFloat(index + 1) / CGFloat(count)
-            let a = CGPoint(x: start.x + (end.x - start.x) * t0, y: start.y + (end.y - start.y) * t0)
-            let b = CGPoint(x: start.x + (end.x - start.x) * t1, y: start.y + (end.y - start.y) * t1)
-            let lift: CGFloat = 26 + CGFloat(index % 2) * 12
-            path.addQuadCurve(to: b, control: CGPoint(x: (a.x + b.x) / 2, y: min(a.y, b.y) - lift))
-        }
-        return path
     }
 }
 
@@ -487,10 +378,12 @@ private struct ProFeatureTile: View {
             icon.frame(height: 30)
             Text(feature.title)
                 .font(.caption.weight(.semibold))
-                .lineLimit(1).minimumScaleFactor(0.8)
+                .lineLimit(2).minimumScaleFactor(0.9)
+                .multilineTextAlignment(.center)
+                .frame(minHeight: 30)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 84)
+        .frame(minHeight: 84)
         .background(ProPass.card, in: .rect(cornerRadius: 16))
         .overlay { RoundedRectangle(cornerRadius: 16).strokeBorder(.white.opacity(0.08)) }
         .accessibilityElement(children: .combine)

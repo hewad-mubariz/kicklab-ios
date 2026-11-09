@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-09",
+  "base_commit": "f8a6e1da",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "old_paywall_only_asset_bytes": 346624,
+  "new_preview_asset_bytes": 263231,
+  "compiled_rendition_saving_bytes": 83393,
+  "old_hero_image_pixels": 3145728,
+  "new_hero_image_pixels": 196608,
+  "image_pixel_reduction_factor": 16,
+  "previews": {
+    "gold": {
+      "sha256": "c60d340f1288343b80c059e9e0ffeb67d6058098f12e349c5836cd8dc01d4f11",
+      "width": 256,
+      "height": 256,
+      "source": "production BallSkinSphereRenderer, zero-angle source pose"
+    },
+    "stealth": {
+      "sha256": "316032fdabae28c00c6bbe77e377478572e960aa7545f28e5d4b94d0c16b4727",
+      "width": 256,
+      "height": 256,
+      "source": "production BallSkinSphereRenderer, zero-angle source pose"
+    },
+    "volt": {
+      "sha256": "2e01f1c452e2fa4662da61f7ecdf750c1d1e1a9ec7ab84d81faf20f0274f260c",
+      "width": 256,
+      "height": 256,
+      "source": "production BallSkinSphereRenderer, zero-angle source pose"
+    }
+  },
+  "shared_home_image_retained": true,
+  "renderer_or_model_initialized_by_paywall": false,
+  "whole_app_memory_measured": false,
+  "whole_app_download_size_measured": false,
+  "tests": {
+    "navigation_and_plan_selection": "passed",
+    "purchase_completion": "not verified; simulator requested Apple Account sign-in",
+    "final_navigation_tests_passed": 2
+  },
+  "phone_builds_updated": false,
+  "visual_checks": [
+    "iPhone 17 Pro Max / English",
+    "iPhone SE / English and German"
+  ]
+}
