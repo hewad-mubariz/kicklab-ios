@@ -1,0 +1,251 @@
+{
+  "sdk_version": "1.2.2",
+  "upstream_revision": "5b6fea33b95a78ae3dc61f4ed96a2f7df85a672e",
+  "supported_use": "Juggle Dude CPU PoseLandmarker video mode with full pose model; unrelated MediaPipe task graphs are not retained.",
+  "task_graph_sha256": {
+    "ios-arm64": "fe86940f3af72e52043d1dc0eacb933251f74ddac2e564b4624e76717e465602",
+    "ios-arm64-simulator": "6e6ccb3d73de1e37492f22826c2d6135b668c23255c3aa62fce19685c611c91b"
+  },
+  "anchors": [
+    {
+      "member": "flow_limiter_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_21FlowLimiterCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "tensors_to_segmentation_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe4api28internal23InternalNodeRegistratorINS_4api331TensorsToSegmentationCalculatorEE12registrationE"
+    },
+    {
+      "member": "pose_landmarker_graph.o",
+      "symbol": "_MPP__ZN9mediapipe5tasks6vision15pose_landmarker19PoseLandmarkerGraph9GetConfigEPNS_15SubgraphContextE"
+    },
+    {
+      "member": "association_norm_rect_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_29AssociationNormRectCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "collection_has_min_size_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_30CollectionHasMinSizeCalculatorINSt3__16vectorINS_14NormalizedRectENS3_9allocatorIS5_EEEEEEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "previous_loopback_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api226PreviousLoopbackCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "merge_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe4api28internal23InternalNodeRegistratorINS_4api313MergeNodeImplEE12registrationE"
+    },
+    {
+      "member": "packet_presence_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_24PacketPresenceCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "pose_detector_graph.o",
+      "symbol": "_MPP__ZN9mediapipe5tasks6vision13pose_detector17PoseDetectorGraph9GetConfigEPNS_15SubgraphContextE"
+    },
+    {
+      "member": "clip_vector_size_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_24ClipVectorSizeCalculatorIN7drishti9DetectionEEEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "tensors_to_detections_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api229TensorsToDetectionsCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "ssd_anchors_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_20SsdAnchorsCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "detection_letterbox_removal_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_35DetectionLetterboxRemovalCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "detection_projection_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_29DetectionProjectionCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "detection_transformation_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api233DetectionTransformationCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "non_max_suppression_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_27NonMaxSuppressionCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "pose_landmarks_detector_graph.o",
+      "symbol": "_MPP__ZN9mediapipe5tasks6vision15pose_landmarker32SinglePoseLandmarksDetectorGraph9GetConfigEPNS_15SubgraphContextE"
+    },
+    {
+      "member": "begin_loop_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_19BeginLoopCalculatorINSt3__16vectorIfNS3_9allocatorIfEEEEEEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "concatenate_vector_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_27ConcatenateVectorCalculatorIbEEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "constant_side_packet_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_28ConstantSidePacketCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "end_loop_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_17EndLoopCalculatorINSt3__16vectorIbNS3_9allocatorIbEEEEEEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "gate_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_14GateCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "side_packet_to_stream_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_28SidePacketToStreamCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "inference_calculator_cpu.o",
+      "symbol": "_MPP__ZN9mediapipe4api28internal23InternalNodeRegistratorINS0_26InferenceCalculatorCpuImplEE12registrationE"
+    },
+    {
+      "member": "inference_calculator_xnnpack.o",
+      "symbol": "_MPP__ZN9mediapipe4api28internal23InternalNodeRegistratorINS0_30InferenceCalculatorXnnpackImplEE12registrationE"
+    },
+    {
+      "member": "tensors_to_floats_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api225TensorsToFloatsCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "tensors_to_landmarks_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api228TensorsToLandmarksCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "alignment_points_to_rects_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_30AlignmentPointsRectsCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "detections_to_rects_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_27DetectionsToRectsCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "inverse_matrix_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe4api28internal23InternalNodeRegistratorINS_4api321InverseMatrixNodeImplEE12registrationE"
+    },
+    {
+      "member": "landmark_letterbox_removal_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_34LandmarkLetterboxRemovalCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "landmark_projection_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe4api28internal23InternalNodeRegistratorINS_4api326LandmarkProjectionNodeImplEE12registrationE"
+    },
+    {
+      "member": "landmarks_to_detection_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_30LandmarksToDetectionCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "rect_transformation_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_28RectTransformationCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "refine_landmarks_from_heatmap_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe4api28internal23InternalNodeRegistratorINS0_40RefineLandmarksFromHeatmapCalculatorImplEE12registrationE"
+    },
+    {
+      "member": "thresholding_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_22ThresholdingCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "visibility_copy_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe4api28internal23InternalNodeRegistratorINS_4api322VisibilityCopyNodeImplEE12registrationE"
+    },
+    {
+      "member": "world_landmark_projection_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe4api28internal23InternalNodeRegistratorINS_4api331WorldLandmarkProjectionNodeImplEE12registrationE"
+    },
+    {
+      "member": "get_vector_item_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api223GetVectorItemCalculatorINS_4RectEEEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "landmarks_smoothing_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api232LandmarksSmoothingCalculatorImplEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "multi_landmarks_smoothing_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api237MultiLandmarksSmoothingCalculatorImplEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "multi_world_landmarks_smoothing_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api242MultiWorldLandmarksSmoothingCalculatorImplEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "visibility_smoothing_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_29VisibilitySmoothingCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "image_preprocessing_graph.o",
+      "symbol": "_MPP__ZN9mediapipe5tasks10components10processors14regular_tflite23ImagePreprocessingGraph9GetConfigEPNS_15SubgraphContextE"
+    },
+    {
+      "member": "pass_through_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_21PassThroughCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "image_clone_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api220ImageCloneCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "image_properties_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_4api225ImagePropertiesCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "image_to_tensor_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe4api28internal23InternalNodeRegistratorINS_4api321ImageToTensorNodeImplEE12registrationE"
+    },
+    {
+      "member": "split_proto_list_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_24SplitJointListCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "split_vector_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_21SplitVectorCalculatorIfLb0EEEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "model_resources_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_5tasks4core14regular_tflite24ModelResourcesCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "inference_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe4api231InferenceCalculatorSelectorImpl9GetConfigERKN7drishti26CalculatorGraphConfig_NodeE"
+    },
+    {
+      "member": "callback_packet_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_24CallbackPacketCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "packet_generator_wrapper_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe8internal24CalculatorBaseFactoryForINS_32PacketGeneratorWrapperCalculatorEvE11GetContractEPNS_18CalculatorContractE"
+    },
+    {
+      "member": "warp_affine_calculator.o",
+      "symbol": "_MPP__ZN9mediapipe4api317CalculatorContextINS0_14WarpAffineNodeINS_5ImageEEEE5ClearEv"
+    },
+    {
+      "member": "in_order_output_stream_handler.o",
+      "symbol": "_MPP__ZN9mediapipe26InOrderOutputStreamHandler15PropagationLoopEv"
+    },
+    {
+      "member": "immediate_input_stream_handler.o",
+      "symbol": "_MPP__ZN9mediapipe27ImmediateInputStreamHandlerD0Ev"
+    },
+    {
+      "member": "fixed_size_input_stream_handler.o",
+      "symbol": "_MPP__ZN9mediapipe27FixedSizeInputStreamHandlerD0Ev"
+    },
+    {
+      "member": "default_input_stream_handler.o",
+      "symbol": "_MPP__ZN9mediapipe25DefaultInputStreamHandlerD0Ev"
+    },
+    {
+      "member": "thread_pool_executor.o",
+      "symbol": "_MPP__ZN9mediapipe18ThreadPoolExecutorC1Ei"
+    }
+  ]
+}

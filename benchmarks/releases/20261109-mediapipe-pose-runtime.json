@@ -1,0 +1,142 @@
+{
+  "date": "2026-11-09",
+  "branch": "feature/leaderboard-editor-upgrade",
+  "baseline_commit": "eb29acbc",
+  "measurement": "Uncompressed archived Release app file bytes, decimal MB. No App Store download measurement.",
+  "baseline_archive": "artifacts/mediapipe-linkage-optimization/JuggleDude-conservative.xcarchive",
+  "optimized_archive": "artifacts/mediapipe-pose-subset/JuggleDude-pose-runtime.xcarchive",
+  "archive": {
+    "baseline_bytes": 199564962,
+    "optimized_bytes": 188358354,
+    "saved_bytes": 11206608,
+    "baseline_executable_bytes": 47767360,
+    "optimized_executable_bytes": 36560752,
+    "size_changes": [
+      {
+        "path": "Juggle Dude",
+        "before": 47767360,
+        "after": 36560752,
+        "delta": -11206608
+      }
+    ],
+    "protected_resources_identical": [
+      "ball-skin-classic.jdmaterial",
+      "ball-skin-volt.jdmaterial",
+      "default.metallib",
+      "ball-skin-chrome.jdmaterial",
+      "ball-skin-matrix.jdmaterial",
+      "studio-environment.bin.lzfse",
+      "ice-fracture-triangles.bin.lzfse",
+      "ball-skin-crimson.jdmaterial",
+      "ball-skin-metal.jdmaterial",
+      "ice-fracture-bvh.bin.lzfse",
+      "GoogleSans-Regular.ttf",
+      "ball-skin-galaxy.jdmaterial",
+      "ball-skin-stealth.jdmaterial",
+      "ball-skin-aurora.jdmaterial",
+      "ball-skin-arctic.jdmaterial",
+      "pose_landmarker_full.task",
+      "ball-skin-lava.jdmaterial",
+      "ball-skin-pearl.jdmaterial",
+      "ball-skin-graffiti.jdmaterial",
+      "ball-skin-gold.jdmaterial",
+      "gold-environment.bin.lzfse",
+      "GoogleSignIn_GoogleSignIn.bundle/Roboto-Bold.ttf",
+      "RFDETRSmallRecovery040FP16.mlmodelc/metadata.json",
+      "RFDETRSmallRecovery040FP16.mlmodelc/model.mil",
+      "RFDETRSmallRecovery040FP16.mlmodelc/coremldata.bin",
+      "RFDETRSmallRecovery040FP16.mlmodelc/weights/weight.bin",
+      "RFDETRSmallRecovery040FP16.mlmodelc/analytics/coremldata.bin"
+    ],
+    "codesign": "passed",
+    "app": {
+      "CFBundleIdentifier": "com.juggledude",
+      "CFBundleShortVersionString": "1.2.0",
+      "CFBundleVersion": "77",
+      "MinimumOSVersion": "18.0"
+    }
+  },
+  "total_saved_since_uploaded_build_77_bytes": 32433902,
+  "growth_since_original_build_36_bytes": 45094764,
+  "implementation": {
+    "change": "Replace app-wide force loading of the complete task-graphs archive with strong references to the registration units used by the CPU pose pipeline.",
+    "registration_units": 60,
+    "sdk_version": "1.2.2",
+    "sdk_binaries_modified": false,
+    "model_changed": false,
+    "counter_rules_changed": false,
+    "runtime_configuration": "Existing Full pose model, CPU, video mode, one person, existing 0.5 thresholds and no requested segmentation masks.",
+    "upstream_inputs": [
+      "mediapipe/tasks/cc/vision/pose_landmarker/BUILD",
+      "mediapipe/tasks/cc/vision/pose_detector/BUILD",
+      "mediapipe/tasks/cc/components/processors/BUILD"
+    ],
+    "integration_files": [
+      "config/MediaPipePose.xcconfig",
+      "Vendor/MediaPipeTasks/pose-link-anchors.json",
+      "scripts/verify-mediapipe-pose-linkage.py"
+    ],
+    "maintenance": "Pinned SDK hashes and unique anchor-member mappings verified for device and simulator. Adding another MediaPipe task/delegate or upgrading the SDK requires review and repeated runtime tests."
+  },
+  "verification": {
+    "full_graph_baseline_tests_passed": 8,
+    "targeted_debug_tests_passed": 9,
+    "debug_landmarks_vs_full_graph": {
+      "lifecycle": {
+        "identical_bytes": true,
+        "frames": 120,
+        "sha256": "b40fa9cac0dccdec213f1a5467245622419a1c6f9b0e8c5b605a602e3752c80d"
+      },
+      "video": {
+        "identical_bytes": true,
+        "frames": 90,
+        "sha256": "aa6c427ac0a5192ca7371ffc3197daad9cc0029a8f2e11389ed00246e05bcc15"
+      }
+    },
+    "actual_production_recovery_calls": 210,
+    "actual_production_recovery_errors": 0,
+    "heel_toe_numeric_rule_tests_passed": 6,
+    "home_navigation_test_passed": true,
+    "two_sessions": {
+      "visible_frames_per_session": 40,
+      "blank_frames_per_session": 20,
+      "reacquired_frames_per_session": 20
+    },
+    "release_inference": {
+      "status": "passed",
+      "tests": 2,
+      "configuration": "Release, iOS 26.5 arm64 simulator, ENABLE_TESTABILITY=YES and ONLY_ACTIVE_ARCH=YES",
+      "comparison": {
+        "video": {
+          "identical_bytes": true,
+          "frames": 90,
+          "sha256": "aa6c427ac0a5192ca7371ffc3197daad9cc0029a8f2e11389ed00246e05bcc15"
+        },
+        "lifecycle": {
+          "identical_bytes": true,
+          "frames": 120,
+          "sha256": "b40fa9cac0dccdec213f1a5467245622419a1c6f9b0e8c5b605a602e3752c80d"
+        }
+      },
+      "isolated_test_bundle": "Only MediaPipeLinkageTests compiled because existing unrelated tests require DEBUG-only helpers; temporary source exclusions restored."
+    },
+    "sdk_anchor_verification": "Both original arm64 device and simulator archives: pinned hashes match and all 60 symbols uniquely identify their recorded object member.",
+    "result_bundles": [
+      "artifacts/mediapipe-pose-subset/full-baseline.xcresult",
+      "artifacts/mediapipe-pose-subset/validated-debug.xcresult",
+      "artifacts/mediapipe-pose-subset/validated-release.xcresult"
+    ],
+    "archive_success": true,
+    "codesign_deep_strict": "passed"
+  },
+  "discarded_prototypes": [
+    "Propagating C++ anchor symbols through the SwiftPM product produced hosted-test linker failures; anchors now apply only to app configurations.",
+    "Initial subsets lacked warp-affine and stream-handler registrations. Actual graph initialization failed, the missing required units were added, and validation rerun."
+  ],
+  "limits": [
+    "Runtime comparison used the iOS 26.5 arm64 simulator, not a new physical-phone benchmark.",
+    "No reduction in model calls, accuracy settings, or counting workload; no performance-speedup claim.",
+    "Only the app existing CPU pose usage is validated. Unrelated task graphs/GPU inference backends are not retained.",
+    "No TestFlight upload, App Store submission or physical-phone installation performed."
+  ]
+}

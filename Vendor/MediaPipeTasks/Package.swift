@@ -100,10 +100,10 @@ let package = Package(
                 .copy("PrivacyInfo.xcprivacy"),
             ],
             linkerSettings: [
-                // Preserve Objective-C classes and helper categories. The app
-                // target force-loads only MediaPipeTaskGraphs_library.a to keep
-                // its static calculator registrations. Do not replace this with
-                // ordinary dead stripping: pose initialization would fail.
+                // Preserve Objective-C classes and helper categories. The app's
+                // MediaPipePose.xcconfig retains the pinned CPU pose registration
+                // units without force-loading unrelated task graphs/backends.
+                // See UPSTREAM.txt before adding other MediaPipe APIs.
                 .unsafeFlags(["-Xlinker", "-ObjC"]),
                 .linkedLibrary("c++"),
                 // Required by MPPSqliteVectorStore in MediaPipeTasksRetrieval.
