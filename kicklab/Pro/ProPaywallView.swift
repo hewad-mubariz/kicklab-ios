@@ -39,12 +39,7 @@ struct ProPaywallView: View {
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityIdentifier("pro-free-features")
-                        ProInviteCodeButton(isRedeeming: $redeemingInvite) {
-                            if onUnlocked != nil { deliverUnlock() }
-                            else { close() }
-                        }
-                        .foregroundStyle(ProPass.lime)
-                        plans.padding(.top, 2)
+                        plans.padding(.top, 6)
                         if subscriptions.isPro {
                             Text("To change plans, tap Monthly or Yearly and choose your plan in Apple’s subscription settings.")
                                 .font(.caption)
@@ -83,6 +78,13 @@ struct ProPaywallView: View {
                         }
                         #endif
                         links
+                        // Invites are for testers, so they sit with the small print, not above the plans.
+                        ProInviteCodeButton(isRedeeming: $redeemingInvite) {
+                            if onUnlocked != nil { deliverUnlock() }
+                            else { close() }
+                        }
+                        .foregroundStyle(ProPass.lime.opacity(0.85))
+                        .padding(.top, -10)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, -34)
@@ -135,7 +137,7 @@ struct ProPaywallView: View {
     /// and small ones scroll.
     private func heroHeight(_ proxy: GeometryProxy) -> CGFloat {
         let screen = proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
-        return max(400, screen - 474)
+        return max(400, screen - 566)
     }
 
     private var closeButton: some View {
@@ -159,10 +161,10 @@ struct ProPaywallView: View {
     }
 
     private var features: some View {
-        HStack(spacing: 8) {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
             ForEach(Array(ProFeature.allCases.enumerated()), id: \.element) { index, feature in
                 ProFeatureTile(feature: feature, appeared: appeared)
-                    .sessionEntrance(appeared, order: 5 + index, offset: 18)
+                    .sessionEntrance(appeared, order: 5 + index / 3, offset: 18)
             }
         }
     }
@@ -355,13 +357,14 @@ private struct ProPassHero: View {
                 LinearGradient(colors: [.black.opacity(0.6), .clear], startPoint: .leading, endPoint: UnitPoint(x: 0.6, y: 0.5))
                 LinearGradient(stops: [.init(color: .clear, location: 0.55), .init(color: ProPass.background, location: 0.97)],
                                startPoint: .top, endPoint: .bottom)
-                ProMotionLine(start: CGPoint(x: 92, y: h * 0.72), end: CGPoint(x: ball.x - 22, y: ball.y + 4), progress: Double(touches) / 5)
+                // Low enough to clear a two-line subtitle on the shortest hero.
+                ProMotionLine(start: CGPoint(x: 92, y: h * 0.78), end: CGPoint(x: ball.x - 22, y: ball.y + 4), progress: Double(touches) / 5)
                     .opacity(appeared ? 1 : 0)
                 headline
                     .padding(.leading, 20)
                     .padding(.top, topInset + 26)
                 ProTouchBadge(touches: touches)
-                    .position(x: 52, y: h * 0.72)
+                    .position(x: 52, y: h * 0.78)
                     .sessionEntrance(appeared, order: 4, scale: 0.6)
             }
             .frame(width: w, height: h, alignment: .topLeading)
@@ -390,7 +393,7 @@ private struct ProPassHero: View {
             .sessionEntrance(appeared, order: 2, offset: -14)
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
-            Text("Effects, overlays and\nshot camera tools.")
+            Text("Looks, touch sounds,\neffects and camera tools.")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.white.opacity(0.85))
                 .padding(.top, 2)
@@ -478,58 +481,80 @@ private struct ProMotionLine: View {
 
 // MARK: - Below the hero
 
+/// One Pro tool, shown with the same preview its tile has in the replay editor.
 private struct ProFeatureTile: View {
     let feature: ProFeature
     let appeared: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(spacing: 8) {
-            icon.frame(height: 30)
+        // Previews stay level across the row; a title that wraps grows downward.
+        VStack(spacing: 6) {
+            preview.frame(height: 34)
             Text(feature.title)
                 .font(.caption.weight(.semibold))
-                .lineLimit(1).minimumScaleFactor(0.8)
+                .multilineTextAlignment(.center)
+                .lineLimit(2).minimumScaleFactor(0.85)
+                .frame(maxHeight: .infinity, alignment: .top)
         }
+        .padding(.horizontal, 6).padding(.top, 16).padding(.bottom, 6)
         .frame(maxWidth: .infinity)
-        .frame(height: 84)
+        .frame(height: 90)
         .background(ProPass.card, in: .rect(cornerRadius: 16))
-        .overlay { RoundedRectangle(cornerRadius: 16).strokeBorder(.white.opacity(0.08)) }
-        .accessibilityElement(children: .combine)
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(feature.isNew ? ProPass.lime.opacity(0.4) : .white.opacity(0.08))
+        }
+        .overlay(alignment: .topTrailing) {
+            if feature.isNew {
+                Text("NEW")
+                    .font(.system(size: 8, weight: .heavy, design: .rounded)).tracking(0.5)
+                    .foregroundStyle(ProPass.ink)
+                    .padding(.horizontal, 5).padding(.vertical, 3)
+                    .background(ProPass.lime, in: .capsule)
+                    .padding(6)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(feature.isNew
+            ? String(localized: "\(feature.title), new", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+            : feature.title)
+        .accessibilityIdentifier("pro-feature-\(feature.rawValue)")
     }
 
-    @ViewBuilder private var icon: some View {
+    @ViewBuilder private var preview: some View {
         switch feature {
         case .effects:
-            Image(systemName: "sparkles")
-                .font(.system(size: 26, weight: .medium))
-                .foregroundStyle(ProPass.lime)
-                .symbolEffect(.bounce, value: appeared)
+            Image("replay-tool-effects-v2").resizable().scaledToFit()
+                .offset(x: appeared || reduceMotion ? 0 : -16)
+                .animation(.spring(response: 0.6, dampingFraction: 0.7).delay(0.6), value: appeared)
         case .balls:
-            Image(systemName: "soccerball")
-                .font(.system(size: 27, weight: .regular))
-                .rotationEffect(.degrees(appeared ? 360 : 0))
+            BallSkinPreview(skin: .gold)
+                .frame(width: 34, height: 34)
+                .rotationEffect(.degrees(appeared && !reduceMotion ? 360 : 0))
                 .animation(.spring(response: 0.9, dampingFraction: 0.7).delay(0.6), value: appeared)
-        case .motion:
-            ProSquiggle()
-                .trim(from: 0, to: appeared ? 1 : 0)
-                .stroke(ProPass.lime, style: StrokeStyle(lineWidth: 2.8, lineCap: .round, lineJoin: .round))
-                .frame(width: 40, height: 20)
-                .animation(.easeOut(duration: 0.7).delay(0.7), value: appeared)
+        case .looks:
+            LooksPreview(looks: Array(LookRecipes.ladder.prefix(3)))
+                .fixedSize().scaleEffect(0.78)
+                .frame(width: 90)
+        case .sounds:
+            SoundWaveform(sound: .touch(.snare), bars: 9, color: ProPass.lime)
+                .frame(width: 52, height: 28)
+        case .analytics:
+            MotionStyleGraph(style: .ballMotion, snapshot: MotionStyleSample.preview(for: .ballMotion))
+                .frame(width: 76)
+        case .counters:
+            if let image = Self.counter {
+                Image(decorative: image, scale: 1).resizable().scaledToFit()
+            }
         }
     }
-}
 
-private struct ProSquiggle: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.midY + rect.height * 0.2))
-        path.addCurve(to: CGPoint(x: rect.midX, y: rect.midY),
-                      control1: CGPoint(x: rect.width * 0.18, y: rect.minY - rect.height * 0.3),
-                      control2: CGPoint(x: rect.width * 0.32, y: rect.maxY + rect.height * 0.2))
-        path.addCurve(to: CGPoint(x: rect.maxX, y: rect.midY - rect.height * 0.2),
-                      control1: CGPoint(x: rect.width * 0.68, y: rect.minY - rect.height * 0.4),
-                      control2: CGPoint(x: rect.width * 0.82, y: rect.maxY + rect.height * 0.1))
-        return path
-    }
+    /// Drawn once by the export renderer, like the counter tile in the editor.
+    private static let counter: CGImage? = {
+        let age = CounterArt.previewAge(.neon)
+        return ExportOverlayRenderer.image(style: .neon, time: 5 + age, counter: .init(count: 28, isTotal: false, age: age))
+    }()
 }
 
 private struct ProPlanCard: View {

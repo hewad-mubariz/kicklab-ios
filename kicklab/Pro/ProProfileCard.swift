@@ -22,7 +22,7 @@ struct ProProfileCard: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(subscriptions.isPro ? "Juggle Dude Pro · Active" : "Juggle Dude Pro").font(.body.weight(.semibold))
                         .accessibilityIdentifier("profile-pro-status")
-                    Text(subscriptions.isPro ? "Manage your subscription" : "Effects, balls, overlays and shot camera tools")
+                    Text(subscriptions.isPro ? "Manage your subscription" : "Effects, looks, touch sounds and shot camera tools")
                         .font(.caption).foregroundStyle(TrainingHomeStyle.muted(scheme))
                 }
                 Spacer(minLength: 4)

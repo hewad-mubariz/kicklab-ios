@@ -63,14 +63,20 @@ nonisolated struct ProOffer {
     }
 }
 
+/// The replay tools Pro unlocks, in the paywall's grid order.
 nonisolated enum ProFeature: String, CaseIterable, Identifiable {
-    case effects, balls, motion
+    case effects, balls, looks, sounds, analytics, counters
     var id: String { rawValue }
+    /// New in 1.2, so the paywall tags them.
+    var isNew: Bool { self == .looks || self == .sounds }
     var title: String {
         switch self {
-        case .effects: String(localized: "All effects", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .effects: String(localized: "Effects", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         case .balls: String(localized: "Ball styles", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        case .motion: String(localized: "Graphs & counter styles", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .looks: String(localized: "Looks", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .sounds: String(localized: "Touch sounds", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .analytics: String(localized: "Analytics", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+        case .counters: String(localized: "Counter styles", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
         }
     }
 }

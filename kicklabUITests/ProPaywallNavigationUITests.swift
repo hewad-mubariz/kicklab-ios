@@ -71,4 +71,27 @@ final class ProPaywallNavigationUITests: XCTestCase {
         app.buttons["Done"].tap()
         XCTAssertTrue(app.buttons["pro-close"].isHittable)
     }
+
+    func testPaywallShowsEveryProToolAndTheSmallPrint() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-kicklab.welcome.completed", "YES", "--session-design", "paywall"]
+        app.launch()
+        XCTAssertTrue(app.buttons["pro-close"].waitForExistence(timeout: 10))
+        for feature in ["effects", "balls", "looks", "sounds", "analytics", "counters"] {
+            XCTAssertTrue(app.descendants(matching: .any)["pro-feature-\(feature)"].exists, feature)
+        }
+        XCTAssertTrue(app.descendants(matching: .any)["pro-feature-sounds"].label.hasSuffix("new"))
+        XCTAssertFalse(app.descendants(matching: .any)["pro-feature-effects"].label.hasSuffix("new"))
+        attach(app, "Pro tools")
+        let invite = app.buttons["pro-redeem-invite"]
+        for _ in 0..<3 where !invite.isHittable { app.swipeUp() }
+        XCTAssertTrue(invite.isHittable, "Invites sit with the small print, below the plans")
+        XCTAssertTrue(app.buttons["pro-restore"].isHittable)
+        attach(app, "Pro small print")
+    }
+
+    private func attach(_ app: XCUIApplication, _ name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
+    }
 }
