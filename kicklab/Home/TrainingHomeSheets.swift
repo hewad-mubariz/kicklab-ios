@@ -1,13 +1,10 @@
-import AppTrackingTransparency
 import SwiftUI
-import UIKit
 
 struct TrainingHomeSettings: View {
     @Binding var appearance: String
     @EnvironmentObject private var player: PlayerStore
     @ObservedObject private var analytics = ProductAnalytics.shared
     @ObservedObject private var updates = AppUpdateNotice.shared
-    @ObservedObject private var adMeasurement = MetaAdsMeasurement.shared
     @Environment(\.openURL) private var openURL
     @Environment(\.colorScheme) private var scheme
     #if DEBUG
@@ -55,37 +52,13 @@ struct TrainingHomeSettings: View {
                     SettingsLabel("Share usage analytics", symbol: "chart.bar.xaxis")
                 }
                 .accessibilityIdentifier("analytics-sharing")
+                Link("Privacy Policy", destination: LegalLinks.privacy)
             } header: {
                 Text("Privacy")
             } footer: {
                 Text("Help improve Juggle Dude by sharing feature usage and whether actions succeed. Uses a random installation ID. Your videos, email and sign-in details aren’t included. You can turn this off anytime.")
             }
             .listRowBackground(TrainingHomeStyle.panel(scheme))
-            if adMeasurement.isAvailable {
-                Section {
-                    LabeledContent { Text(adPermissionLabel) } label: {
-                        SettingsLabel("Tracking permission", symbol: "hand.raised")
-                    }
-                    if adMeasurement.authorizationStatus == .notDetermined {
-                        Button("Choose tracking permission") {
-                            Task { await adMeasurement.requestPermission() }
-                        }
-                        .disabled(adMeasurement.isRequesting)
-                        .accessibilityIdentifier("meta-ad-permission")
-                    } else {
-                        Button("Open iPhone Settings") {
-                            if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
-                        }
-                        .accessibilityIdentifier("meta-ad-settings")
-                    }
-                    Link("Privacy Policy", destination: LegalLinks.privacy)
-                } header: {
-                    Text("Advertising measurement")
-                } footer: {
-                    Text("Meta measures our Facebook and Instagram ads using app installs and opens, first-session completion, and Pro trial or subscription starts. With tracking allowed, your advertising identifier is included. In the EEA, UK and Switzerland, nothing is sent without permission. Elsewhere, events without that identifier can still be sent. Videos, touch counts and account details aren’t included.")
-                }
-                .listRowBackground(TrainingHomeStyle.panel(scheme))
-            }
             #if DEBUG
             Section {
                 Toggle(isOn: $showDebugOverlays) { SettingsLabel("Show debug overlays", symbol: "ladybug") }
@@ -123,16 +96,6 @@ struct TrainingHomeSettings: View {
         .padding(.top, 4)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("settings-version")
-    }
-
-    private var adPermissionLabel: String {
-        switch adMeasurement.authorizationStatus {
-        case .authorized: String(localized: "Allowed", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        case .denied: String(localized: "Not allowed", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        case .restricted: String(localized: "Restricted on this device", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        case .notDetermined: String(localized: "Not chosen", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        @unknown default: String(localized: "Not allowed", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
-        }
     }
 }
 
