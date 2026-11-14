@@ -6,15 +6,17 @@ export type Purchase = {
   environment: Environment; original_transaction_id: string; product_id: string;
   app_account_token?: string; status: number; expires_at_ms: number;
   access_until_ms: number; signed_at_ms: number;
+  /** Verified Apple offer-code usage; analytics only, never an access decision. */
+  offer_code_redeemed?: boolean;
 };
 export type StoredPurchase = Purchase & { user_id: string };
 export class SubscriptionError extends Error {
   constructor(readonly status: number, readonly code: string) { super(code); }
 }
 export interface AppleSubscriptions {
-  proof(jws: string): Promise<{ environment: Environment; originalID: string; accountToken?: string }>;
+  proof(jws: string): Promise<{ environment: Environment; originalID: string; accountToken?: string; offerCodeRedeemed?: boolean }>;
   current(environment: Environment, originalID: string): Promise<Purchase>;
-  notification(jws: string): Promise<{ environment: Environment; originalID?: string; test: boolean }>;
+  notification(jws: string): Promise<{ environment: Environment; originalID?: string; test: boolean; offerCodeRedeemed?: boolean }>;
 }
 export interface SubscriptionDatabase {
   authenticate(token: string): Promise<string>;
@@ -99,7 +101,8 @@ export function accountHandler(db: SubscriptionDatabase, apple: AppleSubscriptio
             if (!owner && current.access_until_ms <= now()) throw new SubscriptionError(409, 'subscription_inactive');
             stage = 'save_link';
             try {
-              await db.save(userID, current); link = 'linked';
+              await db.save(userID, { ...current,
+                offer_code_redeemed: current.offer_code_redeemed === true || proof.offerCodeRedeemed === true }); link = 'linked';
               refreshed.add(current.original_transaction_id);
             }
             catch (error) {
@@ -153,7 +156,11 @@ export function notificationHandler(db: SubscriptionDatabase, apple: AppleSubscr
       const event = await apple.notification(input.signedPayload);
       if (!event.test && event.originalID) {
         const owner = await db.owner(event.environment, event.originalID);
-        if (owner) await db.save(owner, await apple.current(event.environment, event.originalID));
+        if (owner) {
+          const current = await apple.current(event.environment, event.originalID);
+          await db.save(owner, { ...current,
+            offer_code_redeemed: current.offer_code_redeemed === true || event.offerCodeRedeemed === true });
+        }
       }
       // No customer record is created by an unsolicited notification. Apple retries
       // transient failures; duplicate/out-of-order events refresh the current state.

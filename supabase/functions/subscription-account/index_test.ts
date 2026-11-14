@@ -26,12 +26,12 @@ class Database implements SubscriptionDatabase {
   }
 }
 class Apple implements AppleSubscriptions {
-  state = { ...initial }; proofToken?: string; fail = false; invalid = false; calls = 0; test = false;
+  state = { ...initial }; proofToken?: string; proofOffer = false; notificationOffer = false; fail = false; invalid = false; calls = 0; test = false;
   failedIDs = new Set<string>();
   requestedIDs: string[] = [];
   proof(_: string) {
     if (this.invalid) throw new SubscriptionError(400, 'invalid_purchase');
-    return Promise.resolve({ environment: this.state.environment, originalID: '123', accountToken: this.proofToken });
+    return Promise.resolve({ environment: this.state.environment, originalID: '123', accountToken: this.proofToken, offerCodeRedeemed: this.proofOffer });
   }
   current(_: Environment, id: string) {
     this.calls++; this.requestedIDs.push(id);
@@ -40,7 +40,7 @@ class Apple implements AppleSubscriptions {
   }
   notification(_: string) {
     if (this.invalid) throw new SubscriptionError(400, 'invalid_notification');
-    return Promise.resolve({ environment: this.state.environment, originalID: '123', test: this.test });
+    return Promise.resolve({ environment: this.state.environment, originalID: '123', test: this.test, offerCodeRedeemed: this.notificationOffer });
   }
 }
 const request = (payload?: unknown, env = 'Production') => new Request('https://test/subscription-account', {
@@ -197,4 +197,24 @@ Deno.test('a renewal stamped by a deleted account links to the new account', asy
   const { db, apple, handler } = setup(); apple.state.app_account_token = other; db.accounts.delete(other);
   const response = await handler(request({ signed_transaction: 'proof' })); const body = await response.json();
   equal(body.link, 'linked'); equal(body.product_id, initial.product_id); equal(db.rows[0].user_id, user);
+});
+
+Deno.test('only Apple offer codes mark analytics; all offer types keep the same entitlement', () => {
+  for (const offerType of [undefined, 1, 2, 3, 4]) {
+    const state = purchaseState({ ...tx, offerType }, renewal, 1, 'Production', '123');
+    equal(state.offer_code_redeemed, offerType === 3);
+    equal(state.access_until_ms, tx.expiresDate);
+  }
+});
+Deno.test('verified code proof survives a later non-code renewal during account linking', async () => {
+  const { db, apple, handler } = setup(); apple.proofOffer = true;
+  const response = await handler(request({ signed_transaction: 'verified-code' }));
+  equal(response.status, 200); equal(db.rows[0].offer_code_redeemed, true);
+  equal(db.rows[0].access_until_ms, initial.access_until_ms);
+});
+Deno.test('an older verified code notification marks analytics using current billing state', async () => {
+  const { db, apple, handler } = setup(); await handler(request({ signed_transaction: 'proof' }));
+  apple.notificationOffer = true; apple.state = { ...initial, status: 2, access_until_ms: 0 };
+  equal((await notificationHandler(db, apple)(request({ signedPayload: 'verified-code' }))).status, 200);
+  equal(db.rows[0].offer_code_redeemed, true); equal(db.rows[0].access_until_ms, 0);
 });

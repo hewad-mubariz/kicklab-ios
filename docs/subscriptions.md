@@ -29,6 +29,16 @@ Validation on the iOS 27.0 simulator: all three new transaction tests passed (ex
 
 Build 35 validation on 30 October 2026: the merged branch passed all 21 subscription tests and both selected paywall/navigation tests on iOS 18.0. The initial run exposed asynchronous StoreKit fixture publication in the two direct-result tests and the expiry test; those tests now wait for the verified or expired history before asserting app behavior. No production subscription logic changed for this correction. Evidence: `artifacts/releases/20261030-invites-1.1.0-35/subscription-tests-r2.log` and `subscription-tests.log`. Real offer-code redemption remains a physical-device testing task.
 
+## Invite-code analytics provenance (14 November 2026)
+
+The server now retains `offer_code_redeemed` from verified Apple `offerType = 3` transactions, including purchase proofs and notifications whose current subscription state has already renewed. This is analytics metadata only; entitlement, expiry, ownership and account recovery behavior are unchanged. Production and Sandbox remain separate.
+
+The website owns migrations `202611140000_subscription_offer_codes.sql` and `202611140001_admin_analytics_invites.sql`. The private flag is monotonic, including older verified events, and is deleted with the existing subscription/account cascade. It powers the admin-only default exclusion and optional all/invite-only views. Current linked histories were verified: 8 production chains, 2 offer-code chains belonging to 2 accounts (the Monthly and Yearly Pro Tester Invite offers).
+
+`supabase/ops/backfill-offer-code-analytics.ts` accepts a private Supabase CLI JSON query result containing `environment` and `original_transaction_id`, verifies Apple's complete production history and writes a SQL update containing only confirmed code chains. It does not apply changes itself. Use restricted file permissions and never commit its input/output. Re-run it when an older offer expired before the first app-account link; normal proof/state/notification capture cannot infer an offer omitted from all later transactions. Unlinked guest purchases cannot identify a profile.
+
+Validation: 26 subscription tests and 11 SQL/analytics tests passed; website build and isolated HTTP checks passed. Production migration/backfill retained the same 156 profiles, 470 sessions, 12 subscription chains and billing fingerprint. Both subscription functions deployed with their existing authentication settings.
+
 ## App Store configuration
 
 - App: **Juggle Dude**, Apple app ID **6820780610**.

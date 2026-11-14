@@ -31,7 +31,7 @@ export function purchaseState(tx: JWSTransactionDecodedPayload, renewal: JWSRene
   }
   return { environment, original_transaction_id: originalID, product_id: tx.productId,
     app_account_token: token, status, expires_at_ms: tx.expiresDate, access_until_ms: access,
-    signed_at_ms: Math.max(tx.signedDate, renewal.signedDate) };
+    signed_at_ms: Math.max(tx.signedDate, renewal.signedDate), offer_code_redeemed: tx.offerType === 3 };
 }
 
 export class VerifiedAppleSubscriptions implements AppleSubscriptions {
@@ -51,7 +51,8 @@ export class VerifiedAppleSubscriptions implements AppleSubscriptions {
         const tx = await verifier.verifyAndDecodeTransaction(jws);
         if (validID(tx.originalTransactionId) && tx.productId && products.has(tx.productId) &&
           tx.type === 'Auto-Renewable Subscription' && tx.inAppOwnershipType === 'PURCHASED') {
-          return { environment, originalID: tx.originalTransactionId, accountToken: tx.appAccountToken };
+          return { environment, originalID: tx.originalTransactionId, accountToken: tx.appAccountToken,
+            offerCodeRedeemed: tx.offerType === 3 };
         }
       } catch (error) {
         // Log only bounded categories, never Apple's error text or signed purchase.
@@ -112,7 +113,8 @@ export class VerifiedAppleSubscriptions implements AppleSubscriptions {
         if (event.data?.signedTransactionInfo) {
           const tx = await verifier.verifyAndDecodeTransaction(event.data.signedTransactionInfo);
           if (validID(tx.originalTransactionId) && tx.productId && products.has(tx.productId)) {
-            return { environment, originalID: tx.originalTransactionId, test: false };
+            return { environment, originalID: tx.originalTransactionId, test: false,
+              offerCodeRedeemed: tx.offerType === 3 };
           }
         }
         return { environment, test: false };
