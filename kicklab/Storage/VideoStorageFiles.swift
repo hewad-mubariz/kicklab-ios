@@ -6,6 +6,7 @@ nonisolated struct VideoStorageFiles: Sendable {
     let cacheRoot: URL
     let temporaryRoot: URL
     let documentsRoot: URL
+    private var predictionRoot: URL { historyRoot.deletingLastPathComponent().appendingPathComponent("Predictions-v1") }
 
     init(historyRoot: URL, cacheRoot: URL, temporaryRoot: URL, documentsRoot: URL) {
         self.historyRoot = historyRoot; self.cacheRoot = cacheRoot
@@ -44,7 +45,7 @@ nonisolated struct VideoStorageFiles: Sendable {
 
     /// These shared results can be regenerated. Saved analyses of other sessions remain intact.
     func clearSharedVideoCaches() throws {
-        for name in ["SessionAnalysis-v1", "SessionSpin-v3"] {
+        for name in ["SessionAnalysis-v1", "SessionSpin-v3", "EffectPreview-v1"] {
             for file in try files(in: cacheRoot.appendingPathComponent(name)) { try remove(file) }
         }
         for file in try temporaryExports() { try remove(file) }
@@ -69,7 +70,7 @@ nonisolated struct VideoStorageFiles: Sendable {
 
     private func cacheCandidates() throws -> [URL] {
         // Cached masks/spin in History are rebuildable; edits and counting records are not.
-        try files(in: cacheRoot) + files(in: historyRoot).filter {
+        try files(in: cacheRoot) + files(in: predictionRoot) + files(in: historyRoot).filter {
             $0.lastPathComponent.hasSuffix(".analysis.plist") || $0.lastPathComponent.hasSuffix(".motion.plist")
         }
     }
@@ -145,7 +146,7 @@ nonisolated struct VideoStorageFiles: Sendable {
     private func remove(_ url: URL) throws {
         // A malicious/stale symlink must never redirect cleanup outside these roots.
         let resolved = url.resolvingSymlinksInPath().path
-        guard [historyRoot, cacheRoot, temporaryRoot, documentsRoot].contains(where: {
+        guard [historyRoot, cacheRoot, temporaryRoot, documentsRoot, predictionRoot].contains(where: {
             resolved.hasPrefix($0.resolvingSymlinksInPath().path + "/")
         }), isRegular(url) else { return }
         try FileManager.default.removeItem(at: url)

@@ -46,7 +46,7 @@ nonisolated enum TouchCountingDebugProfile {
             let raw = ProcessInfo.processInfo.arguments
             let effective = arguments
             let policy = CountingPolicy.current
-            let counter = ContactCounterFactory.make(verifier:nil)
+            let counter = ContactCounterFactory.make(verifier:nil, config:CounterV2Policy.configuration())
             let config = try counter.traceSnapshot().map {
                 try JSONSerialization.jsonObject(with:JSONEncoder().encode($0.config))
             }

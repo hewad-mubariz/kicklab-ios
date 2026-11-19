@@ -46,7 +46,8 @@ nonisolated enum EffectIconRenderer {
                 liquid.uniforms.options.y = -1; liquid.uniforms.options.w = 0.52
                 frame.liquid = liquid
             }
-            if shaderStyle == BallStyle.water.shaderID || shaderStyle == BallStyle.crystal.shaderID {
+            let bridged = BallStyle.bridged.first { $0.shaderID == shaderStyle }
+            if shaderStyle == BallStyle.water.shaderID || shaderStyle == BallStyle.crystal.shaderID || bridged != nil {
                 // Water and Crystal draw over the picture they refract. Drawn once over black and once
                 // over white, the difference is their transparency and the black render their colour.
                 let path: (Float) -> SIMD4<Float> = { t in
@@ -54,7 +55,15 @@ nonisolated enum EffectIconRenderer {
                     let p = center - velocity * radius * age + SIMD2(0, radius * 1.6 * age * age)
                     return SIMD4(p.x, p.y, radius, 1)
                 }
-                if shaderStyle == BallStyle.water.shaderID {
+                if let bridged {
+                    let flight: @Sendable (Float) -> SIMD4<Float> = { t in
+                        let age = Float(time) - t
+                        let p = center - velocity * radius * age + SIMD2(0, radius * 1.6 * age * age)
+                        return SIMD4(p.x, p.y, radius, 1)
+                    }
+                    frame.labBridge = LabBridgeFrame(style: bridged, time: Float(time), size: SIMD2(Float(w), Float(h)), strength: 1,
+                                                     touches: [Float(time) - 0.2], sample: flight)
+                } else if shaderStyle == BallStyle.water.shaderID {
                     WaterCrown.prepareAll()
                     frame.water = WaterScene.frame(time: Float(time), size: SIMD2(Float(w), Float(h)), stage: .motion, intensity: 1,
                                                    light: true, source: true, touches: [Float(time) - 0.16], sample: path)

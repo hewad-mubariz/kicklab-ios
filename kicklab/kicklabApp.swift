@@ -82,6 +82,8 @@ struct kicklabApp: App {
                 BallDistanceView()
             } else if ProcessInfo.processInfo.arguments.contains("--shot-geometry-capture") {
                 ShotGeometryCaptureView()
+            } else if ProcessInfo.processInfo.arguments.contains("--widget-review") {
+                WidgetCardsReview()
             } else {
             if ProcessInfo.processInfo.arguments.contains("--notification-review") {
                 NotificationReview()
@@ -166,6 +168,7 @@ struct kicklabApp: App {
                 #endif
             }
             .onOpenURL { url in
+                guard !JuggleQuickAction.handle(url) else { return }
                 guard !NativeGoogleSignIn.handle(url) else { return }
                 Task { await account.handleCallback(url) }
             }

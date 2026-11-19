@@ -25,6 +25,9 @@ struct ReplayMotionPicker: View {
     let isPlaying: Bool
     let onTogglePlayback: () -> Void
     var showsProBadges = false
+    /// Test build: the analytics lab views, listed in the same scroll under the graph styles.
+    var labSelection: Binding<LabViewID?>? = nil
+    var labStatus: String? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var placement: AnalyticsPlacement { AnalyticsPlacement(included: includeGraph, background: analyticsBackground) }
@@ -52,53 +55,38 @@ struct ReplayMotionPicker: View {
             .padding(.horizontal, 16)
             .sensoryFeedback(.selection, trigger: placement)
 
-            VStack(spacing: 10) {
-                HStack(alignment: .center) {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(style.title.uppercased()).font(.system(size: 10, weight: .semibold)).tracking(1)
-                        Text("In this clip · \(ExportPreviewTime.label(at: snapshot.graph.time))")
-                            .font(.system(size: 10)).monospacedDigit().foregroundStyle(.white.opacity(0.55))
-                            .accessibilityIdentifier("motion-preview-time")
-                    }
-                    Spacer()
-                    if let status = style.status(snapshot.graph) {
-                        Text(status).font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(SessionStyle.mint)
-                    }
-                    Button(action: onTogglePlayback) {
-                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 13, weight: .semibold)).frame(width: 30, height: 30)
-                    }
-                    .appGlassButtonStyle().buttonBorderShape(.circle)
-                    .accessibilityLabel(isPlaying ? "Pause motion preview" : "Play motion preview")
-                    .accessibilityIdentifier("motion-preview-play")
+            // The chosen graph's tile draws this clip live; play runs the clip under it.
+            HStack(alignment: .center, spacing: 10) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(labSelection == nil ? LocalizedStringKey("Graph styles") : LocalizedStringKey("Analytics")).font(.system(size: 12, weight: .semibold))
+                    Text("In this clip · \(ExportPreviewTime.label(at: snapshot.graph.time))")
+                        .font(.system(size: 10)).monospacedDigit().foregroundStyle(.white.opacity(0.55))
+                        .accessibilityIdentifier("motion-preview-time")
                 }
-                MotionStyleGraph(style: style, snapshot: snapshot, sourceAspect: sourceAspect)
-                    .frame(height: 100)
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("Motion preview")
-                    .accessibilityValue(style.rawValue)
-                    .accessibilityIdentifier("motion-selected-preview")
+                Spacer()
+                Button(action: onTogglePlayback) {
+                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                        .font(.system(size: 13, weight: .semibold)).frame(width: 30, height: 30)
+                        .contentTransition(.symbolEffect(.replace))
+                }
+                .appGlassButtonStyle().buttonBorderShape(.circle)
+                .accessibilityLabel(isPlaying ? "Pause motion preview" : "Play motion preview")
+                .accessibilityIdentifier("motion-preview-play")
             }
-            .padding(14)
-            .background(Color(red: 0.045, green: 0.065, blue: 0.067), in: .rect(cornerRadius: 18))
-            .overlay { RoundedRectangle(cornerRadius: 18).strokeBorder(.white.opacity(0.1), lineWidth: 0.5) }
             .padding(.horizontal, 16)
 
-            HStack {
-                Text("Motion styles").font(.system(size: 12, weight: .semibold))
-                Spacer()
-                Text("\(MotionStyle.allCases.count) styles · Swipe to explore").font(.system(size: 10)).foregroundStyle(.white.opacity(0.5))
-            }.padding(.horizontal, 16)
-
+            // Two to a row, scrolling down; the next row peeks under a fade so there is more below.
             ScrollViewReader { reader in
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
+                ScrollView(.vertical, showsIndicators: false) {
+                  VStack(alignment: .leading, spacing: 10) {
+                    if labSelection != nil { sectionTitle("Graph styles") }
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
                         ForEach(MotionStyle.allCases) { option in
                             Button {
                                 style = option
                             } label: {
-                                MotionStyleOption(style: option, selected: style == option)
+                                MotionStyleOption(style: option, selected: style == option, width: nil,
+                                                  live: style == option ? snapshot : nil, sourceAspect: sourceAspect)
                                     .overlay(alignment: .topTrailing) {
                                         if showsProBadges { ProBadge().padding(8) }
                                     }
@@ -110,13 +98,89 @@ struct ReplayMotionPicker: View {
                             .accessibilityIdentifier("motion-style-\(option.rawValue)")
                             .id(option)
                         }
-                    }.padding(.horizontal, 16).padding(.vertical, 2)
+                    }
+                    if let labSelection { labSection(labSelection) }
+                  }
+                  .padding(.horizontal, 16).padding(.top, 2).padding(.bottom, 22)
+                }
+                .frame(height: 300)
+                .mask {
+                    LinearGradient(stops: [.init(color: .black, location: 0), .init(color: .black, location: 0.88),
+                                           .init(color: .black.opacity(0), location: 1)],
+                                   startPoint: .top, endPoint: .bottom)
                 }
                 .accessibilityIdentifier("motion-style-options")
                 .onAppear { reader.scrollTo(style, anchor: .center) }
             }
         }
         .sensoryFeedback(.selection, trigger: style)
+    }
+
+    private func sectionTitle(_ title: LocalizedStringKey, status: String? = nil) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(title).font(.system(size: 11, weight: .semibold)).tracking(0.4)
+                .foregroundStyle(.white.opacity(0.7)).textCase(.uppercase)
+            Spacer(minLength: 6)
+            if let status {
+                Text(status).font(.system(size: 10, weight: .medium)).monospacedDigit()
+                    .foregroundStyle(SessionStyle.mint).lineLimit(1)
+                    .contentTransition(.numericText())
+            }
+        }
+        .padding(.top, 4)
+    }
+
+    /// The lab views as tiles, two to a row; tapping the one that is on turns it off again.
+    private func labSection(_ selection: Binding<LabViewID?>) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionTitle("New analytics (test)", status: labStatus)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
+                ForEach(LabViewID.allCases) { view in
+                    let on = selection.wrappedValue == view
+                    Button {
+                        withAnimation(.snappy(duration: 0.25)) { selection.wrappedValue = on ? nil : view }
+                    } label: {
+                        LabViewTile(view: view, selected: on)
+                    }
+                    .buttonStyle(SessionPressStyle(scale: reduceMotion ? 1 : 0.96))
+                    .accessibilityLabel(view.title)
+                    .accessibilityAddTraits(on ? .isSelected : [])
+                    .accessibilityIdentifier("lab-view-\(view.rawValue)")
+                }
+            }
+        }
+        .sensoryFeedback(.selection, trigger: selection.wrappedValue)
+    }
+}
+
+/// One lab view in the Analytics grid: its symbol, name and family.
+struct LabViewTile: View {
+    let view: LabViewID
+    var selected = false
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: view.symbol)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(selected ? SessionStyle.background : SessionStyle.mint)
+                .frame(width: 32, height: 32)
+                .background(selected ? SessionStyle.mint : SessionStyle.mint.opacity(0.12), in: .circle)
+                .symbolEffect(.bounce, value: selected)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(view.title).font(.system(size: 12, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
+                Text(view.group.uppercased()).font(.system(size: 7, weight: .bold)).tracking(0.6)
+                    .foregroundStyle(.white.opacity(0.45))
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 10).padding(.vertical, 9)
+        .frame(maxWidth: .infinity)
+        .background(Color(red: 0.05, green: 0.075, blue: 0.077), in: .rect(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(selected ? SessionStyle.mint : .white.opacity(0.14), lineWidth: selected ? 1.3 : 0.5)
+        }
+        .foregroundStyle(.white).contentShape(.rect(cornerRadius: 14))
     }
 }
 
@@ -180,30 +244,55 @@ struct AnalyticsPlacementOption: View {
 struct MotionStyleOption: View {
     let style: MotionStyle
     var selected = false
-    var width: CGFloat = 146
+    /// A fixed width for a sideways row; nil fills its grid column.
+    var width: CGFloat? = 146
+    /// The clip's own data, drawn live in this style; without it the tile shows sample motion.
+    var live: MotionStyleSnapshot? = nil
+    var sourceAspect: CGFloat = 9.0 / 16.0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            MotionStyleGraph(style: style, snapshot: MotionStyleSample.preview(for: style))
-                .frame(height: 66).accessibilityHidden(true)
+            Group {
+                if let live {
+                    MotionStyleGraph(style: style, snapshot: live, sourceAspect: sourceAspect)
+                } else {
+                    MotionStyleGraph(style: style, snapshot: MotionStyleSample.preview(for: style))
+                }
+            }
+            .frame(height: 66).accessibilityHidden(true)
             HStack(spacing: 4) {
                 Text(style.title).font(.system(size: 11, weight: .semibold)).lineLimit(1)
                 Spacer(minLength: 0)
                 if selected {
                     Image(systemName: "checkmark.circle.fill").font(.system(size: 13))
                         .foregroundStyle(.black, SessionStyle.mint)
+                        .transition(.scale.combined(with: .opacity))
                 }
             }
-            Text(style == .ballMotion ? String(localized: "DEFAULT", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : style.measure)
-                .font(.system(size: 7, weight: .medium)).tracking(0.6)
-                .foregroundStyle(style == .ballMotion ? SessionStyle.mint : .white.opacity(0.45))
+            caption
         }
-        .padding(12).frame(width: width)
+        .padding(12)
+        .frame(width: width)
+        .frame(maxWidth: width == nil ? .infinity : nil, alignment: .leading)
         .background(Color(red: 0.05, green: 0.075, blue: 0.077), in: .rect(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(selected ? SessionStyle.mint : .white.opacity(0.14), lineWidth: selected ? 1.3 : 0.5)
         }
         .foregroundStyle(.white).contentShape(.rect(cornerRadius: 16))
+        .animation(.snappy(duration: 0.25), value: selected)
+    }
+
+    /// The live tile reads out the clip where the style has something to say; others name what they measure.
+    @ViewBuilder private var caption: some View {
+        if let live, let status = style.status(live.graph) {
+            Text(status).font(.system(size: 9, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
+                .foregroundStyle(SessionStyle.mint)
+                .contentTransition(.numericText())
+        } else {
+            Text(style == .ballMotion ? String(localized: "DEFAULT", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : style.measure)
+                .font(.system(size: 7, weight: .medium)).tracking(0.6).lineLimit(1)
+                .foregroundStyle(style == .ballMotion ? SessionStyle.mint : .white.opacity(0.45))
+        }
     }
 }

@@ -189,7 +189,9 @@ nonisolated enum SelectiveEffectTrack {
             reader.add(output)
             guard reader.startReading() else { throw reader.error ?? failure(2) }
             defer { reader.cancelReading() }
-            let detector = try BallDetector()
+            let reuse = RFFramePredictionReuse.persistenceEnabled && !ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache")
+                ? try RFFramePredictionReuse.shared.persistentCache(for: SessionAnalysisStore.sourceDigest(source)) : nil
+            let detector = try BallDetector(predictionCache: reuse)
             var association = BallPlausibility(policy: detector.plausibilityPolicy)
             var repaired: [RecordedFrame] = [], index = 0, failures = 0, calls = 0
             var anchorIndex = 0, queries = QueryCursor(work.queries)

@@ -244,6 +244,7 @@ nonisolated enum BallSkinSphereRenderer {
             return printedShade(skin: skin, rgb: rgb, gap: gap, normal: normal, pixel: pixel)
         // Lab skins are lit by their own shaders and never reach the artwork shading.
         case .original, .goldPolish, .prism, .wave, .nightPulse: return .zero
+        default: return .zero
         }
     }
 

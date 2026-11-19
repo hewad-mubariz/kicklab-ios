@@ -23,11 +23,15 @@ nonisolated final class RFFramePredictionCache: @unchecked Sendable {
     private struct Entry { let detections: FrameDetections; let bytes: Int }
     private let lock = NSLock()
     private let byteLimit: Int
+    private let disk: RFPredictionDiskStore?
     private var entries: [Key: Entry] = [:]
     private var bytes = 0
     private var hits = 0
 
-    init(byteLimit: Int = 16 * 1024 * 1024) { self.byteLimit = max(0, byteLimit) }
+    init(byteLimit: Int = 16 * 1024 * 1024, disk: RFPredictionDiskStore? = nil) {
+        self.byteLimit = max(0, byteLimit); self.disk = disk
+    }
+    var isPersistent: Bool { disk != nil }
 
     static func input(_ provider: MLFeatureProvider, sourceSize: CGSize) -> Input? {
         guard let tensor = provider.featureValue(for: "tensors")?.multiArrayValue,
@@ -43,23 +47,37 @@ nonisolated final class RFFramePredictionCache: @unchecked Sendable {
                      width: Int(sourceSize.width), height: Int(sourceSize.height))
     }
 
-    func lookup(_ key: Key) -> FrameDetections? {
+    func lookup(_ key: Key) throws -> FrameDetections? {
         lock.lock(); defer { lock.unlock() }
-        guard let found = entries[key] else { return nil }
-        hits += 1
-        return found.detections
+        if let found = entries[key] { hits += 1; return found.detections }
+        guard let found = try disk?.lookup(key) else { return nil }
+        hits += 1; retain(found, for: key)
+        return found
     }
 
-    func store(_ value: FrameDetections, for key: Key) {
+    func store(_ value: FrameDetections, for key: Key) throws {
+        lock.lock(); defer { lock.unlock() }
+        if let disk, try !disk.store(value, for: key) {
+            guard let existing = try disk.lookup(key) else { throw RFPredictionDiskStore.Failure(detail: "Committed prediction disappeared") }
+            retain(existing, for: key)
+            return
+        }
+        retain(value, for: key)
+    }
+
+    private func retain(_ value: FrameDetections, for key: Key) {
         var compact = value
         compact.ballMask = value.ballMask?.compacted()
         let cost = 256 + key.model.utf8.count + compact.people.count * 40 + (compact.ballMask?.storageByteCount ?? 0)
         guard cost <= byteLimit else { return }
-        lock.lock(); defer { lock.unlock() }
         // Both passes read the clip in order, so evicting the oldest would drop what the second
         // pass reaches next and a clip over the limit would reuse nothing. Once full, later
         // frames run the model and the start of the clip is still reused.
-        guard entries[key] == nil, bytes + cost <= byteLimit else { return }
+        guard entries[key] == nil else { return }
+        // Disk-backed entries remain available after RAM pressure. Keep a bounded
+        // read-through window; never discard the persistent record to make room.
+        if disk != nil, bytes + cost > byteLimit { entries.removeAll(); bytes = 0 }
+        guard bytes + cost <= byteLimit else { return }
         entries[key] = Entry(detections: compact, bytes: cost)
         bytes += cost
     }
@@ -71,6 +89,8 @@ nonisolated final class RFFramePredictionCache: @unchecked Sendable {
 
     var retainedBytes: Int { lock.lock(); defer { lock.unlock() }; return bytes }
     var hitCount: Int { lock.lock(); defer { lock.unlock() }; return hits }
+    var diskHitCount: Int { lock.lock(); defer { lock.unlock() }; return disk?.reads ?? 0 }
+    var diskWriteCount: Int { lock.lock(); defer { lock.unlock() }; return disk?.writes ?? 0 }
 }
 
 /// Offline analyses are serialized; retain only the latest clip's predictions between its
@@ -79,6 +99,26 @@ nonisolated final class RFFramePredictionReuse: @unchecked Sendable {
     static let shared = RFFramePredictionReuse()
     private let lock = NSLock()
     private var current: (String, RFFramePredictionCache)?
+
+    static var persistenceEnabled: Bool {
+        #if DEBUG
+        return Bundle.main.bundleIdentifier == "com.juggledude.counterresearch.debug"
+            && ProcessInfo.processInfo.arguments.contains("--durable-rf-reuse")
+        #else
+        return false
+        #endif
+    }
+
+    func persistentCache(for sourceDigest: String) throws -> RFFramePredictionCache {
+        lock.lock(); defer { lock.unlock() }
+        let runtime = RFDeviceProfile.hardwareIdentifier + "|" + ProcessInfo.processInfo.operatingSystemVersionString
+        let identity = "persistent|" + sourceDigest + "|" + runtime
+        if let current, current.0 == identity { return current.1 }
+        let disk = try RFPredictionDiskStore(source: sourceDigest, runtime: runtime)
+        let cache = RFFramePredictionCache(disk: disk)
+        current = (identity, cache)
+        return cache
+    }
 
     init() {
         NotificationCenter.default.addObserver(forName: UIApplication.didReceiveMemoryWarningNotification,

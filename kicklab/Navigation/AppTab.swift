@@ -7,20 +7,20 @@ import SwiftUI
 
 enum AppTab: String, CaseIterable, Identifiable, Hashable {
     case home
-    case train
-    case progress
+    case learn
     case challenges
-    case profile
+    case wallGame
+    case leaderboard
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .home: "Home"
-        case .train: "Train"
-        case .progress: "Progress"
+        case .learn: "Learn"
+        case .leaderboard: "Leaderboard"
         case .challenges: "Challenges"
-        case .profile: "Profile"
+        case .wallGame: "Wall Game"
         }
     }
 
@@ -28,20 +28,20 @@ enum AppTab: String, CaseIterable, Identifiable, Hashable {
     var symbolName: String {
         switch self {
         case .home: "house"
-        case .train: "bolt"
-        case .progress: "chart.bar"
-        case .challenges: "trophy"
-        case .profile: "person"
+        case .learn: "graduationcap"
+        case .leaderboard: "trophy"
+        case .challenges: "flag.checkered"
+        case .wallGame: "square.grid.3x2"
         }
     }
 
     var symbolNameSelected: String {
         switch self {
         case .home: "house.fill"
-        case .train: "bolt.fill"
-        case .progress: "chart.bar.fill"
-        case .challenges: "trophy.fill"
-        case .profile: "person.fill"
+        case .learn: "graduationcap.fill"
+        case .leaderboard: "trophy.fill"
+        case .challenges: "flag.checkered"
+        case .wallGame: "square.grid.3x2.fill"
         }
     }
 }

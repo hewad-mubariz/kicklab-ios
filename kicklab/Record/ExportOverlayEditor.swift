@@ -143,7 +143,7 @@ struct ExportOverlayEditor: View {
             ZStack(alignment: .topLeading) {
                 Color.black
                 if let player {
-                    MetalVideoSurface(player: player, edit: edit, track: effectTrack) { error = $0 }
+                    MetalVideoSurface(player: player, edit: edit, track: effectTrack, onFailure: { error = $0 })
                 } else {
                     VStack(spacing: 10) {
                         if let error { Text(error).font(.system(size: 12)).multilineTextAlignment(.center) }

@@ -56,6 +56,11 @@ final class LeaderboardBoardStore: ObservableObject {
             let board = try await request.task.value
             guard generation == current, !request.task.isCancelled else { return }
             states[period] = State(board: board)
+            // Your place, for the Home Screen widget; sample boards never count.
+            let you = (board.around + board.entries).first { $0.isYou && !$0.isPreview }
+            JuggleWidgetData.update { data in
+                if period == .week { data.weekRank = you?.rank } else { data.allTimeRank = you?.rank }
+            }
         } catch {
             guard generation == current, !request.task.isCancelled else { return }
             states[period, default: State()].error = PlayerDataError.requestFailed.localizedDescription

@@ -38,13 +38,13 @@ nonisolated struct PoseLandmark: Codable, Equatable, Sendable {
     var confidence: Double = 1
 }
 
-nonisolated struct HandLandmark: Sendable {
+nonisolated struct HandLandmark: Codable, Sendable {
     /// Zero is the wrist; 1...5 identify the five fingers.
     var finger: Int
     var x, y, confidence: Double
 }
 
-nonisolated struct BodyPose: Sendable {
+nonisolated struct BodyPose: Codable, Sendable {
     var joints: [BodyJoint: PosePoint] = [:]
     var ankles: [BodySide: PoseLandmark] = [:]
     var hips: [BodySide: PoseLandmark] = [:]

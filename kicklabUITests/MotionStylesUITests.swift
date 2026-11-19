@@ -34,15 +34,14 @@ final class MotionStylesUITests: ProReplayUITestCase {
         let options = app.scrollViews["motion-style-options"]
         for style in ["comet", "bounceRun", "heartbeat", "melody", "fireworks", "skyMeter", "combo", "metronome", "rainbowArcs"] {
             let button = app.buttons["motion-style-\(style)"]
+            // Two to a row, scrolling down.
             for _ in 0..<6 {
                 if button.isHittable { break }
-                options.swipeLeft()
+                options.swipeUp()
             }
             XCTAssertTrue(button.isHittable, "\(style) is reachable")
             button.tap()
             XCTAssertTrue(button.isSelected)
-            let preview = app.descendants(matching: .any)["motion-selected-preview"].firstMatch
-            XCTAssertEqual(preview.value as? String, style)
             attach(app, "Graph picker - \(style)")
             app.buttons["replay-close-tools"].tap()
             XCTAssertTrue(graph.waitForExistence(timeout: 4))

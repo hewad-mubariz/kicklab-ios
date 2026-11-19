@@ -2,7 +2,7 @@ import AVFoundation
 
 /// Index compressed samples without decoding pixels or running inference. Frame stepping uses
 /// presentation timestamps, so variable-rate and reordered footage is handled correctly.
-nonisolated struct ShotSourceFrames: Equatable, Sendable {
+nonisolated struct ShotSourceFrames: Codable, Equatable, Sendable {
     var times: [Double]
     var duration: Double
     var isEmpty: Bool { times.isEmpty }
@@ -35,7 +35,25 @@ nonisolated struct ShotSourceFrames: Equatable, Sendable {
         let i = index(at: time)
         return max(0.00001, (i + 1 < times.count ? times[i + 1] : duration) - times[i])
     }
-    static func load(_ url: URL) async throws -> Self {
+    static func load(_ url: URL, reuseStore: ShotReuseStore? = nil) async throws -> Self {
+        let digest = try reuseStore.map { _ in try ShotReuseStore.sourceDigest(url) }
+        let contract = "powershot-compressed-timestamps-v1|" + ProcessInfo.processInfo.operatingSystemVersionString
+        if let reuseStore, let digest, let data = try reuseStore.load(source: digest, contract: contract) {
+            let value = try PropertyListDecoder().decode(Self.self, from: data)
+            guard value.duration.isFinite, value.duration > 0,
+                  value == Self(times: value.times, duration: value.duration) else {
+                throw ShotReuseStore.Failure(detail: "Invalid source-frame index")
+            }
+            return value
+        }
+        let value = try await scan(url)
+        if let reuseStore, let digest {
+            let encoder = PropertyListEncoder(); encoder.outputFormat = .binary
+            try reuseStore.save(encoder.encode(value), source: digest, contract: contract)
+        }
+        return value
+    }
+    private static func scan(_ url: URL) async throws -> Self {
         let asset = AVURLAsset(url: url)
         defer { withExtendedLifetime(asset) {} }
         let duration = try await asset.load(.duration).seconds

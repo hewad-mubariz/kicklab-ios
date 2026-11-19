@@ -47,6 +47,9 @@ struct ReplayToolbox: View {
     /// Plays a short run through a ball change.
     var onPreviewMoment: (Double) -> Void = { _ in }
     var onPreviewSound: (ReplaySound) -> Void = { _ in }
+    /// Test build 2026-11-19: the analytics lab views, picked on the Analytics page.
+    var labView: Binding<LabViewID?> = .constant(nil)
+    var labStatus: String? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
     @State private var ballKicks: [BallSkin: Int] = [:]
@@ -63,7 +66,9 @@ struct ReplayToolbox: View {
     /// Into a tool or back out of it; the swap leans slightly that way.
     @State private var forward = true
 
-    private let skins = BallSkin.pickerOrder
+    /// The Ball page's open set, and which way the last set change went.
+    @State private var ballSet: BallSet = .classic
+    @State private var setForward = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -151,6 +156,8 @@ struct ReplayToolbox: View {
         }
         commitBall()
         forward = next != nil
+        // The Ball page opens on the set holding the ball in use.
+        if next == .ball { ballSet = BallSet.containing(edit.ballSkin) }
         withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { page = next }
     }
 
@@ -327,9 +334,11 @@ struct ReplayToolbox: View {
         case .effects: effectsPage
         case .timer: timerPage
         case .graph:
+            // Graph styles and the lab views share one vertical scroll, two to a row.
             ReplayMotionPicker(style: $motionStyle, includeGraph: $includeGraph,
                                analyticsBackground: $analyticsBackground, snapshot: motionSnapshot,
-                               sourceAspect: sourceAspect, isPlaying: isPlaying, onTogglePlayback: onTogglePlayback, showsProBadges: !isPro)
+                               sourceAspect: sourceAspect, isPlaying: isPlaying, onTogglePlayback: onTogglePlayback,
+                               showsProBadges: !isPro, labSelection: labView, labStatus: labStatus)
         case .counter: counterPage
         case .sound: ReplaySoundPage(edit: $edit, autoMuted: $autoMuted, onPreview: onPreviewSound)
         case .looks:
@@ -449,19 +458,62 @@ struct ReplayToolbox: View {
         .padding(.horizontal, 16)
     }
 
-    /// Every ball at once, four to a row, so they can be compared and picked directly.
+    /// One set at a time, two rows of five: every ball in it is on screen and picked in place,
+    /// and the switcher or a sideways swipe moves between sets.
     private var ballPage: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 22) {
-                ForEach(Array(skins.enumerated()), id: \.element) { index, skin in
-                    // The right-hand columns swing left, so no ball leaves the panel's edge.
-                    ballOption(skin, direction: index % 4 < 2 ? 1 : -1)
+        VStack(alignment: .leading, spacing: 14) {
+            BallSetSwitcher(selection: $ballSet, current: BallSet.containing(shownBall)) { showSet($0) }
+                .padding(.horizontal, 16)
+            ZStack(alignment: .top) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 5), spacing: 16) {
+                    ForEach(Array(ballSet.skins.enumerated()), id: \.element) { index, skin in
+                        // Outer columns lean inward as they spin; the middle one spins straight.
+                        ballOption(skin, direction: [1, 1, 0, -1, -1][index % 5])
+                    }
                 }
+                .padding(.horizontal, 12).padding(.top, 4)
+                .id(ballSet)
+                .transition(setSwap)
             }
-            .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 2)
+            .frame(maxWidth: .infinity)
+            .contentShape(.rect)
+            .gesture(DragGesture(minimumDistance: 24).onEnded { swipeSet($0.translation) })
             if edit.hasLookChanges { looksNote("This ball starts the clip. Looks changes the rest.", id: "ball-looks-note") }
         }
+        .onAppear {
+            // Opens on the set holding the ball in use, without playing the swap.
+            let start = BallSet.containing(edit.ballSkin)
+            guard start != ballSet else { return }
+            var quiet = Transaction(); quiet.disablesAnimations = true
+            withTransaction(quiet) { ballSet = start }
+        }
         .onDisappear { applyBall?.cancel(); applyBall = nil; pendingBall = nil }
+    }
+
+    /// The next set leans in from the side it was asked for while the old one blurs away.
+    private var setSwap: AnyTransition {
+        if reduceMotion { return .opacity }
+        let lean: CGFloat = setForward ? 34 : -34
+        return .asymmetric(
+            insertion: .modifier(active: TraySwap(hidden: true, lean: lean), identity: TraySwap(hidden: false, lean: lean)),
+            removal: .modifier(active: TraySwap(hidden: true, lean: -lean), identity: TraySwap(hidden: false, lean: 0)))
+    }
+
+    private func showSet(_ next: BallSet) {
+        guard next != ballSet else { return }
+        let order = BallSet.allCases
+        setForward = (order.firstIndex(of: next) ?? 0) > (order.firstIndex(of: ballSet) ?? 0)
+        withAnimation(SessionMotion.animation(.spring(response: 0.4, dampingFraction: 0.82), reduceMotion: reduceMotion)) {
+            ballSet = next
+        }
+    }
+
+    private func swipeSet(_ travel: CGSize) {
+        guard abs(travel.width) > 44, abs(travel.width) > abs(travel.height) * 1.5 else { return }
+        let order = BallSet.allCases
+        guard let index = order.firstIndex(of: ballSet) else { return }
+        let next = travel.width < 0 ? index + 1 : index - 1
+        if order.indices.contains(next) { showSet(order[next]) }
     }
 
     /// With looks on, Ball and Effects set the first look; this says so and leads to the rest.
@@ -527,10 +579,14 @@ struct ReplayToolbox: View {
     private var effectsPage: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Every effect at once, four to a row, so the video keeps most of the screen.
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 7), count: 4), spacing: 10) {
-                ForEach(BallStyle.selectableCases) { style in effectOption(style) }
+            // Test build 2026-11-19: 44 effects no longer fit at once, so the grid scrolls.
+            ScrollView(.vertical) {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 7), count: 4), spacing: 10) {
+                    ForEach(BallStyle.selectableCases) { style in effectOption(style) }
+                }
+                .padding(.horizontal, 16).padding(.top, 4)
             }
-            .padding(.horizontal, 16).padding(.top, 4)
+            .frame(height: 330)
             if edit.style != .none {
                 HStack(spacing: 10) {
                     Text("Intensity").font(.system(size: 12, weight: .semibold))

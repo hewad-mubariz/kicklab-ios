@@ -158,7 +158,7 @@ struct ShotEffectsReplayView: View {
         self.holdAt = holdAt
         self.onClose = onClose
         _look = State(initialValue: savedChoices ?? ShotReplayLook(style: style))
-        let cached = trackCache.map { FileManager.default.fileExists(atPath: $0.path) } ?? false
+        let cached = !ShotReplayReuse.enabled && (trackCache.map { FileManager.default.fileExists(atPath: $0.path) } ?? false)
         _processing = State(initialValue: !cached)
     }
 
@@ -513,7 +513,9 @@ struct ShotEffectsReplayView: View {
             sourceFrames = ShotSourceFrames(duration: duration)
             frameIndexTask = Task {
                 do {
-                    let worker = Task.detached(priority: .userInitiated) { try await ShotSourceFrames.load(video) }
+                    let worker = Task.detached(priority: .userInitiated) {
+                        try await ShotSourceFrames.load(video, reuseStore: ShotReplayReuse.enabled ? ShotReplayReuse.store : nil)
+                    }
                     let frames = try await withTaskCancellationHandler { try await worker.value } onCancel: { worker.cancel() }
                     guard !Task.isCancelled else { return }
                     sourceFrames = frames
@@ -543,15 +545,18 @@ struct ShotEffectsReplayView: View {
             ready(cached)
         } else {
             do {
-                let frames = try await VideoAnalyzer.replayTrack(source: video) { value in
+                let onProgress: @Sendable (Double) -> Void = { value in
                     Task { @MainActor in
                         progress = max(progress, 0.1 + value * 0.78)
                         step = max(step, value < 0.5 ? 1 : 2)
                     }
                 }
+                let frames: [RecordedFrame]
+                if ShotReplayReuse.enabled { frames = try await ShotReplayReuse.frames(source: video, onProgress: onProgress) }
+                else { frames = try await VideoAnalyzer.replayTrack(source: video, onProgress: onProgress) }
                 let found = BallEffectTrack(frames: frames)
                 if found.samples.count >= 8 {
-                    if let trackCache { try? SessionAnalysisStore.frameData(frames).write(to: trackCache, options: .atomic) }
+                    if !ShotReplayReuse.enabled, let trackCache { try? SessionAnalysisStore.frameData(frames).write(to: trackCache, options: .atomic) }
                     ready(found)
                 } else {
                     track = found
@@ -703,6 +708,7 @@ struct ShotEffectsReplayView: View {
     }
 
     private func cachedTrack() -> BallEffectTrack? {
+        guard !ShotReplayReuse.enabled else { return nil }
         guard let trackCache, let data = try? Data(contentsOf: trackCache),
               let stored = try? PropertyListDecoder().decode([StoredFrame].self, from: data),
               stored.allSatisfy(\.isValid) else { return nil }

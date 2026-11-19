@@ -179,4 +179,6 @@ final class AppNotificationNavigation: ObservableObject {
         return true
     }
     func consume() { pending = nil }
+    /// "Start juggling" from the widget, a quick action, Siri or a shortcut.
+    func requestPractice() { pending = Request(destination: .practice) }
 }

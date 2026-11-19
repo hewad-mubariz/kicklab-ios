@@ -1,18 +1,18 @@
 import SwiftUI
 import simd
 
-/// Picking a ball plays like a trick. It leaves its spot and swings round a loop that
-/// comes toward you (bigger at the top, never smaller than at rest), tumbling on its
-/// real printed panels with a glowing ice trail behind it while its shadow shrinks below.
-/// It lands in a frost burst (ground ripples, a flash and flying ice shards) and the
-/// ice pad under it lights up. Reduce Motion keeps the lit pad, without the flight.
+/// Picking a ball plays like a keepy-up. It pops straight up off its own spot, a little toward
+/// you (never smaller than at rest), tumbling on its real printed panels while its shadow
+/// shrinks below, and drops back in a small frost burst (ripples, a flash and ice shards) as
+/// the ice pad under it lights up. It never leaves its spot, so it suits a full grid.
+/// Reduce Motion keeps the lit pad, without the hop.
 struct BallPickSlot: View {
     let skin: BallSkin
     let selected: Bool
     /// Bumped on every pick of this ball; each change plays the moment once.
     let picks: Int
     var size: CGFloat = 62
-    /// 1 swings out to the right first, -1 to the left, so edge columns swing inward.
+    /// The lean of the spin: 1 tips right, -1 left, 0 spins straight; edge columns lean inward.
     var direction: CGFloat = 1
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -45,12 +45,11 @@ struct BallPickSlot: View {
                 ZStack {
                     shadow(spot)
                     groundRipples(flight.impact)
-                    trail(flight.progress)
                     flightGlow(spot)
                     ball
                         .frame(width: size, height: size)
                         .scaleEffect((1 + 0.5 * spot.depth) * flight.pulse)
-                        .rotationEffect(.degrees(-28 * Double(direction) * sin(flight.progress * 2 * .pi)
+                        .rotationEffect(.degrees(-10 * Double(direction) * sin(flight.progress * .pi)
                                                  + (skin == .original ? 720 * flight.progress : 0)))
                         .offset(x: spot.point.x, y: spot.point.y + flight.hop)
                     frostBurst(flight.impact)
@@ -85,12 +84,12 @@ struct BallPickSlot: View {
         .sensoryFeedback(.impact(weight: .medium, intensity: 0.9), trigger: landings)
     }
 
-    /// The swing, in slot points: up and right, over the top, down the left, back in.
-    /// Depth is how close it has come toward the viewer, highest at the top of the loop.
+    /// The pick, in slot points: a kick straight up off the pad and back down onto it, so the
+    /// ball never leaves its own spot in a full grid. Depth is how close it has come toward the
+    /// viewer, highest at the top of the hop.
     private func loop(_ progress: Double) -> (point: CGPoint, depth: Double) {
-        let angle = progress * 2 * .pi
-        return (CGPoint(x: direction * size * 1.0 * sin(angle), y: -size * 0.62 * (1 - cos(angle))),
-                max(0, sin(angle / 2)))
+        let lift = sin(progress * .pi)
+        return (CGPoint(x: 0, y: -size * 0.42 * lift), 0.3 * lift)
     }
 
     @ViewBuilder private var ball: some View {
@@ -148,59 +147,12 @@ struct BallPickSlot: View {
 
     // MARK: - Flight
 
-    /// A glowing ice trail along the path just travelled: soft blue glow, an ice body,
-    /// a white-hot core and frost sparkles twinkling off its tail.
-    private func trail(_ head: Double) -> some View {
-        let tail = max(0, head - 0.4), steps = 18
-        func at(_ step: Int) -> (point: CGPoint, depth: Double) {
-            let spot = loop(tail + (head - tail) * Double(step) / Double(steps))
-            return (CGPoint(x: spot.point.x + size / 2, y: spot.point.y + size / 2), spot.depth)
-        }
-        func segment(_ step: Int) -> Path {
-            Path { path in path.move(to: at(step - 1).point); path.addLine(to: at(step).point) }
-        }
-        func width(_ step: Int) -> CGFloat {
-            (1.5 + 7 * Double(step) / Double(steps)) * (1 + 0.5 * at(step).depth)
-        }
-        return ZStack {
-            ZStack {
-                ForEach(1...steps, id: \.self) { step in
-                    segment(step).stroke(Frost.glacier.opacity(0.7 * Double(step) / Double(steps)),
-                                         style: StrokeStyle(lineWidth: width(step) * 2.6, lineCap: .round))
-                }
-            }
-            .blur(radius: 7)
-            .blendMode(.plusLighter)
-            ForEach(1...steps, id: \.self) { step in
-                let fraction = Double(step) / Double(steps)
-                segment(step).stroke(Frost.ice.opacity(0.85 * fraction),
-                                     style: StrokeStyle(lineWidth: width(step), lineCap: .round))
-                segment(step).stroke(.white.opacity(0.9 * fraction * fraction),
-                                     style: StrokeStyle(lineWidth: width(step) * 0.32, lineCap: .round))
-            }
-            ForEach(0..<9, id: \.self) { index in
-                let fraction = (Double(index) + 0.5) / 9
-                let spot = at(Int((fraction * Double(steps)).rounded()))
-                let drift = sin(Double(index) * 12.9898) * size * 0.14
-                Image(systemName: "sparkle")
-                    .font(.system(size: 5 + 4 * fraction, weight: .bold))
-                    .foregroundStyle(index.isMultiple(of: 3) ? .white : Frost.ice)
-                    .shadow(color: Frost.glacier, radius: 3)
-                    .position(x: spot.point.x + drift * 0.6, y: spot.point.y + drift)
-                    .opacity((0.35 + 0.65 * abs(sin(head * 38 + Double(index) * 1.7))) * fraction)
-            }
-        }
-        .frame(width: size, height: size)
-        .opacity(head > 0.02 && head < 0.995 ? 1 : 0)
-        .allowsHitTesting(false)
-    }
-
     /// The ball runs cold while it flies: an ice glow that grows as it comes toward you.
     private func flightGlow(_ spot: (point: CGPoint, depth: Double)) -> some View {
         Circle()
             .fill(RadialGradient(colors: [Frost.ice.opacity(0.6), Frost.glacier.opacity(0.28), .clear],
                                  center: .center, startRadius: 0, endRadius: size * 0.75))
-            .frame(width: size * 1.5, height: size * 1.5)
+            .frame(width: size * 1.2, height: size * 1.2)
             .scaleEffect(1 + 0.5 * spot.depth)
             .opacity(min(1, spot.depth * 1.6))
             .offset(x: spot.point.x, y: spot.point.y)
@@ -223,7 +175,7 @@ struct BallPickSlot: View {
                 .offset(y: -size * 0.12)
             ForEach(0..<2, id: \.self) { index in
                 let wave = min(1, max(0, impact * 1.4 - Double(index) * 0.22))
-                let width = size * (0.95 + 1.6 * wave)
+                let width = size * (0.95 + 0.85 * wave)
                 Ellipse()
                     .stroke(LinearGradient(colors: [.white, Frost.ice, Frost.glacier],
                                            startPoint: .top, endPoint: .bottom),
@@ -245,11 +197,12 @@ struct BallPickSlot: View {
                 // Two sprays, left and right off the rim, so none crosses the ball's face.
                 let side = Double(index % 5) / 4
                 let angle = index < 5 ? -Double.pi * (0.62 + 0.3 * side) : -Double.pi * (0.08 + 0.3 * side)
-                let speed = size * (1.5 + 0.7 * Double((index * 7) % 5) / 4)
+                // Short throws, so the shards stay on this ball's spot and off its neighbours.
+                let speed = size * (0.7 + 0.35 * Double((index * 7) % 5) / 4)
                 let t = impact
                 // Launched from the rim of the pad, clear of the ball itself.
                 let x = cos(angle) * (size * 0.36 + speed * t)
-                let y = sin(angle) * speed * t + 0.5 * size * 3.4 * t * t
+                let y = sin(angle) * speed * t + 0.5 * size * 1.8 * t * t
                 Rectangle()
                     .fill(LinearGradient(colors: [.white, Frost.ice], startPoint: .top, endPoint: .bottom))
                     .frame(width: 2.2, height: 6 + 2 * CGFloat(index % 3))
@@ -302,7 +255,7 @@ struct BallPickSlot: View {
 }
 
 private struct Flight {
-    /// 0 → 1 around the loop.
+    /// 0 → 1 up the hop and back down.
     var progress: Double = 0
     /// A small straight-up rebound after touchdown.
     var hop: CGFloat = 0

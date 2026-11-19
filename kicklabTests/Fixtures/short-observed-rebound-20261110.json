@@ -1,0 +1,1855 @@
+{
+  "source_sha256": "6e250e0976e4c584adef498bbe43cb5d7705ef374f1c7437f0cfe0d53f331e81",
+  "targetMs": 45610,
+  "targetFrame": 1368,
+  "config": {
+    "timeAwareTrajectory": true,
+    "cadenceAwareGroundContact": true,
+    "stabilizesPlayerGround": true,
+    "medianWindow": 3,
+    "smoothingWindow": 3,
+    "velocityThreshold": 0.05,
+    "maxGapFrames": 8,
+    "maxGapDurationMs": 300,
+    "minStateFrames": 2,
+    "minFallAmplitude": 0.02,
+    "minFallBallHeights": 0.1,
+    "minRiseAmplitude": 0.007,
+    "completesRiseWhileSlowing": true,
+    "preservesFallingArcAcrossShortGap": true,
+    "minTouchImpulse": 0.2,
+    "touchCooldownMs": 180,
+    "groundTolerance": 0.03,
+    "roiMargin": 0.08,
+    "recoversVisibleFootOutsideRegion": true,
+    "usesRecheckedRegionContact": true,
+    "recoversSmallVisibleContacts": true,
+    "recoversMeasuredSmallArcs": true,
+    "recoversMeasuredSlowRise": true,
+    "recoversMeasuredTerminalRebound": true,
+    "recoversMeasuredGapRebound": true,
+    "recoversUnsmoothedFootRebound": true,
+    "recoversShortObservedFootRebound": true,
+    "usesJointGapRelease": true,
+    "probesSettledMeasuredRebound": true,
+    "requiresDistantLowFootProof": true,
+    "recoversAlignedFootRegion": true,
+    "recoversBriefToeLift": true,
+    "rejectsDescendingFloorRebound": true,
+    "personSearchFrames": 12,
+    "lowerBodyFraction": 1.0,
+    "supportWindowFrames": 4
+  },
+  "foot": {
+    "before": {
+      "timestampMs": 45510,
+      "ballX": 0.6840277777777778,
+      "ballY": 0.518750011920929,
+      "width": 0.14722230699327257,
+      "height": 0.08203125,
+      "confidence": 0.94873046875,
+      "ankles": {
+        "left": {
+          "x": 0.5180354118347168,
+          "y": 0.6052020788192749,
+          "confidence": 0.84033203125
+        },
+        "right": {
+          "x": 0.24486331641674042,
+          "y": 0.6784961819648743,
+          "confidence": 0.873046875
+        }
+      },
+      "hips": {
+        "left": {
+          "x": 0.35708561539649963,
+          "y": 0.4159238338470459,
+          "confidence": 0.6640625
+        },
+        "right": {
+          "x": 0.2968866527080536,
+          "y": 0.4430696964263916,
+          "confidence": 0.6767578125
+        }
+      }
+    },
+    "contact": {
+      "timestampMs": 45610,
+      "ballX": 0.7194444868299696,
+      "ballY": 0.544921875,
+      "width": 0.14027775658501518,
+      "height": 0.08359372615814209,
+      "confidence": 0.93408203125,
+      "ankles": {
+        "left": {
+          "x": 0.6472390294075012,
+          "y": 0.5730851888656616,
+          "confidence": 0.755859375
+        },
+        "right": {
+          "x": 0.24151675403118134,
+          "y": 0.6716564893722534,
+          "confidence": 0.82177734375
+        }
+      },
+      "hips": {
+        "left": {
+          "x": 0.36417967081069946,
+          "y": 0.40718960762023926,
+          "confidence": 0.59130859375
+        },
+        "right": {
+          "x": 0.30455633997917175,
+          "y": 0.4350203275680542,
+          "confidence": 0.60498046875
+        }
+      }
+    },
+    "after": {
+      "timestampMs": 45710,
+      "ballX": 0.7152777777777778,
+      "ballY": 0.533984363079071,
+      "width": 0.14583333333333334,
+      "height": 0.08203125,
+      "confidence": 0.93505859375,
+      "ankles": {
+        "right": {
+          "x": 0.3033517599105835,
+          "y": 0.639611005783081,
+          "confidence": 0.84716796875
+        },
+        "left": {
+          "x": 0.609982430934906,
+          "y": 0.584700345993042,
+          "confidence": 0.865234375
+        }
+      },
+      "hips": {
+        "right": {
+          "x": 0.336611270904541,
+          "y": 0.4015171527862549,
+          "confidence": 0.69189453125
+        },
+        "left": {
+          "x": 0.39051273465156555,
+          "y": 0.38177359104156494,
+          "confidence": 0.69140625
+        }
+      }
+    },
+    "usesMeasuredFootProof": true,
+    "allowsShallowMeasuredApproach": true,
+    "corroboratesWeakSupport": true,
+    "allowsShallowToeRebound": true,
+    "allowsAdjacentShallowToeRebound": true,
+    "allowsRaisedForefoot": true,
+    "compactGroundEvidence": {
+      "contactMs": 45610,
+      "samples": [
+        {
+          "timestampMs": 45310,
+          "ballX": 0.5993055767483182,
+          "ballY": 0.5558593273162842,
+          "width": 0.1416666242811415,
+          "height": 0.08125001192092896,
+          "confidence": 0.94775390625,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.24046269059181213,
+              "y": 0.587552547454834,
+              "confidence": 0.8427734375
+            },
+            "right": {
+              "x": 0.46282723546028137,
+              "y": 0.6456805467605591,
+              "confidence": 0.841796875
+            }
+          },
+          "hips": {
+            "right": {
+              "x": 0.24438166618347168,
+              "y": 0.4053747057914734,
+              "confidence": 0.6953125
+            },
+            "left": {
+              "x": 0.31702083349227905,
+              "y": 0.39490532875061035,
+              "confidence": 0.57421875
+            }
+          }
+        },
+        {
+          "timestampMs": 45343,
+          "ballX": 0.6131943596733941,
+          "ballY": 0.5414062738418579,
+          "width": 0.14444446563720703,
+          "height": 0.08281248807907104,
+          "confidence": 0.95166015625,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.2529155910015106,
+              "y": 0.5783112645149231,
+              "confidence": 0.85888671875
+            },
+            "right": {
+              "x": 0.4151056110858917,
+              "y": 0.6506901383399963,
+              "confidence": 0.81298828125
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.3242579698562622,
+              "y": 0.39990079402923584,
+              "confidence": 0.57275390625
+            },
+            "right": {
+              "x": 0.2572828531265259,
+              "y": 0.4103119373321533,
+              "confidence": 0.67041015625
+            }
+          }
+        },
+        {
+          "timestampMs": 45377,
+          "ballX": 0.6298611958821615,
+          "ballY": 0.5296875238418579,
+          "width": 0.14444446563720703,
+          "height": 0.08281248807907104,
+          "confidence": 0.93701171875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.28579726815223694,
+              "y": 0.5742747783660889,
+              "confidence": 0.80712890625
+            },
+            "right": {
+              "x": 0.3572894334793091,
+              "y": 0.6555513739585876,
+              "confidence": 0.83056640625
+            }
+          },
+          "hips": {
+            "right": {
+              "x": 0.28190869092941284,
+              "y": 0.4075894355773926,
+              "confidence": 0.67431640625
+            },
+            "left": {
+              "x": 0.33882981538772583,
+              "y": 0.39541804790496826,
+              "confidence": 0.54931640625
+            }
+          }
+        },
+        {
+          "timestampMs": 45410,
+          "ballX": 0.644444465637207,
+          "ballY": 0.5218750238418579,
+          "width": 0.14583333333333334,
+          "height": 0.08281248807907104,
+          "confidence": 0.95068359375,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.31526753306388855,
+              "y": 0.5801609754562378,
+              "confidence": 0.72509765625
+            },
+            "right": {
+              "x": 0.29853561520576477,
+              "y": 0.6546623706817627,
+              "confidence": 0.880859375
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.3561907410621643,
+              "y": 0.4001990556716919,
+              "confidence": 0.68798828125
+            },
+            "right": {
+              "x": 0.2873305380344391,
+              "y": 0.4166083335876465,
+              "confidence": 0.71923828125
+            }
+          }
+        },
+        {
+          "timestampMs": 45443,
+          "ballX": 0.6597222222222222,
+          "ballY": 0.516406238079071,
+          "width": 0.15000004238552517,
+          "height": 0.08281251788139343,
+          "confidence": 0.94921875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.38655248284339905,
+              "y": 0.5927133560180664,
+              "confidence": 0.689453125
+            },
+            "right": {
+              "x": 0.2636135518550873,
+              "y": 0.6717744469642639,
+              "confidence": 0.861328125
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.36288705468177795,
+              "y": 0.4011526107788086,
+              "confidence": 0.66943359375
+            },
+            "right": {
+              "x": 0.29781800508499146,
+              "y": 0.41881299018859863,
+              "confidence": 0.69091796875
+            }
+          }
+        },
+        {
+          "timestampMs": 45477,
+          "ballX": 0.6736111111111112,
+          "ballY": 0.516406238079071,
+          "width": 0.15000004238552517,
+          "height": 0.08359372615814209,
+          "confidence": 0.93701171875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.4473971128463745,
+              "y": 0.6010946035385132,
+              "confidence": 0.81982421875
+            },
+            "right": {
+              "x": 0.2482200264930725,
+              "y": 0.6753383278846741,
+              "confidence": 0.87255859375
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.35643720626831055,
+              "y": 0.40671080350875854,
+              "confidence": 0.6650390625
+            },
+            "right": {
+              "x": 0.2956477105617523,
+              "y": 0.42722558975219727,
+              "confidence": 0.66796875
+            }
+          }
+        },
+        {
+          "timestampMs": 45510,
+          "ballX": 0.6840277777777778,
+          "ballY": 0.518750011920929,
+          "width": 0.14722230699327257,
+          "height": 0.08203125,
+          "confidence": 0.94873046875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.5180354118347168,
+              "y": 0.6052020788192749,
+              "confidence": 0.84033203125
+            },
+            "right": {
+              "x": 0.24486331641674042,
+              "y": 0.6784961819648743,
+              "confidence": 0.873046875
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.35708561539649963,
+              "y": 0.4159238338470459,
+              "confidence": 0.6640625
+            },
+            "right": {
+              "x": 0.2968866527080536,
+              "y": 0.4430696964263916,
+              "confidence": 0.6767578125
+            }
+          }
+        },
+        {
+          "timestampMs": 45543,
+          "ballX": 0.6979166666666666,
+          "ballY": 0.524609386920929,
+          "width": 0.14722230699327257,
+          "height": 0.08124998211860657,
+          "confidence": 0.94189453125,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "right": {
+              "x": 0.24853676557540894,
+              "y": 0.67754065990448,
+              "confidence": 0.853515625
+            },
+            "left": {
+              "x": 0.5839077234268188,
+              "y": 0.5996467471122742,
+              "confidence": 0.8369140625
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.3710363209247589,
+              "y": 0.4164494276046753,
+              "confidence": 0.63671875
+            },
+            "right": {
+              "x": 0.3058584928512573,
+              "y": 0.44923681020736694,
+              "confidence": 0.6728515625
+            }
+          }
+        },
+        {
+          "timestampMs": 45577,
+          "ballX": 0.7090278201633029,
+          "ballY": 0.5347656011581421,
+          "width": 0.14583333333333334,
+          "height": 0.08203122019767761,
+          "confidence": 0.94091796875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.622877299785614,
+              "y": 0.5877130031585693,
+              "confidence": 0.81591796875
+            },
+            "right": {
+              "x": 0.2386384755373001,
+              "y": 0.6754944324493408,
+              "confidence": 0.8388671875
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.3598853051662445,
+              "y": 0.4130648970603943,
+              "confidence": 0.68017578125
+            },
+            "right": {
+              "x": 0.3086959421634674,
+              "y": 0.4481569528579712,
+              "confidence": 0.6533203125
+            }
+          }
+        },
+        {
+          "timestampMs": 45610,
+          "ballX": 0.7194444868299696,
+          "ballY": 0.544921875,
+          "width": 0.14027775658501518,
+          "height": 0.08359372615814209,
+          "confidence": 0.93408203125,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.6472390294075012,
+              "y": 0.5730851888656616,
+              "confidence": 0.755859375
+            },
+            "right": {
+              "x": 0.24151675403118134,
+              "y": 0.6716564893722534,
+              "confidence": 0.82177734375
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.36417967081069946,
+              "y": 0.40718960762023926,
+              "confidence": 0.59130859375
+            },
+            "right": {
+              "x": 0.30455633997917175,
+              "y": 0.4350203275680542,
+              "confidence": 0.60498046875
+            }
+          }
+        },
+        {
+          "timestampMs": 45643,
+          "ballX": 0.720833248562283,
+          "ballY": 0.5398437976837158,
+          "width": 0.14444446563720703,
+          "height": 0.08515626192092896,
+          "confidence": 0.92529296875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "right": {
+              "x": 0.25817766785621643,
+              "y": 0.6615849137306213,
+              "confidence": 0.8173828125
+            },
+            "left": {
+              "x": 0.6526544094085693,
+              "y": 0.5699878931045532,
+              "confidence": 0.74267578125
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.37565696239471436,
+              "y": 0.3952176570892334,
+              "confidence": 0.6064453125
+            },
+            "right": {
+              "x": 0.31532377004623413,
+              "y": 0.4213358759880066,
+              "confidence": 0.619140625
+            }
+          }
+        },
+        {
+          "timestampMs": 45677,
+          "ballX": 0.7180555131700304,
+          "ballY": 0.5347656011581421,
+          "width": 0.14861117468939888,
+          "height": 0.08437499403953552,
+          "confidence": 0.9189453125,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "right": {
+              "x": 0.27299827337265015,
+              "y": 0.6499965786933899,
+              "confidence": 0.8173828125
+            },
+            "left": {
+              "x": 0.6416897773742676,
+              "y": 0.5742328763008118,
+              "confidence": 0.7724609375
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.37787696719169617,
+              "y": 0.38438594341278076,
+              "confidence": 0.6552734375
+            },
+            "right": {
+              "x": 0.3193674087524414,
+              "y": 0.4066883325576782,
+              "confidence": 0.63623046875
+            }
+          }
+        },
+        {
+          "timestampMs": 45710,
+          "ballX": 0.7152777777777778,
+          "ballY": 0.533984363079071,
+          "width": 0.14583333333333334,
+          "height": 0.08203125,
+          "confidence": 0.93505859375,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "right": {
+              "x": 0.3033517599105835,
+              "y": 0.639611005783081,
+              "confidence": 0.84716796875
+            },
+            "left": {
+              "x": 0.609982430934906,
+              "y": 0.584700345993042,
+              "confidence": 0.865234375
+            }
+          },
+          "hips": {
+            "right": {
+              "x": 0.336611270904541,
+              "y": 0.4015171527862549,
+              "confidence": 0.69189453125
+            },
+            "left": {
+              "x": 0.39051273465156555,
+              "y": 0.38177359104156494,
+              "confidence": 0.69140625
+            }
+          }
+        }
+      ],
+      "checksBallBelowFeet": true,
+      "requiresLowBallCenter": true,
+      "usesLocalImpactSize": true,
+      "requiresResolvedLowFoot": true,
+      "toleratesApproachGap": true,
+      "checksBallBesideFeet": true,
+      "toleratesPlantedApproachGap": true,
+      "requiresMovingAnkleForRescue": true,
+      "allowsStationaryHole": true,
+      "checksDeepFloorContact": true,
+      "checksCompactFootContact": true,
+      "usesCompactFootEligibility": true,
+      "allowsSettlingCompactRelease": true,
+      "checksAdjacentCompactImpact": true,
+      "compactFootSamples": [
+        {
+          "timestampMs": 45310,
+          "ballX": 0.5993055767483182,
+          "ballY": 0.5558593273162842,
+          "width": 0.1416666242811415,
+          "height": 0.08125001192092896,
+          "confidence": 0.94775390625,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.24046269059181213,
+              "y": 0.587552547454834,
+              "confidence": 0.8427734375
+            },
+            "right": {
+              "x": 0.46282723546028137,
+              "y": 0.6456805467605591,
+              "confidence": 0.841796875
+            }
+          },
+          "hips": {
+            "right": {
+              "x": 0.24438166618347168,
+              "y": 0.4053747057914734,
+              "confidence": 0.6953125
+            },
+            "left": {
+              "x": 0.31702083349227905,
+              "y": 0.39490532875061035,
+              "confidence": 0.57421875
+            }
+          }
+        },
+        {
+          "timestampMs": 45343,
+          "ballX": 0.6131943596733941,
+          "ballY": 0.5414062738418579,
+          "width": 0.14444446563720703,
+          "height": 0.08281248807907104,
+          "confidence": 0.95166015625,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.2529155910015106,
+              "y": 0.5783112645149231,
+              "confidence": 0.85888671875
+            },
+            "right": {
+              "x": 0.4151056110858917,
+              "y": 0.6506901383399963,
+              "confidence": 0.81298828125
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.3242579698562622,
+              "y": 0.39990079402923584,
+              "confidence": 0.57275390625
+            },
+            "right": {
+              "x": 0.2572828531265259,
+              "y": 0.4103119373321533,
+              "confidence": 0.67041015625
+            }
+          }
+        },
+        {
+          "timestampMs": 45377,
+          "ballX": 0.6298611958821615,
+          "ballY": 0.5296875238418579,
+          "width": 0.14444446563720703,
+          "height": 0.08281248807907104,
+          "confidence": 0.93701171875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.28579726815223694,
+              "y": 0.5742747783660889,
+              "confidence": 0.80712890625
+            },
+            "right": {
+              "x": 0.3572894334793091,
+              "y": 0.6555513739585876,
+              "confidence": 0.83056640625
+            }
+          },
+          "hips": {
+            "right": {
+              "x": 0.28190869092941284,
+              "y": 0.4075894355773926,
+              "confidence": 0.67431640625
+            },
+            "left": {
+              "x": 0.33882981538772583,
+              "y": 0.39541804790496826,
+              "confidence": 0.54931640625
+            }
+          }
+        },
+        {
+          "timestampMs": 45410,
+          "ballX": 0.644444465637207,
+          "ballY": 0.5218750238418579,
+          "width": 0.14583333333333334,
+          "height": 0.08281248807907104,
+          "confidence": 0.95068359375,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.31526753306388855,
+              "y": 0.5801609754562378,
+              "confidence": 0.72509765625
+            },
+            "right": {
+              "x": 0.29853561520576477,
+              "y": 0.6546623706817627,
+              "confidence": 0.880859375
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.3561907410621643,
+              "y": 0.4001990556716919,
+              "confidence": 0.68798828125
+            },
+            "right": {
+              "x": 0.2873305380344391,
+              "y": 0.4166083335876465,
+              "confidence": 0.71923828125
+            }
+          }
+        },
+        {
+          "timestampMs": 45443,
+          "ballX": 0.6597222222222222,
+          "ballY": 0.516406238079071,
+          "width": 0.15000004238552517,
+          "height": 0.08281251788139343,
+          "confidence": 0.94921875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.38655248284339905,
+              "y": 0.5927133560180664,
+              "confidence": 0.689453125
+            },
+            "right": {
+              "x": 0.2636135518550873,
+              "y": 0.6717744469642639,
+              "confidence": 0.861328125
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.36288705468177795,
+              "y": 0.4011526107788086,
+              "confidence": 0.66943359375
+            },
+            "right": {
+              "x": 0.29781800508499146,
+              "y": 0.41881299018859863,
+              "confidence": 0.69091796875
+            }
+          }
+        },
+        {
+          "timestampMs": 45477,
+          "ballX": 0.6736111111111112,
+          "ballY": 0.516406238079071,
+          "width": 0.15000004238552517,
+          "height": 0.08359372615814209,
+          "confidence": 0.93701171875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.4473971128463745,
+              "y": 0.6010946035385132,
+              "confidence": 0.81982421875
+            },
+            "right": {
+              "x": 0.2482200264930725,
+              "y": 0.6753383278846741,
+              "confidence": 0.87255859375
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.35643720626831055,
+              "y": 0.40671080350875854,
+              "confidence": 0.6650390625
+            },
+            "right": {
+              "x": 0.2956477105617523,
+              "y": 0.42722558975219727,
+              "confidence": 0.66796875
+            }
+          }
+        },
+        {
+          "timestampMs": 45510,
+          "ballX": 0.6840277777777778,
+          "ballY": 0.518750011920929,
+          "width": 0.14722230699327257,
+          "height": 0.08203125,
+          "confidence": 0.94873046875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.5180354118347168,
+              "y": 0.6052020788192749,
+              "confidence": 0.84033203125
+            },
+            "right": {
+              "x": 0.24486331641674042,
+              "y": 0.6784961819648743,
+              "confidence": 0.873046875
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.35708561539649963,
+              "y": 0.4159238338470459,
+              "confidence": 0.6640625
+            },
+            "right": {
+              "x": 0.2968866527080536,
+              "y": 0.4430696964263916,
+              "confidence": 0.6767578125
+            }
+          }
+        },
+        {
+          "timestampMs": 45543,
+          "ballX": 0.6979166666666666,
+          "ballY": 0.524609386920929,
+          "width": 0.14722230699327257,
+          "height": 0.08124998211860657,
+          "confidence": 0.94189453125,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "right": {
+              "x": 0.24853676557540894,
+              "y": 0.67754065990448,
+              "confidence": 0.853515625
+            },
+            "left": {
+              "x": 0.5839077234268188,
+              "y": 0.5996467471122742,
+              "confidence": 0.8369140625
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.3710363209247589,
+              "y": 0.4164494276046753,
+              "confidence": 0.63671875
+            },
+            "right": {
+              "x": 0.3058584928512573,
+              "y": 0.44923681020736694,
+              "confidence": 0.6728515625
+            }
+          }
+        },
+        {
+          "timestampMs": 45577,
+          "ballX": 0.7090278201633029,
+          "ballY": 0.5347656011581421,
+          "width": 0.14583333333333334,
+          "height": 0.08203122019767761,
+          "confidence": 0.94091796875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.622877299785614,
+              "y": 0.5877130031585693,
+              "confidence": 0.81591796875
+            },
+            "right": {
+              "x": 0.2386384755373001,
+              "y": 0.6754944324493408,
+              "confidence": 0.8388671875
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.3598853051662445,
+              "y": 0.4130648970603943,
+              "confidence": 0.68017578125
+            },
+            "right": {
+              "x": 0.3086959421634674,
+              "y": 0.4481569528579712,
+              "confidence": 0.6533203125
+            }
+          }
+        },
+        {
+          "timestampMs": 45610,
+          "ballX": 0.7194444868299696,
+          "ballY": 0.544921875,
+          "width": 0.14027775658501518,
+          "height": 0.08359372615814209,
+          "confidence": 0.93408203125,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.6472390294075012,
+              "y": 0.5730851888656616,
+              "confidence": 0.755859375
+            },
+            "right": {
+              "x": 0.24151675403118134,
+              "y": 0.6716564893722534,
+              "confidence": 0.82177734375
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.36417967081069946,
+              "y": 0.40718960762023926,
+              "confidence": 0.59130859375
+            },
+            "right": {
+              "x": 0.30455633997917175,
+              "y": 0.4350203275680542,
+              "confidence": 0.60498046875
+            }
+          }
+        },
+        {
+          "timestampMs": 45643,
+          "ballX": 0.720833248562283,
+          "ballY": 0.5398437976837158,
+          "width": 0.14444446563720703,
+          "height": 0.08515626192092896,
+          "confidence": 0.92529296875,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "right": {
+              "x": 0.25817766785621643,
+              "y": 0.6615849137306213,
+              "confidence": 0.8173828125
+            },
+            "left": {
+              "x": 0.6526544094085693,
+              "y": 0.5699878931045532,
+              "confidence": 0.74267578125
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.37565696239471436,
+              "y": 0.3952176570892334,
+              "confidence": 0.6064453125
+            },
+            "right": {
+              "x": 0.31532377004623413,
+              "y": 0.4213358759880066,
+              "confidence": 0.619140625
+            }
+          }
+        },
+        {
+          "timestampMs": 45677,
+          "ballX": 0.7180555131700304,
+          "ballY": 0.5347656011581421,
+          "width": 0.14861117468939888,
+          "height": 0.08437499403953552,
+          "confidence": 0.9189453125,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "right": {
+              "x": 0.27299827337265015,
+              "y": 0.6499965786933899,
+              "confidence": 0.8173828125
+            },
+            "left": {
+              "x": 0.6416897773742676,
+              "y": 0.5742328763008118,
+              "confidence": 0.7724609375
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.37787696719169617,
+              "y": 0.38438594341278076,
+              "confidence": 0.6552734375
+            },
+            "right": {
+              "x": 0.3193674087524414,
+              "y": 0.4066883325576782,
+              "confidence": 0.63623046875
+            }
+          }
+        },
+        {
+          "timestampMs": 45710,
+          "ballX": 0.7152777777777778,
+          "ballY": 0.533984363079071,
+          "width": 0.14583333333333334,
+          "height": 0.08203125,
+          "confidence": 0.93505859375,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "right": {
+              "x": 0.3033517599105835,
+              "y": 0.639611005783081,
+              "confidence": 0.84716796875
+            },
+            "left": {
+              "x": 0.609982430934906,
+              "y": 0.584700345993042,
+              "confidence": 0.865234375
+            }
+          },
+          "hips": {
+            "right": {
+              "x": 0.336611270904541,
+              "y": 0.4015171527862549,
+              "confidence": 0.69189453125
+            },
+            "left": {
+              "x": 0.39051273465156555,
+              "y": 0.38177359104156494,
+              "confidence": 0.69140625
+            }
+          }
+        },
+        {
+          "timestampMs": 45743,
+          "ballX": 0.7128471798366971,
+          "ballY": 0.537109375,
+          "width": 0.14513895246717665,
+          "height": 0.08124998211860657,
+          "confidence": 0.94140625,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "left": {
+              "x": 0.5711512565612793,
+              "y": 0.6009300351142883,
+              "confidence": 0.79248046875
+            },
+            "right": {
+              "x": 0.33856186270713806,
+              "y": 0.6402255296707153,
+              "confidence": 0.861328125
+            }
+          },
+          "hips": {
+            "left": {
+              "x": 0.40399619936943054,
+              "y": 0.38329827785491943,
+              "confidence": 0.66064453125
+            },
+            "right": {
+              "x": 0.3422103822231293,
+              "y": 0.40361952781677246,
+              "confidence": 0.65771484375
+            }
+          }
+        },
+        {
+          "timestampMs": 45777,
+          "ballX": 0.7090278201633029,
+          "ballY": 0.5453125238418579,
+          "width": 0.14583333333333334,
+          "height": 0.08125001192092896,
+          "confidence": 0.94384765625,
+          "imageAspect": 0.5625,
+          "ankles": {
+            "right": {
+              "x": 0.3787282109260559,
+              "y": 0.6421064734458923,
+              "confidence": 0.82861328125
+            },
+            "left": {
+              "x": 0.5251333713531494,
+              "y": 0.6121069192886353,
+              "confidence": 0.79638671875
+            }
+          },
+          "hips": {
+            "right": {
+              "x": 0.34188738465309143,
+              "y": 0.3972763419151306,
+              "confidence": 0.693359375
+            },
+            "left": {
+              "x": 0.4083695411682129,
+              "y": 0.37945932149887085,
+              "confidence": 0.69873046875
+            }
+          }
+        }
+      ],
+      "corroboratesCompactAnkles": true,
+      "usesMeasuredCompactRelease": true,
+      "checksRaisedCompactFoot": true,
+      "usesCorroboratedRaisedToe": true,
+      "requiresPlantedImpactEvidence": true,
+      "checksUnliftedFloorRebound": true,
+      "checksCorroboratedFloorRebound": true,
+      "checksVisibleForefoot": true,
+      "checksVisibleToePulse": true
+    },
+    "usesFourExposureWindow": true,
+    "rejectsWeakBelowAnkle": true
+  },
+  "operations": [
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1350,
+        "timestampMs": 45010,
+        "sourceFrameIndex": 1350,
+        "ball": {
+          "frameIndex": 1350,
+          "timestampMs": 45010,
+          "x": 0.4739583333333333,
+          "y": 0.578906238079071,
+          "width": 0.13819440205891928,
+          "height": 0.08359372615814209,
+          "confidence": 0.91943359375
+        },
+        "person": {
+          "x": 0.27760420905219185,
+          "y": 0.41015625,
+          "width": 0.4142361217074924,
+          "height": 0.5164062976837158
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1351,
+        "timestampMs": 45044,
+        "sourceFrameIndex": 1351,
+        "ball": {
+          "frameIndex": 1351,
+          "timestampMs": 45044,
+          "x": 0.4861111111111111,
+          "y": 0.572265625,
+          "width": 0.1388888888888889,
+          "height": 0.07968747615814209,
+          "confidence": 0.91796875
+        },
+        "person": {
+          "x": 0.2803819444444444,
+          "y": 0.40791016817092896,
+          "width": 0.42256948682996964,
+          "height": 0.5248047113418579
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1352,
+        "timestampMs": 45077,
+        "sourceFrameIndex": 1352,
+        "ball": {
+          "frameIndex": 1352,
+          "timestampMs": 45077,
+          "x": 0.4965277777777778,
+          "y": 0.5726562738418579,
+          "width": 0.14027780956692165,
+          "height": 0.08125001192092896,
+          "confidence": 0.9365234375
+        },
+        "person": {
+          "x": 0.2767361534966363,
+          "y": 0.40625,
+          "width": 0.42291667726304794,
+          "height": 0.5281250476837158
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1353,
+        "timestampMs": 45110,
+        "sourceFrameIndex": 1353,
+        "ball": {
+          "frameIndex": 1353,
+          "timestampMs": 45110,
+          "x": 0.5090276930067275,
+          "y": 0.575976550579071,
+          "width": 0.14027775658501518,
+          "height": 0.080078125,
+          "confidence": 0.95166015625
+        },
+        "person": {
+          "x": 0.2734375,
+          "y": 0.40312498807907104,
+          "width": 0.4253472222222222,
+          "height": 0.5179687738418579
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1354,
+        "timestampMs": 45144,
+        "sourceFrameIndex": 1354,
+        "ball": {
+          "frameIndex": 1354,
+          "timestampMs": 45144,
+          "x": 0.5208333333333334,
+          "y": 0.5824218988418579,
+          "width": 0.1416666242811415,
+          "height": 0.08203125,
+          "confidence": 0.94482421875
+        },
+        "person": {
+          "x": 0.2664930555555556,
+          "y": 0.4051757752895355,
+          "width": 0.4503472646077474,
+          "height": 0.521679699420929
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1355,
+        "timestampMs": 45177,
+        "sourceFrameIndex": 1355,
+        "ball": {
+          "frameIndex": 1355,
+          "timestampMs": 45177,
+          "x": 0.53125,
+          "y": 0.5910155773162842,
+          "width": 0.1416666242811415,
+          "height": 0.07890623807907104,
+          "confidence": 0.95361328125
+        },
+        "person": {
+          "x": 0.2779513994852702,
+          "y": 0.41328123211860657,
+          "width": 0.5177083545260959,
+          "height": 0.520312488079071
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1356,
+        "timestampMs": 45210,
+        "sourceFrameIndex": 1356,
+        "ball": {
+          "frameIndex": 1356,
+          "timestampMs": 45210,
+          "x": 0.543055534362793,
+          "y": 0.6042969226837158,
+          "width": 0.14027780956692165,
+          "height": 0.07890623807907104,
+          "confidence": 0.91943359375
+        },
+        "person": {
+          "x": 0.2986111111111111,
+          "y": 0.41874998807907104,
+          "width": 0.5777778095669217,
+          "height": 0.5171874761581421
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1357,
+        "timestampMs": 45244,
+        "sourceFrameIndex": 1357,
+        "ball": {
+          "frameIndex": 1357,
+          "timestampMs": 45244,
+          "x": 0.5670138465033637,
+          "y": 0.5960937738418579,
+          "width": 0.14374997880723742,
+          "height": 0.07968753576278687,
+          "confidence": 0.93896484375
+        },
+        "person": {
+          "x": 0.32447920905219185,
+          "y": 0.4188476502895355,
+          "width": 0.6371528307596842,
+          "height": 0.5130859017372131
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1358,
+        "timestampMs": 45277,
+        "sourceFrameIndex": 1358,
+        "ball": {
+          "frameIndex": 1358,
+          "timestampMs": 45277,
+          "x": 0.5829861958821615,
+          "y": 0.57421875,
+          "width": 0.14374997880723742,
+          "height": 0.08203125,
+          "confidence": 0.9365234375
+        },
+        "person": {
+          "x": 0.3404513994852702,
+          "y": 0.4156250059604645,
+          "width": 0.6427083545260959,
+          "height": 0.522656261920929
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1359,
+        "timestampMs": 45310,
+        "sourceFrameIndex": 1359,
+        "ball": {
+          "frameIndex": 1359,
+          "timestampMs": 45310,
+          "x": 0.5993055767483182,
+          "y": 0.5558593273162842,
+          "width": 0.1416666242811415,
+          "height": 0.08125001192092896,
+          "confidence": 0.94775390625
+        },
+        "person": {
+          "x": 0.3458333545260959,
+          "y": 0.408203125,
+          "width": 0.625,
+          "height": 0.5421874523162842
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1360,
+        "timestampMs": 45343,
+        "sourceFrameIndex": 1360,
+        "ball": {
+          "frameIndex": 1360,
+          "timestampMs": 45343,
+          "x": 0.6131943596733941,
+          "y": 0.5414062738418579,
+          "width": 0.14444446563720703,
+          "height": 0.08281248807907104,
+          "confidence": 0.95166015625
+        },
+        "person": {
+          "x": 0.34600692325168186,
+          "y": 0.40556639432907104,
+          "width": 0.6107639206780328,
+          "height": 0.5638672113418579
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1361,
+        "timestampMs": 45377,
+        "sourceFrameIndex": 1361,
+        "ball": {
+          "frameIndex": 1361,
+          "timestampMs": 45377,
+          "x": 0.6298611958821615,
+          "y": 0.5296875238418579,
+          "width": 0.14444446563720703,
+          "height": 0.08281248807907104,
+          "confidence": 0.93701171875
+        },
+        "person": {
+          "x": 0.3298611111111111,
+          "y": 0.408203125,
+          "width": 0.5972222222222222,
+          "height": 0.58203125
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1362,
+        "timestampMs": 45410,
+        "sourceFrameIndex": 1362,
+        "ball": {
+          "frameIndex": 1362,
+          "timestampMs": 45410,
+          "x": 0.644444465637207,
+          "y": 0.5218750238418579,
+          "width": 0.14583333333333334,
+          "height": 0.08281248807907104,
+          "confidence": 0.95068359375
+        },
+        "person": {
+          "x": 0.3104166454739041,
+          "y": 0.41484376788139343,
+          "width": 0.5708333651224772,
+          "height": 0.598437488079071
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1363,
+        "timestampMs": 45443,
+        "sourceFrameIndex": 1363,
+        "ball": {
+          "frameIndex": 1363,
+          "timestampMs": 45443,
+          "x": 0.6597222222222222,
+          "y": 0.516406238079071,
+          "width": 0.15000004238552517,
+          "height": 0.08281251788139343,
+          "confidence": 0.94921875
+        },
+        "person": {
+          "x": 0.29288196563720703,
+          "y": 0.41962891817092896,
+          "width": 0.5295138888888888,
+          "height": 0.5943359136581421
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1364,
+        "timestampMs": 45477,
+        "sourceFrameIndex": 1364,
+        "ball": {
+          "frameIndex": 1364,
+          "timestampMs": 45477,
+          "x": 0.6736111111111112,
+          "y": 0.516406238079071,
+          "width": 0.15000004238552517,
+          "height": 0.08359372615814209,
+          "confidence": 0.93701171875
+        },
+        "person": {
+          "x": 0.30694442325168186,
+          "y": 0.4234375059604645,
+          "width": 0.5152778095669217,
+          "height": 0.586718738079071
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1365,
+        "timestampMs": 45510,
+        "sourceFrameIndex": 1365,
+        "ball": {
+          "frameIndex": 1365,
+          "timestampMs": 45510,
+          "x": 0.6840277777777778,
+          "y": 0.518750011920929,
+          "width": 0.14722230699327257,
+          "height": 0.08203125,
+          "confidence": 0.94873046875
+        },
+        "person": {
+          "x": 0.36944447623358834,
+          "y": 0.4305664300918579,
+          "width": 0.5402777989705404,
+          "height": 0.5748046636581421
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1366,
+        "timestampMs": 45543,
+        "sourceFrameIndex": 1366,
+        "ball": {
+          "frameIndex": 1366,
+          "timestampMs": 45543,
+          "x": 0.6979166666666666,
+          "y": 0.524609386920929,
+          "width": 0.14722230699327257,
+          "height": 0.08124998211860657,
+          "confidence": 0.94189453125
+        },
+        "person": {
+          "x": 0.4388888676961263,
+          "y": 0.4312499761581421,
+          "width": 0.5430555873446994,
+          "height": 0.5726562738418579
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1367,
+        "timestampMs": 45577,
+        "sourceFrameIndex": 1367,
+        "ball": {
+          "frameIndex": 1367,
+          "timestampMs": 45577,
+          "x": 0.7090278201633029,
+          "y": 0.5347656011581421,
+          "width": 0.14583333333333334,
+          "height": 0.08203122019767761,
+          "confidence": 0.94091796875
+        },
+        "person": {
+          "x": 0.46944448682996964,
+          "y": 0.4320312440395355,
+          "width": 0.5625000529819064,
+          "height": 0.573437511920929
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1368,
+        "timestampMs": 45610,
+        "sourceFrameIndex": 1368,
+        "ball": {
+          "frameIndex": 1368,
+          "timestampMs": 45610,
+          "x": 0.7194444868299696,
+          "y": 0.544921875,
+          "width": 0.14027775658501518,
+          "height": 0.08359372615814209,
+          "confidence": 0.93408203125
+        },
+        "person": {
+          "x": 0.4751736323038737,
+          "y": 0.42890626192092896,
+          "width": 0.5579861534966363,
+          "height": 0.5812499523162842
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1369,
+        "timestampMs": 45643,
+        "sourceFrameIndex": 1369,
+        "ball": {
+          "frameIndex": 1369,
+          "timestampMs": 45643,
+          "x": 0.720833248562283,
+          "y": 0.5398437976837158,
+          "width": 0.14444446563720703,
+          "height": 0.08515626192092896,
+          "confidence": 0.92529296875
+        },
+        "person": {
+          "x": 0.4626736111111111,
+          "y": 0.4247070252895355,
+          "width": 0.5274305873446994,
+          "height": 0.589648425579071
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1370,
+        "timestampMs": 45677,
+        "sourceFrameIndex": 1370,
+        "ball": {
+          "frameIndex": 1370,
+          "timestampMs": 45677,
+          "x": 0.7180555131700304,
+          "y": 0.5347656011581421,
+          "width": 0.14861117468939888,
+          "height": 0.08437499403953552,
+          "confidence": 0.9189453125
+        },
+        "person": {
+          "x": 0.4835069444444444,
+          "y": 0.4203124940395355,
+          "width": 0.5788194868299696,
+          "height": 0.5960937142372131
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1371,
+        "timestampMs": 45710,
+        "sourceFrameIndex": 1371,
+        "ball": {
+          "frameIndex": 1371,
+          "timestampMs": 45710,
+          "x": 0.7152777777777778,
+          "y": 0.533984363079071,
+          "width": 0.14583333333333334,
+          "height": 0.08203125,
+          "confidence": 0.93505859375
+        },
+        "person": {
+          "x": 0.46111106872558594,
+          "y": 0.4156250059604645,
+          "width": 0.5527777671813965,
+          "height": 0.590624988079071
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1372,
+        "timestampMs": 45743,
+        "sourceFrameIndex": 1372,
+        "ball": {
+          "frameIndex": 1372,
+          "timestampMs": 45743,
+          "x": 0.7128471798366971,
+          "y": 0.537109375,
+          "width": 0.14513895246717665,
+          "height": 0.08124998211860657,
+          "confidence": 0.94140625
+        },
+        "person": {
+          "x": 0.4354166454739041,
+          "y": 0.40898436307907104,
+          "width": 0.5111111005147299,
+          "height": 0.57421875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1373,
+        "timestampMs": 45777,
+        "sourceFrameIndex": 1373,
+        "ball": {
+          "frameIndex": 1373,
+          "timestampMs": 45777,
+          "x": 0.7090278201633029,
+          "y": 0.5453125238418579,
+          "width": 0.14583333333333334,
+          "height": 0.08125001192092896,
+          "confidence": 0.94384765625
+        },
+        "person": {
+          "x": 0.4097222222222222,
+          "y": 0.41132810711860657,
+          "width": 0.44722217983669704,
+          "height": 0.563281238079071
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1374,
+        "timestampMs": 45810,
+        "sourceFrameIndex": 1374,
+        "ball": {
+          "frameIndex": 1374,
+          "timestampMs": 45810,
+          "x": 0.7048611111111112,
+          "y": 0.555859386920929,
+          "width": 0.14722230699327257,
+          "height": 0.08203125,
+          "confidence": 0.94189453125
+        },
+        "person": {
+          "x": 0.4104166560702854,
+          "y": 0.41328123211860657,
+          "width": 0.4361111323038737,
+          "height": 0.559374988079071
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1375,
+        "timestampMs": 45843,
+        "sourceFrameIndex": 1375,
+        "ball": {
+          "frameIndex": 1375,
+          "timestampMs": 45843,
+          "x": 0.7000000211927626,
+          "y": 0.5699218511581421,
+          "width": 0.14861106872558594,
+          "height": 0.08046871423721313,
+          "confidence": 0.94189453125
+        },
+        "person": {
+          "x": 0.4161458545260959,
+          "y": 0.42353516817092896,
+          "width": 0.43854167726304794,
+          "height": 0.5498046875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1376,
+        "timestampMs": 45877,
+        "sourceFrameIndex": 1376,
+        "ball": {
+          "frameIndex": 1376,
+          "timestampMs": 45877,
+          "x": 0.6965276930067275,
+          "y": 0.5859375,
+          "width": 0.14444446563720703,
+          "height": 0.07890629768371582,
+          "confidence": 0.9501953125
+        },
+        "person": {
+          "x": 0.42378467983669704,
+          "y": 0.4297851622104645,
+          "width": 0.4496527247958713,
+          "height": 0.537304699420929
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1377,
+        "timestampMs": 45910,
+        "sourceFrameIndex": 1377,
+        "ball": {
+          "frameIndex": 1377,
+          "timestampMs": 45910,
+          "x": 0.6909722222222222,
+          "y": 0.607421875,
+          "width": 0.14305559794108072,
+          "height": 0.07890629768371582,
+          "confidence": 0.9521484375
+        },
+        "person": {
+          "x": 0.44305557674831814,
+          "y": 0.43134766817092896,
+          "width": 0.46805556615193683,
+          "height": 0.5263671875
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1378,
+        "timestampMs": 45943,
+        "sourceFrameIndex": 1378,
+        "ball": {
+          "frameIndex": 1378,
+          "timestampMs": 45943,
+          "x": 0.6875,
+          "y": 0.627734363079071,
+          "width": 0.1416666242811415,
+          "height": 0.08203125,
+          "confidence": 0.9296875
+        },
+        "person": {
+          "x": 0.4612847434149848,
+          "y": 0.43085938692092896,
+          "width": 0.5052083333333334,
+          "height": 0.5226562023162842
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    },
+    {
+      "flush": false,
+      "input": {
+        "frameIndex": 1379,
+        "timestampMs": 45977,
+        "sourceFrameIndex": 1379,
+        "ball": {
+          "frameIndex": 1379,
+          "timestampMs": 45977,
+          "x": 0.6868055131700304,
+          "y": 0.6187499761581421,
+          "width": 0.1430554919772678,
+          "height": 0.08125001192092896,
+          "confidence": 0.9443359375
+        },
+        "person": {
+          "x": 0.4592013888888889,
+          "y": 0.427734375,
+          "width": 0.5149305131700304,
+          "height": 0.5210937261581421
+        },
+        "cameraOffsetY": 0.0,
+        "reliable": true
+      }
+    }
+  ]
+}

@@ -205,6 +205,19 @@ nonisolated struct BallSurfaceTimeline: Sendable {
 
     static func releaseCachedResults() async throws { try await BallSurfaceMotionCache.shared.releaseCachedResults() }
 
+    /// These use the same keys and store as preview/export; no parallel cache lifetime.
+    static func hasPreparedMotion(source: URL, track: BallEffectTrack) async throws -> Bool {
+        try await BallSurfaceMotionCache.shared.hasPrepared(source: source, track: track)
+    }
+    static func storeSharedMotion(source: URL, track: BallEffectTrack, inputIdentity: [Double],
+                                  timeline: Self) async throws -> Bool {
+        try Task.checkCancellation()
+        guard SharedBallPreparation.enabled, track.sharedMotionIdentity == inputIdentity,
+              !timeline.entries.isEmpty, StoredSurfaceTimeline(timeline).isValid else { return false }
+        return try await BallSurfaceMotionCache.shared.storeShared(source: source, track: track, value: timeline)
+    }
+
+
     #if DEBUG
     /// Independent rotation measurement for paired pipeline reviews.
     static func analyzeForReview(source: URL, track: BallEffectTrack) async throws -> Self {
@@ -313,11 +326,58 @@ private actor BallSurfaceMotionCache {
         completed.removeAll(); tail = nil
     }
 
-    func prepare(source: URL,track: BallEffectTrack, history: HistoryReplayContext?) async throws -> BallSurfaceTimeline {
-        let requestedAt = ProcessInfo.processInfo.systemUptime
+    private struct Location {
+        let key: String
+        let folder: URL
+        var file: URL { folder.appendingPathComponent(key + ".json") }
+    }
+    private static func signature(_ track: BallEffectTrack) throws -> Data {
         let samples = track.samples.map { [$0.time, Double($0.center.x), Double($0.center.y),
             Double($0.boxSize?.width ?? 0), Double($0.boxSize?.height ?? 0), $0.confidence] }
-        let signature = try JSONEncoder().encode(samples)
+        return try JSONEncoder().encode(samples)
+    }
+    private static func location(source: URL, signature: Data) throws -> Location {
+        let content = try SessionAnalysisStore.sourceDigest(source)
+        let key = SessionAnalysisStore.digest(Data("spin-v5-ball-exposure|\(SessionAnalysisStore.pipelineSignature())|\(content)|".utf8) + signature)
+        return Location(key: key, folder: URL.cachesDirectory.appendingPathComponent("SessionSpin-v3", isDirectory: true))
+    }
+    private static func read(_ file: URL) -> BallSurfaceTimeline? {
+        guard let size = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize, size < 16*1024*1024,
+              let data = try? Data(contentsOf: file),
+              let saved = try? JSONDecoder().decode(StoredSurfaceTimeline.self, from: data), saved.isValid else { return nil }
+        return saved.timeline
+    }
+    private static func persist(_ value: BallSurfaceTimeline, at location: Location) -> Bool {
+        guard let data = try? JSONEncoder().encode(StoredSurfaceTimeline(value)), data.count < 16*1024*1024 else { return false }
+        do {
+            try FileManager.default.createDirectory(at: location.folder, withIntermediateDirectories: true)
+            try data.write(to: location.file, options: .atomic)
+        } catch { return false }
+        let files = (try? FileManager.default.contentsOfDirectory(at: location.folder, includingPropertiesForKeys: [.contentModificationDateKey])) ?? []
+        let sorted = files.sorted { ((try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast)
+            > ((try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast) }
+        for old in sorted.dropFirst(4) where old != location.file { try? FileManager.default.removeItem(at: old) }
+        return true
+    }
+    func hasPrepared(source: URL, track: BallEffectTrack) throws -> Bool {
+        let location = try Self.location(source: source, signature: Self.signature(track))
+        if completed.contains(where: { $0.0 == location.key }) || pending[location.key] != nil { return true }
+        guard let value = Self.read(location.file) else { return false }
+        completed.append((location.key, value)); if completed.count > 2 { completed.removeFirst() }
+        return true
+    }
+    func storeShared(source: URL, track: BallEffectTrack, value: BallSurfaceTimeline) throws -> Bool {
+        let location = try Self.location(source: source, signature: Self.signature(track))
+        try Task.checkCancellation()
+        // A concurrent consumer may already own this calculation. Preserve its result.
+        guard pending[location.key] == nil, !completed.contains(where: { $0.0 == location.key }) else { return false }
+        completed.append((location.key, value)); if completed.count > 2 { completed.removeFirst() }
+        return Self.persist(value, at: location)
+    }
+
+    func prepare(source: URL,track: BallEffectTrack, history: HistoryReplayContext?) async throws -> BallSurfaceTimeline {
+        let requestedAt = ProcessInfo.processInfo.systemUptime
+        let signature = try Self.signature(track)
         // The source is owned by this immutable session. Match the actual ball
         // track, without invalidating completed spin on unrelated app rebuilds.
         let historyKey = SessionAnalysisStore.digest(Data("saved-spin-v5-ball-exposure|".utf8) + signature)
@@ -326,10 +386,8 @@ private actor BallSurfaceMotionCache {
                                                computation: value.preparationTiming)
             return value
         }
-        let content = try SessionAnalysisStore.sourceDigest(source)
-        let requested = SessionAnalysisStore.digest(Data("spin-v5-ball-exposure|\(SessionAnalysisStore.pipelineSignature())|\(content)|".utf8) + signature)
-        let folder = URL.cachesDirectory.appendingPathComponent("SessionSpin-v3", isDirectory: true)
-        let file = folder.appendingPathComponent(requested + ".json")
+        let location = try Self.location(source: source, signature: signature)
+        let requested = location.key
         func report(_ value: BallSurfaceTimeline, origin: String) -> BallSurfaceTimeline {
             if let history { try? history.library.saveReplayMotion(value, for: history.item, key: historyKey) }
             BallPreparationTiming.writeRequest(origin: origin, key: requested, since: requestedAt,
@@ -338,10 +396,7 @@ private actor BallSurfaceMotionCache {
         }
         if let value=completed.first(where:{$0.0==requested})?.1 {return report(value, origin: "memory_cache")}
         if let task=pending[requested] {return report(try await task.value, origin: "shared_work")}
-        if let size = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize, size < 16*1024*1024,
-           let data = try? Data(contentsOf: file),
-           let saved = try? JSONDecoder().decode(StoredSurfaceTimeline.self, from: data), saved.isValid {
-            let value = saved.timeline
+        if let value = Self.read(location.file) {
             completed.append((requested,value)); if completed.count > 2 { completed.removeFirst() }
             return report(value, origin: "disk_cache")
         }
@@ -356,14 +411,7 @@ private actor BallSurfaceMotionCache {
             let value=try await task.value
             pending[requested]=nil
             completed.append((requested,value))
-            if let data = try? JSONEncoder().encode(StoredSurfaceTimeline(value)), data.count < 16*1024*1024 {
-                try? FileManager.default.createDirectory(at:folder,withIntermediateDirectories:true)
-                try? data.write(to:file,options:.atomic)
-                let files = (try? FileManager.default.contentsOfDirectory(at:folder,includingPropertiesForKeys:[.contentModificationDateKey])) ?? []
-                let sorted = files.sorted { ((try? $0.resourceValues(forKeys:[.contentModificationDateKey]).contentModificationDate) ?? .distantPast)
-                    > ((try? $1.resourceValues(forKeys:[.contentModificationDateKey]).contentModificationDate) ?? .distantPast) }
-                for old in sorted.dropFirst(4) where old != file { try? FileManager.default.removeItem(at:old) }
-            }
+            _ = Self.persist(value, at: location)
             if completed.count>2 {completed.removeFirst(completed.count-2)}
             if pending.isEmpty {tail=nil}
             return report(value, origin: "computed")

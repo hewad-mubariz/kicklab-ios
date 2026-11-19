@@ -19,8 +19,8 @@ final class LeaderboardCardGalleryUITests: XCTestCase {
                 capture(app, "Home card")
                 for _ in 0..<5 { app.swipeDown() }
             }
-            XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 10))
-            app.buttons["home-leaderboard"].tap()
+            XCTAssertTrue(app.mainTab("leaderboard").waitForExistence(timeout: 10))
+            app.mainTab("leaderboard").tap()
             XCTAssertTrue(app.descendants(matching: .any)["leaderboard-pennant-1"].waitForExistence(timeout: 8))
             pause(2.5)
             capture(app, "Pennants · \(appearance)")
@@ -39,8 +39,8 @@ final class LeaderboardCardGalleryUITests: XCTestCase {
             joining.launchArguments = ["-kicklab.welcome.completed", "YES", "--profile-editor-review",
                                        "-kicklab.leaderboard.askedToJoin", "", "-kicklab.appearance", appearance]
             joining.launch()
-            XCTAssertTrue(joining.buttons["home-leaderboard"].waitForExistence(timeout: 10))
-            joining.buttons["home-leaderboard"].tap()
+            XCTAssertTrue(joining.mainTab("leaderboard").waitForExistence(timeout: 10))
+            joining.mainTab("leaderboard").tap()
             XCTAssertTrue(joining.descendants(matching: .any)["leaderboard-join-card"].waitForExistence(timeout: 8))
             pause(1.5)
             capture(joining, "Join card · \(appearance)")

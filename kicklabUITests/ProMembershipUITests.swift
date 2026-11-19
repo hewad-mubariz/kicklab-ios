@@ -8,8 +8,8 @@ final class ProMembershipUITests: XCTestCase {
         app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-preview", "mixed",
                                "-kicklab.appearance", "dark", "-AppleLanguages", "(en)"]
         app.launch()
-        XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 15))
-        app.buttons["home-leaderboard"].tap()
+        XCTAssertTrue(app.mainTab("leaderboard").waitForExistence(timeout: 15))
+        app.mainTab("leaderboard").tap()
         let badge = app.buttons["leaderboard-pro-1"]
         XCTAssertTrue(badge.waitForExistence(timeout: 10))
         XCTAssertFalse(app.buttons["leaderboard-pro-2"].exists)

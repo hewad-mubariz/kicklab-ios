@@ -61,7 +61,8 @@ nonisolated final class RFAppCounterCore {
     private let counterConfig: CounterConfig
     private var detector: RFFrameMetrics?
     private var evidence: ContactRecheckEvidence?
-    private var counterEvidence: (any ContactEvidenceProviding)? { evidence ?? contactVerifier as (any ContactEvidenceProviding)? }
+    private var toeEvidence: LiveToeVerifier?
+    private var counterEvidence: (any ContactEvidenceProviding)? { toeEvidence }
     private var trackingBaselineMB = 0.0
     private var trackingPreparationMS = 0.0
     private var counter = StreamingCounter()
@@ -99,7 +100,7 @@ nonisolated final class RFAppCounterCore {
     func markFailed() { analysisFailed = true }
 
     init(counterConfig: CounterConfig = CounterConfig()) {
-        self.counterConfig = counterConfig
+        self.counterConfig = CounterV2Policy.configuration(counterConfig)
     }
 
     func prepare(request: CaptureRequest, worker: RFWorker) throws -> Bool {
@@ -113,6 +114,9 @@ nonisolated final class RFAppCounterCore {
         let observations = ContactObservationStore()
         let verifier = JugglingContactVerifier.enabled ? JugglingContactVerifier(observations: observations) : nil
         evidence = verifier.map { ContactRecheckEvidence(observations: observations, verifier: $0, worker: worker, enabled: true, backlogGuard: false) }
+        guard let evidence else { throw LiveToeVerifier.failure("Native contact verifier unavailable") }
+        toeEvidence = try LiveToeVerifier(base: evidence, observations: observations)
+        if let verifier { toeEvidence?.bind(to: verifier) }
         verifier?.warmUp()
         guard !request.isCancelled else { return false }
         if let error = verifier?.lastError {
@@ -134,6 +138,7 @@ nonisolated final class RFAppCounterCore {
         detector = nil
         contactVerifier = nil
         evidence = nil
+        toeEvidence = nil
         capturePipelineSignature = nil
         preparedPipelineSignature = nil
     }
@@ -141,6 +146,7 @@ nonisolated final class RFAppCounterCore {
     func resetCounter() {
         contactVerifier?.reset()
         evidence?.reset()
+        toeEvidence?.reset()
         counter = ContactCounterFactory.make(verifier: counterEvidence, config: counterConfig)
         plausibility.reset()
         playerTracker.reset()
@@ -162,6 +168,7 @@ nonisolated final class RFAppCounterCore {
         let verifier = contactVerifier
         verifier?.reset()
         evidence?.reset()
+        toeEvidence?.reset()
         counter = ContactCounterFactory.make(verifier: counterEvidence, config: counterConfig)
         // Reuse live count/mask evidence only when the prepared settings still match.
         capturePipelineSignature = preparedPipelineSignature == signature ? signature : nil
@@ -202,7 +209,7 @@ nonisolated final class RFAppCounterCore {
                 time: Double(touch.timestampMs) / 1000.0 - recordingStartSeconds,
                 x: touch.x, y: touch.y))
         }
-        let qualityFailed = analysisFailed || contactVerifier?.lastError != nil || evidence?.error != nil
+        let qualityFailed = toeEvidence?.error != nil || analysisFailed || contactVerifier?.lastError != nil || evidence?.error != nil
         let touches = wasActive ? touchesThisRun : []
         let track = wasActive ? trackThisRun : []
         let count = wasActive ? counter.count : 0
@@ -243,7 +250,7 @@ nonisolated final class RFAppCounterCore {
         frameIndex += 1
         let inferenceSucceeded = true
         var found = output.found
-        if contactVerifier?.lastError != nil || evidence?.error != nil {
+        if toeEvidence?.error != nil || contactVerifier?.lastError != nil || evidence?.error != nil {
             analysisFailed = true
             throw VideoSafetyPolicy.Failure.analysis
         }

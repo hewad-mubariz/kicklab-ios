@@ -119,6 +119,7 @@ extension BallSkin {
         case .prism: SIMD3(0.88, 0.92, 1)
         case .wave: SIMD3(0.35, 0.8, 1)
         case .nightPulse: SIMD3(0.3, 1, 0.9)
+        default: SIMD3(0.9, 0.9, 0.95)
         }
     }
 }

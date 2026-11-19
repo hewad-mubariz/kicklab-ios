@@ -79,6 +79,12 @@ nonisolated struct CounterConfig: Codable, Equatable, Sendable {
     /// Debug experiment: a small raw turn may request foot proof when smoothing
     /// never arms an arc. Nil keeps historical candidate and evidence timing.
     var recoversUnsmoothedFootRebound: Bool? = nil
+    /// A measured shallow dip may request foot verification when smoothing
+    /// never arms or confirms its rise. Nil preserves saved proposal timing.
+    var recoversShortObservedFootRebound: Bool? = nil
+    /// A weak foot at the image edge cannot establish a low contact through
+    /// proximity alone. Nil preserves historical evidence requirements.
+    var requiresResolvedEdgeFootContact: Bool? = nil
     /// Two measured release views may jointly confirm a short tracking gap.
     var usesJointGapRelease: Bool? = nil
     /// A completed shallow raw rebound may request measured foot evidence
@@ -253,6 +259,7 @@ nonisolated final class TouchStateMachine {
     private var gapReboundProbeFrame: Int?
     private var rawReboundProbeFrame: Int?
     private var settledReboundProbeMs: Int?
+    private var shortObservedProbeFrame: Int?
 
     private func resetArc(restartTopY: Double? = nil) {
         armed = false
@@ -309,6 +316,7 @@ nonisolated final class TouchStateMachine {
         }
         gapRun = 0
         lastValidPoint = point
+        if let touch = confirmShortObservedFootRebound(at: point) { return touch }
         if let touch = confirmUnsmoothedFootRebound(at: point) { return touch }
         if let touch = confirmMeasuredGapRebound(at: point) { return touch }
         if let touch = confirmSettledMeasuredRebound(at: point) { return touch }
@@ -349,6 +357,55 @@ nonisolated final class TouchStateMachine {
             if config.completesRiseWhileSlowing == true, point.vy <= 0 {
                 return confirmRise(at: point)
             }
+        }
+        return nil
+    }
+
+    /// Proposal only: a shallow raw rebound still needs positive measured foot
+    /// proof and all ordinary body, hand, ground and holding vetoes. Leave the
+    /// established rising path alone; inspect unarmed or neutral trajectories.
+    private func confirmShortObservedFootRebound(at point: TrajectoryPoint) -> Touch? {
+        guard config.recoversShortObservedFootRebound == true,
+              !armed || point.motion == .unknown,
+              footContactEvidence != nil, allowsBodyContact != nil,
+              rejectsHandContact != nil else { return nil }
+        let views = observedBalls.values.filter {
+            (0...267).contains(point.timestampMs-$0.timestampMs)
+        }.sorted { $0.timestampMs < $1.timestampMs }
+        guard (5...10).contains(views.count), let release = views.last,
+              release.timestampMs == point.timestampMs else { return nil }
+        for index in stride(from: views.count-3, through: 2, by: -1) {
+            let contact = views[index]
+            guard (65...134).contains(release.timestampMs-contact.timestampMs),
+                  shortObservedProbeFrame != contact.frameIndex,
+                  lastTouchMs.map({ contact.timestampMs-$0 >= config.touchCooldownMs }) ?? true else { continue }
+            let measured = Array(views[(index-2)...])
+            let approach = measured[0], incoming = measured[1], outgoing = Array(measured.dropFirst(3))
+            guard measured.allSatisfy({ b in
+                [b.x,b.y,b.width,b.height,b.confidence].allSatisfy(\.isFinite)
+                    && b.confidence >= 0.7 && b.width > 0 && b.height > 0
+                    && b.x-b.width/2 >= 0 && b.x+b.width/2 <= 1
+                    && b.y-b.height/2 >= 0 && b.y+b.height/2 <= (imageBottoms[b.frameIndex] ?? 1)
+            }), zip(measured,measured.dropFirst()).allSatisfy({ (25...67).contains($1.timestampMs-$0.timestampMs) }),
+                measured.map(\.height).max()! <= 1.25*measured.map(\.height).min()!,
+                measured.map(\.width).max()! <= 1.25*measured.map(\.width).min()!,
+                incoming.y > approach.y, contact.y > incoming.y,
+                contact.y-approach.y >= max(0.007,0.1*contact.height),
+                contact.y-outgoing[0].y >= max(0.0015,0.025*contact.height),
+                zip(outgoing,outgoing.dropFirst()).allSatisfy({ $0.y > $1.y }),
+                contact.y-release.y >= max(0.0035,0.075*contact.height) else { continue }
+            shortObservedProbeFrame = contact.frameIndex
+            let fall = (contact.y-approach.y)/Double(contact.timestampMs-approach.timestampMs)*1000
+            let rise = (contact.y-release.y)/Double(release.timestampMs-contact.timestampMs)*1000
+            let impact = TrajectoryPoint(frameIndex:contact.frameIndex,timestampMs:contact.timestampMs,
+                x:contact.x,y:contact.y,vy:fall,confidence:contact.confidence,valid:true,motion:.falling)
+            let confirmation = TrajectoryPoint(frameIndex:release.frameIndex,timestampMs:release.timestampMs,
+                x:release.x,y:release.y,vy:-rise,confidence:release.confidence,valid:true,motion:.rising)
+            guard let touch = evaluate(apex:impact,confirmation:confirmation,arcTopY:approach.y,
+                impulse:fall+rise,requiresMeasuredFoot:true) else { return nil }
+            resetArc(restartTopY:release.y)
+            touches.append(touch); lastTouchMs = touch.timestampMs
+            return touch
         }
         return nil
     }
@@ -812,6 +869,7 @@ nonisolated final class TouchStateMachine {
                 return reject(.groundBounce)
             }
             if plantedFeetConfirmed == true || groundEvidence?.needsPositiveFootContact == true
+                || (config.requiresResolvedEdgeFootContact == true && groundEvidence?.hasUnresolvedEdgeFoot == true)
                 || (config.requiresDistantLowFootProof == true && groundEvidence?.hasDistantLowBall == true) {
                 // A resolved kick can still rescue the contact. Reuse a prior
                 // check when the body-box ground gate already requested it.

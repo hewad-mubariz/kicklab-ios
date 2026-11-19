@@ -9,6 +9,7 @@ import Foundation
 nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
     /// Diagnostic opt-out is also included in the analysis cache signature.
     static let enabled = CountingPolicy.current.verifiesContacts
+    var auxiliaryFootEvidence: ((Int) -> FootContactEvidence?)?
     private var usesContactEvidenceV16 = false
     private var requiresPositiveLowContact = false
     private var usesFloorEvidenceV18 = false
@@ -161,6 +162,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
         guard let frame = frames.first(where: { $0.index == frameIndex }) else {
             if policy.usesObservedImpact, recoverObservedLeg(at: frameIndex) { return true }
             if measuredAdjacentFoot(at: frameIndex) != nil { return true }
+            if auxiliaryFootEvidence?(frameIndex)?.confirms == true { return true }
             bodyFailures[frameIndex] = bodyFailures[frameIndex] ?? .missingBall
             return false
         }
@@ -182,7 +184,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
         if failure != nil, lastError == nil,
            allowsHeadKneeFootContact(at: frameIndex, recordEvidence: false) { return true }
         if failure == .lowContactNeedsFootEvidence, lastError == nil,
-           footEvidence(at: frameIndex)?.confirms == true { return true }
+           (footEvidence(at: frameIndex)?.confirms == true || auxiliaryFootEvidence?(frameIndex)?.confirms == true) { return true }
         if usesVisibleFootV21, failure == .lowContactNeedsFootEvidence || policy.allowsObservedLegRecovery(after: failure), lastError == nil,
            groundEvidence(at: frameIndex, timed: true)?.confirmsCompactFootContact == true { return true }
         if failure != nil, policy.usesMovingFoot, lastError == nil,
@@ -295,7 +297,7 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
         // a raised kick despite an arm projecting nearby. Ground has already
         // been checked; hand and holding vetoes still run after eligibility.
         if usesToeContactV20, policy.allowsObservedLegRecovery(after: failure), lastError == nil,
-           footEvidence(at: frameIndex)?.confirms == true { return true }
+           (footEvidence(at: frameIndex)?.confirms == true || auxiliaryFootEvidence?(frameIndex)?.confirms == true) { return true }
         if usesMeasuredFootV22, ContactRecheckPolicy.usesLateApproach(), failure == .handsNearBall,
            recoverMeasuredEarlierImpact(at: frame) { return true }
         bodyFailures[frameIndex] = lastError == nil ? failure : .missingPose

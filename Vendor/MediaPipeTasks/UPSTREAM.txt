@@ -1,0 +1,19 @@
+Google MediaPipeTasks 1.2.2. Unmodified binaries, pinned by upstream SHA-256.
+Source: https://github.com/google-ai-edge/mediapipe/tree/5b6fea33b95a78ae3dc61f4ed96a2f7df85a672e
+
+The local SwiftPM wrapper includes only the Common, Graphs and Vision binaries.
+The wrapper source, privacy manifest and Apache-2.0 license come from the same
+upstream version previously used by this project. It links Objective-C classes,
+C++ and required Apple frameworks. config/MediaPipePose.xcconfig force-loads the
+graph archive in the app target, matching the qualified Counter V2 research build.
+Hosted tests resolve private graph registrations through their app host.
+
+Counter V2 uses CPU PoseLandmarker image mode, up to two poses, and the pinned Full
+model. It invokes the auxiliary provider selectively from native contact checks;
+the retired per-frame ShoeContactRecovery implementation is not restored.
+Heavy, Text, Audio, Retrieval and Decision SDK/model candidates are not bundled.
+
+Run scripts/install-counter-pose-model.py before building. SwiftPM downloads and
+verifies the three SDK archives automatically. CounterV2IntegrationTests exercises
+real image inference, a blank exposure, reacquisition and provider warmup so an
+otherwise successful link cannot conceal missing registration dependencies.

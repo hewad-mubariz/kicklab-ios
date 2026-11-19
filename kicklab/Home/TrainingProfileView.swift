@@ -3,6 +3,7 @@ import SwiftUI
 struct TrainingProfileView: View {
     let personalBest: Int
     @Binding var appearance: String
+    var isTabRoot = false
     @EnvironmentObject private var account: AccountStore
     @EnvironmentObject private var player: PlayerStore
     @AppStorage("kicklab.profile.displayName") private var displayName = ""
@@ -115,11 +116,13 @@ struct TrainingProfileView: View {
             .navigationTitle(String(localized: "Profile", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Close profile", systemImage: "xmark") { dismiss() }
-                        .labelStyle(.iconOnly)
-                        .accessibilityIdentifier("profile-close")
-                        .disabled(account.isDeleting)
+                if !isTabRoot {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Close profile", systemImage: "xmark") { dismiss() }
+                            .labelStyle(.iconOnly)
+                            .accessibilityIdentifier("profile-close")
+                            .disabled(account.isDeleting)
+                    }
                 }
             }
             .fullScreenCover(isPresented: $showsSignIn) {

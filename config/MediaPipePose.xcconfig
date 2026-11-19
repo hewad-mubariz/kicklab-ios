@@ -1,0 +1,3 @@
+// Keep the same full graph registration as the qualified Counter V2 build.
+// Apply to the app only; hosted tests resolve these symbols through their host.
+OTHER_LDFLAGS = $(inherited) -Xlinker -force_load -Xlinker "$(BUILT_PRODUCTS_DIR)/MediaPipeTaskGraphs_library.a"

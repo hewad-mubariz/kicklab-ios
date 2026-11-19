@@ -23,6 +23,10 @@ if [[ "$lane" == release || "$lane" == logic || "$lane" == all ]]; then
     echo "INCOMPLETE: install the manifest-pinned shared RF package with scripts/install-rf-model.py SOURCE.mlpackage"
     exit 2
   fi
+  if ! python3 scripts/install-counter-pose-model.py --check; then
+    echo "INCOMPLETE: install the pinned Full pose model with scripts/install-counter-pose-model.py"
+    exit 2
+  fi
 fi
 
 if [[ "$lane" == release || "$lane" == all ]]; then

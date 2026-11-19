@@ -85,13 +85,16 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
     /// Nil preserves every historical verdict and its numeric replay.
     var checksVisibleForefoot: Bool? = nil
     var checksVisibleToePulse: Bool? = nil
+    /// Only explicitly observed toes may arrive inside the ball's central
+    /// contact disk. Native ankle evidence and historical traces omit this.
+    var observesForefootToes: Bool? = nil
     var visibleFootProof: VisibleForefootContactRules.Proof? {
         guard checksVisibleForefoot == true else { return nil }
         let views=(compactFootSamples ?? samples).map {
             FootContactRules.Sample(timestampMs:$0.timestampMs,ballX:$0.ballX,ballY:$0.ballY,
                   width:$0.width,height:$0.height,confidence:$0.confidence,ankles:$0.ankles,hips:$0.hips)
         }
-        return VisibleForefootContactRules.proof(views,proposedMs:contactMs)
+        return VisibleForefootContactRules.proof(views,proposedMs:contactMs,observesToes:observesForefootToes == true)
             ?? (checksVisibleToePulse == true ? VisibleToePulseRules.proof(views,proposedMs:contactMs) : nil)
     }
 
@@ -310,6 +313,43 @@ nonisolated struct GroundContactEvidence: Codable, Equatable, Sendable {
                 let feet = supported.map { $0.ankles[side.opposite]! }
                 if feet.map(\.x).max()!-feet.map(\.x).min()! <= 0.1*s.width,
                    feet.map(\.y).max()!-feet.map(\.y).min()! <= 0.1*s.height { return true }
+            }
+        }
+        return false
+    }
+
+    /// Uncertainty only: a low ball reaches the image edge beside a weak foot
+    /// whose toes may be outside the image. A stable opposite foot establishes
+    /// the low region; this does not prove that the ball struck the floor.
+    var hasUnresolvedEdgeFoot: Bool {
+        let ordered = samples.sorted { $0.timestampMs < $1.timestampMs }
+        guard Set(ordered.map(\.timestampMs)).count == ordered.count else { return false }
+        func valid(_ p: PoseLandmark, minimum: Double) -> Bool {
+            [p.x,p.y,p.confidence].allSatisfy(\.isFinite)
+                && (0...1).contains(p.x) && (0...1).contains(p.y)
+                && (minimum...1).contains(p.confidence)
+        }
+        for sample in ordered where abs(sample.timestampMs-contactMs) <= 34 {
+            guard [sample.ballX,sample.ballY,sample.width,sample.height,sample.confidence].allSatisfy(\.isFinite),
+                  sample.width > 0, sample.height > 0, (0.7...1).contains(sample.confidence),
+                  sample.ballX-sample.width/2 >= 0, sample.ballX+sample.width/2 <= 1,
+                  sample.ballY-sample.height/2 >= 0, sample.ballY+sample.height/2 <= 1 else { continue }
+            for side in BodySide.allCases {
+                guard let foot = sample.ankles[side], valid(foot, minimum:0.3), foot.confidence < 0.5,
+                      let support = sample.ankles[side.opposite], valid(support, minimum:0.6),
+                      sample.ballY >= support.y-0.25*sample.height,
+                      sample.ballY-foot.y >= 0.2*sample.height,
+                      hypot((sample.ballX-foot.x)/sample.width,(sample.ballY-foot.y)/sample.height) <= 0.9 else { continue }
+                let leftEdge = sample.ballX-sample.width/2 <= 0.05*sample.width && foot.x <= 0.25*sample.width
+                let rightEdge = 1-sample.ballX-sample.width/2 <= 0.05*sample.width && 1-foot.x <= 0.25*sample.width
+                guard leftEdge || rightEdge else { continue }
+                let nearby = ordered.filter { abs($0.timestampMs-sample.timestampMs) <= 134 }
+                guard nearby.contains(where: { (40...134).contains(sample.timestampMs-$0.timestampMs) }),
+                      nearby.contains(where: { (40...134).contains($0.timestampMs-sample.timestampMs) }),
+                      nearby.allSatisfy({ $0.ankles[side.opposite].map { valid($0,minimum:0.6) } == true }) else { continue }
+                let anchors = nearby.map { $0.ankles[side.opposite]! }
+                if anchors.map(\.x).max()!-anchors.map(\.x).min()! <= 0.1*sample.width,
+                   anchors.map(\.y).max()!-anchors.map(\.y).min()! <= 0.1*sample.height { return true }
             }
         }
         return false

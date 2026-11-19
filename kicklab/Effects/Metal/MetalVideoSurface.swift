@@ -17,11 +17,13 @@ struct MetalVideoSurface: UIViewRepresentable {
     let player: AVPlayer
     let edit: SessionEditState
     let track: BallEffectTrack
+    var onFirstFrame: () -> Void = { }
     var onFailure: (String) -> Void = { _ in }
 
     func makeUIView(context: Context) -> EffectVideoView { EffectVideoView() }
     func updateUIView(_ view: EffectVideoView, context: Context) {
         view.onFailure = onFailure
+        view.onFirstFrame = onFirstFrame
         view.configure(player: player, edit: edit, track: track)
     }
     static func dismantleUIView(_ view: EffectVideoView, coordinator: ()) { view.stop() }
@@ -112,6 +114,8 @@ final class EffectVideoView: MTKView {
     /// Frames sent to the screen; the phone check reads the replay's pace from it.
     private(set) var presentedFrameCount = 0
     private var reportedError = false
+    private var completedFirstFrame = false
+    var onFirstFrame: () -> Void = { }
     private var requestedCrystalPreparation = false
     var onFailure: (String) -> Void = { _ in }
     #if DEBUG
@@ -205,6 +209,7 @@ final class EffectVideoView: MTKView {
         }
         #endif
         guard item !== player.currentItem else { return }
+        completedFirstFrame = false
         if let item, let output { item.remove(output) }
         item = player.currentItem
         let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [
@@ -398,11 +403,19 @@ final class EffectVideoView: MTKView {
             command.present(drawable)
             let retainedPixels = framePixels, used = material
             let semaphore = inFlight
+            let firstFrameItem = completedFirstFrame ? nil : item
             command.addCompletedHandler { [weak self] completed in
                 withExtendedLifetime((videoReference, retainedPixels, used)) {}
                 used?.release()
                 semaphore.signal()
                 if let error = completed.error { Task { @MainActor [weak self] in self?.report(error) } }
+                else if let firstFrameItem {
+                    Task { @MainActor [weak self] in
+                        guard let self, self.item === firstFrameItem, !self.completedFirstFrame else { return }
+                        self.completedFirstFrame = true
+                        self.onFirstFrame()
+                    }
+                }
             }
             command.commit(); submitted = true; presentedFrameCount += 1
             if liveSource != nil { isHidden = false }

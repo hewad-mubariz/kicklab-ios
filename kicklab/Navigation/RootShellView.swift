@@ -5,31 +5,41 @@ import SwiftUI
 struct RootShellView: View {
     @EnvironmentObject private var account: AccountStore
     @EnvironmentObject private var player: PlayerStore
+    @Environment(\.colorScheme) private var scheme
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.openURL) private var openURL
     @AppStorage("kicklab.appearance") private var appearance = "system"
     @AppStorage("kicklab.welcome.completed") private var hasEnteredApp = false
     @AppStorage(JugglingRecords.bestKey) private var personalBest = 0
+    @AppStorage("kicklab.profile.displayName") private var guestName = ""
+    @AppStorage(ProfilePhoto.versionKey) private var guestPhotoVersion = 0
+    @State private var showsProfile = false
+    @Namespace private var zoom
     @State private var capture: HomeCapture?
     @State private var sheet: HomeSheet?
     @State private var showImport = false
     @State private var importedVideo: PhotosPickerItem?
-    @State private var showsLeaderboard = false
-    @State private var recordsAfterLeaderboard = false
-    @State private var showsProfile = false
+    @State private var selectedTab: AppTab = .home
     @State private var showsHistory = false
     @State private var showsUpdateAlert = false
     @ObservedObject private var updateNotice = AppUpdateNotice.shared
     @ObservedObject private var adMeasurement = MetaAdsMeasurement.shared
     @ObservedObject private var notificationNavigation = AppNotificationNavigation.shared
     @ObservedObject private var practiceNotifications = PracticeNotifications.shared
-    @Namespace private var zoom
     private var accountBest: Int { account.user == nil ? personalBest : player.personalBest }
-
-    private var homeIsReadyForNotice: Bool {
-        hasEnteredApp && scenePhase == .active && capture == nil && sheet == nil &&
-        !showImport && !showsLeaderboard && !showsProfile && !showsHistory
+    /// The name the profile shows; Home greets with its first word.
+    private var homeName: String? {
+        let name = account.user == nil ? guestName : (player.profile?.displayName ?? account.user?.name ?? "")
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
+
+    private var shellIsReady: Bool {
+        hasEnteredApp && scenePhase == .active && capture == nil && sheet == nil &&
+        !showImport && !showsHistory && !showsProfile
+    }
+
+    private var homeIsReadyForNotice: Bool { shellIsReady && selectedTab == .home }
 
     private var canRequestPracticePermission: Bool {
         homeIsReadyForNotice && practiceNotifications.shouldAskAfterSession &&
@@ -45,7 +55,7 @@ struct RootShellView: View {
     }
 
     private var canOpenNotification: Bool {
-        homeIsReadyForNotice && !showsUpdateAlert && !adMeasurement.isRequesting &&
+        shellIsReady && !showsUpdateAlert && !adMeasurement.isRequesting &&
         !practiceNotifications.isRequestingSessionPermission
     }
 
@@ -72,19 +82,7 @@ struct RootShellView: View {
         Group {
             // The sign-in view hands over itself once signed in, after its "You're in" moment.
             if hasEnteredApp {
-                HomeView(
-                    personalBest: accountBest,
-                    onJuggling: { capture = HomeCapture(mode: .juggling) },
-                    onPowerShot: { capture = HomeCapture(mode: .powerShot) },
-                    onImport: { showImport = true },
-                    onProfile: { showsProfile = true },
-                    onSetupGuide: { sheet = .setup },
-                    onLeaderboard: { showsLeaderboard = true },
-                    onLeaderboardRules: { sheet = .leaderboardRules },
-                    onHistory: { showsHistory = true },
-                    leaderboardZoom: zoom,
-                    profileZoom: zoom
-                )
+                mainTabs
             } else {
                 SignInView(presentation: .welcome) {
                     hasEnteredApp = true
@@ -148,30 +146,21 @@ struct RootShellView: View {
         .onChange(of: showImport) { _, _ in openImportedVideoIfReady() }
         .onChange(of: notificationNavigation.pending, initial: true) { _, _ in openNotificationIfReady() }
         .onChange(of: canOpenNotification) { _, _ in openNotificationIfReady() }
+        .task(id: notificationNavigation.pending?.id) {
+            // A tab may own a sheet (profile editing, rules, player details).
+            // Keep the request pending until that presentation has finished.
+            while notificationNavigation.pending != nil {
+                openNotificationIfReady()
+                do { try await Task.sleep(for: .milliseconds(300)) } catch { return }
+            }
+        }
         .fullScreenCover(item: $capture) { destination in
             switch destination.mode {
             case .juggling:
-                RecordView(initialVideo: destination.importedVideo)
+                RecordView(initialVideo: destination.importedVideo, challengeTarget: destination.challengeTarget)
             case .powerShot:
                 BallDistanceView()
             }
-        }
-        .fullScreenCover(isPresented: $showsLeaderboard, onDismiss: {
-            if recordsAfterLeaderboard {
-                recordsAfterLeaderboard = false
-                capture = HomeCapture(mode: .juggling)
-            }
-        }) {
-            LeaderboardView(yourName: account.user?.name, onClose: { showsLeaderboard = false }, onRecord: {
-                recordsAfterLeaderboard = true; showsLeaderboard = false
-            })
-                .leaderboardZoom(in: zoom)
-                .preferredColorScheme(preferredScheme)
-        }
-        .fullScreenCover(isPresented: $showsProfile) {
-            TrainingProfileView(personalBest: accountBest, appearance: $appearance)
-            .navigationTransition(.zoom(sourceID: "profile", in: zoom))
-            .preferredColorScheme(preferredScheme)
         }
         .sheet(item: $sheet) { destination in
             switch destination {
@@ -179,9 +168,79 @@ struct RootShellView: View {
             case .leaderboardRules: LeaderboardRulesView()
             }
         }
+        .fullScreenCover(isPresented: $showsProfile) {
+            TrainingProfileView(personalBest: accountBest, appearance: $appearance)
+                .navigationTransition(.zoom(sourceID: "profile", in: zoom))
+                .preferredColorScheme(preferredScheme)
+        }
         .sheet(isPresented: $showsHistory) {
             SessionHistoryView(store: player.history)
                 .preferredColorScheme(preferredScheme)
+        }
+    }
+
+    private var mainTabs: some View {
+        TabView(selection: $selectedTab) {
+            Tab(value: AppTab.home) {
+                HomeSessionsObserver(store: player.history) { sessions in
+                    HomeView(
+                        personalBest: accountBest,
+                        onJuggling: { capture = HomeCapture(mode: .juggling) },
+                        onPowerShot: { capture = HomeCapture(mode: .powerShot) },
+                        onImport: { showImport = true },
+                        onProfile: { showsProfile = true },
+                        onSetupGuide: { sheet = .setup },
+                        onLeaderboard: { selectedTab = .leaderboard },
+                        onLeaderboardRules: { sheet = .leaderboardRules },
+                        onHistory: { showsHistory = true },
+                        profileZoom: zoom,
+                        showsDestinationShortcuts: false,
+                        sessions: sessions,
+                        playerName: homeName,
+                        onGoal: { target in capture = HomeCapture(mode: .juggling, challengeTarget: target) },
+                        profilePhoto: HomeProfilePhoto(accountPhoto: account.user == nil ? nil : player.avatarData,
+                                                       guestVersion: account.user == nil ? guestPhotoVersion : nil)
+                    )
+                }
+                .customTabBarSpace()
+            } label: {
+                Label("Home", systemImage: "house")
+            }
+            Tab(value: AppTab.learn) {
+                LearnHubView()
+                    .customTabBarSpace()
+            } label: {
+                Label("Learn", systemImage: "graduationcap")
+            }
+            Tab(value: AppTab.challenges) {
+                JugglingChallengesView(personalBest: accountBest) { target in
+                    capture = HomeCapture(mode: .juggling, challengeTarget: target)
+                }
+                .customTabBarSpace()
+            } label: {
+                Label("Challenges", systemImage: "flag.checkered")
+            }
+            Tab(value: AppTab.wallGame) {
+                WallGameHubView()
+                    .customTabBarSpace()
+            } label: {
+                Label("Wall Game", systemImage: "square.grid.3x2")
+            }
+            Tab(value: AppTab.leaderboard) {
+                LeaderboardView(yourName: account.user?.name, onRecord: {
+                    capture = HomeCapture(mode: .juggling)
+                })
+                .customTabBarSpace()
+            } label: {
+                Label("Leaderboard", systemImage: "trophy")
+            }
+        }
+        .tint(TrainingHomeStyle.accent(preferredScheme ?? scheme))
+        // Experiment: our own bar, so the icons can animate (see AnimatedTabBar).
+        .overlay(alignment: .bottom) { AnimatedTabBar(selection: $selectedTab) }
+        // A leaderboard place belongs to the account that earned it.
+        .onChange(of: account.user?.id) { _, _ in
+            JuggleWidgetData.update { data in data.weekRank = nil; data.allTimeRank = nil }
         }
     }
 
@@ -210,17 +269,28 @@ struct RootShellView: View {
 
     private func openNotificationIfReady() {
         guard let request = notificationNavigation.pending else { return }
-        if request.destination == .leaderboard && showsLeaderboard {
+        if request.destination == .leaderboard && selectedTab == .leaderboard {
             notificationNavigation.consume()
             return
         }
-        guard canOpenNotification else { return }
+        guard canOpenNotification, !hasPresentedScreen else { return }
         notificationNavigation.consume()
         // Wait for active work to close. A tap never starts recording or discards a replay.
         switch request.destination {
         case .practice: capture = HomeCapture(mode: .juggling)
-        case .leaderboard: showsLeaderboard = true
+        case .leaderboard: selectedTab = .leaderboard
         }
+    }
+
+    private var hasPresentedScreen: Bool {
+        func isPresenting(_ controller: UIViewController) -> Bool {
+            controller.presentedViewController != nil || controller.isBeingDismissed ||
+            controller.children.contains(where: isPresenting)
+        }
+        return UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+            .filter { $0.activationState == .foregroundActive }
+            .flatMap(\.windows).filter(\.isKeyWindow)
+            .compactMap(\.rootViewController).contains(where: isPresenting)
     }
 }
 
@@ -229,6 +299,7 @@ private struct HomeCapture: Identifiable {
     let id = UUID()
     let mode: Mode
     var importedVideo: PhotosPickerItem?
+    var challengeTarget: Int?
 }
 
 private enum HomeSheet: String, Identifiable {

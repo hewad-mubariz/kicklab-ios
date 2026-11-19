@@ -16,7 +16,7 @@ final class HomeNavigationTests: XCTestCase {
         XCTAssertTrue(app.buttons["module-juggling"].isEnabled)
         XCTAssertTrue(app.buttons["module-power-shot"].isEnabled)
         XCTAssertFalse(app.buttons["module-target-shooting"].exists)
-        XCTAssertFalse(app.buttons["tab-home"].exists)
+        XCTAssertTrue(app.mainTab("home").exists)
         XCTAssertEqual(app.descendants(matching: .any)["home-personal-best"].label,
                        "Personal best streak, 42 consecutive touches")
 
@@ -101,8 +101,11 @@ final class HomeNavigationTests: XCTestCase {
         XCUIDevice.shared.orientation = .portrait
         app.launchArguments += ["-kicklab.welcome.completed", "YES"]
         app.launch()
-        XCTAssertTrue(app.buttons["module-power-shot"].waitForExistence(timeout: 10))
-        app.buttons["module-power-shot"].tap()
+        let ballDistance = app.buttons["module-power-shot"]
+        XCTAssertTrue(ballDistance.waitForExistence(timeout: 10))
+        // Ball Distance sits below the Home stage, under the tab bar until scrolled.
+        for _ in 0..<4 where !ballDistance.isHittable { app.swipeUp() }
+        ballDistance.tap()
         XCTAssertTrue(app.staticTexts["power-shot-title"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.switches["roll-distance-toggle"].exists)
         XCTAssertTrue(app.buttons["roll-calibrate"].exists)

@@ -49,7 +49,7 @@ final class LeaderboardUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-review-count", "0"]
         app.launch()
-        let open = app.buttons["home-leaderboard"]
+        let open = app.mainTab("leaderboard")
         XCTAssertTrue(open.waitForExistence(timeout: 10))
         open.tap()
         XCTAssertTrue(app.descendants(matching: .any)["leaderboard-empty"].waitForExistence(timeout: 20))
@@ -66,8 +66,8 @@ final class LeaderboardUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-preview", "inReview", "-kicklab.appearance", "light"]
         app.launch()
-        XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 10))
-        app.buttons["home-leaderboard"].tap()
+        XCTAssertTrue(app.mainTab("leaderboard").waitForExistence(timeout: 10))
+        app.mainTab("leaderboard").tap()
         let pill = app.buttons["leaderboard-you-pill"]
         XCTAssertTrue(pill.waitForExistence(timeout: 8))
         XCTAssertFalse(pill.label.contains("in review"), pill.label)
@@ -94,8 +94,8 @@ final class LeaderboardUITests: XCTestCase {
         app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-review-count", "1",
                                "--leaderboard-legacy-review", "-kicklab.appearance", "light"]
         app.launch()
-        XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 10))
-        app.buttons["home-leaderboard"].tap()
+        XCTAssertTrue(app.mainTab("leaderboard").waitForExistence(timeout: 10))
+        app.mainTab("leaderboard").tap()
         let first = app.descendants(matching: .any)["leaderboard-pennant-1"]
         XCTAssertTrue(first.waitForExistence(timeout: 8))
         first.tap()
@@ -116,8 +116,8 @@ final class LeaderboardUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-review-count", "1", "-kicklab.appearance", "light"]
         app.launch()
-        XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 10))
-        app.buttons["home-leaderboard"].tap()
+        XCTAssertTrue(app.mainTab("leaderboard").waitForExistence(timeout: 10))
+        app.mainTab("leaderboard").tap()
         let first = app.descendants(matching: .any)["leaderboard-pennant-1"]
         XCTAssertTrue(first.waitForExistence(timeout: 5))
         let settled = expectation(description: "Pennant reveal settles")
@@ -177,8 +177,8 @@ final class LeaderboardUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-review-count", "1", "-kicklab.appearance", "light"]
         app.launch()
-        XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 10))
-        app.buttons["home-leaderboard"].tap()
+        XCTAssertTrue(app.mainTab("leaderboard").waitForExistence(timeout: 10))
+        app.mainTab("leaderboard").tap()
         let first = app.descendants(matching: .any)["leaderboard-pennant-1"]
         XCTAssertTrue(first.waitForExistence(timeout: 5))
         func expectScore(_ score: Int) {
@@ -214,7 +214,7 @@ final class LeaderboardUITests: XCTestCase {
         app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-samples",
                                "-kicklab.juggling.bestStreak", "350", "-kicklab.appearance", "dark"]
         app.launch()
-        let open = app.buttons["home-leaderboard"]
+        let open = app.mainTab("leaderboard")
         XCTAssertTrue(open.waitForExistence(timeout: 10))
         open.tap()
 
@@ -239,9 +239,10 @@ final class LeaderboardUITests: XCTestCase {
         bottom.name = "leaderboard-ten-players-list"
         bottom.lifetime = .keepAlways
         add(bottom)
-        app.buttons["leaderboard-close"].tap()
+        app.mainTab("home").tap()
         open.tap()
-        XCTAssertTrue(app.buttons["leaderboard-period-week"].isHittable, "Reopening starts at the top")
+        XCTAssertTrue(last.isHittable, "Switching tabs preserves the board’s scroll position")
+        for _ in 0..<5 where !app.buttons["leaderboard-period-week"].isHittable { app.swipeDown() }
         XCTAssertTrue(first.isHittable)
 
         app.buttons["leaderboard-period-all-time"].tap()
@@ -254,7 +255,7 @@ final class LeaderboardUITests: XCTestCase {
         first.tap()
         XCTAssertTrue(app.buttons["leaderboard-player-close"].waitForExistence(timeout: 3))
         app.buttons["leaderboard-player-close"].tap()
-        app.buttons["leaderboard-close"].tap()
+        app.mainTab("home").tap()
         XCTAssertTrue(open.waitForExistence(timeout: 5))
     }
 }

@@ -191,18 +191,51 @@ final class CaptureFlowUITests: ProReplayUITestCase {
         app.launch()
         XCTAssertTrue(app.buttons["replay-export"].waitForExistence(timeout: 15))
         openTool("ball", in: app)
-        for skin in ["goldPolish", "prism", "wave", "nightPulse", "classic"] {
-            let option = app.buttons["ball-picker-\(skin)"]
-            XCTAssertTrue(option.waitForExistence(timeout: 5), skin)
-            XCTAssertTrue(option.isHittable, "\(skin) is on screen")
+        // The page opens on the set holding the ball in use: Original leads Classic.
+        XCTAssertTrue(app.buttons["ball-set-classic"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["ball-set-classic"].isSelected)
+        for skin in ["original", "classic", "gold"] {
+            XCTAssertTrue(app.buttons["ball-picker-\(skin)"].isHittable, "\(skin) is on screen")
+        }
+        let folder = ProcessInfo.processInfo.environment["BALL_PAGE_SHOTS"] ?? ""
+        func shoot(_ name: String) {
+            attach(app, "Ball page - \(name)")
+            if !folder.isEmpty {
+                try? app.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: folder).appendingPathComponent("ball-\(name).png"))
+            }
+        }
+        shoot("classic")
+        // Every set fits on screen at once, so each of its balls is hittable without scrolling.
+        let sets: [(String, [String])] = [
+            ("crafted", ["kintsugi", "meteorRelic"]), ("match", ["apexCarbon", "crownBlack"]),
+            ("arcade", ["discoMirror", "goalGlobe"]), ("shine", ["goldPolish", "prism", "wave", "nightPulse", "volt"])]
+        for (set, skins) in sets {
+            app.buttons["ball-set-\(set)"].tap()
+            XCTAssertTrue(app.buttons["ball-set-\(set)"].isSelected, set)
+            for skin in skins {
+                let option = app.buttons["ball-picker-\(skin)"]
+                XCTAssertTrue(option.waitForExistence(timeout: 5), skin)
+                XCTAssertTrue(option.isHittable, "\(skin) is on screen")
+            }
+            Thread.sleep(forTimeInterval: 0.6)
+            shoot(set)
         }
         app.buttons["ball-picker-prism"].tap()
         XCTAssertTrue(app.buttons["ball-picker-prism"].isSelected)
+        Thread.sleep(forTimeInterval: 0.2)
+        shoot("prism-hop")
         Thread.sleep(forTimeInterval: 1)
-        attach(app, "Ball page - lab skins")
-        if let folder = ProcessInfo.processInfo.environment["BALL_PAGE_SHOTS"], !folder.isEmpty {
-            try? app.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: folder).appendingPathComponent("ball-page.png"))
-        }
+        shoot("prism-picked")
+        // Back on Classic, the Shine segment carries the dot for the ball in use.
+        app.buttons["ball-set-classic"].tap()
+        Thread.sleep(forTimeInterval: 0.6)
+        shoot("classic-with-dot")
+        // A sideways swipe moves to the next set.
+        app.buttons["ball-picker-gold"].swipeLeft()
+        let crafted = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isSelected == true"),
+                                                object: app.buttons["ball-set-crafted"])
+        XCTAssertEqual(XCTWaiter.wait(for: [crafted], timeout: 3), .completed, "Swiping left opens the next set")
+        shoot("swiped-to-crafted")
     }
 
     /// Paced taps for a screen recording of the tray opening each page (TRAY_TIMING_REVIEW).

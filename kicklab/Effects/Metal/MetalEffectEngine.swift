@@ -118,6 +118,7 @@ nonisolated final class MetalEffectEngine {
     private var labBackground: MTLTexture?
     private var labField: MTLTexture?
     private var water: WaterLabRenderer?
+    private var labBridge: LabBridgeRenderer?
     /// Set by the editor's live preview: Crystal draws lighter there, saved videos in full.
     var livePreview = false
 
@@ -262,8 +263,20 @@ nonisolated final class MetalEffectEngine {
                 return
             }
         }
+        if let lab = frame.labBridge, !frame.counter, frame.intensity > 0.005, frame.visibility > 0.005,
+           source != nil || frame.labBackdrop != nil {
+            if labBridge == nil { labBridge = try? LabBridgeRenderer(device: device) }
+            if let labBridge, let early = resources.queue.makeCommandBuffer() {
+                // The lab renderers commit their own GPU work: finish the background first.
+                let background = try labBackground(frame, target: target, source: source, material: material,
+                                                   backdrop: frame.labBackdrop, command: early)
+                early.commit(); early.waitUntilCompleted()
+                try labBridge.render(lab, source: background, target: target)
+                return
+            }
+        }
         // A lab effect without its touches and track (style 30 and up) has nothing to draw.
-        let labWithoutScene = frame.style >= 30 && frame.liquid == nil && frame.water == nil && frame.crystal == nil
+        let labWithoutScene = frame.style >= 30 && frame.liquid == nil && frame.water == nil && frame.crystal == nil && frame.labBridge == nil
         if !frame.counter && (frame.style < 0.5 || frame.intensity <= 0.005 || frame.visibility <= 0.005 || labWithoutScene) {
             // An explicit off frame never consumes cached flame/bloom textures.
             // Still composite an independently selected ball material or grade.

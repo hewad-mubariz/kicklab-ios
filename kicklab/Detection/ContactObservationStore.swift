@@ -44,6 +44,8 @@ nonisolated final class ContactObservationStore {
     private(set) var lastError: String?
     private var warmed = false
     private let followsVideoLifecycle: Bool
+    let predictionStore: PosePredictionStore?
+    private let handCPUOnly: Bool
     private let requestUsesCPUOnly: Bool
     private let request = VNDetectHumanBodyPoseRequest()
     private let usesVisionRevision2 = ContactRecoveryPolicy.usesVisionRevision2
@@ -66,14 +68,16 @@ nonisolated final class ContactObservationStore {
         poseProfile["pose_" + name, default: 0] += value
     }
 
-    init() {
+    init(predictionStore: PosePredictionStore? = nil) {
+        self.predictionStore = predictionStore
+        handCPUOnly = VideoWorkExecution.cpuOnly
         followsVideoLifecycle = ContactPoseComputePolicy.followsVideoLifecycle()
         // Prepare a separate CPU request for video jobs. The automatic request
         // is reused in foreground; neither switch discards cached landmarks.
         requestUsesCPUOnly = followsVideoLifecycle || VideoWorkExecution.cpuOnly
         do {
             try VisionComputePolicy.configure(request, cpuOnly: requestUsesCPUOnly)
-            try VisionComputePolicy.configure(handRequest)
+            try VisionComputePolicy.configure(handRequest, cpuOnly: handCPUOnly)
         }
         catch { lastError = error.localizedDescription }
     }
@@ -112,6 +116,7 @@ nonisolated final class ContactObservationStore {
     /// No camera image or every-frame pose inference is needed for warmup.
     func warmUp() {
         guard !warmed, lastError == nil else { return }
+        if predictionStore != nil { warmed = true; return }
         let start = ProcessInfo.processInfo.systemUptime
         defer { warmUpMS = (ProcessInfo.processInfo.systemUptime - start) * 1000 }
         var pixels: CVPixelBuffer?
@@ -194,9 +199,12 @@ nonisolated final class ContactObservationStore {
 
     func hands(for frame: Frame, recordErrors: Bool = true) -> [[HandLandmark]]? {
         do {
+            let key = try predictionStore.map { _ in try PosePredictionStore.key(pixels:frame.pixels,
+                kind:"hand|revision=\(handRequest.revision)|cpu=\(handCPUOnly)|up|decode-v1") }
+            if let key, let saved = try predictionStore?.lookup([[HandLandmark]].self,key:key) { return saved }
             handPoseRequests += 1
             try VNImageRequestHandler(cvPixelBuffer: frame.pixels).perform([handRequest])
-            return try (handRequest.results ?? []).map { observation in
+            let result: [[HandLandmark]] = try (handRequest.results ?? []).map { observation in
                 let recognized = try observation.recognizedPoints(.all)
                 let groups: [[VNHumanHandPoseObservation.JointName]] = [
                     [.wrist], [.thumbIP, .thumbTip], [.indexDIP, .indexTip],
@@ -209,8 +217,10 @@ nonisolated final class ContactObservationStore {
                     }
                 }
             }
+            if let key, let predictionStore { return try predictionStore.store(result,key:key) }
+            return result
         } catch {
-            if recordErrors { lastError = error.localizedDescription }
+            if recordErrors || error is PosePredictionStore.Failure { lastError = error.localizedDescription }
             return nil
         }
     }
@@ -232,49 +242,21 @@ nonisolated final class ContactObservationStore {
             do {
                 poseRequests += 1
                 if usesVisionRevision2, LiveBodyPoseRevision2.isPermitted,
-                   let poses = try? LiveBodyPoseRevision2.poses(in: frame.pixels, session: revision2Session), !poses.isEmpty {
+                   let poses = try revision2Poses(frame.pixels), !poses.isEmpty {
                     let selected = ActivePlayerPoseMatcher.index(in: poses, selection: frame.player)
                     let result = selected.map { poses[$0] } ?? Pose()
                     otherPoseCache[frame.index] = poses.enumerated().filter { $0.offset != selected }.map(\.element)
                     poseCache[frame.index] = result
                     return result
                 }
-                let rawPoses = try performBodyPose(frame.pixels)
-                let names: [(BodyJoint, VNHumanBodyPoseObservation.JointName)] = [
-                    (.nose, .nose), (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
-                    (.leftElbow, .leftElbow), (.rightElbow, .rightElbow),
-                    (.leftWrist, .leftWrist), (.rightWrist, .rightWrist),
-                    (.leftHip, .leftHip), (.rightHip, .rightHip),
-                    (.leftKnee, .leftKnee), (.rightKnee, .rightKnee),
-                    (.leftAnkle, .leftAnkle), (.rightAnkle, .rightAnkle)]
-                let poses: [Pose] = try rawPoses.prefix(8).map { observation in
-                    let recognized = try observation.recognizedPoints(.all)
-                    var result = Pose()
-                    for (name,joint) in names {
-                        guard let point = recognized[joint] else { continue }
-                        if point.confidence >= 0.3 { result.joints[name] = .init(x: point.location.x, y: 1-point.location.y) }
-                        let landmark = PoseLandmark(x: point.location.x, y: 1-point.location.y,
-                                                    confidence: Double(point.confidence))
-                        result.landmarks[name] = landmark
-                        switch name {
-                        case .leftWrist: result.wrists[.left] = landmark
-                        case .rightWrist: result.wrists[.right] = landmark
-                        case .leftHip: result.hips[.left] = landmark
-                        case .rightHip: result.hips[.right] = landmark
-                        case .leftAnkle: result.ankles[.left] = landmark
-                        case .rightAnkle: result.ankles[.right] = landmark
-                        default: break
-                        }
-                    }
-                    return result
-                }
+                let poses = try legacyPoses(frame.pixels)
                 let selected = ActivePlayerPoseMatcher.index(in: poses, selection: frame.player)
                 let result = selected.map { poses[$0] } ?? Pose()
                 otherPoseCache[frame.index] = poses.enumerated().filter { $0.offset != selected }.map(\.element)
                 poseCache[frame.index] = result
                 return result
             } catch {
-                if recordErrors {
+                if recordErrors || error is PosePredictionStore.Failure {
                     lastError = error.localizedDescription
                     discardFrames()
                 }
@@ -283,13 +265,66 @@ nonisolated final class ContactObservationStore {
         }
     }
 
-    private func performBodyPose(_ pixels: CVPixelBuffer, profiling: Bool = true) throws -> [VNHumanBodyPoseObservation] {
+    private func revision2Poses(_ pixels: CVPixelBuffer) throws -> [Pose]? {
+        let key = try predictionStore.map { _ in try PosePredictionStore.key(pixels:pixels,
+            kind:"vision-r2|revision2|hands=false|up|automatic-foreground|decode-v1") }
+        if let key, let saved = try predictionStore?.lookup([Pose].self,key:key) { return saved }
+        let poses: [Pose]
+        do { poses = try LiveBodyPoseRevision2.poses(in:pixels,session:revision2Session) }
+        catch is CancellationError { throw CancellationError() }
+        catch { return nil } // Preserve the native legacy fallback; do not cache failed requests.
+        if let key, let predictionStore { return try predictionStore.store(poses,key:key) }
+        return poses
+    }
+
+    private func legacyPoses(_ pixels: CVPixelBuffer) throws -> [Pose] {
+        func key(_ cpu: Bool) throws -> PosePredictionStore.Key {
+            try PosePredictionStore.key(pixels:pixels,
+                kind:"vision-r1|revision=\(request.revision)|cpu=\(cpu)|up|decode-v1")
+        }
+        let expectedCPU = !(followsVideoLifecycle && ContactPoseComputePolicy.canAccelerate()) && requestUsesCPUOnly
+        if let predictionStore, let saved = try predictionStore.lookup([Pose].self,key:try key(expectedCPU)) { return saved }
+        let result = try performBodyPose(pixels)
+        let rawPoses = result.observations
+        let names: [(BodyJoint, VNHumanBodyPoseObservation.JointName)] = [
+            (.nose, .nose), (.leftShoulder, .leftShoulder), (.rightShoulder, .rightShoulder),
+            (.leftElbow, .leftElbow), (.rightElbow, .rightElbow),
+            (.leftWrist, .leftWrist), (.rightWrist, .rightWrist),
+            (.leftHip, .leftHip), (.rightHip, .rightHip),
+            (.leftKnee, .leftKnee), (.rightKnee, .rightKnee),
+            (.leftAnkle, .leftAnkle), (.rightAnkle, .rightAnkle)]
+        let poses: [Pose] = try rawPoses.prefix(8).map { observation in
+            let recognized = try observation.recognizedPoints(.all)
+            var result = Pose()
+            for (name,joint) in names {
+                guard let point = recognized[joint] else { continue }
+                if point.confidence >= 0.3 { result.joints[name] = .init(x: point.location.x, y: 1-point.location.y) }
+                let landmark = PoseLandmark(x: point.location.x, y: 1-point.location.y,
+                                            confidence: Double(point.confidence))
+                result.landmarks[name] = landmark
+                switch name {
+                case .leftWrist: result.wrists[.left] = landmark
+                case .rightWrist: result.wrists[.right] = landmark
+                case .leftHip: result.hips[.left] = landmark
+                case .rightHip: result.hips[.right] = landmark
+                case .leftAnkle: result.ankles[.left] = landmark
+                case .rightAnkle: result.ankles[.right] = landmark
+                default: break
+                }
+            }
+            return result
+        }
+        if let predictionStore { return try predictionStore.store(poses,key:try key(result.cpuOnly)) }
+        return poses
+    }
+
+    private func performBodyPose(_ pixels: CVPixelBuffer, profiling: Bool = true) throws -> (observations: [VNHumanBodyPoseObservation], cpuOnly: Bool) {
         let accelerated = followsVideoLifecycle && ContactPoseComputePolicy.canAccelerate()
         let selected = accelerated ? acceleratedRequest : request
         do {
             if profiling { profile(accelerated || !requestUsesCPUOnly ? "accelerated_requests" : "cpu_requests") }
             try VNImageRequestHandler(cvPixelBuffer: pixels).perform([selected])
-            return selected.results ?? []
+            return (selected.results ?? [], !accelerated && requestUsesCPUOnly)
         } catch is CancellationError { throw CancellationError() }
         catch {
             // Foreground can end between selecting a request and submitting
@@ -299,7 +334,7 @@ nonisolated final class ContactObservationStore {
             if VideoWorkExecution.lease?.isCancelled == true { throw CancellationError() }
             if profiling { profile("transition_retries"); profile("cpu_requests") }
             try VNImageRequestHandler(cvPixelBuffer: pixels).perform([request])
-            return request.results ?? []
+            return (request.results ?? [], requestUsesCPUOnly)
         }
     }
 }

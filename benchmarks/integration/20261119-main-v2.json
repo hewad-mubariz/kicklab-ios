@@ -1,0 +1,69 @@
+{
+  "date": "2026-11-19",
+  "purpose": "Local integration of the V2 design and qualified Counter V2 into the main JuggleDude target",
+  "base_commit": "822ca4f0",
+  "release": {
+    "bundle": "com.juggledude",
+    "build": "89",
+    "code_signing": false,
+    "shaders": 29,
+    "all_shaders_match_iphoneos": true,
+    "heavy_bundled": false,
+    "executable_sha256": "e973967a304172f1496ef4a38c1b2a51d914ca54b3a906d38e81744ff4a18cd2",
+    "full_model_sha256": "5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1"
+  },
+  "tests": {
+    "platform": "iOS 27.0 Simulator, arm64",
+    "result": "Passed",
+    "unique_tests": 162,
+    "passed": 162,
+    "parameterized_executions_passed": 164,
+    "failed": 0,
+    "skipped": 0,
+    "coverage": [
+      "Real Full-model CPU image inference, blank frame and reacquisition; provider warmup",
+      "Versioned counter policy, toe association/ground rules and short observed rebounds",
+      "RF/pose persistence integrity; cancellation, sharing and storage cleanup",
+      "Completed analysis/motion reuse, old large mask sessions and corrupted cache recovery",
+      "Preview conversion reuse and playback-readiness suspension",
+      "Every bridged effect and skin rendered",
+      "V2 Home/Challenges/Learn/Profile/Leaderboard navigation"
+    ],
+    "runtime_warnings": [
+      {
+        "issueType": "Runtime Warning",
+        "message": "[Internal] Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions"
+      },
+      {
+        "issueType": "Runtime Warning",
+        "message": "[Internal] Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions",
+        "sourceURL": "file:///Users/hewadmubariz/.codex/worktrees/counter-pose-research/kicklab/kicklabTests/CounterV2IntegrationTests.swift"
+      }
+    ]
+  },
+  "limits": [
+    "No new physical-phone, live camera, complete import/export, one-hour or PowerShot qualification",
+    "No new end-to-end speed or touch accuracy measurement",
+    "Quick counted-mask preview remains outside main",
+    "Coral first-use distance field is expensive in unoptimized Simulator; all-skin rendering test passed in 359.308 seconds; not a phone performance measurement",
+    "Analytics lab preparation remains separate and is not durably reused across editor visits"
+  ],
+  "defaults": {
+    "counter": "Selective Full-model Counter V2 in camera and Gallery",
+    "shared_preparation_hardware": [
+      "iPhone18,2"
+    ],
+    "ram_prediction_reuse": true,
+    "durable_observation_stores": false,
+    "experimental_powershot_reuse": false,
+    "provisional_preview": false
+  },
+  "setup_attempts": [
+    "Initial Release setup stopped to finish model/package wiring",
+    "Simulator build input declaration corrected for Xcode script sandbox",
+    "Existing iOS 26.5 Simulator launch stalled; run stopped without a completed test result, then isolated iOS 27.0 Simulator passed"
+  ],
+  "evidence": "artifacts/main-integration-20261119/",
+  "source_manifest_sha256": "2fb1a7aabf1ce02d479a058c206327746b0e5bb5954cc4f2abc6efa33b3d4798",
+  "phones_accessed": false
+}

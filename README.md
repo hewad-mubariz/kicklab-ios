@@ -14,6 +14,64 @@ configuration are excluded from Git. Obtain the approved
 shared-function `RFDETRSmallRecovery040FP16.mlpackage` before building;
 configuration templates are in `config/`. Never put server credentials in the app bundle.
 
+Counter V2 also requires `python3 scripts/install-counter-pose-model.py`. It verifies
+the pinned Full pose model; SwiftPM fetches the matching MediaPipe 1.2.2 binaries.
+`python3 scripts/install-counter-pose-model.py --check` verifies a local setup.
+The [19 November integration notes](docs/v2-main-integration-20261119.md) describe
+the combined V2 UI, counting, preparation defaults and research features kept off.
+
+## V2 navigation prototype — 17 November 2026
+
+The signed-in/guest shell uses a native SwiftUI `TabView` with Home, Learn,
+Challenges, Wall Game and Leaderboard. Profile opens full screen from the photo on
+Home. Experiment: the native tab bar is hidden and `AnimatedTabBar` draws a glass bar
+whose icons play a short animation on each tap (Learn: a boot taps a ball up twice;
+Challenges: a stopwatch laps while a ball pops off its crown; wall tile hits; the trophy
+is raised and shaken with a shine; house bounce); Reduce Motion turns them off. Tab switches retain navigation and scroll state. Camera, video import and replay
+remain modal; closing the camera returns to the originating tab. Notification taps select
+that tab directly and defer navigation while recording, replay or another sheet is open.
+
+Challenges starts with four practice goals: 10, 25 and 50 consecutive touches, plus
+one more than the player's recorded personal best. Details explain setup and streak
+rules, then open the existing camera with a goal label. Sessions use the existing
+results and history. This prototype does not yet award challenge completions, run
+timed challenges, or publish community videos. It changes no counting/scoring rules.
+Home opens with "Hey, <first name>", a short line nudging the next session, and the
+player's photo. Below is a dark stage: the best streak on the left, the app's ball skin
+juggling itself on the right with a lime Glow Trail (Core Animation, a new random run
+each time), then Start session and Import. Then come the next practice goal (opens the
+camera with that goal), this week's best sessions as bars topped with the same ball,
+Ball Distance and Session history. Learn is a placeholder until
+the lessons are planned. Home's main button reads "Start juggling".
+
+"Start juggling" also works from outside the app, always through the same pending
+request a practice reminder uses (it waits until nothing else is on screen): the
+`JuggleWidgets` extension (Home Screen and Lock Screen widget opening
+`juggledude://start-juggling`, and a Control Center / Lock Screen / Action Button
+control), the app icon's long-press quick action, and `StartJugglingIntent` for Siri,
+Spotlight and Shortcuts. The intent lives in `Shortcuts/`, built into both targets;
+the extension's ID is the app's plus `.widgets`. The intent, the widget data and the
+card views live in `Shared/`, built into both targets.
+
+The widget is a carousel (small, medium and Lock Screen): best streak, this week,
+days in a row, leaderboard place and next goal. Cards move on every 5 minutes through
+timeline entries; a › button (`NextJuggleCardIntent`) moves one at once; the rest of
+the widget opens the camera. The app writes `JuggleWidgetData` to the App Group
+`group.com.juggledude` from Home (not during UI-test fixtures) and records your place
+when a leaderboard board loads; signing out clears the place. `--widget-review`
+(DEBUG) draws every card in the app for design review.
+Wall Game has a six-target overview and a setup guide for the
+planned v2 mode. The playable experimental camera/projector runtime remains separate
+until its main-app integration is qualified. New copy is included in all five
+supported app languages.
+
+`NativeTabsUITests` covers navigation preservation, camera return, import cancellation,
+German copy and accessibility text sizing. Physical iPhone 11 evidence is recorded in
+`benchmarks/navigation/20261117-native-tabs.json`; screenshots and test bundles are in
+the worktree's ignored `artifacts/v2-tabs/` directory. The five-tab follow-up is recorded
+in `benchmarks/navigation/20261117-wall-game-tab.json`, with screenshots and the passing
+device test bundle in `artifacts/wall-game-tab/`.
+
 ## iOS 18 compatibility — 30 October 2026
 
 The minimum supported OS is iOS 18.0, matching the pinned RF model's runtime

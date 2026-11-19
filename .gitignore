@@ -46,5 +46,5 @@ supabase/.temp/
 # PostHog project configuration; template in config/PostHogConfig.example.plist
 kicklab/Analytics/PostHogConfig.plist
 
-# Retired experiment model; must stay outside the app source/resources.
+# Pinned Counter V2 model: install with scripts/install-counter-pose-model.py.
 kicklab/Models/pose_landmarker_full.task

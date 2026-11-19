@@ -12,6 +12,7 @@ import PhotosUI
 import SwiftUI
 
 struct RecordView: View {
+    private let challengeTarget: Int?
     @State private var recoveredVideoSaved = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
@@ -56,7 +57,8 @@ struct RecordView: View {
 
     private let timer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
 
-    init(initialVideo: PhotosPickerItem? = nil) {
+    init(initialVideo: PhotosPickerItem? = nil, challengeTarget: Int? = nil) {
+        self.challengeTarget = challengeTarget
         _galleryItem = State(initialValue: initialVideo)
     }
 
@@ -90,6 +92,16 @@ struct RecordView: View {
 
                     VStack(spacing: 0) {
                         topBar.sessionEntrance(hudShown, offset: -14)
+                        if let challengeTarget {
+                            Label("Goal: \(challengeTarget) consecutive touches", systemImage: "flag.checkered")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 16).padding(.vertical, 10)
+                                .background(.black.opacity(0.55), in: .capsule)
+                                .padding(.horizontal, 24)
+                                .accessibilityElement(children: .combine)
+                                .accessibilityIdentifier("capture-challenge-goal")
+                        }
                         Spacer(minLength: 0)
                         CaptureMetrics(points: motionPoints, touchTimes: camera.recentTouchTimes, time: elapsed,
                                        showGraph: subscriptions.isPro, showsTouchMetrics: subscriptions.isPro)

@@ -356,3 +356,20 @@ private nonisolated final class BallExposureCache: @unchecked Sendable {
         return result
     }
 }
+
+// Shared-pass dependency guard: crop masks cannot change any motion input under this restriction.
+extension BallEffectTrack {
+    nonisolated var sharedMotionIdentity: [Double]? {
+        guard surfaceMotion == nil, samples.count >= 2,
+              let last = samples.last, mask(at:last.time) != nil,
+              zip(samples,samples.dropFirst()).allSatisfy({ $1.time > $0.time && $1.time-$0.time <= 0.20 }) else { return nil }
+        var values: [Double] = [usesBallMasks ? 1 : 0]
+        for i in samples.indices {
+            let s = samples[i], raw = rawBoxes[i]
+            values += [s.time,Double(s.center.x),Double(s.center.y),Double(s.radius),s.confidence,
+                Double(s.boxSize?.width ?? 0),Double(s.boxSize?.height ?? 0),
+                Double(raw.width),Double(raw.height),recoverySamples[i] ? 1 : 0,segmentStarts[i]]
+        }
+        return values.allSatisfy(\.isFinite) ? values : nil
+    }
+}

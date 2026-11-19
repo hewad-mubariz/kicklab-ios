@@ -81,6 +81,7 @@ nonisolated final class LabSkinRenderer: @unchecked Sendable {
     /// Outdoor lighting matches the lab's footage renders.
     func image(skin: BallSkin, orientation: simd_quatf, size: Int) -> CGImage? {
         guard skin.isLabSkin, size > 0 else { return nil }
+        if skin.isBridgedSkin { return LabSkinBridge.shared.image(skin: skin, orientation: orientation, size: size) }
         lock.lock(); defer { lock.unlock() }
         let target: MTLTexture
         if let existing = targets[size] { target = existing } else {

@@ -9,8 +9,8 @@ final class PlayerDetailsUITests: XCTestCase {
         app.launchArguments = ["-kicklab.welcome.completed", "YES", "--leaderboard-review-count", "10",
                                "-kicklab.appearance", "light", "-AppleLanguages", "(en)"]
         app.launch()
-        XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 10))
-        app.buttons["home-leaderboard"].tap()
+        XCTAssertTrue(app.mainTab("leaderboard").waitForExistence(timeout: 10))
+        app.mainTab("leaderboard").tap()
         let first = app.buttons["leaderboard-pennant-1"]
         let second = app.buttons["leaderboard-pennant-2"]
         XCTAssertTrue(first.waitForExistence(timeout: 10))

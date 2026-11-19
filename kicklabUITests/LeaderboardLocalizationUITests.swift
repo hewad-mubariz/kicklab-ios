@@ -44,7 +44,7 @@ final class LeaderboardLocalizationUITests: XCTestCase {
             app.buttons["profile-close"].tap()
             XCTAssertTrue(app.staticTexts[text[7]].waitForExistence(timeout: 3))
             XCTAssertTrue(app.buttons["module-juggling"].label.contains(text[9]))
-            app.buttons["home-leaderboard"].tap()
+            app.mainTab("leaderboard").tap()
             XCTAssertTrue(app.buttons["leaderboard-period-week"].waitForExistence(timeout: 5))
             // This title is resolved by the model, not by SwiftUI Text localization.
             XCTAssertTrue(app.buttons["leaderboard-period-week"].label.localizedCaseInsensitiveContains(text[4]))
@@ -55,7 +55,7 @@ final class LeaderboardLocalizationUITests: XCTestCase {
             XCTAssertTrue(app.buttons["leaderboard-player-close"].waitForExistence(timeout: 3))
             attach(app, "live-\(text[0])-detail")
             app.buttons["leaderboard-player-close"].tap()
-            app.buttons["leaderboard-close"].tap()
+            app.mainTab("home").tap()
         }
         app.terminate()
         app.launchArguments = ["--leaderboard-review-count", "1"]
@@ -99,8 +99,8 @@ final class LeaderboardLocalizationUITests: XCTestCase {
             attach(app, "\(text[0])-email")
             app.buttons["email-close"].tap()
             app.buttons["signin-guest"].tap()
-            XCTAssertTrue(app.buttons["home-leaderboard"].waitForExistence(timeout: 10))
-            app.buttons["home-leaderboard"].tap()
+            XCTAssertTrue(app.mainTab("leaderboard").waitForExistence(timeout: 10))
+            app.mainTab("leaderboard").tap()
             let first = app.descendants(matching: .any)["leaderboard-pennant-1"]
             XCTAssertTrue(first.waitForExistence(timeout: 10))
             XCTAssertTrue(app.buttons["leaderboard-period-week"].label.localizedCaseInsensitiveContains(text[6]))

@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-17",
+  "branch": "codex/juggle-v2-tabs",
+  "device": "iPhone 11 Pro Max (iPhone12,5)",
+  "os": "iOS 27.2",
+  "tab_order": [
+    "Home",
+    "Challenges",
+    "Wall Game",
+    "Leaderboard",
+    "Profile"
+  ],
+  "scope": "Wall Game destination with six-target preview, explicit planned-v2 status and setup guide; experimental gameplay runtime remains separate.",
+  "locales": [
+    "en",
+    "de",
+    "es",
+    "fr",
+    "pt-BR"
+  ],
+  "toolchain": {
+    "xcode": "27.2 (27B52)",
+    "metal": "32023.922",
+    "repair": "Installed missing Apple Metal Toolchain 27B47 using xcodebuild -downloadComponent MetalToolchain"
+  },
+  "validation": {
+    "device_build": "passed",
+    "ui_tests": {
+      "passed": 2,
+      "failed": 0,
+      "cases": [
+        "testNativeTabsPreserveProfileAndChallengeNavigation",
+        "testWallGameTabAndSetupReturnWithoutOpeningCamera"
+      ]
+    },
+    "coverage": [
+      "Five native tabs visible and reachable",
+      "Existing profile/challenge navigation preserved",
+      "Wall Game selected state",
+      "Setup sheet opens and closes back to Wall Game",
+      "Switching away and returning",
+      "No wall camera starts when opening the preview",
+      "English/light and German/dark"
+    ],
+    "visual_review": "All five English tab labels fit; wall preview and setup guide reviewed on physical iPhone 11 screenshots.",
+    "normal_launch": "Succeeded without sample/history/language test fixtures; diagnostic overlay hidden for this launch"
+  },
+  "evidence_directory": "artifacts/wall-game-tab",
+  "result_bundle": "artifacts/wall-game-tab/iphone11-verified.xcresult",
+  "limitations": [
+    "Playable camera/projector integration and qualification are pending",
+    "No wall detection, scoring or results pipeline was changed"
+  ],
+  "source_sha256": {
+    "kicklab/Navigation/RootShellView.swift": "5b0e086ee2818e90893c3d3a4984d6c8e14cd59bb25864fd498b7f6d96aa2b5b",
+    "kicklab/Navigation/WallGameHubView.swift": "27cb0155f5eef139ca54644f9226f97bda45756b8093a17f1c69498cfe22e045"
+  }
+}

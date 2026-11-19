@@ -28,6 +28,8 @@ nonisolated struct EffectFrame: Sendable, Equatable {
     var water: WaterFrame?
     /// Crystal's crystals, mist and frost for this moment; drawn by the lab renderer.
     var crystal: CrystalFrame?
+    /// The 19 November 2026 lab effects (LabBridge); drawn by their lab renderers.
+    var labBridge: LabBridgeFrame?
     /// Picker icons only: the solid grey a lab effect is drawn over when there is no video.
     var labBackdrop: Double?
 

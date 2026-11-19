@@ -100,16 +100,23 @@ nonisolated final class BallDetector {
         fileprivate let pixels: CVPixelBuffer
         fileprivate let time: Double
         fileprivate let input: MLFeatureProvider
-        fileprivate let output: MLFeatureProvider
+        fileprivate let output: MLFeatureProvider?
+        fileprivate let cached: FrameDetections?
+        fileprivate let predictionReused: Bool
+        fileprivate let cacheInput: RFFramePredictionCache.Input?
+        fileprivate let cacheCPUOnly: Bool?
         fileprivate let content: CGRect
         fileprivate let preprocessMS, inferenceMS, preparationMS: Double
         fileprivate var consumed = false
         fileprivate let cursor: BatchCursor
         fileprivate let index: Int
         fileprivate init(owner: ObjectIdentifier, pixels: CVPixelBuffer, time: Double,
-                         input: MLFeatureProvider, output: MLFeatureProvider, content: CGRect,
+                         input: MLFeatureProvider, output: MLFeatureProvider?, content: CGRect,
                          preprocessMS: Double, inferenceMS: Double, preparationMS: Double,
-                         cursor: BatchCursor, index: Int) {
+                         cursor: BatchCursor, index: Int, cached: FrameDetections? = nil,
+                         cacheInput: RFFramePredictionCache.Input? = nil, cacheCPUOnly: Bool? = nil, predictionReused: Bool = false) {
+            self.predictionReused = predictionReused
+            self.cached = cached; self.cacheInput = cacheInput; self.cacheCPUOnly = cacheCPUOnly
             self.owner=owner; self.pixels=pixels; self.time=time; self.input=input; self.output=output
             self.content=content; self.preprocessMS=preprocessMS; self.inferenceMS=inferenceMS
             self.preparationMS=preparationMS
@@ -173,6 +180,12 @@ nonisolated final class BallDetector {
     /// Same two-frame ownership and ordering contract, with independent async
     /// predictions. Only the immutable model inputs cross prediction tasks.
     func prepareBatchAsync(_ frames: [(pixels: CVPixelBuffer, time: Double)]) async throws -> [PreparedFrame] {
+        // Imports retain exact predictions in RAM even without the optional disk
+        // store. The async appearance pass must reuse them just like serial detect.
+        if predictionCache != nil, isRFDETR, !roiEnabled, !guardedRecoveryEnabled,
+           !marginalRetryEnabled, !directConfirmationEnabled {
+            return try await prepareReusableBatchAsync(frames)
+        }
         let plan=try autoreleasepool {try batchInputs(frames)}
         let outputs = try await models.performAsync(cpuOnly: { self.requestedModelCPUOnly }) { model in
             try await withThrowingTaskGroup(of:(Int,MLFeatureProvider).self) { group in
@@ -185,6 +198,76 @@ nonisolated final class BallDetector {
             }
         }
         return try preparedFrames(plan,outputs:outputs,finished:ProcessInfo.processInfo.systemUptime)
+    }
+
+    /// Commit stateless observations before temporal consumption. Duplicate inputs in
+    /// one async batch share one model call; every exposure is still consumed in order.
+    private func prepareReusableBatchAsync(_ frames: [(pixels: CVPixelBuffer, time: Double)]) async throws -> [PreparedFrame] {
+        let plan = try autoreleasepool { try batchInputs(frames) }
+        let fingerprintStarted = ProcessInfo.processInfo.systemUptime
+        let sizes = plan.frames.map { CGSize(width: CVPixelBufferGetWidth($0.pixels), height: CVPixelBufferGetHeight($0.pixels)) }
+        let identities = plan.frames.indices.map { RFFramePredictionCache.input(plan.inputs[$0], sourceSize: sizes[$0]) }
+        predictionFingerprintSeconds += ProcessInfo.processInfo.systemUptime - fingerprintStarted
+        func key(_ index: Int, _ cpu: Bool) -> RFFramePredictionCache.Key? {
+            identities[index].map { .init(input: $0, model: predictionCacheModel, cpuOnly: cpu, threshold: activeBallThreshold) }
+        }
+        let expectedCPU = requestedModelCPUOnly || models.acceleratedLoadFailure != nil
+        var ready: [Int: FrameDetections] = [:]
+        if expectedCPU == models.cpuOnly {
+            for i in plan.frames.indices {
+                if let key = key(i, expectedCPU), let value = try predictionCache?.lookup(key) { ready[i] = value }
+            }
+        }
+        var predicted = Set<Int>()
+        var predictionTimes: [Int: Double] = [:]
+        if ready.count < plan.frames.count {
+            let initial = ready
+            let result = try await models.performAsync(cpuOnly: { self.requestedModelCPUOnly }) { model in
+                let cpu = self.models.cpuOnly
+                var found = cpu == expectedCPU ? initial : [:]
+                // A background/load fallback changes the key. Re-check that backend's
+                // saved observations instead of mixing results from different backends.
+                if cpu != expectedCPU {
+                    for i in plan.frames.indices {
+                        if let key = key(i, cpu), let value = try self.predictionCache?.lookup(key) { found[i] = value }
+                    }
+                }
+                var canonical: [RFFramePredictionCache.Input: Int] = [:], aliases: [Int: Int] = [:], missing: [Int] = []
+                for i in plan.frames.indices where found[i] == nil {
+                    if let identity = identities[i], let prior = canonical[identity] { aliases[i] = prior }
+                    else { missing.append(i); if let identity = identities[i] { canonical[identity] = i } }
+                }
+                var times: [Int: Double] = [:]
+                try await withThrowingTaskGroup(of: (Int, MLFeatureProvider, Double).self) { group in
+                    for i in missing {
+                        group.addTask {
+                            let start = ProcessInfo.processInfo.systemUptime
+                            let output = try await model.prediction(from: plan.inputs[i])
+                            return (i, output, (ProcessInfo.processInfo.systemUptime-start)*1000)
+                        }
+                    }
+                    for try await (i, output, ms) in group {
+                        let value = try self.rfSeg.decode(output, sourceSize: sizes[i], threshold: self.activeBallThreshold)
+                        if let key = key(i, cpu) { try self.predictionCache?.store(value, for: key) }
+                        found[i] = value; times[i] = ms
+                    }
+                }
+                for (alias, original) in aliases { found[alias] = found[original] }
+                return (found, Set(missing), times)
+            }
+            ready = result.0; predicted = result.1; predictionTimes = result.2
+        }
+        try Task.checkCancellation()
+        guard ready.count == plan.frames.count else { throw BatchError.outputCount }
+        let finished = ProcessInfo.processInfo.systemUptime, divisor = Double(plan.frames.count)
+        let cursor = BatchCursor()
+        return plan.frames.indices.map { i in
+            PreparedFrame(owner: ObjectIdentifier(self), pixels: plan.frames[i].pixels, time: plan.frames[i].time,
+                input: plan.inputs[i], output: nil, content: plan.rects[i],
+                preprocessMS: (fingerprintStarted-plan.start)*1000/divisor,
+                inferenceMS: predictionTimes[i] ?? 0, preparationMS: (finished-plan.start)*1000/divisor,
+                cursor: cursor, index: i, cached: ready[i], predictionReused: !predicted.contains(i))
+        }
     }
 
     func detectPrepared(_ prepared: PreparedFrame) throws -> FrameDetections {
@@ -314,12 +397,14 @@ nonisolated final class BallDetector {
         isRFDETR = rfModel != nil
         let studyURL = Self.rfInputStudyURL(rfModel)
         self.predictionCache = rfModel != nil && modelURL == nil && studyURL == nil ? predictionCache : nil
-        predictionCacheModel = rfModel?.pipelineIdentity(resolution: rfResolution) ?? resource
         let usesSharedModel = rfModel == .fp16 && modelURL == nil && studyURL == nil
         guard let url = modelURL ?? studyURL ?? Bundle.main.url(forResource: resource, withExtension: "mlmodelc") else {
             throw NSError(domain: "KickLab", code: 1,
                           userInfo: [NSLocalizedDescriptionKey: "\(resource) not in bundle"])
         }
+        let modelIdentity = rfModel?.pipelineIdentity(resolution: rfResolution) ?? resource
+        predictionCacheModel = predictionCache?.isPersistent == true
+            ? modelIdentity + "|compiled=" + (try RFPredictionModelIdentity.digest(url)) : modelIdentity
         self.models = try ModelComputeSwitch(cpuOnly: VideoWorkExecution.modelCPUOnly,
                                             allowsCPUFallbackOnLoadFailure: rfModel != nil) { cpuOnly in
             let configuration = MLModelConfiguration()
@@ -419,9 +504,32 @@ nonisolated final class BallDetector {
     func effectPosition(in pixels: CVPixelBuffer) throws -> Detection? {
         guard isRFDETR else { throw NSError(domain: "SelectiveEffects.Model", code: 1) }
         let image = orientedImage(pixels, portrait: false, orientation: nil)
+        if predictionCache?.isPersistent == true {
+            return try reusableRFObservation(input: makeInput(from: image), size: image.extent.size).ball
+        }
         let output = try predict(makeInput(from: image))
         return try rfSeg.decode(output, sourceSize: image.extent.size, threshold: activeBallThreshold,
             includeAuxiliary: false, includeMasks: false).ball
+    }
+
+    private func reusableRFObservation(input: MLFeatureProvider, size: CGSize) throws -> FrameDetections {
+        let identity = RFFramePredictionCache.input(input, sourceSize: size)
+        let expectedCPU = requestedModelCPUOnly || models.acceleratedLoadFailure != nil
+        if let identity, expectedCPU == models.cpuOnly,
+           let found = try predictionCache?.lookup(.init(input: identity, model: predictionCacheModel,
+                cpuOnly: expectedCPU, threshold: activeBallThreshold)) {
+            reusedPredictions += 1; lastFollowCalls = 0; lastInferenceMS = 0
+            return found
+        }
+        let start = ProcessInfo.processInfo.systemUptime
+        let output = try predict(input)
+        lastInferenceMS = (ProcessInfo.processInfo.systemUptime-start)*1000; lastFollowCalls = 1
+        let value = try rfSeg.decode(output, sourceSize: size, threshold: activeBallThreshold)
+        if let identity {
+            try predictionCache?.store(value, for: .init(input: identity, model: predictionCacheModel,
+                cpuOnly: models.cpuOnly, threshold: activeBallThreshold))
+        }
+        return value
     }
 
     func detect(_ pixelBuffer: CVPixelBuffer, orientLandscapeAsPortrait: Bool = true,
@@ -506,8 +614,17 @@ nonisolated final class BallDetector {
         var reusableInput: RFFramePredictionCache.Input?
         do {
             if let prepared {
-                input=prepared.input; out=prepared.output; contentRect=prepared.content
+                input=prepared.input; contentRect=prepared.content
                 lastPreprocessMS=prepared.preprocessMS; lastInferenceMS=prepared.inferenceMS
+                if let cached = prepared.cached {
+                    if prepared.predictionReused { reusedPredictions += 1 }
+                    lastFollowCalls = prepared.predictionReused ? 0 : 1
+                    lastFollowKind = prepared.predictionReused ? "exact_input_cache" : "detector"
+                    lastError = nil
+                    return cached
+                }
+                guard let output = prepared.output else { throw BatchError.outputCount }
+                out = output; reusableInput = prepared.cacheInput
             } else {
                 input = try makeInput(from: image)
                 let prepared = ProcessInfo.processInfo.systemUptime
@@ -521,7 +638,7 @@ nonisolated final class BallDetector {
                     predictionFingerprintSeconds += ProcessInfo.processInfo.systemUptime - fingerprintStart
                     let effectiveCPU = requestedModelCPUOnly || models.acceleratedLoadFailure != nil
                     if let reusableInput, effectiveCPU == models.cpuOnly,
-                       let cached = predictionCache?.lookup(.init(input: reusableInput, model: predictionCacheModel,
+                       let cached = try predictionCache?.lookup(.init(input: reusableInput, model: predictionCacheModel,
                             cpuOnly: models.cpuOnly, threshold: activeBallThreshold)) {
                         reusedPredictions += 1; lastFollowCalls = 0; lastFollowKind = "exact_input_cache"
                         lastInferenceMS = 0; lastError = nil
@@ -540,8 +657,8 @@ nonisolated final class BallDetector {
             do {
                 let decoded = try rfSeg.decode(out, sourceSize: lastInputSize, threshold: activeBallThreshold)
                 if let reusableInput {
-                    predictionCache?.store(decoded, for: .init(input: reusableInput, model: predictionCacheModel,
-                        cpuOnly: models.cpuOnly, threshold: activeBallThreshold))
+                    try predictionCache?.store(decoded, for: .init(input: reusableInput, model: predictionCacheModel,
+                        cpuOnly: prepared?.cacheCPUOnly ?? models.cpuOnly, threshold: activeBallThreshold))
                 }
                 lastError = nil
                 return decoded
@@ -1097,10 +1214,15 @@ nonisolated extension BallDetector {
         }
         let rect = CGRect(x: roi.minX, y: image.extent.height - roi.maxY, width: roi.width, height: roi.height)
         let patch = image.cropped(to: rect).transformed(by: CGAffineTransform(translationX: -rect.minX, y: -rect.minY))
-        let output = try predict(makeInput(from: patch))
         // The bridge's auxiliary switch also controls mask decoding. Decode it
         // here, then discard crop-local people rather than forwarding them.
-        let decoded = try rfSeg.decode(output, sourceSize: roi.size, threshold: activeBallThreshold)
+        let decoded: FrameDetections
+        if predictionCache?.isPersistent == true {
+            decoded = try reusableRFObservation(input: makeInput(from: patch), size: roi.size)
+        } else {
+            let output = try predict(makeInput(from: patch))
+            decoded = try rfSeg.decode(output, sourceSize: roi.size, threshold: activeBallThreshold)
+        }
         guard let b = decoded.ball, let m = decoded.ballMask else { return FrameDetections(ball: nil, person: nil) }
         let size = image.extent.size
         let ball = Detection(score: b.score, x: (roi.minX + b.x * roi.width) / size.width,

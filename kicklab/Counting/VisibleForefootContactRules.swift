@@ -10,7 +10,7 @@ nonisolated enum VisibleForefootContactRules {
         let before, contact, release, continuation: Sample
     }
 
-    static func proof(_ input: [Sample], proposedMs: Int) -> Proof? {
+    static func proof(_ input: [Sample], proposedMs: Int, observesToes: Bool = false) -> Proof? {
         let samples = input.filter { abs($0.timestampMs-proposedMs) <= 235 }
             .sorted { $0.timestampMs < $1.timestampMs }
         guard samples.count <= 24, Set(samples.map(\.timestampMs)).count == samples.count else { return nil }
@@ -25,14 +25,14 @@ nonisolated enum VisibleForefootContactRules {
                 where (25...70).contains(d.timestampMs-c.timestampMs) {
                 for side in BodySide.allCases {
                     let value = Proof(side:side,before:a,contact:contact,release:c,continuation:d)
-                    if confirms(value) { return value }
+                    if confirms(value, observesToes: observesToes) { return value }
                 }
             } } }
         }
         return nil
     }
 
-    static func confirms(_ p: Proof) -> Bool {
+    static func confirms(_ p: Proof, observesToes: Bool = false) -> Bool {
         let a=p.before, b=p.contact, c=p.release, d=p.continuation, side=p.side
         let views=[a,b,c,d], w=b.width, h=b.height
         guard (65...134).contains(b.timestampMs-a.timestampMs),
@@ -51,8 +51,16 @@ nonisolated enum VisibleForefootContactRules {
         guard near <= 1.1, b.ballY-feet[1].y <= 0.5*h else { return false }
         let incoming=(feet[1].x-feet[0].x)/w
         let relative=((feet[1].x-b.hips[side]!.x)-(feet[0].x-a.hips[side]!.x))/w
+        // An ankle approaches the forefoot contact region from outside it.
+        // A directly observed TOE can already overlap the ball's central disk
+        // at impact, having crossed its centre between exposures. It must have
+        // approached that point from the correct side and still satisfy all
+        // braking, support, ball approach and two-release requirements below.
+        let arrivedInsideBall = observesToes && near <= 0.5
+            && incoming*(b.ballX-feet[0].x) > 0
         guard abs(incoming) >= 0.12, abs(relative) >= 0.12,
-              incoming*relative > 0, incoming*(b.ballX-feet[1].x) > 0 else { return false }
+              incoming*relative > 0,
+              incoming*(b.ballX-feet[1].x) > 0 || arrivedInsideBall else { return false }
         let outgoing=(feet[2].x-feet[1].x)/w
         // A foot chasing a ball after a floor rebound must not supply contact.
         if outgoing*incoming > 0,

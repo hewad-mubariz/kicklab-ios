@@ -5,7 +5,7 @@ import SwiftUI
 struct LeaderboardView: View {
     /// The signed-in name, used for your placeholder initials.
     var yourName: String? = nil
-    let onClose: () -> Void
+    var onClose: (() -> Void)? = nil
     var onRecord: (() -> Void)? = nil
     @Environment(\.dismiss) private var dismiss
     @AppStorage(JugglingRecords.bestKey) private var personalBest = 0
@@ -208,6 +208,7 @@ struct LeaderboardView: View {
     }
 
     private func close() {
+        guard let onClose else { return }
         dismiss()
         onClose()
     }
@@ -216,15 +217,17 @@ struct LeaderboardView: View {
 
     private var topBar: some View {
         HStack {
-            Button(action: close) {
-                Image(systemName: "chevron.left").font(.system(size: 16, weight: .semibold))
-                    .frame(width: 44, height: 44)
-                    .contentShape(.rect)
+            if onClose != nil {
+                Button(action: close) {
+                    Image(systemName: "chevron.left").font(.system(size: 16, weight: .semibold))
+                        .frame(width: 44, height: 44)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .appGlass(in: .circle, interactive: true)
+                .accessibilityLabel("Close leaderboard")
+                .accessibilityIdentifier("leaderboard-close")
             }
-            .buttonStyle(.plain)
-            .appGlass(in: .circle, interactive: true)
-            .accessibilityLabel("Close leaderboard")
-            .accessibilityIdentifier("leaderboard-close")
             Spacer()
             Button("Rules") { showsRules = true }.font(.subheadline.weight(.semibold))
                 .frame(minWidth: 44, minHeight: 44).accessibilityIdentifier("leaderboard-rules-link")

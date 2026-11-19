@@ -260,8 +260,12 @@ final class VideoAnalyzer: ObservableObject {
         let reuseEnabled = !isFinalValidation && !VideoWorkExecution.isAnalysisStudy
             && !ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache")
             && !ProcessInfo.processInfo.arguments.contains("--disable-rf-prediction-reuse")
-        let predictionCache = reuseEnabled
-            ? RFFramePredictionReuse.shared.cache(for: sourceDigest + "|" + pipelineSignature) : nil
+        let predictionCache: RFFramePredictionCache?
+        if reuseEnabled, RFFramePredictionReuse.persistenceEnabled {
+            predictionCache = try RFFramePredictionReuse.shared.persistentCache(for: sourceDigest)
+        } else {
+            predictionCache = reuseEnabled ? RFFramePredictionReuse.shared.cache(for: sourceDigest + "|" + pipelineSignature) : nil
+        }
         let detector = try BallDetector(predictionCache: predictionCache)
         #if DEBUG
         if visualOnly { PreparationMemoryProbe.stage("dense_inference") }
@@ -275,10 +279,27 @@ final class VideoAnalyzer: ObservableObject {
         var inferenceTimes: [Double] = [], totalTimes: [Double] = []
         var followRows: [[String: Any]] = [], detectionErrors=0
         let auditFollow=ProcessInfo.processInfo.arguments.contains("--effects-follow-review")
-        let contactVerifier = !visualOnly && JugglingContactVerifier.enabled ? JugglingContactVerifier() : nil
-        contactVerifier?.warmUp()
+        let poseStore = !visualOnly && reuseEnabled && RFFramePredictionReuse.persistenceEnabled
+            && ProcessInfo.processInfo.arguments.contains("--durable-pose-reuse")
+            ? try PosePredictionStore(root:RFPredictionDiskStore.root,source:sourceDigest,
+                runtime:RFDeviceProfile.hardwareIdentifier + "|" + ProcessInfo.processInfo.operatingSystemVersionString) : nil
+        var contactVerifier: JugglingContactVerifier?
+        var toeEvidence: LiveToeVerifier?
+        // A fresh provider per import; effects-only work never loads the pose model.
+        if !visualOnly {
+            guard JugglingContactVerifier.enabled else {
+                throw LiveToeVerifier.failure("Native contact verifier unavailable")
+            }
+            let observations = ContactObservationStore(predictionStore:poseStore)
+            let native = JugglingContactVerifier(observations: observations)
+            contactVerifier = native
+            toeEvidence = try LiveToeVerifier(base: native, observations: observations)
+            toeEvidence?.bind(to: native)
+            native.warmUp()
+        }
         try Task.checkCancellation()
-        let counter = ContactCounterFactory.make(verifier: contactVerifier,
+        let counter = ContactCounterFactory.make(verifier: toeEvidence,
+            config: visualOnly ? CounterConfig() : CounterV2Policy.configuration(),
             mode: visualOnly ? .visualOnly : .counting)
         #if DEBUG
         if let validationFiles {
@@ -421,6 +442,7 @@ final class VideoAnalyzer: ObservableObject {
             let counterStart = ProcessInfo.processInfo.systemUptime
             let confirmed = counter.push(frameIndex: index, timestampMs: stampMs,
                 ball: ball, person: person, cameraOffsetY: shift, reliable: !compensator.isTooShaky, sourceFrameIndex: sourceIndex, player: player)
+            if let error = toeEvidence?.error { throw LiveToeVerifier.failure(error) }
             counterSeconds += ProcessInfo.processInfo.systemUptime - counterStart
             maskBytes += (found.ballMask?.alpha.count ?? 0) + (visual?.ballMask?.alpha.count ?? 0)
             if let detection = found.ball {
@@ -492,6 +514,8 @@ final class VideoAnalyzer: ObservableObject {
             RecordedTouch(index: $0.index, time: Double($0.timestampMs) / 1000, x: $0.x, y: $0.y)
         })
 
+        try Task.checkCancellation()
+        if let error = toeEvidence?.error { throw LiveToeVerifier.failure(error) }
         guard detectionErrors == 0, contactVerifier?.lastError == nil else {
             throw VideoSafetyPolicy.Failure.analysis
         }
@@ -515,11 +539,19 @@ final class VideoAnalyzer: ObservableObject {
             "reused_predictions": Double(detector.reusedPredictions),
             "prediction_fingerprint_s": detector.predictionFingerprintSeconds,
             "prediction_cache_bytes": Double(predictionCache?.retainedBytes ?? 0),
+            "prediction_disk_hits": Double(predictionCache?.diskHitCount ?? 0),
+            "prediction_disk_writes": Double(predictionCache?.diskWriteCount ?? 0),
             "background_gpu": VideoWorkExecution.lease?.backgroundGPU == true ? 1 : 0,
             "thermal_wait_s": pacer.waitingSeconds,
             "thermal_peak_state": Double(pacer.peakThermalState),
             "thermal_sleep_events": Double(pacer.pacingSleeps),
             "thermal_policy_version": 2,
+            "toe_recovery_enabled": visualOnly ? 0 : 1,
+            "toe_pose_requests": Double(toeEvidence?.requests ?? 0),
+            "toe_confirmations": Double(toeEvidence?.recoveries ?? 0),
+            "toe_cache_hits": Double(toeEvidence?.cacheHits ?? 0),
+            "toe_inference_s": toeEvidence?.inferenceSeconds ?? 0,
+            "toe_warmup_s": toeEvidence?.warmUpSeconds ?? 0,
             "contact_warmup_ms": contactVerifier?.warmUpMS ?? 0,
             "contact_check_ms": contactVerifier?.totalCheckMS ?? 0,
             "contact_checks": Double(contactVerifier?.checkedContacts ?? 0),
@@ -547,6 +579,7 @@ final class VideoAnalyzer: ObservableObject {
             "all_mask_storage_bytes": Double(maskBytes),
             "mask_storage_bytes": Double(frames.reduce(0) { $0 + ($1.ballMask?.alpha.count ?? 0) })]
         metrics.merge(contactVerifier?.poseProfile ?? [:]) { _, new in new }
+        metrics.merge(poseStore?.metrics() ?? [:]) { _, new in new }
         PreparationPerformance.record(visualOnly ? "dense_analysis" : "import_analysis", metrics)
         if visualOnly { RFFramePredictionReuse.shared.release() }
         let modelName = detector.modelName

@@ -1,5 +1,9 @@
 # Outdoor session checks after removing the auxiliary pose model
 
+Historical build 84 results follow. The [19 November V2 integration](v2-main-integration-20261119.md)
+adds a different, selective contact-window toe provider. It does not restore the
+retired per-frame shoe-recovery implementation described here.
+
 Build 84 removes MediaPipe Full, its SDK/linker anchors, model-only heel/toe
 proofs and the debug On/Off switch. The retired preference and launch flags
 cannot enable it. The model file is also excluded from target membership so a

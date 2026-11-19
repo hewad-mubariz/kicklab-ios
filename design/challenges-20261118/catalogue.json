@@ -1,0 +1,888 @@
+{
+  "schemaVersion": 1,
+  "status": "design_proposal",
+  "date": "2026-11-18",
+  "soloChallenges": 52,
+  "friendFormats": 8,
+  "judgingDefinitions": {
+    "streak_candidate": "Reuses current counted-streak results; challenge completion tracking still needs implementation and validation.",
+    "timed_engine": "Requires a bounded timer and event-window scoring; not implemented by the current target label.",
+    "series_engine": "Requires round state, restart rules and series scoring.",
+    "technique_review": "Left/right-foot or exact-technique judging is not qualified in the main app. Practice/self-check first; a friend result needs explicit video sharing and peer agreement.",
+    "friend_engine": "Requires invitations, shared rules, attempts, deadlines and match results. No existing friend match service is assumed."
+  },
+  "challenges": [
+    {
+      "number": 1,
+      "id": "challenge-01",
+      "category": "Streaks",
+      "title": "First 3",
+      "objective": "Reach 3 consecutive counted touches. A hand, catch or ground contact ends the streak.",
+      "format": "streak_target",
+      "parameters": {
+        "target": 3
+      },
+      "judging": "streak_candidate",
+      "difficulty": "Starter"
+    },
+    {
+      "number": 2,
+      "id": "challenge-02",
+      "category": "Streaks",
+      "title": "Find Five",
+      "objective": "Reach 5 consecutive counted touches. A hand, catch or ground contact ends the streak.",
+      "format": "streak_target",
+      "parameters": {
+        "target": 5
+      },
+      "judging": "streak_candidate",
+      "difficulty": "Starter"
+    },
+    {
+      "number": 3,
+      "id": "challenge-03",
+      "category": "Streaks",
+      "title": "First 10",
+      "objective": "Reach 10 consecutive counted touches. A hand, catch or ground contact ends the streak.",
+      "format": "streak_target",
+      "parameters": {
+        "target": 10
+      },
+      "judging": "streak_candidate",
+      "difficulty": "Starter"
+    },
+    {
+      "number": 4,
+      "id": "challenge-04",
+      "category": "Streaks",
+      "title": "Twenty Club",
+      "objective": "Reach 20 consecutive counted touches. A hand, catch or ground contact ends the streak.",
+      "format": "streak_target",
+      "parameters": {
+        "target": 20
+      },
+      "judging": "streak_candidate",
+      "difficulty": "Build"
+    },
+    {
+      "number": 5,
+      "id": "challenge-05",
+      "category": "Streaks",
+      "title": "Thirty Flow",
+      "objective": "Reach 30 consecutive counted touches. A hand, catch or ground contact ends the streak.",
+      "format": "streak_target",
+      "parameters": {
+        "target": 30
+      },
+      "judging": "streak_candidate",
+      "difficulty": "Build"
+    },
+    {
+      "number": 6,
+      "id": "challenge-06",
+      "category": "Streaks",
+      "title": "Half Century",
+      "objective": "Reach 50 consecutive counted touches. A hand, catch or ground contact ends the streak.",
+      "format": "streak_target",
+      "parameters": {
+        "target": 50
+      },
+      "judging": "streak_candidate",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 7,
+      "id": "challenge-07",
+      "category": "Streaks",
+      "title": "Century Club",
+      "objective": "Reach 100 consecutive counted touches. A hand, catch or ground contact ends the streak.",
+      "format": "streak_target",
+      "parameters": {
+        "target": 100
+      },
+      "judging": "streak_candidate",
+      "difficulty": "Expert"
+    },
+    {
+      "number": 8,
+      "id": "challenge-08",
+      "category": "Streaks",
+      "title": "Beat Your Best",
+      "objective": "Reach one more than your recorded personal best. Freeze the target when you enter; use 3 if there is no prior streak.",
+      "format": "personal_best_target",
+      "parameters": {
+        "offset": 1,
+        "firstTarget": 3
+      },
+      "judging": "streak_candidate",
+      "difficulty": "Build"
+    },
+    {
+      "number": 9,
+      "id": "challenge-09",
+      "category": "One foot",
+      "title": "Right Foot 3",
+      "objective": "Complete 3 consecutive touches with only your right foot. The other foot, another body part, a hand or the ground breaks the attempt.",
+      "format": "single_foot",
+      "parameters": {
+        "side": "right",
+        "target": 3
+      },
+      "judging": "technique_review",
+      "difficulty": "Starter"
+    },
+    {
+      "number": 10,
+      "id": "challenge-10",
+      "category": "One foot",
+      "title": "Left Foot 3",
+      "objective": "Complete 3 consecutive touches with only your left foot. The other foot, another body part, a hand or the ground breaks the attempt.",
+      "format": "single_foot",
+      "parameters": {
+        "side": "left",
+        "target": 3
+      },
+      "judging": "technique_review",
+      "difficulty": "Starter"
+    },
+    {
+      "number": 11,
+      "id": "challenge-11",
+      "category": "One foot",
+      "title": "Right Foot 10",
+      "objective": "Complete 10 consecutive touches with only your right foot. The other foot, another body part, a hand or the ground breaks the attempt.",
+      "format": "single_foot",
+      "parameters": {
+        "side": "right",
+        "target": 10
+      },
+      "judging": "technique_review",
+      "difficulty": "Build"
+    },
+    {
+      "number": 12,
+      "id": "challenge-12",
+      "category": "One foot",
+      "title": "Left Foot 10",
+      "objective": "Complete 10 consecutive touches with only your left foot. The other foot, another body part, a hand or the ground breaks the attempt.",
+      "format": "single_foot",
+      "parameters": {
+        "side": "left",
+        "target": 10
+      },
+      "judging": "technique_review",
+      "difficulty": "Build"
+    },
+    {
+      "number": 13,
+      "id": "challenge-13",
+      "category": "One foot",
+      "title": "Right Foot 25",
+      "objective": "Complete 25 consecutive touches with only your right foot. The other foot, another body part, a hand or the ground breaks the attempt.",
+      "format": "single_foot",
+      "parameters": {
+        "side": "right",
+        "target": 25
+      },
+      "judging": "technique_review",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 14,
+      "id": "challenge-14",
+      "category": "One foot",
+      "title": "Left Foot 25",
+      "objective": "Complete 25 consecutive touches with only your left foot. The other foot, another body part, a hand or the ground breaks the attempt.",
+      "format": "single_foot",
+      "parameters": {
+        "side": "left",
+        "target": 25
+      },
+      "judging": "technique_review",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 15,
+      "id": "challenge-15",
+      "category": "One foot",
+      "title": "Right Foot 50",
+      "objective": "Complete 50 consecutive touches with only your right foot. The other foot, another body part, a hand or the ground breaks the attempt.",
+      "format": "single_foot",
+      "parameters": {
+        "side": "right",
+        "target": 50
+      },
+      "judging": "technique_review",
+      "difficulty": "Expert"
+    },
+    {
+      "number": 16,
+      "id": "challenge-16",
+      "category": "One foot",
+      "title": "Left Foot 50",
+      "objective": "Complete 50 consecutive touches with only your left foot. The other foot, another body part, a hand or the ground breaks the attempt.",
+      "format": "single_foot",
+      "parameters": {
+        "side": "left",
+        "target": 50
+      },
+      "judging": "technique_review",
+      "difficulty": "Expert"
+    },
+    {
+      "number": 17,
+      "id": "challenge-17",
+      "category": "One foot",
+      "title": "Weaker Foot 10",
+      "objective": "Complete 10 consecutive touches with only your weaker foot. Choose left or right before starting and keep that choice fixed. The other foot, another body part, a hand or the ground breaks the attempt.",
+      "format": "single_foot",
+      "parameters": {
+        "side": "weaker",
+        "target": 10
+      },
+      "judging": "technique_review",
+      "difficulty": "Build"
+    },
+    {
+      "number": 18,
+      "id": "challenge-18",
+      "category": "One foot",
+      "title": "Weaker Foot 30",
+      "objective": "Complete 30 consecutive touches with only your weaker foot. Choose left or right before starting and keep that choice fixed. The other foot, another body part, a hand or the ground breaks the attempt.",
+      "format": "single_foot",
+      "parameters": {
+        "side": "weaker",
+        "target": 30
+      },
+      "judging": "technique_review",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 19,
+      "id": "challenge-19",
+      "category": "Footwork patterns",
+      "title": "Switch Six",
+      "objective": "Complete 6 consecutive foot touches in this exact pattern: LR, repeated 3 times. L = left foot; R = right foot. Wrong foot, another body part or a drop breaks the pattern.",
+      "format": "foot_sequence",
+      "parameters": {
+        "pattern": "LR",
+        "repeats": 3,
+        "target": 6
+      },
+      "judging": "technique_review",
+      "difficulty": "Starter"
+    },
+    {
+      "number": 20,
+      "id": "challenge-20",
+      "category": "Footwork patterns",
+      "title": "Switch Twelve",
+      "objective": "Complete 12 consecutive foot touches in this exact pattern: LR, repeated 6 times. L = left foot; R = right foot. Wrong foot, another body part or a drop breaks the pattern.",
+      "format": "foot_sequence",
+      "parameters": {
+        "pattern": "LR",
+        "repeats": 6,
+        "target": 12
+      },
+      "judging": "technique_review",
+      "difficulty": "Build"
+    },
+    {
+      "number": 21,
+      "id": "challenge-21",
+      "category": "Footwork patterns",
+      "title": "Switch Thirty",
+      "objective": "Complete 30 consecutive foot touches in this exact pattern: LR, repeated 15 times. L = left foot; R = right foot. Wrong foot, another body part or a drop breaks the pattern.",
+      "format": "foot_sequence",
+      "parameters": {
+        "pattern": "LR",
+        "repeats": 15,
+        "target": 30
+      },
+      "judging": "technique_review",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 22,
+      "id": "challenge-22",
+      "category": "Footwork patterns",
+      "title": "Double Step",
+      "objective": "Complete 8 consecutive foot touches in this exact pattern: RRLL, repeated 2 times. L = left foot; R = right foot. Wrong foot, another body part or a drop breaks the pattern.",
+      "format": "foot_sequence",
+      "parameters": {
+        "pattern": "RRLL",
+        "repeats": 2,
+        "target": 8
+      },
+      "judging": "technique_review",
+      "difficulty": "Build"
+    },
+    {
+      "number": 23,
+      "id": "challenge-23",
+      "category": "Footwork patterns",
+      "title": "Double Step Twenty",
+      "objective": "Complete 20 consecutive foot touches in this exact pattern: RRLL, repeated 5 times. L = left foot; R = right foot. Wrong foot, another body part or a drop breaks the pattern.",
+      "format": "foot_sequence",
+      "parameters": {
+        "pattern": "RRLL",
+        "repeats": 5,
+        "target": 20
+      },
+      "judging": "technique_review",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 24,
+      "id": "challenge-24",
+      "category": "Footwork patterns",
+      "title": "Triple Switch",
+      "objective": "Complete 12 consecutive foot touches in this exact pattern: RRRLLL, repeated 2 times. L = left foot; R = right foot. Wrong foot, another body part or a drop breaks the pattern.",
+      "format": "foot_sequence",
+      "parameters": {
+        "pattern": "RRRLLL",
+        "repeats": 2,
+        "target": 12
+      },
+      "judging": "technique_review",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 25,
+      "id": "challenge-25",
+      "category": "Footwork patterns",
+      "title": "Right Lead",
+      "objective": "Complete 16 consecutive foot touches in this exact pattern: RRRL, repeated 4 times. L = left foot; R = right foot. Wrong foot, another body part or a drop breaks the pattern.",
+      "format": "foot_sequence",
+      "parameters": {
+        "pattern": "RRRL",
+        "repeats": 4,
+        "target": 16
+      },
+      "judging": "technique_review",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 26,
+      "id": "challenge-26",
+      "category": "Footwork patterns",
+      "title": "Left Lead",
+      "objective": "Complete 16 consecutive foot touches in this exact pattern: LLLR, repeated 4 times. L = left foot; R = right foot. Wrong foot, another body part or a drop breaks the pattern.",
+      "format": "foot_sequence",
+      "parameters": {
+        "pattern": "LLLR",
+        "repeats": 4,
+        "target": 16
+      },
+      "judging": "technique_review",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 27,
+      "id": "challenge-27",
+      "category": "Against the clock",
+      "title": "Best Streak 15",
+      "objective": "Build your longest uninterrupted streak inside 15 seconds. After a drop you may start a new streak, but the clock keeps running. Only your longest streak is the score.",
+      "format": "timed_best_streak",
+      "parameters": {
+        "seconds": 15
+      },
+      "judging": "timed_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 28,
+      "id": "challenge-28",
+      "category": "Against the clock",
+      "title": "Best Streak 30",
+      "objective": "Build your longest uninterrupted streak inside 30 seconds. After a drop you may start a new streak, but the clock keeps running. Only your longest streak is the score.",
+      "format": "timed_best_streak",
+      "parameters": {
+        "seconds": 30
+      },
+      "judging": "timed_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 29,
+      "id": "challenge-29",
+      "category": "Against the clock",
+      "title": "Best Streak 45",
+      "objective": "Build your longest uninterrupted streak inside 45 seconds. After a drop you may start a new streak, but the clock keeps running. Only your longest streak is the score.",
+      "format": "timed_best_streak",
+      "parameters": {
+        "seconds": 45
+      },
+      "judging": "timed_engine",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 30,
+      "id": "challenge-30",
+      "category": "Against the clock",
+      "title": "Best Streak 60",
+      "objective": "Build your longest uninterrupted streak inside 60 seconds. After a drop you may start a new streak, but the clock keeps running. Only your longest streak is the score.",
+      "format": "timed_best_streak",
+      "parameters": {
+        "seconds": 60
+      },
+      "judging": "timed_engine",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 31,
+      "id": "challenge-31",
+      "category": "Against the clock",
+      "title": "Touch Sprint 15",
+      "objective": "Count as many valid touches as possible in 15 seconds. Drops are allowed; pickups and hand contacts do not count. The timer never resets.",
+      "format": "timed_total",
+      "parameters": {
+        "seconds": 15
+      },
+      "judging": "timed_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 32,
+      "id": "challenge-32",
+      "category": "Against the clock",
+      "title": "Touch Sprint 30",
+      "objective": "Count as many valid touches as possible in 30 seconds. Drops are allowed; pickups and hand contacts do not count. The timer never resets.",
+      "format": "timed_total",
+      "parameters": {
+        "seconds": 30
+      },
+      "judging": "timed_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 33,
+      "id": "challenge-33",
+      "category": "Against the clock",
+      "title": "Touch Sprint 60",
+      "objective": "Count as many valid touches as possible in 60 seconds. Drops are allowed; pickups and hand contacts do not count. The timer never resets.",
+      "format": "timed_total",
+      "parameters": {
+        "seconds": 60
+      },
+      "judging": "timed_engine",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 34,
+      "id": "challenge-34",
+      "category": "Against the clock",
+      "title": "Keep It Up 10",
+      "objective": "Keep one uninterrupted streak alive for at least 10 seconds, measured from the first counted touch to a counted touch at or after 10 seconds. A drop or catch ends the attempt.",
+      "format": "endurance",
+      "parameters": {
+        "seconds": 10,
+        "maximumRecordingSeconds": 20
+      },
+      "judging": "timed_engine",
+      "difficulty": "Starter"
+    },
+    {
+      "number": 35,
+      "id": "challenge-35",
+      "category": "Against the clock",
+      "title": "Keep It Up 20",
+      "objective": "Keep one uninterrupted streak alive for at least 20 seconds, measured from the first counted touch to a counted touch at or after 20 seconds. A drop or catch ends the attempt.",
+      "format": "endurance",
+      "parameters": {
+        "seconds": 20,
+        "maximumRecordingSeconds": 30
+      },
+      "judging": "timed_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 36,
+      "id": "challenge-36",
+      "category": "Against the clock",
+      "title": "Keep It Up 30",
+      "objective": "Keep one uninterrupted streak alive for at least 30 seconds, measured from the first counted touch to a counted touch at or after 30 seconds. A drop or catch ends the attempt.",
+      "format": "endurance",
+      "parameters": {
+        "seconds": 30,
+        "maximumRecordingSeconds": 40
+      },
+      "judging": "timed_engine",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 37,
+      "id": "challenge-37",
+      "category": "Speed goals",
+      "title": "3 in 3",
+      "objective": "Reach 3 consecutive touches within 3 seconds after Go. A drop ends the attempt. Completion is the goal; saved elapsed time can be used for an identical-rule friend race.",
+      "format": "timed_target",
+      "parameters": {
+        "target": 3,
+        "seconds": 3
+      },
+      "judging": "timed_engine",
+      "difficulty": "Starter"
+    },
+    {
+      "number": 38,
+      "id": "challenge-38",
+      "category": "Speed goals",
+      "title": "5 in 5",
+      "objective": "Reach 5 consecutive touches within 5 seconds after Go. A drop ends the attempt. Completion is the goal; saved elapsed time can be used for an identical-rule friend race.",
+      "format": "timed_target",
+      "parameters": {
+        "target": 5,
+        "seconds": 5
+      },
+      "judging": "timed_engine",
+      "difficulty": "Starter"
+    },
+    {
+      "number": 39,
+      "id": "challenge-39",
+      "category": "Speed goals",
+      "title": "10 in 10",
+      "objective": "Reach 10 consecutive touches within 10 seconds after Go. A drop ends the attempt. Completion is the goal; saved elapsed time can be used for an identical-rule friend race.",
+      "format": "timed_target",
+      "parameters": {
+        "target": 10,
+        "seconds": 10
+      },
+      "judging": "timed_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 40,
+      "id": "challenge-40",
+      "category": "Speed goals",
+      "title": "15 in 15",
+      "objective": "Reach 15 consecutive touches within 15 seconds after Go. A drop ends the attempt. Completion is the goal; saved elapsed time can be used for an identical-rule friend race.",
+      "format": "timed_target",
+      "parameters": {
+        "target": 15,
+        "seconds": 15
+      },
+      "judging": "timed_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 41,
+      "id": "challenge-41",
+      "category": "Speed goals",
+      "title": "Race to 10",
+      "objective": "Reach 10 consecutive touches as quickly as possible, within 30 seconds. Score is the time from Go to touch 10; lower is better. A drop or timeout is an unfinished attempt.",
+      "format": "race_target",
+      "parameters": {
+        "target": 10,
+        "seconds": 30
+      },
+      "judging": "timed_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 42,
+      "id": "challenge-42",
+      "category": "Speed goals",
+      "title": "Race to 20",
+      "objective": "Reach 20 consecutive touches as quickly as possible, within 45 seconds. Score is the time from Go to touch 20; lower is better. A drop or timeout is an unfinished attempt.",
+      "format": "race_target",
+      "parameters": {
+        "target": 20,
+        "seconds": 45
+      },
+      "judging": "timed_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 43,
+      "id": "challenge-43",
+      "category": "Speed goals",
+      "title": "Race to 30",
+      "objective": "Reach 30 consecutive touches as quickly as possible, within 60 seconds. Score is the time from Go to touch 30; lower is better. A drop or timeout is an unfinished attempt.",
+      "format": "race_target",
+      "parameters": {
+        "target": 30,
+        "seconds": 60
+      },
+      "judging": "timed_engine",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 44,
+      "id": "challenge-44",
+      "category": "Speed goals",
+      "title": "Race to 50",
+      "objective": "Reach 50 consecutive touches as quickly as possible, within 90 seconds. Score is the time from Go to touch 50; lower is better. A drop or timeout is an unfinished attempt.",
+      "format": "race_target",
+      "parameters": {
+        "target": 50,
+        "seconds": 90
+      },
+      "judging": "timed_engine",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 45,
+      "id": "challenge-45",
+      "category": "Consistency",
+      "title": "Three Fives",
+      "objective": "Complete three separate streaks in order: 5, 5, 5 touches. Rest between rounds. Solo practice can retry a failed round; a scored series has one attempt per round.",
+      "format": "streak_series",
+      "parameters": {
+        "roundTargets": [
+          5,
+          5,
+          5
+        ]
+      },
+      "judging": "series_engine",
+      "difficulty": "Starter"
+    },
+    {
+      "number": 46,
+      "id": "challenge-46",
+      "category": "Consistency",
+      "title": "Three Tens",
+      "objective": "Complete three separate streaks in order: 10, 10, 10 touches. Rest between rounds. Solo practice can retry a failed round; a scored series has one attempt per round.",
+      "format": "streak_series",
+      "parameters": {
+        "roundTargets": [
+          10,
+          10,
+          10
+        ]
+      },
+      "judging": "series_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 47,
+      "id": "challenge-47",
+      "category": "Consistency",
+      "title": "Three Twenties",
+      "objective": "Complete three separate streaks in order: 20, 20, 20 touches. Rest between rounds. Solo practice can retry a failed round; a scored series has one attempt per round.",
+      "format": "streak_series",
+      "parameters": {
+        "roundTargets": [
+          20,
+          20,
+          20
+        ]
+      },
+      "judging": "series_engine",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 48,
+      "id": "challenge-48",
+      "category": "Consistency",
+      "title": "Rising Ladder",
+      "objective": "Complete three separate streaks in order: 5, 10, 15 touches. Rest between rounds. Solo practice can retry a failed round; a scored series has one attempt per round.",
+      "format": "streak_series",
+      "parameters": {
+        "roundTargets": [
+          5,
+          10,
+          15
+        ]
+      },
+      "judging": "series_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 49,
+      "id": "challenge-49",
+      "category": "Consistency",
+      "title": "Big Ladder",
+      "objective": "Complete three separate streaks in order: 10, 20, 30 touches. Rest between rounds. Solo practice can retry a failed round; a scored series has one attempt per round.",
+      "format": "streak_series",
+      "parameters": {
+        "roundTargets": [
+          10,
+          20,
+          30
+        ]
+      },
+      "judging": "series_engine",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 50,
+      "id": "challenge-50",
+      "category": "Consistency",
+      "title": "Control Pyramid",
+      "objective": "Complete three separate streaks in order: 5, 10, 5 touches. Rest between rounds. Solo practice can retry a failed round; a scored series has one attempt per round.",
+      "format": "streak_series",
+      "parameters": {
+        "roundTargets": [
+          5,
+          10,
+          5
+        ]
+      },
+      "judging": "series_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 51,
+      "id": "challenge-51",
+      "category": "Consistency",
+      "title": "Steady Twenty",
+      "objective": "Play three 20-second rounds. Achieve a best streak of at least 10 in every round. Your lowest round best is the series score.",
+      "format": "timed_series",
+      "parameters": {
+        "rounds": 3,
+        "seconds": 20,
+        "minimumEach": 10,
+        "score": "minimum_round_best"
+      },
+      "judging": "series_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 52,
+      "id": "challenge-52",
+      "category": "Consistency",
+      "title": "Steady Thirty",
+      "objective": "Play three 30-second rounds. Achieve a best streak of at least 20 in every round. Your lowest round best is the series score.",
+      "format": "timed_series",
+      "parameters": {
+        "rounds": 3,
+        "seconds": 30,
+        "minimumEach": 20,
+        "score": "minimum_round_best"
+      },
+      "judging": "series_engine",
+      "difficulty": "Advanced"
+    },
+    {
+      "number": 53,
+      "id": "challenge-53",
+      "category": "Friends",
+      "title": "Streak Duel",
+      "objective": "Both players get three separate 30-second attempts. Compare each player's highest valid uninterrupted streak; higher wins.",
+      "format": "friend_best",
+      "parameters": {
+        "challengeRef": "challenge-28",
+        "attempts": 3,
+        "score": "max_streak"
+      },
+      "judging": "friend_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 54,
+      "id": "challenge-54",
+      "category": "Friends",
+      "title": "Sprint Duel",
+      "objective": "Both players get three separate 30-second attempts. Compare their highest total of valid touches in one attempt; higher wins. Drops do not reset the clock.",
+      "format": "friend_best",
+      "parameters": {
+        "challengeRef": "challenge-32",
+        "attempts": 3,
+        "score": "max_total"
+      },
+      "judging": "friend_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 55,
+      "id": "challenge-55",
+      "category": "Friends",
+      "title": "First to Twenty",
+      "objective": "Both players try Race to 20, with three attempts each. Compare the fastest finished attempt within 45 seconds; lower time wins.",
+      "format": "friend_best",
+      "parameters": {
+        "challengeRef": "challenge-42",
+        "attempts": 3,
+        "score": "minimum_finished_time"
+      },
+      "judging": "friend_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 56,
+      "id": "challenge-56",
+      "category": "Friends",
+      "title": "Best of Three",
+      "objective": "Play three paired 30-second best-streak rounds in order. Compare round 1 with round 1, and so on. Each round is recorded once; most round wins decides the match, with equal round scores drawn.",
+      "format": "friend_round_match",
+      "parameters": {
+        "rounds": 3,
+        "seconds": 30,
+        "score": "round_wins",
+        "attempts": 1
+      },
+      "judging": "friend_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 57,
+      "id": "challenge-57",
+      "category": "Friends",
+      "title": "Mirror Me",
+      "objective": "Pick an eight-touch left/right foot sequence and ask a friend to reproduce it. Both review the shared attempt video; matching the sequence completes the challenge.",
+      "format": "friend_sequence",
+      "parameters": {
+        "sequenceLength": 8,
+        "allowedContacts": [
+          "L",
+          "R"
+        ],
+        "score": "matched_sequence",
+        "review": "peer_agreed"
+      },
+      "judging": "technique_review",
+      "difficulty": "Build"
+    },
+    {
+      "number": 58,
+      "id": "challenge-58",
+      "category": "Friends",
+      "title": "Weak Foot Faceoff",
+      "objective": "Each player locks their own weaker foot before starting and tries 10 uninterrupted touches. Completion is confirmed by shared-video review; both can complete. Treat this as a friendly skill challenge, not a verified ranking.",
+      "format": "friend_single_foot",
+      "parameters": {
+        "target": 10,
+        "side": "each_players_declared_weaker",
+        "score": "completion",
+        "review": "peer_agreed"
+      },
+      "judging": "technique_review",
+      "difficulty": "Build"
+    },
+    {
+      "number": 59,
+      "id": "challenge-59",
+      "category": "Friends",
+      "title": "Team Hundred",
+      "objective": "Work together: each player's best 30-second total contributes to a shared target of 100 touches. Three attempts per player; add the two best totals. The outcome is a team completion, not a winner.",
+      "format": "friend_coop",
+      "parameters": {
+        "seconds": 30,
+        "target": 100,
+        "attempts": 3,
+        "score": "sum_of_players_best_totals"
+      },
+      "judging": "friend_engine",
+      "difficulty": "Build"
+    },
+    {
+      "number": 60,
+      "id": "challenge-60",
+      "category": "Friends",
+      "title": "Consistency Duel",
+      "objective": "Each player records three 20-second best-streak rounds, once per round. Compare each player's lowest round score; the higher minimum wins. Equal minima draw.",
+      "format": "friend_consistency",
+      "parameters": {
+        "rounds": 3,
+        "seconds": 20,
+        "attempts": 1,
+        "score": "minimum_round_best"
+      },
+      "judging": "friend_engine",
+      "difficulty": "Build"
+    }
+  ]
+}

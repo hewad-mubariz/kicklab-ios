@@ -25,16 +25,20 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
     case labFlame, glowTrail, blueFlame, emberWake, flameRibbon, heatPulse
     /// Accepted in the Effects Lab on 1 November 2026 and drawn by its own renderers.
     case liquid, water, crystal
+    /// Effects Lab work of 19 November 2026, drawn through LabBridge (test build).
+    case inkBloom, sakuraRush, ferroStorm, silkDancer, bubbleBurst, honeyDrift, koiSpirit, featherSweep, riftBreak, origamiFlight, stormfront, paintRiot, solarShards, vectorSlash, victoryBurst, coinRush, slimePop, toyBlast, musicBounce, popcornPop, bubblegum, discoFlash, rubberRebound, partyCannon, starComet
 
     var id: String { rawValue }
 
     /// Effects Lab effects draw from the touches on the ball track over the video they refract,
     /// with their own renderers rather than the shared effect field.
-    var isLabEffect: Bool { self == .liquid || self == .water || self == .crystal }
+    var isLabEffect: Bool { self == .liquid || self == .water || self == .crystal || isBridged }
 
     /// Keep retired identifiers and shader IDs stable while removing them from all pickers.
     static var selectableCases: [BallStyle] {
-        allCases.filter { $0 != .shadow && $0 != .pixel && $0 != .labFlame }
+        // Test build 2026-11-19: the new lab effects first, right after None.
+        let rest = allCases.filter { $0 != .shadow && $0 != .pixel && $0 != .labFlame && $0 != .none && !$0.isBridged }
+        return [.none] + bridged + rest
     }
 
     var title: String {
@@ -59,6 +63,31 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
         case .liquid: return "Liquid Spectrum"
         case .water: return "Water"
         case .crystal: return "Crystal"
+        case .inkBloom: return "Ink Bloom"
+        case .sakuraRush: return "Sakura Rush"
+        case .ferroStorm: return "Ferro Storm"
+        case .silkDancer: return "Silk Dancer"
+        case .bubbleBurst: return "Bubble Burst"
+        case .honeyDrift: return "Honey Drift"
+        case .koiSpirit: return "Koi Spirit"
+        case .featherSweep: return "Feather Sweep"
+        case .riftBreak: return "Rift Break"
+        case .origamiFlight: return "Origami Flight"
+        case .stormfront: return "Stormfront"
+        case .paintRiot: return "Paint Riot"
+        case .solarShards: return "Solar Shards"
+        case .vectorSlash: return "Vector Slash"
+        case .victoryBurst: return "Victory Burst"
+        case .coinRush: return "Coin Rush"
+        case .slimePop: return "Slime Pop"
+        case .toyBlast: return "Toy Blast"
+        case .musicBounce: return "Music Bounce"
+        case .popcornPop: return "Popcorn Pop"
+        case .bubblegum: return "Bubblegum"
+        case .discoFlash: return "Disco Flash"
+        case .rubberRebound: return "Rubber Rebound"
+        case .partyCannon: return "Party Cannon"
+        case .starComet: return "Star Comet"
         }
     }
 
@@ -76,6 +105,7 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
         case .pixel: return "effect-card-pixel"
         case .nature: return "effect-card-nature"
         case .labFlame, .glowTrail, .blueFlame, .emberWake, .flameRibbon, .heatPulse, .liquid, .water, .crystal: return nil
+        default: return nil
         }
     }
 
@@ -101,6 +131,31 @@ nonisolated enum BallStyle: String, CaseIterable, Identifiable, Hashable, Sendab
         case .liquid: return Color(red: 0.35, green: 0.78, blue: 1)
         case .water: return Color(red: 0.55, green: 0.86, blue: 1)
         case .crystal: return Color(red: 0.72, green: 0.9, blue: 1)
+        case .inkBloom: return Color(red: 0.45, green: 0.35, blue: 1.0)
+        case .sakuraRush: return Color(red: 1.0, green: 0.62, blue: 0.78)
+        case .ferroStorm: return Color(red: 0.75, green: 0.8, blue: 0.88)
+        case .silkDancer: return Color(red: 0.95, green: 0.2, blue: 0.2)
+        case .bubbleBurst: return Color(red: 0.6, green: 0.9, blue: 1.0)
+        case .honeyDrift: return Color(red: 1.0, green: 0.65, blue: 0.12)
+        case .koiSpirit: return Color(red: 1.0, green: 0.5, blue: 0.3)
+        case .featherSweep: return Color(red: 0.95, green: 0.93, blue: 0.88)
+        case .riftBreak: return Color(red: 0.3, green: 1.0, blue: 0.85)
+        case .origamiFlight: return Color(red: 0.95, green: 0.5, blue: 0.3)
+        case .stormfront: return Color(red: 0.6, green: 0.7, blue: 0.95)
+        case .paintRiot: return Color(red: 1.0, green: 0.1, blue: 0.5)
+        case .solarShards: return Color(red: 1.0, green: 0.8, blue: 0.25)
+        case .vectorSlash: return Color(red: 1.0, green: 0.2, blue: 0.2)
+        case .victoryBurst: return Color(red: 1.0, green: 0.82, blue: 0.2)
+        case .coinRush: return Color(red: 1.0, green: 0.78, blue: 0.15)
+        case .slimePop: return Color(red: 0.6, green: 0.95, blue: 0.1)
+        case .toyBlast: return Color(red: 1.0, green: 0.4, blue: 0.3)
+        case .musicBounce: return Color(red: 0.2, green: 0.8, blue: 0.9)
+        case .popcornPop: return Color(red: 1.0, green: 0.9, blue: 0.6)
+        case .bubblegum: return Color(red: 1.0, green: 0.4, blue: 0.7)
+        case .discoFlash: return Color(red: 0.85, green: 0.9, blue: 1.0)
+        case .rubberRebound: return Color(red: 1.0, green: 0.45, blue: 0.1)
+        case .partyCannon: return Color(red: 1.0, green: 0.3, blue: 0.6)
+        case .starComet: return Color(red: 1.0, green: 0.85, blue: 0.2)
         }
     }
 }
@@ -240,6 +295,31 @@ extension BallStyle {
         case .liquid: 31
         case .water: 33
         case .crystal: 30
+        case .inkBloom: 40
+        case .sakuraRush: 41
+        case .ferroStorm: 42
+        case .silkDancer: 43
+        case .bubbleBurst: 44
+        case .honeyDrift: 45
+        case .koiSpirit: 46
+        case .featherSweep: 47
+        case .riftBreak: 48
+        case .origamiFlight: 49
+        case .stormfront: 50
+        case .paintRiot: 51
+        case .solarShards: 52
+        case .vectorSlash: 53
+        case .victoryBurst: 54
+        case .coinRush: 55
+        case .slimePop: 56
+        case .toyBlast: 57
+        case .musicBounce: 58
+        case .popcornPop: 59
+        case .bubblegum: 60
+        case .discoFlash: 61
+        case .rubberRebound: 62
+        case .partyCannon: 63
+        case .starComet: 64
         }
     }
     var caption: String {
@@ -264,6 +344,31 @@ extension BallStyle {
         case .liquid: "Flowing colour from every touch."
         case .water: "A clear splash on every touch."
         case .crystal: "Ice crystals break off the ball."
+        case .inkBloom: "Ink smoke billows off every touch."
+        case .sakuraRush: "Cherry blossoms burst from the ball."
+        case .ferroStorm: "Liquid chrome splashes off each touch."
+        case .silkDancer: "Scarlet silk follows the ball."
+        case .bubbleBurst: "A water splash and floating bubbles."
+        case .honeyDrift: "Glossy honey drips and splashes."
+        case .koiSpirit: "Two koi swim around the ball."
+        case .featherSweep: "Feathers sweep out on every touch."
+        case .riftBreak: "Obsidian shards break off with teal light."
+        case .origamiFlight: "Paper cranes take off from the ball."
+        case .stormfront: "Storm clouds and lightning."
+        case .paintRiot: "Wet paint splashes in three colours."
+        case .solarShards: "Gold splinters fly off each touch."
+        case .vectorSlash: "Red blades slash past the ball."
+        case .victoryBurst: "Gold stars burst on every touch."
+        case .coinRush: "Spinning gold coins."
+        case .slimePop: "Lime slime splats."
+        case .toyBlast: "Colourful toy blocks fly out."
+        case .musicBounce: "Music notes bounce off the ball."
+        case .popcornPop: "Popcorn pops on every touch."
+        case .bubblegum: "Stretchy pink bubblegum."
+        case .discoFlash: "Mirror sparkles and light."
+        case .rubberRebound: "Springy rubber coils."
+        case .partyCannon: "Confetti and streamers."
+        case .starComet: "Shooting stars trail the ball."
         }
     }
     var symbol: String {
@@ -288,6 +393,31 @@ extension BallStyle {
         case .liquid: "drop.fill"
         case .water: "water.waves"
         case .crystal: "snowflake.circle"
+        case .inkBloom: "smoke.fill"
+        case .sakuraRush: "camera.macro"
+        case .ferroStorm: "drop.halffull"
+        case .silkDancer: "wind"
+        case .bubbleBurst: "bubbles.and.sparkles"
+        case .honeyDrift: "drop.fill"
+        case .koiSpirit: "fish.fill"
+        case .featherSweep: "leaf.fill"
+        case .riftBreak: "diamond.fill"
+        case .origamiFlight: "paperplane.fill"
+        case .stormfront: "cloud.bolt.fill"
+        case .paintRiot: "paintbrush.fill"
+        case .solarShards: "sun.max.fill"
+        case .vectorSlash: "scissors"
+        case .victoryBurst: "star.fill"
+        case .coinRush: "dollarsign.circle.fill"
+        case .slimePop: "drop.triangle.fill"
+        case .toyBlast: "cube.fill"
+        case .musicBounce: "music.note"
+        case .popcornPop: "popcorn.fill"
+        case .bubblegum: "circle.hexagongrid.fill"
+        case .discoFlash: "sparkle"
+        case .rubberRebound: "arrow.up.and.down.circle.fill"
+        case .partyCannon: "party.popper.fill"
+        case .starComet: "star.circle.fill"
         }
     }
 }

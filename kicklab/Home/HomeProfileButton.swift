@@ -4,12 +4,21 @@ import SwiftUI
 struct HomeProfileButton: View {
     let action: () -> Void
     var zoom: Namespace.ID? = nil
+    /// The player's own picture; without one the monoline mark shows.
+    var photo: UIImage? = nil
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         Button(action: action) {
-            ProfileMonolineMark()
-                .frame(width: 29, height: 29)
+            Group {
+                if let photo {
+                    Image(uiImage: photo).resizable().scaledToFill()
+                        .frame(width: 42, height: 42)
+                        .clipShape(Circle())
+                } else {
+                    ProfileMonolineMark().frame(width: 29, height: 29)
+                }
+            }
                 .frame(width: 48, height: 48)
                 .background {
                     Circle().fill(LinearGradient(

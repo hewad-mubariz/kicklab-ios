@@ -54,6 +54,13 @@ struct ReplayEffectsView: View {
     @State private var player: AVPlayer?
     @State private var isPlaying = false
     @State private var currentTime: Double = 0
+    /// Test build 2026-11-19: the analytics lab view over the replay, and its prepared data.
+    @State private var labView: LabViewID?
+    @State private var labData: LabViewsData?
+    @State private var labProgress: Double?
+    @State private var labError: String?
+    @State private var labTask: Task<Void, Never>?
+    @State private var labGeneration = UUID()
     @State private var duration: Double = 1
     @State private var timeObserver: Any?
     @State private var sourceSize = CGSize(width: 9, height: 16)
@@ -69,6 +76,9 @@ struct ReplayEffectsView: View {
     @State private var setupGeneration = UUID()
     @State private var playerUsesCompositor = false
     @State private var playbackError: String?
+    @State private var compatibilityRequired = false
+    @State private var canRecoverPlayback = false
+    @StateObject private var playbackMonitor = PreviewPlaybackMonitor()
     @State private var motionSource: URL?
     @State private var surfaceMotionTask: Task<Void, Never>?
     @State private var surfaceMotionGeneration = UUID()
@@ -121,7 +131,8 @@ struct ReplayEffectsView: View {
                                           isPro: subscriptions.isPro, onUnlockTool: unlockTool,
                                           touchTimes: showsTouchTools ? sortedTouchTimes : [], currentTime: currentTime,
                                           onSeek: seekPaused, onPreviewMoment: previewMoment,
-                                          onPreviewSound: { sounds.preview($0) })
+                                          onPreviewSound: { sounds.preview($0) },
+                                          labView: $labView, labStatus: labStatus)
                             .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
                                 // Same spring as the tray's height, so video and panel move as one.
                                 withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { panelTop = top }
@@ -184,6 +195,7 @@ struct ReplayEffectsView: View {
         content.foregroundStyle(.white).preferredColorScheme(.dark)
         .statusBarHidden(false)
         .debugRuntimeOverlay(topInset: 180, onOpenTests: { pause() })
+        .onChange(of: labView) { _, view in prepareLabViews(for: view) }
         .onChange(of: Int(currentTime)) { _, _ in
             #if DEBUG
             FinalTestCoordinator.shared.replaySample(summary.videoURL, position: currentTime, playing: isPlaying)
@@ -296,6 +308,7 @@ struct ReplayEffectsView: View {
             FinalTestCoordinator.shared.replayClosed(summary.videoURL)
             #endif
             momentTask?.cancel(); momentTask = nil
+            cancelLabPreparation()
             sounds.stop()
             tearDownPlayer()
         }
@@ -439,6 +452,51 @@ struct ReplayEffectsView: View {
         }
     }
 
+    private var labStatus: String? {
+        if let labError { return labError }
+        if labView != nil, labData == nil, let labProgress { return "Body tracking \(Int(labProgress * 100))%" }
+        if let labData, labView != nil { return "Feet " + labData.sides }
+        return nil
+    }
+
+    /// Reads the video once (body pose, foot of each touch, lens crops) the first time a lab view is picked.
+    private func prepareLabViews(for view: LabViewID?) {
+        guard view != nil else { cancelLabPreparation(); return }
+        guard labData == nil, labTask == nil else { return }
+        let video = summary.videoURL
+        let frames = summary.track.isEmpty ? summary.renderTrack : summary.track
+        let touches = summary.touchesMarked.map(\.time)
+        labProgress = 0; labError = nil
+        let token = UUID(); labGeneration = token
+        labTask = Task {
+            defer { if labGeneration == token { labTask = nil } }
+            do {
+                let worker = Task.detached(priority: .userInitiated) {
+                    try await LabViewsPrep.prepare(video: video, frames: frames, touches: touches) { value in
+                        Task { @MainActor in
+                            guard labGeneration == token else { return }
+                            labProgress = value
+                        }
+                    }
+                }
+                let data = try await withTaskCancellationHandler { try await worker.value }
+                    onCancel: { worker.cancel() }
+                try Task.checkCancellation()
+                guard labGeneration == token else { return }
+                labData = data; labProgress = nil
+            } catch is CancellationError { }
+            catch {
+                guard labGeneration == token else { return }
+                labError = error.localizedDescription; labProgress = nil
+            }
+        }
+    }
+
+    private func cancelLabPreparation() {
+        labGeneration = UUID()
+        labTask?.cancel(); labTask = nil; labProgress = nil
+    }
+
     private var videoCanvas: some View {
         GeometryReader { geometry in
             let scale = min(geometry.size.width / sourceSize.width, geometry.size.height / sourceSize.height)
@@ -456,7 +514,9 @@ struct ReplayEffectsView: View {
             ZStack(alignment: .topLeading) {
                 if let player {
                     if playerUsesCompositor {
-                        MetalVideoSurface(player: player, edit: renderedEdit, track: effectTrack) { playbackError = $0 }
+                        MetalVideoSurface(player: player, edit: renderedEdit, track: effectTrack,
+                            onFirstFrame: { playbackMonitor.presented(by: player) },
+                            onFailure: { playbackMonitor.stop(); pause(); playbackError = $0 })
                             .frame(width: size.width, height: size.height)
                             .accessibilityIdentifier("effects-replay-surface")
                             .transition(.opacity)
@@ -482,6 +542,16 @@ struct ReplayEffectsView: View {
                         TouchDebugOverlay(event: event, sourceSize: sourceSize)
                     }
                     #endif
+                    if let labView, let labData {
+                        LabViewOverlay(view: labView, data: labData, time: currentTime, size: size)
+                    } else if labView != nil, let labProgress {
+                        Text("Body tracking \(Int(labProgress * 100))%")
+                            .font(.system(size: 13, weight: .semibold)).monospacedDigit()
+                            .padding(.horizontal, 12).padding(.vertical, 7)
+                            .background(.black.opacity(0.55), in: .capsule)
+                            .frame(width: size.width, height: size.height)
+                            .allowsHitTesting(false)
+                    }
                     if effectiveOverlays.graph.enabled {
                         ExportMotionGraphLayer(style: motionStyle,
                             snapshot: motionTimeline.snapshot(at: currentTime, duration: duration), size: size,
@@ -712,15 +782,21 @@ struct ReplayEffectsView: View {
     private func setUpPlayer(at position: Double? = nil, resume: Bool = false) {
         guard player == nil, setupTask == nil else { return }
         playbackError = nil
+        isPlaying = resume
         let selection = playbackSelection
+        let compatibility = compatibilityRequired
+        canRecoverPlayback = selection.usesCompositor && selection.scene == nil && !compatibility
         let token = UUID(); setupGeneration = token
         setupTask = Task {
             defer { if setupGeneration == token { setupTask = nil } }
             do {
-                let media = try await selection.media(summary: summary, sceneModel: stadiumPreview)
+                let media = try await selection.media(summary: summary, sceneModel: stadiumPreview,
+                    compatibility: compatibility)
                 try Task.checkCancellation()
                 guard setupGeneration == token else { return }
                 let url = media.url
+                // An already converted movie must not trigger another conversion loop.
+                canRecoverPlayback = canRecoverPlayback && url == summary.videoURL
                 effectTrack = BallEffectTrack(frames: media.track, touchTimes: summary.touchesMarked.map(\.time))
                 motionSource = summary.videoURL
                 prepareVisualEffects()
@@ -759,6 +835,12 @@ struct ReplayEffectsView: View {
                 sourceSize = loadedSize; duration = loadedDuration
                 playerUsesCompositor = selection.usesCompositor
                 player = p
+                if selection.usesCompositor {
+                    playbackMonitor.start(p) { message in
+                        guard setupGeneration == token else { return }
+                        recoverPlayback(message)
+                    }
+                }
                 currentTime = min(max(0, position ?? (duration - 1.0 / 30)), duration)
                 #if DEBUG && TOUCH_COUNTING_DEBUG
                 if let hold = SessionDesignReview.argument("--touch-debug-hold").flatMap(Double.init), hold.isFinite {
@@ -769,8 +851,9 @@ struct ReplayEffectsView: View {
                              toleranceBefore: .zero, toleranceAfter: .zero)
                 try Task.checkCancellation()
                 guard setupGeneration == token else { return }
+                playbackMonitor.seekCompleted(by: p)
                 sounds.seek(to: currentTime)
-                if resume { p.play(); isPlaying = true }
+                if isPlaying { p.play() }
                 let interval = CMTime(seconds: 1.0 / 60, preferredTimescale: 600)
                 #if DEBUG
                 FinalTestCoordinator.shared.replayOpened(summary.videoURL, duration: duration)
@@ -787,7 +870,7 @@ struct ReplayEffectsView: View {
                 }
                 #endif
                 timeObserver = p.addPeriodicTimeObserver(forInterval: interval, queue: .main) { time in
-                    guard !isScrubbing, !restarting else { return }
+                    guard !isScrubbing, !restarting, p.currentItem?.status == .readyToPlay else { return }
                     let seconds = CMTimeGetSeconds(time)
                     if seconds.isFinite { currentTime = max(0, seconds) }
                     MainActor.assumeIsolated { sounds.advance(to: currentTime, playing: isPlaying) }
@@ -798,12 +881,22 @@ struct ReplayEffectsView: View {
             } catch is CancellationError { }
             catch {
                 guard setupGeneration == token else { return }
-                playbackError = String(localized: "Couldn’t open this video. \(error.localizedDescription)", bundle: AppLanguage.bundle, locale: AppLanguage.locale)
+                recoverPlayback(String(localized: "Couldn’t open this video. \(error.localizedDescription)", bundle: AppLanguage.bundle, locale: AppLanguage.locale))
                 #if DEBUG
                 FinalTestCoordinator.shared.replayFailed(summary.videoURL, message: error.localizedDescription)
                 #endif
             }
         }
+    }
+
+    private func recoverPlayback(_ message: String) {
+        guard canRecoverPlayback else {
+            playbackMonitor.stop(); pause(); playbackError = message; return
+        }
+        let position = currentTime, resume = isPlaying
+        compatibilityRequired = true
+        tearDownPlayer()
+        setUpPlayer(at: position, resume: resume)
     }
 
     /// Under the session badge: a wait with its progress, or a problem the player can retry.
@@ -922,6 +1015,7 @@ struct ReplayEffectsView: View {
     }
 
     private func tearDownPlayer() {
+        playbackMonitor.stop()
         setupGeneration = UUID()
         surfaceMotionGeneration = UUID(); surfaceMotionError = nil
         surfaceMotionTask?.cancel(); surfaceMotionTask = nil; motionSource = nil
@@ -931,6 +1025,7 @@ struct ReplayEffectsView: View {
             player.removeTimeObserver(timeObserver)
         }
         timeObserver = nil
+        player?.currentItem?.cancelPendingSeeks()
         player?.pause()
         isPlaying = false
         player = nil

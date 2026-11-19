@@ -19,13 +19,13 @@ final class ReleaseCandidateUITests: XCTestCase {
         attach(app, "Combined 1.2 settings with default counter")
         app.navigationBars["Settings"].buttons.element(boundBy: 0).tap()
         app.buttons["profile-close"].tap()
-        let leaderboard = app.buttons["home-leaderboard"]
+        let leaderboard = app.mainTab("leaderboard")
         XCTAssertTrue(leaderboard.waitForExistence(timeout: 5))
         leaderboard.tap()
-        XCTAssertTrue(app.buttons["leaderboard-close"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["leaderboard-rules-link"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.descendants(matching: .any)["leaderboard-pennant-1"].waitForExistence(timeout: 10))
         attach(app, "Combined 1.2 leaderboard")
-        app.buttons["leaderboard-close"].tap()
+        app.mainTab("home").tap()
         XCTAssertTrue(app.buttons["module-juggling"].waitForExistence(timeout: 5))
     }
 

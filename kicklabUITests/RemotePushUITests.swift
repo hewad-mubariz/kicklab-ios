@@ -41,11 +41,11 @@ final class RemotePushUITests: XCTestCase {
         notice.tap()
         openNotificationIfNeeded(app, notice: notice, springboard: springboard)
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 15))
-        XCTAssertTrue(app.buttons["leaderboard-close"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.buttons["leaderboard-rules-link"].waitForExistence(timeout: 20))
         XCTAssertFalse(app.buttons["capture-close"].exists)
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = "Leaderboard notification opened leaderboard"; shot.lifetime = .keepAlways; add(shot)
-        app.buttons["leaderboard-close"].tap()
+        app.mainTab("home").tap()
         app.terminate()
         app.launchArguments = base + ["--notification-review"]
         app.launch()

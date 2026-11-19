@@ -3,13 +3,14 @@ import XCTest
 @testable import kicklab
 
 final class ContactRecoveryPolicyTests: XCTestCase {
-    func testBuiltAppOmitsAuxiliaryModelAndRuntime() {
-        XCTAssertNil(Bundle.main.url(forResource: "pose_landmarker_full", withExtension: "task"))
-        XCTAssertNil(NSClassFromString("MPPPoseLandmarker"))
+    func testBuiltAppContainsSelectiveCounterV2ModelAndRuntime() {
+        XCTAssertNotNil(Bundle.main.url(forResource: "pose_landmarker_full", withExtension: "task"))
+        XCTAssertNotNil(NSClassFromString("MPPPoseLandmarker"))
+        XCTAssertNil(Bundle.main.url(forResource: "pose_landmarker_heavy", withExtension: "task"))
     }
 
     @MainActor
-    func testRetiredPreferencesCannotChangeCounterOrReenableModel() throws {
+    func testRetiredPreferencesCannotChangeCounterV2() throws {
         try XCTSkipUnless(ContactRecoveryPolicy.available)
         let defaults = UserDefaults.standard
         let keys = ["juggledude.benchmark.shoe-recovery", "juggledude.preview.shoe-recovery"]
@@ -24,7 +25,10 @@ final class ContactRecoveryPolicyTests: XCTestCase {
         XCTAssertTrue(flags.contains("--visible-foot-recovery-v2"))
         XCTAssertTrue(ContactRecoveryPolicy.usesVisionRevision2)
         XCTAssertTrue(signature.contains("|shoe-recovery-off|visible-foot-v2|pose-r2-"))
-        XCTAssertFalse(signature.contains("|mp-full-"))
+        XCTAssertTrue(signature.contains(CounterV2Policy.signature))
+        XCTAssertTrue(signature.contains("|mp-full-toes-locked-player-v2"))
+        XCTAssertNotEqual(signature, signature.replacingOccurrences(of: CounterV2Policy.signature, with: ""),
+            "Native-only saved decisions must not be reused as Counter V2 results")
         XCTAssertNotEqual(signature, signature.replacingOccurrences(of: "|shoe-recovery-off",
             with: "|shoe-recovery-v1|mp-full-4eaa5eb7"), "Saved model-on evidence must not match")
     }

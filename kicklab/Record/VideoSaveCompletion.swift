@@ -70,7 +70,17 @@ final class VideoSaveCompletion: NSObject, UNUserNotificationCenterDelegate {
 final class VideoSaveAppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         VideoSaveCompletion.shared.configure()
+        JuggleQuickAction.install(on: application)
         return true
+    }
+    /// A quick action that launches the app arrives here; one while it runs reaches
+    /// `JuggleSceneDelegate`.
+    func application(_ application: UIApplication, configurationForConnecting session: UISceneSession,
+                     options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        if let item = options.shortcutItem { JuggleQuickAction.handle(item) }
+        let configuration = UISceneConfiguration(name: nil, sessionRole: session.role)
+        configuration.delegateClass = JuggleSceneDelegate.self
+        return configuration
     }
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         RemotePracticeNotifications.shared.receivedToken(deviceToken)

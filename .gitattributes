@@ -1,0 +1,3 @@
+# Packed environment pixels and compiled shader libraries are not text.
+kicklab/Effects/Lab/Bridge/Resources/*.bin binary
+Vendor/LabShaders/*/*.metallib binary

@@ -7,10 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		21C6A84918F04BD805F63A2E /* MediaPipeTasksVision in Frameworks */ = {isa = PBXBuildFile; productRef = 11B5CBCF2749B1AC11561E86 /* MediaPipeTasksVision */; };
+		A51D00010000000000000051 /* JuggleWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A51D00010000000000000001 /* JuggleWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DAAA00010000000000000001 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = DAAA00010000000000000002 /* PostHog */; };
+		DAAD00010000000000000001 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = DAAD00010000000000000002 /* FacebookCore */; };
 		DABE00010000000000000001 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = DABE00010000000000000002 /* GoogleSignIn */; };
 		DABE00010000000000000004 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = DABE00010000000000000005 /* GoogleSignInSwift */; };
-		DAAD00010000000000000001 /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = DAAD00010000000000000002 /* FacebookCore */; };
-		DAAA00010000000000000001 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = DAAA00010000000000000002 /* PostHog */; };
 		DADD00010000000000000001 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = DADD00010000000000000002 /* Auth */; };
 /* End PBXBuildFile section */
 
@@ -29,23 +31,45 @@
 			remoteGlobalIDString = 7441B446305617DC007026EB;
 			remoteInfo = kicklab;
 		};
+		A51D00010000000000000040 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7441B43F305617DC007026EB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A51D00010000000000000020;
+			remoteInfo = JuggleWidgets;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A51D00010000000000000050 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A51D00010000000000000051 /* JuggleWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		7441B447305617DC007026EB /* Juggle Dude.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Juggle Dude.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7441B456305617DD007026EB /* kicklabTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kicklabTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7441B460305617DE007026EB /* kicklabUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = kicklabUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		859B3B0116E20286B5DCD37F /* MediaPipePose.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = MediaPipePose.xcconfig; path = config/MediaPipePose.xcconfig; sourceTree = "<group>"; };
+		A51D00010000000000000001 /* JuggleWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = JuggleWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		DAAF00010000000000000001 /* Artwork shader precision */ = {
+		DAAF00010000000000000001 /* Exceptions for "kicklab" folder in "kicklab" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Models/pose_landmarker_full.task",
-			);
 			additionalCompilerFlagsByRelativePath = {
-				"Effects/Metal/BallSkinSphere.metal" = "-fno-fast-math";
+				Effects/Metal/BallSkinSphere.metal = "-fno-fast-math";
 			};
+			membershipExceptions = (
+			);
 			target = 7441B446305617DC007026EB /* kicklab */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -54,19 +78,37 @@
 		7441B449305617DC007026EB /* kicklab */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				DAAF00010000000000000001 /* Artwork shader precision */,
+				DAAF00010000000000000001 /* Exceptions for "kicklab" folder in "kicklab" target */,
 			);
 			path = kicklab;
 			sourceTree = "<group>";
 		};
 		7441B459305617DD007026EB /* kicklabTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = kicklabTests;
 			sourceTree = "<group>";
 		};
 		7441B463305617DE007026EB /* kicklabUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = kicklabUITests;
+			sourceTree = "<group>";
+		};
+		A51D00010000000000000002 /* JuggleWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = JuggleWidgets;
+			sourceTree = "<group>";
+		};
+		A51D00010000000000000003 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -81,6 +123,7 @@
 				DABE00010000000000000004 /* GoogleSignInSwift in Frameworks */,
 				DAAA00010000000000000001 /* PostHog in Frameworks */,
 				DAAD00010000000000000001 /* FacebookCore in Frameworks */,
+				21C6A84918F04BD805F63A2E /* MediaPipeTasksVision in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -98,6 +141,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A51D00010000000000000011 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -107,7 +157,10 @@
 				7441B449305617DC007026EB /* kicklab */,
 				7441B459305617DD007026EB /* kicklabTests */,
 				7441B463305617DE007026EB /* kicklabUITests */,
+				A51D00010000000000000002 /* JuggleWidgets */,
+				A51D00010000000000000003 /* Shared */,
 				7441B448305617DC007026EB /* Products */,
+				859B3B0116E20286B5DCD37F /* MediaPipePose.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -117,6 +170,7 @@
 				7441B447305617DC007026EB /* Juggle Dude.app */,
 				7441B456305617DD007026EB /* kicklabTests.xctest */,
 				7441B460305617DE007026EB /* kicklabUITests.xctest */,
+				A51D00010000000000000001 /* JuggleWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -131,13 +185,17 @@
 				7441B443305617DC007026EB /* Sources */,
 				7441B444305617DC007026EB /* Frameworks */,
 				7441B445305617DC007026EB /* Resources */,
+				A51D00010000000000000050 /* Embed Foundation Extensions */,
+				113C1C954EEE6912D5909523 /* Copy Lab Metal Libraries */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A51D00010000000000000041 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				7441B449305617DC007026EB /* kicklab */,
+				A51D00010000000000000003 /* Shared */,
 			);
 			name = kicklab;
 			packageProductDependencies = (
@@ -146,6 +204,7 @@
 				DABE00010000000000000005 /* GoogleSignInSwift */,
 				DAAA00010000000000000002 /* PostHog */,
 				DAAD00010000000000000002 /* FacebookCore */,
+				11B5CBCF2749B1AC11561E86 /* MediaPipeTasksVision */,
 			);
 			productName = kicklab;
 			productReference = 7441B447305617DC007026EB /* Juggle Dude.app */;
@@ -168,8 +227,6 @@
 				7441B459305617DD007026EB /* kicklabTests */,
 			);
 			name = kicklabTests;
-			packageProductDependencies = (
-			);
 			productName = kicklabTests;
 			productReference = 7441B456305617DD007026EB /* kicklabTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -191,11 +248,30 @@
 				7441B463305617DE007026EB /* kicklabUITests */,
 			);
 			name = kicklabUITests;
-			packageProductDependencies = (
-			);
 			productName = kicklabUITests;
 			productReference = 7441B460305617DE007026EB /* kicklabUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		A51D00010000000000000020 /* JuggleWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A51D00010000000000000030 /* Build configuration list for PBXNativeTarget "JuggleWidgets" */;
+			buildPhases = (
+				A51D00010000000000000010 /* Sources */,
+				A51D00010000000000000011 /* Frameworks */,
+				A51D00010000000000000012 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A51D00010000000000000002 /* JuggleWidgets */,
+				A51D00010000000000000003 /* Shared */,
+			);
+			name = JuggleWidgets;
+			productName = JuggleWidgets;
+			productReference = A51D00010000000000000001 /* JuggleWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -210,13 +286,13 @@
 					7441B446305617DC007026EB = {
 						CreatedOnToolsVersion = 26.6;
 						SystemCapabilities = {
-							com.apple.Push = {
-								enabled = 1;
-							};
 							com.apple.AssociatedDomains = {
 								enabled = 1;
 							};
 							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+							com.apple.Push = {
 								enabled = 1;
 							};
 							com.apple.SignInWithApple = {
@@ -231,6 +307,9 @@
 					7441B45F305617DE007026EB = {
 						CreatedOnToolsVersion = 26.6;
 						TestTargetID = 7441B446305617DC007026EB;
+					};
+					A51D00010000000000000020 = {
+						CreatedOnToolsVersion = 26.6;
 					};
 				};
 			};
@@ -252,6 +331,7 @@
 				DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */,
 				DADD00010000000000000003 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				575D88F8A7E83E8F2D7006A7 /* XCLocalSwiftPackageReference "MediaPipeTasks" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7441B448305617DC007026EB /* Products */;
@@ -261,6 +341,7 @@
 				7441B446305617DC007026EB /* kicklab */,
 				7441B455305617DD007026EB /* kicklabTests */,
 				7441B45F305617DE007026EB /* kicklabUITests */,
+				A51D00010000000000000020 /* JuggleWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -287,7 +368,94 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A51D00010000000000000012 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		113C1C954EEE6912D5909523 /* Copy Lab Metal Libraries */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/scripts/copy-lab-shaders.sh",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-bubble.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-festival.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-fx.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-koi.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-origami.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-silk.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-aero.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-amber.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-apex.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-arcade.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-chrome.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-coral.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-crown.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-disco.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-dragonhide.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-kintsugi.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-meteor.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-mono.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-opal.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-plasma.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-porcelain.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-quartz.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-redline.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-scarlet.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-topo.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-turbo.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-ultraviolet.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-skin-velvet.metallib",
+				"$(SRCROOT)/Vendor/LabShaders/$(PLATFORM_NAME)/fxlab-storm.metallib",
+			);
+			name = "Copy Lab Metal Libraries";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-bubble.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-festival.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-fx.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-koi.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-origami.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-silk.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-aero.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-amber.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-apex.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-arcade.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-chrome.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-coral.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-crown.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-disco.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-dragonhide.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-kintsugi.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-meteor.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-mono.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-opal.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-plasma.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-porcelain.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-quartz.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-redline.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-scarlet.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-topo.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-turbo.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-ultraviolet.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-skin-velvet.metallib",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/fxlab-storm.metallib",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/bin/sh \"$SRCROOT/scripts/copy-lab-shaders.sh\"";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7441B443305617DC007026EB /* Sources */ = {
@@ -311,6 +479,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A51D00010000000000000010 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -323,6 +498,11 @@
 			isa = PBXTargetDependency;
 			target = 7441B446305617DC007026EB /* kicklab */;
 			targetProxy = 7441B461305617DE007026EB /* PBXContainerItemProxy */;
+		};
+		A51D00010000000000000041 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A51D00010000000000000020 /* JuggleWidgets */;
+			targetProxy = A51D00010000000000000040 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -443,14 +623,15 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "TOUCH_COUNTER_BETA $(inherited)";
+				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
 		7441B46B305617DE007026EB /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 859B3B0116E20286B5DCD37F /* MediaPipePose.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -477,8 +658,6 @@
 				GCC_OPTIMIZATION_LEVEL = 2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(JUGGLE_APP_INFO_PLIST)";
-				JUGGLE_APP_INFO_PLIST = "config/KickLab-Debug-Info.plist";
-				JUGGLE_APP_BUNDLE_IDENTIFIER = com.juggledude;
 				INFOPLIST_KEY_CFBundleName = "Juggle Dude";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Juggle Dude uses the camera to record your sessions and count your touches. Videos are analysed on your iPhone and only leave it if you export or share them.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Juggle Dude uses the microphone to record sound with your videos. Sound stays on your iPhone unless you export or share a video. You can record without it.";
@@ -488,6 +667,8 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				JUGGLE_APP_BUNDLE_IDENTIFIER = com.juggledude;
+				JUGGLE_APP_INFO_PLIST = "config/KickLab-Debug-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -510,6 +691,7 @@
 		};
 		7441B46C305617DE007026EB /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 859B3B0116E20286B5DCD37F /* MediaPipePose.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -669,6 +851,144 @@
 			};
 			name = TouchCountingDebug;
 		};
+		A51D00010000000000000031 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = config/JuggleWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 89;
+				DEVELOPMENT_TEAM = G276PSQ2LH;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "config/JuggleWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Juggle Dude";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				JUGGLE_APP_BUNDLE_IDENTIFIER = com.juggledude;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(JUGGLE_APP_BUNDLE_IDENTIFIER).widgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) JUGGLE_WIDGET_EXTENSION";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A51D00010000000000000032 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = config/JuggleWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 89;
+				DEVELOPMENT_TEAM = G276PSQ2LH;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "config/JuggleWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Juggle Dude";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juggledude.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) JUGGLE_WIDGET_EXTENSION";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A51D00010000000000000033 /* BallDetectionDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 89;
+				DEVELOPMENT_TEAM = G276PSQ2LH;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "config/JuggleWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Juggle Dude";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juggledude.balldetection.debug.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) JUGGLE_WIDGET_EXTENSION";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = BallDetectionDebug;
+		};
+		A51D00010000000000000034 /* TouchCountingDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 89;
+				DEVELOPMENT_TEAM = G276PSQ2LH;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "config/JuggleWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Juggle Dude";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juggledude.touchcounting.debug.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) JUGGLE_WIDGET_EXTENSION";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = TouchCountingDebug;
+		};
+		A51D00010000000000000035 /* PowerShotDebug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 89;
+				DEVELOPMENT_TEAM = G276PSQ2LH;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "config/JuggleWidgets-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Juggle Dude";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.juggledude.powershot.debug.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) JUGGLE_WIDGET_EXTENSION";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = PowerShotDebug;
+		};
 		BADD00010000000000000001 /* PowerShotDebug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -735,6 +1055,7 @@
 		};
 		BADD00010000000000000002 /* PowerShotDebug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 859B3B0116E20286B5DCD37F /* MediaPipePose.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -889,6 +1210,7 @@
 		};
 		BCDB00010000000000000002 /* TouchCountingDebug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 859B3B0116E20286B5DCD37F /* MediaPipePose.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1020,6 +1342,7 @@
 		};
 		BDDB00010000000000000002 /* BallDetectionDebug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 859B3B0116E20286B5DCD37F /* MediaPipePose.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1113,28 +1436,50 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		A51D00010000000000000030 /* Build configuration list for PBXNativeTarget "JuggleWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A51D00010000000000000031 /* Debug */,
+				A51D00010000000000000033 /* BallDetectionDebug */,
+				A51D00010000000000000035 /* PowerShotDebug */,
+				A51D00010000000000000034 /* TouchCountingDebug */,
+				A51D00010000000000000032 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		575D88F8A7E83E8F2D7006A7 /* XCLocalSwiftPackageReference "MediaPipeTasks" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Vendor/MediaPipeTasks;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
-			requirement = { kind = exactVersion; version = 10.1.0; };
-		};
-		DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/facebook/facebook-ios-sdk.git";
-			requirement = { kind = exactVersion; version = 19.0.0; };
-		};
 		DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/PostHog/posthog-ios.git";
 			requirement = {
 				kind = exactVersion;
 				version = 3.92.0;
+			};
+		};
+		DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/facebook-ios-sdk.git";
+			requirement = {
+				kind = exactVersion;
+				version = 19.0.0;
+			};
+		};
+		DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS.git";
+			requirement = {
+				kind = exactVersion;
+				version = 10.1.0;
 			};
 		};
 		DADD00010000000000000003 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
@@ -1148,6 +1493,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		11B5CBCF2749B1AC11561E86 /* MediaPipeTasksVision */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 575D88F8A7E83E8F2D7006A7 /* XCLocalSwiftPackageReference "MediaPipeTasks" */;
+			productName = MediaPipeTasksVision;
+		};
+		DAAA00010000000000000002 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
+		};
+		DAAD00010000000000000002 /* FacebookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookCore;
+		};
 		DABE00010000000000000002 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
@@ -1157,16 +1517,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = DABE00010000000000000003 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
-		};
-		DAAD00010000000000000002 /* FacebookCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DAAD00010000000000000003 /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
-			productName = FacebookCore;
-		};
-		DAAA00010000000000000002 /* PostHog */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DAAA00010000000000000003 /* XCRemoteSwiftPackageReference "posthog-ios" */;
-			productName = PostHog;
 		};
 		DADD00010000000000000002 /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;

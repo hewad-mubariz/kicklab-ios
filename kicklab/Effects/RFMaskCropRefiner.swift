@@ -200,11 +200,31 @@ nonisolated enum RFMaskCropRefiner {
         let composition = try await EffectVideoGeometry.composition(track: video, duration: duration, shortEdge: 720)
         let pending = requests(frames: frames, frameDuration: composition.frameDuration.seconds)
         guard !pending.isEmpty else { onProgress?(1); return frames }
+        // Only geometry-independent motion can run before repaired masks are available.
+        // Reuse a completed/pending motion result before starting any streaming work.
+        var sharedMotion: SharedMotionAccumulator?
+        var sharedIdentity: [Double]?
+        if SharedBallPreparation.enabled {
+            let track = BallEffectTrack(frames: frames)
+            if let identity = track.sharedMotionIdentity {
+                if try await !BallSurfaceTimeline.hasPreparedMotion(source: source, track: track) {
+                    sharedIdentity = identity
+                    sharedMotion = SharedMotionAccumulator(track: track, duration: duration.seconds,
+                        frameDuration: composition.frameDuration.seconds)
+                } else {
+                    PreparationPerformance.record("shared_motion_already_prepared", ["reused": 1])
+                }
+            } else {
+                PreparationPerformance.record("shared_motion_fallback", ["dependent_track": 1])
+            }
+        }
         let reader = PreparationFrameReader(asset: asset, track: video, composition: composition,
             duration: duration, times: pending.map(\.time),
-            selective: selectiveRead)
+            selective: sharedMotion == nil && selectiveRead)
         defer { reader.cancel() }
         var detector: BallDetector?
+        let reuse = RFFramePredictionReuse.persistenceEnabled && !ProcessInfo.processInfo.arguments.contains("--analysis-ignore-cache")
+            ? try RFFramePredictionReuse.shared.persistentCache(for: SessionAnalysisStore.sourceDigest(source)) : nil
         var result = frames, next = 0, failures = 0, attempted = 0, charged = 0, avoided = 0
         var predictionSeconds = 0.0
         let callBudget = modelCallBudget(frameCount: frames.count)
@@ -228,12 +248,13 @@ nonisolated enum RFMaskCropRefiner {
             }
             #endif
         }
-        while next < pending.count {
+        while next < pending.count || sharedMotion != nil {
             try await VideoWorkExecution.checkpoint(requiresGPU: true)
-            guard let sample = try reader.nextSample() else { break }
+            guard let sample = try reader.nextSample() else { sharedMotion?.reachedEOF = true; break }
+            sharedMotion?.consume(sample)
             let time = sample.presentationTimeStamp.seconds
             while next < pending.count, pending[next].time < time - 0.003 { next += 1 }
-            guard next < pending.count else { break }
+            guard next < pending.count else { if sharedMotion != nil { continue }; break }
             guard abs(pending[next].time - time) < 0.003, let pixels = CMSampleBufferGetImageBuffer(sample) else { continue }
             let request = pending[next]
             next += 1; onProgress?(Double(next) / Double(pending.count))
@@ -253,7 +274,7 @@ nonisolated enum RFMaskCropRefiner {
                         avoided += allowed - look; charged += allowed - look
                         break
                     }
-                    if detector == nil { detector = try BallDetector() }
+                    if detector == nil { detector = try BallDetector(predictionCache: reuse) }
                     let roi = crops[look]
                     let started = try await pacer.beginFrame { _ in }
                     attempted += 1; charged += 1
@@ -290,7 +311,22 @@ nonisolated enum RFMaskCropRefiner {
             }
         }
         try Task.checkCancellation()
+        let sorted = result.sorted { $0.time < $1.time }
+        if let sharedMotion, let sharedIdentity {
+            let track = BallEffectTrack(frames: sorted)
+            if sharedMotion.reachedEOF, failures == 0, track.sharedMotionIdentity == sharedIdentity {
+                let timeline = sharedMotion.finish()
+                try Task.checkCancellation()
+                let persisted = try await BallSurfaceTimeline.storeSharedMotion(source: source, track: track,
+                    inputIdentity: sharedIdentity, timeline: timeline)
+                PreparationPerformance.record("shared_motion_stored", ["entries": Double(timeline.entries.count),
+                    "accepted_pairs": Double(timeline.acceptedCount), "motion_cpu_s": sharedMotion.cpuSeconds,
+                    "persisted": persisted ? 1 : 0])
+            } else {
+                PreparationPerformance.record("shared_motion_fallback", ["incomplete_or_changed": 1])
+            }
+        }
         onProgress?(1)
-        return result.sorted { $0.time < $1.time }
+        return sorted
     }
 }

@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-17",
+  "branch": "codex/juggle-v2-tabs",
+  "base_commit": "822ca4f0",
+  "device": "iPhone 11 Pro Max (iPhone12,5)",
+  "os": "iOS 27.2",
+  "scheme": "JuggleDude",
+  "configuration": "Debug",
+  "bundle_id": "com.juggledude",
+  "version": "1.2.0",
+  "build": "89",
+  "scope": [
+    "Native Home, Challenges, Leaderboard and Profile tabs",
+    "Preserved navigation and leaderboard scroll state",
+    "Practice goal details and full-screen camera target",
+    "Home card and leaderboard notification routing",
+    "Localized new copy in en, de, es, fr and pt-BR"
+  ],
+  "validation": {
+    "device_build": "passed",
+    "native_ui_tests": "4 passed, 0 failures in native-tabs-iphone11-verified.xcresult",
+    "leaderboard_scroll_and_period_regression": "passed in native-tabs-iphone11-final.xcresult",
+    "visual_review": [
+      "English light/dark",
+      "German",
+      "Largest accessibility text size",
+      "Camera covers tab bar"
+    ],
+    "normal_launch": "succeeded without test fixtures; only debug overlay hidden for this launch"
+  },
+  "test_revisions": [
+    "Combined camera goal accessibility label after initial duplicate match",
+    "Checked tab interactivity beneath full-screen camera, because UIKit retains covered tabs in its tree",
+    "Matched localized labels when iOS rebuilds native tabs without SwiftUI test identifiers"
+  ],
+  "limitations": [
+    "Practice goals do not yet award challenge completions, enforce timed rounds, or publish community posts",
+    "Camera navigation checked; no new recording/counting/thermal qualification",
+    "Notification routing updated and reviewed; no APNs alert was sent in this task",
+    "Updated existing UI test navigation selectors; full unrelated test suite was not run"
+  ],
+  "evidence_directory": "artifacts/v2-tabs",
+  "source_sha256": {
+    "kicklab/Navigation/RootShellView.swift": "5fbf46839cdceb6679124c2defbefd37a44e0d4309bd3471a943d5302b7413f1",
+    "kicklab/Navigation/JugglingChallengesView.swift": "f2aaed3c5ef9bc9feaaef80402fde06b603810fc5adb2dd832593828164274c7",
+    "kicklab/Record/RecordView.swift": "cd0bbee4e05b1a48013338ffb071e3da13db4d87f96cb2ed1262e4e5bda85f70"
+  }
+}
