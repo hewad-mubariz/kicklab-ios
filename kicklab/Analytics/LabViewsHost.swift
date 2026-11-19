@@ -147,10 +147,17 @@ nonisolated enum LabViewsPrep {
         reader.add(output)
         guard reader.startReading() else { throw Failure.noVideo }
         defer { reader.cancelReading() }
-        let step = duration > 60 ? 1.0 / 30 : 1.0 / 60
-        var next = 0.0
+        // Body pose at 60 fps from 0.35 s before each touch to 0.12 s after, where the foot rule, the lens
+        // and the leg-swing views look, and 15 fps between touches, enough for body scale. Each decoded frame is released before the next one, so a long or
+        // 4K clip never holds more than one frame; on the iPhone 17 the old loop was killed within seconds.
+        let near = 1.0 / 60, far = 1.0 / 15
+        let windows = touchTimes.map { ($0 - 0.35)...($0 + 0.12) }
+        func nearTouch(_ t: Double) -> Bool { windows.contains { $0.contains(t) } }
+        var lastPose = -Double.infinity
+        var lastPercent = -1
         var poseFrames = [BodyZones.PoseFile.Frame]()
         let ci = CIContext(options: [.cacheIntermediates: false])
+        let request = VNDetectHumanBodyPoseRequest()
         let lensRects: [CGRect?] = touchTimes.map { t in
             ball.ball(at: t).map { b in
                 let side = 2 * TechniqueDrawing.lensCropRadii * Double(b.r)
@@ -158,35 +165,51 @@ nonisolated enum LabViewsPrep {
             }
         }
         var lens = [Int: [(t: Double, image: CGImage)]]()
-        while let sample = output.copyNextSampleBuffer() {
+        var reading = true
+        while reading {
             try Task.checkCancellation()
-            let t = CMSampleBufferGetPresentationTimeStamp(sample).seconds
-            guard let buffer = CMSampleBufferGetImageBuffer(sample) else { continue }
-            let near = touchTimes.indices.filter { abs(touchTimes[$0] - t) <= 0.1 }
-            if !near.isEmpty {
-                var image = CIImage(cvPixelBuffer: buffer).oriented(orientation)
-                image = image.transformed(by: CGAffineTransform(translationX: -image.extent.minX, y: -image.extent.minY))
-                for k in near {
-                    guard let r = lensRects[k] else { continue }
-                    // Core Image is bottom-left; the crop rect is top-left.
-                    let flipped = CGRect(x: r.minX, y: H - r.maxY, width: r.width, height: r.height).intersection(image.extent)
-                    if !flipped.isEmpty, let cut = ci.createCGImage(image, from: flipped) { lens[k, default: []].append((t, cut)) }
+            // One pool per read, so skipped frames are freed at once too.
+            reading = autoreleasepool { () -> Bool in
+                guard let sample = output.copyNextSampleBuffer() else { return false }
+                let t = CMSampleBufferGetPresentationTimeStamp(sample).seconds
+                defer {
+                    let percent = Int(min(0.99, t / max(0.1, duration)) * 100)
+                    if percent != lastPercent { lastPercent = percent; progress(Double(percent) / 100) }
                 }
-            }
-            guard t + 0.0005 >= next else { continue }
-            while next <= t + 0.0005 { next += step }
-            let request = VNDetectHumanBodyPoseRequest()
-            try? VNImageRequestHandler(cvPixelBuffer: buffer, orientation: orientation).perform([request])
-            var joints = [String: [Double]]()
-            if let person = request.results?.max(by: { $0.confidence < $1.confidence }) {
-                for (name, key) in jointNames {
-                    if let p = try? person.recognizedPoint(key), p.confidence > 0.1 {
-                        joints[name] = [Double(p.location.x) * W, (1 - Double(p.location.y)) * H, Double(p.confidence)]
+                // Spacing counts from the last frame used, so entering a touch window switches to 60 fps at once.
+                let close = nearTouch(t)
+                guard t - lastPose >= (close ? near : far) - 0.002,
+                      let buffer = CMSampleBufferGetImageBuffer(sample) else { return true }
+                lastPose = t
+                let lensTouches = close ? touchTimes.indices.filter { abs(touchTimes[$0] - t) <= 0.1 } : []
+                if !lensTouches.isEmpty {
+                    var image = CIImage(cvPixelBuffer: buffer).oriented(orientation)
+                    image = image.transformed(by: CGAffineTransform(translationX: -image.extent.minX, y: -image.extent.minY))
+                    for k in lensTouches {
+                        guard let r = lensRects[k] else { continue }
+                        // Core Image is bottom-left; the crop rect is top-left.
+                        let flipped = CGRect(x: r.minX, y: H - r.maxY, width: r.width, height: r.height).intersection(image.extent)
+                        guard !flipped.isEmpty else { continue }
+                        // The lens shows a crop at about a third of the video's width, so 256 px is enough. About a dozen
+                        // crops per touch are kept for its slow motion: full-size ones cost ~5 MB per touch on the
+                        // phone, 256 px about 2 MB, which a few hundred touches can afford.
+                        let scale = min(1, 256 / max(flipped.width, flipped.height))
+                        let small = image.cropped(to: flipped).transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+                        if let cut = ci.createCGImage(small, from: small.extent.integral) { lens[k, default: []].append((t, cut)) }
                     }
                 }
+                try? VNImageRequestHandler(cvPixelBuffer: buffer, orientation: orientation).perform([request])
+                var joints = [String: [Double]]()
+                if let person = request.results?.max(by: { $0.confidence < $1.confidence }) {
+                    for (name, key) in jointNames {
+                        if let p = try? person.recognizedPoint(key), p.confidence > 0.1 {
+                            joints[name] = [Double(p.location.x) * W, (1 - Double(p.location.y)) * H, Double(p.confidence)]
+                        }
+                    }
+                }
+                poseFrames.append(BodyZones.PoseFile.Frame(time: t, joints: joints))
+                return true
             }
-            poseFrames.append(BodyZones.PoseFile.Frame(time: t, joints: joints))
-            progress(min(0.99, t / max(0.1, duration)))
         }
         try Task.checkCancellation()
         guard reader.status == .completed else { throw reader.error ?? Failure.noVideo }
