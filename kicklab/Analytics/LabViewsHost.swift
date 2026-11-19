@@ -44,6 +44,15 @@ nonisolated enum LabViewID: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    /// Views drawn from the ball track and each touch's foot alone. With the counter's saved feet these
+    /// appear at once, without reading the video; the rest need the body-pose pass.
+    var needsBody: Bool {
+        switch self {
+        case .footRally, .leftRight, .beatGates, .arcMatch, .controlSurf: false
+        default: true
+        }
+    }
+
     var group: String {
         switch self {
         case .footRally, .leftRight, .beatGates, .arcMatch, .controlSurf: "Graphs"
@@ -83,26 +92,31 @@ nonisolated final class LabViewsData: @unchecked Sendable {
     let motion: AnalyticsMotion.Session
     let feet: FootChallenge.Session
     let rally: FootRally.Model
-    let technique: Technique.Model
-    let peak: BodyZones.PeakModel
-    let touch: BodyZones.TouchModel
-    let reach: BodyMoves.ReachModel
-    let footwork: BodyMoves.FootworkModel
+    /// Nil when built from the counter's saved feet without the body-pose pass.
+    let technique: Technique.Model?
+    let peak: BodyZones.PeakModel?
+    let touch: BodyZones.TouchModel?
+    let reach: BodyMoves.ReachModel?
+    let footwork: BodyMoves.FootworkModel?
     let lensFrames: [Int: [(t: Double, image: CGImage)]]
     /// One letter per touch (L, R or U), for checking the foot rule.
     let sides: String
 
     init(video: URL, size: CGSize, ball: GraphScene.BallTrack, motion: AnalyticsMotion.Session, feet: FootChallenge.Session,
-         body: BodyZones.Body, lensFrames: [Int: [(t: Double, image: CGImage)]], sides: String) {
+         body: BodyZones.Body?, lensFrames: [Int: [(t: Double, image: CGImage)]], sides: String) {
         self.video = video; self.size = size; self.ball = ball; self.motion = motion; self.feet = feet
         rally = FootRally.Model(feet)
-        technique = Technique.Model(body: body, ball: ball, touches: feet.times, motion: motion, sides: feet.touches.map(\.side))
-        peak = BodyZones.PeakModel(body: body, ball: ball, touches: feet.times)
-        touch = BodyZones.TouchModel(body: body, ball: ball, feet: feet)
-        reach = BodyMoves.ReachModel(body: body, ball: ball, touchTimes: feet.times)
-        footwork = BodyMoves.FootworkModel(body: body, ball: ball, touchTimes: feet.times)
+        technique = body.map { Technique.Model(body: $0, ball: ball, touches: feet.times, motion: motion, sides: feet.touches.map(\.side)) }
+        peak = body.map { BodyZones.PeakModel(body: $0, ball: ball, touches: feet.times) }
+        touch = body.map { BodyZones.TouchModel(body: $0, ball: ball, feet: feet) }
+        reach = body.map { BodyMoves.ReachModel(body: $0, ball: ball, touchTimes: feet.times) }
+        footwork = body.map { BodyMoves.FootworkModel(body: $0, ball: ball, touchTimes: feet.times) }
         self.lensFrames = lensFrames; self.sides = sides
     }
+
+    var hasBody: Bool { technique != nil }
+    /// Whether this data can draw `view` (feet-only data can't draw the body views).
+    func covers(_ view: LabViewID) -> Bool { hasBody || !view.needsBody }
 }
 
 nonisolated enum LabViewsPrep {
@@ -117,28 +131,61 @@ nonisolated enum LabViewsPrep {
         ("leftHip", .leftHip), ("rightHip", .rightHip), ("leftKnee", .leftKnee), ("rightKnee", .rightKnee),
         ("leftAnkle", .leftAnkle), ("rightAnkle", .rightAnkle)]
 
-    static func prepare(video: URL, frames: [RecordedFrame], touches: [Double],
+    /// The counter's saved feet cover enough touches to skip the body-pose pass for feet-only views.
+    static func savedFeetSuffice(_ feet: [TouchFoot?]) -> Bool {
+        !feet.isEmpty && Double(feet.filter { $0 != nil }.count) >= 0.8 * Double(feet.count)
+    }
+
+    /// Feet-only views straight from the counter's saved feet: no frame is decoded and no pose is run.
+    /// Nil when too few touches have a saved foot; the body-pose pass then works them out.
+    static func fromSavedFeet(video: URL, frames: [RecordedFrame], touches: [Double], feet: [TouchFoot?]) async throws -> LabViewsData? {
+        guard !touches.isEmpty else { throw Failure.noTouches }
+        guard feet.count == touches.count, savedFeetSuffice(feet) else { return nil }
+        let access = try VideoStorageAccess.beginRead()
+        defer { access.release() }
+        let geometry = try await Geometry(AVURLAsset(url: video))
+        let ordered = zip(touches, feet).sorted { $0.0 < $1.0 }
+        return assemble(video: video, geometry: geometry, frames: frames, touchTimes: ordered.map(\.0),
+                        sides: ordered.map { $0.1?.rawValue ?? "U" }, body: nil, lens: [:])
+    }
+
+    private struct Geometry {
+        let track: AVAssetTrack, duration: Double, W: Double, H: Double, orientation: CGImagePropertyOrientation
+        init(_ asset: AVURLAsset) async throws {
+            guard let track = try await asset.loadTracks(withMediaType: .video).first else { throw Failure.noVideo }
+            let natural = try await track.load(.naturalSize), transform = try await track.load(.preferredTransform)
+            duration = try await asset.load(.duration).seconds
+            let upright = CGRect(origin: .zero, size: natural).applying(transform).standardized.size
+            W = Double(upright.width); H = Double(upright.height); self.track = track
+            orientation = transform.b == 1 ? .right : transform.b == -1 ? .left : transform.a == -1 ? .down : .up
+        }
+    }
+
+    /// The counter's own ball track and person boxes (normalized upright, top-left).
+    private static func ballTrack(_ sorted: [RecordedFrame], _ g: Geometry) -> GraphScene.BallTrack {
+        let rows = sorted.map { f in
+            GraphScene.BallTrack.Row(time: f.time, x: f.detected ? f.x : nil, y: f.detected ? f.y : nil, width: f.detected ? f.width : nil,
+                                     personX: f.person?.x, personY: f.person?.y, personHeight: f.person?.height)
+        }
+        return GraphScene.BallTrack(GraphScene.BallTrack.File(track: rows), width: g.W, height: g.H)
+    }
+
+    /// `feet`, when given, are the counter's saved feet in `touches` order; the pass keeps them and works
+    /// out only the touches without one.
+    static func prepare(video: URL, frames: [RecordedFrame], touches: [Double], feet savedFeet: [TouchFoot?]? = nil,
                         progress: @escaping @Sendable (Double) -> Void) async throws -> LabViewsData {
         guard !touches.isEmpty else { throw Failure.noTouches }
         try Task.checkCancellation()
         let access = try VideoStorageAccess.beginRead()
         defer { access.release() }
         let asset = AVURLAsset(url: video)
-        guard let track = try await asset.loadTracks(withMediaType: .video).first else { throw Failure.noVideo }
-        let natural = try await track.load(.naturalSize), transform = try await track.load(.preferredTransform)
-        let duration = try await asset.load(.duration).seconds
-        let upright = CGRect(origin: .zero, size: natural).applying(transform).standardized.size
-        let W = Double(upright.width), H = Double(upright.height)
-        let orientation: CGImagePropertyOrientation = transform.b == 1 ? .right : transform.b == -1 ? .left : transform.a == -1 ? .down : .up
-
-        // The counter's own ball track and person boxes (normalized upright, top-left).
+        let geometry = try await Geometry(asset)
+        let track = geometry.track, duration = geometry.duration, W = geometry.W, H = geometry.H
+        let orientation = geometry.orientation
         let sorted = frames.sorted { $0.time < $1.time }
-        let rows = sorted.map { f in
-            GraphScene.BallTrack.Row(time: f.time, x: f.detected ? f.x : nil, y: f.detected ? f.y : nil, width: f.detected ? f.width : nil,
-                                     personX: f.person?.x, personY: f.person?.y, personHeight: f.person?.height)
-        }
-        let ball = GraphScene.BallTrack(GraphScene.BallTrack.File(track: rows), width: W, height: H)
-        let touchTimes = touches.sorted()
+        let ball = ballTrack(sorted, geometry)
+        let ordered = zip(touches, savedFeet ?? touches.map { _ in nil }).sorted { $0.0 < $1.0 }
+        let touchTimes = ordered.map(\.0)
 
         // One pass over the video: body pose on a 60 (or 30) fps grid, and the Touch Lens crops.
         let reader = try AVAssetReader(asset: asset)
@@ -225,8 +272,8 @@ nonisolated enum LabViewsPrep {
         }
         let facing: Double = hips.filter { $0 }.count * 2 > hips.count ? 1 : -1
         let minLift = 8 * W / 1080
-        var sides = ""
-        let feetInput = FootChallenge.Input(touches: touchTimes.map { t in
+        let sides: [String] = zip(touchTimes, ordered.map(\.1)).map { t, saved in
+            if let saved { return saved.rawValue }
             var num = 0.0, den = 0.0
             for f in poseFrames where f.time >= t - 0.067 - 1e-6 && f.time <= t + 1e-6 {
                 guard let a = f.joints["leftAnkle"], let b = f.joints["rightAnkle"], min(a[2], b[2]) >= 0.3 else { continue }
@@ -237,11 +284,20 @@ nonisolated enum LabViewsPrep {
                 den += lift
             }
             let agree = den > 0 ? num / den : 0
-            let side = abs(agree) >= 0.5 ? (agree > 0 ? "L" : "R") : "U"
-            sides += side
-            return FootChallenge.Input.Touch(time: t, side: side)
-        })
-        let feet = FootChallenge.Session(feetInput)
+            return abs(agree) >= 0.5 ? (agree > 0 ? "L" : "R") : "U"
+        }
+        progress(1)
+        return assemble(video: video, geometry: geometry, frames: sorted, touchTimes: touchTimes, sides: sides, body: body, lens: lens)
+    }
+
+    private static func assemble(video: URL, geometry: Geometry, frames: [RecordedFrame], touchTimes: [Double], sides: [String],
+                                 body: BodyZones.Body?, lens: [Int: [(t: Double, image: CGImage)]]) -> LabViewsData {
+        let sorted = frames.sorted { $0.time < $1.time }
+        let W = geometry.W, H = geometry.H, duration = geometry.duration
+        let ball = ballTrack(sorted, geometry)
+        let feet = FootChallenge.Session(FootChallenge.Input(touches: zip(touchTimes, sides).map {
+            FootChallenge.Input.Touch(time: $0, side: $1)
+        }))
 
         // The suite's input: the ball and the person box on a 30 fps grid, and the touches with their foot.
         var samples = [AnalyticsSuite.Sample]()
@@ -261,9 +317,8 @@ nonisolated enum LabViewsPrep {
         }
         let events = feet.touches.map { AnalyticsSuite.Event(time: $0.time, availableAt: $0.time, side: $0.side == .left ? "L" : $0.side == .right ? "R" : "U") }
         let input = AnalyticsSuite.Input(samples: samples, events: events, history: [], contextKey: "app-test", definitionsVersion: "analytics-lab-v1")
-        progress(1)
         return LabViewsData(video: video, size: CGSize(width: W, height: H), ball: ball, motion: AnalyticsMotion.Session(input),
-                            feet: feet, body: body, lensFrames: lens, sides: sides)
+                            feet: feet, body: body, lensFrames: lens, sides: sides.joined())
     }
 }
 
@@ -289,15 +344,15 @@ nonisolated enum LabViewsDraw {
             default: AnalyticsMotionDrawing.draw(in: c, rect: rect, graph: 2, session: d.motion, time: t)
             }
         case .leftRight: FootChallengeDrawing.draw(in: c, rect: rect, session: d.feet, time: t)
-        case .peakZone: BodyZonesDrawing.peakZone(in: c, rect: rect, model: d.peak, time: t)
-        case .touchZone: BodyZonesDrawing.touchZone(in: c, rect: rect, model: d.touch, time: t)
-        case .reach: BodyMovesDrawing.reach(in: c, rect: rect, model: d.reach, time: t)
-        case .footwork: BodyMovesDrawing.footwork(in: c, rect: rect, model: d.footwork, time: t)
+        case .peakZone: if let m = d.peak { BodyZonesDrawing.peakZone(in: c, rect: rect, model: m, time: t) }
+        case .touchZone: if let m = d.touch { BodyZonesDrawing.touchZone(in: c, rect: rect, model: m, time: t) }
+        case .reach: if let m = d.reach { BodyMovesDrawing.reach(in: c, rect: rect, model: m, time: t) }
+        case .footwork: if let m = d.footwork { BodyMovesDrawing.footwork(in: c, rect: rect, model: m, time: t) }
         default:
-            guard let technique = Technique.View(rawValue: view.rawValue) else { return }
+            guard let technique = Technique.View(rawValue: view.rawValue), let model = d.technique else { return }
             TechniqueDrawing.visible = nil
             TechniqueDrawing.lensFrames = d.lensFrames
-            TechniqueDrawing.draw(technique, in: c, size: size, model: d.technique, time: t)
+            TechniqueDrawing.draw(technique, in: c, size: size, model: model, time: t)
         }
     }
 }

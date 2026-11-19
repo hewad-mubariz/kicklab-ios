@@ -454,25 +454,48 @@ struct ReplayEffectsView: View {
 
     private var labStatus: String? {
         if let labError { return labError }
-        if labView != nil, labData == nil, let labProgress { return "Body tracking \(Int(labProgress * 100))%" }
+        if let labView, !(labData?.covers(labView) ?? false), let labProgress { return "Body tracking \(Int(labProgress * 100))%" }
         if let labData, labView != nil { return "Feet " + labData.sides }
         return nil
     }
 
-    /// Reads the video once (body pose, foot of each touch, lens crops) the first time a lab view is picked.
+    /// Feet-only views come straight from the counter's saved feet. The body views read the video once
+    /// (body pose, lens crops), keeping the saved feet, the first time one is picked.
     private func prepareLabViews(for view: LabViewID?) {
-        guard view != nil else { cancelLabPreparation(); return }
-        guard labData == nil, labTask == nil else { return }
+        guard let view else { cancelLabPreparation(); return }
+        if let labData, labData.covers(view) { return }
+        guard labTask == nil else { return }
         let video = summary.videoURL
         let frames = summary.track.isEmpty ? summary.renderTrack : summary.track
         let touches = summary.touchesMarked.map(\.time)
-        labProgress = 0; labError = nil
+        let feet = summary.touchesMarked.map(\.foot)
+        let quick = !view.needsBody && LabViewsPrep.savedFeetSuffice(feet)
+        labProgress = quick ? nil : 0; labError = nil
         let token = UUID(); labGeneration = token
         labTask = Task {
-            defer { if labGeneration == token { labTask = nil } }
+            defer {
+                if labGeneration == token {
+                    labTask = nil
+                    // A body view picked while the feet-only data was being built still needs its pass.
+                    if labError == nil, let current = labView, !(labData?.covers(current) ?? false) { prepareLabViews(for: current) }
+                }
+            }
             do {
+                if quick {
+                    let worker = Task.detached(priority: .userInitiated) {
+                        try await LabViewsPrep.fromSavedFeet(video: video, frames: frames, touches: touches, feet: feet)
+                    }
+                    if let data = try await withTaskCancellationHandler(operation: { try await worker.value },
+                                                                        onCancel: { worker.cancel() }) {
+                        try Task.checkCancellation()
+                        guard labGeneration == token else { return }
+                        labData = data
+                        return
+                    }
+                }
+                labProgress = 0
                 let worker = Task.detached(priority: .userInitiated) {
-                    try await LabViewsPrep.prepare(video: video, frames: frames, touches: touches) { value in
+                    try await LabViewsPrep.prepare(video: video, frames: frames, touches: touches, feet: feet) { value in
                         Task { @MainActor in
                             guard labGeneration == token else { return }
                             labProgress = value
@@ -542,7 +565,7 @@ struct ReplayEffectsView: View {
                         TouchDebugOverlay(event: event, sourceSize: sourceSize)
                     }
                     #endif
-                    if let labView, let labData {
+                    if let labView, let labData, labData.covers(labView) {
                         LabViewOverlay(view: labView, data: labData, time: currentTime, size: size)
                     } else if labView != nil, let labProgress {
                         Text("Body tracking \(Int(labProgress * 100))%")

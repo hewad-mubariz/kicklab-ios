@@ -210,7 +210,12 @@ nonisolated final class RFAppCounterCore {
                 x: touch.x, y: touch.y))
         }
         let qualityFailed = toeEvidence?.error != nil || analysisFailed || contactVerifier?.lastError != nil || evidence?.error != nil
-        let touches = wasActive ? touchesThisRun : []
+        var touches = wasActive ? touchesThisRun : []
+        // Each touch's foot from the poses the contact checks already made, in the counter's own clock.
+        if let recorder = contactVerifier?.touchFeet, !touches.isEmpty {
+            let feet = recorder.feet(atContactMs: touches.map { Int((($0.time + recordingStartSeconds) * 1000).rounded()) })
+            for i in touches.indices { touches[i].foot = feet[i] }
+        }
         let track = wasActive ? trackThisRun : []
         let count = wasActive ? counter.count : 0
         let diagnostics = wasActive ? (counter.traceSnapshot()?.diagnostics ?? []).map {

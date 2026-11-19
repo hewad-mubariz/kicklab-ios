@@ -407,6 +407,8 @@ nonisolated struct StoredInference: Codable, Sendable {
     let elapsed: Double
     /// Only additions; original frames and counting statistics retain their old meaning.
     var visualRecoveries: [StoredFrame]? = nil
+    /// One letter per touch (L, R or U), from the counter's contact poses. Absent in older analyses.
+    var feet: String? = nil
     var isValid: Bool {
         StoredFrame.validated(frames + (visualRecoveries ?? []))
         && frames.allSatisfy { $0.visualRecovery != true }
@@ -419,6 +421,6 @@ nonisolated struct StoredInference: Codable, Sendable {
             && zip(frames, frames.dropFirst()).allSatisfy { $0.values[0] <= $1.values[0] }
     }
     var recordedTouches: [RecordedTouch] {
-        touches.map { RecordedTouch(index:Int($0[0]),time:$0[1],x:$0[2],y:$0[3]) }
+        TouchFoot.apply(feet, to: touches.map { RecordedTouch(index:Int($0[0]),time:$0[1],x:$0[2],y:$0[3]) })
     }
 }

@@ -76,6 +76,9 @@ nonisolated final class JugglingContactVerifier: ContactEvidenceProviding {
         self.observations = observations
     }
 
+    /// Each touch's foot, from the poses this verifier's checks computed.
+    var touchFeet: TouchFootRecorder { observations.touchFeet }
+
     func discardFrames() {
         observations.discardFrames()
         #if DEBUG

@@ -29,6 +29,8 @@ nonisolated final class ContactObservationStore {
     }
     func timestamp(at index: Int) -> Int? { timestamps[index] }
     typealias Pose = BodyPose
+    /// Ankles and hips of every selected pose computed here, for each touch's foot. Kept across discards.
+    let touchFeet = TouchFootRecorder()
     private var poseCache: [Int: Pose] = [:]
     private var otherPoseCache: [Int: [Pose]] = [:]
     private var selections: [Int: ActivePlayerSelection] = [:]
@@ -100,6 +102,7 @@ nonisolated final class ContactObservationStore {
 
     func reset() {
         discardFrames()
+        touchFeet.reset()
         if let pixelPool { CVPixelBufferPoolFlush(pixelPool, .excessBuffers) }
         context.clearCaches()
         poseRequests = 0
@@ -225,6 +228,13 @@ nonisolated final class ContactObservationStore {
         }
     }
 
+    private func recordFeet(_ pose: Pose, _ frame: Frame) {
+        let height = CVPixelBufferGetHeight(frame.pixels)
+        guard height > 0 else { return }
+        touchFeet.record(timestampMs: frame.timestampMs, pose: pose,
+                         aspect: Double(CVPixelBufferGetWidth(frame.pixels)) / Double(height))
+    }
+
     func pose(for frame: Frame, recordErrors: Bool = true) -> Pose? {
         let scope = profileScope ?? "unattributed"
         if let cached = poseCache[frame.index] {
@@ -247,6 +257,7 @@ nonisolated final class ContactObservationStore {
                     let result = selected.map { poses[$0] } ?? Pose()
                     otherPoseCache[frame.index] = poses.enumerated().filter { $0.offset != selected }.map(\.element)
                     poseCache[frame.index] = result
+                    recordFeet(result, frame)
                     return result
                 }
                 let poses = try legacyPoses(frame.pixels)
@@ -254,6 +265,7 @@ nonisolated final class ContactObservationStore {
                 let result = selected.map { poses[$0] } ?? Pose()
                 otherPoseCache[frame.index] = poses.enumerated().filter { $0.offset != selected }.map(\.element)
                 poseCache[frame.index] = result
+                recordFeet(result, frame)
                 return result
             } catch {
                 if recordErrors || error is PosePredictionStore.Failure {

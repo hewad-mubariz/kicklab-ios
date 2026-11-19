@@ -80,6 +80,66 @@ final class LabViewsTests: XCTestCase {
         }
     }
 
+    /// The counter's own feet: the real import analysis on lab-clip.mp4, with no extra pose pass. Compares each
+    /// counted touch's foot with the full 60 fps pass (29 L, 4 R on the lab's touch times).
+    @MainActor
+    func testCounterFeetOnThePhone() async throws {
+        let docs = URL.documentsDirectory
+        let video = docs.appendingPathComponent("lab-clip.mp4")
+        guard FileManager.default.fileExists(atPath: video.path) else { throw XCTSkip("lab-clip.mp4 not in Documents") }
+        let labTimes = try JSONDecoder().decode([Double].self, from: Data(contentsOf: docs.appendingPathComponent("lab-touches.json"))).sorted()
+        let labSides = Array("RLLLLLLLRLRLLLLLLLLLLLLLLLLLLLLLR")
+        let started = Date()
+        let analyser = VideoAnalyzer()
+        analyser.analyse(url: video)
+        await analyser.waitUntilFinished()
+        XCTAssertEqual(analyser.status, "done")
+        let touches = analyser.recordedTouches
+        var lines = [String(format: "analysis %.1f s, %d touches, feet %@", Date().timeIntervalSince(started), touches.count,
+                            TouchFoot.letters(touches) ?? "none")]
+        var agree = 0, differ = 0, unknown = 0, unmatched = 0
+        for touch in touches {
+            guard let k = labTimes.indices.min(by: { abs(labTimes[$0] - touch.time) < abs(labTimes[$1] - touch.time) }),
+                  abs(labTimes[k] - touch.time) <= 0.06 else { unmatched += 1; continue }
+            guard let foot = touch.foot else { unknown += 1; continue }
+            if foot.rawValue == String(labSides[k]) { agree += 1 } else {
+                differ += 1
+                lines.append(String(format: "differs at %.2f s: counter %@, pass %@", touch.time, foot.rawValue, String(labSides[k])))
+            }
+        }
+        lines.append("agree \(agree), differ \(differ), unknown \(unknown), not on the lab's touches \(unmatched)")
+
+        // Feet-only views straight from those saved feet: no video pass.
+        let quickStart = Date()
+        let quick = try await LabViewsPrep.fromSavedFeet(video: video, frames: analyser.recordedTrack,
+                                                         touches: touches.map(\.time), feet: touches.map(\.foot))
+        lines.append(String(format: "feet-only views ready in %.2f s, sides %@, body %@", Date().timeIntervalSince(quickStart),
+                            quick?.sides ?? "none", quick?.hasBody == true ? "yes" : "no"))
+        XCTAssertNotNil(quick)
+        if let quick {
+            XCTAssertTrue(quick.covers(.footRally)); XCTAssertFalse(quick.covers(.peakZone))
+            let generator = AVAssetImageGenerator(asset: AVURLAsset(url: video))
+            generator.appliesPreferredTrackTransform = true
+            generator.requestedTimeToleranceBefore = .zero; generator.requestedTimeToleranceAfter = .zero
+            let w = Int(quick.size.width / 2), h = Int(quick.size.height / 2)
+            for t in [10.5, 15.4] {
+                let (frame, _) = try await generator.image(at: CMTime(seconds: t, preferredTimescale: 600))
+                let c = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4, space: CGColorSpaceCreateDeviceRGB(),
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+                c.draw(frame, in: CGRect(x: 0, y: 0, width: w, height: h))
+                c.translateBy(x: 0, y: CGFloat(h)); c.scaleBy(x: 0.5, y: -0.5)
+                LabViewsDraw.draw(.footRally, in: c, data: quick, time: t)
+                guard let image = c.makeImage() else { continue }
+                let shot = XCTAttachment(image: UIImage(cgImage: image))
+                shot.name = "foot-rally from saved feet at \(t) s"; shot.lifetime = .keepAlways; add(shot)
+            }
+        }
+        print("COUNTER-FEET\n" + lines.joined(separator: "\n"))
+        let attachment = XCTAttachment(string: lines.joined(separator: "\n"))
+        attachment.name = "Counter feet on the phone"; attachment.lifetime = .keepAlways; add(attachment)
+        XCTAssertEqual(differ, 0)
+    }
+
     private final class LogBox: @unchecked Sendable {
         private let lock = NSLock()
         private var seen = Set<Int>()

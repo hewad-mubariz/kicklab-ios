@@ -11,12 +11,15 @@ nonisolated struct HistoryReplayData: Codable, Sendable {
     let frames: [StoredFrame]
     let touches: [[Double]]
     let framesUseCompositionClock: Bool
+    /// One letter per touch (L, R or U), from the counter's contact poses. Absent in older sessions.
+    var feet: String?
 
     init(summary: SessionSummary) {
         duration = summary.duration; bestCombo = summary.bestCombo
         personalBest = summary.personalBest; sessionNumber = summary.sessionNumber
         framesUseCompositionClock = summary.framesUseCompositionClock
         touches = summary.touchesMarked.map { [Double($0.index), $0.time, $0.x, $0.y] }
+        feet = TouchFoot.letters(summary.touchesMarked)
         frames = summary.track.map {
             var frame = $0
             frame.ballMask = nil
@@ -35,7 +38,7 @@ nonisolated struct HistoryReplayData: Codable, Sendable {
     @MainActor func summary(item: HistorySession, videoURL: URL) -> SessionSummary {
         var value = SessionSummary.make(touches: item.touches, duration: duration, bestCombo: bestCombo,
             personalBest: personalBest, videoURL: videoURL,
-            touchesMarked: touches.map { RecordedTouch(index: Int($0[0]), time: $0[1], x: $0[2], y: $0[3]) },
+            touchesMarked: TouchFoot.apply(feet, to: touches.map { RecordedTouch(index: Int($0[0]), time: $0[1], x: $0[2], y: $0[3]) }),
             track: frames.map(\.frame), sessionNumber: sessionNumber)
         // The first history-editor build saved an import's pre-presentation
         // summary, before this flag was set. Imported frames use this clock.

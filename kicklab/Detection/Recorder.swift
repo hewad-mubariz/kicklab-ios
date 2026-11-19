@@ -58,6 +58,8 @@ nonisolated struct RecordedTouch: Identifiable, Hashable {
     /// Where the ball was, normalised, when the touch was confirmed.
     let x: Double
     let y: Double
+    /// The foot that met the ball, from the counter's own contact poses; nil when it had none.
+    var foot: TouchFoot? = nil
 }
 
 final class Recorder {

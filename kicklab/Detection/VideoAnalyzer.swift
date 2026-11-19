@@ -513,6 +513,11 @@ final class VideoAnalyzer: ObservableObject {
         touches.append(contentsOf: counter.flush().map {
             RecordedTouch(index: $0.index, time: Double($0.timestampMs) / 1000, x: $0.x, y: $0.y)
         })
+        // Each touch's foot from the poses the contact checks already made; no extra pose work.
+        if let recorder = contactVerifier?.touchFeet {
+            let feet = recorder.feet(atContactMs: touches.map { Int(($0.time * 1000).rounded()) })
+            for i in touches.indices { touches[i].foot = feet[i] }
+        }
 
         try Task.checkCancellation()
         if let error = toeEvidence?.error { throw LiveToeVerifier.failure(error) }
@@ -613,7 +618,8 @@ final class VideoAnalyzer: ObservableObject {
                 touches:touches.map { [Double($0.index),$0.time,$0.x,$0.y] },count:finalCount,
                 detections:finalDetections,rejected:finalDropped,framesRead:finalFrames,
                 duration:CMTimeGetSeconds(duration),peak:finalPeak,model:modelName,elapsed:metrics["elapsed_s"] ?? 0,
-                visualRecoveries:recoveredFrames.isEmpty ? nil : recoveredFrames.map(StoredFrame.init))
+                visualRecoveries:recoveredFrames.isEmpty ? nil : recoveredFrames.map(StoredFrame.init),
+                feet:TouchFoot.letters(touches))
             await SessionAnalysisStore.shared.saveInference(stored,key:cacheKey)
         }
         await MainActor.run {
