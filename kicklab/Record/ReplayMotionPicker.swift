@@ -111,6 +111,10 @@ struct ReplayMotionPicker: View {
                 }
                 .accessibilityIdentifier("motion-style-options")
                 .onAppear { reader.scrollTo(style, anchor: .center) }
+                // A tile picked at the fade's edge slides fully into view.
+                .onChange(of: style) { _, picked in
+                    withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { reader.scrollTo(picked) }
+                }
             }
         }
         .sensoryFeedback(.selection, trigger: style)

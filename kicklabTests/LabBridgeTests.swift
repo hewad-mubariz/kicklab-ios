@@ -34,6 +34,30 @@ final class LabBridgeTests: XCTestCase {
         XCTAssertEqual(failures, [])
     }
 
+    /// The Ball page's own path (BallSkinSphereRenderer, rest pose and spin frames) for every lab skin,
+    /// timed, so a phone run shows whether picker balls can come back empty and how long the first draw takes.
+    func testBallPickerPathDrawsEveryLabSkin() {
+        XCTAssertNotNil(LabSkinRenderer.shared, "Lab skin renderer failed to start")
+        let pose = simd_quatf(angle: 1.89, axis: SIMD3<Float>(0, 1, 0)) * simd_quatf(angle: 0.59, axis: SIMD3<Float>(1, 0, 0))
+        var failures = [String](), report = [String]()
+        for skin in BallSkin.pickerOrder where skin.isLabSkin {
+            let start = Date()
+            let rest = BallSkinSphereRenderer.image(skin: skin, time: 0, orientation: pose)
+            let first = Date().timeIntervalSince(start)
+            let spinStart = Date()
+            let spin = BallSkinSphereRenderer.previewImage(skin: skin, time: 0, orientation: simd_normalize(simd_quatf(angle: 0.7, axis: SIMD3<Float>(-1, 0, 0)) * pose))
+            let frame = Date().timeIntervalSince(spinStart)
+            report.append(String(format: "%@ first %.0f ms, spin frame %.0f ms", skin.rawValue, first * 1000, frame * 1000))
+            if let rest { save(rest, "picker-" + skin.rawValue); if opaquePixels(rest) < 2000 { failures.append(skin.rawValue + " rest (empty)") } }
+            else { failures.append(skin.rawValue + " rest (nil)") }
+            if spin == nil { failures.append(skin.rawValue + " spin (nil)") }
+        }
+        print("LAB-PICKER-TIMINGS\n" + report.joined(separator: "\n"))
+        let attachment = XCTAttachment(string: report.joined(separator: "\n"))
+        attachment.name = "Lab skin picker timings"; attachment.lifetime = .keepAlways; add(attachment)
+        XCTAssertEqual(failures, [])
+    }
+
     func testEveryBridgedSkinDrawsItsBall() {
         var failures = [String]()
         for skin in BallSkin.bridgedSkins {

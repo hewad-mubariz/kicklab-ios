@@ -78,7 +78,11 @@ struct BallPickSlot: View {
             }
         }
         .frame(width: size, height: size)
-        .task(id: skin) { if frame == nil { frame = await render(restOrientation, moving: false) } }
+        .task(id: skin) {
+            guard frame == nil else { return }
+            let first = await render(restOrientation, moving: false)
+            withAnimation(.easeOut(duration: 0.25)) { frame = first }
+        }
         .task(id: picks) { await spin() }
         .task(id: picks) { await touchDown() }
         .sensoryFeedback(.impact(weight: .medium, intensity: 0.9), trigger: landings)
@@ -97,8 +101,12 @@ struct BallPickSlot: View {
             Image(systemName: "soccerball").font(.system(size: size * 0.5)).foregroundStyle(.white.opacity(0.75))
         } else if let frame {
             Image(decorative: frame, scale: 1).resizable().scaledToFit().padding(size * 0.035)
+                .transition(.opacity)
         } else {
-            Color.clear
+            // A faint ball holds the spot while the first frame draws, so the grid never shows a hole.
+            Circle().fill(.white.opacity(0.05))
+                .overlay { Circle().strokeBorder(.white.opacity(0.1), lineWidth: 0.75) }
+                .padding(size * 0.06)
         }
     }
 
