@@ -155,8 +155,8 @@ struct ReplayMotionPicker: View {
     }
 }
 
-/// A lab view in the Analytics grid, laid out like the graph styles: its symbol, its name, and what it
-/// needs. While its body tracking runs, the tile shows the progress.
+/// A lab view in the Analytics grid, laid out like the graph styles: a diagram of the view, its name, and
+/// what it needs. While its body tracking runs, the tile shows the progress.
 struct LabViewTile: View {
     let view: LabViewID
     var selected = false
@@ -211,8 +211,21 @@ struct LabViewTile: View {
         .animation(.easeOut(duration: 0.2), value: progress == nil)
     }
 
-    /// No picture: the view's symbol on a soft mint panel, lit when chosen.
-    private var preview: some View {
+    /// The view drawn as a diagram on the tile's colour (a grey figure, a plain ball and the view itself),
+    /// like the graph styles; the symbol on a mint panel if a preview is missing.
+    @ViewBuilder private var preview: some View {
+        if let image = UIImage(named: "analytics-preview-" + view.rawValue) {
+            // Fitted, never filled: the picture's own size must not widen the tile. Its background is the
+            // tile's colour, so the edges disappear.
+            Image(uiImage: image).resizable().scaledToFit()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .opacity(progress == nil ? 1 : 0.35)
+        } else {
+            symbolPanel
+        }
+    }
+
+    private var symbolPanel: some View {
         ZStack {
             LinearGradient(colors: [SessionStyle.mint.opacity(selected ? 0.24 : 0.1), .white.opacity(0.02)],
                            startPoint: .topLeading, endPoint: .bottomTrailing)
