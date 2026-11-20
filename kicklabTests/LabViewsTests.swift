@@ -140,6 +140,61 @@ final class LabViewsTests: XCTestCase {
         XCTAssertEqual(differ, 0)
     }
 
+    /// The Analytics grid's preview for each lab view, drawn on the phone (Vision body pose doesn't run in the
+    /// Simulator) over the owner's clip at a moment where the view has something on screen. Strip views are
+    /// cropped to their card, scene views to a band around the ball. Attached as analytics-preview-<id>.
+    func testLabViewPreviewsOnThePhone() async throws {
+        let docs = URL.documentsDirectory
+        let video = docs.appendingPathComponent("lab-clip.mp4")
+        guard FileManager.default.fileExists(atPath: video.path) else { throw XCTSkip("lab-clip.mp4 not in Documents") }
+        struct Row: Decodable { let time, x, y, width, height, score: Double; let personX, personY, personWidth, personHeight: Double? }
+        struct File: Decodable { let track: [Row] }
+        let rows = try JSONDecoder().decode(File.self, from: Data(contentsOf: docs.appendingPathComponent("lab-analysis.json"))).track
+        let frames = rows.map { r in
+            RecordedFrame(time: r.time, x: r.x, y: r.y, width: r.width, height: r.height, score: r.score, smoothedX: r.x, smoothedY: r.y,
+                          vy: 0, motion: .unknown, detected: r.score > 0,
+                          person: r.personX.map { PersonBox(x: $0, y: r.personY ?? 0, width: r.personWidth ?? 0, height: r.personHeight ?? 0) })
+        }
+        let touches = try JSONDecoder().decode([Double].self, from: Data(contentsOf: docs.appendingPathComponent("lab-touches.json")))
+        let data = try await LabViewsPrep.prepare(video: video, frames: frames, touches: touches) { _ in }
+        let moments: [LabViewID: Double] = [
+            .nextTouch: 9.86, .touchSignature: 15.7, .legSwing: 13.95, .ballFlight: 9.75, .recoveryChain: 10.95,
+            .controlWindow: 11.0, .controlTopography: 15.2, .ghostBall: 9.75, .zoneGame: 9.95, .heightLadder: 9.95,
+            .beatGame: 7.68, .touchLens: 3.52, .peakZone: 13.95, .touchZone: 14.1, .reach: 11.3, .footwork: 17.9,
+            .controlSurf: 10.6, .beatGates: 15.4, .arcMatch: 15.4, .footRally: 15.4, .leftRight: 15.4]
+        let strips: Set<LabViewID> = [.footRally, .leftRight, .beatGates, .arcMatch, .controlSurf, .peakZone, .touchZone, .reach, .footwork]
+        let generator = AVAssetImageGenerator(asset: AVURLAsset(url: video))
+        generator.appliesPreferredTrackTransform = true
+        generator.requestedTimeToleranceBefore = .zero; generator.requestedTimeToleranceAfter = .zero
+        let w = Int(data.size.width / 2), h = Int(data.size.height / 2)
+        for view in LabViewID.allCases {
+            let t = moments[view] ?? 15.4
+            let (frame, _) = try await generator.image(at: CMTime(seconds: t, preferredTimescale: 600))
+            let c = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4, space: CGColorSpaceCreateDeviceRGB(),
+                              bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+            c.draw(frame, in: CGRect(x: 0, y: 0, width: w, height: h))
+            c.saveGState()
+            c.translateBy(x: 0, y: CGFloat(h)); c.scaleBy(x: 0.5, y: -0.5)
+            LabViewsDraw.draw(view, in: c, data: data, time: t)
+            c.restoreGState()
+            guard let full = c.makeImage() else { continue }
+            // Crop rects are in the half-size image, top-left origin.
+            var crop: CGRect
+            if strips.contains(view) {
+                let strip = LabViewsDraw.strip(data.size)
+                crop = CGRect(x: strip.minX / 2, y: strip.minY / 2, width: strip.width / 2, height: strip.height / 2).insetBy(dx: -6, dy: -6)
+            } else {
+                let height = CGFloat(w) / 2.3
+                let ballY = data.ball.ball(at: t).map { CGFloat($0.p.y) / 2 } ?? CGFloat(h) * 0.45
+                crop = CGRect(x: 0, y: min(max(0, ballY - height * 0.45), CGFloat(h) - height), width: CGFloat(w), height: height)
+            }
+            crop = crop.integral.intersection(CGRect(x: 0, y: 0, width: w, height: h))
+            guard let cut = full.cropping(to: crop) else { continue }
+            let shot = XCTAttachment(image: UIImage(cgImage: cut))
+            shot.name = "analytics-preview-" + view.rawValue; shot.lifetime = .keepAlways; add(shot)
+        }
+    }
+
     private final class LogBox: @unchecked Sendable {
         private let lock = NSLock()
         private var seen = Set<Int>()

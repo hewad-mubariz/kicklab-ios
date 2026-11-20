@@ -50,6 +50,7 @@ struct ReplayToolbox: View {
     /// Test build 2026-11-19: the analytics lab views, picked on the Analytics page.
     var labView: Binding<LabViewID?> = .constant(nil)
     var labStatus: String? = nil
+    var labProgress: Double? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
     @State private var ballKicks: [BallSkin: Int] = [:]
@@ -66,9 +67,7 @@ struct ReplayToolbox: View {
     /// Into a tool or back out of it; the swap leans slightly that way.
     @State private var forward = true
 
-    /// The Ball page's open set, and which way the last set change went.
-    @State private var ballSet: BallSet = .classic
-    @State private var setForward = true
+    private let skins = BallSkin.pickerOrder
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -156,8 +155,6 @@ struct ReplayToolbox: View {
         }
         commitBall()
         forward = next != nil
-        // The Ball page opens on the set holding the ball in use.
-        if next == .ball { ballSet = BallSet.containing(edit.ballSkin) }
         withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { page = next }
     }
 
@@ -338,7 +335,8 @@ struct ReplayToolbox: View {
             ReplayMotionPicker(style: $motionStyle, includeGraph: $includeGraph,
                                analyticsBackground: $analyticsBackground, snapshot: motionSnapshot,
                                sourceAspect: sourceAspect, isPlaying: isPlaying, onTogglePlayback: onTogglePlayback,
-                               showsProBadges: !isPro, labSelection: labView, labStatus: labStatus)
+                               showsProBadges: !isPro, labSelection: labView, labStatus: labStatus,
+                               labProgress: labProgress)
         case .counter: counterPage
         case .sound: ReplaySoundPage(edit: $edit, autoMuted: $autoMuted, onPreview: onPreviewSound)
         case .looks:
@@ -458,62 +456,34 @@ struct ReplayToolbox: View {
         .padding(.horizontal, 16)
     }
 
-    /// One set at a time, two rows of five: every ball in it is on screen and picked in place,
-    /// and the switcher or a sideways swipe moves between sets.
+    /// Every ball in one scrolling grid, four to a row like Effects, newest first after Original.
+    /// A pick hops in place, so it never leaves its spot or the scroll.
     private var ballPage: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            BallSetSwitcher(selection: $ballSet, current: BallSet.containing(shownBall)) { showSet($0) }
-                .padding(.horizontal, 16)
-            ZStack(alignment: .top) {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 5), spacing: 16) {
-                    ForEach(Array(ballSet.skins.enumerated()), id: \.element) { index, skin in
-                        // Outer columns lean inward as they spin; the middle one spins straight.
-                        ballOption(skin, direction: [1, 1, 0, -1, -1][index % 5])
+        VStack(alignment: .leading, spacing: 12) {
+            ScrollViewReader { reader in
+                ScrollView(.vertical, showsIndicators: false) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 16) {
+                        ForEach(Array(skins.enumerated()), id: \.element) { index, skin in
+                            // Outer columns lean inward as they spin.
+                            ballOption(skin, direction: index % 4 < 2 ? 1 : -1).id(skin)
+                        }
                     }
+                    // Room above the first row for its hop.
+                    .padding(.horizontal, 16).padding(.top, 24).padding(.bottom, 18)
                 }
-                .padding(.horizontal, 12).padding(.top, 4)
-                .id(ballSet)
-                .transition(setSwap)
+                .frame(height: 330)
+                .mask {
+                    LinearGradient(stops: [.init(color: .black, location: 0), .init(color: .black, location: 0.9),
+                                           .init(color: .black.opacity(0), location: 1)],
+                                   startPoint: .top, endPoint: .bottom)
+                }
+                .accessibilityIdentifier("ball-picker-options")
+                // A ball further down opens scrolled to it.
+                .onAppear { if edit.ballSkin != .original { reader.scrollTo(edit.ballSkin, anchor: .center) } }
             }
-            .frame(maxWidth: .infinity)
-            .contentShape(.rect)
-            .gesture(DragGesture(minimumDistance: 24).onEnded { swipeSet($0.translation) })
             if edit.hasLookChanges { looksNote("This ball starts the clip. Looks changes the rest.", id: "ball-looks-note") }
         }
-        .onAppear {
-            // Opens on the set holding the ball in use, without playing the swap.
-            let start = BallSet.containing(edit.ballSkin)
-            guard start != ballSet else { return }
-            var quiet = Transaction(); quiet.disablesAnimations = true
-            withTransaction(quiet) { ballSet = start }
-        }
         .onDisappear { applyBall?.cancel(); applyBall = nil; pendingBall = nil }
-    }
-
-    /// The next set leans in from the side it was asked for while the old one blurs away.
-    private var setSwap: AnyTransition {
-        if reduceMotion { return .opacity }
-        let lean: CGFloat = setForward ? 34 : -34
-        return .asymmetric(
-            insertion: .modifier(active: TraySwap(hidden: true, lean: lean), identity: TraySwap(hidden: false, lean: lean)),
-            removal: .modifier(active: TraySwap(hidden: true, lean: -lean), identity: TraySwap(hidden: false, lean: 0)))
-    }
-
-    private func showSet(_ next: BallSet) {
-        guard next != ballSet else { return }
-        let order = BallSet.allCases
-        setForward = (order.firstIndex(of: next) ?? 0) > (order.firstIndex(of: ballSet) ?? 0)
-        withAnimation(SessionMotion.animation(.spring(response: 0.4, dampingFraction: 0.82), reduceMotion: reduceMotion)) {
-            ballSet = next
-        }
-    }
-
-    private func swipeSet(_ travel: CGSize) {
-        guard abs(travel.width) > 44, abs(travel.width) > abs(travel.height) * 1.5 else { return }
-        let order = BallSet.allCases
-        guard let index = order.firstIndex(of: ballSet) else { return }
-        let next = travel.width < 0 ? index + 1 : index - 1
-        if order.indices.contains(next) { showSet(order[next]) }
     }
 
     /// With looks on, Ball and Effects set the first look; this says so and leads to the rest.

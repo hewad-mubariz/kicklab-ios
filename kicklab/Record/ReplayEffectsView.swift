@@ -132,7 +132,8 @@ struct ReplayEffectsView: View {
                                           touchTimes: showsTouchTools ? sortedTouchTimes : [], currentTime: currentTime,
                                           onSeek: seekPaused, onPreviewMoment: previewMoment,
                                           onPreviewSound: { sounds.preview($0) },
-                                          labView: $labView, labStatus: labStatus)
+                                          labView: $labView, labStatus: labStatus,
+                                          labProgress: labView.flatMap { labData?.covers($0) == true ? nil : labProgress })
                             .onGeometryChange(for: CGFloat.self) { $0.frame(in: .global).minY } action: { top in
                                 // Same spring as the tray's height, so video and panel move as one.
                                 withAnimation(SessionMotion.animation(SessionMotion.tray, reduceMotion: reduceMotion)) { panelTop = top }
@@ -162,7 +163,8 @@ struct ReplayEffectsView: View {
                             }
                             CaptureMetrics(points: motionTimeline.points, touchTimes: motionTimeline.touches,
                                            time: currentTime, duration: duration,
-                                           showGraph: showsTouchTools && displayedLook.showGraph && !effectiveOverlays.graph.enabled, showTime: false,
+                                           showGraph: showsTouchTools && displayedLook.showGraph && !effectiveOverlays.graph.enabled && labView == nil,
+                                           showTime: false,
                                            motionStyle: motionStyle, motionTimeline: motionTimeline,
                                            sourceAspect: sourceSize.width / max(1, sourceSize.height),
                                            showsTouchMetrics: showsTouchTools && subscriptions.isPro && !effectiveOverlays.graph.enabled)
@@ -575,7 +577,8 @@ struct ReplayEffectsView: View {
                             .frame(width: size.width, height: size.height)
                             .allowsHitTesting(false)
                     }
-                    if effectiveOverlays.graph.enabled {
+                    // One analytic at a time: a lab view replaces the graph on the replay.
+                    if effectiveOverlays.graph.enabled && labView == nil {
                         ExportMotionGraphLayer(style: motionStyle,
                             snapshot: motionTimeline.snapshot(at: currentTime, duration: duration), size: size,
                             background: effectiveOverlays.graph.background)

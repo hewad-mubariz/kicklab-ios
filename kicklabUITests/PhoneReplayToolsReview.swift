@@ -29,21 +29,20 @@ final class PhoneReplayToolsReview: XCTestCase {
         XCTAssertTrue(app.buttons["replay-tool-ball"].waitForExistence(timeout: 5))
         shot(app, "00 tools")
         app.buttons["replay-tool-ball"].tap()
-        XCTAssertTrue(app.buttons["ball-set-classic"].waitForExistence(timeout: 5))
-        if app.staticTexts["Juggle Dude Pro"].exists || app.buttons["paywall-close"].exists {
-            XCTFail("The Ball page is behind the paywall on this phone"); return
+        let balls = app.scrollViews["ball-picker-options"]
+        XCTAssertTrue(balls.waitForExistence(timeout: 5))
+        if app.buttons["paywall-close"].exists { XCTFail("The Ball page is behind the paywall on this phone"); return }
+        pause(0.5)
+        shot(app, "01 balls after 0.5 s")
+        pause(2.5)
+        shot(app, "02 balls after 3 s")
+        for index in 3...6 {
+            balls.swipeUp(); pause(1)
+            shot(app, String(format: "%02d balls scrolled", index))
         }
-        for (index, set) in ["classic", "crafted", "match", "arcade", "shine"].enumerated() {
-            app.buttons["ball-set-\(set)"].tap()
-            pause(0.5)
-            shot(app, String(format: "%02d %@ after 0.5 s", index * 2 + 1, set))
-            pause(2.5)
-            shot(app, String(format: "%02d %@ after 3 s", index * 2 + 2, set))
-        }
-        // A new skin on the clip: the pick hop and the replaced ball.
-        app.buttons["ball-set-crafted"].tap()
-        pause(1)
-        app.buttons["ball-picker-kintsugi"].tap()
+        let kintsugi = app.buttons["ball-picker-kintsugi"]
+        for _ in 0..<8 where !kintsugi.isHittable { balls.swipeDown() }
+        kintsugi.tap()
         pause(0.25)
         shot(app, "11 kintsugi hop")
         pause(2)
@@ -58,5 +57,16 @@ final class PhoneReplayToolsReview: XCTestCase {
         shot(app, "14 analytics scrolled")
         options.swipeUp(); options.swipeUp(); pause(0.8)
         shot(app, "15 analytics lab views")
+        // One analytic at a time: Ball Flight replaces the graph on the replay.
+        let flight = app.buttons["lab-view-ball-flight"]
+        for _ in 0..<6 where !flight.isHittable { options.swipeUp() }
+        flight.tap(); pause(1)
+        shot(app, "16 ball flight picked")
+        let foot = app.buttons["lab-view-foot-rally"]
+        for _ in 0..<6 where !foot.isHittable { options.swipeDown() }
+        foot.tap(); pause(2)
+        shot(app, "17 foot rally picked")
+        app.buttons["replay-close-tools"].tap(); pause(2)
+        shot(app, "18 foot rally on the replay")
     }
 }

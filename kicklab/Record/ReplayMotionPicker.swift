@@ -25,10 +25,16 @@ struct ReplayMotionPicker: View {
     let isPlaying: Bool
     let onTogglePlayback: () -> Void
     var showsProBadges = false
-    /// Test build: the analytics lab views, listed in the same scroll under the graph styles.
+    /// Test build: the analytics lab views, in the same grid as the graph styles. Only one analytic is
+    /// shown at a time: a lab view replaces the graph on the replay, and a graph style turns it off.
     var labSelection: Binding<LabViewID?>? = nil
     var labStatus: String? = nil
+    /// Body tracking for the chosen lab view, 0…1, while it prepares.
+    var labProgress: Double? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var chosenLab: LabViewID? { labSelection?.wrappedValue }
+    private var chosenID: String { chosenLab.map { "lab-" + $0.rawValue } ?? "style-" + style.rawValue }
 
     private var placement: AnalyticsPlacement { AnalyticsPlacement(included: includeGraph, background: analyticsBackground) }
 
@@ -54,11 +60,18 @@ struct ReplayMotionPicker: View {
             }
             .padding(.horizontal, 16)
             .sensoryFeedback(.selection, trigger: placement)
+            if chosenLab != nil {
+                Label("New analytics show in the replay; the saved video uses the graph style.", systemImage: "info.circle")
+                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.6))
+                    .padding(.horizontal, 16)
+                    .transition(.opacity)
+            }
 
             // The chosen graph's tile draws this clip live; play runs the clip under it.
             HStack(alignment: .center, spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(labSelection == nil ? LocalizedStringKey("Graph styles") : LocalizedStringKey("Analytics")).font(.system(size: 12, weight: .semibold))
+                    Text(chosenLab?.title ?? style.title).font(.system(size: 12, weight: .semibold))
+                        .contentTransition(.interpolate)
                     Text("In this clip · \(ExportPreviewTime.label(at: snapshot.graph.time))")
                         .font(.system(size: 10)).monospacedDigit().foregroundStyle(.white.opacity(0.55))
                         .accessibilityIdentifier("motion-preview-time")
@@ -75,33 +88,16 @@ struct ReplayMotionPicker: View {
             }
             .padding(.horizontal, 16)
 
-            // Two to a row, scrolling down; the next row peeks under a fade so there is more below.
+            // One category, two to a row, scrolling down; the next row peeks under a fade so there is more below.
             ScrollViewReader { reader in
                 ScrollView(.vertical, showsIndicators: false) {
-                  VStack(alignment: .leading, spacing: 10) {
-                    if labSelection != nil { sectionTitle("Graph styles") }
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
-                        ForEach(MotionStyle.allCases) { option in
-                            Button {
-                                style = option
-                            } label: {
-                                MotionStyleOption(style: option, selected: style == option, width: nil,
-                                                  live: style == option ? snapshot : nil, sourceAspect: sourceAspect)
-                                    .overlay(alignment: .topTrailing) {
-                                        if showsProBadges { ProBadge().padding(8) }
-                                    }
-                            }
-                            .buttonStyle(SessionPressStyle(scale: reduceMotion ? 1 : 0.97))
-                            .accessibilityLabel(option.title + (option == .ballMotion ? ", " + String(localized: "Default", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : ""))
-                            .accessibilityHint(option.caption)
-                            .accessibilityAddTraits(style == option ? .isSelected : [])
-                            .accessibilityIdentifier("motion-style-\(option.rawValue)")
-                            .id(option)
+                        ForEach(MotionStyle.allCases) { option in styleTile(option) }
+                        if let labSelection {
+                            ForEach(LabViewID.allCases) { view in labTile(view, labSelection) }
                         }
                     }
-                    if let labSelection { labSection(labSelection) }
-                  }
-                  .padding(.horizontal, 16).padding(.top, 2).padding(.bottom, 22)
+                    .padding(.horizontal, 16).padding(.top, 2).padding(.bottom, 22)
                 }
                 .frame(height: 300)
                 .mask {
@@ -110,81 +106,133 @@ struct ReplayMotionPicker: View {
                                    startPoint: .top, endPoint: .bottom)
                 }
                 .accessibilityIdentifier("motion-style-options")
-                .onAppear { reader.scrollTo(style, anchor: .center) }
+                .onAppear { reader.scrollTo(chosenID, anchor: .center) }
                 // A tile picked at the fade's edge slides fully into view.
-                .onChange(of: style) { _, picked in
+                .onChange(of: chosenID) { _, picked in
                     withAnimation(SessionMotion.animation(SessionMotion.snap, reduceMotion: reduceMotion)) { reader.scrollTo(picked) }
                 }
             }
         }
-        .sensoryFeedback(.selection, trigger: style)
+        .animation(.snappy(duration: 0.25), value: chosenLab)
+        .sensoryFeedback(.selection, trigger: chosenID)
     }
 
-    private func sectionTitle(_ title: LocalizedStringKey, status: String? = nil) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(title).font(.system(size: 11, weight: .semibold)).tracking(0.4)
-                .foregroundStyle(.white.opacity(0.7)).textCase(.uppercase)
-            Spacer(minLength: 6)
-            if let status {
-                Text(status).font(.system(size: 10, weight: .medium)).monospacedDigit()
-                    .foregroundStyle(SessionStyle.mint).lineLimit(1)
-                    .contentTransition(.numericText())
-            }
-        }
-        .padding(.top, 4)
-    }
-
-    /// The lab views as tiles, two to a row; tapping the one that is on turns it off again.
-    private func labSection(_ selection: Binding<LabViewID?>) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("New analytics (test)", status: labStatus)
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 2), spacing: 10) {
-                ForEach(LabViewID.allCases) { view in
-                    let on = selection.wrappedValue == view
-                    Button {
-                        withAnimation(.snappy(duration: 0.25)) { selection.wrappedValue = on ? nil : view }
-                    } label: {
-                        LabViewTile(view: view, selected: on)
-                    }
-                    .buttonStyle(SessionPressStyle(scale: reduceMotion ? 1 : 0.96))
-                    .accessibilityLabel(view.title)
-                    .accessibilityAddTraits(on ? .isSelected : [])
-                    .accessibilityIdentifier("lab-view-\(view.rawValue)")
+    private func styleTile(_ option: MotionStyle) -> some View {
+        let on = chosenLab == nil && style == option
+        return Button {
+            labSelection?.wrappedValue = nil
+            style = option
+        } label: {
+            MotionStyleOption(style: option, selected: on, width: nil, live: on ? snapshot : nil, sourceAspect: sourceAspect)
+                .overlay(alignment: .topTrailing) {
+                    if showsProBadges { ProBadge().padding(8) }
                 }
-            }
         }
-        .sensoryFeedback(.selection, trigger: selection.wrappedValue)
+        .buttonStyle(SessionPressStyle(scale: reduceMotion ? 1 : 0.97))
+        .accessibilityLabel(option.title + (option == .ballMotion ? ", " + String(localized: "Default", bundle: AppLanguage.bundle, locale: AppLanguage.locale) : ""))
+        .accessibilityHint(option.caption)
+        .accessibilityAddTraits(on ? .isSelected : [])
+        .accessibilityIdentifier("motion-style-\(option.rawValue)")
+        .id("style-" + option.rawValue)
+    }
+
+    private func labTile(_ view: LabViewID, _ selection: Binding<LabViewID?>) -> some View {
+        let on = selection.wrappedValue == view
+        return Button {
+            selection.wrappedValue = view
+        } label: {
+            LabViewTile(view: view, selected: on, progress: on ? labProgress : nil, status: on ? labStatus : nil)
+                .overlay(alignment: .topTrailing) {
+                    if showsProBadges { ProBadge().padding(8) }
+                }
+        }
+        .buttonStyle(SessionPressStyle(scale: reduceMotion ? 1 : 0.97))
+        .accessibilityLabel(view.title)
+        .accessibilityValue(on && labProgress != nil ? "Preparing" : "")
+        .accessibilityAddTraits(on ? .isSelected : [])
+        .accessibilityIdentifier("lab-view-\(view.rawValue)")
+        .id("lab-" + view.rawValue)
     }
 }
 
-/// One lab view in the Analytics grid: its symbol, name and family.
+/// A lab view in the Analytics grid, laid out like the graph styles: a preview of the view on a real
+/// clip, its name, and what it needs. While its body tracking runs, the tile shows the progress.
 struct LabViewTile: View {
     let view: LabViewID
     var selected = false
+    var progress: Double? = nil
+    var status: String? = nil
 
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: view.symbol)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(selected ? SessionStyle.background : SessionStyle.mint)
-                .frame(width: 32, height: 32)
-                .background(selected ? SessionStyle.mint : SessionStyle.mint.opacity(0.12), in: .circle)
-                .symbolEffect(.bounce, value: selected)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(view.title).font(.system(size: 12, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
-                Text(view.group.uppercased()).font(.system(size: 7, weight: .bold)).tracking(0.6)
-                    .foregroundStyle(.white.opacity(0.45))
+        VStack(alignment: .leading, spacing: 8) {
+            preview
+                .frame(height: 66).frame(maxWidth: .infinity)
+                .clipShape(.rect(cornerRadius: 9))
+                .overlay {
+                    if let progress {
+                        ZStack {
+                            Color.black.opacity(0.45)
+                            VStack(spacing: 5) {
+                                ProgressView(value: progress).progressViewStyle(.linear).tint(SessionStyle.mint)
+                                    .frame(width: 72)
+                                Text("Tracking \(Int(progress * 100))%").font(.system(size: 9, weight: .semibold)).monospacedDigit()
+                                    .contentTransition(.numericText(value: progress))
+                            }
+                        }
+                        .clipShape(.rect(cornerRadius: 9))
+                        .transition(.opacity)
+                    }
+                }
+                .accessibilityHidden(true)
+            HStack(spacing: 4) {
+                Text(view.title).font(.system(size: 11, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.85)
+                Spacer(minLength: 0)
+                if selected && progress == nil {
+                    Image(systemName: "checkmark.circle.fill").font(.system(size: 13))
+                        .foregroundStyle(.black, SessionStyle.mint)
+                        .transition(.scale.combined(with: .opacity))
+                }
             }
-            Spacer(minLength: 0)
+            caption
         }
-        .padding(.horizontal, 10).padding(.vertical, 9)
-        .frame(maxWidth: .infinity)
-        .background(Color(red: 0.05, green: 0.075, blue: 0.077), in: .rect(cornerRadius: 14))
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(red: 0.05, green: 0.075, blue: 0.077), in: .rect(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(selected ? SessionStyle.mint : .white.opacity(0.14), lineWidth: selected ? 1.3 : 0.5)
         }
-        .foregroundStyle(.white).contentShape(.rect(cornerRadius: 14))
+        .foregroundStyle(.white).contentShape(.rect(cornerRadius: 16))
+        .animation(.snappy(duration: 0.25), value: selected)
+        .animation(.easeOut(duration: 0.2), value: progress == nil)
+    }
+
+    @ViewBuilder private var preview: some View {
+        if let image = UIImage(named: "analytics-preview-" + view.rawValue) {
+            Image(uiImage: image).resizable().scaledToFill()
+        } else {
+            ZStack {
+                Color.white.opacity(0.04)
+                Image(systemName: view.symbol).font(.system(size: 22, weight: .semibold)).foregroundStyle(SessionStyle.mint)
+            }
+        }
+    }
+
+    /// What the view reads, or the chosen one's state; the body views say they track the body first.
+    @ViewBuilder private var caption: some View {
+        if let status, progress == nil, selected, status.hasPrefix("Feet") == false {
+            Text(status).font(.system(size: 9, weight: .medium)).lineLimit(1).minimumScaleFactor(0.8)
+                .foregroundStyle(.orange)
+        } else {
+            HStack(spacing: 4) {
+                if view.needsBody {
+                    Image(systemName: "figure.walk").font(.system(size: 7, weight: .bold))
+                }
+                Text(view.needsBody ? "BODY TRACKING" : view.group.uppercased())
+                    .font(.system(size: 7, weight: .medium)).tracking(0.6).lineLimit(1)
+            }
+            .foregroundStyle(selected ? SessionStyle.mint : .white.opacity(0.45))
+        }
     }
 }
 
