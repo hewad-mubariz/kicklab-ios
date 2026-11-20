@@ -34,8 +34,8 @@ final class NativeTabsUITests: XCTestCase {
         attach(app, "Challenge - first three card")
         app.mainTab("learn").tap()
         XCTAssertTrue(app.mainTab("learn").isSelected)
-        XCTAssertTrue(app.descendants(matching: .any)["learn-coming-soon"].waitForExistence(timeout: 5))
-        attach(app, "Learn - coming soon")
+        XCTAssertTrue(app.buttons["learn-start"].waitForExistence(timeout: 5))
+        attach(app, "Learn - animated coach")
         app.mainTab("challenges").tap()
         XCTAssertTrue(app.buttons["challenge-try"].waitForExistence(timeout: 5))
 

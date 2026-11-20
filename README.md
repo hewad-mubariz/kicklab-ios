@@ -41,8 +41,39 @@ player's photo. Below is a dark stage: the best streak on the left, the app's ba
 juggling itself on the right with a lime Glow Trail (Core Animation, a new random run
 each time), then Start session and Import. Then come the next practice goal (opens the
 camera with that goal), this week's best sessions as bars topped with the same ball,
-Ball Distance and Session history. Learn is a placeholder until
-the lessons are planned. Home's main button reads "Start juggling".
+Ball Distance and Session history. Learn now opens the animated coaching prototype
+described below. Home's main button reads "Start juggling".
+
+### Learn coaching prototype — 20 November 2026
+
+The Learn tab contains 12 proposed drills across Basics, Build rhythm, Control and
+Advanced, plus shortcuts for keeping the ball close and practising the other foot.
+A lesson provides an original procedural SceneKit character and football, a looping
+demonstration, front/side views, half-speed playback, written steps and a short guided
+practice round. All geometry, materials and motion are authored in `Learning/`;
+there are no purchased assets, external generation services or subscriptions.
+
+Tap the play icon beside the coach's caption to hear the demonstration cue, or
+“Let's try together” to start three paced practice invitations. Speech uses the
+device's English AVSpeechSynthesizer voice. Captions also work with voice muted or
+unavailable. Leaving, pausing, backgrounding or an audio interruption cancels pending
+prompts and releases the coaching audio session. Reduce Motion pauses the character;
+the written steps remain available.
+
+This is a visual and interaction prototype with hand-authored illustrative motion
+and a proposed curriculum, pending football-coach review. The camera stays off in
+these lessons. Check-ins are self-reported practice, saved locally on the device;
+they are not detected catches, measured form, verified mastery or leaderboard scores.
+“Make it a little easier” opens a simpler drill. Spoken prompts are English in this
+first version. Physical-device voice quality and animation performance still need
+review before release. Review artifacts are in `artifacts/learn-coach/`.
+
+Validation: five focused logic/audio tests and two interaction tests passed on an
+isolated iOS 26.5 iPhone 17 Pro Simulator. This covers ball/floor and catch boundaries,
+continuous loops, both-foot demonstrations, simpler-drill routing, actual system-voice
+audio generation, muted practice, timed cues, playback speed, camera angle and voice
+controls. Light/dark screenshots were inspected. These are prototype checks, not a
+coaching-technique qualification or a full application regression run.
 
 "Start juggling" also works from outside the app, always through the same pending
 request a practice reminder uses (it waits until nothing else is on screen): the
