@@ -1,0 +1,16 @@
+{
+  "mode": "built-in image_gen",
+  "date": "2026-11-20",
+  "assets": [
+    {
+      "path": "sources/athlete.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: transparent athlete cutout for small football analytics preview cards in a premium dark mobile app.\nCreate a completely fictional adult male football freestyler, athletic build and medium brown skin, full body including head and both shoes, isolated on a fully transparent background. Front three-quarter view facing slightly left. Wearing a plain very dark charcoal short-sleeve performance T-shirt, black shorts, calf-length muted grey socks and clean off-white football boots, absolutely no logos. Natural juggling pose: balance on his right leg, left thigh raised slightly and left knee bent, left boot extended in front at shin height with instep upward. Arms slightly out for balance. A single white football with subtle dark graphite panels floats just above his lifted left boot at about knee height. Ball is to viewer's left of his body. Anatomically natural, realistic fabric textures and boots. Soft directional studio light from upper left with a subtle cool rim and realistic shadowing on the body. Restrained exposure, readable grey highlights, sophisticated editorial sports photography, not a game character or neon hologram. Athlete fills the image height with safe margins at head and both shoes. No floor or backdrop, no shadows beyond the cutout, no graphic annotations, no text, no watermark. This is a new anonymous person, not based on any supplied or real person's photograph.",
+      "transparent_background": true
+    },
+    {
+      "path": "sources/touch-lens.png",
+      "prompt": "Use case: photorealistic-natural.\nAsset type: landscape sample photo for the Touch Lens football analytics preview thumbnail.\nPrimary request: a close, beautiful editorial sports photograph of the exact moment a fictional football freestyler's raised boot meets a juggling ball. Only the lower legs and ball are in frame; no face, torso or identifiable person. One off-white football boot with graphite details beneath a white football with dark charcoal geometric panels; the ball almost touches the instep. The raised foot points to the left. Charcoal socks, a hint of athletic bare calf. The boot and ball are large and central, with ball centered at 48% width and 42% height and boot at 52% width 72% height, both fully in frame with breathing room. A distant second leg visible softly on the right. Outdoor practice pitch at dusk, muted deep teal-green blurred background, soft directional golden-neutral light, frozen motion and fine stitched leather texture. A crisp pale ball against the darker environment. Premium realistic sports photography, rich shadows but clearly readable boot and ball at tiny sizes. Wide 3:2 composition. No logos, text, watermarks, graphic annotations, glowing VFX or HUD. Completely invented scene, no supplied personal photo.",
+      "transparent_background": false
+    }
+  ]
+}
