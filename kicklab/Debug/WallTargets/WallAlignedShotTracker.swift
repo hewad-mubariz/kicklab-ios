@@ -7,13 +7,14 @@ import Foundation
 nonisolated struct WallAlignedShotTracker {
     private var detector: WallImpactDetector?
     private var epoch: Int?
+    private var activeLayout: WallTargetLayout?
     private var pending: [WallImpactDetector.Impact] = []
     private var decisions: [WallImpactDetector.Decision] = []
     private(set) var contactPreview: WallImpactDetector.Impact?
     private var lastPreview = -Double.infinity
 
     mutating func reset() {
-        detector = nil; epoch = nil; pending = []; decisions = []
+        detector = nil; epoch = nil; activeLayout = nil; pending = []; decisions = []
         contactPreview = nil; lastPreview = -Double.infinity
     }
 
@@ -23,22 +24,25 @@ nonisolated struct WallAlignedShotTracker {
 
     mutating func process(_ observation: WallImpactDetector.Observation?, at time: Double,
                          update: WallBoardAlignment.Update?, retainEvidence: Bool, canScore: Bool,
-                         reference: WallBallReference?, size: CGSize, fps: Double) -> [WallImpactDetector.Impact] {
+                         reference: WallBallReference?, size: CGSize, fps: Double,
+                         layout: WallTargetLayout = .sixTargets,
+                         usesSparseDepthConsistency: Bool = false) -> [WallImpactDetector.Impact] {
         guard retainEvidence, let update, let reference else { reset(); return [] }
-        if epoch != update.evidenceEpoch {
+        if epoch != update.evidenceEpoch || activeLayout != layout {
             reset()
             let p = update.corners.map { CGPoint(x: $0.x * size.width, y: $0.y * size.height) }
             guard p.count == 4, let board = WallBoard(topLeft: p[0], topRight: p[1], bottomRight: p[2], bottomLeft: p[3]) else { return [] }
-            detector = WallImpactDetector(board: board, reference: reference, imageWidth: size.width)
+            detector = WallImpactDetector(board: board, reference: reference, imageWidth: size.width, layout: layout)
             detector?.rejectBorderline = true
-            epoch = update.evidenceEpoch
+            epoch = update.evidenceEpoch; activeLayout = layout
         }
         detector?.processingFPS = fps
+        detector?.usesSparseDepthConsistency = usesSparseDepthConsistency
         if let observation { detector?.add(observation) }
         let previews = detector?.previewContacts(now: time) ?? []
         pending += detector?.impacts(now: time) ?? []
         if let preview = (previews + pending).last(where: {
-            WallBoard.box(u: $0.u, v: $0.v) != nil
+            (layout.continuousSurface ? layout.contains(CGPoint(x: $0.u, y: $0.v)) : layout.target(u: $0.u, v: $0.v) != nil)
                 && $0.t - lastPreview >= WallImpactDetector.minSeparation - 0.5 / max(fps, 1)
                 && time - $0.t <= 1.6
         }) {

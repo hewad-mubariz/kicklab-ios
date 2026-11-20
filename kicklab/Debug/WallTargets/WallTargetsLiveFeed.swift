@@ -25,6 +25,8 @@ nonisolated final class WallTargetsLiveFeed: @unchecked Sendable {
 
     private let lock = NSLock()
     private let context = CIContext()
+    private let previewWidth: CGFloat
+    init(previewWidth: CGFloat=640) { self.previewWidth=min(1280,max(320,previewWidth)) }
     private let serverQueue = DispatchQueue(label: "com.juggledude.wall-targets.live")
     private var listener: NWListener?
     // Guarded by lock.
@@ -33,6 +35,22 @@ nonisolated final class WallTargetsLiveFeed: @unchecked Sendable {
     private var lastJPEGTime = -Double.infinity
     private var state: [String: Any] = [:]
     private var shots: [Shot] = []
+    private var inspectionDirectory: URL?
+    private var inspectionID = UUID()
+    private var lastInspectionExport = -Double.infinity
+    private var keeperState: PhysicalKeeperTelemetry?
+    func setKeeperState(_ value: PhysicalKeeperTelemetry) {
+        lock.withLock {
+            keeperState=value
+            // Keep lightweight setup status fresh when thermal policy pauses
+            // JPEG previews. The frame timestamp still describes the old image.
+            if inspectionDirectory != nil {
+                state["keeper"]=value.json
+                state["keeperUpdatedAt"]=Date().timeIntervalSince1970
+                state["status"]="Real ball · \(value.state)"
+            }
+        }
+    }
 
     // MARK: Server
 
@@ -50,6 +68,20 @@ nonisolated final class WallTargetsLiveFeed: @unchecked Sendable {
     func stop() {
         listener?.cancel()
         listener = nil
+    }
+
+    /// A bounded, latest-frame diagnostic also works through Xcode's paired
+    /// device file service when Bonjour/HTTP cannot reach the projector phone.
+    /// No accumulating video archive; only enabled in the visible camera check.
+    func setInspectionEnabled(_ enabled: Bool) {
+        lock.withLock {
+            let directory = enabled ? FileManager.default.urls(for:.documentDirectory,in:.userDomainMask)[0]
+                .appendingPathComponent("KeeperLive",isDirectory:true) : nil
+            guard directory != inspectionDirectory else { return }
+            inspectionDirectory=directory
+            inspectionID=UUID()
+            lastInspectionExport = -.infinity
+        }
     }
 
     private func serve(_ connection: NWConnection) {
@@ -101,7 +133,7 @@ nonisolated final class WallTargetsLiveFeed: @unchecked Sendable {
     /// of the newest frame for the browser at about eight per second.
     func addFrame(_ pixels: CVPixelBuffer, at t: Double) {
         let image = CIImage(cvPixelBuffer: pixels)
-        let scale = 640 / image.extent.width
+        let scale = previewWidth / image.extent.width
         let small = image.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
         guard let frame = context.createCGImage(small, from: small.extent) else { return }
         let wantsJPEG = lock.withLock { t - lastJPEGTime >= 0.12 }
@@ -114,7 +146,33 @@ nonisolated final class WallTargetsLiveFeed: @unchecked Sendable {
     }
 
     func setState(_ newState: [String: Any]) {
-        lock.withLock { state = newState }
+        let export: (URL,Data,Data,UUID)? = lock.withLock {
+            state = newState
+            state["frameTime"] = lastJPEGTime.isFinite ? lastJPEGTime : NSNull()
+            state["updatedAt"] = Date().timeIntervalSince1970
+            guard let directory=inspectionDirectory else { return nil }
+            state["mode"]="physical-ball-camera-check"
+            state["status"]="Camera check · saves not armed"
+            state["wifiAddress"]=wallTargetsWiFiAddress() ?? ""
+            state["session"]=inspectionID.uuidString
+            if let keeperState {
+                state["keeper"]=keeperState.json
+                state["status"]=keeperState.armed ? "Real ball · reactions enabled":"Real ball · \(keeperState.state)"
+            }
+            guard !latestJPEG.isEmpty,lastJPEGTime-lastInspectionExport >= 1 else { return nil }
+            lastInspectionExport=lastJPEGTime
+            return (directory,latestJPEG,json(state),inspectionID)
+        }
+        if let (directory,jpeg,metadata,id)=export {
+            serverQueue.async { [self] in
+                guard lock.withLock({ inspectionID == id && inspectionDirectory != nil }) else { return }
+                do {
+                    try FileManager.default.createDirectory(at:directory,withIntermediateDirectories:true)
+                    try jpeg.write(to:directory.appendingPathComponent("frame.jpg"),options:.atomic)
+                    try metadata.write(to:directory.appendingPathComponent("state.json"),options:.atomic)
+                } catch { /* Optional diagnostics must not interrupt capture. */ }
+            }
+        }
     }
 
     /// Six frames from 0.25 s before to 0.25 s after contact, the contact

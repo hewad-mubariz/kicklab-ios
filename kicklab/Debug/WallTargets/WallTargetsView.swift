@@ -8,13 +8,30 @@ import SwiftUI
 /// order (TL, TR, BR, BL), then dragging any handle to fine-tune. Recordings
 /// save the video, detections and hits for review on the Mac.
 struct WallTargetsView: View {
+    var onClose: (() -> Void)? = nil
     @ObservedObject private var model = WallTargetsModel.shared
+    @ObservedObject private var penalties = VirtualPenaltyPresentation.shared
     @StateObject private var camera = WallTargetsCamera(onImpact: { impact in
-        WallTargetsModel.shared.accept(impact) { cleared in
-            WallTargetsFeedback.shared.play(cleared: cleared)
+        let model = WallTargetsModel.shared
+        let eventCount = model.arcadeEvents.count
+        let accepted = model.accept(impact) { cleared in
+            guard !model.game.isArcade else { return }
+            WallTargetsFeedback.shared.play(cleared: cleared, game: model.game,
+                remainingHealth: model.game == .brickBlast
+                    ? (model.lastHit?.brickDamage.contains(where: \.shattered) == true ? 0 : 1) : 0,
+                brokenBricks: model.lastHit?.brickDamage.filter(\.shattered).count ?? 0)
         }
+        if let cue = model.arcadeEvents.dropFirst(eventCount).compactMap(\.cue).last {
+            WallTargetsFeedback.shared.play(cue)
+        }
+        return accepted
     }, onAlignment: { WallTargetsModel.shared.applyAlignment($0) },
-       onContactPreview: { WallTargetsModel.shared.showContactPreview($0) })
+       onContactPreview: { WallTargetsModel.shared.showContactPreview($0) },
+       onPhysicalBall: { sample,time in
+           let p=VirtualPenaltyPresentation.shared
+           guard p.active,p.realBallTest else { return nil }
+           return p.physical.consume(sample,at:time)
+       })
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @State private var calibrating = false
@@ -33,6 +50,16 @@ struct WallTargetsView: View {
     private static let minPanelWidth: CGFloat = 150
 
     var body: some View {
+        Group {
+#if WALL_GAMES_PREVIEW
+            WallArcadeHub(model:model, camera:camera, onPlay: { game in
+                model.showGameIntro()
+                if model.selectGame(game,preservingSetup:true) { showPlay = true }
+            }, onTopBins: { penalties.open(realBall:true,challenge:.topBins) }, onClose: {
+                model.arcadePresented=false;model.invalidateCalibration(); camera.stop()
+                if let onClose { onClose() } else { dismiss() }
+            })
+#else
         GeometryReader { geometry in
             // The camera takes the full height; the panel gets whatever width is left.
             let aspect = camera.frameSize.width / max(camera.frameSize.height, 1)
@@ -42,10 +69,15 @@ struct WallTargetsView: View {
                 panel.frame(width: geometry.size.width - videoWidth)
             }
         }
+#endif
+        }
         .background(.black)
         .preferredColorScheme(.dark)
         .onChange(of: camera.recordingState, initial: true) { _, state in model.recordingState = state }
         .sheet(isPresented: $showResults) { WallTargetsResultsView() }
+#if WALL_GAMES_PREVIEW
+        .modifier(VirtualPenaltyCover(camera:camera))
+#endif
         // Boxes only on screen (and so on a mirrored projector); the camera keeps
         // detecting underneath, since this view and its camera stay alive.
         .fullScreenCover(isPresented: $showPlay) {
@@ -54,32 +86,101 @@ struct WallTargetsView: View {
         .statusBarHidden()
         .persistentSystemOverlays(.hidden)
         .onAppear {
+            WallPowerMonitor.shared.start()
+#if WALL_GAMES_PREVIEW
+            model.arcadePresented=true
+#endif
+            WallPowerMonitor.shared.setGameplayProvider { [weak model, weak penalties, weak camera] in
+                guard let model, let penalties, let camera else { return nil }
+                let phase: String
+                if penalties.active {
+                    phase = penalties.challenge.finished ? "results" : penalties.physical.phase.rawValue
+                } else if model.gameScreen == .intro { phase = "menu" }
+                else if model.gameScreen == .results || model.sessionEnded || model.clearedAt != nil { phase = "results" }
+                else if model.isPlaying { phase = model.alignmentStatus == .ready ? "playing" : "alignment-paused" }
+                else { phase = "setup" }
+                return WallPowerGameplay(phase: phase, recording: camera.recordingState == .recording,
+                    macPreview: UserDefaults.standard.bool(forKey: "wallTargets.macPreview")
+                        || (penalties.active && penalties.realBallTest))
+            }
+#if WALL_GAMES_PREVIEW
+            if !showPlay && !penalties.active && !model.arcadeSetupGuidePresented { WallTargetsAppDelegate.lock(.allButUpsideDown) }
+#else
             WallTargetsAppDelegate.lock(.landscapeRight)
+#endif
             UIApplication.shared.isIdleTimerDisabled = true
             camera.setCorners(model.corners)
-            camera.start()
-            applyMacPreview(macPreview)
+            if !model.arcadeSetupGuidePresented { updatePenaltyCamera() }
             // Open straight into boxes only, so the wall never shows a camera picture;
             // long-press there to come back to this settings screen.
             if !autoPlayed {
+                var selected: WallGame? = ProcessInfo.processInfo.arguments.contains("--memory-strike") ? .memoryStrike
+                    : ProcessInfo.processInfo.arguments.contains("--meteor-defence") ? .meteorDefence
+                    : ProcessInfo.processInfo.arguments.contains("--cross-circle") ? .crossCircle
+                    : ProcessInfo.processInfo.arguments.contains("--goal-duel") ? .goalDuel
+                    : ProcessInfo.processInfo.arguments.contains("--four-in-row") ? .fourInRow
+                    : ProcessInfo.processInfo.arguments.contains("--territory-duel") ? .territoryDuel
+                    : ProcessInfo.processInfo.arguments.contains("--copy-my-shot") ? .copyMyShot
+                    : ProcessInfo.processInfo.arguments.contains("--brick-blast") ? .brickBlast : nil
+#if WALL_GAMES_PREVIEW
+                // Launch shortcuts follow the same release catalogue as the menu.
+                if let candidate=selected, !WallArcadeGame.all.contains(where:{ $0.game == candidate }) { selected=nil }
+#endif
+                if let selected {
+                    model.showGameIntro()
+                    model.selectGame(selected)
+                }
                 model.invalidateCalibration()
                 autoPlayed = true
+#if WALL_GAMES_PREVIEW
+                model.showGameIntro()
+#else
                 showPlay = true
+#endif
             }
         }
         .onDisappear {
             // Play mode covers this screen but must keep its camera detecting.
-            guard !showPlay else { return }
+            guard !showPlay && !penalties.active else { return }
+#if WALL_GAMES_PREVIEW
+            // The framing guide covers its presenter but still owns this
+            // camera; showing it must not trigger arcade teardown.
+            guard !model.arcadeSetupGuidePresented else { return }
+            model.arcadePresented=false
+#endif
+            WallPowerMonitor.shared.setGameplayProvider(nil)
             applyMacPreview(false)
             camera.stop()
             UIApplication.shared.isIdleTimerDisabled = false
             WallTargetsAppDelegate.lock(.portrait)
         }
         .onChange(of: showPlay) { _, playing in
-            if !playing { camera.start() }   // in case the cover's appearance paused it
+            if !playing && !penalties.active {
+#if WALL_GAMES_PREVIEW
+                camera.setCaptureResting(true)
+                model.showGameIntro()
+                WallTargetsAppDelegate.lock(.allButUpsideDown)
+#else
+                camera.start()
+#endif
+            }
         }
+        .onChange(of: penalties.active) { _, active in
+            model.invalidateCalibration()
+            updatePenaltyCamera()
+#if WALL_GAMES_PREVIEW
+            if !active { WallTargetsAppDelegate.lock(.allButUpsideDown); model.showGameIntro() }
+#endif
+        }
+        .onChange(of: penalties.realBallTest) { _, _ in
+            if penalties.active { updatePenaltyCamera() }
+        }
+        .onChange(of: camera.frameSize) { _, _ in model.invalidateCalibration() }
+        .onChange(of: model.game) { _, _ in updatePowerContext() }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { camera.start() } else {
+            if phase == .active {
+                updatePenaltyCamera()
+            } else {
                 hitFeedback.invalidatePreparation()
                 model.invalidateCalibration()
                 camera.stop()
@@ -96,11 +197,12 @@ struct WallTargetsView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: AVCaptureSession.wasInterruptedNotification,
                                                          object: camera.session)) { _ in
+            model.invalidateCalibration()
             camera.stop(message: "Camera interrupted")
         }
         .onReceive(NotificationCenter.default.publisher(for: AVCaptureSession.interruptionEndedNotification,
                                                          object: camera.session)) { _ in
-            if scenePhase == .active { camera.start() }
+            if scenePhase == .active { updatePenaltyCamera() }
         }
     }
 
@@ -140,18 +242,55 @@ struct WallTargetsView: View {
         }
     }
 
+    private func updatePenaltyCamera() {
+        updatePowerContext()
+        let inspect = penalties.active && penalties.realBallTest
+        camera.setInspectionEnabled(inspect)
+        liveFeed.setInspectionEnabled(inspect)
+#if WALL_GAMES_PREVIEW
+        applyMacPreview(false)
+#else
+        applyMacPreview(macPreview || inspect)
+#endif
+        if penalties.active {
+            camera.setScoringEnabled(false)
+            if inspect {
+                // Old wall-game corners must not crop the new projected goal.
+                camera.setCorners([])
+                camera.setCaptureResting(false)
+                camera.start()
+            } else {
+                camera.stop(message:"Virtual penalties preview")
+            }
+        } else {
+            camera.setCorners(model.corners)
+#if WALL_GAMES_PREVIEW
+            camera.setCaptureResting(true)
+#else
+            if showPlay { camera.setCaptureResting(true) }
+#endif
+            camera.start()
+        }
+    }
+
     // MARK: Overlay
+
+    private func updatePowerContext() {
+        WallPowerMonitor.shared.setContext(penalties.active
+            ? (penalties.challenge.mode?.rawValue ?? (penalties.realBallTest ? "virtual-penalties-real" : "virtual-penalties-simulated"))
+            : model.game.rawValue)
+    }
 
     private func drawOverlay(_ context: GraphicsContext, video: CGRect, corners: [CGPoint]) {
         func view(_ p: CGPoint) -> CGPoint { CGPoint(x: video.minX + p.x * video.width, y: video.minY + p.y * video.height) }
         if calibrating, corners.count == 4, let board = WallBoard(topLeft: corners[0], topRight: corners[1],
                                                                   bottomRight: corners[2], bottomLeft: corners[3]) {
             var grid = Path()
-            for u in 0...3 {
-                grid.move(to: board.imagePoint(u: Double(u), v: 0)); grid.addLine(to: board.imagePoint(u: Double(u), v: 2))
-            }
-            for v in 0...2 {
-                grid.move(to: board.imagePoint(u: 0, v: Double(v))); grid.addLine(to: board.imagePoint(u: 3, v: Double(v)))
+            for target in model.game.layout.targets {
+                let r = target.hitFrame
+                let points = [(r.minX, r.minY), (r.maxX, r.minY), (r.maxX, r.maxY), (r.minX, r.maxY)]
+                    .map { board.imagePoint(u: $0.0, v: $0.1) }
+                grid.addLines(points); grid.closeSubpath()
             }
             context.stroke(grid, with: .color(.cyan.opacity(0.9)), lineWidth: 2)
         }
@@ -212,6 +351,7 @@ struct WallTargetsView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Wall targets").font(.headline)
+                Text("Phone performance").font(.subheadline.weight(.semibold))
                 WallTargetsRuntimeHUD(sample: camera.runtime)
                 Label(model.projectorConnected ? "Projector on" : "No projector: use Screen Mirroring",
                       systemImage: model.projectorConnected ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
@@ -227,8 +367,8 @@ struct WallTargetsView: View {
                     showPlay = true
                 } label: {
                     VStack(alignment: .leading, spacing: 1) {
-                        Label("Clear the Wall", systemImage: "play.fill").font(.headline)
-                        Text("Six targets · beat your best time").font(.caption2)
+                        Label(model.game.title, systemImage: "play.fill").font(.headline)
+                        Text("Wall games + virtual penalties").font(.caption2)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -245,7 +385,7 @@ struct WallTargetsView: View {
                 .labelsHidden()
                 Toggle("Hit sounds", isOn: $hitSoundsEnabled)
                     .font(.caption)
-                Button("Test hit sound") { hitFeedback.play(cleared: false) }
+                Button("Test hit sound") { hitFeedback.play(cleared: false, game: model.game) }
                     .buttonStyle(.bordered)
                     .font(.caption)
                     .disabled(!hitSoundsEnabled)
@@ -316,19 +456,16 @@ struct WallTargetsView: View {
     }
 
     private var miniBoard: some View {
-        Grid(horizontalSpacing: 3, verticalSpacing: 3) {
-            ForEach(0..<2, id: \.self) { row in
-                GridRow {
-                    ForEach(1...3, id: \.self) { column in
-                        let box = row * 3 + column, lit = model.boxesHit.contains(box)
-                        Text("\(box)")
-                            .font(.subheadline.bold())
-                            .foregroundStyle(lit ? .black : .white.opacity(0.7))
-                            .frame(maxWidth: .infinity, minHeight: 26)
-                            .background(lit ? WallTargetsBoard.hitColor : Color.white.opacity(0.12),
-                                        in: RoundedRectangle(cornerRadius: 5))
-                    }
-                }
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3),
+                                  count: model.game == .brickBlast ? 4 : 3), spacing: 3) {
+            ForEach(model.game.targetIDs, id: \.self) { box in
+                let lit = model.clearedBoxes.contains(box)
+                Text("\(box)")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(lit ? .black : .white.opacity(0.7))
+                    .frame(maxWidth: .infinity, minHeight: 26)
+                    .background(lit ? WallTargetsBoard.hitColor : Color.white.opacity(0.12),
+                                in: RoundedRectangle(cornerRadius: 5))
             }
         }
     }
@@ -338,10 +475,10 @@ struct WallTargetsView: View {
             Group {
                 if let time = model.clearTime {
                     Text(String(format: "Cleared %.1f s", time)).foregroundStyle(.green)
-                } else if let start = model.roundStart {
-                    Text(String(format: "%d/6 · %.1f s", model.boxesHit.count, timeline.date.timeIntervalSince(start)))
+                } else if model.roundStart != nil {
+                    Text(String(format: "%d/%d · %.1f s", model.clearedBoxes.count, model.game.targetCount, model.elapsed(at: timeline.date)))
                 } else {
-                    Text("Hit a box to start")
+                    Text("Start a round to play")
                 }
             }
             .font(.subheadline.weight(.semibold).monospacedDigit())
@@ -378,7 +515,7 @@ private struct WallTargetsWarpedBoard: View {
     }
 }
 
-private struct WallTargetsPreview: UIViewRepresentable {
+struct WallTargetsPreview: UIViewRepresentable {
     let session: AVCaptureSession
 
     func makeUIView(context: Context) -> PreviewView {
@@ -389,6 +526,10 @@ private struct WallTargetsPreview: UIViewRepresentable {
     }
 
     func updateUIView(_ view: PreviewView, context: Context) { view.setNeedsLayout() }
+
+    static func dismantleUIView(_ view: PreviewView, coordinator: ()) {
+        view.previewLayer.session = nil
+    }
 
     final class PreviewView: UIView {
         override class var layerClass: AnyClass { AVCaptureVideoPreviewLayer.self }

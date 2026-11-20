@@ -361,6 +361,7 @@ nonisolated final class BallDetector {
     var modelComputeSwitches: Int { models.switches }
     var modelReloadSeconds: Double { models.reloadSeconds }
     var modelAccelerationUnavailable: Bool { models.acceleratedLoadFailure != nil }
+    var modelAcceleratedLoadFailure: String? { models.acceleratedLoadFailure }
     var modelComputeDescription: String {
         if models.acceleratedLoadFailure != nil { return "CPU (compatibility)" }
         if models.cpuOnly { return "CPU" }
@@ -557,11 +558,17 @@ nonisolated final class BallDetector {
     }
 
     /// Wall scoring needs the ball and person boxes, but no segmentation mask.
-    func wallTargetDetections(in pixelBuffer: CVPixelBuffer, threshold: Double) throws -> FrameDetections {
+    func wallTargetDetections(in pixelBuffer: CVPixelBuffer, threshold: Double, minimumBallDiameter: Double = 0) throws -> FrameDetections {
         guard isRFDETR else { return FrameDetections(ball: nil, person: nil) }
         let image = orientedImage(pixelBuffer, portrait: false, orientation: nil)
         let output = try predict(makeInput(from: image))
-        return try rfSeg.decode(output, sourceSize: image.extent.size, threshold: threshold, includeMasks: false)
+        var result = try rfSeg.decode(output, sourceSize: image.extent.size, threshold: threshold, includeMasks: false)
+        if minimumBallDiameter > 0 {
+            // A projected virtual ball must not replace the physical ball's track.
+            result.ball = try rfSeg.physicalWallBall(output, threshold: threshold,
+                minimumDiameter: minimumBallDiameter, imageAspect: image.extent.width / image.extent.height)
+        }
+        return result
     }
 
     func wallTargetBall(in pixelBuffer: CVPixelBuffer, threshold: Double) throws -> Detection? {

@@ -331,6 +331,70 @@ final class WallTargetsTests: XCTestCase {
         }
     }
 
+    func testRecordedCollapsedLeftEdgesCannotBecomeCalibration() {
+        // Both failed phone sessions on 19 Oct accepted a fourth corner beside
+        // the first. Convexity and total area still passed for these coordinates.
+        for p in [
+            [[0.33073586, 0.33982961], [0.71587638, 0.38234198], [0.71204762, 0.68134366], [0.33384892, 0.36020150]],
+            [[0.38696822, 0.47313842], [0.75972535, 0.50349392], [0.75738409, 0.81079699], [0.38123959, 0.48055556]]
+        ] {
+            XCTAssertFalse(WallBoard.validCalibration(p.map { CGPoint(x: $0[0], y: $0[1]) }))
+        }
+        XCTAssertTrue(WallBoard.validCalibration(WallMappingFixture.corners))
+    }
+
+    func testAlignmentSetupFailureDiscardsMapAndCannotStartEitherGame() {
+        for game in WallGame.allCases {
+            let model = model()
+            model.showGameIntro()
+            model.selectGame(game)
+            XCTAssertTrue(model.beginGameSetup())
+            XCTAssertTrue(model.setCorners(corners))
+            model.validateMappingForTest()
+            XCTAssertTrue(model.finishReference(Array(repeating: 0.04, count: 6)))
+            model.alignmentSetupFailed()
+            XCTAssertEqual(model.calibration, .failed)
+            XCTAssertNil(model.mappingReport)
+            XCTAssertNil(model.wallReference)
+            XCTAssertFalse(model.startPlay())
+        }
+    }
+
+    private func cornerBlinkFrames(dimAndSplit: Bool = false, missingOnSecond: Bool = false,
+                                   shiftSecond: Int = 0, falseFourth: Bool = false) -> [WallCornerFinder.Frame] {
+        let w = WallCornerFinder.width, h = WallCornerFinder.height
+        let dark = [UInt8](repeating: 40, count: w * h)
+        return (0..<12).map { index in
+            guard index % 6 >= 3 else { return .init(t: Double(index), luma: dark) }
+            var lit = dark
+            let pass = index / 6
+            for (i, centre) in [(64, 36), (256, 44), (250, 144), (66, 140)].enumerated() {
+                if missingOnSecond && pass == 1 && i == 3 { continue }
+                let (x, y) = falseFourth && i == 3 ? (66, 45) : centre
+                for dy in -3...3 { for dx in -3...3 {
+                    let value = dimAndSplit ? (i == 3 ? 95 : (i == 0 && dy == 0 ? 80 : 230)) : 230
+                    lit[(y + dy) * w + x + dx + (pass == 1 ? shiftSecond : 0)] = UInt8(value)
+                } }
+            }
+            return .init(t: Double(index), luma: lit)
+        }
+    }
+
+    func testCornerSearchFindsDimFourthDotWithoutUsingSplitFirstDotTwice() throws {
+        let result = try XCTUnwrap(WallCornerFinder.corners(in: cornerBlinkFrames(dimAndSplit: true),
+            on: [3...5, 9...11], off: [0...2, 6...8]))
+        XCTAssertEqual(result[0].y, 36.5 / 180, accuracy: 0.002)
+        XCTAssertEqual(result[3].y, 140.5 / 180, accuracy: 0.002)
+    }
+
+    func testEachCornerBlinkMustHaveFourStableMeasuredDots() {
+        for frames in [cornerBlinkFrames(missingOnSecond: true), cornerBlinkFrames(shiftSecond: 6),
+                       cornerBlinkFrames(falseFourth: true)] {
+            XCTAssertNil(WallCornerFinder.corners(in: frames, on: [3...5, 9...11], off: [0...2, 6...8]))
+        }
+        XCTAssertNotNil(WallCornerFinder.corners(in: cornerBlinkFrames(), on: [3...5, 9...11], off: [0...2, 6...8]))
+    }
+
     func testBlinkSearchRequiresFourDotsAndEnoughFrames() throws {
         let w = WallCornerFinder.width, h = WallCornerFinder.height
         let dark = [UInt8](repeating: 40, count: w * h)
@@ -416,6 +480,107 @@ final class WallTargetsTests: XCTestCase {
         XCTAssertTrue(detector.impacts(now: .infinity).isEmpty)
     }
 
+    func testContinuousStrongReboundsConfirmSoonerAtDifferentCadences() {
+        let board = WallBoard(topLeft: .zero, topRight: CGPoint(x: 1280, y: 0),
+            bottomRight: CGPoint(x: 1280, y: 720), bottomLeft: CGPoint(x: 0, y: 720))!
+        for fps in [20.0, 30.0, 60.0] {
+            for scenario in ["turn", "depth", "edge"] {
+                var detector = WallImpactDetector(board: board, reference: WallBallReference([44.0 / 1280]),
+                    imageWidth: 1280, layout: .brickWall)
+                detector.processingFPS = fps
+                var hits: [WallImpactDetector.Impact] = [], reported: Double?
+                for frame in 0..<Int(fps * 2) {
+                    let t = Double(frame) / fps
+                    detector.add(.init(t: t, x: scenario == "depth" ? 600 : 600 - abs(t - 1) * 240,
+                        y: scenario == "edge" ? 30 : 210, d: 44 + abs(t - 1) * 120, hand: .clear))
+                    let found = detector.impacts(now: t)
+                    if !found.isEmpty { reported = t }
+                    hits += found
+                }
+                XCTAssertEqual(hits.count, 1, "\(scenario) at \(fps)")
+                XCTAssertEqual(hits.first?.t ?? 0, 1, accuracy: 0.001)
+                XCTAssertEqual(hits.first?.x ?? 0, 600, accuracy: 0.001)
+                if scenario == "edge" { XCTAssertGreaterThanOrEqual(reported ?? 0, 1.4) }
+                else {
+                    XCTAssertGreaterThan(reported ?? 0, 1.1)
+                    XCTAssertLessThan(reported ?? 10, 1.21)
+                }
+            }
+        }
+    }
+
+    func testContinuousSizeNoiseAndUnreturnedApproachesCannotScore() {
+        let board = WallBoard(topLeft: .zero, topRight: CGPoint(x: 1280, y: 0),
+            bottomRight: CGPoint(x: 1280, y: 720), bottomLeft: CGPoint(x: 0, y: 720))!
+        for fps in [20.0, 30.0, 60.0] {
+            for scenario in ["size_dip", "single_return", "held", "unknown", "no_return"] {
+                var detector = WallImpactDetector(board: board, reference: WallBallReference([44.0 / 1280]),
+                    imageWidth: 1280, layout: .brickWall)
+                detector.processingFPS = fps
+                for frame in 0..<Int(fps * 2) {
+                    let t = Double(frame) / fps
+                    var d = 44 + abs(t - 1) * 120
+                    if scenario == "size_dip" { d = frame == Int(fps) ? 44 : 60 }
+                    if scenario == "single_return", t > 1 { d = frame == Int(fps) + 2 ? 60 : 44 }
+                    let hand: WallHandState = scenario == "held" ? .held : scenario == "unknown" ? .unknown : .clear
+                    if scenario != "no_return" || t <= 1 {
+                        detector.add(.init(t: t, x: 600, y: 210, d: d, hand: hand))
+                    }
+                    XCTAssertTrue(detector.impacts(now: t).isEmpty, "\(scenario) at \(fps), \(t)")
+                }
+            }
+        }
+    }
+
+    func testRecordedContinuousReboundsKeepContactAndReduceWaiting() throws {
+        try checkContinuousReboundRecording(mode: "original")
+    }
+
+    func testRecordedContinuousReboundsStillNeedReleaseAndReturn() throws {
+        for mode in ["held", "unknown", "no_return"] { try checkContinuousReboundRecording(mode: mode) }
+    }
+
+    private func checkContinuousReboundRecording(mode: String) throws {
+        struct Expected: Decodable { let t, u, v, maximumDelay: Double }
+        struct Scenario: Decodable {
+            let name: String; let corners: [[Double]]; let reference: [Double]
+            let frames: [[Double]]; let expected: Expected?
+        }
+        struct Fixture: Decodable { let width, height: Double; let scenarios: [Scenario] }
+        let path = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/wall-continuous-reaction.json")
+        let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: path))
+        let states: [WallBoardAlignment.Status] = [.checking, .ready, .obscured, .shifted, .referenceRequired]
+        for scenario in fixture.scenarios {
+            var tracker = WallAlignedShotTracker(), hits: [WallImpactDetector.Impact] = []
+            var reported: Double?
+            for r in scenario.frames {
+                let hand: WallHandState = mode == "held" ? .held : mode == "unknown" ? .unknown
+                    : WallHandState(rawValue: Int(r[5]))!
+                let measured = r[6] > 0 && !(mode == "no_return" && r[0] > (scenario.expected?.t ?? 0) + 0.001)
+                let observation = measured ? WallImpactDetector.Observation(
+                    t: r[0], x: r[2], y: r[3], d: r[4], hand: hand) : nil
+                let found = tracker.process(observation, at: r[0],
+                    update: .init(status: states[Int(r[7])],
+                        corners: scenario.corners.map { CGPoint(x: $0[0], y: $0[1]) },
+                        revision: Int(r[8]), evidenceEpoch: Int(r[9])),
+                    retainEvidence: r[10] == 1, canScore: r[11] == 1,
+                    reference: WallBallReference(scenario.reference),
+                    size: CGSize(width: fixture.width, height: fixture.height), fps: r[1], layout: .brickWall)
+                if !found.isEmpty { reported = r[0] }
+                hits += found
+            }
+            if mode == "original", let e = scenario.expected {
+                XCTAssertEqual(hits.count, 1, scenario.name)
+                let hit = try XCTUnwrap(hits.first, scenario.name)
+                XCTAssertEqual(hit.t, e.t, accuracy: 0.001, scenario.name)
+                XCTAssertEqual(hit.u, e.u, accuracy: 0.001, scenario.name)
+                XCTAssertEqual(hit.v, e.v, accuracy: 0.001, scenario.name)
+                XCTAssertLessThanOrEqual(try XCTUnwrap(reported) - hit.t, e.maximumDelay, scenario.name)
+            } else { XCTAssertTrue(hits.isEmpty, "\(scenario.name): \(mode)") }
+        }
+    }
+
     func testBadObservationsCannotPoisonDepthHistory() {
         let board = WallBoard(topLeft: .zero, topRight: CGPoint(x: 1280, y: 0),
                               bottomRight: CGPoint(x: 1280, y: 720), bottomLeft: CGPoint(x: 0, y: 720))!
@@ -452,7 +617,7 @@ final class WallTargetsTests: XCTestCase {
         found += remaining
         XCTAssertFalse(found.isEmpty, "Reject the oversized frame without losing the real rebound")
     }
-    func testReferencePhaseCannotScoreAndSixValidSamplesAreRequired() {
+    func testReferencePhaseCannotScoreAndAnExplicitProfileIsRequired() {
         let m = model()
         m.setCorners(corners); m.validateMappingForTest()
         XCTAssertFalse(m.startPlay())
@@ -473,7 +638,12 @@ final class WallTargetsTests: XCTestCase {
     }
 
     func testReferenceProfileValidationAndSpatialInterpolation() throws {
-        XCTAssertNil(WallBallReference([0.04]))
+        let single = try XCTUnwrap(WallBallReference([0.04]))
+        XCTAssertEqual(single.diameter(u: 0, v: 0, imageWidth: 1000), 40)
+        XCTAssertEqual(single.diameter(u: 3, v: 2, imageWidth: 1000), 40)
+        XCTAssertNil(WallBallReference([]))
+        XCTAssertNil(WallBallReference([0.04, 0.04]))
+        XCTAssertNil(WallBallReference([.nan]))
         XCTAssertNil(WallBallReference([.nan, 0.04, 0.04, 0.04, 0.04, 0.04]))
         XCTAssertNil(WallBallReference([0.20, 0.04, 0.04, 0.04, 0.04, 0.04]))
         let profile = try XCTUnwrap(WallBallReference([0.04, 0.05, 0.06, 0.04, 0.05, 0.06]))
@@ -499,6 +669,30 @@ final class WallTargetsTests: XCTestCase {
         }
         XCTAssertEqual(collector.add(nil, now: 5).progress, 0)
         XCTAssertNil(collector.add(.init(t: 5.1, x: 150, y: 150, d: 60, score: 0.8, aspect: 1), now: 5.1).diameter)
+    }
+
+    func testOneCentralHoldCollectsOnlyAtTheWallAnchorAndStartsPlay() throws {
+        let board = try XCTUnwrap(WallBoard(topLeft: .zero, topRight: CGPoint(x: 900, y: 0),
+                                            bottomRight: CGPoint(x: 900, y: 600), bottomLeft: CGPoint(x: 0, y: 600)))
+        var collector = WallReferenceCollector(board: board, target: WallReferenceCollector.wallCentre, imageWidth: 900)
+        for f in 0..<100 {
+            let t = Double(f) / 30
+            XCTAssertNil(collector.add(.init(t: t, x: 150, y: 150, d: 45, score: 0.9, aspect: 1), now: t).diameter)
+        }
+        var diameter: Double?
+        for f in 100...195 {
+            let t = Double(f) / 30
+            let update = collector.add(.init(t: t, x: 450, y: 300, d: 45, score: 0.9, aspect: 1), now: t)
+            if f < 190 { XCTAssertNil(update.diameter) }
+            diameter = update.diameter
+        }
+        XCTAssertEqual(try XCTUnwrap(diameter), 0.05, accuracy: 0.001)
+        let m = model()
+        m.setCorners(corners); m.validateMappingForTest(); m.beginReference()
+        XCTAssertEqual(m.referenceBox, WallReferenceCollector.wallCentre)
+        XCTAssertFalse(m.startPlay())
+        XCTAssertTrue(m.finishReference([try XCTUnwrap(diameter)]))
+        XCTAssertTrue(m.startPlay())
     }
 
     func testHandsAndMissingPoseCannotMasqueradeAsRelease() {

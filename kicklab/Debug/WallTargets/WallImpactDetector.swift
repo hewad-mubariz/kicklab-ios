@@ -2,9 +2,8 @@
 import CoreGraphics
 import Foundation
 
-/// The 3 x 2 target board on the wall, mapped from the camera image through its
-/// four outer corners. Board coordinates run u 0...3 left to right and v 0...2
-/// top to bottom, so box = row * 3 + column + 1.
+/// Continuous wall coordinates from four outer markers. The 0...3 by 0...2
+/// coordinate range is retained for saved recordings; targets come from a layout.
 nonisolated struct WallBoard: Equatable, Sendable {
     let corners: [CGPoint]   // image pixels, top-left origin: TL, TR, BR, BL
     private let toBoard: [Double]
@@ -30,15 +29,24 @@ nonisolated struct WallBoard: Equatable, Sendable {
 
     /// A measured centre close enough to a line to change boxes under the
     /// tracking/alignment error is neutral. This is not a ball-radius overlap rule.
-    func isBorderline(_ point: CGPoint, uncertainty: Double) -> Bool {
+    func isBorderline(_ point: CGPoint, uncertainty: Double, layout: WallTargetLayout = .sixTargets) -> Bool {
         guard uncertainty > 0, uncertainty.isFinite else { return false }
         let centre = boardPoint(point)
-        let box = Self.box(u: centre.x, v: centre.y)
+        let box = layout.target(u: centre.x, v: centre.y)
+        if layout.continuousSurface && !layout.contains(centre) { return true }
         for i in 0..<16 {
             let angle = Double(i) * .pi / 8
             let p = boardPoint(CGPoint(x: point.x + cos(angle) * uncertainty,
                                       y: point.y + sin(angle) * uncertainty))
-            if Self.box(u: p.x, v: p.y) != box { return true }
+            if layout.continuousSurface {
+                if !layout.contains(p) { return true }
+            } else if layout.target(u: p.x, v: p.y) != box {
+                // A centre measured inside one tile can overlap its empty margin.
+                // Keep ambiguous neighbouring tiles and the outer wall neutral;
+                // an empty gap alone must not turn a clear edge touch into a miss.
+                if box != nil, layout.contains(p), layout.target(u: p.x, v: p.y) == nil { continue }
+                return true
+            }
         }
         return false
     }
@@ -52,7 +60,18 @@ nonisolated struct WallBoard: Equatable, Sendable {
         let area = (0..<4).reduce(0.0) {
             $0 + points[$1].x * points[($1 + 1) % 4].y - points[($1 + 1) % 4].x * points[$1].y
         } / 2
-        return area >= 0.02
+        guard area >= 0.02 else { return false }
+        // A false candidate beside the top-left marker once became bottom-left.
+        // Convexity and area alone accept that almost triangular map. Allow
+        // substantial perspective, but require both ends of each axis to exist.
+        let edges: [Double] = (0..<4).map { i in
+            let a = points[i], b = points[(i + 1) % 4]
+            return hypot(Double(b.x - a.x), Double(b.y - a.y))
+        }
+        for i in 0..<2 {
+            if min(edges[i], edges[i + 2]) < max(edges[i], edges[i + 2]) * 0.2 { return false }
+        }
+        return true
     }
 
     private static func isConvex(_ points: [CGPoint]) -> Bool {
@@ -108,11 +127,15 @@ nonisolated struct WallImpactDetector: Sendable {
     struct Observation: Equatable, Sendable {
         var t, x, y, d: Double
         var hand: WallHandState = .unknown
+        var confidence = 1.0
     }   // seconds; pixels
     struct Impact: Equatable, Sendable {
         var t, x, y, d, turn, u, v: Double
         var box: Int?
         var borderline = false
+        /// Image-plane motion in ball diameters/second, for visual effects only.
+        var approachSpeed: Double? = nil
+        var footprint: WallContactFootprint? = nil
     }
     struct Decision: Sendable { var t, x, y, d: Double; var reason: String }
     private var decisions: [Decision] = []
@@ -132,17 +155,25 @@ nonisolated struct WallImpactDetector: Sendable {
     var board: WallBoard
     /// Observation cadence; below 50 fps v2 accepts one fewer approach/side point.
     var processingFPS = 60.0
+    /// CPU follow crops can produce a transient partial-ball size estimate.
+    /// Accelerated and legacy replay paths retain their established rules.
+    var usesSparseDepthConsistency = false
     /// Enabled by the live aligned-board pipeline; legacy detector replays can
     /// still inspect all physical contacts without classifying target uncertainty.
     var rejectBorderline = false
     private(set) var history: [Observation] = []
+    let layout: WallTargetLayout
     let reference: WallBallReference?
     let imageWidth: Double
+    // Retain the cadence at each measured edge. A later fps change must not
+    // split (or join) a trajectory whose evidence has already arrived.
+    private var capturedCadence: [Double: Double] = [:]
     private var lastImpact = -Double.infinity
     private var judgedThrough = -Double.infinity
 
-    init(board: WallBoard, reference: WallBallReference? = nil, imageWidth: Double = 1) {
-        self.board = board; self.reference = reference; self.imageWidth = imageWidth
+    init(board: WallBoard, reference: WallBallReference? = nil, imageWidth: Double = 1,
+         layout: WallTargetLayout = .sixTargets) {
+        self.board = board; self.reference = reference; self.imageWidth = imageWidth; self.layout = layout
     }
 
     /// No warmup fallback: an arbitrary nearby ball can never establish wall depth.
@@ -160,14 +191,19 @@ nonisolated struct WallImpactDetector: Sendable {
         guard [observation.t, observation.x, observation.y, observation.d].allSatisfy(\.isFinite),
               observation.d > 0, history.last.map({ observation.t > $0.t }) ?? true else { return }
         history.append(observation)
+        capturedCadence[observation.t] = processingFPS
         if let first = history.firstIndex(where: { observation.t - $0.t <= Self.historySpan }), first > 0 {
+            for old in history.prefix(first) { capturedCadence.removeValue(forKey: old.t) }
             history.removeFirst(first)
         }
     }
 
     /// Hits whose evidence is complete at `now`. Pass `.infinity` to flush.
     mutating func impacts(now: Double) -> [Impact] {
-        impacts(now: now, settling: turnEvidenceMaturity, requireTurnBeforeSettle: true)
+        // Continuous material can use a corroborated rebound as soon as the
+        // contact minimum is stable. Precise numbered targets keep their timing.
+        let maturity = layout.continuousSurface ? 0.10 + 0.5 / max(processingFPS, 1) : turnEvidenceMaturity
+        return impacts(now: now, settling: maturity, requireTurnBeforeSettle: true)
     }
 
     /// A visual acknowledgement only. The full turn neighbourhood must already
@@ -185,23 +221,51 @@ nonisolated struct WallImpactDetector: Sendable {
 
     private mutating func impacts(now: Double, settling: Double, requireTurnBeforeSettle: Bool = false) -> [Impact] {
         guard reference != nil else { return [] }
-        let minBefore = processingFPS >= 50 ? 4 : 3, minSide = processingFPS >= 50 ? 3 : 2
         // Half a frame: makes each seconds window include exactly the frame counts
         // v2 used at 30 and 60 fps (where 7 frames at 60 fps rounded to 4 at 30).
-        let slack = 0.5 / max(processingFPS, 1), gate = wallGate
+        let gate = wallGate
+        // At CPU cadence the last 250 ms can contain only the almost-flat
+        // bottom of the size valley. Keep the earlier measured approach too;
+        // the point count, shrink, release and rebound requirements remain.
+        let sparse = usesSparseDepthConsistency && processingFPS < 20
+        let approachSpan = sparse ? 0.40 : Self.approachWindow
         var found: [Impact] = []
         for track in tracks() {
             guard track.count >= 5 else { continue }
-            for i in 2..<(track.count - 2) {
+            for i in (sparse ? 1 : 2)..<(track.count - 2) {
                 let m = track[i]
+                // One trajectory keeps the evidence requirements captured at its
+                // candidate. Later throughput jitter must not consume a pending
+                // three-sample approach by suddenly requiring a fourth sample.
+                let candidateFPS = capturedCadence[m.t] ?? processingFPS
+                let minBefore = candidateFPS >= 50 ? 4 : 3, minSide = candidateFPS >= 50 ? 3 : 2
+                let slack = 0.5 / max(candidateFPS, 1)
                 guard m.t > judgedThrough, m.t <= now - settling else { continue }
+                // Changing cadence can join previously split sparse tracks. Do
+                // not turn that into feedback for a shot several seconds ago.
+                if sparse, now.isFinite, now - m.t > 0.8 { judgedThrough = m.t; continue }
                 let previouslyJudged = judgedThrough
                 judgedThrough = m.t
                 // A five-frame minimum can be a size wobble while the ball is
                 // still approaching (especially at 60 fps). Wait for the whole
                 // contact neighbourhood before committing to that minimum.
                 let valley = track.filter { abs($0.t - m.t) <= 0.10 + slack }
-                guard m.d == valley.map(\.d).min() else { continue }
+                let minimum = valley.map(\.d).min()!
+                // A few pixels of box-size noise must not move a measured bounce
+                // into the next square. Within a flat depth valley, a measured
+                // reversal locates contact better than the smallest decimal size.
+                let reverses = sparse && Self.hasPlanarReversal(track, at: m, slack: slack)
+                // A rejected early reversal must not permanently hide the
+                // later measured depth minimum in the same neighbourhood.
+                let plateau = sparse ? valley.filter {
+                    $0.t > previouslyJudged && $0.d <= minimum * 1.06 && isAtWall($0)
+                        && Self.hasPlanarReversal(track, at: $0, slack: slack)
+                } : []
+                if let firstReversal = plateau.first {
+                    guard m.t == firstReversal.t else { continue }
+                } else {
+                    guard m.d == minimum else { continue }
+                }
                 var reason = "wall_size"
                 defer {
                     let p = board.boardPoint(CGPoint(x: m.x, y: m.y))
@@ -210,9 +274,47 @@ nonisolated struct WallImpactDetector: Sendable {
                     }
                 }
                 guard isAtWall(m) else { continue }
+                if sparse, !layout.continuousSurface {
+                    // A partial-ball box can dip early, recover by a few pixels,
+                    // then reach the real wall in a different square. A second
+                    // near-depth measurement must not contradict this square.
+                    // Do not move this candidate to a predicted/later location:
+                    // let that later measured minimum pass the full rules itself.
+                    let location = board.boardPoint(CGPoint(x: m.x, y: m.y))
+                    let target = layout.target(u: location.x, v: location.y)
+                    let alternatives = track[(i + 1)...].filter {
+                        // A real rebound can leave the square while growing.
+                        // Only sizes within 6% (about 3 px for this wall ball)
+                        // are competing estimates of essentially the same depth.
+                        $0.t - m.t <= 0.22 && isAtWall($0) && $0.d <= m.d * 1.06
+                    }
+                    if !reverses, alternatives.contains(where: {
+                        let point = board.boardPoint(CGPoint(x: $0.x, y: $0.y))
+                        return layout.target(u: point.x, v: point.y) != target
+                    }) {
+                        reason = "ambiguous_depth"
+                        continue
+                    }
+                }
                 reason = "approach"
-                let before = track[...i].filter { m.t - $0.t <= Self.approachWindow + slack }
-                guard before.count >= minBefore,
+                let before = Self.approachMeasurements(track[...i].filter { m.t - $0.t <= approachSpan + slack })
+                // At 10 fps a fast approach may have only one pre-contact
+                // measurement. Require a larger shrink and three measured,
+                // released return samples, including two with >=20% regrowth.
+                // A missing frame, a one-frame size dip or a held ball cannot
+                // supply that evidence. Wait for it without consuming the hit.
+                let shortBefore = sparse && before.count == 2 && before[0].hand == .clear
+                    && m.t - before[0].t <= 0.18 && before[0].d >= m.d * 1.20
+                    && hypot(m.x - before[0].x, m.y - before[0].y) >= m.d * 0.35
+                let shortAfter = track[(i + 1)...].filter { $0.t - m.t <= Self.regrowWindow + slack }
+                let shortReturn = shortAfter.count >= 3 && shortAfter.allSatisfy { $0.hand == .clear && $0.d >= m.d * 1.02 }
+                    && shortAfter.filter { $0.d >= m.d * 1.20 }.count >= 2
+                    && zip([m] + shortAfter, shortAfter).filter { $1.d - $0.d >= m.d * 0.015 }.count >= 2
+                    && Self.slope(shortAfter) > 0
+                if shortBefore, !shortReturn, now < m.t + Self.regrowWindow + slack {
+                    judgedThrough = previouslyJudged; reason = "approach_pending"; return found
+                }
+                guard (before.count >= minBefore || (shortBefore && shortReturn)),
                       before.map(\.d).max()! >= m.d * (1 + Self.approachShrink),
                       Self.slope(before) < 0 else { continue }   // shrinking on the way in, not a size glitch
                 // The size minimum is noisy; the kink is the sharpest turn near it.
@@ -238,18 +340,34 @@ nonisolated struct WallImpactDetector: Sendable {
                     && Self.slope(after) > 0
                 let turned = best.turn >= Self.turnDegrees || (regrow >= 0.08 && best.turn >= 20)
                 let location = board.boardPoint(CGPoint(x: m.x, y: m.y))
-                let fu = location.x - floor(location.x), fv = location.y - floor(location.y)
-                let clearlyInside = WallBoard.box(u: location.x, v: location.y) != nil
-                    && min(fu, 1 - fu, fv, 1 - fv) >= 0.15
+                let region = layout.continuousSurface ? CGRect(x: 0, y: 0, width: 3, height: 2)
+                    : layout.target(u: location.x, v: location.y).flatMap { layout.target($0)?.hitFrame }
+                let clearlyInside = region.map { r in
+                    let fu = (location.x - r.minX) / r.width, fv = (location.y - r.minY) / r.height
+                    return min(fu, 1 - fu, fv, 1 - fv) >= 0.15
+                } ?? false
+                // A minimum plus three measured, released outgoing samples can
+                // establish a bounce before the entire kink-search window ends.
+                // Require sustained depth recovery as well as a visible turn;
+                // frontal returns need a stronger recovery instead. A lone box
+                // spike, a held ball or a still-shrinking approach cannot qualify.
+                let tail = Array(after.suffix(3))
+                let confirmedEarly = layout.continuousSurface && clearlyInside && depthRebound
+                    && tail.count == 3 && tail.allSatisfy { $0.hand == .clear && $0.d >= m.d * 1.12 }
+                    && Self.slope(tail) > 0
+                    && (best.turn >= Self.turnDegrees || tail.allSatisfy { $0.d >= m.d * 1.20 })
                 reason = "rebound"
-                if requireTurnBeforeSettle, now < m.t + Self.settle, !turned || !clearlyInside {
-                    // The complete 2D turn window can confirm early. A depth-only
-                    // recovery or a contact near a boundary keeps the full window.
+                if requireTurnBeforeSettle, !confirmedEarly,
+                   now < m.t + turnEvidenceMaturity
+                    || (now < m.t + Self.settle && (!turned || !clearlyInside)) {
+                    // Weak evidence keeps the original turn/confirmation windows.
+                    // In particular, do not consume a candidate merely because
+                    // its strong early-rebound evidence has not arrived yet.
                     judgedThrough = previouslyJudged
                     reason = "rebound_pending"
                     return found
                 }
-                guard turned || depthRebound else {
+                guard turned || depthRebound || (shortBefore && shortReturn) else {
                     if now < m.t + Self.regrowWindow + slack {
                         // Do not let a later point replace this contact while
                         // its outgoing evidence can still arrive. Keep its
@@ -282,11 +400,13 @@ nonisolated struct WallImpactDetector: Sendable {
                 let b = board.boardPoint(point)
                 guard b.x.isFinite, b.y.isFinite else { continue }
                 lastImpact = p.t
-                let borderline = rejectBorderline && board.isBorderline(point, uncertainty: 3 + max(3, p.d * 0.15))
+                let borderline = rejectBorderline && board.isBorderline(point, uncertainty: 3 + max(3, p.d * 0.15), layout: layout)
                 reason = borderline ? "borderline" : "accepted"
                 found.append(Impact(t: p.t, x: point.x, y: point.y, d: p.d, turn: best.turn,
-                                    u: b.x, v: b.y, box: borderline ? nil : WallBoard.box(u: b.x, v: b.y),
-                                    borderline: borderline))
+                                    u: b.x, v: b.y, box: borderline ? nil : layout.target(u: b.x, v: b.y),
+                                    borderline: borderline,
+                                    approachSpeed: WallImpactMotion.approachSpeed(before, contact: p),
+                                    footprint: WallContactFootprint.measured(board: board, point: point, diameter: p.d)))
             }
         }
         return found
@@ -294,13 +414,31 @@ nonisolated struct WallImpactDetector: Sendable {
 
     /// Consecutive observations with short gaps and plausible jumps.
     private func tracks() -> [[Observation]] {
-        let frame = 1 / max(processingFPS, 1)
         var result: [[Observation]] = [], current: [Observation] = []
         for o in history {
             if let last = current.last {
                 let dt = o.t - last.t
-                if dt > Self.maxGap + 1.5 * frame ||
-                    hypot(o.x - last.x, o.y - last.y) > 1.5 * last.d * max(1, dt * processingFPS) {
+                let localFPS = capturedCadence[o.t] ?? processingFPS
+                let sparse = usesSparseDepthConsistency && localFPS < 20
+                let cadence = localFPS
+                let distance = sparse ? 2.0 : 1.5
+                // The returning ball grows and covers more pixels. Use the
+                // larger measured diameter at this edge, not a stale small box.
+                let diameter = sparse ? max(last.d, o.d) : last.d
+                // At sparse cadence bridge one missing measurement, not a
+                // multi-frame disappearance followed by a separate floor bounce.
+                // Slower inference must not reconnect the later floor bounce.
+                // Real intervening pixel measurements can bridge a flight;
+                // a longer unobserved interval cannot substitute for them.
+                let gap = sparse ? min(0.25, Self.maxGap + 1.5 / max(cadence, 1), max(Self.maxGap, 2.5 / max(cadence, 1)))
+                                 : Self.maxGap + 1.5 / max(cadence, 1)
+                // CPU throughput is not the ball's speed. Below 10 model fps,
+                // retain the same bounded travel per elapsed second instead of
+                // shrinking the physical gate with a slower inference average.
+                // The absolute missing-frame cap above still applies.
+                let travelCadence = sparse ? max(10, cadence) : cadence
+                if dt > gap ||
+                    hypot(o.x - last.x, o.y - last.y) > distance * diameter * max(1, dt * travelCadence) {
                     result.append(current); current = []
                 }
             }
@@ -308,6 +446,25 @@ nonisolated struct WallImpactDetector: Sendable {
         }
         if !current.isEmpty { result.append(current) }
         return result
+    }
+
+    /// A reversal of either image axis, with real travel on both sides. Flat
+    /// depth alone is insufficient; every sample used here was measured.
+    private static func hasPlanarReversal(_ track: [Observation], at m: Observation, slack: Double) -> Bool {
+        let before = track.filter { $0.t < m.t && m.t - $0.t <= approachWindow + slack }
+        let after = track.filter { $0.t > m.t && $0.t - m.t <= 0.22 + slack }
+        guard let a = before.first, let b = after.last, after.count >= 2 else { return false }
+        for horizontal in [true, false] {
+            let centre = horizontal ? m.x : m.y
+            let incoming = centre - (horizontal ? a.x : a.y)
+            let outgoing = (horizontal ? b.x : b.y) - centre
+            let sign = incoming >= 0 ? 1.0 : -1.0
+            if abs(incoming) >= m.d * 0.35, outgoing * sign <= -m.d * 0.25,
+               after.allSatisfy({ ((horizontal ? $0.x : $0.y) - centre) * sign <= m.d * 0.02 }) {
+                return true
+            }
+        }
+        return false
     }
 
     private static func turn(_ track: [Observation], at k: Int, minSide: Int, slack: Double)
@@ -321,6 +478,22 @@ nonisolated struct WallImpactDetector: Sendable {
         guard nin >= max(2, c.d * 0.35), nout >= max(2, c.d * 0.35) else { return (0, pre, post) }
         let cosine = max(-1, min(1, (vin.0 * vout.0 + vin.1 * vout.1) / (nin * nout)))
         return (acos(cosine) * 180 / .pi, pre, post)
+    }
+
+    /// A weak oversized box can include the cast shadow. Discard only an
+    /// isolated interior size spike bracketed by two real smaller measurements.
+    /// Never alter a contact centre/diameter, infer a missing observation, or
+    /// count a discarded box towards the minimum approach evidence.
+    private static func approachMeasurements(_ samples: [Observation]) -> [Observation] {
+        guard samples.count >= 3 else { return samples }
+        return samples.enumerated().compactMap { index, sample in
+            if index > 0, index + 1 < samples.count,
+               sample.confidence.isFinite, sample.confidence < 0.5,
+               sample.d > max(samples[index - 1].d, samples[index + 1].d) * 1.15 {
+                return nil
+            }
+            return sample
+        }
     }
 
     private static func slope(_ ps: [Observation]) -> Double {

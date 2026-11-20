@@ -78,6 +78,11 @@ final class VideoSaveAppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, configurationForConnecting session: UISceneSession,
                      options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         if let item = options.shortcutItem { JuggleQuickAction.handle(item) }
+        #if WALL_GAMES_PREVIEW
+        if session.role == .windowExternalDisplayNonInteractive {
+            return WallTargetsAppDelegate().application(application, configurationForConnecting: session, options: options)
+        }
+        #endif
         let configuration = UISceneConfiguration(name: nil, sessionRole: session.role)
         configuration.delegateClass = JuggleSceneDelegate.self
         return configuration
@@ -85,6 +90,11 @@ final class VideoSaveAppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         RemotePracticeNotifications.shared.receivedToken(deviceToken)
     }
+    #if WALL_GAMES_PREVIEW
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        WallTargetsAppDelegate().application(application, supportedInterfaceOrientationsFor: window)
+    }
+    #endif
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         RemotePracticeNotifications.shared.registrationFailed()
     }

@@ -32,20 +32,52 @@ nonisolated enum WallCornerFinder {
 
     /// Corners TL, TR, BR, BL normalised to the frame, or nil without four clear dots.
     static func corners(in frames: [Frame], on: [ClosedRange<Double>], off: [ClosedRange<Double>]) -> [CGPoint]? {
-        guard let lit = average(frames, in: on), let dark = average(frames, in: off) else { return nil }
+        guard !on.isEmpty, on.count == off.count else { return nil }
+        var passes: [[CGPoint]] = []
+        for (litSpan, darkSpan) in zip(on, off) {
+            guard let lit = average(frames, in: [litSpan]), let dark = average(frames, in: [darkSpan]),
+                  let points = find(lit: lit, dark: dark) else { return nil }
+            passes.append(points)
+        }
+        // Pooling the two blinks can hide movement or a missing marker in one
+        // pass. Every pass must independently observe the same four dots.
+        let first = passes[0]
+        guard passes.allSatisfy({ points in zip(first, points).allSatisfy {
+            hypot(($0.x - $1.x) * Double(width), ($0.y - $1.y) * Double(height)) <= 2
+        } }) else { return nil }
+        return (0..<4).map { i in CGPoint(
+            x: passes.reduce(0) { $0 + $1[i].x } / Double(passes.count),
+            y: passes.reduce(0) { $0 + $1[i].y } / Double(passes.count)) }
+    }
+
+    private static func find(lit: [Double], dark: [Double]) -> [CGPoint]? {
         let diff = zip(lit, dark).map { max(0, $0 - $1) }
         let peak = diff.max() ?? 0
         guard peak >= 20 else { return nil }
-        let threshold = max(12, peak * 0.4)
+        // In recorded bright-room attempts the left markers change by only
+        // 9–12 luma levels, while scene noise is about one level. A fixed floor
+        // of 12 discards them, even when lowering the peak-relative threshold.
+        // Start above measured scene noise to retain each whole dot, rather
+        // than centring on a few unstable pixels at the tip of its brightness.
+        let floor = WallBlinkContrast.threshold(lit: lit, dark: dark)
+        for threshold in [floor, max(floor, peak * 0.25), max(floor, peak * 0.4)] {
+            if let points = components(diff, threshold: threshold) { return points }
+        }
+        return nil
+    }
 
+    private static func components(_ diff: [Double], threshold: Double) -> [CGPoint]? {
         var labelled = [Bool](repeating: false, count: diff.count)
         var blobs: [(weight: Double, x: Double, y: Double)] = []
         for start in diff.indices where diff[start] >= threshold && !labelled[start] {
             var stack = [start]
             labelled[start] = true
-            var weight = 0.0, sx = 0.0, sy = 0.0
+            var weight = 0.0, sx = 0.0, sy = 0.0, count = 0
+            var clipped = false
             while let i = stack.popLast() {
+                count += 1
                 let x = i % width, y = i / width, v = diff[i]
+                if x == 0 || x == width - 1 || y == 0 || y == height - 1 { clipped = true }
                 weight += v; sx += v * (Double(x) + 0.5); sy += v * (Double(y) + 0.5)
                 for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
                 where nx >= 0 && ny >= 0 && nx < width && ny < height {
@@ -53,7 +85,7 @@ nonisolated enum WallCornerFinder {
                     if !labelled[j] && diff[j] >= threshold { labelled[j] = true; stack.append(j) }
                 }
             }
-            blobs.append((weight, sx / weight, sy / weight))
+            if count >= 3, !clipped { blobs.append((weight, sx / weight, sy / weight)) }
         }
         let ranked = blobs.sorted { $0.weight > $1.weight }
         guard ranked.count >= 4 else { return nil }
@@ -66,7 +98,7 @@ nonisolated enum WallCornerFinder {
         return ordered
     }
 
-    private static func average(_ frames: [Frame], in ranges: [ClosedRange<Double>]) -> [Double]? {
+    static func average(_ frames: [Frame], in ranges: [ClosedRange<Double>]) -> [Double]? {
         let chosen = frames.filter { f in ranges.contains { $0.contains(f.t) } }
         guard chosen.count >= 3, let first = chosen.first,
               chosen.allSatisfy({ $0.luma.count == width * height }) else { return nil }
@@ -75,9 +107,18 @@ nonisolated enum WallCornerFinder {
         return sum.map { $0 / Double(chosen.count) }
     }
 
-    /// Shoelace area of a quad in normalised units.
-    private static func area(_ p: [CGPoint]) -> Double {
-        abs((0..<4).reduce(0.0) { $0 + p[$1].x * p[($1 + 1) % 4].y - p[($1 + 1) % 4].x * p[$1].y }) / 2
+}
+
+/// Averaged blink differences have a different noise scale from single camera
+/// frames. Share the measured floor across outer-corner and interior-point
+/// checks so uneven projection cannot pass one stage and fail the next solely
+/// because one stage still uses a fixed global brightness cutoff.
+nonisolated enum WallBlinkContrast {
+    static func threshold(lit: [Double], dark: [Double]) -> Double {
+        guard !lit.isEmpty, lit.count == dark.count else { return .infinity }
+        let residuals = zip(lit, dark).map { abs($0 - $1) }.sorted()
+        let noise = residuals[Int(Double(residuals.count - 1) * 0.9)]
+        return max(6, 3 * noise)
     }
 }
 #endif

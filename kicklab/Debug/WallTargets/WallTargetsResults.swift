@@ -13,6 +13,12 @@ struct WallTargetsSession: Identifiable {
     let hits: [Hit]
     let clears: [Double]
     let style: String
+    let game: WallGame
+    let layout: WallTargetLayout
+    let destroyedTargets: [Int]?
+    let scoredHitCount: Int
+    let brickContacts: [Int: Int]
+    let arcadeSummary: String?
     /// "recording" on disk after the app stopped means it was cut off; all but the last second is kept.
     let interrupted: Bool
 
@@ -31,6 +37,35 @@ struct WallTargetsSession: Identifiable {
         }
         clears = json["clears"] as? [Double] ?? []
         style = json["style"] as? String ?? ""
+        game = (json["game"] as? String).flatMap(WallGame.init(rawValue:)) ?? .clearTheWall
+        let recordedTargets = (json["targets"] as? [[String: Any]] ?? []).compactMap { t -> WallTargetLayout.Target? in
+            guard let id = t["id"] as? Int, let f = t["frame"] as? [Double], f.count == 4,
+                  f.allSatisfy(\.isFinite), f[2] > 0, f[3] > 0 else { return nil }
+            return .init(id: id, frame: CGRect(x: f[0], y: f[1], width: f[2], height: f[3]),
+                         health: t["health"] as? Int ?? 1, faceInset: t["faceInset"] as? Double ?? 0)
+        }
+        layout = recordedTargets.isEmpty ? (game == .brickBlast ? .legacyBricks : game.layout)
+            : WallTargetLayout(id: json["layout"] as? String ?? "recorded", targets: recordedTargets,
+                               continuousSurface: json["continuousSurface"] as? Bool ?? false)
+        destroyedTargets = json["destroyedTargets"] as? [Int]
+        scoredHitCount = (json["scoredHits"] as? [[String: Any]])?.count ?? hits.filter { $0.box != nil }.count
+        var counts: [Int: Int] = [:]
+        for hit in json["scoredHits"] as? [[String: Any]] ?? [] {
+            for damage in hit["brickDamage"] as? [[String: Any]] ?? [] {
+                if let id = damage["brick"] as? Int { counts[id, default: 0] += 1 }
+            }
+        }
+        brickContacts = counts
+        if game.isParty {
+            let winner = json["winner"] as? Int
+            let result = (json["partyFinished"] as? Bool == true)
+                ? winner.map { "Player \($0) won" } ?? "Draw" : "Stopped"
+            let scores = (json["playerGoals"] ?? json["playerScores"]) as? [Int]
+            let scored = [.goalDuel, .territoryDuel, .copyMyShot].contains(game)
+            arcadeSummary = result + (scored && scores?.count == 2 ? " · \(scores![0])–\(scores![1])" : "")
+        } else if game.isArcade {
+            arcadeSummary = "\(json["arcadeScore"] as? Int ?? 0) points"
+        } else { arcadeSummary = nil }
         interrupted = json["status"] as? String == "recording"
     }
 
@@ -64,7 +99,7 @@ struct WallTargetsResultsView: View {
         NavigationStack {
             List {
                 if sessions.isEmpty {
-                    Text("Start Wall targets to record. Clear all six targets or long-press the game screen to stop and save.")
+                    Text("Choose a wall game and start a round. Finishing the game saves automatically. Long-press the game screen to stop and save early.")
                         .foregroundStyle(.secondary)
                 }
                 ForEach(sessions) { session in
@@ -86,7 +121,8 @@ struct WallTargetsResultsView: View {
     }
 
     static func summary(_ s: WallTargetsSession) -> String {
-        var parts = [String(format: "%.0f s", s.duration), "\(s.boxHits.count) hits", "\(s.boxesHit.count)/6 boxes"]
+        var parts = [s.game.title, String(format: "%.0f s", s.duration), "\(s.scoredHitCount) hits",
+                     s.arcadeSummary ?? (s.game == .brickBlast ? "\(s.destroyedTargets?.count ?? 0)/\(s.layout.targets.count) bricks broken" : "\(s.boxesHit.count)/\(s.layout.targets.count) boxes")]
         if let best = s.clears.min() { parts.append("\(s.clears.count) cleared · best \(String(format: "%.1f", best)) s") }
         if s.interrupted { parts.append("cut off (saved up to the last second)") }
         return parts.joined(separator: " · ")
@@ -123,29 +159,27 @@ private struct WallTargetsSessionView: View {
                 if let exportError { Text(exportError).foregroundStyle(.red) }
             }
             Section("Where the ball hit the wall") {
-                WallTargetsHitMap(hits: session.hits)
+                WallTargetsHitMap(hits: session.hits, layout: session.layout)
                     .frame(maxWidth: .infinity)
                     .aspectRatio(1.85, contentMode: .fit)
                     .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
             }
-            Section("Hits per box") {
-                Grid(horizontalSpacing: 6, verticalSpacing: 6) {
-                    ForEach(0..<2, id: \.self) { row in
-                        GridRow {
-                            ForEach(1...3, id: \.self) { column in
-                                let box = row * 3 + column
-                                let count = session.hits.filter { $0.box == box }.count
-                                VStack {
-                                    Text("\(box)").font(.caption)
-                                    Text("\(count)").font(.title2.bold())
-                                }
-                                .frame(maxWidth: .infinity, minHeight: 50)
-                                .background(count > 0 ? WallTargetsBoard.hitColor.opacity(0.35) : Color.white.opacity(0.08),
-                                            in: RoundedRectangle(cornerRadius: 8))
-                            }
+            if !session.layout.targets.isEmpty {
+            Section(session.game == .brickBlast ? "Damage per brick" : "Hits per box") {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: session.game == .brickBlast ? 5 : 3)) {
+                    ForEach(session.layout.ids, id: \.self) { box in
+                        let count = session.layout.continuousSurface ? session.brickContacts[box, default: 0]
+                            : session.hits.filter { $0.box == box }.count
+                        VStack {
+                            Text("\(box)").font(.caption)
+                            Text("\(count)").font(.title2.bold())
                         }
+                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .background(count > 0 ? WallTargetsBoard.hitColor.opacity(0.35) : Color.white.opacity(0.08),
+                                    in: RoundedRectangle(cornerRadius: 8))
                     }
                 }
+            }
             }
             if !session.clears.isEmpty {
                 Section("Cleared rounds") {
@@ -156,7 +190,7 @@ private struct WallTargetsSessionView: View {
             }
             Section("Hits in order") {
                 ForEach(Array(session.hits.enumerated()), id: \.offset) { index, hit in
-                    Text("\(index + 1). \(String(format: "%.1f", hit.t)) s  ·  \(hit.box.map { "Box \($0)" } ?? "Outside the grid")")
+                    Text("\(index + 1). \(String(format: "%.1f", hit.t)) s  ·  \(session.layout.continuousSurface ? "Wall contact" : (hit.box.map { "Box \($0)" } ?? "Outside the grid"))")
                 }
             }
         }
@@ -169,6 +203,7 @@ private struct WallTargetsSessionView: View {
 /// green inside a box, orange outside the grid (drawn at the edge if far off).
 private struct WallTargetsHitMap: View {
     let hits: [WallTargetsSession.Hit]
+    let layout: WallTargetLayout
 
     var body: some View {
         Canvas { context, size in
@@ -178,10 +213,9 @@ private struct WallTargetsHitMap: View {
                 CGPoint(x: board.minX + board.width * min(3.35, max(-0.35, u)) / 3,
                         y: board.minY + board.height * min(2.4, max(-0.4, v)) / 2)
             }
-            for box in 1...6 {
-                let c = CGFloat((box - 1) % 3), r = CGFloat((box - 1) / 3)
-                let cell = CGRect(x: board.minX + c * board.width / 3, y: board.minY + r * board.height / 2,
-                                  width: board.width / 3, height: board.height / 2).insetBy(dx: 2, dy: 2)
+            for target in layout.targets {
+                let box = target.id
+                let cell = target.screenFrame(in: board).insetBy(dx: 2, dy: 2)
                 let count = hits.filter { $0.box == box }.count
                 context.fill(Path(roundedRect: cell, cornerRadius: 6),
                              with: .color(WallTargetsBoard.metalCyan.opacity(count > 0 ? 0.45 : 0.18)))

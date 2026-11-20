@@ -43,7 +43,7 @@ nonisolated final class RFSegBridge {
         return provider
     }
 
-    func wallCandidates(_ out: MLFeatureProvider) throws -> [Detection] {
+    func wallCandidates(_ out: MLFeatureProvider, limit: Int = 6) throws -> [Detection] {
         guard let boxes = out.featureValue(for: "concat_2")?.multiArrayValue,
               let scores = out.featureValue(for: "linear_122")?.multiArrayValue,
               boxes.shape.map(\.intValue) == [1, 100, 4], scores.shape.map(\.intValue) == [1, 100, 91] else {
@@ -58,7 +58,14 @@ nonisolated final class RFSegBridge {
             let w = Self.value(boxes, o + 2 * bs[2]), h = Self.value(boxes, o + 3 * bs[2])
             guard score >= 0.08, [x, y, w, h].allSatisfy(\.isFinite), w > 0, h > 0 else { return nil }
             return Detection(score: score, x: x, y: y, width: w, height: h)
-        }.sorted { $0.score > $1.score }.prefix(6).map { $0 }
+        }.sorted { $0.score > $1.score }.prefix(limit).map { $0 }
+    }
+
+    func physicalWallBall(_ out: MLFeatureProvider, threshold: Double,
+                          minimumDiameter: Double, imageAspect: Double) throws -> Detection? {
+        try wallCandidates(out, limit: 100).first {
+            $0.score >= threshold && ($0.width + $0.height / imageAspect) / 2 >= minimumDiameter
+        }
     }
     #endif
 

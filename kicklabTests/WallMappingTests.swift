@@ -87,6 +87,25 @@ final class WallMappingTests: XCTestCase {
         XCTAssertEqual(check((0..<12).map { .init(t: Double($0), luma: dark) }).status, .missingPoints)
     }
 
+    func testUnevenProjectionDoesNotDiscardMeasuredDimInteriorPoints() {
+        func dimLeft(_ frames: [WallMappingCheck.Frame]) -> [WallMappingCheck.Frame] {
+            frames.map { frame in
+                let image = frame.luma.enumerated().map { index, value in
+                    value == 200 && index % WallMappingCheck.width < WallMappingCheck.width / 2 ? UInt8(90) : value
+                }
+                return .init(t: frame.t, luma: image)
+            }
+        }
+        let result = check(dimLeft(WallMappingFixture.frames()))
+        XCTAssertEqual(result.status, .passed)
+        XCTAssertEqual(result.samples.count, 30)
+        XCTAssertEqual(check(dimLeft(WallMappingFixture.frames(missing: 0))).status, .missingPoints)
+        XCTAssertEqual(check(dimLeft(WallMappingFixture.frames(duplicate: true))).status, .ambiguousPoints)
+        XCTAssertEqual(check(dimLeft(WallMappingFixture.frames(offset: { _, i in
+            i == 0 ? CGPoint(x: 14, y: 0) : .zero
+        }))).status, .misaligned)
+    }
+
     func testAmbiguousBlinkingReflectionDoesNotPickTheNearest() {
         XCTAssertEqual(check(WallMappingFixture.frames(duplicate: true)).status, .ambiguousPoints)
     }

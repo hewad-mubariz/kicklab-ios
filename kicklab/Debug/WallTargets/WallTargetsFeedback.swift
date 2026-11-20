@@ -1,17 +1,44 @@
-#if DEBUG && BALL_DETECTION_DEBUG
+#if DEBUG
 import AVFoundation
 import Foundation
 
-/// Short hit sounds, played once on the phone rather than once per
-/// board view (the projector and phone both observe the same game state).
-@MainActor
-final class WallTargetsFeedback {
+/// Playback/session operations are serialized away from the UI and camera.
+/// AVAudioPlayer.play() can block on the output route, even when preloaded.
+/// The unchecked conformance is limited to this owner: only `queue` accesses
+/// the output after construction. Requests retain their submission order.
+nonisolated final class WallTargetsFeedback: @unchecked Sendable {
     static let shared = WallTargetsFeedback()
+    static let soundPreference = "wallTargets.hitSoundsEnabled"
+    private let queue = DispatchQueue(label: "kicklab.wall-hit-audio", qos: .userInteractive)
+    private let output: any WallFeedbackOutput
+
+    init(output: any WallFeedbackOutput = WallTargetsAudioOutput()) { self.output = output }
+
+    func play(cleared: Bool, game: WallGame = .clearTheWall, remainingHealth: Int = 0, brokenBricks: Int = 1) {
+        queue.async { self.output.play(cleared: cleared, game: game, remainingHealth: remainingHealth, brokenBricks: brokenBricks) }
+    }
+
+    func prepare() { queue.async { self.output.prepare() } }
+    func invalidatePreparation() { queue.async { self.output.invalidatePreparation() } }
+    func play(_ cue: WallArcadeCue) { queue.async { self.output.playArcade(cue) } }
+}
+
+nonisolated protocol WallFeedbackOutput: AnyObject {
+    func play(cleared: Bool, game: WallGame, remainingHealth: Int, brokenBricks: Int)
+    func prepare()
+    func invalidatePreparation()
+    func playArcade(_ cue: WallArcadeCue)
+}
+
+/// Short sounds played once per score, independent of the number of displays.
+nonisolated private final class WallTargetsAudioOutput: WallFeedbackOutput {
     private var hit: AVAudioPlayer?
     private var clear: AVAudioPlayer?
+    private var brickPlayers: [WallHitSound: [AVAudioPlayer]] = [:]
+    private var nextVariant: [WallHitSound: Int] = [:]
+    private var activeBrickPlayers: [AVAudioPlayer] = []
+    private var arcadePlayers: [WallArcadeCue: AVAudioPlayer] = [:]
     private var prepared = false
-    static let soundPreference = "wallTargets.hitSoundsEnabled"
-
     init() {
         hit = try? AVAudioPlayer(data: Self.sound(cleared: false))
         clear = try? AVAudioPlayer(data: Self.sound(cleared: true))
@@ -19,26 +46,69 @@ final class WallTargetsFeedback {
         clear?.volume = 0.65
         hit?.prepareToPlay()
         clear?.prepareToPlay()
+        for cue in [WallHitSound.armourCrack, .brickBreak, .brickSmash, .brickClear] {
+            brickPlayers[cue] = cue.assets.compactMap { name in
+                guard let url = Bundle.main.url(forResource: name, withExtension: "wav"),
+                      let player = try? AVAudioPlayer(contentsOf: url) else { return nil }
+                player.volume = 0.78
+                player.prepareToPlay()
+                return player
+            }
+        }
+        for cue in WallArcadeCue.allCases {
+            if let player = try? AVAudioPlayer(data: WallArcadeSound.data(for: cue)) {
+                player.volume = 0.72; player.prepareToPlay(); arcadePlayers[cue] = player
+            }
+        }
     }
 
-    func play(cleared: Bool) {
-        guard UserDefaults.standard.object(forKey: Self.soundPreference) == nil
-                || UserDefaults.standard.bool(forKey: Self.soundPreference) else { return }
+    func playArcade(_ cue: WallArcadeCue) {
+        guard UserDefaults.standard.object(forKey: WallTargetsFeedback.soundPreference) == nil
+            || UserDefaults.standard.bool(forKey: WallTargetsFeedback.soundPreference) else { return }
         if !prepared { prepare() }
-        hit?.stop()
-        clear?.stop()
-        let player = cleared ? clear : hit
+        // One short arcade voice at a time; changing games cannot retain tails.
+        arcadePlayers.values.forEach { $0.stop() }
+        activeBrickPlayers.forEach { $0.stop() }; activeBrickPlayers = []
+        let player = arcadePlayers[cue]
+        player?.currentTime = 0; player?.play()
+    }
+
+    func play(cleared: Bool, game: WallGame = .clearTheWall, remainingHealth: Int = 0, brokenBricks: Int = 1) {
+        guard UserDefaults.standard.object(forKey: WallTargetsFeedback.soundPreference) == nil
+                || UserDefaults.standard.bool(forKey: WallTargetsFeedback.soundPreference) else { return }
+        if !prepared { prepare() }
+        if hit?.isPlaying == true { hit?.stop() }
+        if clear?.isPlaying == true { clear?.stop() }
+        activeBrickPlayers.removeAll { !$0.isPlaying }
+        if game != .brickBlast {
+            activeBrickPlayers.forEach { $0.stop() }; activeBrickPlayers = []
+        }
+        let cue = WallHitSound.forHit(game: game, remainingHealth: remainingHealth, cleared: cleared, brokenBricks: brokenBricks)
+        let player: AVAudioPlayer?
+        if let variants = brickPlayers[cue], !variants.isEmpty {
+            let index = nextVariant[cue, default: 0] % variants.count
+            nextVariant[cue] = index + 1
+            player = variants[index]
+            // Let rubble settle between quick shots instead of chopping off
+            // the previous tail. Three preloaded voices is a hard upper bound.
+            activeBrickPlayers.removeAll { $0 === player }
+            while activeBrickPlayers.count >= 3 { activeBrickPlayers.removeFirst().stop() }
+            activeBrickPlayers.append(variants[index])
+        } else { player = cleared ? clear : hit }
+        player?.stop()
         player?.currentTime = 0
         player?.play()
     }
 
     /// Warm the output route before the first throw, instead of on its hit.
     func prepare() {
-        guard UserDefaults.standard.object(forKey: Self.soundPreference) == nil
-                || UserDefaults.standard.bool(forKey: Self.soundPreference) else { return }
+        guard UserDefaults.standard.object(forKey: WallTargetsFeedback.soundPreference) == nil
+                || UserDefaults.standard.bool(forKey: WallTargetsFeedback.soundPreference) else { return }
         prepared = configureAudio()
         hit?.prepareToPlay()
         clear?.prepareToPlay()
+        for pool in brickPlayers.values { pool.forEach { $0.prepareToPlay() } }
+        arcadePlayers.values.forEach { $0.prepareToPlay() }
     }
 
     /// A route change or interruption can invalidate the warmed audio session.

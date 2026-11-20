@@ -110,6 +110,27 @@ final class WallRecordingTests: XCTestCase {
         }
     }
 
+    func testResultSurvivesSceneStopDuringFinalReaction() async throws {
+        let root=FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at:root) }
+        let recorder=try WallTargetsRecorder(size:CGSize(width:64,height:64),metadata:[:],root:root)
+        let pixels=try frame()
+        for i in 0..<6 {
+            recorder.append(pixels,at:CMTime(seconds:100+Double(i)/30,preferredTimescale:600),ball:nil,person:nil,hand:.clear)
+            try await Task.sleep(for:.milliseconds(10))
+        }
+        recorder.updateMetadata(["game":"top-bins","stopReason":"round_complete","activePlaySeconds":42.5,
+            "challengeEnd":["mode":"top-bins","score":300,"shots":[["shot":1,"points":100]]]])
+        // An interruption can own finalization before the delayed UI task does.
+        let result=await recorder.finish(extra:[:])
+        XCTAssertTrue(result.succeeded,result.error ?? "")
+        let json=try JSONSerialization.jsonObject(with:Data(contentsOf:result.folder.appendingPathComponent("session.json"))) as! [String:Any]
+        XCTAssertEqual(json["status"] as? String,"completed")
+        XCTAssertEqual(json["stopReason"] as? String,"round_complete")
+        XCTAssertEqual(json["activePlaySeconds"] as? Double,42.5)
+        XCTAssertEqual((json["challengeEnd"] as? [String:Any])?["score"] as? Int,300)
+    }
+
     func testRapidNewSessionNeverReusesAnExistingFolder() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -120,6 +141,51 @@ final class WallRecordingTests: XCTestCase {
         XCTAssertEqual(json["session"] as? Int, 1)
         _ = await first.finish(extra: [:])
         _ = await second.finish(extra: [:])
+    }
+
+    func testVariableCadenceKeepsVideoCSVAndContactTimesAligned() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let recorder = try WallTargetsRecorder(size: CGSize(width: 64, height: 64), metadata: [:], root: root)
+        let pixels = try frame()
+        // Quiet context, a full-rate model burst, then quiet context again.
+        for i in 0..<60 {
+            recorder.append(pixels, at: CMTime(value: Int64(6000 + i), timescale: 60),
+                ball: nil, person: nil, hand: .clear, inferenceRan: (20..<30).contains(i))
+            try await Task.sleep(for: .milliseconds(17))
+        }
+        recorder.note(.init(t: 100.4, x: 20, y: 30, d: 12, turn: 60, u: 0.3, v: 0.4, box: 1))
+        let result = await recorder.finish(extra: ["stopReason": "round_complete"])
+        XCTAssertTrue(result.succeeded, result.error ?? "")
+        let json = try JSONSerialization.jsonObject(with: Data(contentsOf: result.folder.appendingPathComponent("session.json"))) as! [String: Any]
+        XCTAssertEqual(json["recordingCadence"] as? String, WallRecordingCadence.policy)
+        XCTAssertEqual(json["idleVideoFramesSkipped"] as? Int, 41)
+        let rows = try String(contentsOf: result.folder.appendingPathComponent("detections.csv"), encoding: .utf8)
+            .split(separator: "\n").dropFirst().map { $0.split(separator: ",") }
+        XCTAssertEqual(rows.count, 19)
+        XCTAssertEqual(rows.filter { $0.last == "1" }.count, 10)
+        XCTAssertEqual(rows.compactMap { Int($0[0]) }, Array(0..<rows.count))
+        let contact = try XCTUnwrap((json["impacts"] as? [[String: Any]])?.first?["t"] as? Double)
+        XCTAssertEqual(contact, 0.4, accuracy: 0.00001)
+        let asset = AVURLAsset(url: result.folder.appendingPathComponent("video.mov"))
+        let tracks = try await asset.loadTracks(withMediaType: .video)
+        let reader = try AVAssetReader(asset: asset)
+        let output = AVAssetReaderTrackOutput(track: try XCTUnwrap(tracks.first),
+            outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+        reader.add(output)
+        XCTAssertTrue(reader.startReading())
+        var timestamps: [Double] = []
+        while let sample = output.copyNextSampleBuffer() {
+            if CMSampleBufferGetImageBuffer(sample) != nil {
+                timestamps.append(CMSampleBufferGetPresentationTimeStamp(sample).seconds)
+            }
+        }
+        XCTAssertEqual(reader.status, .completed)
+        XCTAssertEqual(timestamps.count, rows.count)
+        for (time, row) in zip(timestamps, rows) {
+            XCTAssertEqual(time, try XCTUnwrap(Double(row[1])), accuracy: 0.001)
+        }
+        XCTAssertEqual(timestamps.last ?? 0, 59.0 / 60, accuracy: 0.001)
     }
 }
 #endif

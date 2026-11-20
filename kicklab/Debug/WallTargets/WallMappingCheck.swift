@@ -60,7 +60,8 @@ nonisolated enum WallMappingCheck {
             guard let lit = average(frames, in: on[pass]), let dark = average(frames, in: off[pass]) else {
                 return report(.missingPoints)
             }
-            let blobs = components(zip(lit, dark).map { max(0, $0 - $1) })
+            let blobs = components(zip(lit, dark).map { max(0, $0 - $1) },
+                                   threshold: WallBlinkContrast.threshold(lit: lit, dark: dark))
             let mapped = blobs.map { board.boardPoint($0) }
             for (index, target) in points.enumerated() {
                 // One isolated observed blob per target; never substitute its predicted position.
@@ -94,10 +95,9 @@ nonisolated enum WallMappingCheck {
         return sum.map { $0 / Double(chosen.count) }
     }
 
-    private static func components(_ diff: [Double]) -> [CGPoint] {
+    private static func components(_ diff: [Double], threshold: Double) -> [CGPoint] {
         let peak = diff.max() ?? 0
         guard peak >= 20 else { return [] }
-        let threshold = max(12, peak * 0.4)
         var visited = [Bool](repeating: false, count: diff.count)
         var result: [CGPoint] = []
         for start in diff.indices where !visited[start] && diff[start] >= threshold {

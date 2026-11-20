@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>GoogleSans-Regular.ttf</string>
+	</array>
+	<key>GIDClientID</key>
+	<string>312611098464-ut664skmcfjlg7nnck966cnfq9824a9v.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>312611098464-dkqd08atv84ne68qpj772j4t0ivn8qus.apps.googleusercontent.com</string>
+	<key>JuggleDudeMetaAdsEnabled</key>
+	<true/>
+	<key>FacebookAppID</key>
+	<string>1439446130906551</string>
+	<key>FacebookClientToken</key>
+	<string>53427dfbebb91a856757eb34a9cb47ff</string>
+	<key>FacebookDisplayName</key>
+	<string>Juggle Dude</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This helps us measure and improve our advertising.</string>
+	<key>FacebookAutoLogAppEventsEnabled</key>
+	<false/>
+	<key>FacebookAdvertiserIDCollectionEnabled</key>
+	<true/>
+	<key>FacebookSKAdNetworkReportEnabled</key>
+	<true/>
+	<key>FacebookCodelessDebugLogEnabled</key>
+	<false/>
+	<key>FBSDKAutoLogMetaDataEnabled</key>
+	<false/>
+	<key>FBSDKAutoLogProductImprovementEnabled</key>
+	<false/>
+	<key>FBSDKAemAutoSetupEnabled</key>
+	<false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>CFBundleDisplayName</key>
+	<string>Juggle Dude Play</string>
+	<key>CFBundleName</key>
+	<string>Juggle Dude Play</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.juggledude.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>juggledude</string>
+				<string>com.googleusercontent.apps.312611098464-ut664skmcfjlg7nnck966cnfq9824a9v</string>
+			</array>
+		</dict>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>processing</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.juggledude.video.*</string>
+	</array>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Use the camera to track the ball and record your games. Replays stay on your phone unless you share them.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Connect to your game display during setup.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleExternalDisplayNonInteractive</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Wall Projector</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).WallTargetsProjectorScene</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+</dict>
+</plist>

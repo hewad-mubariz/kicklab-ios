@@ -4,6 +4,145 @@ import CoreGraphics
 @testable import kicklab
 
 final class WallRuntimeTests: XCTestCase {
+    func testRecordingSamplesIdleVideoAtTenFPSWithoutChangingCaptureTimestamps() {
+        var cadence = WallRecordingCadence()
+        var kept: [Double] = []
+        for i in 0..<600 {
+            let t = 100 + Double(i) / 60
+            if cadence.shouldRecord(at: t, inferenceRan: false, hasBall: false, source: 0) {
+                cadence.recorded(at: t); kept.append(t)
+            }
+        }
+        XCTAssertEqual(kept.count, 100)
+        XCTAssertEqual(kept.first, 100)
+        XCTAssertEqual(kept.last ?? 0, 109.9, accuracy: 0.00001)
+    }
+
+    func testRecordingNeverIntentionallySkipsModelOrPixelEvidenceOrLegacyFrames() {
+        var cadence = WallRecordingCadence()
+        cadence.recorded(at: 10)
+        for i in 1...5 {
+            let t = 10 + Double(i) / 60
+            XCTAssertTrue(cadence.shouldRecord(at: t, inferenceRan: true, hasBall: false, source: 0))
+            XCTAssertTrue(cadence.shouldRecord(at: t, inferenceRan: false, hasBall: true, source: 5))
+            XCTAssertTrue(cadence.shouldRecord(at: t, inferenceRan: false, hasBall: false, source: 5))
+            XCTAssertTrue(cadence.shouldRecord(at: t, inferenceRan: nil, hasBall: false, source: 0))
+        }
+        XCTAssertFalse(cadence.shouldRecord(at: .nan, inferenceRan: true, hasBall: true, source: 5))
+    }
+
+    func testEncoderBackpressureDoesNotConsumeAnIdleRecordingSlot() {
+        var cadence = WallRecordingCadence()
+        cadence.recorded(at: 1)
+        XCTAssertTrue(cadence.shouldRecord(at: 1.1, inferenceRan: false, hasBall: false, source: 0))
+        // Writer unavailable: do not call recorded(at:). The next frame can try.
+        XCTAssertTrue(cadence.shouldRecord(at: 1.1167, inferenceRan: false, hasBall: false, source: 0))
+        cadence.recorded(at: 1.1167)
+        XCTAssertFalse(cadence.shouldRecord(at: 1.1334, inferenceRan: false, hasBall: false, source: 0))
+        XCTAssertTrue(cadence.shouldRecord(at: 0, inferenceRan: false, hasBall: false, source: 0))
+    }
+
+    func testNonInputPhaseRestsModelButDoesNotBlockReferenceOrFirstRecallFrame() {
+        var cadence = WallInferenceCadence()
+        for frame in 0..<120 {
+            XCTAssertFalse(cadence.admit(at: Double(frame) / 30, scoring: true,
+                collectingReference: false, referenceFinished: true, gameplayInputEnabled: false))
+        }
+        XCTAssertTrue(cadence.admit(at: 4, scoring: true,
+            collectingReference: false, referenceFinished: true, gameplayInputEnabled: true))
+        XCTAssertTrue(cadence.admit(at: 4.01, scoring: false,
+            collectingReference: true, referenceFinished: false, gameplayInputEnabled: false))
+        XCTAssertFalse(cadence.admit(at: 4.02, scoring: false,
+            collectingReference: true, referenceFinished: false, gameplayInputEnabled: false))
+    }
+
+    func testSceneActivityWakesForSmallBallLargePlayerAndFlash() {
+        var activity = WallSceneActivity(), cadence = WallGameplayInferenceCadence()
+        let still = [UInt8](repeating: 80, count: 320 * 180)
+        XCTAssertTrue(activity.hasMotion(luma: still, width: 320, height: 180, at: 0))
+        XCTAssertTrue(cadence.admit(at: 0, motion: false, tracked: false, modelFrame: true))
+        XCTAssertFalse(activity.hasMotion(luma: still, width: 320, height: 180, at: 0.03))
+        for size in [(4, 3), (100, 100), (320, 180)] {
+            activity.reset()
+            _ = activity.hasMotion(luma: still, width: 320, height: 180, at: 0)
+            var changed = still
+            for y in 0..<size.1 { for x in 0..<size.0 { changed[y * 320 + x] += 12 } }
+            let motion = activity.hasMotion(luma: changed, width: 320, height: 180, at: 0.033)
+            XCTAssertTrue(motion)
+            cadence.reset()
+            _ = cadence.admit(at: 0, motion: false, tracked: false, modelFrame: true)
+            XCTAssertTrue(cadence.admit(at: 0.033, motion: motion, tracked: false, modelFrame: true))
+        }
+    }
+
+    func testIsolatedProjectorNoiseRestsButSmallCoherentMotionStillWakes() {
+        var activity = WallSceneActivity()
+        let still = [UInt8](repeating: 80, count: 320 * 180)
+        _ = activity.hasMotion(luma: still, width: 320, height: 180, at: 0)
+        var noise = still
+        for y in stride(from: 10, to: 170, by: 10) {
+            for x in stride(from: 10, to: 310, by: 10) { noise[y * 320 + x] = 150 }
+        }
+        XCTAssertFalse(activity.hasMotion(luma: noise, width: 320, height: 180, at: 0.017))
+        // A ball can arrive during the noise; do not postpone it to the 4 Hz fallback.
+        for y in 50..<54 { for x in 75..<79 { noise[y * 320 + x] = 180 } }
+        XCTAssertTrue(activity.hasMotion(luma: noise, width: 320, height: 180, at: 0.033))
+    }
+
+    func testSceneActivityFailsOpenAfterGapsAndBadInput() {
+        var activity = WallSceneActivity()
+        let image = [UInt8](repeating: 80, count: 40)
+        for t in [0.0, 1, 0.5, 0.5, .nan] {
+            XCTAssertTrue(activity.hasMotion(luma: image, width: 10, height: 4, at: t))
+        }
+        XCTAssertTrue(activity.hasMotion(luma: image, width: 4, height: 10, at: 2))
+        XCTAssertFalse(activity.hasMotion(luma: image, width: 4, height: 10, at: 2.03))
+        XCTAssertTrue(activity.hasMotion(luma: [], width: 4, height: 10, at: 2.06))
+        XCTAssertTrue(activity.hasMotion(luma: image, width: 4, height: 10, at: 2.09))
+    }
+
+    func testWaitingModelRestsButMotionWakesOnTheSameFrame() {
+        var cadence = WallGameplayInferenceCadence()
+        let runs = (0..<600).filter {
+            cadence.admit(at: Double($0) / 60, motion: false, tracked: false, modelFrame: true)
+        }
+        XCTAssertEqual(runs.count, 40)
+        XCTAssertTrue(cadence.admit(at: 10, motion: false, tracked: false, modelFrame: true))
+        XCTAssertTrue(cadence.admit(at: 10.0167, motion: true, tracked: false, modelFrame: true))
+        XCTAssertTrue(cadence.admit(at: 10.10, motion: false, tracked: false, modelFrame: true))
+        XCTAssertFalse(cadence.admit(at: 10.22, motion: false, tracked: false, modelFrame: true))
+    }
+
+    func testBufferedMotionWakesNextModelAndMeasuredBallKeepsFullReboundWindow() {
+        var cadence = WallGameplayInferenceCadence()
+        XCTAssertTrue(cadence.admit(at: 1, motion: false, tracked: false, modelFrame: true))
+        XCTAssertFalse(cadence.admit(at: 1.0167, motion: true, tracked: false, modelFrame: false))
+        XCTAssertTrue(cadence.admit(at: 1.0334, motion: false, tracked: false, modelFrame: true))
+        cadence.observedBall(at: 1.0334)
+        for t in [1.12, 1.22, 1.32, 1.42, 1.52, 1.62, 1.68] {
+            XCTAssertTrue(cadence.admit(at: t, motion: false, tracked: false, modelFrame: true))
+        }
+        XCTAssertFalse(cadence.admit(at: 1.70, motion: false, tracked: false, modelFrame: true))
+        XCTAssertTrue(cadence.admit(at: 1.94, motion: false, tracked: false, modelFrame: true))
+        cadence.reset()
+        XCTAssertTrue(cadence.admit(at: 2, motion: false, tracked: false, modelFrame: true))
+        XCTAssertFalse(cadence.admit(at: .nan, motion: true, tracked: true, modelFrame: true))
+        XCTAssertFalse(cadence.admit(at: 2, motion: false, tracked: false, modelFrame: true))
+        XCTAssertTrue(cadence.admit(at: 0, motion: false, tracked: false, modelFrame: true))
+    }
+
+    func testWorkReportCountsIntentionalWaitingSeparately() {
+        var meter = WallWorkMeter(at: 0)
+        meter.skippedIdleModelFrame(); meter.skippedIdleModelFrame()
+        meter.skippedGamePhaseFrame()
+        let sample = meter.take(at: 1)
+        XCTAssertEqual(sample.idleModelFramesSkipped, 2)
+        XCTAssertEqual(sample.referenceFramesSkipped, 0)
+        XCTAssertEqual(sample.gamePhaseFramesSkipped, 1)
+        let next = meter.take(at: 2)
+        XCTAssertEqual(next.idleModelFramesSkipped, 0)
+        XCTAssertEqual(next.gamePhaseFramesSkipped, 0)
+    }
     func testReferenceCapHandlesSensorJitterAndNeverCapsGameplay() {
         var cadence = WallInferenceCadence()
         let admitted = (0..<600).filter { frame in

@@ -1,0 +1,22 @@
+{
+  "character": "Microsoft Rocketbox Sports_Male_02",
+  "characterLicense": "MIT",
+  "motionSource": "Adobe Mixamo goalkeeper diving save and medium, low, high catches",
+  "animationLicense": "Adobe Mixamo terms; embedded app use",
+  "runtime": "Retargeted captures sampled on a single clock, catch-height blending and bounded two-joint arm IK",
+  "clips": [
+    "ready",
+    "left",
+    "right",
+    "medium",
+    "low",
+    "high"
+  ],
+  "environment": "Original procedural training ground, turf, goal, net, stands and lighting",
+  "limitations": [
+    "Low/high lateral dives adapt one captured dive using bounded vertical root movement; dedicated captures remain a quality improvement.",
+    "Deterministic virtual shot sandbox, no live ball tracking.",
+    "Glove, body and foot contacts use swept proxy volumes; no deforming glove simulation.",
+    "Net uses local damped-spring contacts and procedural ripples, not a full cloth solver."
+  ]
+}

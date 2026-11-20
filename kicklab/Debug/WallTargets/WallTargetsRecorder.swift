@@ -41,6 +41,8 @@ nonisolated final class WallTargetsRecorder: @unchecked Sendable {
     private var impacts: [[String: Any]] = []
     private var start: Double?
     private var duration = 0.0
+    private var videoCadence = WallRecordingCadence()
+    private var idleVideoFramesSkipped = 0
     private var phase = "setup"
     private var referenceBox = 0
     private var phases: [[String: Any]] = []
@@ -50,6 +52,7 @@ nonisolated final class WallTargetsRecorder: @unchecked Sendable {
     private var mappingChecks: [[String: Any]] = []
     private var feedbackEvents: [[String: Any]] = []
     private var feedbackDeliveries: [[String: Any]] = []
+    private var pixelBridges: [[String: Any]] = []
 
     private static let flushEvery = 30
 
@@ -87,6 +90,7 @@ nonisolated final class WallTargetsRecorder: @unchecked Sendable {
         FileManager.default.createFile(atPath: resourceURL.path, contents: nil)
         resources = try FileHandle(forWritingTo: resourceURL)
         self.metadata = metadata
+        self.metadata["recordingCadence"] = WallRecordingCadence.policy
         writeSession(status: "recording")
     }
 
@@ -94,11 +98,16 @@ nonisolated final class WallTargetsRecorder: @unchecked Sendable {
     func append(_ pixels: CVPixelBuffer, at time: CMTime, ball: Detection?, person: Detection?, hand: WallHandState, source: Int = 0,
                 alignment: WallBoardAlignment.Update? = nil, retainEvidence: Bool = false, canScore: Bool = false,
                 lensPosition: Double? = nil, adjustingFocus: Bool = false, inferenceRan: Bool? = nil) {
+        guard videoCadence.shouldRecord(at: time.seconds, inferenceRan: inferenceRan, hasBall: ball != nil, source: source) else {
+            idleVideoFramesSkipped += 1
+            return
+        }
         if start == nil {
             writer.startSession(atSourceTime: time)
             start = time.seconds
         }
         guard let start, input.isReadyForMoreMediaData, adaptor.append(pixels, withPresentationTime: time) else { return }
+        videoCadence.recorded(at: time.seconds)
         let values: [Double] = ball.map { [$0.score, $0.x, $0.y, $0.width, $0.height] } ?? [0, 0, 0, 0, 0]
         duration = time.seconds - start
         var fields = [String(frames), String(format: "%.5f", duration)]
@@ -132,7 +141,9 @@ nonisolated final class WallTargetsRecorder: @unchecked Sendable {
     func note(_ impact: WallImpactDetector.Impact) {
         guard let start else { return }
         impacts.append(["t": impact.t - start, "box": impact.box ?? NSNull(), "u": impact.u, "v": impact.v,
-                        "x": impact.x, "y": impact.y, "d": impact.d, "turn": impact.turn, "borderline": impact.borderline])
+                        "x": impact.x, "y": impact.y, "d": impact.d, "turn": impact.turn, "borderline": impact.borderline,
+                        "approachSpeed": impact.approachSpeed as Any? ?? NSNull(),
+                        "footprint": impact.footprint?.json as Any? ?? NSNull()])
         writeSession(status: "recording")
     }
 
@@ -163,6 +174,14 @@ nonisolated final class WallTargetsRecorder: @unchecked Sendable {
     func updateMetadata(_ extra: [String: Any]) {
         metadata.merge(extra) { _, new in new }
         writeSession(status: "recording")
+    }
+
+    /// Source 5 rows are provisional image matches. Only confirmed ranges were
+    /// admitted to the contact history, after the endpoint's RF measurement.
+    func notePixelBridge(from: Double, through: Double, count: Int, confirmed: Bool) {
+        guard let start, pixelBridges.count < 5000 else { return }
+        pixelBridges.append(["from": from - start, "through": through - start,
+                             "count": count, "confirmed": confirmed])
     }
 
     /// Append a bounded-rate resource history; do not retain a growing sample
@@ -233,10 +252,12 @@ nonisolated final class WallTargetsRecorder: @unchecked Sendable {
     private func writeSession(status: String, extra: [String: Any] = [:]) -> Bool {
         var session = metadata.merging(extra) { _, new in new }
         session["frames"] = frames
+        session["idleVideoFramesSkipped"] = idleVideoFramesSkipped
         session["duration"] = duration
         session["impacts"] = impacts
         session["feedbackEvents"] = feedbackEvents
         session["feedbackDeliveries"] = feedbackDeliveries
+        session["pixelBridges"] = pixelBridges
         session["resourceLog"] = "resources.jsonl"
         session["resourceSampleCount"] = resourceSampleCount
         session["sampledPeakMemoryMiB"] = peakMemoryMiB as Any? ?? NSNull()

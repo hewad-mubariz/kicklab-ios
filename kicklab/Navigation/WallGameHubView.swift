@@ -1,12 +1,16 @@
 import SwiftUI
 
-/// The V2 destination is available before the experimental camera/projector
-/// runtime is qualified for the main app. This page never starts that runtime.
+/// The consolidated Wall Games preview opens the existing arcade runtime.
+/// Other configurations retain the release placeholder until qualification.
 struct WallGameHubView: View {
+    var onClose: () -> Void = {}
     @Environment(\.colorScheme) private var scheme
     @State private var showsSetup = false
 
     var body: some View {
+#if WALL_GAMES_PREVIEW
+        WallTargetsView(onClose: onClose)
+#else
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 6) {
@@ -85,6 +89,7 @@ struct WallGameHubView: View {
         .foregroundStyle(TrainingHomeStyle.ink(scheme))
         .accessibilityIdentifier("wall-game-screen")
         .sheet(isPresented: $showsSetup) { WallGameSetupGuide() }
+#endif
     }
 }
 

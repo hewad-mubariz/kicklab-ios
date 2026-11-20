@@ -12,12 +12,15 @@ struct WallTargetsBoard: View {
     var background: Color = .black
     var onStart: (() -> Void)? = nil
     var onSettings: (() -> Void)? = nil
-    var onStop: (() -> Void)? = nil
+    var onPenalties: (() -> Void)? = nil
+    var onChallenge: ((GoalChallengeMode) -> Void)? = nil
     var startEnabled = true
     var startStatus: String? = nil
     var showsGameScreens = true
     var runtime: WallRuntimeSample? = nil
     @State private var flashing: UUID?
+    @State private var bursts: [WallTargetsModel.Hit] = []
+    @State private var finishingBurst = false
 
     static let hitColor = Color(red: 0, green: 1, blue: 0.35)
     /// Space around the board on every side, as a fraction of the screen's width and
@@ -35,32 +38,28 @@ struct WallTargetsBoard: View {
     private static let glow = Color(red: 120 / 255, green: 200 / 255, blue: 1)
 
     var body: some View {
-        if showsGameScreens && model.gameScreen != .board {
-            WallTargetsGameScreen(model: model, onStart: onStart, onSettings: onSettings,
-                                  startEnabled: startEnabled, startStatus: startStatus)
-                .overlay(alignment: .bottomLeading) {
-                    if let runtime {
-                        WallTargetsRuntimeHUD(sample: runtime).padding(.leading, 24).padding(.bottom, 6)
-                    }
-                }
-        } else {
-            board
-                .overlay(alignment: .topTrailing) {
-                    if let onStop {
-                        Button(action: onStop) {
-                            Label("Stop & Save", systemImage: "stop.circle.fill")
-                                .font(.system(size: 14, weight: .semibold))
-                                .padding(.horizontal, 14)
-                                .frame(minHeight: 44)
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(.white)
-                        .background(.black.opacity(0.9), in: Capsule())
-                        .overlay(Capsule().stroke(.white.opacity(0.5), lineWidth: 1))
-                        .padding(.top, 6).padding(.trailing, 16)
-                        .accessibilityIdentifier("wall.stopAndSave")
-                    }
-                }
+        Group {
+            if showsGameScreens && model.gameScreen != .board && !finishingBurst {
+                WallTargetsGameScreen(model: model, onStart: onStart, onSettings: onSettings,onPenalties:onPenalties,onChallenge:onChallenge,
+                                      startEnabled: startEnabled, startStatus: startStatus)
+            } else {
+                board
+            }
+        }
+        .onChange(of: model.lastHit?.id) { _, id in
+            flashing = id
+            guard let hit = model.lastHit else { bursts = []; finishingBurst = false; return }
+            if model.game == .brickBlast {
+                bursts.append(hit)
+                if bursts.count > 3 { bursts.removeFirst(bursts.count - 3) }
+                finishingBurst = model.clearedAt != nil
+            }
+            if model.game.isArcade { finishingBurst = model.clearedAt != nil }
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(model.game == .brickBlast ? WallBrickExplosion.duration : model.game.isParty ? 2.5 : model.game.isArcade ? 0.7 : 0.35))
+                bursts.removeAll { $0.id == id }
+                if flashing == id { flashing = nil; finishingBurst = false }
+            }
         }
     }
 
@@ -71,7 +70,27 @@ struct WallTargetsBoard: View {
             ZStack(alignment: .topLeading) {
                 background
                 if model.calibration != .searching && !model.checkingMapping {
-                    if model.style == .metal || model.referenceBox != nil {
+                    if model.referenceBox == WallReferenceCollector.wallCentre {
+                        centreReference(in: rect)
+                    } else if model.game.isArcade {
+                        if model.wallReference != nil {
+                            WallArcadeBoard(model: model)
+                                .frame(width: rect.width, height: rect.height)
+                                .offset(x: rect.minX, y: rect.minY)
+                        }
+                    } else if model.game == .brickBlast, model.wallReference != nil, model.referenceBox == nil {
+                        ForEach(model.game.layout.targets) { target in
+                            let box = target.id
+                            let frame = target.screenFrame(in: rect)
+                            WallBrickTile(health: model.remainingHealth(for: box),
+                                          initialHealth: model.game.initialHealth(for: box),
+                                          seed: box, impact: brickImpact(box, frame: frame, board: rect))
+                                .frame(width: frame.width, height: frame.height)
+                                .position(x: frame.midX, y: frame.midY)
+                        }
+                    } else if model.game == .brickBlast, model.wallReference == nil, model.referenceBox == nil {
+                        Color.clear // Setup geometry is independent of the game targets.
+                    } else if model.style == .metal || model.referenceBox != nil {
                         ForEach(1...6, id: \.self) { box in arenaCell(box, in: rect) }
                     } else {
                         ForEach(1...6, id: \.self) { box in cell(box, in: rect) }
@@ -89,18 +108,27 @@ struct WallTargetsBoard: View {
                                       y: rect.minY + point.y / 2 * rect.height)
                     }
                 }
-                impactMarkers(in: rect)
-                header(height: h).position(x: rect.midX, y: rect.minY / 2)
-                HStack(spacing: 12) {
-                    if let runtime { WallTargetsRuntimeHUD(sample: runtime) }
-                    Text(footer)
-                        .font(.system(size: (runtime == nil ? 0.032 : 0.026) * h, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.85))
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
+                if model.game == .brickBlast {
+                    brickBursts(in: rect)
                 }
-                .frame(width: rect.width)
-                .position(x: rect.midX, y: rect.maxY + (h - rect.maxY) / 2 - (runtime == nil ? 0 : 6))
+                if !model.game.isArcade { impactMarkers(in: rect) }
+                header(height: h, width: rect.width * 0.90).position(x: rect.midX, y: rect.minY / 2)
+                VStack(spacing: h * 0.008) {
+                    Text(footer)
+                        .font(.system(size: (model.game == .crossCircle && model.isPlaying ? 0.046 :
+                            (model.game == .memoryStrike || model.game.isParty) && model.isPlaying ? 0.043 : 0.034) * h,
+                                      weight: model.game == .crossCircle ? .black : .bold, design: .rounded))
+                        .foregroundStyle(model.borderlineNotice != nil ? Self.metalGold : .white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                    if let runtime, runtime.thermalState >= 2 {
+                        Text(runtime.shouldEndRound ? "PHONE HOT · SAVING" : "PHONE HOT · FINISH & COOL")
+                            .font(.system(size: h * 0.035, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Self.metalGold)
+                    }
+                }
+                .frame(width: rect.width * 0.92)
+                .position(x: rect.midX, y: rect.maxY + (h - rect.maxY) / 2)
                 if model.cornerDots != .hidden {
                     let dot = (model.cornerDots == .large ? 0.10 : 0.032) * h
                     ForEach([CGPoint(x: rect.minX, y: rect.minY), CGPoint(x: rect.maxX, y: rect.minY),
@@ -128,7 +156,7 @@ struct WallTargetsBoard: View {
                         .background(.black.opacity(0.9), in: RoundedRectangle(cornerRadius: h * 0.035))
                         .position(x: rect.midX, y: rect.midY)
                 }
-                if model.showingGo {
+                if model.showingGo && !model.game.isArcade {
                     Text("GO")
                         .font(.system(size: h * 0.18, weight: .black, design: .rounded))
                         .foregroundStyle(Self.metalCyan)
@@ -140,7 +168,7 @@ struct WallTargetsBoard: View {
                 if model.calibration == .failed || model.referenceFailed || model.mappingFailed {
                     VStack(spacing: h * 0.025) {
                         Text(model.mappingFailed ? "BOARD CHECK NEEDS A RETRY" : model.focusFailed ? "FOCUS NEEDS A RETRY" : (model.referenceFailed ? "REPEAT BALL SETUP" : "ALIGN THE BOARD")).font(.system(size: h * 0.06, weight: .heavy))
-                        Text(model.mappingFailed ? "Keep the phone still and the whole board visible" : model.focusFailed ? "Keep the phone still and stand clear of the wall" : (model.referenceFailed ? "Touch the wall with the same ball at each target" : "Keep all four white dots in the camera"))
+                        Text(model.mappingFailed ? "Keep the phone still and the whole board visible" : model.focusFailed ? "Keep the phone still and stand clear of the wall" : (model.referenceFailed ? "Touch the wall with the ball at the centre ring" : "Keep all four white dots in the camera"))
                             .font(.system(size: h * 0.035, weight: .medium))
                         Text("Tap the phone to retry")
                             .font(.system(size: h * 0.04, weight: .bold))
@@ -152,16 +180,31 @@ struct WallTargetsBoard: View {
             }
         }
         .ignoresSafeArea()
-        .onChange(of: model.lastHit?.id) { _, id in
-            flashing = id
-            Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(350))
-                if flashing == id { withAnimation(.easeOut(duration: 0.3)) { flashing = nil } }
+    }
+
+    private func brickBursts(in rect: CGRect) -> some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(bursts) { hit in
+                let localBoard = CGRect(origin: .zero, size: rect.size)
+                let bricks = hit.brickDamage.compactMap { damage -> WallBrickExplosion.Brick? in
+                    guard let target = model.game.layout.target(damage.id) else { return nil }
+                    return .init(id: damage.id, frame: target.screenFrame(in: localBoard), shattered: damage.shattered)
+                }
+                let footprint = hit.footprint ?? .preview
+                let radius = sqrt(abs(footprint.determinant) * rect.width / 3 * rect.height / 2)
+                WallBrickExplosion(bricks: bricks,
+                    origin: CGPoint(x: hit.u / 3 * rect.width, y: hit.v / 2 * rect.height),
+                    ballRadius: radius, strength: WallImpactMotion.strength(for: hit.approachSpeed))
             }
         }
+        .frame(width: rect.width, height: rect.height)
+        .clipped() // Board-level limit; fragments can leave a brick but not the tracking area.
+        .offset(x: rect.minX, y: rect.minY)
+        .allowsHitTesting(false)
     }
 
     private var footer: String {
+        if model.calibration == .searching { return "SETUP 1/3 · finding four corners · stand aside" }
         if model.checkingMapping { return "Stand aside · keep the whole board clear" }
         if model.mappingFailed { return model.notice ?? "Tap the phone to retry the board check" }
         if model.sessionEnded {
@@ -171,17 +214,48 @@ struct WallTargetsBoard: View {
             return model.alignmentStatus == .obscured
                 ? "Checking shot · keep the corner dots visible" : "Checking shot…"
         }
+        if !model.isPlaying, model.wallReference == nil, model.calibration == .ready,
+           model.referenceBox == nil {
+            return "SETUP 1/3 · confirming the four dots · stand aside"
+        }
         return (model.referenceBox == nil && model.calibration == .ready ? model.alignmentNotice : nil)
             ?? model.borderlineNotice ?? model.notice
-            ?? (model.isPlaying ? "\(6 - model.boxesHit.count) left · any order · Stop & Save on the phone" : "Stop & Save on the phone")
+            ?? (model.isPlaying ? (model.game.isArcade ? arcadeInstruction : model.game == .brickBlast
+                ? "Smash the wall · hit a joint to break more"
+                : "\(6 - model.boxesHit.count) left · any order · long-press to stop and save") : "Long-press to stop and save")
+    }
+
+    private var arcadeInstruction: String {
+        if model.game == .fourInRow { return "HIT A COLUMN · CONNECT FOUR" }
+        if model.game == .territoryDuel { return "CLAIM OR STEAL · EVERY SHOT COUNTS" }
+        if model.game == .copyMyShot { return "SET A SPOT · MATCH INSIDE THE GOLD RING" }
+        if model.game == .crossCircle { return "HIT AN EMPTY SQUARE" }
+        if model.game == .goalDuel { return "AIM PAST THE ROBOT · INSIDE THE POSTS" }
+        if let memory = model.memory {
+            switch memory.phase {
+            case .watching: return "WAIT · NO KICKS YET"
+            case .recalling: return "SAME ORDER · ONE KICK PER SYMBOL"
+            case .interlude: return "WAIT FOR YOUR TURN"
+            case .finished: return memory.won ? "Five rounds remembered!" : "Three lives used · try again"
+            }
+        }
+        return model.meteors?.phase == .interlude ? "City protected · next wave incoming"
+            : "Hit the glowing rocks before they reach the city"
     }
 
     private func impactMarkers(in rect: CGRect) -> some View {
         ZStack(alignment: .topLeading) {
             ForEach(Array(model.hits.enumerated()), id: \.element.id) { index, hit in
-                WallTargetsImpactMarker(number: index + 1, latest: hit.id == model.lastHit?.id,
-                                        diameter: rect.height * 0.078)
-                    .position(x: hit.u / 3 * rect.width, y: hit.v / 2 * rect.height)
+                if model.game == .brickBlast {
+                    Circle().stroke(Self.metalCyan.opacity(hit.id == model.lastHit?.id ? 0.85 : 0.35),
+                                    lineWidth: rect.height * 0.003)
+                        .frame(width: rect.height * 0.027, height: rect.height * 0.027)
+                        .position(x: hit.u / 3 * rect.width, y: hit.v / 2 * rect.height)
+                } else {
+                    WallTargetsImpactMarker(number: index + 1, latest: hit.id == model.lastHit?.id,
+                                            diameter: rect.height * 0.078)
+                        .position(x: hit.u / 3 * rect.width, y: hit.v / 2 * rect.height)
+                }
             }
             if let contact = model.contactPreview {
                 // A hollow white ring acknowledges measured contact. Only a
@@ -202,26 +276,65 @@ struct WallTargetsBoard: View {
         .allowsHitTesting(false)
     }
 
-    private func header(height h: CGFloat) -> some View {
+    private func header(height h: CGFloat, width: CGFloat) -> some View {
         TimelineView(.periodic(from: .now, by: 0.1)) { timeline in
-            if model.isPlaying {
+            if model.game.isParty && (model.isPlaying || model.sessionEnded) {
+                WallPartyHUD(model: model, height: h).frame(width: width, height: h * 0.10)
+            } else if model.game.isArcade && (model.isPlaying || model.sessionEnded) {
+                WallArcadeHUD(model: model, height: h).frame(width: width, height: h * 0.10)
+            } else if model.isPlaying && model.game == .brickBlast {
+                HStack(alignment: .center) {
+                    VStack(alignment: .leading, spacing: h * 0.002) {
+                        Text("SCORE").font(.system(size: h * 0.025, weight: .bold).width(.condensed))
+                        Text("\(model.brickScore)").font(.system(size: h * 0.065, weight: .heavy).width(.condensed).monospacedDigit())
+                            .foregroundStyle(Self.metalCyan)
+                    }
+                    Spacer()
+                    VStack(spacing: h * 0.005) {
+                        Text("BRICK BLAST").font(.system(size: h * 0.024, weight: .bold).width(.condensed))
+                        Text(model.timerStatus + " · " + String(format: "%.1f s", model.elapsed(at: timeline.date)))
+                            .font(.system(size: h * 0.024, weight: .bold, design: .rounded).monospacedDigit())
+                            .foregroundStyle(.white.opacity(0.8))
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: h * 0.002) {
+                        Text("\(model.game.targetCount - model.clearedBoxes.count)")
+                            .font(.system(size: h * 0.065, weight: .heavy).width(.condensed).monospacedDigit())
+                            .foregroundStyle(Self.metalGold)
+                        Text("BRICKS LEFT").font(.system(size: h * 0.025, weight: .bold).width(.condensed))
+                    }
+                }
+                .foregroundStyle(.white)
+                .frame(width: width, height: h * 0.10)
+            } else if model.isPlaying {
                 HStack(alignment: .center) {
                     VStack(alignment: .leading, spacing: h * 0.012) {
-                        Text("CLEAR THE WALL")
-                            .font(.system(size: h * 0.04, weight: .black, design: .rounded))
+                        Text(model.game.title.uppercased())
+                            .font(.system(size: h * 0.035, weight: .black, design: .rounded))
                             .lineLimit(1)
                             .fixedSize()
                         HStack(spacing: h * 0.01) {
-                            ForEach(1...6, id: \.self) { box in
-                                Capsule().fill(model.boxesHit.contains(box) ? Self.metalGold : .white.opacity(0.25))
-                                    .frame(width: h * 0.055, height: h * 0.009)
+                            ForEach(model.game.targetIDs, id: \.self) { box in
+                                Capsule().fill(model.clearedBoxes.contains(box) ? Self.metalGold : .white.opacity(0.25))
+                                    .frame(width: h * (model.game == .brickBlast ? 0.024 : 0.055), height: h * 0.009)
                             }
-                            Text("\(model.boxesHit.count)/6")
+                            Text("\(model.clearedBoxes.count)/\(model.game.targetCount)")
                                 .font(.system(size: h * 0.025, weight: .bold, design: .rounded))
                                 .fixedSize()
                         }
                     }
-                    Spacer(minLength: h * 0.08)
+                    Spacer(minLength: h * 0.04)
+                    if model.game == .brickBlast {
+                        HStack(alignment: .firstTextBaseline, spacing: h * 0.012) {
+                            Text("\(model.game.targetCount - model.clearedBoxes.count)")
+                                .font(.system(size: h * 0.075, weight: .black, design: .rounded).monospacedDigit())
+                            Text("LEFT")
+                                .font(.system(size: h * 0.028, weight: .black, design: .rounded))
+                        }
+                        .foregroundStyle(Self.metalGold)
+                        .accessibilityLabel("\(model.game.targetCount - model.clearedBoxes.count) bricks left")
+                        Spacer(minLength: h * 0.04)
+                    }
                     VStack(alignment: .trailing, spacing: h * 0.002) {
                         Text(model.timerStatus)
                             .font(.system(size: h * 0.019, weight: .bold))
@@ -232,29 +345,51 @@ struct WallTargetsBoard: View {
                     }
                 }
                 .foregroundStyle(.white)
-                .frame(width: h * 1.1, height: h * 0.10)
+                .frame(width: width, height: h * 0.10)
             } else {
             VStack(spacing: h * 0.008) {
-                Text(model.checkingMapping ? "CHECKING THE WHOLE BOARD" : model.referenceBox.map { "SETUP · TOUCH WALL AT \($0)" }
-                     ?? (model.clearedAt != nil ? "WALL CLEARED!" : "CLEAR THE WALL"))
+                Text(model.checkingMapping ? "\(model.game.title.uppercased()) · SETUP 2/3" : model.referenceBox.map { $0 == WallReferenceCollector.wallCentre ? "SETUP 3/3 · ONE BALL HOLD" : "SETUP 3/3 · TOUCH WALL AT \($0)" }
+                     ?? (model.clearedAt != nil ? "WALL CLEARED!" : model.game.title.uppercased() + (model.isPlaying ? "" : " · SETUP")))
                     .font(.system(size: h * 0.046, weight: .black, design: .rounded))
                 HStack(spacing: h * 0.06) {
                     if model.checkingMapping {
                         Text("Keep the phone still · scoring is off")
                     } else if let box = model.referenceBox {
-                        Text("\(box) / 6 · scoring is off")
+                        Text(box == WallReferenceCollector.wallCentre ? "Touch the wall at the ring · hold still" : "\(box) / 6 · scoring is off")
                     } else {
-                        Text("\(model.boxesHit.count) / 6")
-                        let seconds = model.elapsed(at: timeline.date)
-                        Text("\(model.timerStatus) · " + (model.clearedAt != nil
-                            ? String(format: "%.1f s", seconds)
-                            : String(format: "%02d:%02d", Int(seconds) / 60, Int(seconds) % 60)))
+                        if !model.isPlaying, model.wallReference == nil, model.game != .clearTheWall {
+                            Text("Check the wall · one ball hold · then play")
+                        } else {
+                            Text("\(model.clearedBoxes.count) / \(model.game.targetCount)")
+                            let seconds = model.elapsed(at: timeline.date)
+                            Text("\(model.timerStatus) · " + (model.clearedAt != nil
+                                ? String(format: "%.1f s", seconds)
+                                : String(format: "%02d:%02d", Int(seconds) / 60, Int(seconds) % 60)))
+                        }
                     }
                 }
                 .font(.system(size: h * 0.035, weight: .semibold, design: .rounded).monospacedDigit())
             }.foregroundStyle(model.clearedAt != nil ? Self.metalGold : .white)
             }
         }
+    }
+
+    /// One calibration anchor, unrelated to any game's target count or layout.
+    private func centreReference(in rect: CGRect) -> some View {
+        let diameter = rect.height * 0.36
+        return ZStack {
+            Circle().fill(.black)
+            Circle().stroke(Self.metalCyan, lineWidth: rect.height * 0.012)
+            Circle().trim(from: 0, to: model.referenceProgress)
+                .stroke(.white, style: StrokeStyle(lineWidth: rect.height * 0.025, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            Image(systemName: "soccerball")
+                .font(.system(size: diameter * 0.35, weight: .bold))
+                .foregroundStyle(.white)
+        }
+        .frame(width: diameter, height: diameter)
+        .position(x: rect.midX, y: rect.midY)
+        .accessibilityLabel("Hold the ball against the wall at this ring")
     }
 
     /// A static board leaves the GPU free for detection; only hit feedback animates.
@@ -337,6 +472,12 @@ struct WallTargetsBoard: View {
         let gap = rect.height * 0.022, w = rect.width / 3, h = rect.height / 2
         return CGRect(x: rect.minX + CGFloat((box - 1) % 3) * w, y: rect.minY + CGFloat((box - 1) / 3) * h,
                       width: w, height: h).insetBy(dx: gap / 2, dy: gap / 2)
+    }
+
+    private func brickImpact(_ box: Int, frame: CGRect, board: CGRect) -> CGPoint {
+        guard let hit = model.hits.last(where: { $0.brickDamage.contains { $0.id == box } }) else { return CGPoint(x: 0.5, y: 0.5) }
+        return CGPoint(x: min(1, max(0, (board.minX + hit.u / 3 * board.width - frame.minX) / frame.width)),
+                       y: min(1, max(0, (board.minY + hit.v / 2 * board.height - frame.minY) / frame.height)))
     }
 
     private func metalState(_ box: Int) -> (hit: Bool, flash: Bool) {
@@ -462,13 +603,48 @@ final class WallTargetsProjectorScene: NSObject, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options: UIScene.ConnectionOptions) {
         guard let scene = scene as? UIWindowScene else { return }
         let window = UIWindow(windowScene: scene)
-        window.rootViewController = UIHostingController(rootView: WallTargetsBoard(model: .shared))
-        window.isHidden = false
-        self.window = window
+        window.frame = scene.effectiveGeometry.coordinateSpace.bounds
         WallTargetsModel.shared.setProjectorConnected(true)
+        window.rootViewController = UIHostingController(rootView: WallGamesProjectorRoot())
+        self.window = window
+        // Keep input and accessibility focus on the phone.
+        window.isHidden = false
+        NotificationCenter.default.addObserver(self, selector:#selector(displayModeChanged(_:)),
+            name:UIScreen.modeDidChangeNotification, object:scene.screen)
+    }
+
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        guard let scene=scene as? UIWindowScene else { return }
+        // Some receivers cannot change mode until the scene owns a visible window.
+        selectDisplayMode(scene)
+        resizeToDisplay(scene)
+    }
+
+    @objc private func displayModeChanged(_ notification:Notification) {
+        guard let scene=window?.windowScene else { return }
+        resizeToDisplay(scene)
+    }
+
+    private func resizeToDisplay(_ scene:UIWindowScene) {
+        window?.frame=scene.screen.bounds
+        NSLog("WALL_PROJECTOR_GEOMETRY %@", "scene=\(scene.effectiveGeometry.coordinateSpace.bounds) screen=\(scene.screen.bounds)")
+    }
+
+    private func selectDisplayMode(_ scene: UIWindowScene) {
+        // Some outputs prefer a legacy 720×480 mode even when their display is
+        // 1080p. Select an advertised mode, bounded to 1080p for the phone GPU.
+        let modes=scene.screen.availableModes.filter { $0.size.width*$0.size.height <= 1920*1080 }
+        if let mode=modes.max(by:{ $0.size.width*$0.size.height < $1.size.width*$1.size.height })
+            ?? scene.screen.preferredMode { scene.screen.currentMode=mode }
+        NSLog("WALL_PROJECTOR %@", "scene=\(scene.effectiveGeometry.coordinateSpace.bounds) screen=\(scene.screen.bounds) current=\(String(describing:scene.screen.currentMode?.size)) modes=\(scene.screen.availableModes.map(\.size))")
+    }
+
+    func windowScene(_ windowScene: UIWindowScene, didUpdateEffectiveGeometry previousEffectiveGeometry: UIWindowScene.Geometry) {
+        resizeToDisplay(windowScene)
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
+        NotificationCenter.default.removeObserver(self,name:UIScreen.modeDidChangeNotification,object:nil)
         window = nil
         WallTargetsModel.shared.setProjectorConnected(false)
     }
@@ -481,15 +657,19 @@ final class WallTargetsAppDelegate: NSObject, UIApplicationDelegate {
 
     func application(_ application: UIApplication, configurationForConnecting session: UISceneSession,
                      options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        let configuration = UISceneConfiguration(name: nil, sessionRole: session.role)
+        let configuration = UISceneConfiguration(
+            name: session.role == .windowExternalDisplayNonInteractive ? "Wall Projector":nil,
+            sessionRole: session.role)
         if session.role == .windowExternalDisplayNonInteractive {
+            configuration.sceneClass = UIWindowScene.self
             configuration.delegateClass = WallTargetsProjectorScene.self
         }
         return configuration
     }
 
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-        Self.orientations
+        if window?.windowScene?.session.role == .windowExternalDisplayNonInteractive { return .all }
+        return Self.orientations
     }
 
     @MainActor
@@ -497,9 +677,18 @@ final class WallTargetsAppDelegate: NSObject, UIApplicationDelegate {
         orientations = mask
         for case let scene as UIWindowScene in UIApplication.shared.connectedScenes
         where scene.session.role == .windowApplication {
-            scene.keyWindow?.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
-            scene.requestGeometryUpdate(.iOS(interfaceOrientations: mask)) { _ in }
+            // A presented guide owns the active orientation decision. Updating only
+            // the root leaves its presented controller's cached portrait mask.
+            var controller=scene.keyWindow?.rootViewController
+            while let current=controller {
+                current.setNeedsUpdateOfSupportedInterfaceOrientations()
+                controller=current.presentedViewController
+            }
+            scene.requestGeometryUpdate(.iOS(interfaceOrientations: mask)) { error in
+                NSLog("WALL_ORIENTATION %@", error.localizedDescription)
+            }
         }
     }
+
 }
 #endif

@@ -221,7 +221,7 @@ struct RootShellView: View {
                 Label("Challenges", systemImage: "flag.checkered")
             }
             Tab(value: AppTab.wallGame) {
-                WallGameHubView()
+                WallGameHubView(onClose: { selectedTab = .home })
                     .customTabBarSpace()
             } label: {
                 Label("Wall Game", systemImage: "square.grid.3x2")

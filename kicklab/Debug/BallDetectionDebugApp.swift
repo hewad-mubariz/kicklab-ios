@@ -4,6 +4,7 @@ import Combine
 import SwiftUI
 
 /// Separate entry point: opening this build starts only the camera diagnostic.
+#if !WALL_GAMES_PREVIEW
 @main
 struct BallDetectionDebugApp: App {
     /// Projector window and landscape lock for the wall-targets experiment.
@@ -23,6 +24,8 @@ struct BallDetectionDebugApp: App {
         }
     }
 }
+
+#endif
 
 struct BallDetectionDebugView: View {
     @StateObject private var camera = BallDetectionDebugCamera()

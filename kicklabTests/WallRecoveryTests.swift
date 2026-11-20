@@ -121,6 +121,28 @@ final class WallRecoveryTests: XCTestCase {
         }
     }
 
+    func testEarlyContinuousReboundStillWaitsForAlignmentAndDiscardsCameraMovement() {
+        for moved in [false, true] {
+            var shots = WallAlignedShotTracker()
+            var hits: [WallImpactDetector.Impact] = [], sawPending = false
+            for frame in 0..<120 {
+                let t = Double(frame) / 60, ready = t >= 1.7
+                let found = shots.process(.init(t: t, x: 600 - abs(t - 1) * 240,
+                    y: 210, d: 44 + abs(t - 1) * 120, hand: .clear), at: t,
+                    update: .init(status: ready ? .ready : .obscured, corners: corners,
+                        revision: 1, evidenceEpoch: moved && t >= 1.3 ? 2 : 1),
+                    retainEvidence: true, canScore: ready, reference: WallBallReference([44.0 / 1280]),
+                    size: size, fps: 60, layout: .brickWall)
+                if t < 1.2, shots.contactPreview != nil { sawPending = true }
+                if !ready { XCTAssertTrue(found.isEmpty) }
+                hits += found
+            }
+            XCTAssertTrue(sawPending)
+            XCTAssertEqual(hits.count, moved ? 0 : 1)
+            if let hit = hits.first { XCTAssertEqual(hit.t, 1, accuracy: 0.001) }
+        }
+    }
+
     func testFocusWaitsForStartupThenStableLensAndFreshFrames() {
         var focus = WallFocusReadiness(started: 0)
         for i in 0..<8 {

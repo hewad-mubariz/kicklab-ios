@@ -7,7 +7,7 @@ import AVFoundation
 import SwiftUI
 import StoreKit
 
-#if !BALL_DETECTION_DEBUG && !POWER_SHOT_DEBUG
+#if (!BALL_DETECTION_DEBUG || WALL_GAMES_PREVIEW) && !POWER_SHOT_DEBUG
 @main
 struct kicklabApp: App {
     @UIApplicationDelegateAdaptor(VideoSaveAppDelegate.self) private var appDelegate
