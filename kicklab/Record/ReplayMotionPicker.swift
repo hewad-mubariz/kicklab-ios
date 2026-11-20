@@ -155,8 +155,8 @@ struct ReplayMotionPicker: View {
     }
 }
 
-/// A lab view in the Analytics grid, laid out like the graph styles: a preview of the view on a real
-/// clip, its name, and what it needs. While its body tracking runs, the tile shows the progress.
+/// A lab view in the Analytics grid, laid out like the graph styles: its symbol, its name, and what it
+/// needs. While its body tracking runs, the tile shows the progress.
 struct LabViewTile: View {
     let view: LabViewID
     var selected = false
@@ -173,8 +173,12 @@ struct LabViewTile: View {
                         ZStack {
                             Color.black.opacity(0.45)
                             VStack(spacing: 5) {
-                                ProgressView(value: progress).progressViewStyle(.linear).tint(SessionStyle.mint)
-                                    .frame(width: 72)
+                                ZStack(alignment: .leading) {
+                                    Capsule().fill(.white.opacity(0.2))
+                                    Capsule().fill(SessionStyle.mint).frame(width: 72 * max(0.04, min(1, progress)))
+                                }
+                                .frame(width: 72, height: 4)
+                                .animation(.easeOut(duration: 0.3), value: progress)
                                 Text("Tracking \(Int(progress * 100))%").font(.system(size: 9, weight: .semibold)).monospacedDigit()
                                     .contentTransition(.numericText(value: progress))
                             }
@@ -207,14 +211,18 @@ struct LabViewTile: View {
         .animation(.easeOut(duration: 0.2), value: progress == nil)
     }
 
-    @ViewBuilder private var preview: some View {
-        if let image = UIImage(named: "analytics-preview-" + view.rawValue) {
-            Image(uiImage: image).resizable().scaledToFill()
-        } else {
-            ZStack {
-                Color.white.opacity(0.04)
-                Image(systemName: view.symbol).font(.system(size: 22, weight: .semibold)).foregroundStyle(SessionStyle.mint)
-            }
+    /// No picture: the view's symbol on a soft mint panel, lit when chosen.
+    private var preview: some View {
+        ZStack {
+            LinearGradient(colors: [SessionStyle.mint.opacity(selected ? 0.24 : 0.1), .white.opacity(0.02)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing)
+            Image(systemName: view.symbol)
+                .font(.system(size: 26, weight: .semibold))
+                .foregroundStyle(SessionStyle.mint)
+                .shadow(color: SessionStyle.mint.opacity(selected ? 0.6 : 0), radius: 8)
+                .symbolEffect(.bounce, value: selected)
+                // Steps back while the body tracking bar is shown over it.
+                .opacity(progress == nil ? 1 : 0.12)
         }
     }
 
