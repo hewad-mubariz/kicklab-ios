@@ -28,6 +28,8 @@ struct BallPickSlot: View {
         self.skin = skin; self.selected = selected; self.picks = picks; self.size = size
         self.direction = direction
         _picksAtAppear = State(initialValue: picks)
+        // The shipped resting ball shows at once; drawing it live can wait minutes behind a session's preparation.
+        _frame = State(initialValue: ShippedBallImage.image(for: skin))
     }
 
     private var isNewPick: Bool { picks > picksAtAppear && !reduceMotion }
@@ -240,7 +242,13 @@ struct BallPickSlot: View {
             let eased = Float(1 - (1 - progress) * (1 - progress))
             let pose = simd_normalize(simd_quatf(angle: turns * eased, axis: axis) * start)
             // Small frames while it moves; the resting pose is drawn sharp at full size.
-            frame = await render(pose, moving: progress < 1)
+            let drawn = await render(pose, moving: progress < 1)
+            // With the GPU busy a frame can take seconds: then the ball keeps its resting look and doesn't spin.
+            if Date.now.timeIntervalSince(frameStart) > 0.25, let rest = ShippedBallImage.image(for: skin) {
+                frame = rest
+                return
+            }
+            if let drawn { frame = drawn }
             if progress >= 1 { restOrientation = pose; return }
             let spent = Date.now.timeIntervalSince(frameStart)
             if spent < 1.0 / 60 { try? await Task.sleep(for: .seconds(1.0 / 60 - spent)) }
@@ -278,4 +286,20 @@ private enum Frost {
     static let ice = Color(red: 0.62, green: 0.92, blue: 1.0)
     static let glacier = Color(red: 0.3, green: 0.7, blue: 1.0)
     static let deep = Color(red: 0.16, green: 0.42, blue: 0.95)
+}
+
+/// Every ball's resting look, rendered ahead (LabBridgeTests.testBallPickerThumbnails) and shipped in the
+/// asset catalog, so pickers never wait for the GPU to show a ball.
+nonisolated enum ShippedBallImage {
+    /// NSCache and UIImage(named:) are safe from any thread.
+    nonisolated(unsafe) private static let cache = NSCache<NSString, CGImage>()
+
+    static func image(for skin: BallSkin) -> CGImage? {
+        guard skin != .original else { return nil }
+        let name = "ball-thumb-" + skin.rawValue
+        if let cached = cache.object(forKey: name as NSString) { return cached }
+        guard let image = UIImage(named: name)?.cgImage else { return nil }
+        cache.setObject(image, forKey: name as NSString)
+        return image
+    }
 }

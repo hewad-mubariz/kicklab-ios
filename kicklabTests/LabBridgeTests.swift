@@ -58,6 +58,28 @@ final class LabBridgeTests: XCTestCase {
         XCTAssertEqual(failures, [])
     }
 
+    /// The Ball page's resting balls, saved as ball-thumb-<skin>.png in LAB_BRIDGE_OUT. The app ships them so
+    /// the picker shows every ball at once, even while a session's preparation keeps the GPU busy.
+    func testBallPickerThumbnails() throws {
+        guard ProcessInfo.processInfo.environment["LAB_BRIDGE_OUT"] != nil else { throw XCTSkip("LAB_BRIDGE_OUT not set") }
+        // BallPickSlot's resting pose.
+        let pose = simd_quatf(angle: 1.89, axis: SIMD3<Float>(0, 1, 0)) * simd_quatf(angle: 0.59, axis: SIMD3<Float>(1, 0, 0))
+        var missing = [String]()
+        for skin in BallSkin.pickerOrder where skin != .original {
+            guard let image = BallSkinSphereRenderer.image(skin: skin, time: 0, orientation: pose), opaquePixels(image) > 2000 else {
+                missing.append(skin.rawValue); continue
+            }
+            save(image, "ball-thumb-" + skin.rawValue)
+        }
+        XCTAssertEqual(missing, [])
+    }
+
+    /// Every picker ball ships its resting picture, so no ball waits for the GPU to appear.
+    func testEveryBallShipsItsPicture() {
+        let missing = BallSkin.pickerOrder.filter { $0 != .original && ShippedBallImage.image(for: $0) == nil }.map(\.rawValue)
+        XCTAssertEqual(missing, [])
+    }
+
     func testEveryBridgedSkinDrawsItsBall() {
         var failures = [String]()
         for skin in BallSkin.bridgedSkins {

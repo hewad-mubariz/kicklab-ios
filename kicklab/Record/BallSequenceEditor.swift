@@ -10,6 +10,8 @@ actor BallThumbnailStore {
     func image(for skin: BallSkin) -> CGImage? {
         guard skin != .original else { return nil }
         if let hit = images[skin] { return hit }
+        // The shipped resting ball first: drawing live can wait behind a session's GPU preparation.
+        if let shipped = ShippedBallImage.image(for: skin) { images[skin] = shipped; return shipped }
         let rendered = BallSkinSphereRenderer.previewImage(skin: skin, time: 0, orientation: pose)
         if let rendered { images[skin] = rendered }
         return rendered
@@ -21,6 +23,11 @@ struct BallThumbnail: View {
     let skin: BallSkin
     var size: CGFloat = 30
     @State private var image: CGImage?
+
+    init(skin: BallSkin, size: CGFloat = 30) {
+        self.skin = skin; self.size = size
+        _image = State(initialValue: ShippedBallImage.image(for: skin))
+    }
 
     var body: some View {
         ZStack {
