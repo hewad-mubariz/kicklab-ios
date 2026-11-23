@@ -1,0 +1,9 @@
+{
+  "character": "Microsoft Rocketbox Sports_Male_02",
+  "source": "https://github.com/microsoft/Microsoft-Rocketbox",
+  "license": "MIT, retained in Rocketbox-LICENSE.txt",
+  "local_source": "Existing KeeperAssets.bundle/Keeper-ready.usdz",
+  "animation": "Embedded imported animations are removed at load. Learning poses are authored with two-link inverse kinematics.",
+  "appearance": "Original model textures; lighting adjusted for human skin and fabric.",
+  "cost": "No paid services or new asset purchases."
+}

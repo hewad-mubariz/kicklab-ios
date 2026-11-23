@@ -1,8 +1,71 @@
 import XCTest
 import AVFoundation
+import SceneKit
+import simd
 @testable import kicklab
 
 final class LearningCoachTests: XCTestCase {
+    @MainActor
+    func testHumanAssetContainsTexturedSkinnedGeometry() throws {
+        let rig = try HumanCoachRig(url: XCTUnwrap(HumanCoachRig.assetURL))
+        var skinnedMeshes = 0
+        rig.node.enumerateChildNodes { node, _ in
+            guard let skinner = node.skinner else { return }
+            skinnedMeshes += 1
+            XCTAssertGreaterThan(skinner.bones.count, 20)
+            XCTAssertTrue(node.geometry?.materials.contains { $0.diffuse.contents != nil } == true)
+        }
+        XCTAssertGreaterThan(skinnedMeshes, 0, "The shipping bundle must load the real rig, not just a scene shell.")
+    }
+
+    @MainActor
+    func testRetargetedHumanMaintainsBoneLengthsAndContinuousBallPaths() throws {
+        let rig = try HumanCoachRig(url: XCTUnwrap(HumanCoachRig.assetURL))
+        let chains = ["L", "R"].flatMap { side in
+            [("Thigh", "Calf"), ("Calf", "Foot"), ("UpperArm", "Forearm"), ("Forearm", "Hand")].map {
+                ("Bip01_\(side)_\($0.0)", "Bip01_\(side)_\($0.1)")
+            }
+        }
+        let lengths = try chains.map { try simd_distance(XCTUnwrap(rig.position(of: $0.0)), XCTUnwrap(rig.position(of: $0.1))) }
+        for lesson in LearnLesson.all {
+            var previous: SIMD3<Float>?
+            for frame in 0...200 {
+                let progress = Double(frame) / 200
+                rig.update(CoachPose.sample(lesson.motion, progress: progress), time: progress * lesson.motion.duration, speaking: false)
+                let ball = rig.ballPosition
+                XCTAssertTrue(ball.x.isFinite && ball.y.isFinite && ball.z.isFinite, lesson.id)
+                XCTAssertGreaterThanOrEqual(ball.y, 0.114, lesson.id)
+                if let previous { XCTAssertLessThan(simd_distance(ball, previous), 0.1, lesson.id) }
+                previous = ball
+                for (index, chain) in chains.enumerated() {
+                    let length = try simd_distance(XCTUnwrap(rig.position(of: chain.0)), XCTUnwrap(rig.position(of: chain.1)))
+                    XCTAssertEqual(length, lengths[index], accuracy: 0.001, lesson.id)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    func testHumanCatchesAndBootContactRespectModelProportions() throws {
+        let rig = try HumanCoachRig(url: XCTUnwrap(HumanCoachRig.assetURL))
+        for (motion, side) in [(CoachMotion.touchCatch, "L"), (.otherFootCatch, "R")] {
+            rig.update(CoachPose.sample(motion, progress: 0.34), time: 0, speaking: false)
+            let ankle = try XCTUnwrap(rig.position(of: "Bip01_\(side)_Foot"))
+            let toe = try XCTUnwrap(rig.position(of: "Bip01_\(side)_Toe0"))
+            let laces = ankle * 0.45 + toe * 0.55
+            XCTAssertGreaterThan(rig.ballPosition.y - laces.y, 0.12)
+            XCTAssertLessThan(simd_distance(rig.ballPosition, laces), 0.19)
+            rig.update(CoachPose.sample(motion, progress: 0.8), time: 0, speaking: false)
+            for sign: Float in [-1, 1] {
+                let hand = try XCTUnwrap(rig.position(of: "Bip01_\(sign > 0 ? "L" : "R")_Hand"))
+                let target = rig.ballPosition + SIMD3<Float>(sign * 0.17, 0.025, 0.01)
+                XCTAssertLessThan(simd_distance(hand, target), 0.01)
+            }
+        }
+        rig.update(CoachPose.sample(.bounceCatch, progress: 0.4), time: 0, speaking: false)
+        XCTAssertEqual(rig.ballPosition.y, 0.115, accuracy: 0.001)
+    }
+
     @MainActor
     func testCoachVoiceProducesAudio() async throws {
         let synthesizer = AVSpeechSynthesizer()

@@ -2,8 +2,8 @@ import SwiftUI
 import SceneKit
 import simd
 
-/// Original, procedural artwork. No downloaded models, textures or motion data.
-/// These deliberately authored demonstrations are a prototype, not captured biomechanics.
+/// Authored lesson paths retargeted onto the licensed human coach.
+/// These demonstrations are a prototype, not captured biomechanics.
 struct CoachPose {
     var ball = SIMD3<Float>(0.15, 1.05, 0.24)
     var leftLift: Float = 0
@@ -12,14 +12,20 @@ struct CoachPose {
     var held: Float = 1
     var thighLift: Float = 0
     var phase = "Ready"
+    var usesFootContact = true
 
     static func sample(_ motion: CoachMotion, progress raw: Double) -> CoachPose {
         let t = Float(raw - floor(raw))
         var pose = CoachPose()
+        pose.usesFootContact = motion != .bounceCatch
         let other = motion == .otherFootCatch || motion == .otherFoot
         let side: Float = other ? -1 : 1
+        func ease(_ value: Float) -> Float {
+            let u = min(1, max(0, value))
+            return u * u * (3 - 2 * u)
+        }
         func pulse(_ value: Float, _ centre: Float, _ width: Float) -> Float {
-            max(0, 1 - abs(value - centre) / width)
+            ease(1 - abs(value - centre) / width)
         }
         func lift(_ u: Float, from: Float = 0.325, to: Float = 1.05, arc: Float = 0.55) -> Float {
             from + (to - from) * u + arc * 4 * u * (1 - u)
@@ -27,7 +33,7 @@ struct CoachPose {
 
         if motion.endsWithCatch {
             pose.ball.x = 0.15 * side
-            pose.held = t < 0.14 || t >= 0.76 ? 1 : max(0, (t - 0.65) / 0.11)
+            pose.held = t < 0.30 ? 1 - ease((t - 0.14) / 0.10) : ease((t - 0.65) / 0.11)
             if motion == .bounceCatch {
                 pose.ball.x = 0
                 if t < 0.14 { pose.phase = "Hold" }
@@ -58,7 +64,7 @@ struct CoachPose {
                     if motion == .alternatingCatch { pose.ball.x = -0.15 }
                     pose.phase = two ? "Second touch" : "Gentle touch"
                 } else {
-                    if motion == .alternatingCatch { pose.ball.x = -0.15 + 0.30 * min(1, (t - 0.82) / 0.16) }
+                    if motion == .alternatingCatch { pose.ball.x = -0.15 + 0.30 * ease((t - 0.82) / 0.16) }
                     pose.phase = "Catch & reset"
                 }
                 let first = 0.085 * pulse(t, contact, 0.11)
@@ -184,39 +190,30 @@ private struct CoachSceneSurface: UIViewRepresentable {
 private final class CoachScene {
     let scene = SCNScene()
     let camera = SCNNode()
-    private let body = SCNNode()
-    private let torso = SCNNode()
-    private let head = SCNNode()
-    private let mouth = SCNNode()
+    private let human: HumanCoachRig?
     private let ball = SCNNode()
     private let ballShadow = SCNNode()
-    private var upperArms: [SCNNode] = []
-    private var forearms: [SCNNode] = []
-    private var hands: [SCNNode] = []
-    private var thighs: [SCNNode] = []
-    private var shins: [SCNNode] = []
-    private var socks: [SCNNode] = []
-    private var shoes: [SCNNode] = []
-    private var knees: [SCNNode] = []
-    private var elbows: [SCNNode] = []
     private var previousSide = false
     private let lime = UIColor(red: 0.81, green: 0.97, blue: 0.32, alpha: 1)
-    private let skin = UIColor(red: 0.67, green: 0.38, blue: 0.23, alpha: 1)
     private let ink = UIColor(red: 0.06, green: 0.11, blue: 0.10, alpha: 1)
 
     init() {
-        scene.rootNode.addChildNode(body)
+        human = HumanCoachRig.assetURL.flatMap { try? HumanCoachRig(url: $0) }
+        if let human { scene.rootNode.addChildNode(human.node) }
         camera.camera = SCNCamera()
         camera.camera?.usesOrthographicProjection = true
-        camera.camera?.orthographicScale = 1.16
+        camera.camera?.orthographicScale = 1.10
+        camera.camera?.wantsHDR = true
+        camera.camera?.wantsExposureAdaptation = false
+        camera.camera?.exposureOffset = -0.3
         camera.camera?.zNear = 0.1
         camera.camera?.zFar = 30
         camera.position = SCNVector3(2.4, 2.1, 6)
         camera.look(at: SCNVector3(0, 0.88, 0))
         scene.rootNode.addChildNode(camera)
-        light(.ambient, intensity: 180, color: .white, position: SCNVector3(0, 4, 2))
-        light(.omni, intensity: 430, color: UIColor(red: 1, green: 0.98, blue: 0.95, alpha: 1), position: SCNVector3(-2, 4, 4))
-        light(.omni, intensity: 210, color: UIColor(red: 0.81, green: 0.94, blue: 0.85, alpha: 1), position: SCNVector3(2, 2, -3))
+        light(.ambient, intensity: 65, color: .white, position: SCNVector3(0, 4, 2))
+        light(.omni, intensity: 240, color: UIColor(red: 1, green: 0.98, blue: 0.95, alpha: 1), position: SCNVector3(-2, 4, 4))
+        light(.omni, intensity: 130, color: UIColor(red: 0.81, green: 0.94, blue: 0.85, alpha: 1), position: SCNVector3(2, 2, -3))
 
         let platform = node(SCNCylinder(radius: 0.72, height: 0.025), color: UIColor(red: 0.13, green: 0.21, blue: 0.17, alpha: 1))
         platform.position.y = -0.02
@@ -231,76 +228,6 @@ private final class CoachScene {
         ballShadow.addChildNode(groundBallShadow)
         scene.rootNode.addChildNode(ballShadow)
 
-        torso.geometry = SCNCapsule(capRadius: 0.225, height: 0.61)
-        torso.geometry?.firstMaterial = material(lime)
-        torso.scale = SCNVector3(1, 1, 0.62)
-        torso.position.y = 1.19
-        body.addChildNode(torso)
-        let collar = node(SCNTorus(ringRadius: 0.077, pipeRadius: 0.008), color: ink)
-        collar.position.y = 1.48
-        body.addChildNode(collar)
-        let neck = node(SCNCylinder(radius: 0.065, height: 0.13), color: skin)
-        neck.position.y = 1.51
-        body.addChildNode(neck)
-        let shorts = node(SCNBox(width: 0.34, height: 0.22, length: 0.23, chamferRadius: 0.07), color: ink)
-        shorts.position.y = 0.91
-        body.addChildNode(shorts)
-        let badge = node(SCNBox(width: 0.035, height: 0.075, length: 0.008, chamferRadius: 0.006), color: ink)
-        badge.position = SCNVector3(-0.095, 1.31, 0.128)
-        body.addChildNode(badge)
-        let stripe = node(SCNBox(width: 0.30, height: 0.018, length: 0.012, chamferRadius: 0.006), color: ink.withAlphaComponent(0.8))
-        stripe.position = SCNVector3(0, 1.12, 0.14)
-        body.addChildNode(stripe)
-
-        head.position.y = 1.68
-        body.addChildNode(head)
-        let face = node(SCNSphere(radius: 0.147), color: skin)
-        face.scale = SCNVector3(0.93, 1.12, 0.94)
-        head.addChildNode(face)
-        let hair = node(SCNSphere(radius: 0.151), color: ink)
-        hair.scale = SCNVector3(1, 0.60, 1)
-        hair.position = SCNVector3(0, 0.103, -0.012)
-        head.addChildNode(hair)
-        for sign: Float in [-1, 1] {
-            let ear = node(SCNSphere(radius: 0.03), color: skin)
-            ear.position = SCNVector3(sign * 0.137, 0, 0)
-            head.addChildNode(ear)
-            let eye = node(SCNSphere(radius: 0.012), color: ink)
-            eye.scale.y = 0.8
-            eye.position = SCNVector3(sign * 0.048, 0.016, 0.13)
-            head.addChildNode(eye)
-        }
-        let nose = node(SCNSphere(radius: 0.024), color: skin)
-        nose.position = SCNVector3(0, -0.015, 0.14)
-        head.addChildNode(nose)
-        mouth.geometry = SCNCapsule(capRadius: 0.008, height: 0.040)
-        mouth.geometry?.firstMaterial = material(ink)
-        mouth.eulerAngles.z = .pi / 2
-        mouth.position = SCNVector3(0, -0.062, 0.126)
-        head.addChildNode(mouth)
-
-        for _ in 0..<2 {
-            upperArms.append(limb(radius: 0.073, color: lime))
-            forearms.append(limb(radius: 0.052, color: skin))
-            let elbow = node(SCNSphere(radius: 0.052), color: skin)
-            body.addChildNode(elbow); elbows.append(elbow)
-            let hand = node(SCNSphere(radius: 0.061), color: skin)
-            hand.scale = SCNVector3(0.75, 1.15, 0.75)
-            body.addChildNode(hand); hands.append(hand)
-            thighs.append(limb(radius: 0.092, color: ink))
-            shins.append(limb(radius: 0.060, color: skin))
-            let knee = node(SCNSphere(radius: 0.060), color: skin)
-            body.addChildNode(knee); knees.append(knee)
-            socks.append(limb(radius: 0.062, color: .white))
-            let shoe = node(SCNBox(width: 0.14, height: 0.10, length: 0.29, chamferRadius: 0.047), color: .white)
-            let sole = node(SCNBox(width: 0.144, height: 0.023, length: 0.295, chamferRadius: 0.011), color: lime)
-            sole.position.y = -0.043
-            shoe.addChildNode(sole)
-            let lace = node(SCNBox(width: 0.06, height: 0.008, length: 0.07, chamferRadius: 0.004), color: ink)
-            lace.position = SCNVector3(0, 0.05, 0.045)
-            shoe.addChildNode(lace)
-            body.addChildNode(shoe); shoes.append(shoe)
-        }
         ball.geometry = SCNSphere(radius: 0.115)
         ball.geometry?.firstMaterial = material(.white)
         addBallPanels()
@@ -311,39 +238,14 @@ private final class CoachScene {
     func update(_ pose: CoachPose, time: Double, sideView: Bool, speaking: Bool) {
         SCNTransaction.begin()
         SCNTransaction.disableActions = true
-        body.position.x = pose.shift
-        let sway = Float(sin(time * 2)) * 0.009
-        torso.eulerAngles.z = sway
-        head.eulerAngles.x = pose.held > 0.8 ? 0.06 : 0.17
-        mouth.scale.x = speaking ? 1 + Float(abs(sin(time * 16))) * 1.8 : 1
-        ball.simdPosition = pose.ball
+        human?.update(pose, time: time, speaking: speaking)
+        let ballPosition = human?.ballPosition ?? pose.ball
+        ball.simdPosition = ballPosition
         if pose.held < 0.8 { ball.eulerAngles = SCNVector3(Float(time * 1.5), Float(time * 0.6), 0) }
-        ballShadow.position = SCNVector3(pose.ball.x, 0.009, pose.ball.z)
-        ballShadow.opacity = CGFloat(max(0.14, 0.48 - pose.ball.y * 0.22))
-        let shadowScale = 1 + pose.ball.y * 0.3
+        ballShadow.position = SCNVector3(ballPosition.x, 0.009, ballPosition.z)
+        ballShadow.opacity = CGFloat(max(0.14, 0.48 - ballPosition.y * 0.22))
+        let shadowScale = 1 + ballPosition.y * 0.3
         ballShadow.scale = SCNVector3(shadowScale, 1, shadowScale)
-        for index in 0..<2 {
-            let sign: Float = index == 0 ? -1 : 1
-            let amount = index == 0 ? pose.leftLift : pose.rightLift
-            let thigh = index == 1 ? pose.thighLift : 0
-            let hip = SIMD3<Float>(sign * 0.13, 0.90, 0)
-            let knee = SIMD3<Float>(sign * 0.15, 0.52 + amount * 0.7 + thigh * 0.36, 0.05 + amount + thigh * 0.23)
-            let ankle = SIMD3<Float>(sign * 0.15, 0.12 + amount + thigh * 0.42, 0.025 + thigh * 0.16)
-            segment(thighs[index], from: hip, to: knee)
-            segment(shins[index], from: knee, to: ankle)
-            knees[index].simdPosition = knee
-            segment(socks[index], from: ankle, to: ankle + (knee - ankle) * 0.45)
-            shoes[index].simdPosition = SIMD3<Float>(ankle.x, 0.075 + amount + thigh * 0.42, 0.13 + thigh * 0.16)
-            let shoulder = SIMD3<Float>(sign * 0.21, 1.40, 0)
-            let restingHand = SIMD3<Float>(sign * 0.38, 0.94, 0.18)
-            let catchingHand = SIMD3<Float>(pose.ball.x - pose.shift + sign * 0.115, pose.ball.y - 0.015, pose.ball.z)
-            let hand = simd_mix(restingHand, catchingHand, SIMD3<Float>(repeating: pose.held))
-            let elbow = SIMD3<Float>(sign * 0.34, 1.15, 0.08 + 0.09 * pose.held)
-            segment(upperArms[index], from: shoulder, to: elbow)
-            segment(forearms[index], from: elbow, to: hand)
-            elbows[index].simdPosition = elbow
-            hands[index].simdPosition = hand
-        }
         SCNTransaction.commit()
         if previousSide != sideView {
             previousSide = sideView
@@ -365,17 +267,6 @@ private final class CoachScene {
     private func node(_ geometry: SCNGeometry, color: UIColor) -> SCNNode {
         geometry.firstMaterial = material(color)
         return SCNNode(geometry: geometry)
-    }
-    private func limb(radius: CGFloat, color: UIColor) -> SCNNode {
-        let n = node(SCNCapsule(capRadius: radius, height: 0.4), color: color)
-        body.addChildNode(n)
-        return n
-    }
-    private func segment(_ n: SCNNode, from a: SIMD3<Float>, to b: SIMD3<Float>) {
-        let delta = b - a
-        n.simdPosition = (a + b) / 2
-        (n.geometry as? SCNCapsule)?.height = CGFloat(simd_length(delta))
-        n.simdOrientation = simd_quatf(from: SIMD3<Float>(0, 1, 0), to: simd_normalize(delta))
     }
     private func light(_ type: SCNLight.LightType, intensity: CGFloat, color: UIColor, position: SCNVector3) {
         let n = SCNNode()

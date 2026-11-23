@@ -44,14 +44,19 @@ camera with that goal), this week's best sessions as bars topped with the same b
 Ball Distance and Session history. Learn now opens the animated coaching prototype
 described below. Home's main button reads "Start juggling".
 
-### Learn coaching prototype — 20 November 2026
+### Learn coaching prototype — 23 November 2026
 
 The Learn tab contains 12 proposed drills across Basics, Build rhythm, Control and
 Advanced, plus shortcuts for keeping the ball close and practising the other foot.
-A lesson provides an original procedural SceneKit character and football, a looping
-demonstration, front/side views, half-speed playback, written steps and a short guided
-practice round. All geometry, materials and motion are authored in `Learning/`;
-there are no purchased assets, external generation services or subscriptions.
+A lesson provides a textured, rigged human football player and a procedural football,
+a looping demonstration, front/side views, half-speed playback, written steps and a
+short guided practice round. The human is Microsoft's MIT-licensed Rocketbox
+Sports_Male_02, reused from the project's existing goalkeeper asset. The learning
+bundle retains the license and provenance in `Learning/CoachAssets.bundle/`.
+`HumanCoachRig` removes embedded animation and authors lesson poses with two-link
+inverse kinematics, hand targets, boot contact, breathing and simple jaw movement
+while speaking. This is an existing licensed character, not a custom likeness;
+there are no new asset purchases, generation services or subscriptions.
 
 Tap the play icon beside the coach's caption to hear the demonstration cue, or
 “Let's try together” to start three paced practice invitations. Speech uses the
@@ -66,14 +71,18 @@ these lessons. Check-ins are self-reported practice, saved locally on the device
 they are not detected catches, measured form, verified mastery or leaderboard scores.
 “Make it a little easier” opens a simpler drill. Spoken prompts are English in this
 first version. Physical-device voice quality and animation performance still need
-review before release. Review artifacts are in `artifacts/learn-coach/`.
+review before release. Original review artifacts are in `artifacts/learn-coach/`;
+human-character previews and validation are in `artifacts/learn-human-coach/`.
 
-Validation: five focused logic/audio tests and two interaction tests passed on an
-isolated iOS 26.5 iPhone 17 Pro Simulator. This covers ball/floor and catch boundaries,
-continuous loops, both-foot demonstrations, simpler-drill routing, actual system-voice
-audio generation, muted practice, timed cues, playback speed, camera angle and voice
-controls. Light/dark screenshots were inspected. These are prototype checks, not a
-coaching-technique qualification or a full application regression run.
+Validation: eight focused rig/logic/audio tests and two interaction tests passed on
+an isolated iOS 26.5 iPhone 17 Pro Simulator, plus a preview-capture test. This covers
+the bundled textured skeleton, preserved bone lengths across all lessons, model-aware
+boot and hand contact, continuous ball paths, bounce/floor boundaries, both feet,
+simpler-drill routing, actual system-voice audio generation, muted practice, timed
+cues, playback speed, camera angle and voice controls. Light/dark and side-view
+screenshots were inspected. The preview pairs a Simulator screen recording with
+separately rendered audio from the same app voice and demonstration phrase. These
+are prototype checks, not a coaching-technique qualification or full app regression.
 
 "Start juggling" also works from outside the app, always through the same pending
 request a practice reminder uses (it waits until nothing else is on screen): the
