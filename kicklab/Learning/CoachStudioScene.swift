@@ -12,13 +12,14 @@ private typealias StudioColor = NSColor
 final class CoachScene {
     let scene = SCNScene()
     let camera = SCNNode()
-    let character = CoachCharacter()
+    let character: HumanCoachRig?
     private let ball = SCNNode()
     private var previousSide = false
     private let ink = StudioColor(red: 0.045, green: 0.085, blue: 0.07, alpha: 1)
 
-    init() {
-        scene.rootNode.addChildNode(character.node)
+    init(assetURL: URL? = HumanCoachRig.assetURL) {
+        character = assetURL.flatMap { try? HumanCoachRig(url: $0) }
+        if let character { scene.rootNode.addChildNode(character.node) }
         camera.camera = SCNCamera()
         camera.camera?.usesOrthographicProjection = true
         camera.camera?.orthographicScale = 1.08
@@ -68,7 +69,7 @@ final class CoachScene {
     func update(_ pose: CoachPose, time: Double, sideView: Bool, speaking: Bool) {
         SCNTransaction.begin()
         SCNTransaction.disableActions = true
-        character.update(pose, time: time, speaking: speaking)
+        character?.update(pose, time: time, speaking: speaking)
         ball.simdPosition = pose.ball
         ball.simdEulerAngles = SIMD3(-pose.spin, 0, 0)
         SCNTransaction.commit()

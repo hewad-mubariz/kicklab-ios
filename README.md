@@ -46,18 +46,22 @@ described below. Home's main button reads "Start juggling".
 
 The Learn tab contains 12 proposed drills across Basics, Build rhythm, Control and
 Advanced, plus shortcuts for keeping the ball close and practising the other foot.
-A lesson provides an original faceless training mannequin, a looping demonstration,
-front/side views, half-speed playback, written steps and a guided practice round.
-`CoachCharacter` builds a smooth, tapered mannequin with adult proportions and
-articulated hands. `CoachChoreography` coordinates gravity-based ball flight,
-anticipatory weight transfer, planted support feet, kick follow-through, hand
-preparation and a soft catch. Moving drills reposition a foot only during its swing.
+A lesson provides a realistic human coach, a looping demonstration, front/side
+views, half-speed playback, written steps and a guided practice round.
+`HumanCoachRig` uses the existing MIT-licensed Microsoft Rocketbox football model
+with its original skin and kit textures. Embedded animation clips are removed at
+load. `CoachChoreography` coordinates gravity-based ball flight, weight transfer,
+planted support feet and kick follow-through. The human's measured limb lengths
+constrain the motion. Elbows stay relaxed; palms turn toward the catch, fingers
+close around the ball, and the hands give downward as it arrives. Moving drills
+reposition a foot only during its swing. The reference reel informs movement
+principles only; no character or animation assets are copied from it.
+
 The dark studio uses a ground grid, cast shadows and a restrained reflection.
 `CoachStudioScene` is shared by the app and the offline motion preview. Rendering
 runs at up to 60 fps while visible; half-speed slows the same choreography clock.
-The earlier borrowed goalkeeper model is no longer used or bundled for learning.
-Character geometry and motion are authored in `Learning/`; no paid assets,
-generation services or subscriptions are required.
+Model license and provenance are retained in `Learning/CoachAssets.bundle/`.
+No paid services, new asset purchases or subscriptions are required.
 
 Tap the play icon beside the coach's caption to hear the demonstration cue, or
 “Let's try together” to start three paced practice invitations. Speech uses the
@@ -73,8 +77,8 @@ they are not detected catches, measured form, verified mastery or leaderboard sc
 “Make it a little easier” opens a simpler drill. Spoken prompts are English in this
 first version. Physical-device voice quality and animation performance still need
 review before release. Current motion-review artifacts are in
-`artifacts/learn-natural-motion/`; earlier iterations remain in `artifacts/learn-coach/`
-and `artifacts/learn-human-coach/`.
+`artifacts/learn-real-coach-motion/`; earlier iterations remain in
+`artifacts/learn-natural-motion/` and `artifacts/learn-human-coach/`.
 
 Validation: eight focused choreography/geometry/audio tests and two interaction
 tests passed on an isolated iOS 26.5 iPhone 17 Pro Simulator. They cover realistic

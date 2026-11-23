@@ -6,21 +6,33 @@ import simd
 
 final class LearningCoachTests: XCTestCase {
     @MainActor
-    func testMannequinHasAdultProportionsAndFixedLimbLengths() throws {
-        let character = CoachCharacter()
-        for motion in [CoachMotion.touchCatch, .bounceCatch, .thigh, .moving] {
+    func testHumanSkeletonKeepsItsLimbLengthsAndReachesTheAuthoredTargets() throws {
+        let character = try HumanCoachRig(url: XCTUnwrap(HumanCoachRig.assetURL))
+        var skinnedMeshes = 0
+        character.node.enumerateChildNodes { node, _ in
+            if node.skinner != nil { skinnedMeshes += 1 }
+            XCTAssertTrue(node.animationKeys.isEmpty, "Embedded clips must not fight the lesson motion.")
+        }
+        XCTAssertGreaterThan(skinnedMeshes, 0, "Use the textured human model.")
+        for lesson in LearnLesson.all {
             for frame in 0..<100 {
-                let pose = CoachPose.sample(motion, progress: Double(frame) / 100)
+                let pose = CoachPose.sample(lesson.motion, progress: Double(frame) / 100)
                 character.update(pose, time: 0, speaking: false)
-                for side in ["left", "right"] {
-                    let points = character.jointPositions
-                    for (a, b, length): (String, String, Float) in [("hip", "knee", 0.445), ("knee", "ankle", 0.435),
-                                                                  ("shoulder", "elbow", 0.31), ("elbow", "wrist", 0.285)] {
-                        let actual = try simd_distance(XCTUnwrap(points[side + a]), XCTUnwrap(points[side + b]))
-                        XCTAssertEqual(actual, length, accuracy: 0.001, "\(motion) \(side) \(a)")
+                for side in CoachSide.allCases {
+                    let prefix = "Bip01_" + (side == .right ? "L" : "R") + "_"
+                    for (a, b, length): (String, String, Float) in [
+                        ("Thigh", "Calf", CoachAnatomy.thighLength), ("Calf", "Foot", CoachAnatomy.calfLength),
+                        ("UpperArm", "Forearm", CoachAnatomy.upperArmLength), ("Forearm", "Hand", CoachAnatomy.forearmLength)
+                    ] {
+                        let actual = try simd_distance(XCTUnwrap(character.position(of: prefix + a)), XCTUnwrap(character.position(of: prefix + b)))
+                        XCTAssertEqual(actual, length, accuracy: 0.001, "\(lesson.id) \(a)")
+                    }
+                    for (joint, target) in [("Foot", pose.foot(side).position), ("Hand", pose.hand(side)),
+                                            ("Thigh", pose.hip(side)), ("Calf", pose.knee(side))] {
+                        let actual = try XCTUnwrap(character.position(of: prefix + joint))
+                        XCTAssertLessThan(simd_distance(actual, target), 0.002, "\(lesson.id) \(joint)")
                     }
                 }
-                XCTAssertGreaterThan(try XCTUnwrap(character.jointPositions["head"]).y, 1.45)
             }
         }
     }
@@ -40,8 +52,8 @@ final class LearningCoachTests: XCTestCase {
                     }
                 }
                 for side in CoachSide.allCases {
-                    XCTAssertLessThan(simd_distance(pose.hip(side), pose.foot(side).position), 0.88, lesson.id)
-                    XCTAssertLessThan(simd_distance(pose.shoulder(side), pose.hand(side)), 0.595, lesson.id)
+                    XCTAssertLessThan(simd_distance(pose.hip(side), pose.foot(side).position), CoachAnatomy.thighLength + CoachAnatomy.calfLength - 0.001, lesson.id)
+                    XCTAssertLessThan(simd_distance(pose.shoulder(side), pose.hand(side)), CoachAnatomy.upperArmLength + CoachAnatomy.forearmLength - 0.001, lesson.id)
                 }
                 previous = pose
             }
@@ -74,7 +86,7 @@ final class LearningCoachTests: XCTestCase {
                 let pose = plan.sample(seconds: Float(frame) / 1000 * plan.duration)
                 for side in CoachSide.allCases {
                     let a = previous.foot(side), b = pose.foot(side)
-                    if abs(a.position.y - 0.095) < 0.00001 && abs(b.position.y - 0.095) < 0.00001 {
+                    if abs(a.position.y - CoachAnatomy.ankleHeight) < 0.00001 && abs(b.position.y - CoachAnatomy.ankleHeight) < 0.00001 {
                         XCTAssertEqual(a.position.x, b.position.x, accuracy: 0.0002, "A planted foot must not skate sideways.")
                         XCTAssertEqual(a.position.z, b.position.z, accuracy: 0.0002)
                         XCTAssertEqual(b.pitch, 0, accuracy: 0.001)

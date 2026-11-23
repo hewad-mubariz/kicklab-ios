@@ -6,12 +6,26 @@ enum CoachSide: CaseIterable {
     var sign: Float { self == .left ? -1 : 1 }
 }
 
+/// Dimensions of the licensed human skeleton, measured in metres in its rest pose.
+/// Choreography and retargeting use the same proportions and contact surface.
+enum CoachAnatomy {
+    static let pelvisHeight: Float = 0.878
+    static let ankleHeight: Float = 0.105
+    static let hipHalfWidth: Float = 0.08836846
+    static let thighLength: Float = 0.3990352
+    static let calfLength: Float = 0.396689
+    static let upperArmLength: Float = 0.2858015
+    static let forearmLength: Float = 0.2709195
+    static let spineOffset = SIMD3<Float>(0, 0.11994374, 0.00885893)
+    static let instep = SIMD3<Float>(0, -0.050, 0.10)
+}
+
 struct CoachFoot {
     var position: SIMD3<Float>
     var pitch: Float = 0
     var rotation: simd_quatf { simd_quatf(angle: pitch, axis: SIMD3(1, 0, 0)) }
     var ballContact: SIMD3<Float> {
-        position + rotation.act(SIMD3(0, 0.035, 0.13)) + SIMD3(0, CoachPose.ballRadius, 0)
+        position + rotation.act(CoachAnatomy.instep) + SIMD3(0, CoachPose.ballRadius, 0)
     }
 }
 
@@ -20,16 +34,17 @@ struct CoachFoot {
 struct CoachPose {
     static let ballRadius: Float = 0.105
     var ball = SIMD3<Float>(0.145, 1.10, 0.28)
-    var pelvis = SIMD3<Float>(0, 0.96, -0.025)
+    var pelvis = SIMD3<Float>(0, CoachAnatomy.pelvisHeight, -0.025)
     var lean: Float = 0.06
     var roll: Float = 0
     var twist: Float = 0
-    var leftFoot = CoachFoot(position: SIMD3(-0.145, 0.095, 0))
-    var rightFoot = CoachFoot(position: SIMD3(0.145, 0.095, 0))
+    var leftFoot = CoachFoot(position: SIMD3(-0.145, CoachAnatomy.ankleHeight, 0))
+    var rightFoot = CoachFoot(position: SIMD3(0.145, CoachAnatomy.ankleHeight, 0))
     var leftHand = SIMD3<Float>(0.005, 1.16, 0.28)
     var rightHand = SIMD3<Float>(0.285, 1.16, 0.28)
     var held: Float = 1
     var grip: Float = 1
+    var handReadiness: Float = 1
     var headPitch: Float = 0.16
     var headYaw: Float = 0
     var spin: Float = 0
@@ -43,13 +58,16 @@ struct CoachPose {
         simd_quatf(angle: lean, axis: SIMD3(1, 0, 0))
     }
     func hip(_ side: CoachSide) -> SIMD3<Float> {
-        pelvis + simd_quatf(angle: roll, axis: SIMD3(0, 0, 1)).act(SIMD3(side.sign * 0.09, 0, 0))
+        // This skeleton parents both hips to its first spine joint.
+        pelvis + simd_quatf(angle: roll, axis: SIMD3(0, 0, 1)).act(CoachAnatomy.spineOffset) +
+        torsoRotation.act(SIMD3(side.sign * CoachAnatomy.hipHalfWidth, 0, 0) - CoachAnatomy.spineOffset)
     }
     func shoulder(_ side: CoachSide) -> SIMD3<Float> {
-        pelvis + torsoRotation.act(SIMD3(side.sign * 0.205, 0.49, 0))
+        pelvis + simd_quatf(angle: roll, axis: SIMD3(0, 0, 1)).act(CoachAnatomy.spineOffset) +
+        torsoRotation.act(SIMD3(side.sign * 0.2103711, 0.4131694, 0.0122967))
     }
     func knee(_ side: CoachSide) -> SIMD3<Float> {
-        CoachKinematics.joint(from: hip(side), to: foot(side).position, upper: 0.445, lower: 0.435,
+        CoachKinematics.joint(from: hip(side), to: foot(side).position, upper: CoachAnatomy.thighLength, lower: CoachAnatomy.calfLength,
                               pole: SIMD3(side.sign * 0.08, 0, 1))
     }
     static func sample(_ motion: CoachMotion, progress: Double) -> CoachPose {
@@ -227,7 +245,7 @@ struct CoachChoreography {
             let steps = events.filter { $0.side == side && $0.kind != .floor }.sorted { $0.time < $1.time }
             let next = steps.first { $0.time >= t - 0.29 }
             let previous = steps.last { $0.time < (next?.time ?? t) }
-            var foot = CoachFoot(position: SIMD3(side.sign * 0.145 + (previous?.offset ?? 0), 0.095, 0))
+            var foot = CoachFoot(position: SIMD3(side.sign * 0.145 + (previous?.offset ?? 0), CoachAnatomy.ankleHeight, 0))
             if let event = next {
                 let delta = t - event.time
                 let startX = side.sign * 0.145 + (previous?.offset ?? event.offset)
@@ -235,7 +253,7 @@ struct CoachChoreography {
                 let x = startX + (endX - startX) * Self.ease((delta + 0.23) / 0.23)
                 if event.kind == .thigh {
                     let lift = Self.ease((delta + 0.34) / 0.34) * (1 - Self.ease(delta / 0.29))
-                    foot.position = SIMD3(x, 0.095 + 0.46 * lift, 0.25 * lift)
+                    foot.position = SIMD3(x, CoachAnatomy.ankleHeight + 0.46 * lift, 0.25 * lift)
                     foot.pitch = 0.06 * lift
                 } else { foot = Self.kickingFoot(side, delta: delta, x: x) }
             }
@@ -243,8 +261,8 @@ struct CoachChoreography {
         }
         let centre = (pose.leftFoot.position.x + pose.rightFoot.position.x) * 0.5
         let soften = catchTime.map { Self.ease((t - $0 + 0.10) / 0.16) * (1 - Self.ease((t - $0 - 0.06) / 0.35)) } ?? 0
-        let bounceBend: Float = motion == .bounceCatch ? 0.10 * Self.ease((t - catchTime! + 0.30) / 0.25) * (1 - Self.ease((t - catchTime! - 0.20) / 0.50)) : 0
-        pose.pelvis = SIMD3(centre + support * 0.075, 0.96 - compression - soften * 0.028 - bounceBend, -0.025)
+        let bounceBend: Float = motion == .bounceCatch ? 0.115 * Self.ease((t - catchTime! + 0.30) / 0.25) * (1 - Self.ease((t - catchTime! - 0.20) / 0.50)) : 0
+        pose.pelvis = SIMD3(centre + support * 0.075, CoachAnatomy.pelvisHeight - compression - soften * 0.028 - bounceBend, -0.025)
         pose.roll = -support * 0.035
         pose.lean = 0.055 + compression * 1.5 + soften * 0.06 + bounceBend * 0.6
         pose.twist = support * 0.06
@@ -252,10 +270,11 @@ struct CoachChoreography {
     }
 
     private func positionHands(_ pose: inout CoachPose, centre: SIMD3<Float>, reach: Float) {
+        pose.handReadiness = reach
         for side in CoachSide.allCases {
-            let ready = SIMD3<Float>(pose.pelvis.x + side.sign * 0.28, 0.97 + (pose.pelvis.y - 0.96) * 0.5,
+            let ready = SIMD3<Float>(pose.pelvis.x + side.sign * 0.28, 0.97 + (pose.pelvis.y - CoachAnatomy.pelvisHeight) * 0.5,
                                      0.20 + side.sign * pose.twist * 0.3)
-            let target = centre + SIMD3<Float>(side.sign * 0.145, 0.055, 0)
+            let target = centre + SIMD3<Float>(side.sign * 0.14, -0.005, -0.07)
             let hand = simd_mix(ready, target, SIMD3(repeating: reach))
             if side == .left { pose.leftHand = hand } else { pose.rightHand = hand }
         }
@@ -265,7 +284,7 @@ struct CoachChoreography {
         let height = curve(delta, keys: [(-0.23, 0, 0), (-0.10, 0.020, 0.25), (0, 0.075, 0.78), (0.09, 0.128, 0), (0.29, 0, 0)])
         let forward = curve(delta, keys: [(-0.23, 0, 0), (0, 0.16, 0.6), (0.09, 0.205, 0), (0.29, 0, 0)])
         let pitch = curve(delta, keys: [(-0.23, 0, 0), (0, -0.18, -0.4), (0.09, -0.23, 0), (0.29, 0, 0)])
-        return CoachFoot(position: SIMD3(x, 0.095 + max(0, height), forward), pitch: pitch)
+        return CoachFoot(position: SIMD3(x, CoachAnatomy.ankleHeight + max(0, height), forward), pitch: pitch)
     }
 
     static func flight(from start: SIMD3<Float>, to end: SIMD3<Float>, elapsed: Float, duration: Float) -> SIMD3<Float> {
