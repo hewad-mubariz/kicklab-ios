@@ -29,6 +29,9 @@ struct JugglingChallengesView: View {
     @State private var headerIn = false
     @State private var arrivalRun = 0
     @State private var leftForSession = false
+    /// The arrival plays on the first visit only; coming back to the tab (perhaps scrolled far down)
+    /// shows the path as it was left.
+    @State private var arrived = false
     private static let contentSpace = "challenge-content"
     private static let landStep = 0.22
 
@@ -74,7 +77,8 @@ struct JugglingChallengesView: View {
         .task { ball = (await HomeBallArt.loadClassic()).first }
         .onAppear {
             syncBall(animated: true)
-            if hop != nil || leftForSession { showEverything() } else { playArrival(header: true) }
+            if arrived || hop != nil || leftForSession { showEverything() } else { playArrival(header: true) }
+            arrived = true
             leftForSession = false
         }
         .onChange(of: personalBest) { syncBall(animated: true) }

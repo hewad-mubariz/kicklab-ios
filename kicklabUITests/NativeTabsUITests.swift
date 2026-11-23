@@ -285,6 +285,26 @@ final class NativeTabsUITests: XCTestCase {
         }
     }
 
+    /// The arrival plays on the first visit only. Coming back, scrolled down, the path is where it was
+    /// and every piece is already in place (a replay starts pieces at half size, raised and hidden).
+    @MainActor
+    func testChallengesDoNotReplayTheirArrivalOnReturn() {
+        let app = launch()
+        app.mainTab("challenges").tap()
+        XCTAssertTrue(app.buttons["challenge-ball"].waitForExistence(timeout: 10))
+        sleep(5)
+        let piece = app.buttons["challenge-cup-06"]
+        reveal(piece, in: app)
+        let before = piece.frame
+        app.mainTab("learn").tap()
+        XCTAssertTrue(app.mainTab("learn").isSelected)
+        app.mainTab("challenges").tap()
+        let after = piece.frame
+        attach(app, "Challenges - back again")
+        XCTAssertEqual(after.minY, before.minY, accuracy: 1)
+        XCTAssertEqual(after.width, before.width, accuracy: 1)
+    }
+
     @MainActor
     func testChallengePathForReview() {
         for appearance in ["light", "dark"] {

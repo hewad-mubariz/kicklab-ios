@@ -5,6 +5,8 @@ struct LearnHubView: View {
     @State private var level: LearnLevel = .basics
     @State private var selected: LearnLesson?
     @State private var visible = false
+    /// The coach only moves while its card is on screen, so it isn't running unseen far down the page.
+    @State private var heroOnScreen = true
     @AppStorage("juggledude.learn.practised.v1") private var practised = ""
     private var ink: Color { TrainingHomeStyle.ink(scheme) }
 
@@ -51,8 +53,9 @@ struct LearnHubView: View {
             ZStack(alignment: .topLeading) {
                 RadialGradient(colors: [Color(red: 0.15, green: 0.25, blue: 0.19), Color(red: 0.04, green: 0.09, blue: 0.075)],
                                center: .center, startRadius: 15, endRadius: 260)
-                JugglingCoachStage(motion: .touchCatch, playing: visible && selected == nil, showsPhase: false)
+                JugglingCoachStage(motion: .touchCatch, playing: visible && heroOnScreen && selected == nil, showsPhase: false)
                     .padding(.leading, 38).padding(.top, 20)
+                    .onScrollVisibilityChange(threshold: 0.05) { heroOnScreen = $0 }
                 VStack(alignment: .leading, spacing: 7) {
                     Text("YOUR PRACTICE PARTNER").font(.system(size: 9, weight: .bold, design: .monospaced))
                         .tracking(1.8).foregroundStyle(TrainingHomeStyle.lime)
