@@ -49,18 +49,21 @@ Advanced, plus shortcuts for keeping the ball close and practising the other foo
 A lesson provides a realistic human coach, a looping demonstration, front/side
 views, half-speed playback, written steps and a guided practice round.
 `HumanCoachRig` uses the existing MIT-licensed Microsoft Rocketbox football model
-with its original skin and kit textures. Embedded animation clips are removed at
-load. `CoachChoreography` coordinates gravity-based ball flight, weight transfer,
-planted support feet and kick follow-through. The human's measured limb lengths
-constrain the motion. Elbows stay relaxed; palms turn toward the catch, fingers
-close around the ball, and the hands give downward as it arrives. Moving drills
-reposition a foot only during its swing. The reference reel informs movement
-principles only; no character or animation assets are copied from it.
+with its original skin and kit textures. Embedded full-body clips are removed at
+load. `CoachCatchMotion` reuses the existing Adobe Mixamo ready and low-catch arm,
+wrist and finger rotations. The hands return gradually after a drop and prepare
+earlier for the next catch. Bounded IK keeps each captured palm against the ball,
+while the body bends to meet lower catches without stretching the arms.
+`CoachChoreography` coordinates gravity-based ball flight, weight transfer,
+planted support feet and kick follow-through. Moving drills reposition a foot only
+during its swing. The goalkeeper library has no juggling kick; foot motion remains
+authored around each ball contact. The reference reel informs movement principles
+only; no character or animation assets are copied from it.
 
 The dark studio uses a ground grid, cast shadows and a restrained reflection.
 `CoachStudioScene` is shared by the app and the offline motion preview. Rendering
 runs at up to 60 fps while visible; half-speed slows the same choreography clock.
-Model license and provenance are retained in `Learning/CoachAssets.bundle/`.
+Model and animation licenses and provenance are retained in `Learning/CoachAssets.bundle/`.
 No paid services, new asset purchases or subscriptions are required.
 
 Tap the play icon beside the coach's caption to hear the demonstration cue, or
@@ -70,21 +73,22 @@ unavailable. Leaving, pausing, backgrounding or an audio interruption cancels pe
 prompts and releases the coaching audio session. Reduce Motion pauses the character;
 the written steps remain available.
 
-This is a visual and interaction prototype with hand-authored illustrative motion
-and a proposed curriculum, pending football-coach review. The camera stays off in
+This is a visual and interaction prototype with adapted captured hand motion,
+authored juggling and a proposed curriculum, pending football-coach review. The camera stays off in
 these lessons. Check-ins are self-reported practice, saved locally on the device;
 they are not detected catches, measured form, verified mastery or leaderboard scores.
 “Make it a little easier” opens a simpler drill. Spoken prompts are English in this
 first version. Physical-device voice quality and animation performance still need
 review before release. Current motion-review artifacts are in
-`artifacts/learn-real-coach-motion/`; earlier iterations remain in
-`artifacts/learn-natural-motion/` and `artifacts/learn-human-coach/`.
+`artifacts/learn-captured-hands/`; earlier iterations remain in
+`artifacts/learn-real-coach-motion/`, `artifacts/learn-natural-motion/` and `artifacts/learn-human-coach/`.
 
-Validation: eight focused choreography/geometry/audio tests and two interaction
+Validation: nine focused choreography/geometry/audio tests and two interaction
 tests passed on an isolated iOS 26.5 iPhone 17 Pro Simulator. They cover realistic
 drop timing and gravitational acceleration, fixed limb lengths, reach limits,
-continuous ball/hand/body paths, planted feet, exact impact points, catch absorption,
-both feet, simpler-drill routing and actual system-voice audio generation. The UI
+continuous ball/hand/body paths, bounded wrist/elbow speeds, palm contact, planted
+feet, exact impact points, catch absorption, both feet, simpler-drill routing and
+actual system-voice audio generation. The UI
 checks cover practice, timed cues, playback speed, side view and voice controls.
 The preview renders the same scene code as the app, with separately rendered audio
 from the same app voice and demonstration phrase. These are prototype checks,

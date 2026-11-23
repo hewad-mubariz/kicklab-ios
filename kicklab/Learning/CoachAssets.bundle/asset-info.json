@@ -3,7 +3,9 @@
   "source": "https://github.com/microsoft/Microsoft-Rocketbox",
   "license": "MIT, retained in Rocketbox-LICENSE.txt",
   "local_source": "Existing KeeperAssets.bundle/Keeper-ready.usdz",
-  "animation": "Embedded imported animations are removed at load. Authored gravity-based juggling and soft catches are retargeted to measured human anatomy using two-link inverse kinematics, palm orientation and finger articulation. No animation data is copied from the reference reel.",
+  "animation": "Arm, wrist and finger articulation sampled from the app\u2019s existing Adobe Mixamo ready and low-catch clips. Authored juggling contacts, slower hand return, earlier catch preparation and bounded palm contact IK adapt the capture to each lesson. No animation data is copied from the reference reel.",
   "appearance": "Original model textures; lighting adjusted for human skin and fabric.",
-  "cost": "No paid services or new asset purchases."
+  "cost": "No paid services or new asset purchases.",
+  "animation_license": "Adobe Mixamo terms for embedded app use; retained in Mixamo-usage.txt",
+  "motion_rebuild": "python3 scripts/learning/prepare-catch-motion.py"
 }

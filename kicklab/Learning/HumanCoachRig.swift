@@ -3,7 +3,7 @@ import SceneKit
 import simd
 
 /// The licensed Rocketbox mesh supplies the anatomy, skinning and textures.
-/// Lesson motion is authored here; none of the asset's embedded goalkeeper clips play.
+/// Captured arm articulation is retargeted onto the authored juggling contacts.
 final class HumanCoachRig {
     enum LoadError: Error { case missingSkeleton }
     let node = SCNNode()
@@ -11,6 +11,7 @@ final class HumanCoachRig {
     private var rest: [(SCNNode, simd_float4x4)] = []
     private var worldPositions: [String: SIMD3<Float>] = [:]
     private var worldRotations: [String: simd_quatf] = [:]
+    private let catchMotion: CoachCatchMotion
     private(set) var ballPosition = SIMD3<Float>(0.15, 1.05, 0.24)
 
     static var assetURL: URL? {
@@ -20,6 +21,8 @@ final class HumanCoachRig {
     }
 
     init(url: URL) throws {
+        let motionURL = url.deletingLastPathComponent().appendingPathComponent("CatchMotion.json")
+        catchMotion = try JSONDecoder().decode(CoachCatchMotion.self, from: Data(contentsOf: motionURL))
         let scene = try SCNScene(url: url, options: nil)
         for child in scene.rootNode.childNodes {
             child.removeFromParentNode()
@@ -53,6 +56,9 @@ final class HumanCoachRig {
         }
         orient("Bip01_Pelvis", delta: simd_quatf(angle: pose.roll, axis: SIMD3(0, 0, 1)))
         orient("Bip01_Spine", delta: pose.torsoRotation)
+        for (name, rotation) in catchMotion.rotations(readiness: pose.handReadiness, grip: pose.grip) {
+            bones[name]?.simdOrientation = rotation
+        }
 
         for side in CoachSide.allCases {
             let label = side == .right ? "L" : "R"
@@ -69,7 +75,7 @@ final class HumanCoachRig {
             }
             solve(upper: prefix + "UpperArm", lower: prefix + "Forearm", end: prefix + "Hand",
                   target: pose.hand(side), pole: SIMD3(side.sign * 0.35, -0.75, -0.25))
-            poseHand(prefix, side: side, grip: pose.grip, readiness: pose.handReadiness)
+            fitPalm(prefix, target: pose.catchTarget, weight: pose.handReadiness, side: side)
         }
         orient("Bip01_Head", delta: simd_quatf(angle: pose.headYaw, axis: SIMD3(0, 1, 0)) *
                simd_quatf(angle: pose.headPitch * 0.65, axis: SIMD3(1, 0, 0)))
@@ -82,38 +88,30 @@ final class HumanCoachRig {
 
     func position(of joint: String) -> SIMD3<Float>? { bones[joint]?.simdWorldPosition }
 
+    func palmCentre(_ side: CoachSide) -> SIMD3<Float> {
+        let prefix = "Bip01_" + (side == .right ? "L" : "R") + "_"
+        let wrist = bones[prefix + "Hand"]!.simdWorldPosition
+        return wrist + (bones[prefix + "Finger2"]!.simdWorldPosition - wrist) * 0.65
+    }
+
+    private func fitPalm(_ prefix: String, target: SIMD3<Float>, weight: Float, side: CoachSide) {
+        guard weight > 0, let wrist = bones[prefix + "Hand"] else { return }
+        let palm = palmCentre(side)
+        let towardBall = target - palm
+        let distance = simd_length(towardBall)
+        guard distance > 0.001 else { return }
+        // A small contact correction keeps the captured glove on the ball's
+        // surface. Preserve the capture's wrist orientation through the solve.
+        let correction = simd_normalize(towardBall) * min(0.045, max(-0.045, distance - CoachPose.ballRadius - 0.012)) * weight
+        let orientation = wrist.simdWorldOrientation
+        solve(upper: prefix + "UpperArm", lower: prefix + "Forearm", end: prefix + "Hand",
+              target: wrist.simdWorldPosition + correction, pole: SIMD3(side.sign * 0.35, -0.75, -0.25))
+        wrist.simdWorldOrientation = orientation
+    }
+
     private func orient(_ name: String, delta: simd_quatf) {
         if let bone = bones[name], let rotation = worldRotations[name] {
             bone.simdWorldOrientation = delta * rotation
-        }
-    }
-
-    private func poseHand(_ prefix: String, side: CoachSide, grip: Float, readiness: Float) {
-        guard let wrist = worldPositions[prefix + "Hand"], let middle = worldPositions[prefix + "Finger2"],
-              let index = worldPositions[prefix + "Finger1"], let little = worldPositions[prefix + "Finger4"] else { return }
-        let restForward = simd_normalize(middle - wrist)
-        let restNormal = -side.sign * simd_normalize(simd_cross(index - little, restForward))
-        let restAcross = simd_normalize(simd_cross(restForward, restNormal))
-        let restFrame = simd_quatf(simd_float3x3(columns: (restAcross, restForward, restNormal)))
-        let openNormal = simd_normalize(SIMD3<Float>(-side.sign * 0.65, 0, 1))
-        let catchNormal = simd_normalize(SIMD3<Float>(-side.sign, 0.25, 0))
-        let normal = simd_normalize(simd_mix(openNormal, catchNormal, SIMD3(repeating: readiness)))
-        let direction = simd_mix(SIMD3<Float>(0, -1, 0.10), SIMD3<Float>(0, 0.22, 1), SIMD3(repeating: readiness))
-        let forward = simd_normalize(direction - normal * simd_dot(direction, normal))
-        let across = simd_normalize(simd_cross(forward, normal))
-        let frame = simd_quatf(simd_float3x3(columns: (across, forward, normal)))
-        orient(prefix + "Hand", delta: frame * restFrame.inverse)
-        // Curl the actual finger joints; palm orientation is controlled separately
-        // so the wrists do not twist as the arms extend to receive the ball.
-        for finger in 1...4 {
-            for (suffix, angle): (String, Float) in [("", 0.10 + 0.25 * grip), ("1", 0.36 * grip), ("2", 0.18 * grip)] {
-                if let bone = bones[prefix + "Finger\(finger)" + suffix] {
-                    bone.simdWorldOrientation = simd_quatf(angle: angle, axis: across) * bone.simdWorldOrientation
-                }
-            }
-        }
-        if let thumb = bones[prefix + "Finger01"] {
-            thumb.simdWorldOrientation = simd_quatf(angle: 0.18 * grip, axis: across) * thumb.simdWorldOrientation
         }
     }
 

@@ -45,6 +45,7 @@ struct CoachPose {
     var held: Float = 1
     var grip: Float = 1
     var handReadiness: Float = 1
+    var catchTarget = SIMD3<Float>(0.145, 1.10, 0.28)
     var headPitch: Float = 0.16
     var headYaw: Float = 0
     var spin: Float = 0
@@ -169,7 +170,7 @@ struct CoachChoreography {
             } else if t < contacts[0].time {
                 let elapsed = t - release
                 pose.ball = hold + SIMD3(0, -0.5 * Self.gravity * elapsed * elapsed, 0)
-                reach = 1 - Self.ease((t - release) / 0.20)
+                reach = 1 - Self.ease((t - release) / min(0.40, contacts[0].time - release))
                 pose.grip = 1 - Self.ease((t - release + 0.06) / 0.12)
                 pose.phase = "Let it drop"
             } else if t < catchTime {
@@ -178,7 +179,7 @@ struct CoachChoreography {
                 let nextPoint = index + 1 < contacts.count ? points[index + 1] : catchPoint
                 pose.ball = Self.flight(from: points[index], to: nextPoint, elapsed: t - contacts[index].time,
                                         duration: nextTime - contacts[index].time)
-                reach = Self.ease((t - catchTime + 0.22) / 0.22)
+                reach = Self.ease((t - catchTime + 0.38) / 0.38)
                 pose.grip = Self.ease((t - catchTime + 0.035) / 0.07)
                 pose.phase = motion == .bounceCatch ? "Let it bounce" : (contacts.count > 1 && index == 0 ? "First touch" : "A small lift")
             } else {
@@ -260,9 +261,9 @@ struct CoachChoreography {
             if side == .left { pose.leftFoot = foot } else { pose.rightFoot = foot }
         }
         let centre = (pose.leftFoot.position.x + pose.rightFoot.position.x) * 0.5
-        let soften = catchTime.map { Self.ease((t - $0 + 0.10) / 0.16) * (1 - Self.ease((t - $0 - 0.06) / 0.35)) } ?? 0
-        let bounceBend: Float = motion == .bounceCatch ? 0.115 * Self.ease((t - catchTime! + 0.30) / 0.25) * (1 - Self.ease((t - catchTime! - 0.20) / 0.50)) : 0
-        pose.pelvis = SIMD3(centre + support * 0.075, CoachAnatomy.pelvisHeight - compression - soften * 0.028 - bounceBend, -0.025)
+        let soften = catchTime.map { Self.ease((t - $0 + 0.30) / 0.26) * (1 - Self.ease((t - $0 - 0.15) / 0.40)) } ?? 0
+        let bounceBend: Float = motion == .bounceCatch ? 0.13 * Self.ease((t - catchTime! + 0.30) / 0.25) * (1 - Self.ease((t - catchTime! - 0.20) / 0.50)) : 0
+        pose.pelvis = SIMD3(centre + support * 0.075, CoachAnatomy.pelvisHeight - compression - soften * 0.085 - bounceBend, -0.025)
         pose.roll = -support * 0.035
         pose.lean = 0.055 + compression * 1.5 + soften * 0.06 + bounceBend * 0.6
         pose.twist = support * 0.06
@@ -271,10 +272,11 @@ struct CoachChoreography {
 
     private func positionHands(_ pose: inout CoachPose, centre: SIMD3<Float>, reach: Float) {
         pose.handReadiness = reach
+        pose.catchTarget = centre
         for side in CoachSide.allCases {
             let ready = SIMD3<Float>(pose.pelvis.x + side.sign * 0.28, 0.97 + (pose.pelvis.y - CoachAnatomy.pelvisHeight) * 0.5,
                                      0.20 + side.sign * pose.twist * 0.3)
-            let target = centre + SIMD3<Float>(side.sign * 0.14, -0.005, -0.07)
+            let target = centre + SIMD3<Float>(side.sign * 0.14, -0.075, -0.04)
             let hand = simd_mix(ready, target, SIMD3(repeating: reach))
             if side == .left { pose.leftHand = hand } else { pose.rightHand = hand }
         }

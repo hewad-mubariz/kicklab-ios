@@ -27,10 +27,41 @@ final class LearningCoachTests: XCTestCase {
                         let actual = try simd_distance(XCTUnwrap(character.position(of: prefix + a)), XCTUnwrap(character.position(of: prefix + b)))
                         XCTAssertEqual(actual, length, accuracy: 0.001, "\(lesson.id) \(a)")
                     }
-                    for (joint, target) in [("Foot", pose.foot(side).position), ("Hand", pose.hand(side)),
+                    for (joint, target) in [("Foot", pose.foot(side).position),
                                             ("Thigh", pose.hip(side)), ("Calf", pose.knee(side))] {
                         let actual = try XCTUnwrap(character.position(of: prefix + joint))
                         XCTAssertLessThan(simd_distance(actual, target), 0.002, "\(lesson.id) \(joint)")
+                    }
+                }
+            }
+        }
+    }
+
+    @MainActor
+    func testCapturedHandsKeepContactAndReturnWithoutSnapping() throws {
+        let character = try HumanCoachRig(url: XCTUnwrap(HumanCoachRig.assetURL))
+        for lesson in LearnLesson.all {
+            let plan = CoachChoreography(lesson.motion)
+            let dt = plan.duration / 600
+            var previous: [String: SIMD3<Float>] = [:]
+            for frame in 0...600 {
+                let pose = plan.sample(seconds: Float(frame) * dt)
+                character.update(pose, time: 0, speaking: false)
+                for side in CoachSide.allCases {
+                    let prefix = "Bip01_" + (side == .right ? "L" : "R") + "_"
+                    let wrist = try XCTUnwrap(character.position(of: prefix + "Hand"))
+                    XCTAssertLessThan(simd_distance(wrist, pose.hand(side)), 0.046, lesson.id)
+                    if pose.handReadiness == 1 {
+                        let distance = simd_distance(character.palmCentre(side), pose.catchTarget)
+                        XCTAssertEqual(distance, CoachPose.ballRadius + 0.012, accuracy: 0.008, lesson.id)
+                    }
+                    for (joint, limit): (String, Float) in [("Hand", 2.4), ("Forearm", 2.7), ("Finger2", 3.5)] {
+                        let key = prefix + joint
+                        let point = try XCTUnwrap(character.position(of: key))
+                        if let previous = previous[key] {
+                            XCTAssertLessThan(simd_distance(point, previous) / dt, limit, "\(lesson.id) \(joint)")
+                        }
+                        previous[key] = point
                     }
                 }
             }
