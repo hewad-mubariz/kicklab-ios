@@ -13,9 +13,8 @@ extension XCUIApplication {
         case "leaderboard": labels = ["Leaderboard", "Rangliste", "Ranking", "Classement"]
         default: preconditionFailure("Unknown tab: \(name)")
         }
-        // The app draws its own tab bar (AnimatedTabBar); its buttons carry tab-<name>.
-        _ = labels
-        return buttons.matching(identifier: "tab-\(name)").firstMatch
+        // The system tab bar's buttons carry their localized titles.
+        return tabBars.buttons.matching(NSPredicate(format: "label IN %@", labels)).firstMatch
     }
 }
 
@@ -23,6 +22,6 @@ extension XCUIApplication {
     /// The five main tab buttons.
     @MainActor
     var mainTabButtons: XCUIElementQuery {
-        buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "tab-"))
+        tabBars.firstMatch.buttons
     }
 }
