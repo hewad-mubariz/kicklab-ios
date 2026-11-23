@@ -261,7 +261,7 @@ struct BallDistanceGroundCaptureView: View {
         Button(action: action) {
             VStack(spacing: 12) {
                 Image(systemName: symbol).font(.system(size: 21)).frame(width: 46, height: 46)
-                    .appGlass(in: .circle)
+                    .appGlass(in: .circle, interactive: true)
                 Text(title).font(.system(size: 10, weight: .medium))
             }
             .frame(width: 76)

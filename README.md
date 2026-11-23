@@ -24,10 +24,8 @@ the combined V2 UI, counting, preparation defaults and research features kept of
 
 The signed-in/guest shell uses a native SwiftUI `TabView` with Home, Learn,
 Challenges, Wall Game and Leaderboard. Profile opens full screen from the photo on
-Home. Experiment: the native tab bar is hidden and `AnimatedTabBar` draws a glass bar
-whose icons play a short animation on each tap (Learn: a boot taps a ball up twice;
-Challenges: a stopwatch laps while a ball pops off its crown; wall tile hits; the trophy
-is raised and shaken with a shine; house bounce); Reduce Motion turns them off. Tab switches retain navigation and scroll state. Camera, video import and replay
+Home. The system Liquid Glass tab bar stays visible while scrolling; tab switches
+retain navigation and scroll state. Camera, video import and replay
 remain modal; closing the camera returns to the originating tab. Notification taps select
 that tab directly and defer navigation while recording, replay or another sheet is open.
 

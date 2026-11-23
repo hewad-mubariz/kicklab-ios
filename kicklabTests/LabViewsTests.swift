@@ -195,8 +195,8 @@ final class LabViewsTests: XCTestCase {
         }
     }
 
-    /// The Analytics grid's previews as diagrams, like the graph-style tiles: each view drawn on the tile's dark
-    /// colour, with a grey silhouette and a plain ball in place of the footage. Runs on the Mac (Simulator) from
+    /// Historical full-overlay diagram study, not the shipping chooser assets. Do not copy these personal
+    /// footage crops into Assets.xcassets; current art is authored by scripts/analytics-previews/render.swift. Uses
     /// the lab's saved body pose of the owner's clip, so no phone is needed. Saved to LAB_BRIDGE_OUT.
     func testLabViewDiagramPreviews() async throws {
         guard let out = ProcessInfo.processInfo.environment["LAB_BRIDGE_OUT"] else { throw XCTSkip("LAB_BRIDGE_OUT not set") }

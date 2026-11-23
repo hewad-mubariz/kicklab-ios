@@ -155,7 +155,7 @@ struct ReplayMotionPicker: View {
     }
 }
 
-/// A lab view in the Analytics grid, laid out like the graph styles: a diagram of the view, its name, and
+/// A lab view in the Analytics grid: an illustrated preview of the view, its name, and
 /// what it needs. While its body tracking runs, the tile shows the progress.
 struct LabViewTile: View {
     let view: LabViewID
@@ -166,7 +166,7 @@ struct LabViewTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             preview
-                .frame(height: 66).frame(maxWidth: .infinity)
+                .frame(height: 90).frame(maxWidth: .infinity)
                 .clipShape(.rect(cornerRadius: 9))
                 .overlay {
                     if let progress {
@@ -211,13 +211,13 @@ struct LabViewTile: View {
         .animation(.easeOut(duration: 0.2), value: progress == nil)
     }
 
-    /// The view drawn as a diagram on the tile's colour (a grey figure, a plain ball and the view itself),
-    /// like the graph styles; the symbol on a mint panel if a preview is missing.
+    /// Purpose-made 5:3 artwork, with generated sample imagery instead of personal footage.
+    /// These illustrations explain the view; measured values appear only in the actual replay.
     @ViewBuilder private var preview: some View {
         if let image = UIImage(named: "analytics-preview-" + view.rawValue) {
-            // Fitted, never filled: the picture's own size must not widen the tile. Its background is the
-            // tile's colour, so the edges disappear.
+            // Fit the complete illustration, including its markers, inside either grid column.
             Image(uiImage: image).resizable().scaledToFit()
+                .clipShape(.rect(cornerRadius: 9))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .opacity(progress == nil ? 1 : 0.35)
         } else {
@@ -332,7 +332,7 @@ struct MotionStyleOption: View {
                     MotionStyleGraph(style: style, snapshot: MotionStyleSample.preview(for: style))
                 }
             }
-            .frame(height: 66).accessibilityHidden(true)
+            .frame(height: 90).accessibilityHidden(true)
             HStack(spacing: 4) {
                 Text(style.title).font(.system(size: 11, weight: .semibold)).lineLimit(1)
                 Spacer(minLength: 0)

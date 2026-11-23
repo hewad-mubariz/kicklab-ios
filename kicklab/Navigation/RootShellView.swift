@@ -202,13 +202,11 @@ struct RootShellView: View {
                                                        guestVersion: account.user == nil ? guestPhotoVersion : nil)
                     )
                 }
-                .customTabBarSpace()
             } label: {
                 Label("Home", systemImage: "house")
             }
             Tab(value: AppTab.learn) {
                 LearnHubView()
-                    .customTabBarSpace()
             } label: {
                 Label("Learn", systemImage: "graduationcap")
             }
@@ -216,13 +214,11 @@ struct RootShellView: View {
                 JugglingChallengesView(personalBest: accountBest) { target in
                     capture = HomeCapture(mode: .juggling, challengeTarget: target)
                 }
-                .customTabBarSpace()
             } label: {
                 Label("Challenges", systemImage: "flag.checkered")
             }
             Tab(value: AppTab.wallGame) {
                 WallGameHubView(onClose: { selectedTab = .home })
-                    .customTabBarSpace()
             } label: {
                 Label("Wall Game", systemImage: "square.grid.3x2")
             }
@@ -230,14 +226,15 @@ struct RootShellView: View {
                 LeaderboardView(yourName: account.user?.name, onRecord: {
                     capture = HomeCapture(mode: .juggling)
                 })
-                .customTabBarSpace()
             } label: {
                 Label("Leaderboard", systemImage: "trophy")
             }
         }
         .tint(TrainingHomeStyle.accent(preferredScheme ?? scheme))
-        // Experiment: our own bar, so the icons can animate (see AnimatedTabBar).
-        .overlay(alignment: .bottom) { AnimatedTabBar(selection: $selectedTab) }
+        // The system tab bar: on iOS 26 and later its Liquid Glass selection stretches between tabs and it
+        // can be dragged across. It stays on screen while a tab scrolls (the owner prefers it that way).
+        .tabBarStaysVisible()
+        .sensoryFeedback(.selection, trigger: selectedTab)
         // A leaderboard place belongs to the account that earned it.
         .onChange(of: account.user?.id) { _, _ in
             JuggleWidgetData.update { data in data.weekRank = nil; data.allTimeRank = nil }
@@ -306,4 +303,11 @@ private enum HomeSheet: String, Identifiable {
     case setup
     case leaderboardRules
     var id: String { rawValue }
+}
+
+private extension View {
+    @ViewBuilder
+    func tabBarStaysVisible() -> some View {
+        if #available(iOS 26.0, *) { tabBarMinimizeBehavior(.never) } else { self }
+    }
 }
