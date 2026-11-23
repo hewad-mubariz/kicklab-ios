@@ -231,9 +231,9 @@ struct RootShellView: View {
             }
         }
         .tint(TrainingHomeStyle.accent(preferredScheme ?? scheme))
-        // The system tab bar: on iOS 26 and later its Liquid Glass selection stretches between tabs, it can
-        // be dragged across, and it tucks away while a tab scrolls down.
-        .tabBarMinimizesOnScroll()
+        // The system tab bar: on iOS 26 and later its Liquid Glass selection stretches between tabs and it
+        // can be dragged across. It stays on screen while a tab scrolls (the owner prefers it that way).
+        .tabBarStaysVisible()
         .sensoryFeedback(.selection, trigger: selectedTab)
         // A leaderboard place belongs to the account that earned it.
         .onChange(of: account.user?.id) { _, _ in
@@ -307,7 +307,7 @@ private enum HomeSheet: String, Identifiable {
 
 private extension View {
     @ViewBuilder
-    func tabBarMinimizesOnScroll() -> some View {
-        if #available(iOS 26.0, *) { tabBarMinimizeBehavior(.onScrollDown) } else { self }
+    func tabBarStaysVisible() -> some View {
+        if #available(iOS 26.0, *) { tabBarMinimizeBehavior(.never) } else { self }
     }
 }

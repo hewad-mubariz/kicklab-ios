@@ -68,7 +68,15 @@ final class NativeTabsUITests: XCTestCase {
             XCTAssertEqual(app.descendants(matching: .any)["home-personal-best"].label,
                            "Personal best streak, 42 consecutive touches")
             XCTAssertTrue(app.descendants(matching: .any)["home-next-goal"].label.hasPrefix("Next goal, 50 touches"))
-            XCTAssertEqual(app.descendants(matching: .any)["home-week"].label, "This week, 3 sessions")
+            // The sample sessions are today, yesterday and the day before; early in the week some fall in the last one.
+            // Counted like the app, which this test launches with the en_US region (weeks start on Sunday).
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.locale = Locale(identifier: "en_US")
+            let thisWeek = (0..<3).filter {
+                calendar.isDate(Date().addingTimeInterval(-Double($0) * 86400), equalTo: Date(), toGranularity: .weekOfYear)
+            }.count
+            XCTAssertEqual(app.descendants(matching: .any)["home-week"].label,
+                           "This week, \(thisWeek) session" + (thisWeek == 1 ? "" : "s"))
             XCTAssertTrue(app.descendants(matching: .any)["home-last-session"].exists)
             XCTAssertEqual(app.descendants(matching: .any)["home-days-in-a-row"].label, "3 days in a row")
             XCTAssertEqual(app.staticTexts["home-greeting"].label, "Hey, Alex")
