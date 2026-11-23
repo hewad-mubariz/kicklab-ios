@@ -1,5 +1,0 @@
-Goalkeeper motions: Adobe Mixamo, "Goalkeeper Diving Save" / "Goalkeeper Right Diving Save", "Goalkeeper Catching Ball Medium Height", "Goalkeeper Catching Ball Low Height", and "Goalkeeper Jump Catching Ball High Height".
-Downloaded through the user's signed-in Mixamo session on 2026-10-20.
-Used as an embedded animation in Keeper Lab. This motion is not covered by Rocketbox's MIT license.
-Adobe's usage FAQ: https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html
-Original motion files are retained locally for rebuilding and are not an asset redistribution offering.

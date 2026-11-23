@@ -46,15 +46,18 @@ described below. Home's main button reads "Start juggling".
 
 The Learn tab contains 12 proposed drills across Basics, Build rhythm, Control and
 Advanced, plus shortcuts for keeping the ball close and practising the other foot.
-A lesson provides a textured, rigged human football player and a procedural football,
-a looping demonstration, front/side views, half-speed playback, written steps and a
-short guided practice round. The human is Microsoft's MIT-licensed Rocketbox
-Sports_Male_02, reused from the project's existing goalkeeper asset. The learning
-bundle retains the license and provenance in `Learning/CoachAssets.bundle/`.
-`HumanCoachRig` removes embedded animation and authors lesson poses with two-link
-inverse kinematics, hand targets, boot contact, breathing and simple jaw movement
-while speaking. This is an existing licensed character, not a custom likeness;
-there are no new asset purchases, generation services or subscriptions.
+A lesson provides an original faceless training mannequin, a looping demonstration,
+front/side views, half-speed playback, written steps and a guided practice round.
+`CoachCharacter` builds a smooth, tapered mannequin with adult proportions and
+articulated hands. `CoachChoreography` coordinates gravity-based ball flight,
+anticipatory weight transfer, planted support feet, kick follow-through, hand
+preparation and a soft catch. Moving drills reposition a foot only during its swing.
+The dark studio uses a ground grid, cast shadows and a restrained reflection.
+`CoachStudioScene` is shared by the app and the offline motion preview. Rendering
+runs at up to 60 fps while visible; half-speed slows the same choreography clock.
+The earlier borrowed goalkeeper model is no longer used or bundled for learning.
+Character geometry and motion are authored in `Learning/`; no paid assets,
+generation services or subscriptions are required.
 
 Tap the play icon beside the coach's caption to hear the demonstration cue, or
 “Let's try together” to start three paced practice invitations. Speech uses the
@@ -69,18 +72,19 @@ these lessons. Check-ins are self-reported practice, saved locally on the device
 they are not detected catches, measured form, verified mastery or leaderboard scores.
 “Make it a little easier” opens a simpler drill. Spoken prompts are English in this
 first version. Physical-device voice quality and animation performance still need
-review before release. Original review artifacts are in `artifacts/learn-coach/`;
-human-character previews and validation are in `artifacts/learn-human-coach/`.
+review before release. Current motion-review artifacts are in
+`artifacts/learn-natural-motion/`; earlier iterations remain in `artifacts/learn-coach/`
+and `artifacts/learn-human-coach/`.
 
-Validation: eight focused rig/logic/audio tests and two interaction tests passed on
-an isolated iOS 26.5 iPhone 17 Pro Simulator, plus a preview-capture test. This covers
-the bundled textured skeleton, preserved bone lengths across all lessons, model-aware
-boot and hand contact, continuous ball paths, bounce/floor boundaries, both feet,
-simpler-drill routing, actual system-voice audio generation, muted practice, timed
-cues, playback speed, camera angle and voice controls. Light/dark and side-view
-screenshots were inspected. The preview pairs a Simulator screen recording with
-separately rendered audio from the same app voice and demonstration phrase. These
-are prototype checks, not a coaching-technique qualification or full app regression.
+Validation: eight focused choreography/geometry/audio tests and two interaction
+tests passed on an isolated iOS 26.5 iPhone 17 Pro Simulator. They cover realistic
+drop timing and gravitational acceleration, fixed limb lengths, reach limits,
+continuous ball/hand/body paths, planted feet, exact impact points, catch absorption,
+both feet, simpler-drill routing and actual system-voice audio generation. The UI
+checks cover practice, timed cues, playback speed, side view and voice controls.
+The preview renders the same scene code as the app, with separately rendered audio
+from the same app voice and demonstration phrase. These are prototype checks,
+not a coaching-technique qualification or full app regression.
 
 "Start juggling" also works from outside the app, always through the same pending
 request a practice reminder uses (it waits until nothing else is on screen): the

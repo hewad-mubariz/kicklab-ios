@@ -26,15 +26,7 @@ enum CoachMotion: String {
     case bounceCatch, touchCatch, otherFootCatch, twoTouchCatch, alternatingCatch
     case alternating, closeControl, otherFoot, lowTouches, changeHeight, moving, thigh
 
-    var duration: Double {
-        switch self {
-        case .bounceCatch, .touchCatch, .otherFootCatch: return 5.6
-        case .twoTouchCatch, .alternatingCatch: return 6.4
-        case .changeHeight: return 5.2
-        case .thigh: return 3.4
-        default: return 3.2
-        }
-    }
+    var duration: Double { Double(CoachChoreography(self).duration) }
     var endsWithCatch: Bool {
         [.bounceCatch, .touchCatch, .otherFootCatch, .twoTouchCatch, .alternatingCatch].contains(self)
     }
